@@ -23,36 +23,36 @@ module internal Main =
   let init() =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
-    Visitor.defer := None
-    Visitor.inputDirectories.Clear()
-    Visitor.outputDirectories.Clear()
+    Configuration.defer := None
+    Configuration.inputDirectories.Clear()
+    Configuration.outputDirectories.Clear()
     ProgramDatabase.symbolFolders.Clear()
     Instrument.ResolutionTable.Clear()
 
-    Visitor.keys.Clear()
-    Visitor.defaultStrongNameKey <- None
+    Configuration.keys.Clear()
+    Configuration.defaultStrongNameKey <- None
     use stream =
       Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let snk = StrongNameKeyData.Make(buffer.ToArray())
-    Visitor.Add snk
-    Visitor.recorderStrongNameKey <- Some(snk)
+    Configuration.Add snk
+    Configuration.recorderStrongNameKey <- Some(snk)
 
-    Visitor.reportPath <- None
-    Visitor.NameFilters.Clear()
-    Visitor.interval <- None
-    Visitor.TrackingNames.Clear()
-    Visitor.reportFormat <- None
-    Visitor.inplace := false // ddFlag
-    Visitor.collect := false // ddFlag
-    Visitor.local := false // ddFlag
-    Visitor.single <- false // more complicated
-    Visitor.coverstyle <- CoverStyle.All
-    Visitor.sourcelink := false // ddFlag
-    Visitor.coalesceBranches := false // ddFlag
-    Visitor.staticFilter <- None
-    Visitor.showGenerated := false
+    Configuration.reportPath <- None
+    Configuration.NameFilters.Clear()
+    Configuration.interval <- None
+    Configuration.TrackingNames.Clear()
+    Configuration.reportFormat <- None
+    Configuration.inplace := false // ddFlag
+    Configuration.collect := false // ddFlag
+    Configuration.local := false // ddFlag
+    Configuration.single <- false // more complicated
+    Configuration.coverstyle <- CoverStyle.All
+    Configuration.sourcelink := false // ddFlag
+    Configuration.coalesceBranches := false // ddFlag
+    Configuration.staticFilter <- None
+    Configuration.showGenerated := false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -91,33 +91,33 @@ module internal Main =
     let makeFilter filterscope (x : String) =
       x.Replace(char 0, '\\').Replace(char 1, '|')
       |> CommandLine.validateRegexes
-      |> Seq.iter (FilterClass.Build filterscope >> Visitor.NameFilters.Add)
+      |> Seq.iter (FilterClass.Build filterscope >> Configuration.NameFilters.Add)
 
     [ ("i|inputDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--inputDirectory" x then
            let arg = Path.GetFullPath x
-           if Visitor.inputDirectories.Contains arg then
+           if Configuration.inputDirectories.Contains arg then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "DuplicatesNotAllowed", arg,
                   "--inputDirectory") :: CommandLine.error
            else
-             Visitor.inputDirectories.Add arg))
+             Configuration.inputDirectories.Add arg))
 
       ("o|outputDirectory=",
        (fun x ->
          if CommandLine.validatePath "--outputDirectory" x then
            let arg = Path.GetFullPath x
-           if Visitor.outputDirectories.Contains arg then
+           if Configuration.outputDirectories.Contains arg then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "DuplicatesNotAllowed", arg,
                   "--outputDirectory") :: CommandLine.error
            else
-             CommandLine.doPathOperation (fun _ -> Visitor.outputDirectories.Add arg) ()
+             CommandLine.doPathOperation (fun _ -> Configuration.outputDirectories.Add arg) ()
                false))
 
       ("y|symbolDirectory=",
@@ -140,25 +140,25 @@ module internal Main =
       ("k|key=",
        (fun x ->
          let (pair, ok) = CommandLine.validateStrongNameKey "--key" x
-         if ok then Visitor.Add pair))
+         if ok then Configuration.Add pair))
       ("sn|strongNameKey=",
        (fun x ->
          let (pair, ok) = CommandLine.validateStrongNameKey "--strongNameKey" x
          if ok then
-           if Option.isSome Visitor.defaultStrongNameKey then
+           if Option.isSome Configuration.defaultStrongNameKey then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "MultiplesNotAllowed", "--strongNameKey")
                :: CommandLine.error
            else
-             Visitor.defaultStrongNameKey <- Some pair
-             Visitor.Add pair))
+             Configuration.defaultStrongNameKey <- Some pair
+             Configuration.Add pair))
 
       ("x|xmlReport=",
        (fun x ->
          if CommandLine.validatePath "--xmlReport" x then
-           if Option.isSome Visitor.reportPath then
+           if Option.isSome Configuration.reportPath then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
@@ -166,7 +166,7 @@ module internal Main =
                :: CommandLine.error
            else
              CommandLine.doPathOperation
-               (fun () -> Visitor.reportPath <- Some(Path.GetFullPath x)) () false))
+               (fun () -> Configuration.reportPath <- Some(Path.GetFullPath x)) () false))
       ("f|fileFilter=", makeFilter FilterScope.File)
       ("p|pathFilter=", makeFilter FilterScope.Path)
       ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
@@ -174,50 +174,50 @@ module internal Main =
       ("t|typeFilter=", makeFilter FilterScope.Type)
       ("m|methodFilter=", makeFilter FilterScope.Method)
       ("a|attributeFilter=", makeFilter FilterScope.Attribute)
-      (CommandLine.ddFlag "l|localSource" Visitor.local)
+      (CommandLine.ddFlag "l|localSource" Configuration.local)
       ("c|callContext=",
        (fun x ->
-         if Visitor.single then
+         if Configuration.single then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
                 "--single", "--callContext") :: CommandLine.error
          else
-           let (ok, selection) = ValidateCallContext (Option.isSome Visitor.interval) x
+           let (ok, selection) = ValidateCallContext (Option.isSome Configuration.interval) x
            if ok then
              match selection with
-             | Left n -> Visitor.interval <- n
-             | Right name -> Visitor.TrackingNames.Add(name)))
+             | Left n -> Configuration.interval <- n
+             | Right name -> Configuration.TrackingNames.Add(name)))
       ("opencover",
        (fun _ ->
-         if Option.isSome Visitor.reportFormat then
+         if Option.isSome Configuration.reportFormat then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--opencover")
              :: CommandLine.error
          else
-           Visitor.reportFormat <- Some ReportFormat.OpenCover))
-      (CommandLine.ddFlag "inplace" Visitor.inplace)
-      (CommandLine.ddFlag "save" Visitor.collect)
+           Configuration.reportFormat <- Some ReportFormat.OpenCover))
+      (CommandLine.ddFlag "inplace" Configuration.inplace)
+      (CommandLine.ddFlag "save" Configuration.collect)
       ("single",
        (fun _ ->
-         if Visitor.single then
+         if Configuration.single then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--single")
              :: CommandLine.error
-         else if Option.isSome Visitor.interval || Visitor.TrackingNames.Any() then
+         else if Option.isSome Configuration.interval || Configuration.TrackingNames.Any() then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
                 "--single", "--callContext") :: CommandLine.error
          else
-           Visitor.single <- true))
+           Configuration.single <- true))
       ("linecover",
        (fun _ ->
-         match Visitor.coverstyle with
+         match Configuration.coverstyle with
          | CoverStyle.LineOnly ->
              CommandLine.error <-
                String.Format
@@ -230,10 +230,10 @@ module internal Main =
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "Incompatible", "--linecover",
                   "--branchcover") :: CommandLine.error
-         | _ -> Visitor.coverstyle <- CoverStyle.LineOnly))
+         | _ -> Configuration.coverstyle <- CoverStyle.LineOnly))
       ("branchcover",
        (fun _ ->
-         match Visitor.coverstyle with
+         match Configuration.coverstyle with
          | CoverStyle.BranchOnly ->
              CommandLine.error <-
                String.Format
@@ -246,29 +246,29 @@ module internal Main =
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "Incompatible", "--branchcover",
                   "--linecover") :: CommandLine.error
-         | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
+         | _ -> Configuration.coverstyle <- CoverStyle.BranchOnly))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
-      (CommandLine.ddFlag "sourcelink" Visitor.sourcelink)
+      (CommandLine.ddFlag "sourcelink" Configuration.sourcelink)
       ("defer:",
        (fun x ->
-         if !Visitor.defer = None then
-           Visitor.defer := if String.IsNullOrWhiteSpace x then
-                              Some true
-                            else
-                              let (|Select|_|) (pattern : String) offered =
-                                if offered
-                                   |> String.IsNullOrWhiteSpace
-                                   |> not
-                                   && pattern.Equals
-                                        (offered, StringComparison.OrdinalIgnoreCase) then
-                                  Some offered
-                                else
-                                  None
-                              match x with
-                              | Select "-" _ -> Some false
-                              | Select "+" _ -> Some true
-                              | _ -> None
-           if !Visitor.defer = None then
+         if !Configuration.defer = None then
+           Configuration.defer := if String.IsNullOrWhiteSpace x then
+                                    Some true
+                                  else
+                                    let (|Select|_|) (pattern : String) offered =
+                                      if offered
+                                         |> String.IsNullOrWhiteSpace
+                                         |> not
+                                         && pattern.Equals
+                                              (offered, StringComparison.OrdinalIgnoreCase) then
+                                        Some offered
+                                      else
+                                        None
+                                    match x with
+                                    | Select "-" _ -> Some false
+                                    | Select "+" _ -> Some true
+                                    | _ -> None
+           if !Configuration.defer = None then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
@@ -280,16 +280,16 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
-      (CommandLine.ddFlag "v|visibleBranches" Visitor.coalesceBranches)
+      (CommandLine.ddFlag "v|visibleBranches" Configuration.coalesceBranches)
       ("showstatic:",
        (fun x ->
-         if Visitor.staticFilter = None then
-           Visitor.staticFilter <-
+         if Configuration.staticFilter = None then
+           Configuration.staticFilter <-
              if String.IsNullOrWhiteSpace x || x = "+" then Some StaticFilter.AsCovered
              else if x = "++" then Some StaticFilter.NoFilter
              else if x = "-" then Some StaticFilter.Hidden
              else None
-           if Visitor.staticFilter = None then
+           if Configuration.staticFilter = None then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
@@ -301,7 +301,7 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--showstatic")
              :: CommandLine.error))
-      (CommandLine.ddFlag "showGenerated" Visitor.showGenerated)
+      (CommandLine.ddFlag "showGenerated" Configuration.showGenerated)
       ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
       ("<>",
@@ -319,8 +319,8 @@ module internal Main =
     match action with
     | Right(rest, options) ->
         // Check that the directories are distinct
-        let fromDirectories = Visitor.InputDirectories()
-        let toDirectories = Visitor.OutputDirectories()
+        let fromDirectories = Configuration.InputDirectories()
+        let toDirectories = Configuration.OutputDirectories()
         fromDirectories
         |> Seq.iter (fun fromDirectory ->
              if toDirectories.Contains fromDirectory then
@@ -332,7 +332,7 @@ module internal Main =
 
         CommandLine.doPathOperation (fun () ->
           let found = toDirectories |> Seq.filter Directory.Exists
-          if !Visitor.inplace && CommandLine.error |> List.isEmpty && found.Any() then
+          if !Configuration.inplace && CommandLine.error |> List.isEmpty && found.Any() then
             found
             |> Seq.iter (fun toDirectory ->
                  CommandLine.error <-
@@ -349,7 +349,7 @@ module internal Main =
         else
           Seq.zip toDirectories fromDirectories
           |> Seq.iter (fun (toDirectory, fromDirectory) ->
-               if !Visitor.inplace then
+               if !Configuration.inplace then
                  Output.info
                  <| String.Format
                       (CultureInfo.CurrentCulture,
@@ -371,7 +371,7 @@ module internal Main =
           Right
             (rest, fromDirectories |> Seq.map DirectoryInfo,
              toDirectories |> Seq.map DirectoryInfo,
-             Visitor.SourceDirectories() |> Seq.map DirectoryInfo)
+             Configuration.SourceDirectories() |> Seq.map DirectoryInfo)
     | Left intro -> Left intro
 
   let internal imageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
@@ -415,9 +415,8 @@ module internal Main =
                   use stream = File.OpenRead(fullName)
                   use def = AssemblyDefinition.ReadAssembly(stream)
                   ProgramDatabase.readSymbols def
-                  if def.MainModule.HasSymbols && def
-                                                  |> Visitor.IsIncluded
-                                                  |> Visitor.IsInstrumented
+                  if def.MainModule.HasSymbols &&
+                    (def.IsIncluded).IsInstrumented
                      && (def.MainModule.Attributes &&& ModuleAttributes.ILOnly =
                            ModuleAttributes.ILOnly) then
                     String.Format
@@ -517,7 +516,7 @@ module internal Main =
             Options2 = Runner.DeclareOptions() }
         255
     | Right(rest, fromInfo, toInfo, targetInfo) ->
-        let report = Visitor.ReportPath()
+        let report = Configuration.ReportPath()
 
         let result =
           CommandLine.doPathOperation (fun () ->
@@ -526,13 +525,13 @@ module internal Main =
             |> CommandLine.ensureDirectory
             let (assemblies, assemblyNames) =
               prepareTargetFiles fromInfo toInfo targetInfo
-                (Visitor.InstrumentDirectories())
+                (Configuration.InstrumentDirectories())
             Output.info
             <| String.Format
                  (CultureInfo.CurrentCulture,
                   (CommandLine.resources.GetString "reportingto"), report)
             let reporter, document =
-              match Visitor.ReportKind() with
+              match Configuration.ReportKind() with
               | ReportFormat.OpenCover -> OpenCover.ReportGenerator()
               | _ -> Report.ReportGenerator()
 
@@ -546,9 +545,9 @@ module internal Main =
             |> Directory.CreateDirectory
             |> ignore
             document.Save(report)
-            if !Visitor.collect then Runner.SetRecordToFile report
+            if !Configuration.collect then Runner.SetRecordToFile report
             CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
-        CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Visitor.inplace)
+        CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Configuration.inplace)
         result
 
   let internal (|Select|_|) (pattern : String) offered =

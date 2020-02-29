@@ -37,25 +37,25 @@ module AltCoverRunnerTests =
     let MaxTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.MaxTime now ago) = now @>
+      test <@ (Base.Counter.I.maxTime now ago) = now @>
 
     [<Test>]
     let MaxTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.MaxTime ago now) = now @>
+      test <@ (Base.Counter.I.maxTime ago now) = now @>
 
     [<Test>]
     let MinTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.MinTime ago now) = ago @>
+      test <@ (Base.Counter.I.minTime ago now) = ago @>
 
     [<Test>]
     let MinTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.MinTime now ago) = ago @>
+      test <@ (Base.Counter.I.minTime now ago) = ago @>
 
 #if NETCOREAPP2_0
 #else
@@ -64,7 +64,7 @@ module AltCoverRunnerTests =
     let JunkUspidGivesNegativeIndex() =
       Runner.init()
       let key = " "
-      let index = Counter.I.FindIndexFromUspid 0 key
+      let index = Counter.I.findIndexFromUspid 0 key
       test <@ index < 0 @>
 
 #if NETCOREAPP2_0
@@ -75,7 +75,7 @@ module AltCoverRunnerTests =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v1 = Counter.AddVisit visits key 23 Null
+      let v1 = Counter.addVisit visits key 23 Null
       Assert.That(v1, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -92,7 +92,7 @@ module AltCoverRunnerTests =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      let v2 = Counter.AddVisit visits key 23 payload
+      let v2 = Counter.addVisit visits key 23 payload
       Assert.That(v2, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -108,9 +108,9 @@ module AltCoverRunnerTests =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v3 = Counter.AddVisit visits key 23 Null
+      let v3 = Counter.addVisit visits key 23 Null
       Assert.That(v3, Is.EqualTo 1)
-      let v4 = Counter.AddVisit visits "key" 42 Null
+      let v4 = Counter.addVisit visits "key" 42 Null
       Assert.That(visits.Count, Is.EqualTo 2)
       Assert.That(v4, Is.EqualTo 1)
 
@@ -122,9 +122,9 @@ module AltCoverRunnerTests =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v5 = Counter.AddVisit visits key 23 Null
+      let v5 = Counter.addVisit visits key 23 Null
       Assert.That(v5, Is.EqualTo 1)
-      let v6 = Counter.AddVisit visits key 42 Null
+      let v6 = Counter.addVisit visits key 42 Null
       Assert.That(v6, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 2)
@@ -137,9 +137,9 @@ module AltCoverRunnerTests =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v7 = Counter.AddVisit visits key 23 Null
+      let v7 = Counter.addVisit visits key 23 Null
       Assert.That(v7, Is.EqualTo 1)
-      let v8 = Counter.AddVisit visits key 23 Null
+      let v8 = Counter.addVisit visits key 23 Null
       Assert.That(v8, Is.EqualTo 1)
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 2)
@@ -154,9 +154,9 @@ module AltCoverRunnerTests =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      let v9 = Counter.AddVisit visits key 23 Null
+      let v9 = Counter.addVisit visits key 23 Null
       Assert.That(v9, Is.EqualTo 1)
-      let v10 = Counter.AddVisit visits key 23 payload
+      let v10 = Counter.addVisit visits key 23 payload
       Assert.That(v10, Is.EqualTo 1)
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 1)
@@ -193,10 +193,10 @@ module AltCoverRunnerTests =
       worker.Position <- 0L
       let payload = Dictionary<int, PointVisit>()
       [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- Init (int64(i + 1)) [])
-      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- Init (int64(i - 10)) [])
+      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.branchFlag] <- Init (int64(i - 10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-      Counter.I.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
+      Counter.I.updateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
         worker2 |> ignore
       worker2.Position <- 0L
       let after = XmlDocument()
@@ -241,7 +241,7 @@ module AltCoverRunnerTests =
         let payload = Dictionary<int, PointVisit>()
         [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Counter.DoFlush ignore (fun _ _ -> ()) true visits
+        Counter.doFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
@@ -290,7 +290,7 @@ module AltCoverRunnerTests =
         let payload = Dictionary<int, PointVisit>()
         [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Counter.DoFlush ignore (fun _ _ -> ()) true visits
+        Counter.doFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile (Some outputFile) |> ignore
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
@@ -1581,7 +1581,7 @@ module AltCoverRunnerTests =
         let unique = Guid.NewGuid().ToString()
         let main =
           typeof<TeamCityFormat>.Assembly.GetType("AltCover.AltCover")
-            .GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+            .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
         let result = stderr.ToString().Replace("\r\n", "\n")
@@ -1835,7 +1835,7 @@ or
         hits
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
-             AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit |> ignore)
+             AltCover.Base.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
         Runner.DoReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)

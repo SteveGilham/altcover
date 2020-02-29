@@ -250,8 +250,8 @@ module internal CommandLine =
         launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let logExceptionsToFile name extend =
-    let path = Path.Combine(Visitor.OutputDirectories() |> Seq.head, name)
-    let path' = Path.Combine(Visitor.InputDirectories() |> Seq.head, name)
+    let path = Path.Combine(Configuration.OutputDirectories() |> Seq.head, name)
+    let path' = Path.Combine(Configuration.InputDirectories() |> Seq.head, name)
     exceptions |> List.iter (Output.LogExceptionToFile path)
     if exceptions
        |> List.isEmpty

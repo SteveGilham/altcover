@@ -3,27 +3,28 @@ namespace AltCover.Recorder
 open System.Collections.Generic
 
 #if DEBUG
+[<RequireQualifiedAccess>]
 module Adapter =
-  let DoPause() = Instance.DoPause
-  let DoResume() = Instance.DoResume
-  let DoUnload() = Instance.DoUnload
-  let DoExit() = Instance.DoExit
-  let VisitsClear() = Instance.Clear()
-  let SamplesClear() = Instance.Samples.Clear()
-  let FlushAll() = Instance.FlushFinish()
+  let DoPause() = Instance.I.doPause
+  let DoResume() = Instance.I.doResume
+  let DoUnload() = Instance.I.doUnload
+  let DoExit() = Instance.I.doExit
+  let VisitsClear() = Instance.I.clear()
+  let SamplesClear() = Instance.I.samples.Clear()
+  let FlushAll() = Instance.I.flushAll ProcessExit
 
   let Reset() =
-    Instance.IsRunner <- false
-    Instance.Clear()
-    Instance.Samples.Clear()
+    Instance.I.isRunner <- false
+    Instance.I.clear()
+    Instance.I.samples.Clear()
 
   let internal prepareName name =
     if name
-       |> Instance.Visits.ContainsKey
+       |> Instance.I.visits.ContainsKey
        |> not
     then
       let entry = Dictionary<int, PointVisit>()
-      Instance.Visits.Add(name, entry)
+      Instance.I.visits.Add(name, entry)
 
   let internal Init n l = let tmp = { PointVisit.Create() with Count = n }
                           tmp.Tracks.AddRange l
@@ -32,7 +33,7 @@ module Adapter =
   let VisitsAdd name line number =
     prepareName name
     let v = Init number []
-    Instance.Visits.[name].Add(line, v)
+    Instance.I.visits.[name].Add(line, v)
 
   let VisitsAddTrack name line number =
     prepareName name
@@ -40,7 +41,7 @@ module Adapter =
       Init number
         [ Call 17
           Call 42 ]
-    Instance.Visits.[name].Add(line, v1)
+    Instance.I.visits.[name].Add(line, v1)
 
     let v2 =
       Init (number + 1L)
@@ -48,22 +49,22 @@ module Adapter =
           Both
             { Time = 42L
               Call = 23 } ]
-    Instance.Visits.[name].Add(line + 1, v2)
+    Instance.I.visits.[name].Add(line + 1, v2)
 
-  let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
-  let VisitsEntrySeq key = Instance.Visits.[key] |> Seq.cast<obj>
-  let VisitCount key key2 = (Instance.Visits.[key].[key2]).Count
-  let Lock = Instance.Visits :> obj
+  let VisitsSeq() = Instance.I.visits |> Seq.cast<obj>
+  let VisitsEntrySeq key = Instance.I.visits.[key] |> Seq.cast<obj>
+  let VisitCount key key2 = (Instance.I.visits.[key].[key2]).Count
+  let Lock = Instance.I.visits :> obj
 
   let VisitImplNone moduleId hitPointId =
-    Instance.VisitImpl moduleId hitPointId Track.Null
+    Instance.I.visitImpl moduleId hitPointId Track.Null
   let VisitImplMethod moduleId hitPointId mId =
-    Instance.VisitImpl moduleId hitPointId (Call mId)
+    Instance.I.visitImpl moduleId hitPointId (Call mId)
 
   let AddSample moduleId hitPointId =
-    Instance.TakeSample Sampling.Single moduleId hitPointId
+    Instance.I.takeSample Sampling.Single moduleId hitPointId
   let AddSampleUnconditional moduleId hitPointId =
-    Instance.TakeSample Sampling.All moduleId hitPointId
+    Instance.I.takeSample Sampling.All moduleId hitPointId
 
   let internal NewBoth time call =
     Both
@@ -97,15 +98,15 @@ module Adapter =
     let output' = //if System.String.IsNullOrEmpty output
       //then None // this case gets tested elsewhere
       (*else*) Some output
-    Counter.DoFlush ignore (fun _ _ -> ()) true visits format report output'
+    Counter.doFlush ignore (fun _ _ -> ()) true visits format report output'
 
   let internal UpdateReport counts format coverageFile outputFile =
-    Counter.UpdateReport ignore (fun _ _ -> ()) true counts format coverageFile
+    Counter.I.updateReport ignore (fun _ _ -> ()) true counts format coverageFile
       outputFile
-  let internal PayloadSelector x = Instance.PayloadSelector(fun _ -> x)
-  let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
+  let internal PayloadSelector x = Instance.I.payloadSelector(fun _ -> x)
+  let internal PayloadControl x y = Instance.I.payloadControl (fun _ -> x) (fun _ -> y)
   let internal PayloadSelection x y z =
-    Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
+    Instance.I.payloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
 
   let internal MakeNullTrace name =
     { Tracer = name
@@ -134,6 +135,6 @@ module Adapter =
                       | :? System.ArgumentNullException as ane -> ane.ParamName = unique
                       | _ -> x.Message = unique
 
-    Instance.Issue71Wrapper () () () () catcher pitcher
+    Instance.I.issue71Wrapper () () () () catcher pitcher
 
 #endif

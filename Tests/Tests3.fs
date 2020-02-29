@@ -2397,7 +2397,7 @@ or
         let unique = Guid.NewGuid().ToString()
         let main =
           typeof<Node>.Assembly.GetType("AltCover.AltCover")
-            .GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+            .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
         let result = stderr.ToString().Replace("\r\n", "\n")

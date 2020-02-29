@@ -11,31 +11,22 @@ open System.IO
 open System.Xml
 
 // These conditionally internal for Gendarme
-type
-#if DEBUG
-#else
-     internal
-#endif
-              ReportFormat =
+type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1
   | OpenCoverWithTracking = 2
 
-type
-#if DEBUG
-#else
-     internal
-#endif
-              Sampling =
+type internal Sampling =
   | All = 0
   | Single = 1
 
-type
-#if DEBUG
+// TODO isolate where
+#if RUNNER
 #else
-     internal
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+  "AvoidUninstantiatedInternal")>]
 #endif
-              Tag =
+type internal Tag =
   | Null = 0
   | Time = 1
   | Call = 2
@@ -80,15 +71,9 @@ and [<NoComparison>]
     member internal self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
     member internal self.Total() = self.Count + int64 self.Tracks.Count
 
+[<RequireQualifiedAccess>]
 module internal Counter =
   // "Public" "fields"
-
-  /// <summary>
-  /// The offset flag for branch counts
-  /// </summary>
-  let internal BranchFlag = 0x80000000
-
-  let internal BranchMask = 0x7FFFFFFF
 
   /// <summary>
   /// The time at which coverage run began
@@ -100,8 +85,19 @@ module internal Counter =
   /// </summary>
   let mutable internal measureTime = DateTime.UtcNow
 
+  /// <summary>
+  /// The offset flag for branch counts
+  /// </summary>
+  let internal branchFlag = 0x80000000
+
+  let internal branchMask = 0x7FFFFFFF
+
   // Implementation details
+#if DEBUG
   module internal I =
+#else
+  module private I =
+#endif
 
     /// <summary>
     /// Load the XDocument
@@ -113,7 +109,7 @@ module internal Counter =
     /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
     /// Also, this rule is deprecated
     /// </remarks>
-    let private ReadXDocument(stream : Stream) =
+    let private readXDocument(stream : Stream) =
       let doc = XmlDocument()
       doc.Load(stream)
       doc
@@ -124,10 +120,10 @@ module internal Counter =
     /// <param name="coverageDocument">The XML document to write</param>
     /// <param name="path">The XML file to write to</param>
     /// <remarks>Idiom to work with CA2202 as above</remarks>
-    let private WriteXDocument (coverageDocument : XmlDocument) (stream : Stream) =
+    let private writeXDocument (coverageDocument : XmlDocument) (stream : Stream) =
       coverageDocument.Save(stream)
 
-    let internal FindIndexFromUspid flag uspid =
+    let internal findIndexFromUspid flag uspid =
       let f, c =
         Int32.TryParse
           (uspid, System.Globalization.NumberStyles.Integer,
@@ -135,26 +131,26 @@ module internal Counter =
       if f then (c ||| flag)
       else -1
 
-    let internal OpenCoverXml =
+    let internal openCoverXml =
       ("//Module", "hash", "Classes/Class/Methods/Method",
        [ ("SequencePoints/SequencePoint", 0)
-         ("BranchPoints/BranchPoint", BranchFlag) ], "vc")
+         ("BranchPoints/BranchPoint", branchFlag) ], "vc")
 
-    let internal NCoverXml =
+    let internal nCoverXml =
       ("//module", "moduleId", "method", [ ("seqpnt", 0) ], "visitcount")
 
-    let internal XmlByFormat format =
+    let internal xmlByFormat format =
       match format with
       | ReportFormat.OpenCoverWithTracking
-      | ReportFormat.OpenCover -> OpenCoverXml
-      | _ -> NCoverXml
+      | ReportFormat.OpenCover -> openCoverXml
+      | _ -> nCoverXml
 
-    let internal MinTime (t1:DateTime) (t2:DateTime) =
+    let internal minTime (t1:DateTime) (t2:DateTime) =
       if t1 < t2
       then t1
       else t2
 
-    let internal MaxTime (t1:DateTime) (t2:DateTime) =
+    let internal maxTime (t1:DateTime) (t2:DateTime) =
       if t1 > t2
       then t1
       else t2
@@ -166,12 +162,12 @@ module internal Counter =
     /// <param name="coverageFile">The coverage file to update as a stream</param>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule")>]
-    let internal UpdateReport (postProcess : XmlDocument -> unit)
+    let internal updateReport (postProcess : XmlDocument -> unit)
         (pointProcess : XmlElement -> List<Track> -> unit) own
         (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
         (outputFile : Stream) =
       let flushStart = DateTime.UtcNow
-      let coverageDocument = ReadXDocument coverageFile
+      let coverageDocument = readXDocument coverageFile
       let root = coverageDocument.DocumentElement
 
       if format = ReportFormat.NCover then
@@ -179,9 +175,9 @@ module internal Counter =
         let measureTimeAttr = root.GetAttribute("measureTime")
         let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
         let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
-        let st = MinTime startTime oldStartTime
+        let st = minTime startTime oldStartTime
         startTime <- st.ToUniversalTime() // Min
-        let mt = MaxTime measureTime  oldMeasureTime
+        let mt = maxTime measureTime  oldMeasureTime
         measureTime <- mt.ToUniversalTime() // Max
         root.SetAttribute
           ("startTime",
@@ -195,7 +191,7 @@ module internal Counter =
            + System.Diagnostics.FileVersionInfo.GetVersionInfo(
                System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
-      let (m, i, m', s, v) = XmlByFormat format
+      let (m, i, m', s, v) = xmlByFormat format
 
   #if NET2
       let
@@ -240,7 +236,7 @@ module internal Counter =
                   | ReportFormat.OpenCoverWithTracking | ReportFormat.OpenCover ->
                     "uspid"
                     |> pt.GetAttribute
-                    |> (FindIndexFromUspid flag)
+                    |> (findIndexFromUspid flag)
                   | _ -> counter), pt))
            |> Seq.filter (fst >> moduleHits.ContainsKey)
            |> Seq.iter (fun x ->
@@ -260,32 +256,32 @@ module internal Counter =
       // Save modified xml to a file
       outputFile.Seek(0L, SeekOrigin.Begin) |> ignore
       outputFile.SetLength 0L
-      if own then WriteXDocument coverageDocument outputFile
+      if own then writeXDocument coverageDocument outputFile
       flushStart
 
-    let private EnsureModule (counts : Dictionary<string, Dictionary<int, PointVisit>>) moduleId =
+    let internal ensureModule (counts : Dictionary<string, Dictionary<int, PointVisit>>) moduleId =
       if not (counts.ContainsKey moduleId) then
         lock counts (fun () ->
           if not (counts.ContainsKey moduleId)
           then counts.Add(moduleId, Dictionary<int, PointVisit>())
         )
 
-    let private EnsurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
+    let internal ensurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
       if not (counts.ContainsKey hitPointId) then
         lock counts (fun () ->
         if not (counts.ContainsKey hitPointId)
         then counts.Add(hitPointId, PointVisit.Create()))
 
 #if RUNNER
-    let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+    let internal addTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
                           (t : Dictionary<string, Dictionary<int, PointVisit>>) =
       let mutable hitcount = 0L
       t.Keys
-      |> Seq.iter (fun m -> EnsureModule counts m
+      |> Seq.iter (fun m -> ensureModule counts m
                             let next = counts.[m]
                             let here = t.[m]
                             here.Keys |>
-                            Seq.iter (fun p -> EnsurePoint next p
+                            Seq.iter (fun p -> ensurePoint next p
                                                let v = next.[p]
                                                let add = here.[p]
                                                hitcount <- hitcount + add.Total()
@@ -294,25 +290,24 @@ module internal Counter =
                             )))
       hitcount
 #endif
-
-    let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
-        moduleId hitPointId context =
-      EnsureModule counts moduleId
-      let next = counts.[moduleId]
-      EnsurePoint next hitPointId
-
-      let v = next.[hitPointId]
-      match context with
-      | Null -> v.Step()
-      | something -> v.Track something
-
   // "Public" API
+  let internal addSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+      moduleId hitPointId context =
+    I.ensureModule counts moduleId
+    let next = counts.[moduleId]
+    I.ensurePoint next hitPointId
+
+    let v = next.[hitPointId]
+    match context with
+    | Null -> v.Step()
+    | something -> v.Track something
+
 #if RUNNER
-  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+  let internal addVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
     match context with
-    | Table t -> I.AddTable counts t
-    | _ -> I.AddSingleVisit counts moduleId hitPointId context
+    | Table t -> I.addTable counts t
+    | _ -> addSingleVisit counts moduleId hitPointId context
            1L
 #endif
 
@@ -321,7 +316,7 @@ module internal Counter =
                                                     Justification = "'Target' is disposed")>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
     "AvoidLongParameterListsRule")>]
-  let internal DoFlush postProcess pointProcess own counts format report output =
+  let internal doFlush postProcess pointProcess own counts format report output =
     use coverageFile =
       new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
                       FileOptions.SequentialScan)
@@ -338,5 +333,5 @@ module internal Counter =
       else coverageFile :> Stream
 
     let flushStart =
-      I.UpdateReport postProcess pointProcess own counts format coverageFile outputFile
+      I.updateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)

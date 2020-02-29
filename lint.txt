@@ -2,6 +2,47 @@
 // fsharplint:disable-next-line
 // fsharplint:disable-next-line MemberNames NonPublicValuesNames RedundantNewKeyword
 
+Starting target 'Lint': Lint
+Info: "Consider changing `MatchItem` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\Filter.fs (87,17--87,26) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "MatchItem"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover\Filter.fs (87,17--87,26) IsSynthetic=false
+  ToText = "matchItem" })
+====
+Info: "Consider changing `ResolutionTable` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\Instrument.fs (236,15--236,30) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "ResolutionTable"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover\Instrument.fs (236,15--236,30) IsSynthetic=false
+  ToText = "resolutionTable" })
+====
+Info: "Consider changing `Branch` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (220,19--220,25) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "Branch"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (220,19--220,25) IsSynthetic=false
+  ToText = "branch" })
+====
+Info: "Consider changing `FNDA` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (186,19--186,23) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "FNDA"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (186,19--186,23) IsSynthetic=false
+  ToText = "fNDA" })
+====
+Info: "Consider changing `FN` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (167,19--167,21) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "FN"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (167,19--167,21) IsSynthetic=false
+  ToText = "fN" })
+====
 Info: "Consider changing `ReportVisitor` to camelCase."
  Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\OpenCover.fs (489,8--489,21) IsSynthetic=false
  Fix: Some
@@ -186,19 +227,12 @@ Info: "Consider changing `X` to camelCase."
              C:\Users\steve\Documents\GitHub\altcover\AltCover\OpenCover.fs (66,15--66,16) IsSynthetic=false
   ToText = "x" })
 ====
-Info: "Consider changing `GetEmbeddedPortablePdbEntry` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\ProgramDatabase.fs (23,15--23,42) IsSynthetic=false
+Info: "Consider changing `GetSymbolsByFolder` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\ProgramDatabase.fs (31,17--31,35) IsSynthetic=false
  Fix: Some
-  Some({ FromText = "GetEmbeddedPortablePdbEntry"
+  Some({ FromText = "GetSymbolsByFolder"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\ProgramDatabase.fs (23,15--23,42) IsSynthetic=false        ToText = "getEmbeddedPortablePdbEntry" })
-====
-Info: "Consider changing `SymbolFolders` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\ProgramDatabase.fs (14,15--14,28) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "SymbolFolders"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\ProgramDatabase.fs (14,15--14,28) IsSynthetic=false        ToText = "symbolFolders" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover\ProgramDatabase.fs (31,17--31,35) IsSynthetic=false        ToText = "getSymbolsByFolder" })
 ====
 Info: "Consider changing `ReportVisitor` to camelCase."
  Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\Report.fs (89,8--89,21) IsSynthetic=false
@@ -897,7 +931,8 @@ Info: "Consider changing `MakeTreeNode` to camelCase."
              C:\Users\steve\Documents\GitHub\altcover\AltCover.Avalonia\MainWindow.fs (254,6--254,18) IsSynthetic=false   ToText = "makeTreeNode" })
 ====
 Info: "Consider changing `MethodIcon` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Avalonia\MainWindow.fs (217,6--217,16) IsSynthetic=false       Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Avalonia\MainWindow.fs (217,6--217,16) IsSynthetic=false
+ Fix: Some
   Some({ FromText = "MethodIcon"
   FromRange =
              C:\Users\steve\Documents\GitHub\altcover\AltCover.Avalonia\MainWindow.fs (217,6--217,16) IsSynthetic=false   ToText = "methodIcon" })
@@ -1055,254 +1090,246 @@ Info: "Consider changing `ToConsole` to camelCase."
   FromRange =
              C:\Users\steve\Documents\GitHub\altcover\AltCover.NetCoreApp\Program.fs (11,15--11,24) IsSynthetic=false     ToText = "toConsole" })
 ====
-Info: "Consider changing `AddSingleVisit` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (318,15--318,29) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "AddSingleVisit"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (318,15--318,29) IsSynthetic=false        ToText = "addSingleVisit" })
-====
-Info: "Consider changing `EnsurePoint` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (293,14--293,25) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "EnsurePoint"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (293,14--293,25) IsSynthetic=false        ToText = "ensurePoint" })
-====
-Info: "Consider changing `EnsureModule` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (286,14--286,26) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "EnsureModule"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (286,14--286,26) IsSynthetic=false        ToText = "ensureModule" })
-====
-Info: "Consider changing `DoFlush` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (266,15--266,22) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "DoFlush"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (266,15--266,22) IsSynthetic=false        ToText = "doFlush" })
-====
-Info: "Consider changing `UpdateReport` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (164,15--164,27) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "UpdateReport"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (164,15--164,27) IsSynthetic=false        ToText = "updateReport" })
-====
-Info: "Consider changing `MaxTime` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (152,15--152,22) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "MaxTime"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (152,15--152,22) IsSynthetic=false        ToText = "maxTime" })
-====
-Info: "Consider changing `MinTime` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (147,15--147,22) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "MinTime"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (147,15--147,22) IsSynthetic=false        ToText = "minTime" })
-====
-Info: "Consider changing `XmlByFormat` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (141,15--141,26) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "XmlByFormat"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (141,15--141,26) IsSynthetic=false        ToText = "xmlByFormat" })
-====
-Info: "Consider changing `NCoverXml` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (138,15--138,24) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "NCoverXml"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (138,15--138,24) IsSynthetic=false        ToText = "nCoverXml" })
-====
-Info: "Consider changing `OpenCoverXml` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (133,15--133,27) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "OpenCoverXml"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (133,15--133,27) IsSynthetic=false        ToText = "openCoverXml" })
-====
-Info: "Consider changing `FindIndexFromUspid` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (125,15--125,33) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "FindIndexFromUspid"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (125,15--125,33) IsSynthetic=false        ToText = "findIndexFromUspid" })
-====
-Info: "Consider changing `WriteXDocument` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (122,14--122,28) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "WriteXDocument"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (122,14--122,28) IsSynthetic=false        ToText = "writeXDocument" })
-====
-Info: "Consider changing `ReadXDocument` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (111,14--111,27) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "ReadXDocument"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (111,14--111,27) IsSynthetic=false        ToText = "readXDocument" })
-====
-Info: "Consider changing `BranchMask` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (89,15--89,25) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "BranchMask"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (89,15--89,25) IsSynthetic=false          ToText = "branchMask" })
-====
-Info: "Consider changing `BranchFlag` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (87,15--87,25) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "BranchFlag"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Base.fs (87,15--87,25) IsSynthetic=false          ToText = "branchFlag" })
-====
 Info: "Consider changing `StartWatcher` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (322,15--322,27) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (324,17--324,29) IsSynthetic=false        Fix: Some
   Some({ FromText = "StartWatcher"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (322,15--322,27) IsSynthetic=false    ToText = "startWatcher" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (324,17--324,29) IsSynthetic=false    ToText = "startWatcher" })
+====
+Info: "Consider changing `DoExit` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (322,17--322,23) IsSynthetic=false        Fix: Some
+  Some({ FromText = "DoExit"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (322,17--322,23) IsSynthetic=false    ToText = "doExit" })
+====
+Info: "Consider changing `DoUnload` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (321,17--321,25) IsSynthetic=false        Fix: Some
+  Some({ FromText = "DoUnload"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (321,17--321,25) IsSynthetic=false    ToText = "doUnload" })
+====
+Info: "Consider changing `DoResume` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (320,17--320,25) IsSynthetic=false        Fix: Some
+  Some({ FromText = "DoResume"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (320,17--320,25) IsSynthetic=false    ToText = "doResume" })
+====
+Info: "Consider changing `DoPause` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (319,17--319,24) IsSynthetic=false        Fix: Some
+  Some({ FromText = "DoPause"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (319,17--319,24) IsSynthetic=false    ToText = "doPause" })
 ====
 Info: "Consider changing `FlushCounter` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (308,15--308,27) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (310,17--310,29) IsSynthetic=false        Fix: Some
   Some({ FromText = "FlushCounter"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (308,15--308,27) IsSynthetic=false    ToText = "flushCounter" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (310,17--310,29) IsSynthetic=false    ToText = "flushCounter" })
 ====
 Info: "Consider changing `VisitSelection` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (298,15--298,29) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (307,17--307,31) IsSynthetic=false        Fix: Some
   Some({ FromText = "VisitSelection"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (298,15--298,29) IsSynthetic=false    ToText = "visitSelection" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (307,17--307,31) IsSynthetic=false    ToText = "visitSelection" })
 ====
 Info: "Consider changing `PayloadSelector` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (296,15--296,30) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (305,17--305,32) IsSynthetic=false        Fix: Some
   Some({ FromText = "PayloadSelector"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (296,15--296,30) IsSynthetic=false    ToText = "payloadSelector" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (305,17--305,32) IsSynthetic=false    ToText = "payloadSelector" })
 ====
 Info: "Consider changing `PayloadControl` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (295,15--295,29) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (304,17--304,31) IsSynthetic=false        Fix: Some
   Some({ FromText = "PayloadControl"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (295,15--295,29) IsSynthetic=false    ToText = "payloadControl" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (304,17--304,31) IsSynthetic=false    ToText = "payloadControl" })
 ====
 Info: "Consider changing `PayloadSelection` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (282,15--282,31) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (291,17--291,33) IsSynthetic=false        Fix: Some
   Some({ FromText = "PayloadSelection"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (282,15--282,31) IsSynthetic=false    ToText = "payloadSelection" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (291,17--291,33) IsSynthetic=false    ToText = "payloadSelection" })
 ====
 Info: "Consider changing `Clock` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (280,15--280,20) IsSynthetic=false
- Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (289,17--289,22) IsSynthetic=false        Fix: Some
   Some({ FromText = "Clock"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (280,15--280,20) IsSynthetic=false    ToText = "clock" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (289,17--289,22) IsSynthetic=false    ToText = "clock" })
 ====
 Info: "Consider changing `Granularity` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (279,15--279,26) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (288,17--288,28) IsSynthetic=false        Fix: Some
   Some({ FromText = "Granularity"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (279,15--279,26) IsSynthetic=false    ToText = "granularity" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (288,17--288,28) IsSynthetic=false    ToText = "granularity" })
 ====
 Info: "Consider changing `IsOpenCoverRunner` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (277,14--277,31) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (286,17--286,34) IsSynthetic=false        Fix: Some
   Some({ FromText = "IsOpenCoverRunner"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (277,14--277,31) IsSynthetic=false    ToText = "isOpenCoverRunner" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (286,17--286,34) IsSynthetic=false    ToText = "isOpenCoverRunner" })
 ====
 Info: "Consider changing `VisitImpl` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (269,15--269,24) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (278,17--278,26) IsSynthetic=false        Fix: Some
   Some({ FromText = "VisitImpl"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (269,15--269,24) IsSynthetic=false    ToText = "visitImpl" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (278,17--278,26) IsSynthetic=false    ToText = "visitImpl" })
 ====
 Info: "Consider changing `TakeSample` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (246,15--246,25) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (255,17--255,27) IsSynthetic=false        Fix: Some
   Some({ FromText = "TakeSample"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (246,15--246,25) IsSynthetic=false    ToText = "takeSample" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (255,17--255,27) IsSynthetic=false    ToText = "takeSample" })
 ====
 Info: "Consider changing `AddVisit` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (243,15--243,23) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (252,17--252,25) IsSynthetic=false        Fix: Some
   Some({ FromText = "AddVisit"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (243,15--243,23) IsSynthetic=false    ToText = "addVisit" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (252,17--252,25) IsSynthetic=false    ToText = "addVisit" })
 ====
 Info: "Consider changing `Issue71Wrapper` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (233,22--233,36) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (242,24--242,38) IsSynthetic=false        Fix: Some
   Some({ FromText = "Issue71Wrapper"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (233,22--233,36) IsSynthetic=false    ToText = "issue71Wrapper" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (242,24--242,38) IsSynthetic=false    ToText = "issue71Wrapper" })
+====
+Info: "Consider changing `LogException` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (221,17--221,29) IsSynthetic=false        Fix: Some
+  Some({ FromText = "LogException"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (221,17--221,29) IsSynthetic=false    ToText = "logException" })
 ====
 Info: "Consider changing `TraceVisit` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (202,15--202,25) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (211,17--211,27) IsSynthetic=false        Fix: Some
   Some({ FromText = "TraceVisit"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (202,15--202,25) IsSynthetic=false    ToText = "traceVisit" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (211,17--211,27) IsSynthetic=false    ToText = "traceVisit" })
+====
+Info: "Consider changing `FlushFinish` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (209,17--209,28) IsSynthetic=false        Fix: Some
+  Some({ FromText = "FlushFinish"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (209,17--209,28) IsSynthetic=false    ToText = "flushFinish" })
+====
+Info: "Consider changing `FlushResume` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (198,17--198,28) IsSynthetic=false        Fix: Some
+  Some({ FromText = "FlushResume"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (198,17--198,28) IsSynthetic=false    ToText = "flushResume" })
+====
+Info: "Consider changing `FlushPause` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (190,17--190,27) IsSynthetic=false        Fix: Some
+  Some({ FromText = "FlushPause"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (190,17--190,27) IsSynthetic=false    ToText = "flushPause" })
 ====
 Info: "Consider changing `FlushAll` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (167,15--167,23) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (176,17--176,25) IsSynthetic=false        Fix: Some
   Some({ FromText = "FlushAll"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (167,15--167,23) IsSynthetic=false    ToText = "flushAll" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (176,17--176,25) IsSynthetic=false    ToText = "flushAll" })
+====
+Info: "Consider changing `Clear` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (171,17--171,22) IsSynthetic=false        Fix: Some
+  Some({ FromText = "Clear"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (171,17--171,22) IsSynthetic=false    ToText = "clear" })
 ====
 Info: "Consider changing `Recording` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (160,23--160,32) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (169,25--169,34) IsSynthetic=false        Fix: Some
   Some({ FromText = "Recording"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (160,23--160,32) IsSynthetic=false    ToText = "recording" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (169,25--169,34) IsSynthetic=false    ToText = "recording" })
 ====
 Info: "Consider changing `Watcher` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (159,15--159,22) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (168,17--168,24) IsSynthetic=false        Fix: Some
   Some({ FromText = "Watcher"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (159,15--159,22) IsSynthetic=false    ToText = "watcher" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (168,17--168,24) IsSynthetic=false    ToText = "watcher" })
+====
+Info: "Consider changing `InitialiseTrace` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (163,17--163,32) IsSynthetic=false        Fix: Some
+  Some({ FromText = "InitialiseTrace"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (163,17--163,32) IsSynthetic=false    ToText = "initialiseTrace" })
 ====
 Info: "Consider changing `WithMutex` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (147,15--147,24) IsSynthetic=false        Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (156,17--156,26) IsSynthetic=false        Fix: Some
   Some({ FromText = "WithMutex"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (147,15--147,24) IsSynthetic=false    ToText = "withMutex" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (156,17--156,26) IsSynthetic=false    ToText = "withMutex" })
 ====
-Info: "Consider changing `Sample` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (88,15--88,21) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "Sample"
+Info: "Consider changing `SignalFile` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (149,17--149,27) IsSynthetic=false        Fix: Some
+  Some({ FromText = "SignalFile"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (88,15--88,21) IsSynthetic=false      ToText = "sample" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (149,17--149,27) IsSynthetic=false    ToText = "signalFile" })
 ====
-Info: "Consider changing `CoverageFormat` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (74,23--74,37) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "CoverageFormat"
+Info: "Consider changing `CallerId` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (142,17--142,25) IsSynthetic=false        Fix: Some
+  Some({ FromText = "CallerId"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (74,23--74,37) IsSynthetic=false      ToText = "coverageFormat" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (142,17--142,25) IsSynthetic=false    ToText = "callerId" })
+====
+Info: "Consider changing `Pop` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (141,17--141,20) IsSynthetic=false        Fix: Some
+  Some({ FromText = "Pop"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (141,17--141,20) IsSynthetic=false    ToText = "pop" })
+====
+Info: "Consider changing `Push` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (140,17--140,21) IsSynthetic=false        Fix: Some
+  Some({ FromText = "Push"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (140,17--140,21) IsSynthetic=false    ToText = "push" })
 ====
 Info: "Consider changing `IsRunner` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (55,23--55,31) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (95,25--95,33) IsSynthetic=false
  Fix: Some
   Some({ FromText = "IsRunner"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (55,23--55,31) IsSynthetic=false      ToText = "isRunner" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (95,25--95,33) IsSynthetic=false      ToText = "isRunner" })
 ====
 Info: "Consider changing `Samples` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (54,23--54,30) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (94,25--94,32) IsSynthetic=false
  Fix: Some
   Some({ FromText = "Samples"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (54,23--54,30) IsSynthetic=false      ToText = "samples" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (94,25--94,32) IsSynthetic=false      ToText = "samples" })
 ====
 Info: "Consider changing `Visits` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (52,23--52,29) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (92,25--92,31) IsSynthetic=false
  Fix: Some
   Some({ FromText = "Visits"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (52,23--52,29) IsSynthetic=false      ToText = "visits" })
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (92,25--92,31) IsSynthetic=false      ToText = "visits" })
+====
+Info: "Consider changing `Supervision` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (81,25--81,36) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "Supervision"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (81,25--81,36) IsSynthetic=false      ToText = "supervision" })
+====
+Info: "Consider changing `GetResource` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (74,17--74,28) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "GetResource"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (74,17--74,28) IsSynthetic=false      ToText = "getResource" })
+====
+Info: "Consider changing `Sample` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (55,15--55,21) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "Sample"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (55,15--55,21) IsSynthetic=false      ToText = "sample" })
+====
+Info: "Consider changing `CoverageFormat` to camelCase."
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (41,23--41,37) IsSynthetic=false
+ Fix: Some
+  Some({ FromText = "CoverageFormat"
+  FromRange =
+             C:\Users\steve\Documents\GitHub\altcover\AltCover.Recorder\Recorder.fs (41,23--41,37) IsSynthetic=false      ToText = "coverageFormat" })
 ====
 Info: "Consider changing `toOption` to PascalCase."
  Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\CoverageFile.fs (135,18--135,26) IsSynthetic=false  Fix: Some
@@ -1479,8 +1506,7 @@ Info: "Consider changing `Tag` to camelCase."
   ToText = "tag" })
 ====
 Info: "Consider changing `InitializeTextBuffer` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\Visualizer.fs (878,14--878,34) IsSynthetic=false
- Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\Visualizer.fs (878,14--878,34) IsSynthetic=false    Fix: Some
   Some({ FromText = "InitializeTextBuffer"
   FromRange =
              C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\Visualizer.fs (878,14--878,34) IsSynthetic=false
@@ -1515,8 +1541,7 @@ Info: "Consider changing `PrepareTreeView` to camelCase."
   ToText = "prepareTreeView" })
 ====
 Info: "Consider changing `ShowUrl` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\Visualizer.fs (738,8--738,15) IsSynthetic=false
- Fix: Some
+ Range: C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\Visualizer.fs (738,8--738,15) IsSynthetic=false     Fix: Some
   Some({ FromText = "ShowUrl"
   FromRange =
              C:\Users\steve\Documents\GitHub\altcover\AltCover.Visualizer\Visualizer.fs (738,8--738,15) IsSynthetic=false
@@ -1937,67 +1962,67 @@ Info: "Consider changing `Init` to camelCase."
   ToText = "init" })
 ====
 Info: "Consider changing `X` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2845,10--2845,11) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2844,10--2844,11) IsSynthetic=false
  Fix: Some
   Some({ FromText = "X"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2845,10--2845,11) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2844,10--2844,11) IsSynthetic=false
   ToText = "x" })
 ====
 Info: "Consider changing `X` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2563,10--2563,11) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2562,10--2562,11) IsSynthetic=false
  Fix: Some
   Some({ FromText = "X"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2563,10--2563,11) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2562,10--2562,11) IsSynthetic=false
   ToText = "x" })
 ====
 Info: "Consider changing `X` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2526,10--2526,11) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2525,10--2525,11) IsSynthetic=false
  Fix: Some
   Some({ FromText = "X"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2526,10--2526,11) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2525,10--2525,11) IsSynthetic=false
   ToText = "x" })
 ====
 Info: "Consider changing `X` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2409,10--2409,11) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2408,10--2408,11) IsSynthetic=false
  Fix: Some
   Some({ FromText = "X"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2409,10--2409,11) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2408,10--2408,11) IsSynthetic=false
   ToText = "x" })
 ====
 Info: "Consider changing `RecursiveValidateOpenCover` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2407,20--2407,46) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2406,20--2406,46) IsSynthetic=false
  Fix: Some
   Some({ FromText = "RecursiveValidateOpenCover"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2407,20--2407,46) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2406,20--2406,46) IsSynthetic=false
   ToText = "recursiveValidateOpenCover" })
 ====
 Info: "Consider changing `RecursiveValidate` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2086,20--2086,37) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2085,20--2085,37) IsSynthetic=false
  Fix: Some
   Some({ FromText = "RecursiveValidate"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2086,20--2086,37) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (2085,20--2085,37) IsSynthetic=false
   ToText = "recursiveValidate" })
 ====
 Info: "Consider changing `ProvideKeyPair` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (1259,16--1259,30) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (1258,16--1258,30) IsSynthetic=false
  Fix: Some
   Some({ FromText = "ProvideKeyPair"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (1259,16--1259,30) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (1258,16--1258,30) IsSynthetic=false
   ToText = "provideKeyPair" })
 ====
 Info: "Consider changing `FF` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (68,16--68,18) IsSynthetic=false
+ Range: C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (67,16--67,18) IsSynthetic=false
  Fix: Some
   Some({ FromText = "FF"
   FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (68,16--68,18) IsSynthetic=false
+             C:\Users\steve\Documents\GitHub\altcover\Tests\Tests.fs (67,16--67,18) IsSynthetic=false
   ToText = "fF" })
 ====
 Info: "Consider changing `SetWarn` to camelCase."

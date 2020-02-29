@@ -1,6 +1,10 @@
 #nowarn "25"
 namespace AltCover
 
+// TODO isolate where
+[<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  "Gendarme.Rules.Smells", "AvoidSpeculativeGenerality",
+  Justification = "AvoidCodeDuplicatedInSameClassRule")>]
 #if GUI
 module Augment =
 #else
@@ -46,9 +50,11 @@ module internal Augment =
     member self.Increment (b : bool) =
       self + b.ToInt32
 
+#if WEAKNAME
   type System.UInt64 with
     member self.Increment (b : bool) =
       self + (uint64 b.ToInt32)
+#endif
 
   type Microsoft.FSharp.Collections.List<'T> with
    member self.Split

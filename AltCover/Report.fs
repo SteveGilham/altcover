@@ -96,9 +96,9 @@ module internal Report =
       match node with
       | Start _ -> StartVisit s
       | Module(moduleDef, included) ->
-          VisitModule s head moduleDef (Visitor.IsInstrumented included)
+          VisitModule s head moduleDef (included.IsInstrumented)
       | Method(methodDef, included, _, _) ->
-          VisitMethod s head methodDef (Visitor.IsInstrumented included)
+          VisitMethod s head methodDef (included.IsInstrumented)
       | MethodPoint(_, codeSegment, _, included, vc) ->
           VisitMethodPoint s head codeSegment included vc
       | AfterMethod _ ->

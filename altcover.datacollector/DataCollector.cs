@@ -32,7 +32,7 @@ namespace AltCover
                 }
                 else
                 {
-                    var supervision = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.Public);
+                    var supervision = i.GetProperty("supervision", BindingFlags.Static | BindingFlags.Public);
                     if (supervision == null)
                     {
                         Debug.WriteLine("Supervision not found");

@@ -112,7 +112,7 @@ module AltCoverCoreTests =
 
   [<Test>]
   let VisitShouldSignal() =
-    let save = Instance.trace
+    let save = Instance.I.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let tag = unique + ".acv"
@@ -124,15 +124,15 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
       try
         Adapter.VisitsClear()
-        Instance.trace <- client.OnStart()
-        Assert.True( Instance.trace.IsConnected, "connection failed")
-        Instance.IsRunner <- true
+        Instance.I.trace <- client.OnStart()
+        Assert.True( Instance.I.trace.IsConnected, "connection failed")
+        Instance.I.isRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
-        Instance.trace.Close()
-        Instance.trace.Close()
-        Instance.trace.Close()
-        Instance.trace <- save
+        Instance.I.trace.Close()
+        Instance.I.trace.Close()
+        Instance.I.trace.Close()
+        Instance.I.trace <- save
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
       let results = ReadResults stream |> Seq.toList
@@ -143,7 +143,7 @@ module AltCoverCoreTests =
 
   [<Test>]
   let VisitShouldSignalTrack() =
-    let save = Instance.trace
+    let save = Instance.I.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let tag = unique + ".acv"
@@ -168,17 +168,17 @@ module AltCoverCoreTests =
     try
       let mutable client = Tracer.Create tag
       try
-        Instance.trace <- client.OnStart()
-        Assert.True( Instance.trace.IsConnected, "connection failed")
-        Instance.IsRunner <- true
+        Instance.I.trace <- client.OnStart()
+        Assert.True( Instance.I.trace.IsConnected, "connection failed")
+        Instance.I.isRunner <- true
 
         Adapter.VisitsClear()
         Adapter.VisitsAddTrack("name", 23, 1L)
         Adapter.VisitImplMethod("name", 23, 5)
       finally
-        Instance.IsRunner <- false
-        Instance.trace.Close()
-        Instance.trace <- save
+        Instance.I.isRunner <- false
+        Instance.I.trace.Close()
+        Instance.I.trace <- save
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
       let results = ReadResults stream
@@ -244,7 +244,7 @@ module AltCoverCoreTests =
 
   [<Test>]
   let FlushShouldTidyUp() = // also throw a bone to OpenCover 615
-    let save = Instance.trace
+    let save = Instance.I.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let root = Path.Combine(where, Guid.NewGuid().ToString())
     let unique = root + ".acv"
@@ -255,18 +255,18 @@ module AltCoverCoreTests =
       let expected = [ ("name", client.GetHashCode(), Adapter.Null()) ]
       try
         Adapter.VisitsClear()
-        Instance.trace <- client.OnStart()
-        Assert.That(Instance.trace.Equals client, Is.False)
-        Assert.That(Instance.trace.Equals expected, Is.False)
-        Assert.True(Instance.trace.IsConnected, "connection failed")
+        Instance.I.trace <- client.OnStart()
+        Assert.That(Instance.I.trace.Equals client, Is.False)
+        Assert.That(Instance.I.trace.Equals expected, Is.False)
+        Assert.True(Instance.I.trace.IsConnected, "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         let (a, b, c) = expected |> Seq.head
-        Instance.trace.Push(a, b, c)
+        Instance.I.trace.Push(a, b, c)
         Adapter.FlushAll()
       finally
-        Instance.trace.Close()
+        Instance.I.trace.Close()
         System.Threading.Thread.Sleep 100
-        Instance.trace <- save
+        Instance.I.trace <- save
       use stream =
         new DeflateStream(File.OpenRead(root + ".0.acv"), CompressionMode.Decompress)
 

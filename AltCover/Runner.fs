@@ -636,7 +636,7 @@ module internal Runner =
                       |> not
                       || (key = String.Empty && hitPointId = 0
                           && visit.GetType().ToString() = "AltCover.Base.Track+Table") then
-                     Base.Counter.AddVisit hits key hitPointId visit
+                     Base.Counter.addVisit hits key hitPointId visit
                    else
                      0L
                  sink (hitcount + increment)
@@ -926,7 +926,7 @@ module internal Runner =
 
   let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
-    AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
+    AltCover.Base.Counter.doFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",

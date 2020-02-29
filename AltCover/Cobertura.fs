@@ -158,7 +158,7 @@ module internal Cobertura =
            XAttribute(X "coverage", sprintf "%d%%" pc))
       cc.Add co
 
-    let processSeqPnt (lines : XElement) (s : XElement) =
+    let copySeqPnt (lines : XElement) (s : XElement) =
       let vc = s.Attribute(X "vc")
 
       let vx =
@@ -198,23 +198,23 @@ module internal Cobertura =
       mtx.Add(lines)
       (mtx, lines)
 
-    let addAttributeValue (element : XElement) name v =
+    let provideAttributeValue (element : XElement) name v =
       v + (element.Attribute(X name).Value
            |> Int32.TryParse
            |> snd)
 
     let processMethod (methods : XElement) (b, bv, s, sv, c, cv)
         (key, (signature, method)) =
-      let ccplex = 0 |> addAttributeValue method "cyclomaticComplexity"
+      let ccplex = 0 |> provideAttributeValue method "cyclomaticComplexity"
       let mtx, lines = addMethod (methods : XElement) (key, signature)
       extract method mtx
       mtx.Add(XAttribute(X "complexity", ccplex))
-      method.Descendants(X "SequencePoint") |> Seq.iter (processSeqPnt lines)
+      method.Descendants(X "SequencePoint") |> Seq.iter (copySeqPnt lines)
       let summary = method.Descendants(X "Summary") |> Seq.head
-      (b |> addAttributeValue summary "numBranchPoints",
-       bv |> addAttributeValue summary "visitedBranchPoints",
-       s |> addAttributeValue summary "numSequencePoints",
-       sv |> addAttributeValue summary "visitedSequencePoints", c + 1, cv + ccplex)
+      (b |> provideAttributeValue summary "numBranchPoints",
+       bv |> provideAttributeValue summary "visitedBranchPoints",
+       s |> provideAttributeValue summary "numSequencePoints",
+       sv |> provideAttributeValue summary "visitedSequencePoints", c + 1, cv + ccplex)
 
     let arrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
       methodSet

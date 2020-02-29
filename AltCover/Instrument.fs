@@ -120,7 +120,7 @@ module internal Instrument =
       None
     else
       let index = KeyStore.ArrayToIndex name.PublicKey
-      match Visitor.keys.TryGetValue(index) with
+      match Configuration.keys.TryGetValue(index) with
       | (false, _) -> None
       | (_, record) -> Some record.Pair
 
@@ -135,7 +135,7 @@ module internal Instrument =
       None
     else
       let index = KeyStore.TokenAsULong pktoken
-      match Visitor.keys.TryGetValue(index) with
+      match Configuration.keys.TryGetValue(index) with
       | (false, _) -> None
       | (_, record) -> Some record
 
@@ -169,20 +169,20 @@ module internal Instrument =
 #endif
       definition.Name.Name <- (extractName definition) + ".g"
 
-      let pair = Visitor.recorderStrongNameKey
+      let pair = Configuration.recorderStrongNameKey
       updateStrongNaming definition pair
 
       [ // set the coverage file path and unique token
         ("get_ReportFile",
-         (fun (w : ILProcessor) -> w.Create(OpCodes.Ldstr, Visitor.ReportPath())))
+         (fun (w : ILProcessor) -> w.Create(OpCodes.Ldstr, Configuration.ReportPath())))
         ("get_Token",
          (fun (w : ILProcessor) ->
            w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
         ("get_CoverageFormat",
-         (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, Visitor.ReportFormat() |> int)))
+         (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, Configuration.ReportFormat() |> int)))
         ("get_Sample",
-         (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, Visitor.Sampling())))
-        ("get_Defer", (fun (w : ILProcessor) -> w.Create(Visitor.deferOpCode()))) ]
+         (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, Configuration.Sampling())))
+        ("get_Defer", (fun (w : ILProcessor) -> w.Create(Configuration.deferOpCode()))) ]
       |> List.iter (fun (property, value) ->
            let pathGetterDef =
              definition.MainModule.GetTypes()
@@ -199,7 +199,7 @@ module internal Instrument =
            initialBody |> Seq.iter worker.Remove)
 
       [ (// set the timer interval in ticks
-         "get_Timer", Visitor.Interval()) ]
+         "get_Timer", Configuration.Interval()) ]
       |> List.iter (fun (property, value) ->
            let pathGetterDef =
              definition.MainModule.GetTypes()
@@ -417,7 +417,7 @@ module internal Instrument =
   let internal updateStrongReferences (assembly : AssemblyDefinition)
       (assemblies : string list) =
     let effectiveKey =
-      if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
+      if assembly.Name.HasPublicKey then Configuration.defaultStrongNameKey else None
     updateStrongNaming assembly effectiveKey
     let interestingReferences =
       assembly.MainModule.AssemblyReferences
@@ -435,7 +435,7 @@ module internal Instrument =
 
          let effectiveKey =
            match token with
-           | None -> Visitor.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
+           | None -> Configuration.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
            | Some _ -> token
          match effectiveKey with
          | None ->
@@ -526,12 +526,13 @@ module internal Instrument =
       | _ -> state
     { restate with
         ModuleId =
-          match Visitor.ReportKind() with
+          match Configuration.ReportKind() with
           | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
           | _ -> m.Mvid.ToString() }
 
-  let private visitMethod (state : InstrumentContext) (m : MethodDefinition) included =
-    match Visitor.IsInstrumented included with
+  let private visitMethod (state : InstrumentContext) (m : MethodDefinition)
+                          (included : Inspections) =
+    match included.IsInstrumented with
     | true ->
         let body = m.Body
         { state with
@@ -556,7 +557,7 @@ module internal Instrument =
   let internal visitBranchPoint (state : InstrumentContext) branch =
     if branch.Included && state.MethodWorker.IsNotNull
     then
-      let point = (branch.Uid ||| Base.Counter.BranchFlag)
+      let point = (branch.Uid ||| Base.Counter.branchFlag)
 
       let instrument instruction =
         if branch.Representative <> Reporting.None then
@@ -640,9 +641,9 @@ module internal Instrument =
     try
       let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
       WriteAssemblies (state.RecordingAssembly) recorderFileName
-        (Visitor.InstrumentDirectories()) ignore
+        (Configuration.InstrumentDirectories()) ignore
 
-      Visitor.InstrumentDirectories()
+      Configuration.InstrumentDirectories()
       |> Seq.iter (fun instrument ->
 
            Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
@@ -657,12 +658,12 @@ module internal Instrument =
       (state.RecordingAssembly :> IDisposable).Dispose()
     { state with RecordingAssembly = null }
 
-  let internal doTrack state (m : MethodDefinition) included (track : (int * string) option) =
+  let internal doTrack state (m : MethodDefinition) (included:Inspections)
+                             (track : (int * string) option) =
     track
     |> Option.iter (fun (n, _) ->
          let body =
-           [ m.Body; state.MethodBody ].[(included
-                                         |> Visitor.IsInstrumented).ToInt32]
+           [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
          let instructions = body.Instructions
          let methodWorker = body.GetILProcessor()
          let nop = methodWorker.Create(OpCodes.Nop)
@@ -705,8 +706,8 @@ module internal Instrument =
          methodWorker.InsertBefore(handler.TryStart, pushMethodCall)
          methodWorker.InsertBefore(pushMethodCall, instrLoadId))
 
-  let private visitAfterMethod state m included track =
-    if Visitor.IsInstrumented included then
+  let private visitAfterMethod state m (included : Inspections) track =
+    if included.IsInstrumented then
       let body = state.MethodBody
       // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
       body.SimplifyMacros()

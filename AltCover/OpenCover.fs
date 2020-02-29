@@ -108,8 +108,9 @@ module internal OpenCover =
       element.Add(modules)
       { s with Stack = modules :: s.Stack }
 
-    let VisitModule (s : OpenCoverContext) (moduleDef : ModuleDefinition) included =
-      let instrumented = Visitor.IsInstrumented included
+    let VisitModule (s : OpenCoverContext) (moduleDef : ModuleDefinition)
+                    (included : Inspections) =
+      let instrumented = included.IsInstrumented
       let element = XElement(X "Module")
       if not instrumented
       then element.SetAttributeValue(X "skippedDueTo", "Filter")
@@ -123,7 +124,7 @@ module internal OpenCover =
       if instrumented then element.Add(XElement(X "Files"))
       let classes = XElement(X "Classes")
       element.Add(classes)
-      if Visitor.TrackingNames
+      if Configuration.TrackingNames
          |> Seq.isEmpty
          |> not
       then element.Add(XElement(X "TrackedMethods"))
@@ -136,8 +137,9 @@ module internal OpenCover =
           ModuleClasses = 0
           ClassCC = [] }
 
-    let VisitType (s : OpenCoverContext) (typeDef : TypeDefinition) included =
-      let instrumented = Visitor.IsInstrumented included
+    let VisitType (s : OpenCoverContext) (typeDef : TypeDefinition)
+                  (included : Inspections) =
+      let instrumented =  included.IsInstrumented
       let methods = XElement(X "Methods")
       if included <> Inspections.TrackOnly then
         let element = XElement(X "Class")
@@ -187,7 +189,7 @@ module internal OpenCover =
 
     let VisitMethod (s : OpenCoverContext) (methodDef : MethodDefinition) included =
       if s.Excluded = Nothing && included <> Inspections.TrackOnly then
-        let instrumented = Visitor.IsInstrumented included
+        let instrumented = included.IsInstrumented
         let cc, element = methodElement methodDef
         if instrumented then element.SetAttributeValue(X "skippedDueTo", "File")
         let head = s.Stack |> Seq.head

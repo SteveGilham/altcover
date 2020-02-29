@@ -4076,9 +4076,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "BuildMonoSamples"
 ==> "Compilation"
 
-"BuildRelease"
-==> "Lint"
-==> "Analysis"
+//"BuildRelease"
+//==> "Lint"
+//==> "Analysis"
 
 "Compilation"
 ?=> "Analysis"
@@ -4087,10 +4087,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "FxCop"
 =?> ("Analysis", Environment.isWindows && fxcop |> Option.isSome) // not supported
 
-"Compilation"
-==> "Gendarme"
-==> "Analysis"
-//=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
+//"Compilation"
+//==> "Gendarme"
+//==> "Analysis"
 
 "Compilation"
 ?=> "UnitTest"

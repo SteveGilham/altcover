@@ -84,7 +84,7 @@ module internal Filter =
                                                        |> f
           | _ -> false)
 
-    let internal MatchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
+    let internal matchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
       match nameProvider with
       | :? 'a as item ->
           item
@@ -191,21 +191,21 @@ module internal Filter =
   let internal ``match`` (nameProvider : Object) (filter : FilterClass) =
     let f = filter.Apply
     match filter.Scope with
-    | File -> I.MatchItem<string> filter.Regex f nameProvider Path.GetFileName
+    | File -> I.matchItem<string> filter.Regex f nameProvider Path.GetFileName
     | Assembly ->
-        I.MatchItem<AssemblyDefinition> filter.Regex f nameProvider
+        I.matchItem<AssemblyDefinition> filter.Regex f nameProvider
           (fun assembly -> assembly.Name.Name)
     | Module ->
-        I.MatchItem<ModuleDefinition> filter.Regex f nameProvider
+        I.matchItem<ModuleDefinition> filter.Regex f nameProvider
           (fun ``module`` -> ``module``.Assembly.Name.Name)
     | Type ->
-        I.MatchItem<TypeDefinition> filter.Regex f nameProvider
+        I.matchItem<TypeDefinition> filter.Regex f nameProvider
           (fun typeDef -> typeDef.FullName)
     | Method ->
-        I.MatchItem<MethodDefinition> filter.Regex f nameProvider
+        I.matchItem<MethodDefinition> filter.Regex f nameProvider
           (fun methodDef -> methodDef.Name)
     | Attribute -> I.matchAttribute filter.Regex f nameProvider
-    | Path -> I.MatchItem<string> filter.Regex f nameProvider Path.GetFullPath
+    | Path -> I.matchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
   let internal isFSharpInternal(m : MethodDefinition) =
     I.isFSharpAutoProperty m || I.isFSharpInternalAlgebraic m

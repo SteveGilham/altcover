@@ -762,21 +762,21 @@ module AltCoverTests =
     // Visitor.fs
     [<Test>]
     let CanSwitchSampling() =
-      let save = Visitor.single
+      let save = Configuration.single
       try
         Visitor.single <- true
-        test <@ Visitor.Sampling() = 1 @>
+        test <@ Configuration.Sampling() = 1 @>
         Visitor.single <- false
-        test <@ Visitor.Sampling() = 0 @>
+        test <@ Configuration.Sampling() = 0 @>
       finally
-        Visitor.single <- save
+        Configuration.single <- save
 
     [<Test>]
     let FixEnding() =
-      let a = Visitor.EnsureEndsWith "a" "banana"
+      let a = Configuration.EnsureEndsWith "a" "banana"
       Assert.That (a, Is.EqualTo "banana")
 
-      let s = Visitor.EnsureEndsWith "s" "banana"
+      let s = Configuration.EnsureEndsWith "s" "banana"
       Assert.That (s, Is.EqualTo "bananas")
 
     [<Test>]
@@ -787,13 +787,13 @@ module AltCoverTests =
           StaticFilter.Hidden
           StaticFilter.NoFilter
         ]
-        |> List.map (fun k -> Visitor.SelectExemption k [] Exemption.None)
+        |> List.map (fun k -> Configuration.SelectExemption k [] Exemption.None)
       test <@ result = [ Exemption.StaticAnalysis; Exemption.None; Exemption.None ] @>
 
     [<Test>]
     let ValidateAutomaticExemption() =
       try
-        Visitor.showGenerated := true
+        Configuration.showGenerated := true
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
@@ -810,10 +810,10 @@ module AltCoverTests =
             StaticFilter.Hidden
             StaticFilter.NoFilter
           ]
-          |> List.map (fun k -> Visitor.SelectExemption k items Exemption.None)
+          |> List.map (fun k -> Configuration.SelectExemption k items Exemption.None)
         test <@ result = [ Exemption.StaticAnalysis; Exemption.Automatic; Exemption.Automatic ] @>
       finally
-        Visitor.showGenerated := false
+        Configuration.showGenerated := false
 
     [<Test>]
     let DetectLocalSource() =
@@ -840,8 +840,8 @@ module AltCoverTests =
              (x.Attribute(XName.Get("id")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
         |> Map.ofSeq
 
-      Visitor.local := false
-      Visitor.NameFilters.Clear()
+      Configuration.local := false
+      Configuration.NameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.4.5.2/lib/net45") // stable retro version
       let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil." +
                                                       (libPackages.Item "mono.cecil") +
@@ -873,23 +873,23 @@ module AltCoverTests =
       let f = AssemblyDefinition.ReadAssembly fdll
       ProgramDatabase.readSymbols f
 
-      Assert.That (Visitor.localFilter a, Is.False, "Assembly non-local")
-      Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule non-local")
-      Assert.That (Visitor.localFilter m, Is.False, "dll Assembly non-local")
-      Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule non-local")
-      Assert.That (Visitor.localFilter f, Is.False, "f# Assembly non-local")
-      Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
+      Assert.That (a.localFilter, Is.False, "Assembly non-local")
+      Assert.That (a.MainModule.localFilter, Is.False, "MainModule non-local")
+      Assert.That (m.localFilter, Is.False, "dll Assembly non-local")
+      Assert.That (m.MainModule.localFilter, Is.False, "dll MainModule non-local")
+      Assert.That (f.localFilter, Is.False, "f# Assembly non-local")
+      Assert.That (f.MainModule.localFilter, Is.False, "f# MainModule non-local")
       try
-        Visitor.local := true
-        Assert.That (Visitor.localFilter a, Is.True, "Assembly local")
-        Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule local")
-        Assert.That (Visitor.localFilter m, Is.True, "dll Assembly local")
-        Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule local")
-        Assert.That (Visitor.localFilter f, Is.True, "f# Assembly local")
-        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule local")
+        Configuration.local := true
+        Assert.That (a.localFilter, Is.True, "Assembly local")
+        Assert.That (a.MainModule.localFilter, Is.False, "MainModule local")
+        Assert.That (m.localFilter, Is.True, "dll Assembly local")
+        Assert.That (m.MainModule.localFilter, Is.False, "dll MainModule local")
+        Assert.That (f.localFilter, Is.True, "f# Assembly local")
+        Assert.That (f.MainModule.localFilter, Is.False, "f# MainModule local")
 
       finally
-        Visitor.local := false
+        Configuration.local := false
 
     [<Test>]
     let LocateMatchShouldChooseLongerWildCardPath() =
@@ -901,7 +901,7 @@ module AltCoverTests =
       let pp2 = Path.Combine(p2, "*")
       dict.Add(pp1, pp1)
       dict.Add(pp2, pp2)
-      let find = Visitor.FindClosestMatch file dict
+      let find = Configuration.FindClosestMatch file dict
       Assert.That(find, Is.EqualTo (Some (pp1, String.Empty)))
 
     [<Test>]
@@ -911,8 +911,8 @@ module AltCoverTests =
       let seq = SequencePoint(nop, Document(null))
 
       // transparent
-      Assert.That(Visitor.fakeSequencePoint Genuine seq nop, Is.SameAs seq)
-      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn seq nop, Is.SameAs seq)
+      Assert.That(Configuration.fakeSequencePoint Genuine seq nop, Is.SameAs seq)
+      Assert.That(Configuration.fakeSequencePoint FakeAfterReturn seq nop, Is.SameAs seq)
 
       Assert.That(Visitor.fakeSequencePoint Genuine null null, Is.Null)
       Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null null, Is.Null)

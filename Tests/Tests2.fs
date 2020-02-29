@@ -1138,9 +1138,9 @@ module AltCoverTests2 =
         Assert.That(switches.[1], Is.EqualTo inject.[0])
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+          ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          ((inject.[6].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 0)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
@@ -1198,7 +1198,7 @@ module AltCoverTests2 =
         Assert.That(jump, Is.EqualTo inject.[1])
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[4].Next)
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo branches.[1].Uid)
+          ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo branches.[1].Uid)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
@@ -1249,9 +1249,9 @@ module AltCoverTests2 =
         Assert.That(inject.Length, Is.EqualTo 8)
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+          ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          ((inject.[6].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 0)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None

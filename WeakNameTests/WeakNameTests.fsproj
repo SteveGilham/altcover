@@ -34,7 +34,7 @@
     </WarningsAsErrors>
     <OtherFlags>
     </OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;LEGACY</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;LEGACY;WEAKNAME</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
