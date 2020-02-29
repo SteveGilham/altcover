@@ -23,8 +23,6 @@ type InvalidFile =
 module Transformer =
   let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
-                                 Justification = "Multiple Close() should be safe")>]
   let internal LoadTransform(path : string) =
     use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
     use stylesheet =
@@ -33,8 +31,6 @@ module Transformer =
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
-                                 Justification = "Multiple Close() should be safe")>]
   let internal TransformFromOtherCover (document : XNode) (path : string) =
     let xmlTransform = LoadTransform path
     use buffer = new MemoryStream()
@@ -50,8 +46,6 @@ module Transformer =
       TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
-                                 Justification = "Multiple Close() should be safe")>]
   // PartCover to NCover style sheet
   let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =

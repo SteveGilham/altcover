@@ -2752,7 +2752,6 @@ or
              ("z", [ """<x><seqpnt line="3" /></x>"""
                      """<x><seqpnt line="5" /></x>""" ]) ])
 
-    [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
     // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
     // Also, this rule is deprecated
     let private LoadSchema() =

@@ -537,6 +537,7 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
+      "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
       "-Microsoft.Usage#CA2208" ]
 
   [ ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
@@ -573,8 +574,6 @@ _Target "FxCop" (fun _ ->
        "AltCover.Recorder.Instance" ], rules)
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ], [],
      [ "-Microsoft.Design#CA1059"
-       "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
@@ -584,6 +583,9 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
        "-Microsoft.Naming#CA1707" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+       "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+       "-Microsoft.Usage#CA2235"
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ], [],
      [ "-Microsoft.Usage#CA2235"
@@ -598,6 +600,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
        "-Microsoft.Naming#CA1707" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
      [ "AltCover.Augment"
@@ -613,6 +616,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1707"
        "-Microsoft.Naming#CA1715"
        "-Microsoft.Naming#CA1704"
+       "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
        "-Microsoft.Naming#CA1709" ])
     ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net462/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [ "AltCoverFake.DotNet.Testing.AltCover.CollectParams"
@@ -633,6 +637,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1707" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1724"
+       "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
        "-Microsoft.Usage#CA2208" ]) 
     ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
        //"_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
@@ -645,6 +650,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Naming#CA1716"  // reconsider @ genbu
+       "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
      ])
     ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net46/AltCover.Cake.dll"
        ],
@@ -657,6 +663,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Performance#CA1819" // reconsider @ genbu
+       "-Microsoft.Usage#CA2202" // deprecated -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
      ]) ]
   |> Seq.iter (fun (files, types, ruleset) ->
        files
@@ -4076,9 +4083,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "BuildMonoSamples"
 ==> "Compilation"
 
-//"BuildRelease"
-//==> "Lint"
-//==> "Analysis"
+"BuildRelease"
+==> "Lint"
+==> "Analysis"
 
 "Compilation"
 ?=> "Analysis"
@@ -4087,9 +4094,10 @@ Target.activateFinal "ResetConsoleColours"
 ==> "FxCop"
 =?> ("Analysis", Environment.isWindows && fxcop |> Option.isSome) // not supported
 
-//"Compilation"
-//==> "Gendarme"
-//==> "Analysis"
+"Compilation"
+==> "Gendarme"
+==> "Analysis"
+//=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
 
 "Compilation"
 ?=> "UnitTest"

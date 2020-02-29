@@ -54,7 +54,6 @@ module XmlUtilities =
 
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
   // Also, this rule is deprecated
-  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
   let internal LoadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
 
@@ -69,7 +68,6 @@ module XmlUtilities =
     schemas.Add(String.Empty, xreader) |> ignore
     schemas
 
-  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
   let internal LoadTransform(name : string) =
     let transform = new XslCompiledTransform()
     use stream =
