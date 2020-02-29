@@ -4076,7 +4076,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "BuildMonoSamples"
 ==> "Compilation"
 
-//"BuildRelease"
+"BuildRelease"
 ==> "Lint"
 ==> "Analysis"
 
