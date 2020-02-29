@@ -2,11 +2,11 @@ namespace AltCover
 
 open System
 
+open Augment
 open Mono.Cecil
 
+[<RequireQualifiedAccess>]
 module internal Naming =
-  let isNotNull x = (not << isNull) x
-
   let emptyIfIsNullOrWhiteSpace name =
     if String.IsNullOrWhiteSpace name then String.Empty else name
 
@@ -16,38 +16,38 @@ module internal Naming =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let TypeName(def : TypeDefinition) = emptyIfIsNullOrWhiteSpace def.Name
+  let internal TypeName(def : TypeDefinition) = emptyIfIsNullOrWhiteSpace def.Name
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let TypeRefName(def : TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
+  let internal TypeRefName(def : TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
 
-  let rec FullTypeName(def : TypeDefinition) =
+  let rec internal FullTypeName(def : TypeDefinition) =
     let deft = def.DeclaringType
-    if isNotNull deft
+    if deft.IsNotNull
     then (FullTypeName deft) + "+" + (TypeName def)
     else (suffixIfNotIsNullOrWhiteSpace def.Namespace ".") + TypeName def
 
-  let rec FullTypeRefName(def : TypeReference) =
+  let rec internal FullTypeRefName(def : TypeReference) =
     let deft = def.DeclaringType
-    if isNotNull deft
+    if deft.IsNotNull
     then (FullTypeRefName deft) + "+" + (TypeRefName def)
     else (suffixIfNotIsNullOrWhiteSpace def.Namespace ".") + TypeRefName def
 
-  let MethodName(def : MethodDefinition) =
+  let internal MethodName(def : MethodDefinition) =
     if def.IsConstructor && (not def.IsStatic) then
       "#ctor"
     else
       emptyIfIsNullOrWhiteSpace def.Name
 
-  let FullMethodName(def : MethodDefinition) =
+  let internal FullMethodName(def : MethodDefinition) =
     let parameters =
       String.Join
         (",",
          def.Parameters
-         |> Seq.filter isNotNull
+         |> Seq.filter (fun x -> x.IsNotNull)
          |> Seq.map (fun p -> p.ParameterType)
-         |> Seq.filter isNotNull
+         |> Seq.filter (fun x -> x.IsNotNull)
          |> Seq.map FullTypeRefName)
 
     let generic = def.HasGenericParameters
@@ -57,7 +57,7 @@ module internal Naming =
         String.Join
           (",",
            def.GenericParameters
-           |> Seq.filter isNotNull
+           |> Seq.filter (fun x -> x.IsNotNull)
            |> Seq.map FullTypeRefName)
       else
         String.Empty

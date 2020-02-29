@@ -65,20 +65,21 @@ type internal OpenCoverContext =
 module internal OpenCover =
   let internal X name = XName.Get name
 
-  let internal setChain (xbranch : XElement) branch =
-    let chain = branch.Target.Tail |> List.map (fun i -> i.Offset)
-    xbranch.SetAttributeValue
-      (X "offsetchain",
-       match chain with
-       | [] -> null
-       | l ->
-           String.Join
-             (" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
+  module internal I =
+    let internal setChain (xbranch : XElement) branch =
+      let chain = branch.Target.Tail |> List.map (fun i -> i.Offset)
+      xbranch.SetAttributeValue
+        (X "offsetchain",
+         match chain with
+         | [] -> null
+         | l ->
+             String.Join
+               (" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
 
-  let SafeMultiply x y =
-    try
-      Checked.op_Multiply x <| Math.Max(1, y)
-    with :? OverflowException -> Int32.MaxValue
+    let internal SafeMultiply x y =
+      try
+        Checked.op_Multiply x <| Math.Max(1, y)
+      with :? OverflowException -> Int32.MaxValue
 
   let internal ReportGenerator() =
     // The internal state of the document is mutated by the
@@ -267,7 +268,7 @@ module internal OpenCover =
          && branch.Representative = Reporting.Representative then
         let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
         let (xbranch, fileset, ref) = VisitGoTo s branch
-        setChain xbranch branch
+        I.setChain xbranch branch
         if branches.IsEmpty then
           branches.Add(xbranch)
         else
@@ -314,7 +315,7 @@ module internal OpenCover =
                match x.Name.LocalName with
                | "SequencePoint" ->
                    sq.SetAttributeValue(X "bec", bec)
-                   (SafeMultiply np0 bec, 0, x)
+                   (I.SafeMultiply np0 bec, 0, x)
                | _ -> (np0, bec + 1, sq)) (1, 0, sp.Head)
 
         method.SetAttributeValue(X "nPathComplexity", np)
@@ -324,7 +325,7 @@ module internal OpenCover =
         let np =
           bp
           |> List.groupBy (fun bp -> bp.Attribute(X "offset").Value)
-          |> Seq.fold (fun np0 (_, b) -> SafeMultiply (Seq.length b) np0) 1
+          |> Seq.fold (fun np0 (_, b) -> I.SafeMultiply (Seq.length b) np0) 1
         method.SetAttributeValue(X "nPathComplexity", np)
 
     let AddTracking (s : OpenCoverContext) (m : MethodDefinition) t =
