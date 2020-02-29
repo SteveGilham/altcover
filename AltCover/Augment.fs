@@ -37,9 +37,21 @@ module internal Augment =
     | Choice2Of2 x -> Left x
 #if GUI
 #else
-  let Increment b =
-    if b then 1 else 0
+  type System.Boolean with
+    member self.ToInt32
+      with get() =
+        if self then 1 else 0
 
-  let internal split(l : 'a list) =
-    (l.Head, l.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
+  type System.Int32 with
+    member self.Increment (b : bool) =
+      self + b.ToInt32
+
+  type System.UInt64 with
+    member self.Increment (b : bool) =
+      self + (uint64 b.ToInt32)
+
+  type Microsoft.FSharp.Collections.List<'T> with
+   member self.Split
+     with get () =
+      (self.Head, self.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
 #endif

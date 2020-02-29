@@ -5,6 +5,8 @@ open System.Globalization
 open System.IO
 open System.Xml.Linq
 
+open AltCover.Augment
+
 module internal LCov =
   let internal path : Option<string> ref = ref None
 
@@ -78,12 +80,12 @@ module internal LCov =
                // FNDA:<execution count>,<function name>
                let hit =
                  methods
-                 |> Seq.fold (fun n m ->
+                 |> Seq.fold (fun (n:int) m ->
                       let v =
                         (m.Descendants(x "seqpnt") |> Seq.head).Attribute(x "visitcount").Value
                       let name = fullname m
                       writer.WriteLine("FNDA:" + v + "," + name)
-                      n + (Augment.Increment(v <> "0"))) 0
+                      n.Increment(v <> "0")) 0
                // This  list  is followed by two lines containing the number of functions
                // found and hit:
                //

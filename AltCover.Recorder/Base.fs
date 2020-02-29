@@ -75,12 +75,14 @@ and [<NoComparison>]
       Tracks : List<Track>
     }
     with
-    static member Create () = { Count = 0L; Tracks = List<Track>() }
-    member self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
-    member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
-    member self.Total() = self.Count + int64 self.Tracks.Count
+    static member internal Create () = { Count = 0L; Tracks = List<Track>() }
+    member internal self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
+    member internal self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
+    member internal self.Total() = self.Count + int64 self.Tracks.Count
 
 module internal Counter =
+  // "Public" "fields"
+
   /// <summary>
   /// The offset flag for branch counts
   /// </summary>
@@ -98,239 +100,243 @@ module internal Counter =
   /// </summary>
   let mutable internal measureTime = DateTime.UtcNow
 
-  /// <summary>
-  /// Load the XDocument
-  /// </summary>
-  /// <param name="path">The XML file to load</param>
-  /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
-  /// If this is ever a problem, we will need mutability and two streams, with explicit
-  /// stream disposal if and only if the reader or writer doesn't take ownership
-  /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-  /// Also, this rule is deprecated
-  /// </remarks>
-  let private ReadXDocument(stream : Stream) =
-    let doc = XmlDocument()
-    doc.Load(stream)
-    doc
+  // Implementation details
+  module internal I =
 
-  /// <summary>
-  /// Write the XDocument
-  /// </summary>
-  /// <param name="coverageDocument">The XML document to write</param>
-  /// <param name="path">The XML file to write to</param>
-  /// <remarks>Idiom to work with CA2202 as above</remarks>
-  let private WriteXDocument (coverageDocument : XmlDocument) (stream : Stream) =
-    coverageDocument.Save(stream)
+    /// <summary>
+    /// Load the XDocument
+    /// </summary>
+    /// <param name="path">The XML file to load</param>
+    /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
+    /// If this is ever a problem, we will need mutability and two streams, with explicit
+    /// stream disposal if and only if the reader or writer doesn't take ownership
+    /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+    /// Also, this rule is deprecated
+    /// </remarks>
+    let private ReadXDocument(stream : Stream) =
+      let doc = XmlDocument()
+      doc.Load(stream)
+      doc
 
-  let internal FindIndexFromUspid flag uspid =
-    let f, c =
-      Int32.TryParse
-        (uspid, System.Globalization.NumberStyles.Integer,
-         System.Globalization.CultureInfo.InvariantCulture)
-    if f then (c ||| flag)
-    else -1
+    /// <summary>
+    /// Write the XDocument
+    /// </summary>
+    /// <param name="coverageDocument">The XML document to write</param>
+    /// <param name="path">The XML file to write to</param>
+    /// <remarks>Idiom to work with CA2202 as above</remarks>
+    let private WriteXDocument (coverageDocument : XmlDocument) (stream : Stream) =
+      coverageDocument.Save(stream)
 
-  let internal OpenCoverXml =
-    ("//Module", "hash", "Classes/Class/Methods/Method",
-     [ ("SequencePoints/SequencePoint", 0)
-       ("BranchPoints/BranchPoint", BranchFlag) ], "vc")
+    let internal FindIndexFromUspid flag uspid =
+      let f, c =
+        Int32.TryParse
+          (uspid, System.Globalization.NumberStyles.Integer,
+           System.Globalization.CultureInfo.InvariantCulture)
+      if f then (c ||| flag)
+      else -1
 
-  let internal NCoverXml =
-    ("//module", "moduleId", "method", [ ("seqpnt", 0) ], "visitcount")
+    let internal OpenCoverXml =
+      ("//Module", "hash", "Classes/Class/Methods/Method",
+       [ ("SequencePoints/SequencePoint", 0)
+         ("BranchPoints/BranchPoint", BranchFlag) ], "vc")
 
-  let internal XmlByFormat format =
-    match format with
-    | ReportFormat.OpenCoverWithTracking
-    | ReportFormat.OpenCover -> OpenCoverXml
-    | _ -> NCoverXml
+    let internal NCoverXml =
+      ("//module", "moduleId", "method", [ ("seqpnt", 0) ], "visitcount")
 
-  let internal MinTime (t1:DateTime) (t2:DateTime) =
-    if t1 < t2
-    then t1
-    else t2
+    let internal XmlByFormat format =
+      match format with
+      | ReportFormat.OpenCoverWithTracking
+      | ReportFormat.OpenCover -> OpenCoverXml
+      | _ -> NCoverXml
 
-  let internal MaxTime (t1:DateTime) (t2:DateTime) =
-    if t1 > t2
-    then t1
-    else t2
+    let internal MinTime (t1:DateTime) (t2:DateTime) =
+      if t1 < t2
+      then t1
+      else t2
 
-  /// <summary>
-  /// Save sequence point hit counts to xml report file
-  /// </summary>
-  /// <param name="hitCounts">The coverage results to incorporate</param>
-  /// <param name="coverageFile">The coverage file to update as a stream</param>
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-   "AvoidLongParameterListsRule")>]
-  let internal UpdateReport (postProcess : XmlDocument -> unit)
-      (pointProcess : XmlElement -> List<Track> -> unit) own
-      (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
-      (outputFile : Stream) =
-    let flushStart = DateTime.UtcNow
-    let coverageDocument = ReadXDocument coverageFile
-    let root = coverageDocument.DocumentElement
+    let internal MaxTime (t1:DateTime) (t2:DateTime) =
+      if t1 > t2
+      then t1
+      else t2
 
-    if format = ReportFormat.NCover then
-      let startTimeAttr = root.GetAttribute("startTime")
-      let measureTimeAttr = root.GetAttribute("measureTime")
-      let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
-      let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
-      let st = MinTime startTime oldStartTime
-      startTime <- st.ToUniversalTime() // Min
-      let mt = MaxTime measureTime  oldMeasureTime
-      measureTime <- mt.ToUniversalTime() // Max
-      root.SetAttribute
-        ("startTime",
-         startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
-      root.SetAttribute
-        ("measureTime",
-         measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
-      root.SetAttribute
-        ("driverVersion",
-         "AltCover.Recorder "
-         + System.Diagnostics.FileVersionInfo.GetVersionInfo(
-             System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
+    /// <summary>
+    /// Save sequence point hit counts to xml report file
+    /// </summary>
+    /// <param name="hitCounts">The coverage results to incorporate</param>
+    /// <param name="coverageFile">The coverage file to update as a stream</param>
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+     "AvoidLongParameterListsRule")>]
+    let internal UpdateReport (postProcess : XmlDocument -> unit)
+        (pointProcess : XmlElement -> List<Track> -> unit) own
+        (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
+        (outputFile : Stream) =
+      let flushStart = DateTime.UtcNow
+      let coverageDocument = ReadXDocument coverageFile
+      let root = coverageDocument.DocumentElement
 
-    let (m, i, m', s, v) = XmlByFormat format
+      if format = ReportFormat.NCover then
+        let startTimeAttr = root.GetAttribute("startTime")
+        let measureTimeAttr = root.GetAttribute("measureTime")
+        let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
+        let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
+        let st = MinTime startTime oldStartTime
+        startTime <- st.ToUniversalTime() // Min
+        let mt = MaxTime measureTime  oldMeasureTime
+        measureTime <- mt.ToUniversalTime() // Max
+        root.SetAttribute
+          ("startTime",
+           startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
+        root.SetAttribute
+          ("measureTime",
+           measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
+        root.SetAttribute
+          ("driverVersion",
+           "AltCover.Recorder "
+           + System.Diagnostics.FileVersionInfo.GetVersionInfo(
+               System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
-#if NET2
-    let
-#else
-    use
+      let (m, i, m', s, v) = XmlByFormat format
+
+  #if NET2
+      let
+  #else
+      use
+  #endif
+         moduleNodes = coverageDocument.SelectNodes(m)
+      moduleNodes
+      |> Seq.cast<XmlElement>
+      |> Seq.map (fun el -> el.GetAttribute(i), el)
+      |> Seq.filter (fun (k, _) -> counts.ContainsKey k)
+      |> Seq.iter (fun (k, affectedModule) ->
+           let moduleHits = counts.[k]
+           // Don't do this in one leap like --
+           // affectedModule.Descendants(XName.Get("seqpnt"))
+           // Get the methods, then flip their
+           // contents before concatenating
+  #if NET2
+           let
+  #else
+           use
+  #endif
+               nn = affectedModule.SelectNodes(m')
+           nn
+           |> Seq.cast<XmlElement>
+           |> Seq.collect (fun (method : XmlElement) ->
+                s
+                |> Seq.collect (fun (name, flag) ->
+  #if NET2
+                     let
+  #else
+                     use
+  #endif
+                         nodes = method.SelectNodes(name)
+                     nodes
+                     |> Seq.cast<XmlElement>
+                     |> Seq.map (fun x -> (x, flag))
+                     |> Seq.toList
+                     |> List.rev))
+           |> Seq.mapi (fun counter (pt, flag) ->
+                ((match format with
+                  | ReportFormat.OpenCoverWithTracking | ReportFormat.OpenCover ->
+                    "uspid"
+                    |> pt.GetAttribute
+                    |> (FindIndexFromUspid flag)
+                  | _ -> counter), pt))
+           |> Seq.filter (fst >> moduleHits.ContainsKey)
+           |> Seq.iter (fun x ->
+                let pt = snd x
+                let counter = fst x
+                let vc =
+                  Int64.TryParse
+                    (pt.GetAttribute(v), System.Globalization.NumberStyles.Integer,
+                     System.Globalization.CultureInfo.InvariantCulture) |> snd
+                // Treat -ve visit counts (an exemption added in analysis) as zero
+                let count = moduleHits.[counter]
+                let visits = (max 0L vc) + count.Total()
+                pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
+                pointProcess pt count.Tracks))
+      postProcess coverageDocument
+
+      // Save modified xml to a file
+      outputFile.Seek(0L, SeekOrigin.Begin) |> ignore
+      outputFile.SetLength 0L
+      if own then WriteXDocument coverageDocument outputFile
+      flushStart
+
+    let private EnsureModule (counts : Dictionary<string, Dictionary<int, PointVisit>>) moduleId =
+      if not (counts.ContainsKey moduleId) then
+        lock counts (fun () ->
+          if not (counts.ContainsKey moduleId)
+          then counts.Add(moduleId, Dictionary<int, PointVisit>())
+        )
+
+    let private EnsurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
+      if not (counts.ContainsKey hitPointId) then
+        lock counts (fun () ->
+        if not (counts.ContainsKey hitPointId)
+        then counts.Add(hitPointId, PointVisit.Create()))
+
+#if RUNNER
+    let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+                          (t : Dictionary<string, Dictionary<int, PointVisit>>) =
+      let mutable hitcount = 0L
+      t.Keys
+      |> Seq.iter (fun m -> EnsureModule counts m
+                            let next = counts.[m]
+                            let here = t.[m]
+                            here.Keys |>
+                            Seq.iter (fun p -> EnsurePoint next p
+                                               let v = next.[p]
+                                               let add = here.[p]
+                                               hitcount <- hitcount + add.Total()
+                                               lock v (fun () -> v.Count <- v.Count + add.Count
+                                                                 v.Tracks.AddRange(add.Tracks)
+                            )))
+      hitcount
 #endif
-       moduleNodes = coverageDocument.SelectNodes(m)
-    moduleNodes
-    |> Seq.cast<XmlElement>
-    |> Seq.map (fun el -> el.GetAttribute(i), el)
-    |> Seq.filter (fun (k, _) -> counts.ContainsKey k)
-    |> Seq.iter (fun (k, affectedModule) ->
-         let moduleHits = counts.[k]
-         // Don't do this in one leap like --
-         // affectedModule.Descendants(XName.Get("seqpnt"))
-         // Get the methods, then flip their
-         // contents before concatenating
-#if NET2
-         let
-#else
-         use
-#endif
-             nn = affectedModule.SelectNodes(m')
-         nn
-         |> Seq.cast<XmlElement>
-         |> Seq.collect (fun (method : XmlElement) ->
-              s
-              |> Seq.collect (fun (name, flag) ->
-#if NET2
-                   let
-#else
-                   use
-#endif
-                       nodes = method.SelectNodes(name)
-                   nodes
-                   |> Seq.cast<XmlElement>
-                   |> Seq.map (fun x -> (x, flag))
-                   |> Seq.toList
-                   |> List.rev))
-         |> Seq.mapi (fun counter (pt, flag) ->
-              ((match format with
-                | ReportFormat.OpenCoverWithTracking | ReportFormat.OpenCover ->
-                  "uspid"
-                  |> pt.GetAttribute
-                  |> (FindIndexFromUspid flag)
-                | _ -> counter), pt))
-         |> Seq.filter (fst >> moduleHits.ContainsKey)
-         |> Seq.iter (fun x ->
-              let pt = snd x
-              let counter = fst x
-              let vc =
-                Int64.TryParse
-                  (pt.GetAttribute(v), System.Globalization.NumberStyles.Integer,
-                   System.Globalization.CultureInfo.InvariantCulture) |> snd
-              // Treat -ve visit counts (an exemption added in analysis) as zero
-              let count = moduleHits.[counter]
-              let visits = (max 0L vc) + count.Total()
-              pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
-              pointProcess pt count.Tracks))
-    postProcess coverageDocument
 
-    // Save modified xml to a file
-    outputFile.Seek(0L, SeekOrigin.Begin) |> ignore
-    outputFile.SetLength 0L
-    if own then WriteXDocument coverageDocument outputFile
-    flushStart
+    let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+        moduleId hitPointId context =
+      EnsureModule counts moduleId
+      let next = counts.[moduleId]
+      EnsurePoint next hitPointId
+
+      let v = next.[hitPointId]
+      match context with
+      | Null -> v.Step()
+      | something -> v.Track something
+
+  // "Public" API
+#if RUNNER
+  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+      moduleId hitPointId context =
+    match context with
+    | Table t -> I.AddTable counts t
+    | _ -> I.AddSingleVisit counts moduleId hitPointId context
+           1L
+#endif
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "'Target' is disposed")>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-   "AvoidLongParameterListsRule")>]
+    "AvoidLongParameterListsRule")>]
   let internal DoFlush postProcess pointProcess own counts format report output =
     use coverageFile =
       new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                     FileOptions.SequentialScan)
+                      FileOptions.SequentialScan)
 
     use target =
       match output with
       | None -> new MemoryStream() :> Stream
       | Some f ->
         new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
-                       FileOptions.SequentialScan) :> Stream
+                        FileOptions.SequentialScan) :> Stream
 
     let outputFile =
       if Option.isSome output then target
       else coverageFile :> Stream
 
     let flushStart =
-      UpdateReport postProcess pointProcess own counts format coverageFile outputFile
+      I.UpdateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
-
-  let private EnsureModule (counts : Dictionary<string, Dictionary<int, PointVisit>>) moduleId =
-    if not (counts.ContainsKey moduleId) then
-      lock counts (fun () ->
-        if not (counts.ContainsKey moduleId)
-        then counts.Add(moduleId, Dictionary<int, PointVisit>())
-      )
-
-  let private EnsurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
-    if not (counts.ContainsKey hitPointId) then
-      lock counts (fun () ->
-      if not (counts.ContainsKey hitPointId)
-      then counts.Add(hitPointId, PointVisit.Create()))
-
-#if RUNNER
-  let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
-                        (t : Dictionary<string, Dictionary<int, PointVisit>>) =
-    let mutable hitcount = 0L
-    t.Keys
-    |> Seq.iter (fun m -> EnsureModule counts m
-                          let next = counts.[m]
-                          let here = t.[m]
-                          here.Keys |>
-                          Seq.iter (fun p -> EnsurePoint next p
-                                             let v = next.[p]
-                                             let add = here.[p]
-                                             hitcount <- hitcount + add.Total()
-                                             lock v (fun () -> v.Count <- v.Count + add.Count
-                                                               v.Tracks.AddRange(add.Tracks)
-                          )))
-    hitcount
- #endif
-
-  let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
-      moduleId hitPointId context =
-    EnsureModule counts moduleId
-    let next = counts.[moduleId]
-    EnsurePoint next hitPointId
-
-    let v = next.[hitPointId]
-    match context with
-    | Null -> v.Step()
-    | something -> v.Track something
-
-#if RUNNER
-  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
-      moduleId hitPointId context =
-    match context with
-    | Table t -> AddTable counts t
-    | _ -> AddSingleVisit counts moduleId hitPointId context
-           1L
-#endif

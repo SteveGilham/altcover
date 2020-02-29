@@ -13,7 +13,7 @@ open Mono.Cecil.Pdb
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
   // "Public" "field"
-  let internal SymbolFolders = List<String>()
+  let internal symbolFolders = List<String>()
 
   // Implementation details
   module private I =
@@ -25,10 +25,10 @@ module internal ProgramDatabase =
        |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.Mixin")
        |> Seq.head).GetMethod("GetEmbeddedPortablePdbEntry")
 
-    let internal GetEmbeddedPortablePdbEntry(assembly : AssemblyDefinition) =
+    let internal getEmbeddedPortablePdbEntry(assembly : AssemblyDefinition) =
       getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |]) :?> ImageDebugHeaderEntry
 
-    let GetSymbolsByFolder fileName folderName =
+    let internal GetSymbolsByFolder fileName folderName =
       let name = Path.Combine(folderName, fileName)
       let fallback = Path.ChangeExtension(name, ".pdb")
       if File.Exists(fallback) then
@@ -39,7 +39,7 @@ module internal ProgramDatabase =
         if File.Exists(fallback2) then Some name else None
 
   // "Public" API
-  let internal GetPdbFromImage(assembly : AssemblyDefinition) =
+  let internal getPdbFromImage(assembly : AssemblyDefinition) =
     Some assembly.MainModule
     |> Option.filter (fun x -> x.HasDebugHeader)
     |> Option.map (fun x -> x.GetDebugHeader())
@@ -56,14 +56,14 @@ module internal ProgramDatabase =
     |> Option.filter (fun s -> s.Length > 0)
     |> Option.filter (fun s ->
           File.Exists s || (s = (assembly.Name.Name + ".pdb") && (assembly
-                                                                  |> I.GetEmbeddedPortablePdbEntry).IsNotNull))
+                                                                  |> I.getEmbeddedPortablePdbEntry).IsNotNull))
 
-  let internal GetPdbWithFallback(assembly : AssemblyDefinition) =
-    match GetPdbFromImage assembly with
+  let internal getPdbWithFallback(assembly : AssemblyDefinition) =
+    match getPdbFromImage assembly with
     | None ->
         let foldername = Path.GetDirectoryName assembly.MainModule.FileName
         let filename = Path.GetFileName assembly.MainModule.FileName
-        foldername :: (Seq.toList SymbolFolders)
+        foldername :: (Seq.toList symbolFolders)
         |> Seq.map (I.GetSymbolsByFolder filename)
         |> Seq.choose id
         |> Seq.tryFind (fun _ -> true)
@@ -72,8 +72,8 @@ module internal ProgramDatabase =
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
-  let internal ReadSymbols(assembly : AssemblyDefinition) =
-    GetPdbWithFallback assembly
+  let internal readSymbols(assembly : AssemblyDefinition) =
+    getPdbWithFallback assembly
     |> Option.iter (fun pdbpath ->
           let provider : ISymbolReaderProvider =
             if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase)

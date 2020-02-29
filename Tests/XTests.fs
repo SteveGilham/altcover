@@ -713,7 +713,7 @@ module AltCoverXTests =
 
     let path = Path.Combine(where + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
@@ -749,7 +749,7 @@ module AltCoverXTests =
     let where = Assembly.GetExecutingAssembly().Location
     let path = monoSample1path
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
@@ -781,7 +781,7 @@ module AltCoverXTests =
 
     let path = Path.Combine(where + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore

@@ -351,7 +351,7 @@ module internal OpenCover =
          (if s.MethodSeq > 0 || s.MethodBr > 0 then 1 else 0))
 
     let VisitAfterMethodIncluded(s : OpenCoverContext) =
-      let head, tail = Augment.split s.Stack
+      let head, tail = s.Stack.Split
       let skipped = head.Parent.Attributes(X "skippedDueTo").Any()
       head.Parent.Elements(X "FileRef")
       |> Seq.toList
@@ -391,7 +391,7 @@ module internal OpenCover =
         { s with Excluded = passOnClassExclusion s.Excluded }
 
     let VisitAfterType(s : OpenCoverContext) =
-      let head, tail = Augment.split s.Stack
+      let head, tail = s.Stack.Split
 
       let (min, max), methods =
         s.MethodCC
@@ -426,7 +426,7 @@ module internal OpenCover =
           Excluded = Nothing }
 
     let VisitAfterModule(s : OpenCoverContext) =
-      let head, tail = Augment.split s.Stack
+      let head, tail = s.Stack.Split
       let min, max =
         s.ClassCC
         |> Seq.fold

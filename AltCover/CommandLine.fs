@@ -184,8 +184,7 @@ module internal CommandLine =
     proc.WaitForExitCustom()
 #endif
     proc.ExitCode * (!dropReturnCode
-                     |> not
-                     |> Increment)
+                     |> not).ToInt32
 
   let logException store (e : Exception) =
     error <- e.Message :: error

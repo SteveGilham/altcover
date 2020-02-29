@@ -47,12 +47,11 @@ module internal Gendarme =
     // However, ILSpy doesn't decompile a release-build return <ternary> properly
     // so I'm not going to try to figure that one out on top of this
     let index = int (Option.getOrElse Code.Nop code)
-    mask
-    |> Seq.skip (index >>> 6)
-    |> Seq.head
-    &&& (1UL <<< (index &&& 63))
-    <> 0UL
-    |> Augment.Increment
+    (mask
+     |> Seq.skip (index >>> 6)
+     |> Seq.head
+     &&& (1UL <<< (index &&& 63))
+     <> 0UL).ToInt32
 
   let SwitchCyclomaticComplexity(instructions : Cil.Instruction seq) =
     let targets = System.Collections.Generic.HashSet<Cil.Instruction>()

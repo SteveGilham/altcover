@@ -754,7 +754,7 @@ module AltCoverTests3 =
     let ParsingSymbolGivesSymbol() =
       Main.init()
       try
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
         let options = Main.declareOptions()
         let unique = Path.GetFullPath(".")
         let Symbol = [| "-y"; unique |]
@@ -764,17 +764,17 @@ module AltCoverTests3 =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        match ProgramDatabase.SymbolFolders.Count with
-        | 1 -> Assert.That(ProgramDatabase.SymbolFolders, Is.EquivalentTo [ unique ])
+        match ProgramDatabase.symbolFolders.Count with
+        | 1 -> Assert.That(ProgramDatabase.symbolFolders, Is.EquivalentTo [ unique ])
         | _ -> Assert.Fail()
       finally
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
 
     [<Test>]
     let ParsingMultipleSymbolGivesOK() =
       Main.init()
       try
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
         let options = Main.declareOptions()
 
         let Symbol =
@@ -789,20 +789,20 @@ module AltCoverTests3 =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        match ProgramDatabase.SymbolFolders.Count with
+        match ProgramDatabase.symbolFolders.Count with
         | 2 ->
           Assert.That
-            (ProgramDatabase.SymbolFolders,
+            (ProgramDatabase.symbolFolders,
              Is.EquivalentTo(Symbol |> Seq.filter (fun x -> x.Length > 2)))
         | _ -> Assert.Fail()
       finally
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
 
     [<Test>]
     let ParsingBadSymbolGivesFailure() =
       Main.init()
       try
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
         let options = Main.declareOptions()
         let unique = Guid.NewGuid().ToString().Replace("-", "*")
         let Symbol = [| "-y"; unique |]
@@ -813,13 +813,13 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
 
     [<Test>]
     let ParsingNoSymbolGivesFailure() =
       Main.init()
       try
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
         let options = Main.declareOptions()
         let Symbol = [| "-y" |]
         let parse = CommandLine.parseCommandLine Symbol options
@@ -829,7 +829,7 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
 
     [<Test>]
     let ParsingMultipleDependencyIsOk() =

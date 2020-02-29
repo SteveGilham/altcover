@@ -449,7 +449,7 @@ module internal Visitor =
            |> ignore
 
            // can't delay reading symbols any more
-           ProgramDatabase.ReadSymbols x
+           ProgramDatabase.readSymbols x
 
            // Reject completely if filtered here
            let inspection = IsIncluded x
@@ -901,7 +901,7 @@ module internal Visitor =
       if !coalesceBranches then CoalesceBranchPoints dbg else id
 
     // Generated MoveNext => skip one branch
-    let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
+    let skip = (IsMoveNext.IsMatch methodFullName).ToInt32
     (Seq.map
       (snd
        >> (fun (i : Instruction) ->

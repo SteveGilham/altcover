@@ -37,25 +37,25 @@ module AltCoverRunnerTests =
     let MaxTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.MaxTime now ago) = now @>
+      test <@ (Base.Counter.I.MaxTime now ago) = now @>
 
     [<Test>]
     let MaxTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.MaxTime ago now) = now @>
+      test <@ (Base.Counter.I.MaxTime ago now) = now @>
 
     [<Test>]
     let MinTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.MinTime ago now) = ago @>
+      test <@ (Base.Counter.I.MinTime ago now) = ago @>
 
     [<Test>]
     let MinTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.MinTime now ago) = ago @>
+      test <@ (Base.Counter.I.MinTime now ago) = ago @>
 
 #if NETCOREAPP2_0
 #else
@@ -64,7 +64,7 @@ module AltCoverRunnerTests =
     let JunkUspidGivesNegativeIndex() =
       Runner.init()
       let key = " "
-      let index = Counter.FindIndexFromUspid 0 key
+      let index = Counter.I.FindIndexFromUspid 0 key
       test <@ index < 0 @>
 
 #if NETCOREAPP2_0
@@ -196,7 +196,7 @@ module AltCoverRunnerTests =
       [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- Init (int64(i - 10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-      Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
+      Counter.I.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
         worker2 |> ignore
       worker2.Position <- 0L
       let after = XmlDocument()

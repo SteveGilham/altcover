@@ -165,7 +165,7 @@ module internal Instrument =
     Guard definition (fun () ->  // set the timer interval in ticks
 #if NETCOREAPP2_0
 #else
-      if monoRuntime |> not then ProgramDatabase.ReadSymbols definition
+      if monoRuntime |> not then ProgramDatabase.readSymbols definition
 #endif
       definition.Name.Name <- (extractName definition) + ".g"
 
@@ -308,12 +308,12 @@ module internal Instrument =
     let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
     let pdb =
-      ProgramDatabase.GetPdbWithFallback assembly
+      ProgramDatabase.getPdbWithFallback assembly
       |> Option.getOrElse "x.pdb"
       |> Path.GetExtension
 #if NETCOREAPP2_0
     let separatePdb =
-      ProgramDatabase.GetPdbFromImage assembly
+      ProgramDatabase.getPdbFromImage assembly
       |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
       |> Option.isSome
 
@@ -661,9 +661,8 @@ module internal Instrument =
     track
     |> Option.iter (fun (n, _) ->
          let body =
-           [ m.Body; state.MethodBody ].[included
-                                         |> Visitor.IsInstrumented
-                                         |> Augment.Increment]
+           [ m.Body; state.MethodBody ].[(included
+                                         |> Visitor.IsInstrumented).ToInt32]
          let instructions = body.Instructions
          let methodWorker = body.GetILProcessor()
          let nop = methodWorker.Create(OpCodes.Nop)

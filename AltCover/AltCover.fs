@@ -26,7 +26,7 @@ module internal Main =
     Visitor.defer := None
     Visitor.inputDirectories.Clear()
     Visitor.outputDirectories.Clear()
-    ProgramDatabase.SymbolFolders.Clear()
+    ProgramDatabase.symbolFolders.Clear()
     Instrument.ResolutionTable.Clear()
 
     Visitor.keys.Clear()
@@ -123,7 +123,7 @@ module internal Main =
       ("y|symbolDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--symbolDirectory" x then
-           ProgramDatabase.SymbolFolders.Add x))
+           ProgramDatabase.symbolFolders.Add x))
       ("d|dependency=",
        (fun x ->
          CommandLine.doPathOperation (fun _ ->
@@ -414,7 +414,7 @@ module internal Main =
                 imageLoadResilient (fun () ->
                   use stream = File.OpenRead(fullName)
                   use def = AssemblyDefinition.ReadAssembly(stream)
-                  ProgramDatabase.ReadSymbols def
+                  ProgramDatabase.readSymbols def
                   if def.MainModule.HasSymbols && def
                                                   |> Visitor.IsIncluded
                                                   |> Visitor.IsInstrumented

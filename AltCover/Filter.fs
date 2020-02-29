@@ -84,7 +84,7 @@ module internal Filter =
                                                        |> f
           | _ -> false)
 
-    let MatchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
+    let internal MatchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
       match nameProvider with
       | :? 'a as item ->
           item

@@ -251,7 +251,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let prepared = AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols prepared
+      ProgramDatabase.readSymbols prepared
       let bang = fun () -> InvalidOperationException("Bang") |> raise
       Assert.Throws<InvalidOperationException>
         (fun () -> Instrument.Guard prepared bang |> ignore) |> ignore
@@ -370,7 +370,7 @@ module AltCoverTests2 =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let prepared = Instrument.prepareAssembly path
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProgramDatabase.ReadSymbols raw
+        ProgramDatabase.readSymbols raw
         Assert.That(prepared.Name.Name, Is.EqualTo(raw.Name.Name + ".g"))
         Assert.That (prepared.Name.HasPublicKey)
         Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
@@ -629,7 +629,7 @@ module AltCoverTests2 =
         let save = Visitor.reportPath
         try
           let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-          ProgramDatabase.ReadSymbols def
+          ProgramDatabase.readSymbols def
           let clazz = def.MainModule.GetType("Sample3.Class1")
           let func = clazz.GetMethods() |> Seq.find (fun x -> x.Name = "get_Property")
           let clazz' = def.MainModule.GetType("Sample3.Class3")
@@ -709,7 +709,7 @@ module AltCoverTests2 =
       let where = Assembly.GetExecutingAssembly().Location
       let path = AltCoverTests.sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let program = def.MainModule.GetType("TouchTest.Program")
       let main = program.GetMethods() |> Seq.find (fun x -> x.Name = "Main")
       let oldValue = main.Body.Instructions.[0]
@@ -751,7 +751,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -779,7 +779,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -815,7 +815,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -847,7 +847,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -877,7 +877,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -1092,7 +1092,7 @@ module AltCoverTests2 =
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
@@ -1150,7 +1150,7 @@ module AltCoverTests2 =
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where), "Sample16.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       Visitor.coalesceBranches := true
       let method =
         def.MainModule.GetAllTypes()
@@ -1209,7 +1209,7 @@ module AltCoverTests2 =
       let where = Assembly.GetExecutingAssembly().Location
       let path = AltCoverTests.sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
@@ -1283,7 +1283,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -1304,7 +1304,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -1337,7 +1337,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule.GetType("N.DU")
 
       let du =
@@ -1369,7 +1369,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let token0 = def.Name.PublicKeyToken
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
       use buffer = new MemoryStream()
@@ -1391,7 +1391,7 @@ module AltCoverTests2 =
       let path = Path.Combine(Path.GetDirectoryName(here) + AltCoverTests.Hack(),
                               Path.GetFileName(here))
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let token0 = def.Name.PublicKeyToken
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
       use buffer = new MemoryStream()
@@ -1426,7 +1426,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let token0 = def.Name.PublicKeyToken
       Visitor.defaultStrongNameKey <- None
       let result = Instrument.updateStrongReferences def [ "nunit.framework" ]
@@ -1460,7 +1460,7 @@ module AltCoverTests2 =
       let path' = path
 #endif
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
 #if NETCOREAPP2_0
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
@@ -1481,7 +1481,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def |> ignore
+      ProgramDatabase.readSymbols def |> ignore
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
       use buffer = new MemoryStream()
@@ -1502,7 +1502,7 @@ module AltCoverTests2 =
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProgramDatabase.ReadSymbols def |> ignore
+        ProgramDatabase.readSymbols def |> ignore
         let npath = typeof<TestAttribute>.Assembly.Location
         let ndef = Mono.Cecil.AssemblyDefinition.ReadAssembly npath
         let key = KeyStore.ArrayToIndex ndef.Name.PublicKey
@@ -1531,7 +1531,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
 #if NETCOREAPP2_0
       use stream =
@@ -1557,7 +1557,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
 #if NETCOREAPP2_0
       use stream =
@@ -1584,7 +1584,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let visited = Node.Module(def.MainModule, Inspections.Ignore)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let result = Instrument.instrumentationVisitor state visited
@@ -1597,7 +1597,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let visited = Node.Module(def.MainModule, Inspections.Instrument)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let path' =
@@ -1649,7 +1649,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let visited = Node.MethodPoint(null, None, 0, false, Exemption.None)
       let state = InstrumentContext.Build []
       let result = Instrument.instrumentationVisitor state visited
@@ -1663,7 +1663,7 @@ module AltCoverTests2 =
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProgramDatabase.ReadSymbols def
+        ProgramDatabase.readSymbols def
         let module' = def.MainModule.GetType("N.DU")
 
         let du =
@@ -1703,7 +1703,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let visited = Node.Module(def.MainModule, Inspections.Instrument)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let path' =
@@ -1797,7 +1797,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let prepared = AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols prepared
+      ProgramDatabase.readSymbols prepared
       let state = { InstrumentContext.Build [] with RecordingAssembly = prepared }
       Assert.Throws<InvalidOperationException>
         (fun () ->
@@ -1838,7 +1838,7 @@ module AltCoverTests2 =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let state = { InstrumentContext.Build [] with RecordingAssembly = null }
       let prepared = AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols prepared
+      ProgramDatabase.readSymbols prepared
       Assert.Throws<InvalidOperationException>
         (fun () ->
         Instrument.instrumentationVisitorWrapper
