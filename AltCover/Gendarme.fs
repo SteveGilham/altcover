@@ -9,16 +9,16 @@ module internal Gendarme =
   module internal I =
 
     // OpenCover uses Gendarme to compute Cyclomatic Complexity values.  Reimplement that algorithm here
-    let mask = [ 0xFFFF6C3FCUL; 0x1B0300000000FFE0UL; 0x400100FFF800UL; 0xDE0UL ]
+    let internal mask = [ 0xFFFF6C3FCUL; 0x1B0300000000FFE0UL; 0x400100FFF800UL; 0xDE0UL ]
 
-    let FindFirstUnconditionalBranchTarget(ins : Cil.Instruction) =
+    let internal FindFirstUnconditionalBranchTarget(ins : Cil.Instruction) =
       Seq.unfold
         (fun (state : Cil.Instruction) ->
           if isNull state then None else Some(state, state.Next)) ins
       |> Seq.tryFind (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
       |> Option.map (fun i -> i.Operand :?> Cil.Instruction)
 
-    let AccumulateSwitchTargets (ins : Cil.Instruction)
+    let internal AccumulateSwitchTargets (ins : Cil.Instruction)
         (targets : System.Collections.Generic.HashSet<Cil.Instruction>) =
       let cases = ins.Operand :?> Cil.Instruction []
       cases
@@ -40,7 +40,7 @@ module internal Gendarme =
             |> targets.Add
             |> ignore
 
-    let ``detect ternary pattern`` (code : Code option) =
+    let internal ``detect ternary pattern`` (code : Code option) =
       // look-up into a bit-string to get
       // +1 for any Load instruction, basically
       // Still don't see how that works in my test examples which
@@ -54,7 +54,7 @@ module internal Gendarme =
        &&& (1UL <<< (index &&& 63))
        <> 0UL).ToInt32
 
-    let SwitchCyclomaticComplexity(instructions : Cil.Instruction seq) =
+    let internal SwitchCyclomaticComplexity(instructions : Cil.Instruction seq) =
       let targets = System.Collections.Generic.HashSet<Cil.Instruction>()
 
       let fast =

@@ -252,18 +252,18 @@ module internal Configuration =
   let internal inputDirectories = List<string>()
   let private defaultInputDirectory = "."
 
-  let InputDirectories() =
+  let internal InputDirectories() =
     if inputDirectories.Any()
     then inputDirectories |> Seq.toList
     else [ defaultInputDirectory ] |> List.map Path.GetFullPath
 
-  let inplaceSelection a b =
+  let internal inplaceSelection a b =
     if !inplace then a else b
 
   let internal outputDirectories = List<string>()
   let private defaultOutputDirectory _ = inplaceSelection "__Saved" "__Instrumented"
 
-  let OutputDirectories() =
+  let internal OutputDirectories() =
     let paired = InputDirectories()
     Seq.append (outputDirectories :> string seq)
       (Seq.initInfinite defaultOutputDirectory)
@@ -271,26 +271,26 @@ module internal Configuration =
     |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> Path.GetFullPath)
     |> Seq.toList
 
-  let InstrumentDirectories() = (inplaceSelection InputDirectories OutputDirectories)()
-  let SourceDirectories() = (inplaceSelection OutputDirectories InputDirectories)()
+  let internal InstrumentDirectories() = (inplaceSelection InputDirectories OutputDirectories)()
+  let internal SourceDirectories() = (inplaceSelection OutputDirectories InputDirectories)()
 
   let mutable internal reportPath : Option<string> = None
-  let defaultReportPath = "coverage.xml"
-  let ReportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath reportPath)
+  let internal defaultReportPath = "coverage.xml"
+  let internal ReportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath reportPath)
 
   let mutable internal interval : Option<int> = None
-  let defaultInterval = 0
-  let Interval() = (Option.getOrElse defaultInterval interval)
+  let internal defaultInterval = 0
+  let internal Interval() = (Option.getOrElse defaultInterval interval)
 
   let mutable internal reportFormat : Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
-  let defaultReportFormat() =
+  let internal defaultReportFormat() =
     if coverstyle = CoverStyle.All then ReportFormat.NCover else ReportFormat.OpenCover
 
-  let ReportKind() = (Option.getOrElse (defaultReportFormat()) reportFormat)
+  let internal ReportKind() = (Option.getOrElse (defaultReportFormat()) reportFormat)
 
-  let ReportFormat() =
+  let internal ReportFormat() =
     let fmt = ReportKind()
     if fmt = ReportFormat.OpenCover && (TrackingNames.Any() || Interval() > 0)
     then ReportFormat.OpenCoverWithTracking
@@ -372,11 +372,11 @@ module internal Visitor =
         |> FilterRegex.Exclude
         |> FilterClass.Build FilterScope.Method ]
 
-    let Mask = ~~~Inspections.Instrument
+    let internal Mask = ~~~Inspections.Instrument
 
-    let UpdateInspection before x =
+    let internal UpdateInspection before x =
       (before &&& Mask) ||| (before &&& Inspections.Instrument &&& x.IsIncluded)
-    let ToSeq node = List.toSeq [ node ]
+    let internal ToSeq node = List.toSeq [ node ]
 
     let internal EnsureEndsWith c (s : string) =
       if s.EndsWith(c, StringComparison.Ordinal) then s else s + c
@@ -428,7 +428,7 @@ module internal Visitor =
           map
       | _ -> file
 
-    let significant (m : MethodDefinition) =
+    let internal significant (m : MethodDefinition) =
       [ Filter.isFSharpInternal
         Filter.isCSharpAutoProperty
         (fun m -> specialCaseFilters |> Seq.exists (Filter.``match`` m))
@@ -589,7 +589,7 @@ module internal Visitor =
                                           (tag, StringComparison.Ordinal) >= 0)))
           |> Seq.tryFind predicate
 
-    let SameType (target : TypeReference) (candidate : TypeReference) =
+    let internal SameType (target : TypeReference) (candidate : TypeReference) =
       if target = candidate then
         true
       else if target.HasGenericParameters then
@@ -604,7 +604,7 @@ module internal Visitor =
       else
         false
 
-    let SameFunction (target : MethodReference) (candidate : MethodReference) =
+    let internal SameFunction (target : MethodReference) (candidate : MethodReference) =
       if target = candidate then
         true
       else if SameType target.DeclaringType candidate.DeclaringType then
@@ -614,7 +614,7 @@ module internal Visitor =
       else
         false
 
-    let MethodConstructsType (t : TypeReference) (m : MethodDefinition) =
+    let internal MethodConstructsType (t : TypeReference) (m : MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
       |> Seq.exists (fun i ->
@@ -633,14 +633,14 @@ module internal Visitor =
         |> Seq.filter (fun m -> m.HasBody)
       candidates |> Seq.tryFind (MethodConstructsType tx)
 
-    let MethodCallsMethod (t : MethodReference) (m : MethodDefinition) =
+    let internal MethodCallsMethod (t : MethodReference) (m : MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Call)
       |> Seq.exists (fun i ->
            let tn = (i.Operand :?> MethodReference)
            SameFunction t tn)
 
-    let MethodLoadsMethod (t : MethodReference) (m : MethodDefinition) =
+    let internal MethodLoadsMethod (t : MethodReference) (m : MethodDefinition) =
       m.Body.Instructions
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldftn)
       |> Seq.exists (fun i ->
@@ -735,11 +735,11 @@ module internal Visitor =
              Method(m, inclusion, Track m, visitcount))
             >> buildSequence)
 
-    let IsSequencePoint(s : SequencePoint) =
+    let internal IsSequencePoint(s : SequencePoint) =
       s.IsNotNull
       && s.IsHidden |> not
 
-    let fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
+    let internal fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
       match seq with
       | null ->
           if genuine = FakeAfterReturn && instruction.IsNotNull
@@ -749,7 +749,7 @@ module internal Visitor =
             null
       | _ -> seq
 
-    let findEffectiveSequencePoint genuine (dbg : MethodDebugInformation)
+    let internal findEffectiveSequencePoint genuine (dbg : MethodDebugInformation)
         (instructions : Instruction seq) =
       instructions
       |> Seq.map (fun i ->
@@ -757,12 +757,12 @@ module internal Visitor =
            fakeSequencePoint genuine seq i.Previous)
       |> Seq.tryFind IsSequencePoint
 
-    let findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
+    let internal findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
       findEffectiveSequencePoint Genuine dbg instructions
 
-    let indexList l = l |> List.mapi (fun i x -> (i, x))
+    let internal indexList l = l |> List.mapi (fun i x -> (i, x))
 
-    let getJumpChain (terminal : Instruction) (i : Instruction) =
+    let internal getJumpChain (terminal : Instruction) (i : Instruction) =
       let rec accumulate (state : Instruction) l =
         let gendarme = l
         if state.OpCode = OpCodes.Br || state.OpCode = OpCodes.Br_S then
@@ -784,7 +784,7 @@ module internal Visitor =
     let private boundaryOfList (f : (Instruction -> int) -> Instruction list -> Instruction)
         (places : Instruction list) = places |> f (fun i -> i.Offset)
 
-    let includedSequencePoint dbg (toNext : Instruction list) toJump =
+    let internal includedSequencePoint dbg (toNext : Instruction list) toJump =
       let places = List.concat [ toNext; toJump ]
       let start = places |> (boundaryOfList List.minBy)
       let finish = places |> (boundaryOfList List.maxBy)
@@ -796,7 +796,7 @@ module internal Visitor =
         |> Seq.toList
       findEffectiveSequencePoint FakeAfterReturn dbg range
 
-    let rec lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
+    let rec internal lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
       let n = i.Next
       if n
          |> isNull
@@ -807,7 +807,7 @@ module internal Visitor =
       else
         lastOfSequencePoint dbg n
 
-    let getJumps (dbg : MethodDebugInformation) (i : Instruction) =
+    let internal getJumps (dbg : MethodDebugInformation) (i : Instruction) =
       let terminal = lastOfSequencePoint dbg i
       let next = i.Next
       if i.OpCode = OpCodes.Switch then

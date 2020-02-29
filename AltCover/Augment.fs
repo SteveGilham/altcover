@@ -24,7 +24,7 @@ module internal Augment =
     static member nullable (x : 'T) : option<'T> =
       if isNull (x :> obj) then None else Some x
 #endif
-  type Either<'a, 'b> = Choice<'b, 'a>
+  type internal Either<'a, 'b> = Choice<'b, 'a>
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
@@ -35,7 +35,7 @@ module internal Augment =
     Justification = "Context in F# has to be sufficient")>]
   let Left x : Either<'a, 'b> = Choice2Of2 x
 
-  let (|Right|Left|) =
+  let internal (|Right|Left|) =
     function
     | Choice1Of2 x -> Right x
     | Choice2Of2 x -> Left x
