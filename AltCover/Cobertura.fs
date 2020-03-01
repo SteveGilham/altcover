@@ -287,51 +287,51 @@ module internal Cobertura =
       extract (report.Descendants("CoverageSession".X) |> Seq.head) packages.Parent
       addSources report packages.Parent "File" "fullPath"
 
-    let internal convertReport (report : XDocument) (format : Base.ReportFormat) =
-      let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
-      let doctype =
-        XDocumentType
-          ("coverage", null, "http://cobertura.sourceforge.net/xml/coverage-04.dtd", null)
-      rewrite.Add(doctype)
-      let element =
-        XElement
-          ("coverage".X, XAttribute("line-rate".X, 0), XAttribute("branch-rate".X, 0),
-           XAttribute("lines-covered".X, 0), XAttribute("lines-valid".X, 0),
-           XAttribute("branches-covered".X, 0), XAttribute("branches-valid".X, 0),
-           XAttribute("complexity".X, 1),
-           XAttribute("version".X, AssemblyVersionInformation.AssemblyVersion),
-           XAttribute
-             ("timestamp".X,
-              int
-                ((DateTime.UtcNow - DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds)))
-      rewrite.Add(element)
-      element.Add(XElement("sources".X))
-      let packages = XElement("packages".X)
-      element.Add(packages)
+  let internal convertReport (report : XDocument) (format : Base.ReportFormat) =
+    let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
+    let doctype =
+      XDocumentType
+        ("coverage", null, "http://cobertura.sourceforge.net/xml/coverage-04.dtd", null)
+    rewrite.Add(doctype)
+    let element =
+      XElement
+        ("coverage".X, XAttribute("line-rate".X, 0), XAttribute("branch-rate".X, 0),
+          XAttribute("lines-covered".X, 0), XAttribute("lines-valid".X, 0),
+          XAttribute("branches-covered".X, 0), XAttribute("branches-valid".X, 0),
+          XAttribute("complexity".X, 1),
+          XAttribute("version".X, AssemblyVersionInformation.AssemblyVersion),
+          XAttribute
+            ("timestamp".X,
+            int
+              ((DateTime.UtcNow - DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds)))
+    rewrite.Add(element)
+    element.Add(XElement("sources".X))
+    let packages = XElement("packages".X)
+    element.Add(packages)
 
-      match format with
-      | Base.ReportFormat.NCover -> nCover report packages
-      | _ -> openCover report packages
+    match format with
+    | Base.ReportFormat.NCover -> I.nCover report packages
+    | _ -> I.openCover report packages
 
-      // lines reprise
-      packages.Descendants("class".X)
-      |> Seq.iter (fun c ->
-           let reprise = XElement("lines".X)
-           c.Add reprise
-           let lines =
-             c.Descendants("line".X)
-             |> Seq.sortBy (fun l ->
-                  l.Attribute("number".X).Value
-                  |> Int32.TryParse
-                  |> snd)
-             |> Seq.toList
-           lines
-           |> List.iter (fun l ->
-                let copy = XElement(l)
-                reprise.Add copy))
-      rewrite
+    // lines reprise
+    packages.Descendants("class".X)
+    |> Seq.iter (fun c ->
+          let reprise = XElement("lines".X)
+          c.Add reprise
+          let lines =
+            c.Descendants("line".X)
+            |> Seq.sortBy (fun l ->
+                l.Attribute("number".X).Value
+                |> Int32.TryParse
+                |> snd)
+            |> Seq.toList
+          lines
+          |> List.iter (fun l ->
+              let copy = XElement(l)
+              reprise.Add copy))
+    rewrite
 
   let internal summary (report : XDocument) (format : Base.ReportFormat) result =
-    let rewrite = I.convertReport report format
+    let rewrite = convertReport report format
     rewrite.Save(!path |> Option.get)
     result

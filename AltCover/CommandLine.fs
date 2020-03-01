@@ -173,8 +173,8 @@ module internal CommandLine =
       result
 
     let logExceptionsToFile name extend =
-      let path = Path.Combine(CoverageParameters.theOutputDirectories() |> Seq.head, name)
-      let path' = Path.Combine(CoverageParameters.theInputDirectories() |> Seq.head, name)
+      let path = Path.Combine(CoverageParameters.outputDirectories() |> Seq.head, name)
+      let path' = Path.Combine(CoverageParameters.inputDirectories() |> Seq.head, name)
       exceptions |> List.iter (Output.logExceptionToFile path)
       if exceptions
          |> List.isEmpty

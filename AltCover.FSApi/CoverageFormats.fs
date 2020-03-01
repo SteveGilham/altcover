@@ -18,19 +18,19 @@ module CoverageFormats =
   let ConvertToLcov xmlDocument stream =
     let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
-    AltCover.LCov.I.convertReport xdoc format stream
+    AltCover.LCov.convertReport xdoc format stream
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   let ConvertToCobertura xmlDocument =
     let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
-    AltCover.Cobertura.I.ConvertReport xdoc format
+    AltCover.Cobertura.convertReport xdoc format
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
   let ConvertFromNCover (navigable : IXPathNavigable) (assemblies : string array) =
-    let reporter, rewrite = AltCover.OpenCover.ReportGenerator()
+    let reporter, rewrite = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
     let navigator = navigable.CreateNavigator()
     let identities = Dictionary<string, XPathNavigator>()
@@ -53,7 +53,7 @@ module CoverageFormats =
     // ensure default state -- this switches branch recording off
     AltCover.Main.init()
 
-    AltCover.Visitor.Visit visitors usefulAssemblies
+    AltCover.Visitor.visit visitors usefulAssemblies
 
     let parse s =
       Int32.TryParse
@@ -105,7 +105,7 @@ module CoverageFormats =
     dec.Standalone <- null
 
     let converted = XmlUtilities.ToXmlDocument rewrite
-    AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover converted
+    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover converted
     converted
 
   [<SuppressMessage("Microsoft.Design", "CA1059",

@@ -274,21 +274,21 @@ module internal CoverageParameters =
   let internal instrumentDirectories() = (inplaceSelection inputDirectories outputDirectories)()
   let internal sourceDirectories() = (inplaceSelection outputDirectories inputDirectories)()
 
-  let mutable internal reportPath : Option<string> = None
+  let mutable internal theReportPath : Option<string> = None
   let internal defaultReportPath = "coverage.xml"
-  let internal reportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath reportPath)
+  let internal reportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath theReportPath)
 
-  let mutable internal interval : Option<int> = None
+  let mutable internal theInterval : Option<int> = None
   let internal defaultInterval = 0
-  let internal interval() = (Option.getOrElse defaultInterval interval)
+  let internal interval() = (Option.getOrElse defaultInterval theInterval)
 
-  let mutable internal reportFormat : Option<ReportFormat> = None
+  let mutable internal theReportFormat : Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
   let internal defaultReportFormat() =
     if coverstyle = CoverStyle.All then ReportFormat.NCover else ReportFormat.OpenCover
 
-  let internal reportKind() = (Option.getOrElse (defaultReportFormat()) reportFormat)
+  let internal reportKind() = (Option.getOrElse (defaultReportFormat()) theReportFormat)
 
   let internal reportFormat() =
     let fmt = reportKind()

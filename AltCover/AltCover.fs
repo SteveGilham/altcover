@@ -39,11 +39,11 @@ module internal Main =
     CoverageParameters.add snk
     CoverageParameters.recorderStrongNameKey <- Some(snk)
 
-    CoverageParameters.reportPath <- None
+    CoverageParameters.theReportPath <- None
     CoverageParameters.nameFilters.Clear()
-    CoverageParameters.interval <- None
+    CoverageParameters.theInterval <- None
     CoverageParameters.trackingNames.Clear()
-    CoverageParameters.reportFormat <- None
+    CoverageParameters.theReportFormat <- None
     CoverageParameters.inplace := false // ddFlag
     CoverageParameters.collect := false // ddFlag
     CoverageParameters.local := false // ddFlag
@@ -159,7 +159,7 @@ module internal Main =
         ("x|xmlReport=",
          (fun x ->
            if CommandLine.validatePath "--xmlReport" x then
-             if Option.isSome CoverageParameters.reportPath then
+             if Option.isSome CoverageParameters.theReportPath then
                CommandLine.error <-
                  String.Format
                    (CultureInfo.CurrentCulture,
@@ -167,7 +167,7 @@ module internal Main =
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
-                 (fun () -> CoverageParameters.reportPath <- Some(Path.GetFullPath x)) () false))
+                 (fun () -> CoverageParameters.theReportPath <- Some(Path.GetFullPath x)) () false))
         ("f|fileFilter=", makeFilter FilterScope.File)
         ("p|pathFilter=", makeFilter FilterScope.Path)
         ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
@@ -184,21 +184,21 @@ module internal Main =
                  (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
                   "--single", "--callContext") :: CommandLine.error
            else
-             let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.interval) x
+             let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.theInterval) x
              if ok then
                match selection with
-               | Left n -> CoverageParameters.interval <- n
+               | Left n -> CoverageParameters.theInterval <- n
                | Right name -> CoverageParameters.trackingNames.Add(name)))
         ("opencover",
          (fun _ ->
-           if Option.isSome CoverageParameters.reportFormat then
+           if Option.isSome CoverageParameters.theReportFormat then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "MultiplesNotAllowed", "--opencover")
                :: CommandLine.error
            else
-             CoverageParameters.reportFormat <- Some ReportFormat.OpenCover))
+             CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
         ("single",
@@ -209,7 +209,7 @@ module internal Main =
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "MultiplesNotAllowed", "--single")
                :: CommandLine.error
-           else if Option.isSome CoverageParameters.interval || CoverageParameters.trackingNames.Any() then
+           else if Option.isSome CoverageParameters.theInterval || CoverageParameters.trackingNames.Any() then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
@@ -320,8 +320,8 @@ module internal Main =
       match action with
       | Right(rest, options) ->
           // Check that the directories are distinct
-          let fromDirectories = CoverageParameters.theInputDirectories()
-          let toDirectories = CoverageParameters.theOutputDirectories()
+          let fromDirectories = CoverageParameters.inputDirectories()
+          let toDirectories = CoverageParameters.outputDirectories()
           fromDirectories
           |> Seq.iter (fun fromDirectory ->
                if toDirectories.Contains fromDirectory then

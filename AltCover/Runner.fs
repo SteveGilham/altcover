@@ -499,13 +499,13 @@ module internal Runner =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
         Justification = "Unit test accessor")>]
-    let mutable internal reecorderName = "AltCover.Recorder.g.dll"
+    let mutable internal recorderName = "AltCover.Recorder.g.dll"
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
            "EnsureLocalDisposalRule",
            Justification="Tuple return confusing Gendarme -- TODO")>]
     let internal recorderInstance() =
-      let recorderPath = Path.Combine(Option.get recordingDirectory, reecorderName)
+      let recorderPath = Path.Combine(Option.get recordingDirectory, recorderName)
       let definition = AssemblyDefinition.ReadAssembly recorderPath
       (definition, definition.MainModule.GetType("AltCover.Recorder.Instance"))
 

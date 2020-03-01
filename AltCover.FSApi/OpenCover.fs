@@ -120,6 +120,6 @@ module OpenCoverUtilities =
     |> Seq.cast<XmlElement>
     |> Seq.iter (compressMethod withinSequencePoint sameSpan)
     // tidy up here
-    AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
+    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
     XmlUtilities.prependDeclaration xmlDocument
     xmlDocument

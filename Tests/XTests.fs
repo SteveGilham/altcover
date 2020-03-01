@@ -1,4 +1,5 @@
 namespace Tests
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
 open System.Collections.Generic
@@ -441,9 +442,9 @@ module AltCoverXTests =
     Directory.CreateDirectory unique' |> ignore
     let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.xml")
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
-    let outputSaved = CoverageParameters.outputDirectories |> Seq.toList
-    let inputSaved = CoverageParameters.inputDirectories |> Seq.toList
-    let reportSaved = CoverageParameters.reportPath
+    let outputSaved = CoverageParameters.theOutputDirectories |> Seq.toList
+    let inputSaved = CoverageParameters.theInputDirectories |> Seq.toList
+    let reportSaved = CoverageParameters.theReportPath
     let keySaved = CoverageParameters.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
     Main.init()
@@ -470,15 +471,15 @@ module AltCoverXTests =
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample4.dll")
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       test <@ (expected.Replace("\\", "/")) = stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/") @>
-      test <@ CoverageParameters.OutputDirectories() |> Seq.head = output @>
-      test <@ (CoverageParameters.InputDirectories() |> Seq.head).Replace("\\", "/") =
+      test <@ CoverageParameters.outputDirectories() |> Seq.head = output @>
+      test <@ (CoverageParameters.inputDirectories() |> Seq.head).Replace("\\", "/") =
                ((Path.GetFullPath input).Replace("\\", "/")) @>
-      test <@ CoverageParameters.ReportPath() = report  @>
+      test <@ CoverageParameters.reportPath() = report  @>
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      test <@ (CoverageParameters.keys.ContainsKey(KeyStore.KeyToIndex snk)) @>
+      test <@ (CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk)) @>
       test <@ CoverageParameters.keys.Count = 2 @>
 
       test <@ (File.Exists report) @>
@@ -539,18 +540,18 @@ module AltCoverXTests =
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
     finally
       Output.usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
-      CoverageParameters.TrackingNames.Clear()
-      CoverageParameters.reportFormat <- None
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.inputDirectories.Clear()
-      CoverageParameters.outputDirectories.AddRange outputSaved
-      CoverageParameters.inputDirectories.AddRange inputSaved
-      CoverageParameters.reportPath <- reportSaved
+      CoverageParameters.trackingNames.Clear()
+      CoverageParameters.theReportFormat <- None
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange outputSaved
+      CoverageParameters.theInputDirectories.AddRange inputSaved
+      CoverageParameters.theReportPath <- reportSaved
       CoverageParameters.defaultStrongNameKey <- keySaved
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       CoverageParameters.keys.Clear()
-      CoverageParameters.NameFilters.Clear()
+      CoverageParameters.nameFilters.Clear()
       Output.error <- snd save2
       Output.info <- fst save2
     let before = File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
@@ -604,9 +605,9 @@ module AltCoverXTests =
     Directory.CreateDirectory unique' |> ignore
     let report = Path.Combine(unique', "ADryRunLooksAsExpected.xml")
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
-    let outputSaved = CoverageParameters.outputDirectories |> Seq.toList
-    let inputSaved = CoverageParameters.inputDirectories |> Seq.toList
-    let reportSaved = CoverageParameters.reportPath
+    let outputSaved = CoverageParameters.theOutputDirectories |> Seq.toList
+    let inputSaved = CoverageParameters.theInputDirectories |> Seq.toList
+    let reportSaved = CoverageParameters.theReportPath
     let keySaved = CoverageParameters.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
     let save2 = (Output.info, Output.error)
@@ -632,15 +633,15 @@ module AltCoverXTests =
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       let console = stdout.ToString()
       test <@ console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/")) @>
-      test <@  CoverageParameters.OutputDirectories() |> Seq.head = output @>
-      test <@ (CoverageParameters.InputDirectories() |> Seq.head).Replace("\\", "/") =
+      test <@  CoverageParameters.outputDirectories() |> Seq.head = output @>
+      test <@ (CoverageParameters.inputDirectories() |> Seq.head).Replace("\\", "/") =
                ((Path.GetFullPath path).Replace("\\", "/")) @>
-      test <@ CoverageParameters.ReportPath() = report @>
+      test <@ CoverageParameters.reportPath() = report @>
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      test <@ CoverageParameters.keys.ContainsKey(KeyStore.KeyToIndex snk) @>
+      test <@ CoverageParameters.keys.ContainsKey(KeyStore.keyToIndex snk) @>
       test <@ CoverageParameters.keys.Count = 2 @>
 
       test <@ File.Exists report @>
@@ -687,14 +688,14 @@ module AltCoverXTests =
 
       test <@ actual = theFiles @>
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
-      let recordedXml = Runner.K.LoadReport report
+      let recordedXml = Runner.K.loadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.inputDirectories.Clear()
-      CoverageParameters.outputDirectories.AddRange outputSaved
-      CoverageParameters.inputDirectories.AddRange inputSaved
-      CoverageParameters.reportPath <- reportSaved
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theInputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange outputSaved
+      CoverageParameters.theInputDirectories.AddRange inputSaved
+      CoverageParameters.theReportPath <- reportSaved
       CoverageParameters.defaultStrongNameKey <- keySaved
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
@@ -717,11 +718,11 @@ module AltCoverXTests =
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
-    let saved = CoverageParameters.outputDirectories |> Seq.toList
+    let saved = CoverageParameters.theOutputDirectories |> Seq.toList
     try
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.outputDirectories.Add output
-      let visited = Node.AfterAssembly (def, CoverageParameters.OutputDirectories())
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+      let visited = Node.AfterAssembly (def, CoverageParameters.outputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.I.instrumentationVisitor input visited
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
@@ -741,7 +742,7 @@ module AltCoverXTests =
                  || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
            (created + " pdb not found")
     finally
-      CoverageParameters.outputDirectories.AddRange saved
+      CoverageParameters.theOutputDirectories.AddRange saved
 
   [<Test>]
   let AfterAssemblyCommitsThatAssemblyForMono() =
@@ -753,11 +754,11 @@ module AltCoverXTests =
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
-    let saved = CoverageParameters.outputDirectories |> Seq.toList
+    let saved = CoverageParameters.theOutputDirectories |> Seq.toList
     try
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.outputDirectories.AddRange [ output ]
-      let visited = Node.AfterAssembly (def, CoverageParameters.OutputDirectories())
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange [ output ]
+      let visited = Node.AfterAssembly (def, CoverageParameters.outputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.I.instrumentationVisitor input visited
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
@@ -767,8 +768,8 @@ module AltCoverXTests =
       if isDotNet then
         test' <@ File.Exists(created + ".mdb") @> (created + ".mdb not found")
     finally
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.outputDirectories.AddRange saved
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
 
   [<Test>]
   let FinishCommitsTheRecordingAssembly() =
@@ -785,10 +786,10 @@ module AltCoverXTests =
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
-    let saved = CoverageParameters.outputDirectories |> Seq.toList
+    let saved = CoverageParameters.theOutputDirectories |> Seq.toList
     try
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.outputDirectories.Add output
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
       let input = { InstrumentContext.Build [] with RecordingAssembly = def }
       let result = Instrument.I.instrumentationVisitor input Finish
       test <@ result.RecordingAssembly |> isNull @>
@@ -805,8 +806,8 @@ module AltCoverXTests =
         test' <@  isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
     finally
-      CoverageParameters.outputDirectories.Clear()
-      CoverageParameters.outputDirectories.AddRange saved
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
 
   [<Test>]
   let ShouldDoCoverage() =
@@ -829,14 +830,14 @@ module AltCoverXTests =
       do let from = Path.Combine(here, "AltCover.Recorder.dll")
          let updated = Instrument.I.prepareAssembly from
          Instrument.I.writeAssembly updated create
-    let save = Runner.J.RecorderName
-    let save1 = Runner.K.GetPayload
-    let save2 = Runner.K.GetMonitor
-    let save3 = Runner.K.DoReport
+    let save = Runner.J.recorderName
+    let save1 = Runner.K.getPayload
+    let save2 = Runner.K.getMonitor
+    let save3 = Runner.K.doReport
     let codedreport = "coverage.xml" |> Path.GetFullPath
     let alternate = "not-coverage.xml" |> Path.GetFullPath
     try
-      Runner.J.RecorderName <- "AltCover.Recorder.g.dll"
+      Runner.J.recorderName <- "AltCover.Recorder.g.dll"
       let payload (rest : string list) =
         test <@ rest = [ "test"; "1" ] @>
         255
@@ -854,34 +855,34 @@ module AltCoverXTests =
         test <@ hits |> Seq.isEmpty @>
         TimeSpan.Zero
 
-      Runner.K.GetPayload <- payload
-      Runner.K.GetMonitor <- monitor
-      Runner.K.DoReport <- write
+      Runner.K.getPayload <- payload
+      Runner.K.getMonitor <- monitor
+      Runner.K.doReport <- write
       let empty = OptionSet()
       let dummy = codedreport + ".xx.acv"
       do use temp = File.Create dummy
          test <@ dummy |> File.Exists @>
       let r =
-        Runner.DoCoverage
+        Runner.doCoverage
           [| "Runner"; "-x"; "test"; "-r"; where; "-o"; alternate; "--"; "1" |] empty
       test <@ dummy
               |> File.Exists
               |> not @>
       test <@ r = 127 @>
     finally
-      Runner.K.GetPayload <- save1
-      Runner.K.GetMonitor <- save2
-      Runner.K.DoReport <- save3
-      Runner.J.RecorderName <- save
+      Runner.K.getPayload <- save1
+      Runner.K.getMonitor <- save2
+      Runner.K.doReport <- save3
+      Runner.J.recorderName <- save
       Directory.SetCurrentDirectory start
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMono() =
-    let visitor, document = Report.ReportGenerator()
+    let visitor, document = Report.reportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let path = monoSample1path
-    Visitor.Visit [ visitor ] (Visitor.I.ToSeq (path,[]))
+    Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
     let baseline = XDocument.Load(new System.IO.StringReader(MonoBaseline))
     let result = document.Elements()
     let expected = baseline.Elements()
@@ -889,13 +890,13 @@ module AltCoverXTests =
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
-    let visitor, document = OpenCover.ReportGenerator()
+    let visitor, document = OpenCover.reportGenerator()
     let path = monoSample1path
 
     try
-      CoverageParameters.NameFilters.Clear()
-      CoverageParameters.reportFormat <- Some Base.ReportFormat.OpenCover
-      Visitor.Visit [ visitor ] (Visitor.I.ToSeq (path, []))
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
@@ -906,5 +907,5 @@ module AltCoverXTests =
       let expected = baseline.Elements()
       RecursiveValidateOpenCover result expected 0 true false
     finally
-      CoverageParameters.NameFilters.Clear()
-      CoverageParameters.reportFormat <- None
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None

@@ -1,5 +1,5 @@
 namespace Sample6
-
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 open System
 open System.IO
 open System.Net

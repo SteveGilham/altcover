@@ -1,4 +1,5 @@
 namespace Tests
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
 open System.IO
@@ -55,7 +56,7 @@ module AltCoverTests2 =
            [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)";
              "System.Void AltCover.Recorder.Instance.Push(System.Int32)";
              "System.Void AltCover.Recorder.Instance.Pop()" ]
-      |> List.iter (fun (n, m) -> test <@ Naming.FullMethodName m = n @>)
+      |> List.iter (fun (n, m) -> test <@ Naming.fullMethodName m = n @>)
 
     [<Test>]
     let ShouldBeAbleToClearTheStrongNameKey() =
@@ -127,7 +128,7 @@ module AltCoverTests2 =
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProvideKeyPair() |> CoverageParameters.Add
+        ProvideKeyPair() |> CoverageParameters.add
         Assert.That (Option.isSome(Instrument.I.knownKey def.Name))
       finally
         CoverageParameters.keys.Clear()
@@ -138,7 +139,7 @@ module AltCoverTests2 =
         CoverageParameters.keys.Clear()
         let path = typeof<System.IO.FileAccess>.Assembly.Location
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProvideKeyPair() |> CoverageParameters.Add
+        ProvideKeyPair() |> CoverageParameters.add
         Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
       finally
         CoverageParameters.keys.Clear()
@@ -150,7 +151,7 @@ module AltCoverTests2 =
         let path =
           typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        let key = KeyStore.ArrayToIndex def.Name.PublicKey
+        let key = KeyStore.arrayToIndex def.Name.PublicKey
         CoverageParameters.keys.Add(key,
                          { Pair = StrongNameKeyData.Empty()
                            Token = [] })
@@ -167,7 +168,7 @@ module AltCoverTests2 =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         AltCover.Instrument.I.updateStrongNaming def None
-        ProvideKeyPair() |> CoverageParameters.Add
+        ProvideKeyPair() |> CoverageParameters.add
         Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
       finally
         CoverageParameters.keys.Clear()
@@ -192,7 +193,7 @@ module AltCoverTests2 =
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProvideKeyPair() |> CoverageParameters.Add
+        ProvideKeyPair() |> CoverageParameters.add
         Assert.That (Option.isSome(Instrument.I.knownToken def.Name))
       finally
         CoverageParameters.keys.Clear()
@@ -206,7 +207,7 @@ module AltCoverTests2 =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         AltCover.Instrument.I.updateStrongNaming def None
-        ProvideKeyPair() |> CoverageParameters.Add
+        ProvideKeyPair() |> CoverageParameters.add
         Assert.That(Option.isNone (Instrument.I.knownToken def.Name))
       finally
         CoverageParameters.keys.Clear()
@@ -215,10 +216,10 @@ module AltCoverTests2 =
     let ForeignTokenIsNotMatchedInIndex() =
       try
         CoverageParameters.keys.Clear()
-        ProvideKeyPair() |> CoverageParameters.Add
+        ProvideKeyPair() |> CoverageParameters.add
         let path = typeof<System.IO.FileAccess>.Assembly.Location
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        let key = KeyStore.ArrayToIndex def.Name.PublicKey
+        let key = KeyStore.arrayToIndex def.Name.PublicKey
         Assert.That(Option.isNone (Instrument.I.knownToken def.Name))
       finally
         CoverageParameters.keys.Clear()
@@ -230,7 +231,7 @@ module AltCoverTests2 =
         let path =
           typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        let key = KeyStore.ArrayToIndex def.Name.PublicKey
+        let key = KeyStore.arrayToIndex def.Name.PublicKey
         CoverageParameters.keys.Add(key,
                          { Pair = StrongNameKeyData.Empty()
                            Token = [] })
@@ -328,7 +329,7 @@ module AltCoverTests2 =
            test' <@ String.IsNullOrWhiteSpace a @> j)
 #endif
       let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
-      Instrument.ResolutionTable.Clear()
+      Instrument.resolutionTable.Clear()
       try
         raw.MainModule.AssemblyReferences
         |> Seq.filter
@@ -343,13 +344,13 @@ module AltCoverTests2 =
              f.Version <- System.Version("666.666.666.666")
              let resolved = Instrument.I.hookResolveHandler.Invoke(null, f)
              test' <@ resolved |> isNull @> <| f.ToString())
-        let found = Instrument.ResolutionTable.Keys |> Seq.toList
+        let found = Instrument.resolutionTable.Keys |> Seq.toList
         found
         |> Seq.iter (fun k ->
-             let matched = Instrument.ResolutionTable.[k]
+             let matched = Instrument.resolutionTable.[k]
              let k2 = AssemblyNameReference.Parse(k.ToString())
              k2.Version <- System.Version("666.666.666.666")
-             Instrument.ResolutionTable.[k2.ToString()] <- matched)
+             Instrument.resolutionTable.[k2.ToString()] <- matched)
         raw.MainModule.AssemblyReferences
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
@@ -358,7 +359,7 @@ module AltCoverTests2 =
              let resolved = Instrument.I.hookResolveHandler.Invoke(null, f)
              test' <@ resolved .IsNotNull @> <| f.ToString())
       finally
-        Instrument.ResolutionTable.Clear()
+        Instrument.resolutionTable.Clear()
 
     [<Test>]
     let ShouldBeAbleToPrepareTheAssembly() =
@@ -402,35 +403,35 @@ module AltCoverTests2 =
 
     [<Test>]
     let ShouldGetTrackingStyleIfSet() =
-      let save2 = CoverageParameters.reportFormat
-      let save3 = CoverageParameters.interval
-      CoverageParameters.TrackingNames.Clear()
+      let save2 = CoverageParameters.theReportFormat
+      let save3 = CoverageParameters.theInterval
+      CoverageParameters.trackingNames.Clear()
       try
-        CoverageParameters.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
-        CoverageParameters.interval <- Some 1234567890
+        CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.OpenCover
+        CoverageParameters.theInterval <- Some 1234567890
         Assert.That
-          (CoverageParameters.ReportFormat(),
+          (CoverageParameters.reportFormat(),
            Is.EqualTo AltCover.Base.ReportFormat.OpenCoverWithTracking)
-        CoverageParameters.interval <- None
-        CoverageParameters.TrackingNames.Add("dummy")
+        CoverageParameters.theInterval <- None
+        CoverageParameters.trackingNames.Add("dummy")
         Assert.That
-          (CoverageParameters.ReportFormat(),
+          (CoverageParameters.reportFormat(),
            Is.EqualTo AltCover.Base.ReportFormat.OpenCoverWithTracking)
-        CoverageParameters.TrackingNames.Clear()
+        CoverageParameters.trackingNames.Clear()
         Assert.That
-          (CoverageParameters.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
-        CoverageParameters.reportFormat <- Some AltCover.Base.ReportFormat.NCover
-        CoverageParameters.interval <- Some 1234567890
-        Assert.That(CoverageParameters.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
-        CoverageParameters.interval <- None
-        CoverageParameters.TrackingNames.Add("dummy")
-        Assert.That(CoverageParameters.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
-        CoverageParameters.TrackingNames.Clear()
-        Assert.That(CoverageParameters.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+          (CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.NCover
+        CoverageParameters.theInterval <- Some 1234567890
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        CoverageParameters.theInterval <- None
+        CoverageParameters.trackingNames.Add("dummy")
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        CoverageParameters.trackingNames.Clear()
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
       finally
-        CoverageParameters.reportFormat <- save2
-        CoverageParameters.interval <- save3
-      CoverageParameters.TrackingNames.Clear()
+        CoverageParameters.theReportFormat <- save2
+        CoverageParameters.theInterval <- save3
+      CoverageParameters.trackingNames.Clear()
 
     [<Test>]
     let ShouldSymbolWriterOnWindowsOnly () =
@@ -473,13 +474,13 @@ module AltCoverTests2 =
         let second = Path.Combine(where, Guid.NewGuid().ToString())
         let alter = Path.Combine (second, what)
         Directory.CreateDirectory(second) |> ignore
-        let save = CoverageParameters.reportPath
-        let save2 = CoverageParameters.reportFormat
-        let save3 = CoverageParameters.interval
+        let save = CoverageParameters.theReportPath
+        let save2 = CoverageParameters.theReportFormat
+        let save3 = CoverageParameters.theInterval
         try
-          CoverageParameters.reportPath <- Some unique
-          CoverageParameters.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
-          CoverageParameters.interval <- Some 1234567890
+          CoverageParameters.theReportPath <- Some unique
+          CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.OpenCover
+          CoverageParameters.theInterval <- Some 1234567890
           CoverageParameters.single <- true
           Assert.That(CoverageParameters.Sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.I.prepareAssembly path
@@ -536,9 +537,9 @@ module AltCoverTests2 =
 #endif
         finally
           CoverageParameters.single <- false
-          CoverageParameters.reportPath <- save
-          CoverageParameters.reportFormat <- save2
-          CoverageParameters.interval <- save3
+          CoverageParameters.theReportPath <- save
+          CoverageParameters.theReportFormat <- save2
+          CoverageParameters.theInterval <- save3
           Directory.EnumerateFiles(Path.GetDirectoryName output,
                                    (Path.GetFileNameWithoutExtension output) + ".*")
           |> Seq.iter (fun f -> try File.Delete f
@@ -566,15 +567,15 @@ module AltCoverTests2 =
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
-        let save = CoverageParameters.reportPath
+        let save = CoverageParameters.theReportPath
         use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
         use buffer = new MemoryStream()
         stream.CopyTo(buffer)
         let key = StrongNameKeyData.Make(buffer.ToArray())
         CoverageParameters.defaultStrongNameKey <- Some key
-        CoverageParameters.Add key
+        CoverageParameters.add key
         try
-          CoverageParameters.reportPath <- Some unique
+          CoverageParameters.theReportPath <- Some unique
           let prepared = Instrument.I.prepareAssembly path
           Instrument.I.writeAssembly prepared outputdll
 // TODO -- see Instrument.I.WriteAssembly       Assert.That (File.Exists (outputdll + ".mdb"))
@@ -607,7 +608,7 @@ module AltCoverTests2 =
             AppDomain.Unload(ad)
 #endif
         finally
-          CoverageParameters.reportPath <- save
+          CoverageParameters.theReportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
                                    (Path.GetFileNameWithoutExtension output) + ".*")
           |> Seq.iter (fun f -> try File.Delete f
@@ -626,7 +627,7 @@ module AltCoverTests2 =
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
-        let save = CoverageParameters.reportPath
+        let save = CoverageParameters.theReportPath
         try
           let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
           ProgramDatabase.readSymbols def
@@ -694,7 +695,7 @@ module AltCoverTests2 =
               AppDomain.Unload(ad)
 #endif
         finally
-          CoverageParameters.reportPath <- save
+          CoverageParameters.theReportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
                                    (Path.GetFileNameWithoutExtension output) + ".*")
           |> Seq.iter (fun f -> try File.Delete f
@@ -1032,11 +1033,11 @@ module AltCoverTests2 =
       Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
 
       let m = Node.Method (target, Inspections.Instrument, None, Exemption.None)
-      let steps = Visitor.I.BuildSequence m
+      let steps = Visitor.I.sequenceBuilder m
 
       Assert.That(steps, Is.Not.Empty)
 
-      let visitors = [ Visitor.EncloseState Instrument.I.instrumentationVisitor state ]
+      let visitors = [ Visitor.encloseState Instrument.I.instrumentationVisitor state ]
 
       steps
       |> Seq.fold Visitor.I.apply (visitors |> Seq.toList)
@@ -1097,11 +1098,11 @@ module AltCoverTests2 =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.find (fun m -> m.Name = "as_bar")
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.I.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1142,8 +1143,8 @@ module AltCoverTests2 =
         Assert.That
           ((inject.[6].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 0)
       finally
-        CoverageParameters.NameFilters.Clear()
-        CoverageParameters.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases() =
@@ -1156,11 +1157,11 @@ module AltCoverTests2 =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.find (fun m -> m.Name = "Bar")
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.I.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1200,8 +1201,8 @@ module AltCoverTests2 =
         Assert.That
           ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo branches.[1].Uid)
       finally
-        CoverageParameters.NameFilters.Clear()
-        CoverageParameters.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
         CoverageParameters.coalesceBranches := false
 
     [<Test>]
@@ -1214,11 +1215,11 @@ module AltCoverTests2 =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.find (fun m -> m.Name = "Main")
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.I.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1253,8 +1254,8 @@ module AltCoverTests2 =
         Assert.That
           ((inject.[6].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 0)
       finally
-        CoverageParameters.NameFilters.Clear()
-        CoverageParameters.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 #if COVERLET
 #else
     [<Test>]
@@ -1403,7 +1404,7 @@ module AltCoverTests2 =
       stream2.CopyTo(buffer2)
 
       try
-        CoverageParameters.Add <| StrongNameKeyData.Make(buffer2.ToArray())
+        CoverageParameters.add <| StrongNameKeyData.Make(buffer2.ToArray())
         let result = Instrument.I.updateStrongReferences def ["Sample2"]
         let token1 = def.Name.PublicKeyToken
         Assert.That (token1, Is.Not.Null)
@@ -1505,7 +1506,7 @@ module AltCoverTests2 =
         ProgramDatabase.readSymbols def |> ignore
         let npath = typeof<TestAttribute>.Assembly.Location
         let ndef = Mono.Cecil.AssemblyDefinition.ReadAssembly npath
-        let key = KeyStore.ArrayToIndex ndef.Name.PublicKey
+        let key = KeyStore.arrayToIndex ndef.Name.PublicKey
         use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
 
         use buffer = new MemoryStream()
@@ -1970,10 +1971,10 @@ module AltCoverTests2 =
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
-        CoverageParameters.outputDirectories.Clear()
-        CoverageParameters.inputDirectories.Clear()
-        CoverageParameters.outputDirectories.Add toInfo.FullName
-        CoverageParameters.inputDirectories.Add here
+        CoverageParameters.theOutputDirectories.Clear()
+        CoverageParameters.theInputDirectories.Clear()
+        CoverageParameters.theOutputDirectories.Add toInfo.FullName
+        CoverageParameters.theInputDirectories.Add here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
         let name = "ArgumentExceptionWrites"
@@ -2016,7 +2017,7 @@ module AltCoverTests2 =
         CommandLine.exceptions <- []
         Output.info <- (fst saved)
         Output.error <- (snd saved)
-        CoverageParameters.outputDirectories.Clear()
+        CoverageParameters.theOutputDirectories.Clear()
 
     [<Test>]
     let ArgumentExceptionWritesEx() =
@@ -2039,10 +2040,10 @@ module AltCoverTests2 =
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
-        CoverageParameters.outputDirectories.Clear()
-        CoverageParameters.inputDirectories.Clear()
-        CoverageParameters.outputDirectories.Add toInfo.FullName
-        CoverageParameters.inputDirectories.Add here
+        CoverageParameters.theOutputDirectories.Clear()
+        CoverageParameters.theInputDirectories.Clear()
+        CoverageParameters.theOutputDirectories.Add toInfo.FullName
+        CoverageParameters.theInputDirectories.Add here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
         let name = "ArgumentExceptionWrites"
@@ -2087,7 +2088,7 @@ module AltCoverTests2 =
         CommandLine.exceptions <- []
         Output.info <- (fst saved)
         Output.error <- (snd saved)
-        CoverageParameters.outputDirectories.Clear()
+        CoverageParameters.theOutputDirectories.Clear()
 
     [<Test>]
     let IOExceptionWrites() =
@@ -2102,7 +2103,7 @@ module AltCoverTests2 =
         CommandLine.exceptions <- []
         CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) () false
         Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-        CommandLine.ReportErrors "Instrumentation" false
+        CommandLine.reportErrors "Instrumentation" false
         Assert.That(info.ToString(), Is.Empty)
         let logged = err.ToString().Replace("\r", String.Empty).Replace("\n", "|")
         Assert.That
