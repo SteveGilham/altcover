@@ -10,9 +10,6 @@ open AltCover.Augment
 module internal LCov =
   let internal path : Option<string> ref = ref None
   let internal sortByFirst s = s |> Seq.sortBy fst
-  let internal doWith (create : unit -> 'a) (action : 'a -> unit) =
-    use stream = create()
-    action stream
 
   module internal I =
 
@@ -37,7 +34,7 @@ module internal LCov =
       multiSort lineOfMethod l
 
     let internal convertReport (report : XDocument) (format : Base.ReportFormat) (stream : Stream) =
-      doWith (fun () -> new StreamWriter(stream)) (fun writer ->
+      doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
         //If available, a tracefile begins with the testname which
         //   is stored in the following format:
         //
@@ -276,6 +273,6 @@ module internal LCov =
                  writer.WriteLine "end_of_record"))
 
   let internal summary (report : XDocument) (format : Base.ReportFormat) result =
-    doWith (fun () -> File.OpenWrite(!path |> Option.get))
+    doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
       (I.convertReport report format)
     result

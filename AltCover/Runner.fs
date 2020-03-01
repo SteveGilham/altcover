@@ -462,7 +462,7 @@ module internal Runner =
           fail
 
   let internal SetRecordToFile report =
-    LCov.doWith (fun () ->
+    doWithStream (fun () ->
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 

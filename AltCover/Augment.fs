@@ -65,4 +65,8 @@ module internal Augment =
    member self.Split
      with get () =
       (self.Head, self.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
+
+  let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
+    use stream = create()
+    action stream
 #endif
