@@ -578,7 +578,7 @@ module internal Main =
         |> (Output.info)
         0
     | Select "version" _ ->
-        Runner.WriteResourceWithFormatItems "AltCover.Version"
+        CommandLine.WriteResourceWithFormatItems "AltCover.Version"
           [| AssemblyVersionInformation.AssemblyFileVersion |] false
         0
     | _ -> doInstrumentation arguments

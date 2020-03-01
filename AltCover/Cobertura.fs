@@ -10,50 +10,50 @@ open System.Globalization
 
 module internal Cobertura =
   let internal path : Option<string> ref = ref None
-  let X = OpenCover.X
 
   module internal I =
 
-    let internal SetRate hits total rate (target : XElement) =
+    let internal SetRate hits total (rate : string) (target : XElement) =
       if total > 0 then
         let ratio = (float hits) / (float total)
-        target.SetAttributeValue(X rate, String.Format("{0:0.##}", ratio))
+        target.SetAttributeValue(rate.X, String.Format("{0:0.##}", ratio))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal AddSources (report : XDocument) (target : XElement) tag attribute =
-      report.Descendants(X tag)
-      |> Seq.map (fun s -> s.Attribute(X attribute).Value |> Path.GetDirectoryName)
+    let internal AddSources (report : XDocument) (target : XElement) (tag : string)
+                            (attribute : string) =
+      report.Descendants(tag.X)
+      |> Seq.map (fun s -> s.Attribute(attribute.X).Value |> Path.GetDirectoryName)
       |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
       |> Seq.sort
       |> Seq.iter (fun f ->
-           target.Descendants(X "sources")
-           |> Seq.iter (fun s -> s.Add(XElement(X "source", XText(f)))))
+           target.Descendants("sources".X)
+           |> Seq.iter (fun s -> s.Add(XElement("source".X, XText(f)))))
 
     let internal nCover (report : XDocument) (packages : XElement) =
       let processSeqPnts (method : XElement) (lines : XElement) =
-        method.Descendants(X "seqpnt")
-        |> Seq.filter (fun s -> s.Attribute(X "excluded").Value <> "true")
+        method.Descendants("seqpnt".X)
+        |> Seq.filter (fun s -> s.Attribute("excluded".X).Value <> "true")
         |> Seq.fold (fun (h, t) s ->
-             let vc = s.Attribute(X "visitcount")
+             let vc = s.Attribute("visitcount".X)
 
              let vx =
                if isNull vc then "0" else vc.Value
 
              let line =
                XElement
-                 (X "line", XAttribute(X "number", s.Attribute(X "line").Value),
-                  XAttribute(X "hits", vx), XAttribute(X "branch", "false"))
+                 ("line".X, XAttribute("number".X, s.Attribute("line".X).Value),
+                  XAttribute("hits".X, vx), XAttribute("branch".X, "false"))
              lines.Add line
              (h + (if vx = "0" then 0 else 1), t + 1)) (0, 0)
 
       let processMethod (methods : XElement) (hits, total) (key, (signature, method)) =
         let mtx =
           XElement
-            (X "method", XAttribute(X "name", key), XAttribute(X "signature", signature))
+            ("method".X, XAttribute("name".X, key), XAttribute("signature".X, signature))
         methods.Add(mtx)
-        let lines = XElement(X "lines")
+        let lines = XElement("lines".X)
         mtx.Add(lines)
         let (mHits, mTotal) = processSeqPnts method lines
         SetRate mHits mTotal "line-rate" mtx
@@ -65,9 +65,9 @@ module internal Cobertura =
         method
         |> Seq.map (fun m ->
              let key, signature =
-               let fna = m.Attribute(X "fullname")
+               let fna = m.Attribute("fullname".X)
                if fna |> isNull then
-                 (m.Attribute(X "class").Value + "." + m.Attribute(X "name").Value,
+                 (m.Attribute("class".X).Value + "." + m.Attribute("name".X).Value,
                   String.Empty)
                else
                  let fn = fna.Value.Split([| ' '; '(' |]) |> Array.toList
@@ -79,9 +79,9 @@ module internal Cobertura =
       let processClass (classes : XElement) (hits, total) ((name, signature), method) =
         let ``class`` =
           XElement
-            (X "class", XAttribute(X "name", name), XAttribute(X "filename", signature))
+            ("class".X, XAttribute("name".X, name), XAttribute("filename".X, signature))
         classes.Add(``class``)
-        let methods = XElement(X "methods")
+        let methods = XElement("methods".X)
         ``class``.Add(methods)
         let (mHits, mTotal) = sortMethod name methods method
         SetRate mHits mTotal "line-rate" ``class``
@@ -90,21 +90,21 @@ module internal Cobertura =
         (hits + mHits, total + mTotal)
 
       let extractClasses (``module`` : XElement) classes =
-        ``module``.Descendants(X "method")
-        |> Seq.filter (fun m -> m.Attribute(X "excluded").Value <> "true")
+        ``module``.Descendants("method".X)
+        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value <> "true")
         |> Seq.groupBy (fun method ->
-             (method.Attribute(X "class").Value,
-              method.Descendants(X "seqpnt")
-              |> Seq.map (fun s -> s.Attribute(X "document").Value)
+             (method.Attribute("class".X).Value,
+              method.Descendants("seqpnt".X)
+              |> Seq.map (fun s -> s.Attribute("document".X).Value)
               |> Seq.head))
         |> LCov.sortByFirst
         |> Seq.fold (processClass classes) (0, 0)
 
       let processModule (hits, total) (``module`` : XElement) =
         let package =
-          XElement(X "package", XAttribute(X "name", ``module``.Attribute(X "name").Value))
+          XElement("package".X, XAttribute("name".X, ``module``.Attribute("name".X).Value))
         packages.Add(package)
-        let classes = XElement(X "classes")
+        let classes = XElement("classes".X)
         package.Add(classes)
         let (cHits, cTotal) = extractClasses ``module`` classes
         SetRate cHits cTotal "line-rate" package
@@ -112,21 +112,21 @@ module internal Cobertura =
         SetRate 1 1 "complexity" package
         (hits + cHits, total + cTotal)
 
-      let (hits, total) = report.Descendants(X "module") |> Seq.fold processModule (0, 0)
+      let (hits, total) = report.Descendants("module".X) |> Seq.fold processModule (0, 0)
       let p = packages.Parent
       SetRate hits total "line-rate" p
       SetRate 1 1 "branch-rate" p
-      p.Attribute(X "lines-valid").Value <- total.ToString(CultureInfo.InvariantCulture)
-      p.Attribute(X "lines-covered").Value <- hits.ToString(CultureInfo.InvariantCulture)
+      p.Attribute("lines-valid".X).Value <- total.ToString(CultureInfo.InvariantCulture)
+      p.Attribute("lines-covered".X).Value <- hits.ToString(CultureInfo.InvariantCulture)
 
       AddSources report packages.Parent "seqpnt" "document"
 
     let internal openCover (report : XDocument) (packages : XElement) =
       let extract (owner : XElement) (target : XElement) =
-        let summary = owner.Descendants(X "Summary") |> Seq.head
+        let summary = owner.Descendants("Summary".X) |> Seq.head
 
-        let valueOf name =
-          summary.Attribute(X name).Value
+        let valueOf (name : string) =
+          summary.Attribute(name.X).Value
           |> Int32.TryParse
           |> snd
 
@@ -138,70 +138,70 @@ module internal Cobertura =
         SetRate sv s "line-rate" target
         SetRate bv b "branch-rate" target
         if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
-          let copyup name (value : int) =
-            target.Attribute(X name).Value <- value.ToString(CultureInfo.InvariantCulture)
+          let copyup (name : string) (value : int) =
+            target.Attribute(name.X).Value <- value.ToString(CultureInfo.InvariantCulture)
 
           copyup "lines-valid" s
           copyup "lines-covered" sv
           copyup "branches-valid" b
           copyup "branches-covered" bv
-          target.Attribute(X "complexity").Value <- (summary.Attribute
-                                                       (X "maxCyclomaticComplexity")).Value
+          target.Attribute("complexity".X).Value <- (summary.Attribute
+                                                       ("maxCyclomaticComplexity".X)).Value
 
       let doBranch bec bev uspid (line : XElement) =
         let pc = Math.Round(100.0 * (float bev) / (float bec)) |> int
         line.SetAttributeValue
-          (X "condition-coverage", sprintf "%d%% (%d/%d)" pc bev bec)
-        let cc = XElement(X "conditions")
+          ("condition-coverage".X, sprintf "%d%% (%d/%d)" pc bev bec)
+        let cc = XElement("conditions".X)
         line.Add cc
         let co =
           XElement
-            (X "condition", XAttribute(X "number", uspid), XAttribute(X "type", "jump"),
-             XAttribute(X "coverage", sprintf "%d%%" pc))
+            ("condition".X, XAttribute("number".X, uspid), XAttribute("type".X, "jump"),
+             XAttribute("coverage".X, sprintf "%d%%" pc))
         cc.Add co
 
       let copySeqPnt (lines : XElement) (s : XElement) =
-        let vc = s.Attribute(X "vc")
+        let vc = s.Attribute("vc".X)
 
         let vx =
           (vc
            |> Option.nullable
-           |> Option.getOrElse (XAttribute(X "dummy", "0"))).Value
+           |> Option.getOrElse (XAttribute("dummy".X, "0"))).Value
 
         let bec =
-          s.Attribute(X "bec").Value
+          s.Attribute("bec".X).Value
           |> Int32.TryParse
           |> snd
 
         let bev =
-          s.Attribute(X "bev").Value
+          s.Attribute("bev".X).Value
           |> Int32.TryParse
           |> snd
 
         let line =
           XElement
-            (X "line", XAttribute(X "number", s.Attribute(X "sl").Value),
-             XAttribute(X "hits", vx),
+            ("line".X, XAttribute("number".X, s.Attribute("sl".X).Value),
+             XAttribute("hits".X, vx),
              XAttribute
-               (X "branch",
+               ("branch".X,
                 (if bec = 0 then "false" else "true")))
 
         if bec > 0 then
-          let uspid = s.Attribute(X "uspid").Value // KISS approach
+          let uspid = s.Attribute("uspid".X).Value // KISS approach
           doBranch bec bev uspid line
         lines.Add line
 
       let addMethod (methods : XElement) (key, signature) =
         let mtx =
           XElement
-            (X "method", XAttribute(X "name", key), XAttribute(X "signature", signature))
+            ("method".X, XAttribute("name".X, key), XAttribute("signature".X, signature))
         methods.Add(mtx)
-        let lines = XElement(X "lines")
+        let lines = XElement("lines".X)
         mtx.Add(lines)
         (mtx, lines)
 
-      let provideAttributeValue (element : XElement) name v =
-        v + (element.Attribute(X name).Value
+      let provideAttributeValue (element : XElement) (name : string) v =
+        v + (element.Attribute(name.X).Value
              |> Int32.TryParse
              |> snd)
 
@@ -210,9 +210,9 @@ module internal Cobertura =
         let ccplex = 0 |> provideAttributeValue method "cyclomaticComplexity"
         let mtx, lines = addMethod (methods : XElement) (key, signature)
         extract method mtx
-        mtx.Add(XAttribute(X "complexity", ccplex))
-        method.Descendants(X "SequencePoint") |> Seq.iter (copySeqPnt lines)
-        let summary = method.Descendants(X "Summary") |> Seq.head
+        mtx.Add(XAttribute("complexity".X, ccplex))
+        method.Descendants("SequencePoint".X) |> Seq.iter (copySeqPnt lines)
+        let summary = method.Descendants("Summary".X) |> Seq.head
         (b |> provideAttributeValue summary "numBranchPoints",
          bv |> provideAttributeValue summary "visitedBranchPoints",
          s |> provideAttributeValue summary "numSequencePoints",
@@ -222,23 +222,23 @@ module internal Cobertura =
         methodSet
         |> Seq.map (fun method ->
              let fn =
-               (method.Descendants(X "Name") |> Seq.head).Value.Split([| ' '; '(' |])
+               (method.Descendants("Name".X) |> Seq.head).Value.Split([| ' '; '(' |])
                |> Array.toList
              let key = fn.[1].Substring(name.Length + 2)
              let signature = fn.[0] + " " + fn.[2]
              (key, (signature, method)))
         |> LCov.sortByFirst
         |> Seq.filter (fun (_, (_, mt)) ->
-             mt.Descendants(X "SequencePoint")
+             mt.Descendants("SequencePoint".X)
              |> Seq.isEmpty
              |> not)
         |> Seq.fold (processMethod methods) (0, 0, 0, 0, 0, 0)
 
       let processClass (classes : XElement) (cvcum, ccum) ((name, source), methodSet) =
         let ``class`` =
-          XElement(X "class", XAttribute(X "name", name), XAttribute(X "filename", source))
+          XElement("class".X, XAttribute("name".X, name), XAttribute("filename".X, source))
         classes.Add(``class``)
-        let methods = XElement(X "methods")
+        let methods = XElement("methods".X)
         ``class``.Add(methods)
         let (b, bv, s, sv, c, cv) = arrangeMethods name methods methodSet
         SetRate sv s "line-rate" ``class``
@@ -247,44 +247,44 @@ module internal Cobertura =
         (cv + cvcum, c + ccum)
 
       let processModule files classes (``module`` : XElement) =
-        ``module``.Descendants(X "Method")
+        ``module``.Descendants("Method".X)
         |> Seq.filter (fun m ->
-             m.Descendants(X "FileRef")
+             m.Descendants("FileRef".X)
              |> Seq.isEmpty
              |> not)
         |> Seq.groupBy (fun method ->
-             ((method.Parent.Parent.Descendants(X "FullName") |> Seq.head).Value,
-              method.Descendants(X "FileRef")
-              |> Seq.map (fun s -> files |> Map.find (s.Attribute(X "uid").Value))
+             ((method.Parent.Parent.Descendants("FullName".X) |> Seq.head).Value,
+              method.Descendants("FileRef".X)
+              |> Seq.map (fun s -> files |> Map.find (s.Attribute("uid".X).Value))
               |> Seq.head))
         |> LCov.sortByFirst
         |> Seq.fold (processClass classes) (0, 0)
 
       let lookUpFiles (``module`` : XElement) =
-        ``module``.Descendants(X "File")
+        ``module``.Descendants("File".X)
         |> Seq.fold (fun m x ->
-             m |> Map.add (x.Attribute(X "uid").Value) (x.Attribute(X "fullPath").Value))
+             m |> Map.add (x.Attribute("uid".X).Value) (x.Attribute("fullPath".X).Value))
              Map.empty
-      report.Descendants(X "Module")
+      report.Descendants("Module".X)
       |> Seq.filter (fun m ->
-           m.Descendants(X "Class")
+           m.Descendants("Class".X)
            |> Seq.isEmpty
            |> not)
       |> Seq.iter (fun ``module`` ->
            let mname =
-             ``module``.Descendants(X "ModuleName")
+             ``module``.Descendants("ModuleName".X)
              |> Seq.map (fun x -> x.Value)
              |> Seq.head
 
-           let package = XElement(X "package", XAttribute(X "name", mname))
+           let package = XElement("package".X, XAttribute("name".X, mname))
            let files = lookUpFiles ``module``
            packages.Add(package)
-           let classes = XElement(X "classes")
+           let classes = XElement("classes".X)
            package.Add(classes)
            extract ``module`` package
            let (cv, c) = processModule files classes ``module``
            SetRate cv c "complexity" package)
-      extract (report.Descendants(X "CoverageSession") |> Seq.head) packages.Parent
+      extract (report.Descendants("CoverageSession".X) |> Seq.head) packages.Parent
       AddSources report packages.Parent "File" "fullPath"
 
     let internal ConvertReport (report : XDocument) (format : Base.ReportFormat) =
@@ -295,18 +295,18 @@ module internal Cobertura =
       rewrite.Add(doctype)
       let element =
         XElement
-          (X "coverage", XAttribute(X "line-rate", 0), XAttribute(X "branch-rate", 0),
-           XAttribute(X "lines-covered", 0), XAttribute(X "lines-valid", 0),
-           XAttribute(X "branches-covered", 0), XAttribute(X "branches-valid", 0),
-           XAttribute(X "complexity", 1),
-           XAttribute(X "version", AssemblyVersionInformation.AssemblyVersion),
+          ("coverage".X, XAttribute("line-rate".X, 0), XAttribute("branch-rate".X, 0),
+           XAttribute("lines-covered".X, 0), XAttribute("lines-valid".X, 0),
+           XAttribute("branches-covered".X, 0), XAttribute("branches-valid".X, 0),
+           XAttribute("complexity".X, 1),
+           XAttribute("version".X, AssemblyVersionInformation.AssemblyVersion),
            XAttribute
-             (X "timestamp",
+             ("timestamp".X,
               int
                 ((DateTime.UtcNow - DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds)))
       rewrite.Add(element)
-      element.Add(XElement(X "sources"))
-      let packages = XElement(X "packages")
+      element.Add(XElement("sources".X))
+      let packages = XElement("packages".X)
       element.Add(packages)
 
       match format with
@@ -314,14 +314,14 @@ module internal Cobertura =
       | _ -> openCover report packages
 
       // lines reprise
-      packages.Descendants(X "class")
+      packages.Descendants("class".X)
       |> Seq.iter (fun c ->
-           let reprise = XElement(X "lines")
+           let reprise = XElement("lines".X)
            c.Add reprise
            let lines =
-             c.Descendants(X "line")
+             c.Descendants("line".X)
              |> Seq.sortBy (fun l ->
-                  l.Attribute(X "number").Value
+                  l.Attribute("number".X).Value
                   |> Int32.TryParse
                   |> snd)
              |> Seq.toList

@@ -17,6 +17,11 @@ module internal Augment =
 
 #if GUI
 #else
+  type System.String with
+    member self.X
+      with get() =
+        System.Xml.Linq.XName.Get self
+
   type Microsoft.FSharp.Core.Option<'T> with
     // fsharplint:disable-next-line MemberNames
     static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback

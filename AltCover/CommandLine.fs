@@ -383,3 +383,11 @@ module internal CommandLine =
         w.WriteLine(resources.GetString "orbinder")
         w.WriteLine(resources.GetString "version")
         )
+
+  let internal WriteResource = resources.GetString >> Output.info
+  let internal WriteResourceWithFormatItems s x warn =
+    String.Format(CultureInfo.CurrentCulture, s |> resources.GetString, x)
+    |> (Output.warnOn warn)
+  let internal WriteErrorResourceWithFormatItems s x =
+    String.Format(CultureInfo.CurrentCulture, s |> resources.GetString, x)
+    |> Output.error

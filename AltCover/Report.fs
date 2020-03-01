@@ -4,6 +4,8 @@ open System
 open System.Xml.Linq
 open Mono.Cecil
 
+open Augment
+
 module internal Report =
 
   let internal ReportGenerator() =
@@ -12,7 +14,6 @@ module internal Report =
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure
     let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [| data |])
-    let X name = XName.Get(name)
 
     let ToExcluded included =
       if included then "false" else "true"
@@ -20,19 +21,19 @@ module internal Report =
     let StartVisit(s : list<XElement>) =
       let element =
         XElement
-          (X "coverage",
+          ("coverage".X,
            XAttribute
-             (X "profilerVersion",
+             ("profilerVersion".X,
               "AltCover "
               + (System.Diagnostics.FileVersionInfo.GetVersionInfo
                    (System.Reflection.Assembly.GetExecutingAssembly().Location)).FileVersion),
-           XAttribute(X "driverVersion", 0),
+           XAttribute("driverVersion".X, 0),
            XAttribute
-             (X "startTime",
+             ("startTime".X,
               DateTime.MaxValue.ToString
                 ("o", System.Globalization.CultureInfo.InvariantCulture)),
            XAttribute
-             (X "measureTime",
+             ("measureTime".X,
               DateTime.MinValue.ToString
                 ("o", System.Globalization.CultureInfo.InvariantCulture)))
       document.Add(element)
@@ -42,11 +43,11 @@ module internal Report =
         included =
       let element =
         XElement
-          (X "module", XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
-           XAttribute(X "name", moduleDef.Name),
-           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
-           XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName),
-           XAttribute(X "excluded", ToExcluded included))
+          ("module".X, XAttribute("moduleId".X, moduleDef.Mvid.ToString()),
+           XAttribute("name".X, moduleDef.Name),
+           XAttribute("assembly".X, moduleDef.Assembly.Name.Name),
+           XAttribute("assemblyIdentity".X, moduleDef.Assembly.Name.FullName),
+           XAttribute("excluded".X, ToExcluded included))
       head.Add(element)
       element :: s
 
@@ -54,15 +55,15 @@ module internal Report =
         included =
       let element =
         XElement
-          (X "method", XAttribute(X "name", methodDef.Name),
+          ("method".X, XAttribute("name".X, methodDef.Name),
            //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
-           XAttribute(X "class", Naming.FullTypeName methodDef.DeclaringType),
-           XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),
-           XAttribute(X "excluded", ToExcluded included),
+           XAttribute("class".X, Naming.FullTypeName methodDef.DeclaringType),
+           XAttribute("metadataToken".X, methodDef.MetadataToken.ToUInt32().ToString()),
+           XAttribute("excluded".X, ToExcluded included),
            XAttribute
-             (X "instrumented",
+             ("instrumented".X,
               (if included then "true" else "false")),
-           XAttribute(X "fullname", Naming.FullMethodName methodDef))
+           XAttribute("fullname".X, Naming.FullMethodName methodDef))
       head.Add(element)
       element :: s
 
@@ -72,13 +73,13 @@ module internal Report =
       | Some codeSegment ->
           let element =
             XElement
-              (X "seqpnt", XAttribute(X "visitcount", int vc),
-               XAttribute(X "line", codeSegment.StartLine),
-               XAttribute(X "column", codeSegment.StartColumn),
-               XAttribute(X "endline", codeSegment.EndLine),
-               XAttribute(X "endcolumn", codeSegment.EndColumn),
-               XAttribute(X "excluded", ToExcluded included),
-               XAttribute(X "document", codeSegment.Document |> Visitor.SourceLinkMapping))
+              ("seqpnt".X, XAttribute("visitcount".X, int vc),
+               XAttribute("line".X, codeSegment.StartLine),
+               XAttribute("column".X, codeSegment.StartColumn),
+               XAttribute("endline".X, codeSegment.EndLine),
+               XAttribute("endcolumn".X, codeSegment.EndColumn),
+               XAttribute("excluded".X, ToExcluded included),
+               XAttribute("document".X, codeSegment.Document |> Visitor.SourceLinkMapping))
           if head.IsEmpty then
             head.Add(element)
           else
