@@ -216,7 +216,7 @@ module internal KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
-module internal Configuration =
+module internal CoverageParameters =
 
   let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
@@ -313,7 +313,7 @@ module internal Inspector =
   type System.Object with
     member nameProvider.IsIncluded
       with get () =
-        if (Configuration.NameFilters |> Seq.exists (Filter.``match`` nameProvider))
+        if (CoverageParameters.NameFilters |> Seq.exists (Filter.``match`` nameProvider))
             || nameProvider.localFilter then
           Inspections.Ignore
         else
@@ -343,7 +343,7 @@ module internal Inspector =
 
         match nameProvider with
         | :? AssemblyDefinition as a ->
-            (!Configuration.local) &&
+            (!CoverageParameters.local) &&
                     a.MainModule
                     |> moduleFiles
                     |> Seq.tryHead
@@ -358,7 +358,7 @@ module internal Visitor =
   let mutable private PointNumber : int = 0
   let mutable private BranchNumber : int = 0
   let mutable private MethodNumber : int = 0
-  let mutable private SourceLinkDocuments : Dictionary<string, string> option = None
+  let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
   let internal ZeroPoints() =
     PointNumber <- 0
@@ -491,7 +491,7 @@ module internal Visitor =
             >> buildSequence)
 
     let internal SelectAutomatic items exemption =
-      if items |> Seq.exists (fun t' -> (Configuration.generationFilter |> Seq.exists (Filter.``match`` t')))
+      if items |> Seq.exists (fun t' -> (CoverageParameters.generationFilter |> Seq.exists (Filter.``match`` t')))
       then Exemption.Automatic
       else exemption
 
@@ -499,7 +499,7 @@ module internal Visitor =
       ZeroPoints()
       SourceLinkDocuments <-
         Some x
-        |> Option.filter (fun _ -> !Configuration.sourcelink)
+        |> Option.filter (fun _ -> !CoverageParameters.sourcelink)
         |> Option.map (fun x ->
              x.CustomDebugInformations
              |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
@@ -523,7 +523,7 @@ module internal Visitor =
              let inclusion = Seq.fold UpdateInspection included types
 
              let visitcount =
-               if !Configuration.showGenerated then
+               if !CoverageParameters.showGenerated then
                  SelectAutomatic types Exemption.None
                else
                  Exemption.None
@@ -533,7 +533,7 @@ module internal Visitor =
     let internal Track(m : MethodDefinition) =
       let name = m.Name
       let fullname = m.DeclaringType.FullName.Replace('/', '.') + "." + name
-      Configuration.TrackingNames
+      CoverageParameters.TrackingNames
       |> Seq.map (fun n ->
            if n.Chars(0) = '[' then
              let stripped = n.Trim([| '['; ']' |])
@@ -702,7 +702,7 @@ module internal Visitor =
 
     let internal SelectExemption k items exemption =
       if k = StaticFilter.AsCovered then Exemption.StaticAnalysis
-      else if !Configuration.showGenerated then SelectAutomatic items exemption
+      else if !CoverageParameters.showGenerated then SelectAutomatic items exemption
       else exemption
 
     let private VisitType (t : TypeDefinition) included basevc (buildSequence : Node -> seq<Node>) =
@@ -715,7 +715,7 @@ module internal Visitor =
              if significant m then
                StaticFilter.NoFilter
              else
-               match Configuration.staticFilter with
+               match CoverageParameters.staticFilter with
                | None -> StaticFilter.Hidden
                | Some f -> f
            (m, key))
@@ -776,7 +776,7 @@ module internal Visitor =
                  || state.OpCode.FlowControl =
                       FlowControl.Return // includes state.Next = null
                  || isNull state.Next) then
-          (if !Configuration.coalesceBranches && state <> l.Head then state :: l else l)
+          (if !CoverageParameters.coalesceBranches && state <> l.Head then state :: l else l)
         else
           accumulate state.Next gendarme
       accumulate i [ i ]
@@ -825,7 +825,7 @@ module internal Visitor =
         // Eliminate the "all inside one SeqPnt" jumps
         // This covers a multitude of compiler generated branching cases
         // TODO can we simplify
-        match (!Configuration.coalesceBranches, includedSequencePoint dbg toNext toJump) with
+        match (!CoverageParameters.coalesceBranches, includedSequencePoint dbg toNext toJump) with
         | (true, _)
         | (_, Some _) ->
             [ (i, toNext, next.Offset, -1)
@@ -902,10 +902,10 @@ module internal Visitor =
 
     let private ExtractBranchPoints dbg methodFullName rawInstructions interesting vc =
       let makeDefault i =
-        if !Configuration.coalesceBranches then -1 else i
+        if !CoverageParameters.coalesceBranches then -1 else i
 
       let processBranches =
-        if !Configuration.coalesceBranches then CoalesceBranchPoints dbg else id
+        if !CoverageParameters.coalesceBranches then CoalesceBranchPoints dbg else id
 
       // Generated MoveNext => skip one branch
       let skip = (IsMoveNext.IsMatch methodFullName).ToInt32
@@ -931,7 +931,7 @@ module internal Visitor =
                (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
           |> Seq.mapi (fun n i -> (n, i)) //
           |> Seq.filter (fun (n, _) -> n >= skip)))
-      |> Seq.filter (fun l -> !Configuration.coalesceBranches || l.Length > 1) // TODO revisit
+      |> Seq.filter (fun l -> !CoverageParameters.coalesceBranches || l.Length > 1) // TODO revisit
       |> Seq.collect id
       |> Seq.mapi (fun i (path, (from, target, indexes)) ->
            Seq.unfold (fun (state : Cil.Instruction) ->
@@ -950,7 +950,7 @@ module internal Visitor =
                   Included = interesting
                   VisitCount = vc
                   Representative =
-                    if !Configuration.coalesceBranches then
+                    if !CoverageParameters.coalesceBranches then
                       Reporting.Contributing
                     else
                       Reporting.Representative
@@ -988,7 +988,7 @@ module internal Visitor =
       let MethodPointOnly() =
         interesting && (instructions
                         |> Seq.isEmpty
-                        || Configuration.coverstyle = CoverStyle.BranchOnly) && rawInstructions
+                        || CoverageParameters.coverstyle = CoverStyle.BranchOnly) && rawInstructions
                                                                                 |> Seq.isEmpty
                                                                                 |> not
 
@@ -1009,8 +1009,8 @@ module internal Visitor =
                   |> Some, i + point, wanted interesting s, vc))
 
       let IncludeBranches() =
-        instructions.Any() && Configuration.ReportKind() = Base.ReportFormat.OpenCover
-        && (Configuration.coverstyle <> CoverStyle.LineOnly)
+        instructions.Any() && CoverageParameters.ReportKind() = Base.ReportFormat.OpenCover
+        && (CoverageParameters.coverstyle <> CoverStyle.LineOnly)
 
       let bp =
         if IncludeBranches() then

@@ -125,7 +125,7 @@ module internal OpenCover =
       if instrumented then element.Add(XElement(X "Files"))
       let classes = XElement(X "Classes")
       element.Add(classes)
-      if Configuration.TrackingNames
+      if CoverageParameters.TrackingNames
          |> Seq.isEmpty
          |> not
       then element.Add(XElement(X "TrackedMethods"))

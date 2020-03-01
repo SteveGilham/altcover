@@ -123,7 +123,7 @@ module internal Instrument =
         None
       else
         let index = KeyStore.ArrayToIndex name.PublicKey
-        match Configuration.keys.TryGetValue(index) with
+        match CoverageParameters.keys.TryGetValue(index) with
         | (false, _) -> None
         | (_, record) -> Some record.Pair
 
@@ -138,7 +138,7 @@ module internal Instrument =
         None
       else
         let index = KeyStore.TokenAsULong pktoken
-        match Configuration.keys.TryGetValue(index) with
+        match CoverageParameters.keys.TryGetValue(index) with
         | (false, _) -> None
         | (_, record) -> Some record
 
@@ -172,20 +172,20 @@ module internal Instrument =
   #endif
         definition.Name.Name <- (extractName definition) + ".g"
 
-        let pair = Configuration.recorderStrongNameKey
+        let pair = CoverageParameters.recorderStrongNameKey
         updateStrongNaming definition pair
 
         [ // set the coverage file path and unique token
           ("get_ReportFile",
-           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldstr, Configuration.ReportPath())))
+           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldstr, CoverageParameters.ReportPath())))
           ("get_Token",
            (fun (w : ILProcessor) ->
              w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
           ("get_CoverageFormat",
-           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, Configuration.ReportFormat() |> int)))
+           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.ReportFormat() |> int)))
           ("get_Sample",
-           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, Configuration.Sampling())))
-          ("get_Defer", (fun (w : ILProcessor) -> w.Create(Configuration.deferOpCode()))) ]
+           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.Sampling())))
+          ("get_Defer", (fun (w : ILProcessor) -> w.Create(CoverageParameters.deferOpCode()))) ]
         |> List.iter (fun (property, value) ->
              let pathGetterDef =
                definition.MainModule.GetTypes()
@@ -202,7 +202,7 @@ module internal Instrument =
              initialBody |> Seq.iter worker.Remove)
 
         [ (// set the timer interval in ticks
-           "get_Timer", Configuration.Interval()) ]
+           "get_Timer", CoverageParameters.Interval()) ]
         |> List.iter (fun (property, value) ->
              let pathGetterDef =
                definition.MainModule.GetTypes()
@@ -419,7 +419,7 @@ module internal Instrument =
     let internal updateStrongReferences (assembly : AssemblyDefinition)
         (assemblies : string list) =
       let effectiveKey =
-        if assembly.Name.HasPublicKey then Configuration.defaultStrongNameKey else None
+        if assembly.Name.HasPublicKey then CoverageParameters.defaultStrongNameKey else None
       updateStrongNaming assembly effectiveKey
       let interestingReferences =
         assembly.MainModule.AssemblyReferences
@@ -437,7 +437,7 @@ module internal Instrument =
 
            let effectiveKey =
              match token with
-             | None -> Configuration.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
+             | None -> CoverageParameters.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
              | Some _ -> token
            match effectiveKey with
            | None ->
@@ -528,7 +528,7 @@ module internal Instrument =
         | _ -> state
       { restate with
           ModuleId =
-            match Configuration.ReportKind() with
+            match CoverageParameters.ReportKind() with
             | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
             | _ -> m.Mvid.ToString() }
 
@@ -643,9 +643,9 @@ module internal Instrument =
       try
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
         WriteAssemblies (state.RecordingAssembly) recorderFileName
-          (Configuration.InstrumentDirectories()) ignore
+          (CoverageParameters.InstrumentDirectories()) ignore
 
-        Configuration.InstrumentDirectories()
+        CoverageParameters.InstrumentDirectories()
         |> Seq.iter (fun instrument ->
 
              Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)

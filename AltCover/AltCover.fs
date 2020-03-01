@@ -23,36 +23,36 @@ module internal Main =
   let init() =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
-    Configuration.defer := None
-    Configuration.inputDirectories.Clear()
-    Configuration.outputDirectories.Clear()
+    CoverageParameters.defer := None
+    CoverageParameters.inputDirectories.Clear()
+    CoverageParameters.outputDirectories.Clear()
     ProgramDatabase.symbolFolders.Clear()
     Instrument.ResolutionTable.Clear()
 
-    Configuration.keys.Clear()
-    Configuration.defaultStrongNameKey <- None
+    CoverageParameters.keys.Clear()
+    CoverageParameters.defaultStrongNameKey <- None
     use stream =
       Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let snk = StrongNameKeyData.Make(buffer.ToArray())
-    Configuration.Add snk
-    Configuration.recorderStrongNameKey <- Some(snk)
+    CoverageParameters.Add snk
+    CoverageParameters.recorderStrongNameKey <- Some(snk)
 
-    Configuration.reportPath <- None
-    Configuration.NameFilters.Clear()
-    Configuration.interval <- None
-    Configuration.TrackingNames.Clear()
-    Configuration.reportFormat <- None
-    Configuration.inplace := false // ddFlag
-    Configuration.collect := false // ddFlag
-    Configuration.local := false // ddFlag
-    Configuration.single <- false // more complicated
-    Configuration.coverstyle <- CoverStyle.All
-    Configuration.sourcelink := false // ddFlag
-    Configuration.coalesceBranches := false // ddFlag
-    Configuration.staticFilter <- None
-    Configuration.showGenerated := false
+    CoverageParameters.reportPath <- None
+    CoverageParameters.NameFilters.Clear()
+    CoverageParameters.interval <- None
+    CoverageParameters.TrackingNames.Clear()
+    CoverageParameters.reportFormat <- None
+    CoverageParameters.inplace := false // ddFlag
+    CoverageParameters.collect := false // ddFlag
+    CoverageParameters.local := false // ddFlag
+    CoverageParameters.single <- false // more complicated
+    CoverageParameters.coverstyle <- CoverStyle.All
+    CoverageParameters.sourcelink := false // ddFlag
+    CoverageParameters.coalesceBranches := false // ddFlag
+    CoverageParameters.staticFilter <- None
+    CoverageParameters.showGenerated := false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -91,33 +91,33 @@ module internal Main =
     let makeFilter filterscope (x : String) =
       x.Replace(char 0, '\\').Replace(char 1, '|')
       |> CommandLine.validateRegexes
-      |> Seq.iter (FilterClass.Build filterscope >> Configuration.NameFilters.Add)
+      |> Seq.iter (FilterClass.Build filterscope >> CoverageParameters.NameFilters.Add)
 
     [ ("i|inputDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--inputDirectory" x then
            let arg = Path.GetFullPath x
-           if Configuration.inputDirectories.Contains arg then
+           if CoverageParameters.inputDirectories.Contains arg then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "DuplicatesNotAllowed", arg,
                   "--inputDirectory") :: CommandLine.error
            else
-             Configuration.inputDirectories.Add arg))
+             CoverageParameters.inputDirectories.Add arg))
 
       ("o|outputDirectory=",
        (fun x ->
          if CommandLine.validatePath "--outputDirectory" x then
            let arg = Path.GetFullPath x
-           if Configuration.outputDirectories.Contains arg then
+           if CoverageParameters.outputDirectories.Contains arg then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "DuplicatesNotAllowed", arg,
                   "--outputDirectory") :: CommandLine.error
            else
-             CommandLine.doPathOperation (fun _ -> Configuration.outputDirectories.Add arg) ()
+             CommandLine.doPathOperation (fun _ -> CoverageParameters.outputDirectories.Add arg) ()
                false))
 
       ("y|symbolDirectory=",
@@ -140,25 +140,25 @@ module internal Main =
       ("k|key=",
        (fun x ->
          let (pair, ok) = CommandLine.validateStrongNameKey "--key" x
-         if ok then Configuration.Add pair))
+         if ok then CoverageParameters.Add pair))
       ("sn|strongNameKey=",
        (fun x ->
          let (pair, ok) = CommandLine.validateStrongNameKey "--strongNameKey" x
          if ok then
-           if Option.isSome Configuration.defaultStrongNameKey then
+           if Option.isSome CoverageParameters.defaultStrongNameKey then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "MultiplesNotAllowed", "--strongNameKey")
                :: CommandLine.error
            else
-             Configuration.defaultStrongNameKey <- Some pair
-             Configuration.Add pair))
+             CoverageParameters.defaultStrongNameKey <- Some pair
+             CoverageParameters.Add pair))
 
       ("x|xmlReport=",
        (fun x ->
          if CommandLine.validatePath "--xmlReport" x then
-           if Option.isSome Configuration.reportPath then
+           if Option.isSome CoverageParameters.reportPath then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
@@ -166,7 +166,7 @@ module internal Main =
                :: CommandLine.error
            else
              CommandLine.doPathOperation
-               (fun () -> Configuration.reportPath <- Some(Path.GetFullPath x)) () false))
+               (fun () -> CoverageParameters.reportPath <- Some(Path.GetFullPath x)) () false))
       ("f|fileFilter=", makeFilter FilterScope.File)
       ("p|pathFilter=", makeFilter FilterScope.Path)
       ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
@@ -174,50 +174,50 @@ module internal Main =
       ("t|typeFilter=", makeFilter FilterScope.Type)
       ("m|methodFilter=", makeFilter FilterScope.Method)
       ("a|attributeFilter=", makeFilter FilterScope.Attribute)
-      (CommandLine.ddFlag "l|localSource" Configuration.local)
+      (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
       ("c|callContext=",
        (fun x ->
-         if Configuration.single then
+         if CoverageParameters.single then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
                 "--single", "--callContext") :: CommandLine.error
          else
-           let (ok, selection) = ValidateCallContext (Option.isSome Configuration.interval) x
+           let (ok, selection) = ValidateCallContext (Option.isSome CoverageParameters.interval) x
            if ok then
              match selection with
-             | Left n -> Configuration.interval <- n
-             | Right name -> Configuration.TrackingNames.Add(name)))
+             | Left n -> CoverageParameters.interval <- n
+             | Right name -> CoverageParameters.TrackingNames.Add(name)))
       ("opencover",
        (fun _ ->
-         if Option.isSome Configuration.reportFormat then
+         if Option.isSome CoverageParameters.reportFormat then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--opencover")
              :: CommandLine.error
          else
-           Configuration.reportFormat <- Some ReportFormat.OpenCover))
-      (CommandLine.ddFlag "inplace" Configuration.inplace)
-      (CommandLine.ddFlag "save" Configuration.collect)
+           CoverageParameters.reportFormat <- Some ReportFormat.OpenCover))
+      (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
+      (CommandLine.ddFlag "save" CoverageParameters.collect)
       ("single",
        (fun _ ->
-         if Configuration.single then
+         if CoverageParameters.single then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--single")
              :: CommandLine.error
-         else if Option.isSome Configuration.interval || Configuration.TrackingNames.Any() then
+         else if Option.isSome CoverageParameters.interval || CoverageParameters.TrackingNames.Any() then
            CommandLine.error <-
              String.Format
                (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
                 "--single", "--callContext") :: CommandLine.error
          else
-           Configuration.single <- true))
+           CoverageParameters.single <- true))
       ("linecover",
        (fun _ ->
-         match Configuration.coverstyle with
+         match CoverageParameters.coverstyle with
          | CoverStyle.LineOnly ->
              CommandLine.error <-
                String.Format
@@ -230,10 +230,10 @@ module internal Main =
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "Incompatible", "--linecover",
                   "--branchcover") :: CommandLine.error
-         | _ -> Configuration.coverstyle <- CoverStyle.LineOnly))
+         | _ -> CoverageParameters.coverstyle <- CoverStyle.LineOnly))
       ("branchcover",
        (fun _ ->
-         match Configuration.coverstyle with
+         match CoverageParameters.coverstyle with
          | CoverStyle.BranchOnly ->
              CommandLine.error <-
                String.Format
@@ -246,29 +246,29 @@ module internal Main =
                  (CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "Incompatible", "--branchcover",
                   "--linecover") :: CommandLine.error
-         | _ -> Configuration.coverstyle <- CoverStyle.BranchOnly))
+         | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
-      (CommandLine.ddFlag "sourcelink" Configuration.sourcelink)
+      (CommandLine.ddFlag "sourcelink" CoverageParameters.sourcelink)
       ("defer:",
        (fun x ->
-         if !Configuration.defer = None then
-           Configuration.defer := if String.IsNullOrWhiteSpace x then
-                                    Some true
-                                  else
-                                    let (|Select|_|) (pattern : String) offered =
-                                      if offered
-                                         |> String.IsNullOrWhiteSpace
-                                         |> not
-                                         && pattern.Equals
-                                              (offered, StringComparison.OrdinalIgnoreCase) then
-                                        Some offered
-                                      else
-                                        None
-                                    match x with
-                                    | Select "-" _ -> Some false
-                                    | Select "+" _ -> Some true
-                                    | _ -> None
-           if !Configuration.defer = None then
+         if !CoverageParameters.defer = None then
+           CoverageParameters.defer := if String.IsNullOrWhiteSpace x then
+                                         Some true
+                                       else
+                                         let (|Select|_|) (pattern : String) offered =
+                                           if offered
+                                              |> String.IsNullOrWhiteSpace
+                                              |> not
+                                              && pattern.Equals
+                                                   (offered, StringComparison.OrdinalIgnoreCase) then
+                                             Some offered
+                                           else
+                                             None
+                                         match x with
+                                         | Select "-" _ -> Some false
+                                         | Select "+" _ -> Some true
+                                         | _ -> None
+           if !CoverageParameters.defer = None then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
@@ -280,16 +280,16 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
-      (CommandLine.ddFlag "v|visibleBranches" Configuration.coalesceBranches)
+      (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
       ("showstatic:",
        (fun x ->
-         if Configuration.staticFilter = None then
-           Configuration.staticFilter <-
+         if CoverageParameters.staticFilter = None then
+           CoverageParameters.staticFilter <-
              if String.IsNullOrWhiteSpace x || x = "+" then Some StaticFilter.AsCovered
              else if x = "++" then Some StaticFilter.NoFilter
              else if x = "-" then Some StaticFilter.Hidden
              else None
-           if Configuration.staticFilter = None then
+           if CoverageParameters.staticFilter = None then
              CommandLine.error <-
                String.Format
                  (CultureInfo.CurrentCulture,
@@ -301,7 +301,7 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--showstatic")
              :: CommandLine.error))
-      (CommandLine.ddFlag "showGenerated" Configuration.showGenerated)
+      (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
       ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
       ("<>",
@@ -319,8 +319,8 @@ module internal Main =
     match action with
     | Right(rest, options) ->
         // Check that the directories are distinct
-        let fromDirectories = Configuration.InputDirectories()
-        let toDirectories = Configuration.OutputDirectories()
+        let fromDirectories = CoverageParameters.InputDirectories()
+        let toDirectories = CoverageParameters.OutputDirectories()
         fromDirectories
         |> Seq.iter (fun fromDirectory ->
              if toDirectories.Contains fromDirectory then
@@ -332,7 +332,7 @@ module internal Main =
 
         CommandLine.doPathOperation (fun () ->
           let found = toDirectories |> Seq.filter Directory.Exists
-          if !Configuration.inplace && CommandLine.error |> List.isEmpty && found.Any() then
+          if !CoverageParameters.inplace && CommandLine.error |> List.isEmpty && found.Any() then
             found
             |> Seq.iter (fun toDirectory ->
                  CommandLine.error <-
@@ -349,7 +349,7 @@ module internal Main =
         else
           Seq.zip toDirectories fromDirectories
           |> Seq.iter (fun (toDirectory, fromDirectory) ->
-               if !Configuration.inplace then
+               if !CoverageParameters.inplace then
                  Output.info
                  <| String.Format
                       (CultureInfo.CurrentCulture,
@@ -371,7 +371,7 @@ module internal Main =
           Right
             (rest, fromDirectories |> Seq.map DirectoryInfo,
              toDirectories |> Seq.map DirectoryInfo,
-             Configuration.SourceDirectories() |> Seq.map DirectoryInfo)
+             CoverageParameters.SourceDirectories() |> Seq.map DirectoryInfo)
     | Left intro -> Left intro
 
   let internal imageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
@@ -516,7 +516,7 @@ module internal Main =
             Options2 = Runner.DeclareOptions() }
         255
     | Right(rest, fromInfo, toInfo, targetInfo) ->
-        let report = Configuration.ReportPath()
+        let report = CoverageParameters.ReportPath()
 
         let result =
           CommandLine.doPathOperation (fun () ->
@@ -525,13 +525,13 @@ module internal Main =
             |> CommandLine.ensureDirectory
             let (assemblies, assemblyNames) =
               prepareTargetFiles fromInfo toInfo targetInfo
-                (Configuration.InstrumentDirectories())
+                (CoverageParameters.InstrumentDirectories())
             Output.info
             <| String.Format
                  (CultureInfo.CurrentCulture,
                   (CommandLine.resources.GetString "reportingto"), report)
             let reporter, document =
-              match Configuration.ReportKind() with
+              match CoverageParameters.ReportKind() with
               | ReportFormat.OpenCover -> OpenCover.ReportGenerator()
               | _ -> Report.ReportGenerator()
 
@@ -545,9 +545,9 @@ module internal Main =
             |> Directory.CreateDirectory
             |> ignore
             document.Save(report)
-            if !Configuration.collect then Runner.SetRecordToFile report
+            if !CoverageParameters.collect then Runner.SetRecordToFile report
             CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
-        CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Configuration.inplace)
+        CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !CoverageParameters.inplace)
         result
 
   let internal (|Select|_|) (pattern : String) offered =

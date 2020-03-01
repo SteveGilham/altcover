@@ -389,7 +389,7 @@ module AltCoverRunnerTests =
           else (program, String.Empty)
 
         let r =
-          CommandLine.launch exe args
+          CommandLine.I.launch exe args
             (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
@@ -2726,7 +2726,7 @@ or
         |> List.toSeq
 
       let result =
-        LCov.multiSortByNameAndStartLine input
+        LCov.I.multiSortByNameAndStartLine input
         |> Seq.map (fun (f, ms) ->
              (f,
               ms

@@ -191,7 +191,6 @@ module TestMain =
           Tests.AltCoverTests.TrackingDetectsExpectedTests, "Tests.TrackingDetectsExpectedTests"
           Tests.AltCoverTests.TrackingDetectsTestsByFullType, "Tests.TrackingDetectsTestsByFullType"
           Tests.AltCoverTests.TrackingDetectsMethods, "Tests.TrackingDetectsMethods"
-          Tests.AltCoverTests.NamingDetectNulls, "Tests.NamingDetectNulls"
           Tests.AltCoverTests.NamingDetectEmpties, "Tests.NamingDetectEmpties"
           Tests.AltCoverTests.NamingSuffixDetectEmpties, "Tests.NamingSuffixDetectEmpties"
           Tests.AltCoverTests.TypeNamesAreExtracted, "Tests.TypeNamesAreExtracted"
