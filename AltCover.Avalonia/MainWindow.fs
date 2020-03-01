@@ -33,12 +33,12 @@ module UICommon =
 module Persistence =
   let mutable save = true
 
-  let private DefaultDocument() =
+  let private defaultDocument() =
     let doc = XDocument()
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
 
-  let private EnsureFile() =
+  let private ensureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
     let file = Path.Combine(dir.FullName, "Visualizer.xml")
@@ -46,7 +46,7 @@ module Persistence =
     if file
        |> File.Exists
        |> not then
-      (file, DefaultDocument())
+      (file, defaultDocument())
     else
       try
         let doc = XDocument.Load(file)
@@ -60,10 +60,10 @@ module Persistence =
         (file, doc)
       with x ->
         printfn "%A\r\n\r\n%A" x o
-        (file, DefaultDocument())
+        (file, defaultDocument())
 
   let saveFont (font : string) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//Font")
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
@@ -74,13 +74,13 @@ module Persistence =
     config.Save file
 
   let readFont() =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
     | [] -> "Monospace" // Font defaults to 'Courier New', which is what we want
     | x :: _ -> x.FirstNode.ToString()
 
   let saveFolder (path : string) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] ->
         (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
@@ -90,13 +90,13 @@ module Persistence =
     config.Save file
 
   let readFolder() =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
   let saveCoverageFiles (coverageFiles : string list) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
@@ -106,13 +106,13 @@ module Persistence =
     config.Save file
 
   let readCoverageFiles() =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.map (fun n -> n.FirstNode.ToString())
     |> Seq.toList
 
   let saveGeometry (w : Window) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
@@ -127,7 +127,7 @@ module Persistence =
     config.Save file
 
   let readGeometry (w : Window) =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
 
     let attribute (x : XElement) a =
       x.Attribute(XName.Get a).Value
@@ -145,7 +145,7 @@ module Persistence =
          w.Position <- PixelPoint(x, y))
 
   let clearGeometry() =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
     |> Seq.iter (fun f -> f.Remove())
@@ -198,23 +198,23 @@ type MainWindow() as this =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.dialog-error.png")))
-  let XmlIcon =
+  let xmlIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
-  let AssemblyIcon =
+  let assemblyIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
-  let NamespaceIcon =
+  let namespaceIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
-  let ClassIcon =
+  let classIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
-  let MethodIcon =
+  let methodIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
@@ -251,7 +251,7 @@ type MainWindow() as this =
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Refresh_greyThin_16x.png")))
 
-  let MakeTreeNode name icon =
+  let makeTreeNode name icon =
     let text = new TextBlock()
     text.Text <- name
     text.Margin <- Thickness.Parse("2")
@@ -279,7 +279,7 @@ type MainWindow() as this =
       this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
   // Fill in the menu from the memory cache
-  member private this.populateMenu() =
+  member private this.PopulateMenu() =
     let listitem = this.FindControl<MenuItem>("List")
     let items = listitem.Items.OfType<MenuItem>()
     // blank the whole menu
@@ -299,7 +299,7 @@ type MainWindow() as this =
                                                     else
                                                       mruInactiveIcon).Force()
 
-  member private this.updateMRU path add =
+  member private this.UpdateMRU path add =
     let casematch =
       match System.Environment.GetEnvironmentVariable("OS") with
       | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
@@ -318,7 +318,7 @@ type MainWindow() as this =
            | StringComparison.Ordinal -> n
            | _ -> n.ToUpperInvariant())
       |> Seq.toList
-    this.populateMenu()
+    this.PopulateMenu()
     Persistence.saveCoverageFiles coverageFiles
     this.FindControl<MenuItem>("Refresh").IsEnabled <- coverageFiles.Any()
     this.FindControl<Image>("RefreshImage").Source <- (if coverageFiles.Any() then
@@ -372,7 +372,7 @@ type MainWindow() as this =
 
   member private this.PopulateClassNode (model : List<TreeViewItem>) (row : TreeViewItem)
          (nodes : seq<MethodKey>) =
-    let ApplyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem) (x : MethodKey) =
+    let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem) (x : MethodKey) =
       let fullname = x.m.GetAttribute("fullname", String.Empty)
 
       let args =
@@ -400,7 +400,7 @@ type MainWindow() as this =
         else
           None
 
-      let SelectStyle because excluded =
+      let selectStyle because excluded =
         match (because, excluded) with
         | Select "author declared (" _ -> TextTag.Declared
         | Select "tool-generated: " _ -> TextTag.Automatic
@@ -408,7 +408,7 @@ type MainWindow() as this =
         | (_, true) -> TextTag.Excluded
         | _ -> TextTag.NotVisited
 
-      let CoverageToTag(n : XPathNavigator) =
+      let coverageToTag(n : XPathNavigator) =
         let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
         let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
         let line = n.GetAttribute("line", String.Empty)
@@ -419,15 +419,15 @@ type MainWindow() as this =
         n.MoveToParent() |> ignore
         let because = n.GetAttribute("excluded-because", String.Empty)
         { style =
-            if visitcount = 0 then SelectStyle because excluded else TextTag.Visited
+            if visitcount = 0 then selectStyle because excluded else TextTag.Visited
           line = Int32.TryParse(line) |> snd
           column = (Int32.TryParse(column) |> snd)
           endline = Int32.TryParse(endline) |> snd
           endcolumn = (Int32.TryParse(endcolumn) |> snd) }
 
-      let FilterCoverage lines (n : ColourTag) =
+      let filterCoverage lines (n : ColourTag) =
         n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
-      let TagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
+      let tagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
         ()
 
       //// bound by current line length in case we're looking from stale coverage
@@ -441,13 +441,13 @@ type MainWindow() as this =
       //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
       //buff.ApplyTag(tag, from, until)
 
-      let MarkCoverage (root : XPathNavigator) textBox (lines : string []) filename =
+      let markCoverage (root : XPathNavigator) textBox (lines : string []) filename =
         let lc = lines.Length
         root.Select("//seqpnt[@document='" + filename + "']")
         |> Seq.cast<XPathNavigator>
-        |> Seq.map CoverageToTag
-        |> Seq.filter (FilterCoverage lc)
-        |> Seq.iter (TagByCoverage textBox lines)
+        |> Seq.map coverageToTag
+        |> Seq.filter (filterCoverage lc)
+        |> Seq.iter (tagByCoverage textBox lines)
 
       let newrow = TreeViewItem()
       newrow.DoubleTapped
@@ -495,27 +495,27 @@ type MainWindow() as this =
                  // TODO -- colouring
                  let root = x.m.Clone()
                  root.MoveToRoot()
-                 MarkCoverage root text textLines path
+                 markCoverage root text textLines path
                // MarkBranches root text path
                with x ->
                  let caption = UICommon.GetResourceString "LoadError"
                  this.ShowMessageBox MessageType.Error caption x.Message)
-      let display = MakeTreeNode visbleName <| MethodIcon.Force()
+      let display = makeTreeNode visbleName <| methodIcon.Force()
       newrow.Header <- display
       model.Add newrow
 
     let methods = nodes |> Seq.toArray
-    Array.sortInPlaceWith MethodNameCompare methods
-    methods |> Array.iter (ApplyToModel model row)
+    Array.sortInPlaceWith MethodNameCompare methods // where
+    methods |> Array.iter (applyToModel model row)
 
   member private this.PopulateNamespaceNode (model : List<TreeViewItem>)
          (row : TreeViewItem) (nodes : seq<MethodKey>) =
-    let ApplyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
+    let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
         (group : string * seq<MethodKey>) =
       let name = fst group
       let newrow = TreeViewItem()
       model.Add newrow
-      let display = MakeTreeNode name <| ClassIcon.Force()
+      let display = makeTreeNode name <| classIcon.Force()
       newrow.Header <- display
       let items = List<TreeViewItem>()
       this.PopulateClassNode items newrow (snd group)
@@ -539,7 +539,7 @@ type MainWindow() as this =
                let tmp : TreeViewItem = r
                tmp.Items.OfType<TreeViewItem>().ToList(), r
 
-         let nr = ApplyToModel rowModel pr c
+         let nr = applyToModel rowModel pr c
          pr.Items <- rowModel
          (name, nr) :: restack) []
     |> ignore
@@ -547,12 +547,12 @@ type MainWindow() as this =
   member private this.PopulateAssemblyNode (model : List<TreeViewItem>)
          (row : TreeViewItem) (node : XPathNavigator) =
     // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
-    let ApplyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
+    let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
         (group : string * seq<MethodKey>) =
       let name = fst group
       let newrow = TreeViewItem()
       model.Add newrow
-      let display = MakeTreeNode name <| NamespaceIcon.Force()
+      let display = makeTreeNode name <| namespaceIcon.Force()
       newrow.Header <- display
       let items = List<TreeViewItem>()
       this.PopulateNamespaceNode items newrow (snd group)
@@ -573,13 +573,13 @@ type MainWindow() as this =
       |> Seq.groupBy (fun x -> x.spacename)
       |> Seq.sortBy fst
 
-    methods |> Seq.iter (ApplyToModel model row)
+    methods |> Seq.iter (applyToModel model row)
 
   member this.InitializeComponent() =
     AvaloniaXamlLoader.Load(this)
     Persistence.readGeometry this
     coverageFiles <- Persistence.readCoverageFiles()
-    this.populateMenu()
+    this.PopulateMenu()
     ofd.InitialDirectory <- Persistence.readFolder()
     ofd.Title <- UICommon.GetResourceString "Open Coverage File"
     ofd.AllowMultiple <- false
@@ -644,7 +644,7 @@ type MainWindow() as this =
            match CoverageFile.LoadCoverageFile current with
            | Left failed ->
                this.InvalidCoverageFileMessage failed
-               Dispatcher.UIThread.Post(fun _ -> this.updateMRU current.FullName false)
+               Dispatcher.UIThread.Post(fun _ -> this.UpdateMRU current.FullName false)
            | Right coverage ->
                // check if coverage is newer that the source files
                let sourceFiles =
@@ -666,12 +666,12 @@ type MainWindow() as this =
                       f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
                // warn if not
                if not (Seq.isEmpty newer) then this.OutdatedCoverageFileMessage current
-               let ApplyToModel (model : List<TreeViewItem>)
+               let applyToModel (model : List<TreeViewItem>)
                    (group : XPathNavigator * string) =
                  let name = snd group
                  let row = TreeViewItem()
                  model.Add row
-                 let display = MakeTreeNode name <| AssemblyIcon.Force()
+                 let display = makeTreeNode name <| assemblyIcon.Force()
                  row.Header <- display
                  let items = List<TreeViewItem>()
                  this.PopulateAssemblyNode items row (fst group)
@@ -688,9 +688,9 @@ type MainWindow() as this =
                        node.GetAttribute("assemblyIdentity", String.Empty).Split(',')
                        |> Seq.head))
                  |> Seq.sortBy snd
-                 |> Seq.iter (ApplyToModel items)
+                 |> Seq.iter (applyToModel items)
                  tree.Items <- items
-                 this.updateMRU current.FullName true)
+                 this.UpdateMRU current.FullName true)
          }
          |> Async.Start)
     this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "

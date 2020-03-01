@@ -42,7 +42,7 @@ module Instance =
 #if DEBUG
       mutable
 #endif
-              internal CoverageFormat = ReportFormat.NCover // fsharplint:disable-line MemberNames
+              internal CoverageFormat = ReportFormat.NCover // fsharplint:disable-line NonPublicValuesNames
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -56,7 +56,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal Sample = Sampling.All // fsharplint:disable-line MemberNames
+  let internal Sample = Sampling.All // fsharplint:disable-line NonPublicValuesNames
 
   /// <summary>
   /// Gets the unique token for this instance

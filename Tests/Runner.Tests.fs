@@ -2342,7 +2342,7 @@ or
       Runner.init()
       let visits = Dictionary<int, PointVisit>()
       let key = " "
-      let result = Runner.J.LookUpVisitsByToken key visits
+      let result = Runner.J.lookUpVisitsByToken key visits
       match (result.Count, result.Tracks |> Seq.toList) with
       | (0L, []) -> ()
       | _ -> Assert.Fail(sprintf "%A" result)

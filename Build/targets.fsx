@@ -4097,7 +4097,6 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "Gendarme"
 ==> "Analysis"
-//=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
 
 "Compilation"
 ?=> "UnitTest"

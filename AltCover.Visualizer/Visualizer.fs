@@ -438,7 +438,7 @@ module Gui =
     lazy
       (new Pixbuf(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
-  let private PpropertyIcon =
+  let private propertyIcon =
     lazy
       (new Pixbuf(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
@@ -502,7 +502,7 @@ module Gui =
           theModel.AppendValues
             (theRow,
              [| display :> obj
-                (if special = MethodType.Property then PpropertyIcon else eventIcon)
+                (if special = MethodType.Property then propertyIcon else eventIcon)
                   .Force() :> obj |])
         keys
           |> Seq.sortBy (fun key -> key.name |> DisplayName)
@@ -535,9 +535,9 @@ module Gui =
     methods |> orderMethods
     methods |> applyMethods
 
-  let private PopulateNamespaceNode (model : TreeStore) (row : TreeIter)
+  let private populateNamespaceNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
-    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter)
+    let applyToModel (theModel : TreeStore) (theRow : TreeIter)
         (group : string * seq<MethodKey>) =
       let name = fst group
 
@@ -611,7 +611,7 @@ module Gui =
            | [] -> row
            | (_, r) :: _ -> r
 
-         let nr = ApplyToModel model pr c
+         let nr = applyToModel model pr c
          (name, nr) :: restack) []
     |> ignore
 
@@ -627,7 +627,7 @@ module Gui =
           (theRow,
            [| name :> obj
               namespaceIcon.Force() :> obj |])
-      PopulateNamespaceNode theModel newrow (snd group)
+      populateNamespaceNode theModel newrow (snd group)
 
     let methods =
       node.SelectChildren("method", String.Empty)
@@ -661,8 +661,8 @@ module Gui =
 #endif
 
   let private showMessageOnGuiThread (parent : Window) (severity : MessageType) message =
-    let SendMessageToWindow() = showMessage parent message severity
-    invokeOnGuiThread(SendMessageToWindow)
+    let sendMessageToWindow() = showMessage parent message severity
+    invokeOnGuiThread(sendMessageToWindow)
 
   let private invalidCoverageFileMessage (parent : Window) (x : InvalidFile) =
     let format = getResourceString("InvalidFile")

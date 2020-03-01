@@ -482,7 +482,7 @@ module AltCoverTests2 =
           CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.OpenCover
           CoverageParameters.theInterval <- Some 1234567890
           CoverageParameters.single <- true
-          Assert.That(CoverageParameters.Sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
+          Assert.That(CoverageParameters.sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.I.prepareAssembly path
           let traces = System.Collections.Generic.List<string>()
           Instrument.I.WriteAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
@@ -553,7 +553,7 @@ module AltCoverTests2 =
                                 | :? System.UnauthorizedAccessException
                                 | :? IOException -> ())
 
-          Assert.That(CoverageParameters.Sampling(), Base.Sampling.All |> int |> Is.EqualTo)
+          Assert.That(CoverageParameters.sampling(), Base.Sampling.All |> int |> Is.EqualTo)
       finally
         CoverageParameters.keys.Clear()
 

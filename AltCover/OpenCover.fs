@@ -234,7 +234,7 @@ module internal OpenCover =
           Index = ref
           MethodSeq = s.MethodSeq + 1 }
 
-    let VisitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i included
+    let visitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i included
         vc =
       let element = (s.Stack |> Seq.head).Parent
 
@@ -485,7 +485,7 @@ module internal OpenCover =
       | Node.Type(typeDef, included, _) -> visitType s typeDef included
       | Node.Method(methodDef, included, _, _) -> visitMethod s methodDef included
       | MethodPoint(_, codeSegment, i, included, vc) ->
-          VisitMethodPoint s codeSegment i included vc
+          visitMethodPoint s codeSegment i included vc
       | BranchPoint b -> visitBranchPoint s b
       | AfterMethod(methodDef, included, track) ->
           visitAfterMethod s methodDef track included

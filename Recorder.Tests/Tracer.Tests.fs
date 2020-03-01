@@ -48,7 +48,7 @@ module AltCoverCoreTests =
     finally
       client.Close()
 
-  let internal ReadResults(stream : Stream) =
+  let internal readResults(stream : Stream) =
     let hits = List<string * int * Track>()
     use formatter = new System.IO.BinaryReader(stream)
 
@@ -135,7 +135,7 @@ module AltCoverCoreTests =
         Instance.I.trace <- save
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
-      let results = ReadResults stream |> Seq.toList
+      let results = readResults stream |> Seq.toList
       Assert.True( Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
       Assert.True((results = expected), "unexpected result")
     finally
@@ -181,7 +181,7 @@ module AltCoverCoreTests =
         Instance.I.trace <- save
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
-      let results = ReadResults stream
+      let results = readResults stream
       Assert.True( ("no", 0, Adapter.Null())
                    |> Adapter.untable
                    |> Seq.isEmpty)
@@ -272,7 +272,7 @@ module AltCoverCoreTests =
 
       let results =
         stream
-        |> ReadResults
+        |> readResults
         |> Seq.toList
       Assert.True(Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
       Assert.True((results = expected), "unexpected result")

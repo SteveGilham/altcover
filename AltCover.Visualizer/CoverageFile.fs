@@ -126,7 +126,7 @@ type internal Coverage = Either<InvalidFile, CoverageFile>
 
 module Extensions =
   type Choice<'b, 'a> with
-    static member toOption (x : Either<'a, 'b>) =
+    static member ToOption (x : Either<'a, 'b>) =
       match x with
       | Right y -> Some y
       | _ -> None

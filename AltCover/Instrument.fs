@@ -184,7 +184,7 @@ module internal Instrument =
           ("get_CoverageFormat",
            (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.reportFormat() |> int)))
           ("get_Sample",
-           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.Sampling())))
+           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.sampling())))
           ("get_Defer", (fun (w : ILProcessor) -> w.Create(CoverageParameters.deferOpCode()))) ]
         |> List.iter (fun (property, value) ->
              let pathGetterDef =

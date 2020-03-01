@@ -159,7 +159,7 @@ module internal LCov =
                       |> Seq.exists (fun r -> r.Attribute("uid".X).Value = uid))
                   |> Seq.toList
 
-                let FN(ms : XElement list) = // fsharplint:disable-line MemberNames
+                let FN(ms : XElement list) = // fsharplint:disable-line NonPublicValuesNames
                   ms
                   |> Seq.iter (fun m ->
                       m.Descendants("SequencePoint".X)
@@ -178,7 +178,7 @@ module internal LCov =
                 // Next, there is a list of execution counts for each  instrumented  function:
                 //
                 // FNDA:<execution count>,<function name>
-                let FNDA(ms : XElement list) = // fsharplint:disable-line MemberNames
+                let FNDA(ms : XElement list) = // fsharplint:disable-line NonPublicValuesNames
                   ms
                   |> Seq.iter (fun m ->
                       m.Descendants("SequencePoint".X)

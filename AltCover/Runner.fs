@@ -673,7 +673,7 @@ module internal Runner =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal LookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
+    let internal lookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
       let (ok, index) =
         Int32.TryParse
           (token, System.Globalization.NumberStyles.Integer,
@@ -690,7 +690,7 @@ module internal Runner =
         |> Seq.map (fun m -> m.InnerText)
         |> Seq.head
 
-      let vc = (LookUpVisitsByToken token dict).Total()
+      let vc = (lookUpVisitsByToken token dict).Total()
       mp
       |> Seq.iter (fun m ->
            m.SetAttribute("vc", vc.ToString(CultureInfo.InvariantCulture))

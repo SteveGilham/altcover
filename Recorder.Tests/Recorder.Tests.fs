@@ -12,6 +12,8 @@ namespace Tests.Recorder.Unknown
 #endif
 #endif
 
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+
 open System
 open System.Collections.Generic
 open System.Diagnostics

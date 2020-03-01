@@ -766,9 +766,9 @@ module AltCoverTests =
       let save = CoverageParameters.single
       try
         CoverageParameters.single <- true
-        test <@ CoverageParameters.Sampling() = 1 @>
+        test <@ CoverageParameters.sampling() = 1 @>
         CoverageParameters.single <- false
-        test <@ CoverageParameters.Sampling() = 0 @>
+        test <@ CoverageParameters.sampling() = 0 @>
       finally
         CoverageParameters.single <- save
 

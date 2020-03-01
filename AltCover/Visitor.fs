@@ -239,7 +239,7 @@ module internal CoverageParameters =
 
   let mutable internal single = false // more complicated
 
-  let internal Sampling() =
+  let internal sampling() =
     (if single then Base.Sampling.Single else Base.Sampling.All)
     |> int
 
