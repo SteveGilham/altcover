@@ -13,7 +13,7 @@ module internal Cobertura =
 
   module internal I =
 
-    let internal SetRate hits total (rate : string) (target : XElement) =
+    let internal setRate hits total (rate : string) (target : XElement) =
       if total > 0 then
         let ratio = (float hits) / (float total)
         target.SetAttributeValue(rate.X, String.Format("{0:0.##}", ratio))
@@ -21,7 +21,7 @@ module internal Cobertura =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal AddSources (report : XDocument) (target : XElement) (tag : string)
+    let internal addSources (report : XDocument) (target : XElement) (tag : string)
                             (attribute : string) =
       report.Descendants(tag.X)
       |> Seq.map (fun s -> s.Attribute(attribute.X).Value |> Path.GetDirectoryName)
@@ -56,9 +56,9 @@ module internal Cobertura =
         let lines = XElement("lines".X)
         mtx.Add(lines)
         let (mHits, mTotal) = processSeqPnts method lines
-        SetRate mHits mTotal "line-rate" mtx
-        SetRate 1 1 "branch-rate" mtx
-        SetRate 1 1 "complexity" mtx
+        setRate mHits mTotal "line-rate" mtx
+        setRate 1 1 "branch-rate" mtx
+        setRate 1 1 "complexity" mtx
         (hits + mHits, total + mTotal)
 
       let sortMethod (n : String) (methods : XElement) (method : XElement seq) =
@@ -84,9 +84,9 @@ module internal Cobertura =
         let methods = XElement("methods".X)
         ``class``.Add(methods)
         let (mHits, mTotal) = sortMethod name methods method
-        SetRate mHits mTotal "line-rate" ``class``
-        SetRate 1 1 "branch-rate" ``class``
-        SetRate 1 1 "complexity" ``class``
+        setRate mHits mTotal "line-rate" ``class``
+        setRate 1 1 "branch-rate" ``class``
+        setRate 1 1 "complexity" ``class``
         (hits + mHits, total + mTotal)
 
       let extractClasses (``module`` : XElement) classes =
@@ -107,19 +107,19 @@ module internal Cobertura =
         let classes = XElement("classes".X)
         package.Add(classes)
         let (cHits, cTotal) = extractClasses ``module`` classes
-        SetRate cHits cTotal "line-rate" package
-        SetRate 1 1 "branch-rate" package
-        SetRate 1 1 "complexity" package
+        setRate cHits cTotal "line-rate" package
+        setRate 1 1 "branch-rate" package
+        setRate 1 1 "complexity" package
         (hits + cHits, total + cTotal)
 
       let (hits, total) = report.Descendants("module".X) |> Seq.fold processModule (0, 0)
       let p = packages.Parent
-      SetRate hits total "line-rate" p
-      SetRate 1 1 "branch-rate" p
+      setRate hits total "line-rate" p
+      setRate 1 1 "branch-rate" p
       p.Attribute("lines-valid".X).Value <- total.ToString(CultureInfo.InvariantCulture)
       p.Attribute("lines-covered".X).Value <- hits.ToString(CultureInfo.InvariantCulture)
 
-      AddSources report packages.Parent "seqpnt" "document"
+      addSources report packages.Parent "seqpnt" "document"
 
     let internal openCover (report : XDocument) (packages : XElement) =
       let extract (owner : XElement) (target : XElement) =
@@ -135,8 +135,8 @@ module internal Cobertura =
         let s = valueOf "numSequencePoints"
         let sv = valueOf "visitedSequencePoints"
 
-        SetRate sv s "line-rate" target
-        SetRate bv b "branch-rate" target
+        setRate sv s "line-rate" target
+        setRate bv b "branch-rate" target
         if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
           let copyup (name : string) (value : int) =
             target.Attribute(name.X).Value <- value.ToString(CultureInfo.InvariantCulture)
@@ -241,9 +241,9 @@ module internal Cobertura =
         let methods = XElement("methods".X)
         ``class``.Add(methods)
         let (b, bv, s, sv, c, cv) = arrangeMethods name methods methodSet
-        SetRate sv s "line-rate" ``class``
-        SetRate bv b "branch-rate" ``class``
-        SetRate cv c "complexity" ``class``
+        setRate sv s "line-rate" ``class``
+        setRate bv b "branch-rate" ``class``
+        setRate cv c "complexity" ``class``
         (cv + cvcum, c + ccum)
 
       let processModule files classes (``module`` : XElement) =
@@ -283,11 +283,11 @@ module internal Cobertura =
            package.Add(classes)
            extract ``module`` package
            let (cv, c) = processModule files classes ``module``
-           SetRate cv c "complexity" package)
+           setRate cv c "complexity" package)
       extract (report.Descendants("CoverageSession".X) |> Seq.head) packages.Parent
-      AddSources report packages.Parent "File" "fullPath"
+      addSources report packages.Parent "File" "fullPath"
 
-    let internal ConvertReport (report : XDocument) (format : Base.ReportFormat) =
+    let internal convertReport (report : XDocument) (format : Base.ReportFormat) =
       let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
       let doctype =
         XDocumentType
@@ -332,6 +332,6 @@ module internal Cobertura =
       rewrite
 
   let internal summary (report : XDocument) (format : Base.ReportFormat) result =
-    let rewrite = I.ConvertReport report format
+    let rewrite = I.convertReport report format
     rewrite.Save(!path |> Option.get)
     result

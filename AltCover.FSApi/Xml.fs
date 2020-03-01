@@ -54,7 +54,7 @@ module XmlUtilities =
 
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
   // Also, this rule is deprecated
-  let internal LoadSchema(format : AltCover.Base.ReportFormat) =
+  let internal loadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
 
     let resource =
@@ -68,7 +68,7 @@ module XmlUtilities =
     schemas.Add(String.Empty, xreader) |> ignore
     schemas
 
-  let internal LoadTransform(name : string) =
+  let internal loadTransform(name : string) =
     let transform = new XslCompiledTransform()
     use stream =
       Assembly.GetExecutingAssembly()
@@ -80,18 +80,18 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  let internal DiscoverFormat(xmlDocument : XmlDocument) =
+  let internal discoverFormat(xmlDocument : XmlDocument) =
     let format =
       if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any()
       then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
-    let schema = LoadSchema format
+    let schema = loadSchema format
     xmlDocument.Schemas <- schema
     xmlDocument.Validate(null)
     format
 
-  let internal AssemblyNameWithFallback path fallback =
+  let internal assemblyNameWithFallback path fallback =
     try
       AssemblyName.GetAssemblyName(path).FullName
     with
@@ -102,6 +102,6 @@ module XmlUtilities =
     | :? FileLoadException -> fallback
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
-  let internal PrependDeclaration(x : XmlDocument) =
+  let internal prependDeclaration(x : XmlDocument) =
     let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
     x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore

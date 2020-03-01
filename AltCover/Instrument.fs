@@ -55,7 +55,7 @@ module internal Instrument =
   let private resources =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
-  let internal ResolutionTable = Dictionary<string, AssemblyDefinition>()
+  let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
   module internal I =
 
@@ -122,7 +122,7 @@ module internal Instrument =
       if not name.HasPublicKey then
         None
       else
-        let index = KeyStore.ArrayToIndex name.PublicKey
+        let index = KeyStore.arrayToIndex name.PublicKey
         match CoverageParameters.keys.TryGetValue(index) with
         | (false, _) -> None
         | (_, record) -> Some record.Pair
@@ -137,7 +137,7 @@ module internal Instrument =
       if pktoken.Length <> 8 then
         None
       else
-        let index = KeyStore.TokenAsULong pktoken
+        let index = KeyStore.tokenAsULong pktoken
         match CoverageParameters.keys.TryGetValue(index) with
         | (false, _) -> None
         | (_, record) -> Some record
@@ -177,12 +177,12 @@ module internal Instrument =
 
         [ // set the coverage file path and unique token
           ("get_ReportFile",
-           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldstr, CoverageParameters.ReportPath())))
+           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldstr, CoverageParameters.reportPath())))
           ("get_Token",
            (fun (w : ILProcessor) ->
              w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
           ("get_CoverageFormat",
-           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.ReportFormat() |> int)))
+           (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.reportFormat() |> int)))
           ("get_Sample",
            (fun (w : ILProcessor) -> w.Create(OpCodes.Ldc_I4, CoverageParameters.Sampling())))
           ("get_Defer", (fun (w : ILProcessor) -> w.Create(CoverageParameters.deferOpCode()))) ]
@@ -202,7 +202,7 @@ module internal Instrument =
              initialBody |> Seq.iter worker.Remove)
 
         [ (// set the timer interval in ticks
-           "get_Timer", CoverageParameters.Interval()) ]
+           "get_Timer", CoverageParameters.interval()) ]
         |> List.iter (fun (property, value) ->
              let pathGetterDef =
                definition.MainModule.GetTypes()
@@ -239,8 +239,8 @@ module internal Instrument =
 
     let internal resolveFromNugetCache _ (y : AssemblyNameReference) =
       let name = y.ToString()
-      if ResolutionTable.ContainsKey name then
-        ResolutionTable.[name]
+      if resolutionTable.ContainsKey name then
+        resolutionTable.[name]
       else
         // Placate Gendarme here
         let share = "|usr|share".Replace('|', Path.DirectorySeparatorChar)
@@ -279,7 +279,7 @@ module internal Instrument =
                CommandLine.resources.GetString "resolved", y.ToString(), x)
             |> (Output.warnOn true)
             let a = AssemblyDefinition.ReadAssembly x
-            ResolutionTable.[name] <- a
+            resolutionTable.[name] <- a
             a
 
     let internal hookResolveHandler = new AssemblyResolveEventHandler(resolveFromNugetCache)
@@ -437,7 +437,7 @@ module internal Instrument =
 
            let effectiveKey =
              match token with
-             | None -> CoverageParameters.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
+             | None -> CoverageParameters.defaultStrongNameKey |> Option.map KeyStore.keyToRecord
              | Some _ -> token
            match effectiveKey with
            | None ->
@@ -528,8 +528,8 @@ module internal Instrument =
         | _ -> state
       { restate with
           ModuleId =
-            match CoverageParameters.ReportKind() with
-            | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
+            match CoverageParameters.reportKind() with
+            | AltCover.Base.ReportFormat.OpenCover -> KeyStore.hashFile m.FileName
             | _ -> m.Mvid.ToString() }
 
     let private visitMethod (state : InstrumentContext) (m : MethodDefinition)
@@ -643,9 +643,9 @@ module internal Instrument =
       try
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
         WriteAssemblies (state.RecordingAssembly) recorderFileName
-          (CoverageParameters.InstrumentDirectories()) ignore
+          (CoverageParameters.instrumentDirectories()) ignore
 
-        CoverageParameters.InstrumentDirectories()
+        CoverageParameters.instrumentDirectories()
         |> Seq.iter (fun instrument ->
 
              Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
@@ -785,4 +785,4 @@ module internal Instrument =
   /// <param name="assemblies">List of assembly paths to visit</param>
   /// <returns>Stateful visitor function</returns>
   let internal instrumentGenerator(assemblies : string list) =
-    Visitor.EncloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
+    Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)

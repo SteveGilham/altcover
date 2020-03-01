@@ -28,7 +28,7 @@ module internal ProgramDatabase =
     let internal getEmbeddedPortablePdbEntry(assembly : AssemblyDefinition) =
       getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |]) :?> ImageDebugHeaderEntry
 
-    let internal GetSymbolsByFolder fileName folderName =
+    let internal getSymbolsByFolder fileName folderName =
       let name = Path.Combine(folderName, fileName)
       let fallback = Path.ChangeExtension(name, ".pdb")
       if File.Exists(fallback) then
@@ -64,7 +64,7 @@ module internal ProgramDatabase =
         let foldername = Path.GetDirectoryName assembly.MainModule.FileName
         let filename = Path.GetFileName assembly.MainModule.FileName
         foldername :: (Seq.toList symbolFolders)
-        |> Seq.map (I.GetSymbolsByFolder filename)
+        |> Seq.map (I.getSymbolsByFolder filename)
         |> Seq.choose id
         |> Seq.tryFind (fun _ -> true)
     | pdbpath -> pdbpath

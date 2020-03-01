@@ -460,7 +460,7 @@ module AltCoverXTests =
            "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
-      let result = Main.doInstrumentation args
+      let result = Main.I.doInstrumentation args
       test <@ result = 0 @>
       test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =
@@ -621,7 +621,7 @@ module AltCoverXTests =
       let args = [| "-i"; path; "-o"; output; "-x"; report
                     "-sn"; key
                  |]
-      let result = Main.doInstrumentation args
+      let result = Main.I.doInstrumentation args
       test <@ result = 0 @>
       test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =

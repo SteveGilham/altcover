@@ -77,15 +77,15 @@ module DotNet =
         | Some thing -> Some(thing + " " + options)
 
       // the constructors are version dependent
-      let OptionsConstructor = self.Common.GetType().GetConstructors().[0]
+      let optionsConstructor = self.Common.GetType().GetConstructors().[0]
 
       let args =
-        OptionsConstructor.GetParameters()
+        optionsConstructor.GetParameters()
         |> Array.map (fun info ->
              let t = info.ParameterType
              if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null)
 
-      let common = OptionsConstructor.Invoke(args)
+      let common = optionsConstructor.Invoke(args)
       self.Common.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (fun f ->
            f.SetValue
@@ -94,15 +94,15 @@ module DotNet =
                 f.GetValue self.Common
                else
                  extended :> obj)))
-      let TestOptionsConstructor = self.GetType().GetConstructors().[0]
+      let testOptionsConstructor = self.GetType().GetConstructors().[0]
 
       let args' =
-        TestOptionsConstructor.GetParameters()
+        testOptionsConstructor.GetParameters()
         |> Array.map (fun info ->
              let t = info.ParameterType
              if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null)
 
-      let result = TestOptionsConstructor.Invoke(args')
+      let result = testOptionsConstructor.Invoke(args')
       self.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (fun f ->
            f.SetValue

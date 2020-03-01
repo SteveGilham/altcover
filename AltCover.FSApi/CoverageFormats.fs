@@ -16,14 +16,14 @@ module CoverageFormats =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   let ConvertToLcov xmlDocument stream =
-    let format = XmlUtilities.DiscoverFormat xmlDocument
+    let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
     AltCover.LCov.I.convertReport xdoc format stream
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   let ConvertToCobertura xmlDocument =
-    let format = XmlUtilities.DiscoverFormat xmlDocument
+    let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
     AltCover.Cobertura.I.ConvertReport xdoc format
 
@@ -43,7 +43,7 @@ module CoverageFormats =
     assemblies
     |> Seq.iter (fun p ->
          let a =
-           XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
+           XmlUtilities.assemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
          paths.Add(p, a))
     let usefulAssemblies =
       assemblies
@@ -111,11 +111,11 @@ module CoverageFormats =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
   let ConvertToNCover(navigable : IXPathNavigable) =
-    let transform = XmlUtilities.LoadTransform "OpenCoverToNCover"
+    let transform = XmlUtilities.loadTransform "OpenCoverToNCover"
     let rewrite = XmlDocument()
     do use output = rewrite.CreateNavigator().AppendChild()
        transform.Transform(navigable, output)
-    XmlUtilities.PrependDeclaration rewrite
+    XmlUtilities.prependDeclaration rewrite
 
     use methods = rewrite.SelectNodes("//method")
     methods.OfType<XmlElement>()
@@ -134,7 +134,7 @@ module CoverageFormats =
          m.SetAttribute("name", info.Name)
          let assembly = m.GetAttribute("assembly")
          m.SetAttribute
-           ("assemblyIdentity", XmlUtilities.AssemblyNameWithFallback path assembly))
+           ("assemblyIdentity", XmlUtilities.assemblyNameWithFallback path assembly))
 
     let culture = System.Threading.Thread.CurrentThread.CurrentCulture
     try

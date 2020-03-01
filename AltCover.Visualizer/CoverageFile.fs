@@ -21,9 +21,9 @@ type InvalidFile =
     Fault : Exception }
 
 module Transformer =
-  let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
+  let internal defaultHelper (_ : XDocument) (document : XDocument) = document
 
-  let internal LoadTransform(path : string) =
+  let internal loadTransform(path : string) =
     use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
     use stylesheet =
       XmlReader.Create(str)
@@ -31,8 +31,8 @@ module Transformer =
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
-  let internal TransformFromOtherCover (document : XNode) (path : string) =
-    let xmlTransform = LoadTransform path
+  let internal transformFromOtherCover (document : XNode) (path : string) =
+    let xmlTransform = loadTransform path
     use buffer = new MemoryStream()
     use sw = new StreamWriter(buffer)
     // transform the document:
@@ -41,13 +41,13 @@ module Transformer =
     use reader = XmlReader.Create(buffer)
     XDocument.Load(reader)
 
-  let internal TransformFromOpenCover(document : XNode) =
+  let internal transformFromOpenCover(document : XNode) =
     let report =
-      TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
+      transformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
   // PartCover to NCover style sheet
-  let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
+  let internal convertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
     let schemas = new XmlSchemaSet()
     use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
@@ -64,7 +64,7 @@ module Transformer =
             (String.Empty, ocreader)
           |> ignore
           document.Validate(schemas, null)
-          let report = TransformFromOpenCover document
+          let report = transformFromOpenCover document
           let fixedup = helper CoverageTool.OpenCover document report
           // Consistency check our XSLT
           let schemas2 = new XmlSchemaSet()
@@ -96,7 +96,7 @@ type internal CoverageFile =
                 (file : FileInfo) =
     try
       let rawDocument = XDocument.Load(file.FullName)
-      match Transformer.ConvertFile helper rawDocument with
+      match Transformer.convertFile helper rawDocument with
       | Left x ->
           Left
             { Fault = x
@@ -120,7 +120,7 @@ type internal CoverageFile =
             File = file }
 
   static member LoadCoverageFile(file : FileInfo) =
-    CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
+    CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 

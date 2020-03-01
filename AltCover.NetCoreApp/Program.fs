@@ -8,7 +8,7 @@ open System.Runtime.InteropServices
 ()
 
 module DotNetAltCover =
-  let internal ToConsole() =
+  let internal toConsole() =
     Output.error <- CommandLine.writeErr
     Output.usage <- CommandLine.usageBase
     Output.echo <- CommandLine.writeErr
@@ -19,6 +19,6 @@ module DotNetAltCover =
       "Gendarme.Rules.Portability",
       "ExitCodeIsLimitedOnUnixRule",
       Justification="limited 0-255 elsewhere")>]
-  let private Main arguments =
-    ToConsole()
+  let private main arguments =
+    toConsole()
     AltCover.Main.effectiveMain arguments

@@ -63,7 +63,7 @@ module internal Output =
   let internal warnOn x =
     if x then warn else info
 
-  let internal LogExceptionToFile path e =
+  let internal logExceptionToFile path e =
     Directory.CreateDirectory(path |> Path.GetDirectoryName) |> ignore
     use stream = File.Open(path, FileMode.Append, FileAccess.Write)
     use writer = new StreamWriter(stream)
@@ -173,9 +173,9 @@ module internal CommandLine =
       result
 
     let logExceptionsToFile name extend =
-      let path = Path.Combine(CoverageParameters.OutputDirectories() |> Seq.head, name)
-      let path' = Path.Combine(CoverageParameters.InputDirectories() |> Seq.head, name)
-      exceptions |> List.iter (Output.LogExceptionToFile path)
+      let path = Path.Combine(CoverageParameters.theOutputDirectories() |> Seq.head, name)
+      let path' = Path.Combine(CoverageParameters.theInputDirectories() |> Seq.head, name)
+      exceptions |> List.iter (Output.logExceptionToFile path)
       if exceptions
          |> List.isEmpty
          |> not
@@ -267,7 +267,7 @@ module internal CommandLine =
         if help then Left("HelpText", options) else parse
     | fail -> fail
 
-  let internal ReportErrors (tag : string) extend =
+  let internal reportErrors (tag : string) extend =
     I.conditionalOutput (fun () ->
       tag
       |> String.IsNullOrWhiteSpace
@@ -285,10 +285,10 @@ module internal CommandLine =
       + ".log"
     I.logExceptionsToFile name extend
 
-  let internal HandleBadArguments extend arguments info =
+  let internal handleBadArguments extend arguments info =
     String.Join(" ", arguments |> Seq.map (sprintf "%A")) |> Output.echo
     Output.echo String.Empty
-    ReportErrors String.Empty extend
+    reportErrors String.Empty extend
     Output.usage info
 
   let internal ddFlag (name : string) flag =
@@ -384,10 +384,10 @@ module internal CommandLine =
         w.WriteLine(resources.GetString "version")
         )
 
-  let internal WriteResource = resources.GetString >> Output.info
-  let internal WriteResourceWithFormatItems s x warn =
+  let internal writeResource = resources.GetString >> Output.info
+  let internal writeResourceWithFormatItems s x warn =
     String.Format(CultureInfo.CurrentCulture, s |> resources.GetString, x)
     |> (Output.warnOn warn)
-  let internal WriteErrorResourceWithFormatItems s x =
+  let internal writeErrorResourceWithFormatItems s x =
     String.Format(CultureInfo.CurrentCulture, s |> resources.GetString, x)
     |> Output.error

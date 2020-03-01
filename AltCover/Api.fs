@@ -132,8 +132,8 @@ type CollectParams =
         ("--cobertura", self.Cobertura)
         ("--outputFile", self.OutputFile) ]
       |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
-      validate Runner.ValidateThreshold self.Threshold
-      if afterPreparation then Runner.RequireRecorderTest (recorder |> toOption) () ()
+      validate Runner.validateThreshold self.Threshold
+      if afterPreparation then Runner.requireRecorderTest (recorder |> toOption) () ()
       CommandLine.error |> List.toArray
     finally
       CommandLine.error <- saved
@@ -354,7 +354,7 @@ type PrepareParams =
 
     let validateContext context =
       let select state x =
-        let (_, n) = Main.ValidateCallContext state x
+        let (_, n) = Main.validateCallContext state x
         match (state, n) with
         | (true, _)
         | (_, Left(Some _)) -> true

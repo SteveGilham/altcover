@@ -82,7 +82,7 @@ module internal GuiCommon =
           use client = new System.Net.WebClient()
           client.DownloadString(u)
 
-  let internal GetSource(document : string) =
+  let internal getSource(document : string) =
     if document.StartsWith("http://", StringComparison.Ordinal)
        || document.StartsWith("https://", StringComparison.Ordinal) then
       System.Uri(document) |> Url

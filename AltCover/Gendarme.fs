@@ -11,14 +11,14 @@ module internal Gendarme =
     // OpenCover uses Gendarme to compute Cyclomatic Complexity values.  Reimplement that algorithm here
     let internal mask = [ 0xFFFF6C3FCUL; 0x1B0300000000FFE0UL; 0x400100FFF800UL; 0xDE0UL ]
 
-    let internal FindFirstUnconditionalBranchTarget(ins : Cil.Instruction) =
+    let internal findFirstUnconditionalBranchTarget(ins : Cil.Instruction) =
       Seq.unfold
         (fun (state : Cil.Instruction) ->
           if isNull state then None else Some(state, state.Next)) ins
       |> Seq.tryFind (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
       |> Option.map (fun i -> i.Operand :?> Cil.Instruction)
 
-    let internal AccumulateSwitchTargets (ins : Cil.Instruction)
+    let internal accumulateSwitchTargets (ins : Cil.Instruction)
         (targets : System.Collections.Generic.HashSet<Cil.Instruction>) =
       let cases = ins.Operand :?> Cil.Instruction []
       cases
@@ -33,7 +33,7 @@ module internal Gendarme =
         let operand = next.Operand :?> Cil.Instruction
         match cases
               |> Seq.head
-              |> FindFirstUnconditionalBranchTarget with
+              |> findFirstUnconditionalBranchTarget with
         | Some unc when unc = operand -> ()
         | _ ->
             operand
@@ -54,7 +54,7 @@ module internal Gendarme =
        &&& (1UL <<< (index &&& 63))
        <> 0UL).ToInt32
 
-    let internal SwitchCyclomaticComplexity(instructions : Cil.Instruction seq) =
+    let internal switchCyclomaticComplexity(instructions : Cil.Instruction seq) =
       let targets = System.Collections.Generic.HashSet<Cil.Instruction>()
 
       let fast =
@@ -76,7 +76,7 @@ module internal Gendarme =
                       |> ``detect ternary pattern``)
              | FlowControl.Cond_Branch ->
                  if i.OpCode = OpCodes.Switch then
-                   AccumulateSwitchTargets i targets
+                   accumulateSwitchTargets i targets
                    c
                  else
                    let branch = i.Operand :?> Cil.Instruction
@@ -90,7 +90,7 @@ module internal Gendarme =
              | _ -> c) 1
       fast + targets.Count
 
-  let internal CyclomaticComplexity(m : MethodDefinition) =
+  let internal cyclomaticComplexity(m : MethodDefinition) =
     if m.HasBody then
       let instructions = m.Body.Instructions |> Seq.cast<Cil.Instruction>
       match instructions |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Switch) with
@@ -105,6 +105,6 @@ module internal Gendarme =
                              (fun (previous : Instruction) -> previous.OpCode.Code)
                         |> I.``detect ternary pattern``)
                | _ -> c) 1
-      | _ -> I.SwitchCyclomaticComplexity instructions
+      | _ -> I.switchCyclomaticComplexity instructions
     else
       1

@@ -159,7 +159,7 @@ module internal LCov =
                         |> Seq.exists (fun r -> r.Attribute("uid".X).Value = uid))
                    |> Seq.toList
 
-                 let FN(ms : XElement list) =
+                 let FN(ms : XElement list) = // fsharplint:disable-line MemberNames
                    ms
                    |> Seq.iter (fun m ->
                         m.Descendants("SequencePoint".X)
@@ -178,7 +178,7 @@ module internal LCov =
                  // Next, there is a list of execution counts for each  instrumented  function:
                  //
                  // FNDA:<execution count>,<function name>
-                 let FNDA(ms : XElement list) =
+                 let FNDA(ms : XElement list) = // fsharplint:disable-line MemberNames
                    ms
                    |> Seq.iter (fun m ->
                         m.Descendants("SequencePoint".X)
@@ -212,7 +212,7 @@ module internal LCov =
                  // Block number and branch number are gcc internal  IDs  for  the  branch.
                  // Taken  is either '-' if the basic block containing the branch was never
                  // executed or a number indicating how often that branch was taken.
-                 let Branch(ms : XElement list) =
+                 let branch(ms : XElement list) =
                    let (brf, brh, _) =
                      ms
                      |> Seq.collect (fun m -> m.Descendants("BranchPoint".X))
@@ -238,7 +238,7 @@ module internal LCov =
                    // BRH:<number of branches hit>
                    writer.WriteLine("BRF:" + brf.ToString(CultureInfo.InvariantCulture))
                    writer.WriteLine("BRH:" + brh.ToString(CultureInfo.InvariantCulture))
-                 Branch methods
+                 branch methods
                  // Then there is a list of execution counts  for  each  instrumented  line
                  // (i.e. a line which resulted in executable code):
                  //

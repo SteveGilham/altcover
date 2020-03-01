@@ -27,25 +27,25 @@ module Api =
     |> List.toArray
     |> Main.effectiveMain
 
-  let Summary() = Runner.Summary.ToString()
+  let Summary() = Runner.summary.ToString()
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
-  let internal LogToStore =
+  let internal logToStore =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
 
-  let internal GetStringValue s =
+  let internal getStringValue s =
     writeToStore String.Empty
-    LogToStore.Apply()
+    logToStore.Apply()
     [| s |]
     |> Main.effectiveMain
     |> ignore
     store
 
-  let Ipmo() = GetStringValue "ipmo"
-  let Version() = GetStringValue "version"
+  let Ipmo() = getStringValue "ipmo"
+  let Version() = getStringValue "version"
 
-  let internal Colourize name =
+  let internal colourize name =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
     if ok then Console.ForegroundColor <- colour
 
@@ -232,7 +232,7 @@ type Echo() =
     then
       let original = Console.ForegroundColor
       try
-        Api.Colourize self.Colour
+        Api.colourize self.Colour
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original
