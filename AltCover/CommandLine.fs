@@ -348,6 +348,9 @@ module internal CommandLine =
     else
       (StrongNameKeyData.Empty(), false)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design.Generic",
+    "AvoidMethodWithUnusedGenericTypeRule",
+    Justification="Delegation = first class functions")>]
   let internal doPathOperation = I.doPathOperation
   let internal findAssemblyName = I.findAssemblyName
 

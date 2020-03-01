@@ -1,7 +1,7 @@
 #nowarn "25"
 namespace AltCover
 
-// TODO isolate where
+// TODO isolate where, and why this isn't working
 [<System.Diagnostics.CodeAnalysis.SuppressMessage(
   "Gendarme.Rules.Smells", "AvoidSpeculativeGenerality",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
