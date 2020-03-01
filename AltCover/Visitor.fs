@@ -468,7 +468,7 @@ module internal Visitor =
 
              let included =
                inspection ||| if inspection = Inspections.Instrument
-                                 && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
+                                 && CoverageParameters.ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
                                 Inspections.Track
                               else
                                 Inspections.Ignore
