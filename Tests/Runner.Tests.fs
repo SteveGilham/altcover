@@ -810,7 +810,7 @@ module AltCoverRunnerTests =
       lock LCov.path (fun () ->
         try
           LCov.path := None
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           let options = Runner.DeclareOptions()
           let unique = "some exe"
           let input = [| "-l"; unique |]
@@ -823,9 +823,9 @@ module AltCoverRunnerTests =
           match !LCov.path with
           | None -> Assert.Fail()
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
-          Assert.That(Runner.Summaries.Length, Is.EqualTo 2)
+          Assert.That(Runner.I.Summaries.Length, Is.EqualTo 2)
         finally
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           LCov.path := None)
 
 #if NETCOREAPP2_0
@@ -837,7 +837,7 @@ module AltCoverRunnerTests =
       lock LCov.path (fun () ->
         try
           LCov.path := None
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           let options = Runner.DeclareOptions()
           let unique = Guid.NewGuid().ToString()
 
@@ -855,7 +855,7 @@ module AltCoverRunnerTests =
             Assert.That(x, Is.EqualTo "UsageError")
             Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--lcovReport : specify this only once")
         finally
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           LCov.path := None)
 
 #if NETCOREAPP2_0
@@ -867,7 +867,7 @@ module AltCoverRunnerTests =
       lock LCov.path (fun () ->
         try
           LCov.path := None
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           let options = Runner.DeclareOptions()
           let blank = " "
           let input = [| "-l"; blank |]
@@ -878,7 +878,7 @@ module AltCoverRunnerTests =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           LCov.path := None)
 
 #if NETCOREAPP2_0
@@ -989,7 +989,7 @@ module AltCoverRunnerTests =
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           let options = Runner.DeclareOptions()
           let unique = "some exe"
           let input = [| "-c"; unique |]
@@ -1002,9 +1002,9 @@ module AltCoverRunnerTests =
           match !Cobertura.path with
           | None -> Assert.Fail()
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
-          Assert.That(Runner.Summaries.Length, Is.EqualTo 2)
+          Assert.That(Runner.I.Summaries.Length, Is.EqualTo 2)
         finally
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           Cobertura.path := None)
 
 #if NETCOREAPP2_0
@@ -1016,7 +1016,7 @@ module AltCoverRunnerTests =
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           let options = Runner.DeclareOptions()
           let unique = Guid.NewGuid().ToString()
 
@@ -1034,7 +1034,7 @@ module AltCoverRunnerTests =
             Assert.That(x, Is.EqualTo "UsageError")
             Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--cobertura : specify this only once")
         finally
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           Cobertura.path := None)
 
 #if NETCOREAPP2_0
@@ -1046,7 +1046,7 @@ module AltCoverRunnerTests =
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           let options = Runner.DeclareOptions()
           let blank = " "
           let input = [| "-c"; blank |]
@@ -1057,7 +1057,7 @@ module AltCoverRunnerTests =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.Summaries <- [ Runner.StandardSummary ]
+          Runner.I.Summaries <- [ Runner.I.StandardSummary ]
           Cobertura.path := None)
 
 #if NETCOREAPP2_0
@@ -1285,7 +1285,7 @@ module AltCoverRunnerTests =
         try
           Runner.executable := None
           let options = Runner.DeclareOptions()
-          let parse = Runner.RequireExe(Right([], options))
+          let parse = Runner.J.RequireExe(Right([], options))
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -1304,7 +1304,7 @@ module AltCoverRunnerTests =
         try
           Runner.executable := Some "xxx"
           let options = Runner.DeclareOptions()
-          let parse = Runner.RequireExe(Right([ "b" ], options))
+          let parse = Runner.J.RequireExe(Right([ "b" ], options))
           match parse with
           | Right(x :: y, z) ->
             Assert.That(z, Is.SameAs options)
@@ -1325,7 +1325,7 @@ module AltCoverRunnerTests =
           Runner.executable := None
           Runner.collect := true
           let options = Runner.DeclareOptions()
-          let parse = Runner.RequireExe(Right([ "a"; "b" ], options))
+          let parse = Runner.J.RequireExe(Right([ "a"; "b" ], options))
           match parse with
           | Right([], z) -> Assert.That(z, Is.SameAs options)
           | _ -> Assert.Fail()
@@ -1344,7 +1344,7 @@ module AltCoverRunnerTests =
           Runner.executable := Some "xxx"
           Runner.collect := true
           let options = Runner.DeclareOptions()
-          let parse = Runner.RequireExe(Right([ "b" ], options))
+          let parse = Runner.J.RequireExe(Right([ "b" ], options))
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -1364,7 +1364,7 @@ module AltCoverRunnerTests =
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
         let input = (Right([], options))
-        let parse = Runner.RequireWorker input
+        let parse = Runner.J.RequireWorker input
         match parse with
         | Right _ ->
           Assert.That(parse, Is.SameAs input)
@@ -1383,7 +1383,7 @@ module AltCoverRunnerTests =
         Runner.workingDirectory <- Some "ShouldAcceptWorker"
         let options = Runner.DeclareOptions()
         let input = (Right([], options))
-        let parse = Runner.RequireWorker input
+        let parse = Runner.J.RequireWorker input
         match parse with
         | Right _ ->
           Assert.That(parse, Is.SameAs input)
@@ -1402,7 +1402,7 @@ module AltCoverRunnerTests =
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
         let input = (Right([], options))
-        let parse = Runner.RequireRecorder input
+        let parse = Runner.J.RequireRecorder input
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1430,7 +1430,7 @@ module AltCoverRunnerTests =
         Runner.recordingDirectory <- Some path'
         let options = Runner.DeclareOptions()
         let input = (Right([], options))
-        let parse = Runner.RequireRecorder input
+        let parse = Runner.J.RequireRecorder input
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1461,7 +1461,7 @@ module AltCoverRunnerTests =
              frombytes.CopyTo libstream
         let options = Runner.DeclareOptions()
         let input = (Right([], options))
-        let parse = Runner.RequireRecorder input
+        let parse = Runner.J.RequireRecorder input
         match parse with
         | Right _ -> Assert.That(parse, Is.SameAs input)
         | _ -> Assert.Fail()
@@ -1723,25 +1723,25 @@ or
     let ShouldGetStringConstants() =
       Runner.init()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-      let save = Runner.RecorderName
+      let save = Runner.J.RecorderName
       lock synchronized (fun () ->
         try
           Runner.recordingDirectory <- Some where
-          Runner.RecorderName <- "AltCover.Recorder.dll"
-          let instance = Runner.RecorderInstance() |> snd
+          Runner.J.RecorderName <- "AltCover.Recorder.dll"
+          let instance = Runner.J.RecorderInstance() |> snd
           Assert.That
             (instance.FullName, Is.EqualTo "AltCover.Recorder.Instance",
              "should be the instance")
           let token =
-            (Runner.GetMethod instance "get_Token") |> Runner.GetFirstOperandAsString
+            (Runner.J.GetMethod instance "get_Token") |> Runner.J.GetFirstOperandAsString
           Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
           let report =
-            (Runner.GetMethod instance "get_ReportFile") |> Runner.GetFirstOperandAsString
+            (Runner.J.GetMethod instance "get_ReportFile") |> Runner.J.GetFirstOperandAsString
           Assert.That
             (report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
         finally
           Runner.recordingDirectory <- None
-          Runner.RecorderName <- save)
+          Runner.J.RecorderName <- save)
 
     [<Test>]
     let ShouldProcessPayload() =
@@ -1778,7 +1778,7 @@ or
           if nonWindows then "mono" :: baseArgs
           else baseArgs
 
-        let r = Runner.GetPayload args
+        let r = Runner.K.GetPayload args
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
         stdout.Flush()
@@ -1837,7 +1837,7 @@ or
              (fun (moduleId, hitPointId, hit) ->
              AltCover.Base.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
-        Runner.DoReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+        Runner.K.DoReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -1865,7 +1865,7 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       do use s = File.Create(unique + ".0.acv")
          s.Close()
-      let r = Runner.GetMonitor counts unique List.length []
+      let r = Runner.K.GetMonitor counts unique List.length []
       Assert.That(r, Is.EqualTo 0)
       Assert.That(File.Exists(unique + ".acv"))
       Assert.That(counts, Is.Empty)
@@ -1881,7 +1881,7 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
       let r =
-        Runner.GetMonitor counts unique (fun l ->
+        Runner.K.GetMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           use formatter = new BinaryWriter(sink)
@@ -1931,7 +1931,7 @@ or
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
         let r =
-          Runner.GetMonitor counts unique (fun l ->
+          Runner.K.GetMonitor counts unique (fun l ->
             use sink =
               new DeflateStream(File.OpenWrite(unique + ".0.acv"),
                                 CompressionMode.Compress)
@@ -1945,7 +1945,7 @@ or
             |> List.length) [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
-        let doc = Runner.LoadReport(unique + ".acv")
+        let doc = Runner.K.LoadReport(unique + ".acv")
         Assert.That(doc.Nodes(), Is.Empty)
         Assert.That(counts, Is.Empty)
       finally
@@ -1963,7 +1963,7 @@ or
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
 
       let r =
-        Runner.GetMonitor counts unique (fun l ->
+        Runner.K.GetMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           l
@@ -2002,7 +2002,7 @@ or
       let inputs = [ String.Empty; "a"; "b"; "c"; "d"; String.Empty; "e" ]
 
       let r =
-        Runner.GetMonitor counts unique (fun l ->
+        Runner.K.GetMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           use formatter = new BinaryWriter(sink)
@@ -2103,7 +2103,7 @@ or
           Base.Both { Time = 5L;  Call = 42 }
           Base.Time 42L
           Base.Time 5L ]
-      Runner.PointProcess root hits
+      Runner.K.PointProcess root hits
       Assert.That
         (x.DocumentElement.OuterXml,
          Is.EqualTo
@@ -2341,7 +2341,7 @@ or
       Runner.init()
       let visits = Dictionary<int, PointVisit>()
       let key = " "
-      let result = Runner.LookUpVisitsByToken key visits
+      let result = Runner.J.LookUpVisitsByToken key visits
       match (result.Count, result.Tracks |> Seq.toList) with
       | (0L, []) -> ()
       | _ -> Assert.Fail(sprintf "%A" result)
@@ -2360,7 +2360,7 @@ or
           Runner.SummaryFormat <- Default
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+          let r = Runner.I.StandardSummary report Base.ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo 0)
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
           Assert.That
@@ -2386,7 +2386,7 @@ or
           Runner.SummaryFormat <- B
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+          let r = Runner.I.StandardSummary report Base.ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo 0)
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2414,7 +2414,7 @@ or
           Runner.SummaryFormat <- BPlus
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+          let r = Runner.I.StandardSummary report Base.ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo 0)
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2447,7 +2447,7 @@ or
           let r =
             try
               Runner.threshold <- Some 25
-              Runner.StandardSummary baseline Base.ReportFormat.NCover 42
+              Runner.I.StandardSummary baseline Base.ReportFormat.NCover 42
             finally
               Runner.threshold <- None
           // 80% coverage > threshold so expect return code coming in
@@ -2475,7 +2475,7 @@ or
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- Default
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+          let r = Runner.I.StandardSummary report Base.ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo 0)
           Assert.That
             (builder.ToString(),
@@ -2501,7 +2501,7 @@ or
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- B
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+          let r = Runner.I.StandardSummary report Base.ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo 0)
           Assert.That
             (builder.ToString(),
@@ -2531,7 +2531,7 @@ or
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- RPlus
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+          let r = Runner.I.StandardSummary report Base.ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo 0)
           Assert.That
             (builder.ToString(),
@@ -2571,7 +2571,7 @@ or
           let r =
             try
               Runner.threshold <- Some 75
-              Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
+              Runner.I.StandardSummary baseline Base.ReportFormat.OpenCover 23
             finally
               Runner.threshold <- None
           // 70% coverage < threshold so expect shortfall
@@ -2611,8 +2611,8 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        Runner.AddLCovSummary()
-        let summarize = Runner.Summaries |> Seq.head
+        Runner.I.AddLCovSummary()
+        let summarize = Runner.I.Summaries |> Seq.head
         let r = summarize baseline Base.ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo 0)
         let result = File.ReadAllText unique
@@ -2797,8 +2797,8 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        Runner.AddCoberturaSummary()
-        let summarize = Runner.Summaries |> Seq.head
+        Runner.I.AddCoberturaSummary()
+        let summarize = Runner.I.Summaries |> Seq.head
         let r = summarize baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result =
@@ -2918,21 +2918,21 @@ or
     let ThresholdViolationShouldBeReported() =
       Runner.init()
       let saveErr = Output.error
-      let saveSummaries = Runner.Summaries
+      let saveSummaries = Runner.I.Summaries
       let builder = System.Text.StringBuilder()
       let saved = Runner.threshold
       try
-        Runner.Summaries <- [ (fun _ _ _ -> 23) ]
+        Runner.I.Summaries <- [ (fun _ _ _ -> 23) ]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
         Runner.threshold <- Some 42
-        let delta = Runner.DoSummaries (XDocument()) Base.ReportFormat.NCover 0
+        let delta = Runner.K.DoSummaries (XDocument()) Base.ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),
            Is.EqualTo "Coverage percentage achieved is 23% below the threshold of 42%.|")
       finally
         Output.error <- saveErr
-        Runner.Summaries <- saveSummaries
+        Runner.I.Summaries <- saveSummaries
         Runner.threshold <- saved
 
 #if NETCOREAPP2_0
@@ -2942,4 +2942,4 @@ or
     let TryGetValueHandlesNull() =
       Runner.init()
       let dict : Dictionary<int, int> = null
-      Assert.That(Runner.TryGetValue dict 0 |> fst, Is.False)
+      Assert.That(Runner.J.TryGetValue dict 0 |> fst, Is.False)

@@ -2655,6 +2655,7 @@ module AltCoverTests =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
+        CoverageParameters.NameFilters.Clear()
         CoverageParameters.TrackingNames.Clear()
         CoverageParameters.TrackingNames.Add("Main")
         CoverageParameters.reportFormat <- Some Base.ReportFormat.OpenCover

@@ -687,7 +687,7 @@ module AltCoverXTests =
 
       test <@ actual = theFiles @>
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
-      let recordedXml = Runner.LoadReport report
+      let recordedXml = Runner.K.LoadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
       CoverageParameters.outputDirectories.Clear()
@@ -829,14 +829,14 @@ module AltCoverXTests =
       do let from = Path.Combine(here, "AltCover.Recorder.dll")
          let updated = Instrument.I.prepareAssembly from
          Instrument.I.writeAssembly updated create
-    let save = Runner.RecorderName
-    let save1 = Runner.GetPayload
-    let save2 = Runner.GetMonitor
-    let save3 = Runner.DoReport
+    let save = Runner.J.RecorderName
+    let save1 = Runner.K.GetPayload
+    let save2 = Runner.K.GetMonitor
+    let save3 = Runner.K.DoReport
     let codedreport = "coverage.xml" |> Path.GetFullPath
     let alternate = "not-coverage.xml" |> Path.GetFullPath
     try
-      Runner.RecorderName <- "AltCover.Recorder.g.dll"
+      Runner.J.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest : string list) =
         test <@ rest = [ "test"; "1" ] @>
         255
@@ -854,9 +854,9 @@ module AltCoverXTests =
         test <@ hits |> Seq.isEmpty @>
         TimeSpan.Zero
 
-      Runner.GetPayload <- payload
-      Runner.GetMonitor <- monitor
-      Runner.DoReport <- write
+      Runner.K.GetPayload <- payload
+      Runner.K.GetMonitor <- monitor
+      Runner.K.DoReport <- write
       let empty = OptionSet()
       let dummy = codedreport + ".xx.acv"
       do use temp = File.Create dummy
@@ -869,10 +869,10 @@ module AltCoverXTests =
               |> not @>
       test <@ r = 127 @>
     finally
-      Runner.GetPayload <- save1
-      Runner.GetMonitor <- save2
-      Runner.DoReport <- save3
-      Runner.RecorderName <- save
+      Runner.K.GetPayload <- save1
+      Runner.K.GetMonitor <- save2
+      Runner.K.DoReport <- save3
+      Runner.J.RecorderName <- save
       Directory.SetCurrentDirectory start
 
   [<Test>]
