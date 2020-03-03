@@ -1,9 +1,8 @@
 #nowarn "25"
 namespace AltCover
 
-// TODO isolate where, and why this isn't working
 [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-  "Gendarme.Rules.Smells", "AvoidSpeculativeGenerality",
+  "Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
 #if GUI
 module Augment =
