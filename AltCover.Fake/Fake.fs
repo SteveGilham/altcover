@@ -27,6 +27,7 @@ type Implementation =
   | DotNetCore
   | Framework
 
+[<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments optional
 type Api =
   static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
@@ -134,3 +135,9 @@ module DotNet =
 
     [<Obsolete("Prefer equivalent member .WithAltCoverGetVersion")>]
     member self.WithGetVersion() = self.WithAltCoverGetVersion()
+
+#if RUNNER
+[<assembly:CLSCompliant(true)>]
+[<assembly:System.Runtime.InteropServices.ComVisible(false)>]
+()
+#endif
