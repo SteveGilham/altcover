@@ -545,8 +545,25 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
       "-Microsoft.Usage#CA2208" ]
+  let deprecatedRules = 
+    [ "-Microsoft.Usage#CA2202" ]
 
-  [ ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
+  [ ( [ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/net45/altcover.netcoreapp.exe" ],// TODO netcore support
+      [],
+      [ "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+        "-Microsoft.Naming#CA1709"]) // reconsider @ Genbu
+    ( [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
+      [],
+      deprecatedRules)
+    ( [ "_Binaries/AltCover.Fake/Debug+AnyCPU/net46/AltCover.Fake.dll" ],
+      [],
+      [ "-Microsoft.Design#CA1020"
+        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+        "-Microsoft.Usage#CA2202"
+        "-Microsoft.Usage#CA2208"
+        "-Microsoft.Design#CA2210" ])  // can't strongname this as Fake isn't strongnamed 
+    ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
      [ "AltCover.AltCover"
        "AltCover.Api"
        "AltCover.Args"
@@ -642,7 +659,6 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1724"
        "-Microsoft.Usage#CA2208" ]) 
     ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
-       //"_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
        ],
      [],
      [

@@ -13,7 +13,8 @@ namespace AltCover
   public class DataCollector : InProcDataCollection
   {
     [SuppressMessage("Gendarme.Rules.Correctness", "MethodCanBeMadeStaticRule"),
-     SuppressMessage("Gendarme.Rules.Smells", "RelaxedAvoidCodeDuplicatedInSameClassRule")]
+     SuppressMessage("Gendarme.Rules.Smells", "RelaxedAvoidCodeDuplicatedInSameClassRule"),
+     SuppressMessage("Microsoft.Performance", "CA1822")]
     private void Supervise()
     {
       var rec =
