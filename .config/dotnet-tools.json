@@ -13,6 +13,11 @@
       "commands": [
         "fake"
       ]
-    }
+    },
+    "altcode.gendarme-tool": {
+      "version": "2020.3.4.15094-pre-release",
+      "commands": [
+        "gendarme"
+      ]    }
   }
 }

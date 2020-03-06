@@ -26,6 +26,22 @@ open Microsoft.Win32
 
 open Mono.Options
 
+  [<AbstractClass; Sealed>]
+  type internal Format ()=
+    static member Local(resource, [<ParamArray>] args) =
+      String.Format(
+        CultureInfo.CurrentCulture,
+        resource,
+        args)
+
+    static member GetResourceString(key : string) =
+      let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
+      let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
+      resources.GetString(key)
+
+    static member Resource(resource, [<ParamArray>] args) =
+      Format.Local(Format.GetResourceString resource, args)
+
 [<Sealed>]
 type internal Handler() =
   class
@@ -405,11 +421,6 @@ module Gui =
   let private InvokeOnGuiThread(action : unit -> unit) =
     Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
 
-  let private GetResourceString(key : string) =
-    let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
-    resources.GetString(key)
-
   let private XmlIcon =
     lazy
       (new Pixbuf(Assembly.GetExecutingAssembly()
@@ -665,10 +676,8 @@ module Gui =
     InvokeOnGuiThread(SendMessageToWindow)
 
   let private InvalidCoverageFileMessage (parent : Window) (x : InvalidFile) =
-    let format = GetResourceString("InvalidFile")
     let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName,
+      Format.Resource("InvalidFile", x.File.FullName,
          x.Fault.Message)
     ShowMessageOnGuiThread parent MessageType.Error message
 
@@ -677,9 +686,8 @@ module Gui =
     Justification = "AvoidSpeculativeGenerality too")>]
   let private showMessageResourceFileWarning rn (parent : Window) (x : FileInfo)
       (s : Source) =
-    let format = GetResourceString(rn)
     let message = // rely of the format to drop the source file if not needed
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName, s.FullName)
+      Format.Resource(rn, x.FullName, s.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
   let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
@@ -750,30 +758,27 @@ module Gui =
     LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter (fun w ->
-         let t = GetResourceString w.Label
+         let t = Format.GetResourceString w.Label
          if t
             |> String.IsNullOrWhiteSpace
             |> not
          then w.Label <- t)
 #endif
 
-    handler.aboutVisualizer.Title <- GetResourceString("aboutVisualizer.Title")
+    handler.aboutVisualizer.Title <- Format.GetResourceString("aboutVisualizer.Title")
     handler.aboutVisualizer.Modal <- true
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
     handler.aboutVisualizer.Version <-
       System.AssemblyVersionInformation.AssemblyFileVersion
     handler.aboutVisualizer.Copyright <-
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture,
-         GetResourceString("aboutVisualizer.Copyright"),
+      Format.Resource("aboutVisualizer.Copyright",
          System.AssemblyVersionInformation.AssemblyCopyright)
     handler.aboutVisualizer.License <-
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, handler.aboutVisualizer.License,
+      Format.Local(handler.aboutVisualizer.License,
          System.AssemblyVersionInformation.AssemblyCopyright)
-    handler.aboutVisualizer.Comments <- GetResourceString("aboutVisualizer.Comments")
+    handler.aboutVisualizer.Comments <- Format.GetResourceString("aboutVisualizer.Comments")
     handler.aboutVisualizer.WebsiteLabel <-
-      GetResourceString("aboutVisualizer.WebsiteLabel")
+      Format.GetResourceString("aboutVisualizer.WebsiteLabel")
 
   let private PrepareTreeView(handler : Handler) =
     [| AssemblyIcon; NamespaceIcon; ClassIcon; MethodIcon |]
@@ -800,11 +805,11 @@ module Gui =
 #if NETCOREAPP2_1
   let private PrepareOpenFileDialog(handler : Handler) =
     let openFileDialog =
-      new FileChooserDialog(GetResourceString "OpenFile", handler.mainWindow,
-                            FileChooserAction.Open, GetResourceString "OpenFile.Open",
-                            ResponseType.Ok, GetResourceString "OpenFile.Cancel",
+      new FileChooserDialog(Format.GetResourceString "OpenFile", handler.mainWindow,
+                            FileChooserAction.Open, Format.GetResourceString "OpenFile.Open",
+                            ResponseType.Ok, Format.GetResourceString "OpenFile.Cancel",
                             ResponseType.Cancel, null)
-    let data = GetResourceString("SelectXml").Split([| '|' |])
+    let data = Format.GetResourceString("SelectXml").Split([| '|' |])
     let filter = new FileFilter()
     filter.Name <- data.[0]
     filter.AddPattern data.[1]
@@ -823,7 +828,7 @@ module Gui =
   let private PrepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
     openFileDialog.InitialDirectory <- Persistence.readFolder()
-    openFileDialog.Filter <- GetResourceString("SelectXml")
+    openFileDialog.Filter <- Format.GetResourceString("SelectXml")
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
     openFileDialog
@@ -960,9 +965,7 @@ module Gui =
       if fst counts then
         let v, num = snd counts
         image.TooltipText <-
-          String.Format
-            (System.Globalization.CultureInfo.CurrentCulture,
-             GetResourceString "branchesVisited", v, num)
+          Format.Resource("branchesVisited", v, num)
 
   let internal (|Select|_|) (pattern : String) offered =
     if (fst offered)
@@ -1063,8 +1066,7 @@ module Gui =
       if Seq.isEmpty points then
         let noSource() =
           let message =
-            String.Format
-              (CultureInfo.CurrentCulture, GetResourceString "No source location",
+            Format.Resource("No source location",
                (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
                  .Text.Replace("<", "&lt;").Replace(">", "&gt;"))
           ShowMessageOnGuiThread handler.mainWindow MessageType.Info message
@@ -1109,7 +1111,7 @@ module Gui =
                                                     Justification =
                                                       "IDisposables are added to other widgets")>]
   let private AddLabelWidget g (button : ToolButton, resource) =
-    let keytext = (resource |> GetResourceString).Split(' ')
+    let keytext = (resource |> Format.GetResourceString).Split('\n')
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))
@@ -1223,7 +1225,7 @@ module Gui =
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
            (fun (o : OptionSet) (p, a) ->
-             o.Add(p, GetResourceString p, new System.Action<string>(a))) (OptionSet())
+             o.Add(p, Format.GetResourceString p, new System.Action<string>(a))) (OptionSet())
     options.Parse(arguments) |> ignore
 
   [<EntryPoint; STAThread>]

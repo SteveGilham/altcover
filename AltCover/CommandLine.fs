@@ -381,3 +381,11 @@ module internal CommandLine =
               "--" + (name.Split('|') |> Seq.last)) :: error
        else
          flag := true))
+
+[<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
+type internal Format ()=
+  static member Local(resource, [<ParamArray>] args) =
+    String.Format(
+      CultureInfo.CurrentCulture,
+      CommandLine.resources.GetString resource,
+      args)

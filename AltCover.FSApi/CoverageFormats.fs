@@ -136,9 +136,10 @@ module CoverageFormats =
          m.SetAttribute
            ("assemblyIdentity", XmlUtilities.AssemblyNameWithFallback path assembly))
 
-    let culture = System.Threading.Thread.CurrentThread.CurrentCulture
+    let thread = System.Threading.Thread.CurrentThread
+    let culture = thread.CurrentCulture
     try
-      System.Threading.Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
+      thread.CurrentCulture <- CultureInfo.InvariantCulture
       use coverage = rewrite.SelectNodes("//coverage")
       coverage.OfType<XmlElement>()
       |> Seq.iter (fun c ->
@@ -147,5 +148,5 @@ module CoverageFormats =
            c.SetAttribute("startTime", now)
            c.SetAttribute("measureTime", now))
     finally
-      System.Threading.Thread.CurrentThread.CurrentCulture <- culture
+      thread.CurrentCulture <- culture
     rewrite

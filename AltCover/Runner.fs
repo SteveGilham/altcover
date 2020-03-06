@@ -77,8 +77,7 @@ module internal Runner =
 
   let WriteSummary key vc nc pc =
     let line =
-      String.Format
-        (CultureInfo.CurrentCulture, CommandLine.resources.GetString key, vc, nc, pc)
+      Format.Local(key, vc, nc, pc)
     Write line
 
   let TCtotal =
@@ -310,8 +309,7 @@ module internal Runner =
     let ok = q && (n >= 0) && (n <= 100)
     if ok |> not then
       CommandLine.error <-
-        String.Format
-          (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
+        Format.Local("InvalidValue",
            "--threshold", x) :: CommandLine.error
     (ok, n)
 
@@ -328,9 +326,7 @@ module internal Runner =
          if CommandLine.ValidateDirectory "--recorderDirectory" x then
            if Option.isSome recordingDirectory then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed",
+               Format.Local("MultiplesNotAllowed",
                   "--recorderDirectory") :: CommandLine.error
            else
              recordingDirectory <- Some(Path.GetFullPath x)))
@@ -339,9 +335,7 @@ module internal Runner =
          if CommandLine.ValidateDirectory "--workingDirectory" x then
            if Option.isSome workingDirectory then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed",
+               Format.Local("MultiplesNotAllowed",
                   "--workingDirectory") :: CommandLine.error
            else
              workingDirectory <- Some(Path.GetFullPath x)))
@@ -350,9 +344,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--executable" x then
            if Option.isSome !executable then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--executable")
+               Format.Local("MultiplesNotAllowed", "--executable")
                :: CommandLine.error
            else
              executable := Some x))
@@ -362,9 +354,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--lcovReport" x then
            if Option.isSome !LCov.path then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--lcovReport")
+               Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
            else
              LCov.path := x
@@ -377,9 +367,7 @@ module internal Runner =
          if ok then
            if Option.isSome threshold then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--threshold")
+               Format.Local("MultiplesNotAllowed", "--threshold")
                :: CommandLine.error
            else
              threshold <- Some n))
@@ -388,9 +376,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--cobertura" x then
            if Option.isSome !Cobertura.path then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--cobertura")
+               Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
            else
              Cobertura.path := x
@@ -402,9 +388,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--outputFile" x then
            if Option.isSome output then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--outputFile")
+               Format.Local("MultiplesNotAllowed", "--outputFile")
                :: CommandLine.error
            else
              output <-
@@ -419,23 +403,18 @@ module internal Runner =
              if String.IsNullOrWhiteSpace x then B else TeamCityFormat.Factory x
            if SummaryFormat = Default then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "InvalidValue", "--teamcity", x)
+               Format.Local("InvalidValue", "--teamcity", x)
                :: CommandLine.error
          else
            CommandLine.error <-
-             String.Format
-               (CultureInfo.CurrentCulture,
-                CommandLine.resources.GetString "MultiplesNotAllowed", "--teamcity")
+             Format.Local("MultiplesNotAllowed", "--teamcity")
              :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
        (fun x ->
          CommandLine.error <-
-           String.Format
-             (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
+           Format.Local( "InvalidValue",
               "AltCover", x) :: CommandLine.error)) ] // default end stop
     |> List.fold
          (fun (o : OptionSet) (p, a) ->
@@ -467,9 +446,7 @@ module internal Runner =
           success
         else
           CommandLine.error <-
-            String.Format
-              (CultureInfo.CurrentCulture,
-               CommandLine.resources.GetString "recorderNotFound", dll)
+            Format.Local("recorderNotFound", dll)
             :: CommandLine.error
           fail
 
@@ -526,10 +503,10 @@ module internal Runner =
           (DirectoryInfo(Option.get workingDirectory))) 255 true
   let WriteResource = CommandLine.resources.GetString >> Output.Info
   let WriteResourceWithFormatItems s x warn =
-    String.Format(CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x)
+    Format.Local(s, x)
     |> (Output.WarnOn warn)
   let WriteErrorResourceWithFormatItems s x =
-    String.Format(CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x)
+    Format.Local(s, x)
     |> Output.Error
 
   let internal SetRecordToFile report =

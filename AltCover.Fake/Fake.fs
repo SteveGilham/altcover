@@ -28,7 +28,7 @@ type Implementation =
   | DotNetCore
   | Framework
 
-[<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments optional
+[<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Api =
   static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
