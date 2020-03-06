@@ -26,7 +26,7 @@ open Microsoft.Win32
 
 open Mono.Options
 
-  [<AbstractClass; Sealed>]
+  [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
   type internal Format ()=
     static member Local(resource, [<ParamArray>] args) =
       String.Format(
