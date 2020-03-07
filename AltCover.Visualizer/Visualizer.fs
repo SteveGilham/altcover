@@ -25,22 +25,7 @@ open Microsoft.Win32
 #endif
 
 open Mono.Options
-
-  [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
-  type internal Format ()=
-    static member Local(resource, [<ParamArray>] args) =
-      String.Format(
-        CultureInfo.CurrentCulture,
-        resource,
-        args)
-
-    static member GetResourceString(key : string) =
-      let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-      let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
-      resources.GetString(key)
-
-    static member Resource(resource, [<ParamArray>] args) =
-      Format.Local(Format.GetResourceString resource, args)
+open System.Diagnostics.CodeAnalysis
 
 [<Sealed>]
 type internal Handler() =
@@ -415,7 +400,27 @@ module internal Persistence =
     Registry.CurrentUser.DeleteSubKeyTree(geometry)
 #endif
 
-module Gui =
+module private Gui =
+
+  [<SuppressMessage("Gendarme.Rules.Design",
+                    "AbstractTypesShouldNotHavePublicConstructorsRule",
+                    Justification = "The compiler ignores the 'private ()' declaration")>]
+  [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
+  type Format private () =
+    static member internal Local(resource, [<ParamArray>] args) =
+      String.Format(
+        CultureInfo.CurrentCulture,
+        resource,
+        args)
+
+    static member GetResourceString(key : string) =
+      let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
+      let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
+      resources.GetString(key)
+
+    static member Resource(resource, [<ParamArray>] args) =
+      Format.Local(Format.GetResourceString resource, args)
+
   // --------------------------  General Purpose ---------------------------
   // Safe event dispatch => GUI update
   let private InvokeOnGuiThread(action : unit -> unit) =

@@ -77,7 +77,7 @@ module internal Runner =
 
   let WriteSummary key vc nc pc =
     let line =
-      Format.Local(key, vc, nc, pc)
+      CommandLine.Format.Local(key, vc, nc, pc)
     Write line
 
   let TCtotal =
@@ -309,7 +309,7 @@ module internal Runner =
     let ok = q && (n >= 0) && (n <= 100)
     if ok |> not then
       CommandLine.error <-
-        Format.Local("InvalidValue",
+        CommandLine.Format.Local("InvalidValue",
            "--threshold", x) :: CommandLine.error
     (ok, n)
 
@@ -326,7 +326,7 @@ module internal Runner =
          if CommandLine.ValidateDirectory "--recorderDirectory" x then
            if Option.isSome recordingDirectory then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed",
+               CommandLine.Format.Local("MultiplesNotAllowed",
                   "--recorderDirectory") :: CommandLine.error
            else
              recordingDirectory <- Some(Path.GetFullPath x)))
@@ -335,7 +335,7 @@ module internal Runner =
          if CommandLine.ValidateDirectory "--workingDirectory" x then
            if Option.isSome workingDirectory then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed",
+               CommandLine.Format.Local("MultiplesNotAllowed",
                   "--workingDirectory") :: CommandLine.error
            else
              workingDirectory <- Some(Path.GetFullPath x)))
@@ -344,7 +344,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--executable" x then
            if Option.isSome !executable then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--executable")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--executable")
                :: CommandLine.error
            else
              executable := Some x))
@@ -354,7 +354,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--lcovReport" x then
            if Option.isSome !LCov.path then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--lcovReport")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
            else
              LCov.path := x
@@ -367,7 +367,7 @@ module internal Runner =
          if ok then
            if Option.isSome threshold then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--threshold")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--threshold")
                :: CommandLine.error
            else
              threshold <- Some n))
@@ -376,7 +376,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--cobertura" x then
            if Option.isSome !Cobertura.path then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--cobertura")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
            else
              Cobertura.path := x
@@ -388,7 +388,7 @@ module internal Runner =
          if CommandLine.ValidatePath "--outputFile" x then
            if Option.isSome output then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--outputFile")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--outputFile")
                :: CommandLine.error
            else
              output <-
@@ -403,18 +403,18 @@ module internal Runner =
              if String.IsNullOrWhiteSpace x then B else TeamCityFormat.Factory x
            if SummaryFormat = Default then
              CommandLine.error <-
-               Format.Local("InvalidValue", "--teamcity", x)
+               CommandLine.Format.Local("InvalidValue", "--teamcity", x)
                :: CommandLine.error
          else
            CommandLine.error <-
-             Format.Local("MultiplesNotAllowed", "--teamcity")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--teamcity")
              :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
        (fun x ->
          CommandLine.error <-
-           Format.Local( "InvalidValue",
+           CommandLine.Format.Local( "InvalidValue",
               "AltCover", x) :: CommandLine.error)) ] // default end stop
     |> List.fold
          (fun (o : OptionSet) (p, a) ->
@@ -446,7 +446,7 @@ module internal Runner =
           success
         else
           CommandLine.error <-
-            Format.Local("recorderNotFound", dll)
+            CommandLine.Format.Local("recorderNotFound", dll)
             :: CommandLine.error
           fail
 
@@ -503,10 +503,10 @@ module internal Runner =
           (DirectoryInfo(Option.get workingDirectory))) 255 true
   let WriteResource = CommandLine.resources.GetString >> Output.Info
   let WriteResourceWithFormatItems s x warn =
-    Format.Local(s, x)
+    CommandLine.Format.Local(s, x)
     |> (Output.WarnOn warn)
   let WriteErrorResourceWithFormatItems s x =
-    Format.Local(s, x)
+    CommandLine.Format.Local(s, x)
     |> Output.Error
 
   let internal SetRecordToFile report =
@@ -667,7 +667,8 @@ module internal Runner =
   let internal FillMethodPoint (mp : XmlElement seq) (method : XmlElement)
       (dict : Dictionary<int, Base.PointVisit>) =
     let token =
-      method.GetElementsByTagName("MetadataToken")
+      use elements = method.GetElementsByTagName("MetadataToken")
+      elements
       |> Seq.cast<XmlElement>
       |> Seq.map (fun m -> m.InnerText)
       |> Seq.head
@@ -718,7 +719,8 @@ module internal Runner =
 
         let setSummary (x : XmlElement) pointVisits branchVisits methodVisits classVisits
             ptcover brcover minCrap maxCrap =
-          x.GetElementsByTagName("Summary")
+          use elements = x.GetElementsByTagName("Summary")
+          elements
           |> Seq.cast<XmlElement>
           |> Seq.tryHead
           |> Option.iter (fun s ->
@@ -789,9 +791,11 @@ module internal Runner =
 
         let updateMethod (dict : Dictionary<int, Base.PointVisit>)
             (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
-          let sp = method.GetElementsByTagName("SequencePoint")
-          let bp = method.GetElementsByTagName("BranchPoint")
-          let mp = method.GetElementsByTagName("MethodPoint") |> Seq.cast<XmlElement>
+          use sp = method.GetElementsByTagName("SequencePoint")
+          use bp = method.GetElementsByTagName("BranchPoint")
+          let mp =
+            use elements = method.GetElementsByTagName("MethodPoint")
+            elements |> Seq.cast<XmlElement> |> Seq.toList
           let count = sp.Count
           let rawCount = bp.Count
 
@@ -823,7 +827,8 @@ module internal Runner =
         let updateClass (dict : Dictionary<int, Base.PointVisit>)
             (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
           let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
-            ``class``.GetElementsByTagName("Method")
+            use elements = ``class``.GetElementsByTagName("Method")
+            elements
             |> Seq.cast<XmlElement>
             |> Seq.fold (updateMethod dict)
                  (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
@@ -845,7 +850,8 @@ module internal Runner =
             | (true, d) -> d
 
           let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
-            ``module``.GetElementsByTagName("Class")
+            use elements = ``module``.GetElementsByTagName("Class")
+            elements
             |> Seq.cast<XmlElement>
             |> Seq.fold (dict |> updateClass)
                  (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
@@ -857,7 +863,8 @@ module internal Runner =
            Math.Min(minc, minc0), Math.Max(maxc, maxc0))
 
         let (vb, vs, vm, vc, pt, br, minc, maxc) =
-          document.DocumentElement.SelectNodes("//Module")
+          use elements = document.DocumentElement.SelectNodes("//Module")
+          elements
           |> Seq.cast<XmlElement>
           |> Seq.fold (updateModule counts)
                (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)

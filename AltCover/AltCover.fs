@@ -60,7 +60,7 @@ module internal Main =
       if Char.IsDigit <| k.Chars(0) then
         if predicate || k.Length > 1 then
           CommandLine.error <-
-            Format.Local(
+            CommandLine.Format.Local(
               (if predicate then "MultiplesNotAllowed" else "InvalidValue"),
                "--callContext", x)
             :: CommandLine.error
@@ -71,14 +71,14 @@ module internal Main =
             (ok, Left(Some(pown 10 (7 - n))))
           else
             CommandLine.error <-
-              Format.Local("InvalidValue", "--callContext", x)
+              CommandLine.Format.Local("InvalidValue", "--callContext", x)
               :: CommandLine.error
             (false, Left None)
       else
         (true, Right k)
     else
       CommandLine.error <-
-        Format.Local("InvalidValue",
+        CommandLine.Format.Local("InvalidValue",
            "--callContext", x) :: CommandLine.error
       (false, Left None)
 
@@ -94,7 +94,7 @@ module internal Main =
            let arg = Path.GetFullPath x
            if Visitor.inputDirectories.Contains arg then
              CommandLine.error <-
-               Format.Local("DuplicatesNotAllowed", arg,
+               CommandLine.Format.Local("DuplicatesNotAllowed", arg,
                   "--inputDirectory") :: CommandLine.error
            else
              Visitor.inputDirectories.Add arg))
@@ -105,7 +105,7 @@ module internal Main =
            let arg = Path.GetFullPath x
            if Visitor.outputDirectories.Contains arg then
              CommandLine.error <-
-               Format.Local("DuplicatesNotAllowed", arg,
+               CommandLine.Format.Local("DuplicatesNotAllowed", arg,
                   "--outputDirectory") :: CommandLine.error
            else
              CommandLine.doPathOperation (fun _ -> Visitor.outputDirectories.Add arg) ()
@@ -138,7 +138,7 @@ module internal Main =
          if ok then
            if Option.isSome Visitor.defaultStrongNameKey then
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--strongNameKey")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--strongNameKey")
                :: CommandLine.error
            else
              Visitor.defaultStrongNameKey <- Some pair
@@ -149,7 +149,7 @@ module internal Main =
          if CommandLine.ValidatePath "--xmlReport" x then
            if Option.isSome Visitor.reportPath then
              CommandLine.error <-
-             Format.Local("MultiplesNotAllowed", "--xmlReport")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
                :: CommandLine.error
            else
              CommandLine.doPathOperation
@@ -166,7 +166,7 @@ module internal Main =
        (fun x ->
          if Visitor.single then
            CommandLine.error <-
-             Format.Local("Incompatible",
+             CommandLine.Format.Local("Incompatible",
                 "--single", "--callContext") :: CommandLine.error
          else
            let (ok, selection) = ValidateCallContext (Option.isSome Visitor.interval) x
@@ -178,7 +178,7 @@ module internal Main =
        (fun _ ->
          if Option.isSome Visitor.reportFormat then
            CommandLine.error <-
-             Format.Local("MultiplesNotAllowed", "--opencover")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--opencover")
              :: CommandLine.error
          else
            Visitor.reportFormat <- Some ReportFormat.OpenCover))
@@ -188,11 +188,11 @@ module internal Main =
        (fun _ ->
          if Visitor.single then
            CommandLine.error <-
-             Format.Local("MultiplesNotAllowed", "--single")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--single")
              :: CommandLine.error
          else if Option.isSome Visitor.interval || Visitor.TrackingNames.Any() then
            CommandLine.error <-
-             Format.Local("Incompatible",
+             CommandLine.Format.Local("Incompatible",
                 "--single", "--callContext") :: CommandLine.error
          else
            Visitor.single <- true))
@@ -201,11 +201,11 @@ module internal Main =
          match Visitor.coverstyle with
          | CoverStyle.LineOnly ->
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--linecover")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--linecover")
                :: CommandLine.error
          | CoverStyle.BranchOnly ->
              CommandLine.error <-
-               Format.Local("Incompatible", "--linecover",
+               CommandLine.Format.Local("Incompatible", "--linecover",
                   "--branchcover") :: CommandLine.error
          | _ -> Visitor.coverstyle <- CoverStyle.LineOnly))
       ("branchcover",
@@ -213,11 +213,11 @@ module internal Main =
          match Visitor.coverstyle with
          | CoverStyle.BranchOnly ->
              CommandLine.error <-
-               Format.Local("MultiplesNotAllowed", "--branchcover")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--branchcover")
                :: CommandLine.error
          | CoverStyle.LineOnly ->
              CommandLine.error <-
-               Format.Local("Incompatible", "--branchcover",
+               CommandLine.Format.Local("Incompatible", "--branchcover",
                   "--linecover") :: CommandLine.error
          | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
@@ -243,11 +243,11 @@ module internal Main =
                               | _ -> None
            if !Visitor.defer = None then
              CommandLine.error <-
-               Format.Local("InvalidValue", "--defer", x)
+               CommandLine.Format.Local("InvalidValue", "--defer", x)
                :: CommandLine.error
          else
            CommandLine.error <-
-             Format.Local("MultiplesNotAllowed", "--defer")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
       (CommandLine.ddFlag "v|visibleBranches" Visitor.coalesceBranches)
       ("showstatic:",
@@ -260,11 +260,11 @@ module internal Main =
              else None
            if Visitor.staticFilter = None then
              CommandLine.error <-
-               Format.Local("InvalidValue", "--showstatic", x)
+               CommandLine.Format.Local("InvalidValue", "--showstatic", x)
                :: CommandLine.error
          else
            CommandLine.error <-
-             Format.Local("MultiplesNotAllowed", "--showstatic")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
              :: CommandLine.error))
       (CommandLine.ddFlag "showGenerated" Visitor.showGenerated)
       ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
@@ -272,7 +272,7 @@ module internal Main =
       ("<>",
        (fun x ->
          CommandLine.error <-
-           Format.Local("InvalidValue",
+           CommandLine.Format.Local("InvalidValue",
               "AltCover", x) :: CommandLine.error)) ] // default end stop
     |> List.fold
          (fun (o : OptionSet) (p, a) ->
@@ -289,7 +289,7 @@ module internal Main =
         |> Seq.iter (fun fromDirectory ->
              if toDirectories.Contains fromDirectory then
                CommandLine.error <-
-                 Format.Local("NotInPlace", fromDirectory)
+                 CommandLine.Format.Local("NotInPlace", fromDirectory)
                  :: CommandLine.error)
 
         CommandLine.doPathOperation (fun () ->
@@ -298,7 +298,7 @@ module internal Main =
             found
             |> Seq.iter (fun toDirectory ->
                  CommandLine.error <-
-                   Format.Local("SaveExists", toDirectory)
+                   CommandLine.Format.Local("SaveExists", toDirectory)
                    :: CommandLine.error)
           if CommandLine.error |> List.isEmpty then
             (Seq.iter CommandLine.ensureDirectory toDirectories)) () false
@@ -311,15 +311,15 @@ module internal Main =
           |> Seq.iter (fun (toDirectory, fromDirectory) ->
                if !Visitor.inplace then
                  Output.Info
-                 <| Format.Local("savingto", toDirectory)
+                 <| CommandLine.Format.Local("savingto", toDirectory)
                  Output.Info
-                 <| Format.Local("instrumentingin", fromDirectory)
+                 <| CommandLine.Format.Local("instrumentingin", fromDirectory)
                else
                  Output.Info
-                 <| Format.Local("instrumentingfrom",
+                 <| CommandLine.Format.Local("instrumentingfrom",
                        fromDirectory)
                  Output.Info
-                 <| Format.Local("instrumentingto", toDirectory))
+                 <| CommandLine.Format.Local("instrumentingto", toDirectory))
           Right
             (rest, fromDirectories |> Seq.map DirectoryInfo,
              toDirectories |> Seq.map DirectoryInfo,
@@ -372,7 +372,7 @@ module internal Main =
                                                   |> Visitor.IsInstrumented
                      && (def.MainModule.Attributes &&& ModuleAttributes.ILOnly =
                            ModuleAttributes.ILOnly) then
-                    Format.Local("instrumenting", fullName)
+                    CommandLine.Format.Local("instrumenting", fullName)
                     |> Output.Info
                     { Path = [ fullName ]
                       Name = def.Name.Name
@@ -478,7 +478,7 @@ module internal Main =
               PrepareTargetFiles fromInfo toInfo targetInfo
                 (Visitor.InstrumentDirectories())
             Output.Info
-            <| Format.Local("reportingto", report)
+            <| CommandLine.Format.Local("reportingto", report)
             let reporter, document =
               match Visitor.ReportKind() with
               | ReportFormat.OpenCover -> OpenCover.ReportGenerator()

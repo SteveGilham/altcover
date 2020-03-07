@@ -29,7 +29,7 @@ type Implementation =
   | Framework
 
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
-type Api =
+type Api private () =
   static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
   static member Collect(args : FSApi.CollectParams, ?log : FSApi.Logging) =
