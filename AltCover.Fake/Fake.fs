@@ -28,6 +28,9 @@ type Implementation =
   | DotNetCore
   | Framework
 
+[<SuppressMessage("Gendarme.Rules.Performance",
+                  "AvoidUncalledPrivateCodeRule",
+                  Justification = "Can't stop the instance constructor happening")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Api private () =
   static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
