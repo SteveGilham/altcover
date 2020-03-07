@@ -479,19 +479,19 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
   Directory.ensure "./_Reports"
 
   [ ("./Build/common-rules.xml",
-     [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+     [ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
+       "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/AltCover.Shadow.dll" 
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
        "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" 
        "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.FSApi.dll" 
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" 
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll"
-       "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
         ])
     ("./Build/csharp-rules.xml",
-     [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
+     [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.CSapi.dll"
-       "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
         ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
@@ -503,7 +503,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
              Console = true
              Log = "./_Reports/gendarme.html"
              LogKind = Gendarme.LogKind.Html
-             Targets = files
+             Targets = if Environment.isWindows then files else (List.tail files)
              ToolType = ToolType.CreateLocalTool()
              FailBuildOnDefect = true }))
 
