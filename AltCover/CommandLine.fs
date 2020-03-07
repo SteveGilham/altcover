@@ -101,6 +101,7 @@ module internal CommandLine =
   [<SuppressMessage("Gendarme.Rules.Design",
                     "AbstractTypesShouldNotHavePublicConstructorsRule",
                     Justification = "The compiler ignores the 'private ()' declaration")>]
+  [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
   [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
   type internal Format private () =
     static member Local(resource, [<ParamArray>] args) =

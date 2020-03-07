@@ -792,6 +792,15 @@ module AltCoverTests =
       test <@ result = [ Exemption.StaticAnalysis; Exemption.None; Exemption.None ] @>
 
     [<Test>]
+    let ValidateStaticClass () =
+      let where = typeof<AltCover.CommandLine.Format>.Assembly.Location
+      use def = Mono.Cecil.AssemblyDefinition.ReadAssembly where
+      let cl = def.MainModule.GetType("AltCover.CommandLine")
+      test <@ cl |> Visitor.isFSharpStaticClass |> not @>
+      let format = cl.NestedTypes |> Seq.find (fun t -> t.Name = "Format")
+      test <@ format |> Visitor.isFSharpStaticClass @>
+
+    [<Test>]
     let ValidateAutomaticExemption() =
       try
         Visitor.showGenerated := true

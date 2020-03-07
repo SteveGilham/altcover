@@ -801,9 +801,21 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
              f |> DotNet.test coverletTestOptions
            with x -> eprintf "%A" x
            let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
+
+           // Can't seem to get this any other way
+           let doc = covxml |> XDocument.Load 
+
+           let key = doc.Descendants(XName.Get "Name")
+                     |> Seq.filter (fun x -> x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
+                     |> Seq.toList
+           key
+           |> List.iter (fun x -> x.Parent.Remove())
+
            let target = (Path.getFullName "./_Reports") @@ ((Path.GetFileNameWithoutExtension f) + ".coverlet.xml")
-           Shell.copyFile target covxml
-           covxml :: l) []
+           doc.Save target
+
+           // Shell.copyFile target covxml
+           target :: l) []
 
     ReportGenerator.generateReports (fun p ->
       { p with
