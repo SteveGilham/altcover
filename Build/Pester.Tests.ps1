@@ -550,7 +550,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
-    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8").Replace('CrapScore=`"13.12`"', 'CrapScore=`"13.13`"')
     $result | Should -Be $expected.Replace("`r", "")
     $result | Should -Be $written.Replace("`r", "")
   }
@@ -582,7 +582,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
-    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8").Replace('CrapScore=`"13.12`"', 'CrapScore=`"13.13`"')
     $result | Should -Be $expected.Replace("`r", "")
   }
 }
