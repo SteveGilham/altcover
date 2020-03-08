@@ -553,7 +553,7 @@ Describe "ConvertFrom-NCover" {
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result | Should -Be $written.Replace("`r", "")
 
-    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13")
+    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
     $result | Should -Be $expected.Replace("`r", "")
   }
 
@@ -584,7 +584,9 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
-    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8").Replace("rapScore=`"13.12", "rapScore=`"13.13")
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
+    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+
     $result | Should -Be $expected.Replace("`r", "")
   }
 }
