@@ -509,14 +509,6 @@ module internal Runner =
           CommandLine.processTrailingArguments rest
             (DirectoryInfo(Option.get workingDirectory))) 255 true
 
-    let writeResource = CommandLine.resources.GetString >> Output.info
-    let writeResourceWithFormatItems s x warn =
-      CommandLine.Format.Local(s, x)
-      |> (Output.warnOn warn)
-    let WriteErrorResourceWithFormatItems s x =
-      CommandLine.Format.Local(s, x)
-      |> Output.error
-
     let internal runProcess report (payload : string list -> int) (args : string list) =
       setRecordToFile report
       "Beginning run..." |> CommandLine.writeResource
@@ -670,7 +662,8 @@ module internal Runner =
     let internal fillMethodPoint (mp : XmlElement seq) (method : XmlElement)
         (dict : Dictionary<int, Base.PointVisit>) =
       let token =
-        method.GetElementsByTagName("MetadataToken")
+        use elements = method.GetElementsByTagName("MetadataToken")
+        elements
         |> Seq.cast<XmlElement>
         |> Seq.map (fun m -> m.InnerText)
         |> Seq.head
