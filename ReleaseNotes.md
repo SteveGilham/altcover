@@ -20,6 +20,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [BUGFIX] Provide a suitable binary (a simple shim called `altcover.netcoreapp.dll`) in the API nupkg for `AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.DotNetCore` to return -- and test that it works, just like the build already tested `AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework`
 * Move the windows build for release all to the new-style projects, keeping the old style for the non-windows test builds
 * Deprecate the `dotnet-altcover` DotNetCliToolReference Tool, package `altcover.dotnet`, prior to removal in the v7.x release.  See https://github.com/dotnet/sdk/issues/3115 for context
+* Ignore constructors for `[<Sealed; AbstractClass>]` types in F# for the purposes of coverage
 
 # 6.7.750  (Fukurou series release 12)
 * [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the Visualizer-focussed enhancements in the previous release
