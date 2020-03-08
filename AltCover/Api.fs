@@ -537,7 +537,7 @@ module internal Args =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type ValidatedCommandLine =
   { Command : string list
-    Errors : string array }
+    Errors : string seq }
   override self.ToString() =
     let cl =
       String.Join
@@ -548,7 +548,7 @@ type ValidatedCommandLine =
     String.Join
       (Environment.NewLine,
        Seq.concat
-         [ [| cl |]
+         [ [| cl |] |> Array.toSeq
            self.Errors ])
 
 type CollectParams with

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AltCover.Parameters
@@ -14,32 +15,32 @@ namespace AltCover.Parameters
     string OutputFile { get; }
     bool ExposeReturnCode { get; }
     string SummaryFormat { get; }
-    string[] CommandLine { get; }
+    IEnumerable<string> CommandLine { get; }
 
     FSApi.CollectParams ToParameters();
 
-    string[] Validate(bool afterPreparation);
+    IEnumerable<string> Validate(bool afterPreparation);
 
     FSApi.ValidatedCommandLine WhatIf(bool afterPreparation);
   }
 
   public interface IPrepareArgs
   {
-    string[] InputDirectories { get; }
-    string[] OutputDirectories { get; }
-    string[] SymbolDirectories { get; }
-    string[] Dependencies { get; }
-    string[] Keys { get; }
+    IEnumerable<string> InputDirectories { get; }
+    IEnumerable<string> OutputDirectories { get; }
+    IEnumerable<string> SymbolDirectories { get; }
+    IEnumerable<string> Dependencies { get; }
+    IEnumerable<string> Keys { get; }
     string StrongNameKey { get; }
     string XmlReport { get; }
-    string[] FileFilter { get; }
-    string[] AssemblyFilter { get; }
-    string[] AssemblyExcludeFilter { get; }
-    string[] TypeFilter { get; }
-    string[] MethodFilter { get; }
-    string[] AttributeFilter { get; }
-    string[] PathFilter { get; }
-    string[] CallContext { get; }
+    IEnumerable<string> FileFilter { get; }
+    IEnumerable<string> AssemblyFilter { get; }
+    IEnumerable<string> AssemblyExcludeFilter { get; }
+    IEnumerable<string> TypeFilter { get; }
+    IEnumerable<string> MethodFilter { get; }
+    IEnumerable<string> AttributeFilter { get; }
+    IEnumerable<string> PathFilter { get; }
+    IEnumerable<string> CallContext { get; }
 
     bool OpenCover { get; }
     bool InPlace { get; }
@@ -55,11 +56,11 @@ namespace AltCover.Parameters
     string ShowStatic { get; }
     bool ShowGenerated { get; }
 
-    string[] CommandLine { get; }
+    IEnumerable<string> CommandLine { get; }
 
     FSApi.PrepareParams ToParameters();
 
-    string[] Validate();
+    IEnumerable<string> Validate();
 
     FSApi.ValidatedCommandLine WhatIf();
   }
@@ -84,8 +85,13 @@ namespace AltCover.Parameters
 
 namespace AltCover.Parameters.Primitive
 {
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Maintainability", "AvoidLackOfCohesionOfMethodsRule",
+      Justification = "What's there not to get?")]
   public class CollectArgs : ICollectArgs
   {
+    private IEnumerable<string> commandLine;
+
     public string RecorderDirectory { get; set; }
     public string WorkingDirectory { get; set; }
     public string Executable { get; set; }
@@ -94,7 +100,19 @@ namespace AltCover.Parameters.Primitive
     public string Cobertura { get; set; }
     public string OutputFile { get; set; }
     public string SummaryFormat { get; set; }
-    public string[] CommandLine { get; set; }
+
+    public IEnumerable<string> CommandLine
+    {
+      get
+      {
+        return commandLine.ToArray();
+      }
+      set
+      {
+        commandLine = (value ?? Enumerable.Empty<string>()).ToArray();
+      }
+    }
+
     public bool ExposeReturnCode { get; set; }
 
     public FSApi.CollectParams ToParameters()
@@ -125,13 +143,13 @@ namespace AltCover.Parameters.Primitive
         Threshold = string.Empty,
         Cobertura = string.Empty,
         OutputFile = string.Empty,
-        CommandLine = new string[] { },
+        CommandLine = Enumerable.Empty<string>(),
         ExposeReturnCode = true,
         SummaryFormat = string.Empty
       };
     }
 
-    public string[] Validate(bool afterPreparation)
+    public IEnumerable<string> Validate(bool afterPreparation)
     {
       return ToParameters().Validate(afterPreparation);
     }
@@ -144,21 +162,21 @@ namespace AltCover.Parameters.Primitive
 
   public class PrepareArgs : IPrepareArgs
   {
-    public string[] InputDirectories { get; set; }
-    public string[] OutputDirectories { get; set; }
-    public string[] SymbolDirectories { get; set; }
-    public string[] Dependencies { get; set; }
-    public string[] Keys { get; set; }
+    public IEnumerable<string> InputDirectories { get; set; }
+    public IEnumerable<string> OutputDirectories { get; set; }
+    public IEnumerable<string> SymbolDirectories { get; set; }
+    public IEnumerable<string> Dependencies { get; set; }
+    public IEnumerable<string> Keys { get; set; }
     public string StrongNameKey { get; set; }
     public string XmlReport { get; set; }
-    public string[] FileFilter { get; set; }
-    public string[] AssemblyFilter { get; set; }
-    public string[] AssemblyExcludeFilter { get; set; }
-    public string[] TypeFilter { get; set; }
-    public string[] MethodFilter { get; set; }
-    public string[] AttributeFilter { get; set; }
-    public string[] PathFilter { get; set; }
-    public string[] CallContext { get; set; }
+    public IEnumerable<string> FileFilter { get; set; }
+    public IEnumerable<string> AssemblyFilter { get; set; }
+    public IEnumerable<string> AssemblyExcludeFilter { get; set; }
+    public IEnumerable<string> TypeFilter { get; set; }
+    public IEnumerable<string> MethodFilter { get; set; }
+    public IEnumerable<string> AttributeFilter { get; set; }
+    public IEnumerable<string> PathFilter { get; set; }
+    public IEnumerable<string> CallContext { get; set; }
 
     public bool OpenCover { get; set; }
     public bool InPlace { get; set; }
@@ -174,7 +192,7 @@ namespace AltCover.Parameters.Primitive
     public string ShowStatic { get; set; }
     public bool ShowGenerated { get; set; }
 
-    public string[] CommandLine { get; set; }
+    public IEnumerable<string> CommandLine { get; set; }
 
     public FSApi.PrepareParams ToParameters()
     {
@@ -247,7 +265,7 @@ namespace AltCover.Parameters.Primitive
       };
     }
 
-    public string[] Validate()
+    public IEnumerable<string> Validate()
     {
       return ToParameters().Validate();
     }
@@ -344,7 +362,7 @@ namespace AltCover
                                     ToCLIArgs(control));
     }
 
-    public static string[] ToTestArgumentList(IPrepareArgs prepareArgs,
+    public static IEnumerable<string> ToTestArgumentList(IPrepareArgs prepareArgs,
                                               ICollectArgs collectArgs,
                                               ICLIArg control)
     {

@@ -108,7 +108,7 @@ module internal Instrument =
           assemblyName.PublicKeyToken <- null
       | Some key' ->
           assemblyName.HasPublicKey <- true
-          assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
+          assemblyName.PublicKey <- key'.PublicKey |> Seq.toArray // sets token implicitly
 
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
@@ -446,7 +446,7 @@ module internal Instrument =
                r.PublicKey <- null
            | Some key ->
                r.HasPublicKey <- true
-               r.PublicKey <- key.Pair.PublicKey // implicitly sets token
+               r.PublicKey <- key.Pair.PublicKey |> Seq.toArray // implicitly sets token
 
            let updated = r.ToString()
            if not <| updated.Equals(original, StringComparison.Ordinal) then

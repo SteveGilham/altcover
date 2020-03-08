@@ -57,20 +57,59 @@ type Prepare() =
       Justification = "Unit test accessor")>]
   member val internal ACLog : FSApi.Logging option = None with get, set
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val InputDirectories : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val OutputDirectories : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val SymbolDirectories : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val Dependencies : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
   member val XmlReport = String.Empty with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val FileFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val AssemblyFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val AssemblyExcludeFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val TypeFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val MethodFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val AttributeFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val PathFilter : string array = [||] with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
   member val OpenCover = true with get, set
@@ -79,6 +118,9 @@ type Prepare() =
   member val Single = false with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
   member val SourceLink = false with get, set
   member val Defer = false with get, set
@@ -147,6 +189,9 @@ type Collect() =
   member val Threshold = String.Empty with get, set
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
 

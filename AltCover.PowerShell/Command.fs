@@ -66,32 +66,27 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val CommandLine : string array = [||] with get, set
+  member val CommandLine = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("InputDirectories")>]
-  member val InputDirectory : string array = [||] with get, set
+  member val InputDirectory = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("OutputDirectories")>]
-  member val OutputDirectory : string array = [||] with get, set
+  member val OutputDirectory = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("SymbolDirectories")>]
-  member val SymbolDirectory : string array = [||] with get, set
+  member val SymbolDirectory = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("Dependencies")>]
-  member val Dependency : string array = [||] with get, set
+  member val Dependency = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("Keys")>]
-  member val Key : string array = [||] with get, set
+  member val Key = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -103,35 +98,35 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val FileFilter : string array = [||] with get, set
+  member val FileFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val PathFilter : string array = [||] with get, set
+  member val PathFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val AssemblyFilter : string array = [||] with get, set
+  member val AssemblyFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val AssemblyExcludeFilter : string array = [||] with get, set
+  member val AssemblyExcludeFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val TypeFilter : string array = [||] with get, set
+  member val TypeFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val MethodFilter : string array = [||] with get, set
+  member val MethodFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val AttributeFilter : string array = [||] with get, set
+  member val AttributeFilter = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val CallContext : string array = [||] with get, set
+  member val CallContext = Seq.empty<string> with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]

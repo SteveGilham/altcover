@@ -147,7 +147,6 @@ type internal StrongNameKeyData =
         this.Parameters.Modulus
         |> Seq.toList
         |> List.rev ]
-    |> Seq.toArray
 
   static member Make(data : byte array) =
     use csp = new System.Security.Cryptography.RSACryptoServiceProvider()
@@ -176,8 +175,10 @@ module internal KeyStore =
   let private publicKeyOfKey (key : StrongNameKeyData) = key.PublicKey
 
   module internal I =
-    let internal tokenOfArray(key : byte array) =
-      hash.ComputeHash(key)
+    let internal tokenOfArray(key : byte seq) =
+      key
+      |> Seq.toArray
+      |> hash.ComputeHash
       |> Array.rev
       |> Array.take 8
 
