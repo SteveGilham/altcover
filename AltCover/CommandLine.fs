@@ -14,6 +14,7 @@ open System.Text.RegularExpressions
 open Augment
 open BlackFox.CommandLine
 open Mono.Options
+open System.Diagnostics.CodeAnalysis
 
 #if NETCOREAPP2_0
 #else
@@ -94,8 +95,19 @@ module internal CommandLine =
   let internal resources =
     ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
 
-  module internal I =
+  [<SuppressMessage("Gendarme.Rules.Design",
+                    "AbstractTypesShouldNotHavePublicConstructorsRule",
+                    Justification = "The compiler ignores the 'private ()' declaration")>]
+  [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+  [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
+  type internal Format private () =
+    static member Local(resource, [<ParamArray>] args) =
+      String.Format(
+        CultureInfo.CurrentCulture,
+        resources.GetString resource,
+        args)
 
+  module internal I =
     let internal conditionalOutput condition output =
       if condition() then output()
 
@@ -132,8 +144,7 @@ module internal CommandLine =
         |> Option.getOrElse String.Empty
 
       let enquoted = quote + cmd.Trim([| '"'; ''' |]) + quote
-      String.Format
-        (CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted, args)
+      Format.Local ("CommandLine", enquoted, args)
       |> Output.info
 
       let psi = ProcessStartInfo(enquoted, args)
@@ -182,7 +193,7 @@ module internal CommandLine =
       then
         let resource =
           if extend then "WrittenToEx" else "WrittenTo"
-        String.Format(CultureInfo.CurrentCulture, resources.GetString resource, path, path')
+        Format.Local(resource, path, path')
         |> Output.error
 
     let internal validateFileSystemEntity exists message key x =
@@ -193,7 +204,7 @@ module internal CommandLine =
           true
         else
           error <-
-            String.Format(CultureInfo.CurrentCulture, resources.GetString message, key, x)
+            Format.Local(message, key, x)
             :: error
           false) false false
 
@@ -293,11 +304,10 @@ module internal CommandLine =
 
   let internal ddFlag (name : string) flag =
     (name,
-      (fun (_:string) ->
-        if !flag then
-          error <-
-            String.Format
-              (CultureInfo.CurrentCulture, resources.GetString "MultiplesNotAllowed",
+     (fun (_:string) ->
+       if !flag then
+         error <-
+           Format.Local("MultiplesNotAllowed",
               "--" + (name.Split('|') |> Seq.last)) :: error
         else
           flag := true))
@@ -327,8 +337,7 @@ module internal CommandLine =
       let name = I.findAssemblyName x
       if String.IsNullOrWhiteSpace name then
         error <-
-          String.Format
-            (CultureInfo.CurrentCulture, resources.GetString "NotAnAssembly", assembly, x)
+          Format.Local("NotAnAssembly", assembly, x)
           :: error
         (String.Empty, false)
       else
@@ -363,8 +372,7 @@ module internal CommandLine =
       |> Directory.Exists
       |> not) (fun () ->
       Output.info
-      <| String.Format
-            (CultureInfo.CurrentCulture, (resources.GetString "CreateFolder"), directory)
+      <| Format.Local("CreateFolder", directory)
       Directory.CreateDirectory(directory) |> ignore)
 
   let internal validatePath path x =
@@ -389,8 +397,8 @@ module internal CommandLine =
 
   let internal writeResource = resources.GetString >> Output.info
   let internal writeResourceWithFormatItems s x warn =
-    String.Format(CultureInfo.CurrentCulture, s |> resources.GetString, x)
+    Format.Local(s, x)
     |> (Output.warnOn warn)
   let internal writeErrorResourceWithFormatItems s x =
-    String.Format(CultureInfo.CurrentCulture, s |> resources.GetString, x)
+    Format.Local(s, x)
     |> Output.error

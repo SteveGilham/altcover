@@ -428,11 +428,25 @@ module internal Visitor =
           map
       | _ -> file
 
+    let internal isFSharpStaticClass (t : TypeDefinition) =
+      (t.CustomAttributes
+       |> Seq.fold
+          (fun x a -> let fn = a.AttributeType.FullName
+                      if fn = "Microsoft.FSharp.Core.AbstractClassAttribute"
+                      then x ||| 1
+                      else if fn = "Microsoft.FSharp.Core.SealedAttribute"
+                            then x ||| 2
+                            else x ) 0) = 3
+
     let internal significant (m : MethodDefinition) =
       [ Filter.isFSharpInternal
         Filter.isCSharpAutoProperty
         (fun m -> specialCaseFilters |> Seq.exists (Filter.``match`` m))
-
+        // Constructors of sealed abstract types otherwise pollute F# coverage
+        (fun m ->
+          let t = m.DeclaringType
+          m.IsConstructor
+          && (isFSharpStaticClass t))
         // Constructors of compiler generated types otherwise pollute F# coverage
         (fun m ->
           let t = m.DeclaringType

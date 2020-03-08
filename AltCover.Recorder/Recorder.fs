@@ -87,8 +87,9 @@ module Instance =
       ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
 
     let internal getResource s =
-      [ System.Globalization.CultureInfo.CurrentUICulture.Name
-        System.Globalization.CultureInfo.CurrentUICulture.Parent.Name
+      let cc = System.Globalization.CultureInfo.CurrentUICulture
+      [ cc.Name
+        cc.Parent.Name
         "en" ]
       |> Seq.map (fun l -> resources.GetString(s + "." + l))
       |> Seq.tryFind (String.IsNullOrEmpty >> not)

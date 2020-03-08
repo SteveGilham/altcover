@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -11,6 +12,9 @@ namespace AltCover
 {
     public class DataCollector : InProcDataCollection
     {
+    [SuppressMessage("Gendarme.Rules.Correctness", "MethodCanBeMadeStaticRule"),
+     SuppressMessage("Gendarme.Rules.Smells", "RelaxedAvoidCodeDuplicatedInSameClassRule"),
+     SuppressMessage("Microsoft.Performance", "CA1822")]
         private void Supervise()
         {
             var rec =
@@ -45,22 +49,29 @@ namespace AltCover
             }
         }
 
-        public void Initialize(IDataCollectionSink _dataCollectionSink)
+    public void Initialize(IDataCollectionSink dataCollectionSink)
         {
-            Debug.WriteLine("Initialize");
+      Debug.WriteLine("Initialize {0}", dataCollectionSink);
             Supervise();
         }
 
-        public void TestCaseEnd(TestCaseEndArgs _testCaseEndArgs)
-        { }
+    public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
+    {
+#if DEBUG
+      Debug.WriteLine("TestCaseEnd {0}", testCaseEndArgs);
+#endif
+    }
 
-        public void TestCaseStart(TestCaseStartArgs _testCaseStartArgs)
+    public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
+#if DEBUG
+      Debug.WriteLine("TestCaseStart {0}", testCaseStartArgs);
+#endif
         }
 
-        public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
+    public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
-            Debug.WriteLine("TestSessionEnd");
+      Debug.WriteLine("TestSessionEnd {0}", testSessionEndArgs);
             var rec =
             AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => a.GetName().Name == "AltCover.Recorder.g")
@@ -93,9 +104,9 @@ namespace AltCover
             }
         }
 
-        public void TestSessionStart(TestSessionStartArgs _testSessionStartArgs)
+    public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {
-            Debug.WriteLine("TestSessionStart");
+      Debug.WriteLine("TestSessionStart : {0}", testSessionStartArgs);
             Supervise();
         }
     }

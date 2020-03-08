@@ -60,11 +60,9 @@ module internal Main =
       if Char.IsDigit <| k.Chars(0) then
         if predicate || k.Length > 1 then
           CommandLine.error <-
-            String.Format
-              (CultureInfo.CurrentCulture,
-                CommandLine.resources.GetString
-                  ((if predicate then "MultiplesNotAllowed" else "InvalidValue")),
-                "--callContext", x)
+            CommandLine.Format.Local(
+              (if predicate then "MultiplesNotAllowed" else "InvalidValue"),
+               "--callContext", x)
             :: CommandLine.error
           (false, Left None)
         else
@@ -73,9 +71,7 @@ module internal Main =
             (ok, Left(Some(pown 10 (7 - n))))
           else
             CommandLine.error <-
-              String.Format
-                (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "InvalidValue", "--callContext", x)
+              CommandLine.Format.Local("InvalidValue", "--callContext", x)
               :: CommandLine.error
             (false, Left None)
       else
@@ -100,9 +96,7 @@ module internal Main =
              let arg = Path.GetFullPath x
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "DuplicatesNotAllowed", arg,
+                 CommandLine.Format.Local("DuplicatesNotAllowed", arg,
                     "--inputDirectory") :: CommandLine.error
              else
                CoverageParameters.theInputDirectories.Add arg))
@@ -113,9 +107,7 @@ module internal Main =
              let arg = Path.GetFullPath x
              if CoverageParameters.theOutputDirectories.Contains arg then
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "DuplicatesNotAllowed", arg,
+                 CommandLine.Format.Local("DuplicatesNotAllowed", arg,
                     "--outputDirectory") :: CommandLine.error
              else
                CommandLine.doPathOperation (fun _ -> CoverageParameters.theOutputDirectories.Add arg) ()
@@ -148,9 +140,7 @@ module internal Main =
            if ok then
              if Option.isSome CoverageParameters.defaultStrongNameKey then
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "MultiplesNotAllowed", "--strongNameKey")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--strongNameKey")
                  :: CommandLine.error
              else
                CoverageParameters.defaultStrongNameKey <- Some pair
@@ -161,9 +151,7 @@ module internal Main =
            if CommandLine.validatePath "--xmlReport" x then
              if Option.isSome CoverageParameters.theReportPath then
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "MultiplesNotAllowed", "--xmlReport")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
@@ -180,8 +168,7 @@ module internal Main =
          (fun x ->
            if CoverageParameters.single then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
+               CommandLine.Format.Local("Incompatible",
                   "--single", "--callContext") :: CommandLine.error
            else
              let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.theInterval) x
@@ -193,9 +180,7 @@ module internal Main =
          (fun _ ->
            if Option.isSome CoverageParameters.theReportFormat then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--opencover")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--opencover")
                :: CommandLine.error
            else
              CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover))
@@ -205,14 +190,11 @@ module internal Main =
          (fun _ ->
            if CoverageParameters.single then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--single")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--single")
                :: CommandLine.error
            else if Option.isSome CoverageParameters.theInterval || CoverageParameters.trackingNames.Any() then
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture, CommandLine.resources.GetString "Incompatible",
+               CommandLine.Format.Local("Incompatible",
                   "--single", "--callContext") :: CommandLine.error
            else
              CoverageParameters.single <- true))
@@ -221,15 +203,11 @@ module internal Main =
            match CoverageParameters.coverstyle with
            | CoverStyle.LineOnly ->
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "MultiplesNotAllowed", "--linecover")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--linecover")
                  :: CommandLine.error
            | CoverStyle.BranchOnly ->
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "Incompatible", "--linecover",
+                 CommandLine.Format.Local("Incompatible", "--linecover",
                     "--branchcover") :: CommandLine.error
            | _ -> CoverageParameters.coverstyle <- CoverStyle.LineOnly))
         ("branchcover",
@@ -237,15 +215,11 @@ module internal Main =
            match CoverageParameters.coverstyle with
            | CoverStyle.BranchOnly ->
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "MultiplesNotAllowed", "--branchcover")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--branchcover")
                  :: CommandLine.error
            | CoverStyle.LineOnly ->
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "Incompatible", "--branchcover",
+                 CommandLine.Format.Local("Incompatible", "--branchcover",
                     "--linecover") :: CommandLine.error
            | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
         (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
@@ -271,15 +245,11 @@ module internal Main =
                                            | _ -> None
              if !CoverageParameters.defer = None then
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "InvalidValue", "--defer", x)
+                 CommandLine.Format.Local("InvalidValue", "--defer", x)
                  :: CommandLine.error
            else
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--defer")
                :: CommandLine.error))
         (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
         ("showstatic:",
@@ -292,15 +262,11 @@ module internal Main =
                else None
              if CoverageParameters.staticFilter = None then
                CommandLine.error <-
-                 String.Format
-                   (CultureInfo.CurrentCulture,
-                    CommandLine.resources.GetString "InvalidValue", "--showstatic", x)
+                 CommandLine.Format.Local("InvalidValue", "--showstatic", x)
                  :: CommandLine.error
            else
              CommandLine.error <-
-               String.Format
-                 (CultureInfo.CurrentCulture,
-                  CommandLine.resources.GetString "MultiplesNotAllowed", "--showstatic")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
@@ -308,8 +274,7 @@ module internal Main =
         ("<>",
          (fun x ->
            CommandLine.error <-
-             String.Format
-               (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
+             CommandLine.Format.Local("InvalidValue",
                 "AltCover", x) :: CommandLine.error)) ] // default end stop
       |> List.fold
            (fun (o : OptionSet) (p, a) ->
@@ -326,9 +291,7 @@ module internal Main =
           |> Seq.iter (fun fromDirectory ->
                if toDirectories.Contains fromDirectory then
                  CommandLine.error <-
-                   String.Format
-                     (CultureInfo.CurrentCulture,
-                      CommandLine.resources.GetString "NotInPlace", fromDirectory)
+                   CommandLine.Format.Local("NotInPlace", fromDirectory)
                    :: CommandLine.error)
 
           CommandLine.doPathOperation (fun () ->
@@ -337,9 +300,7 @@ module internal Main =
               found
               |> Seq.iter (fun toDirectory ->
                    CommandLine.error <-
-                     String.Format
-                       (CultureInfo.CurrentCulture,
-                        CommandLine.resources.GetString "SaveExists", toDirectory)
+                     CommandLine.Format.Local("SaveExists", toDirectory)
                      :: CommandLine.error)
             if CommandLine.error |> List.isEmpty then
               (Seq.iter CommandLine.ensureDirectory toDirectories)) () false
@@ -352,23 +313,15 @@ module internal Main =
             |> Seq.iter (fun (toDirectory, fromDirectory) ->
                  if !CoverageParameters.inplace then
                    Output.info
-                   <| String.Format
-                        (CultureInfo.CurrentCulture,
-                         (CommandLine.resources.GetString "savingto"), toDirectory)
+                   <| CommandLine.Format.Local("savingto", toDirectory)
                    Output.info
-                   <| String.Format
-                        (CultureInfo.CurrentCulture,
-                         (CommandLine.resources.GetString "instrumentingin"), fromDirectory)
-                 else
+                   <| CommandLine.Format.Local("instrumentingin", fromDirectory)
+                  else
                    Output.info
-                   <| String.Format
-                        (CultureInfo.CurrentCulture,
-                         (CommandLine.resources.GetString "instrumentingfrom"),
-                         fromDirectory)
+                   <| CommandLine.Format.Local("instrumentingfrom",
+                       fromDirectory)
                    Output.info
-                   <| String.Format
-                        (CultureInfo.CurrentCulture,
-                         (CommandLine.resources.GetString "instrumentingto"), toDirectory))
+                   <| CommandLine.Format.Local("instrumentingto", toDirectory))
             Right
               (rest, fromDirectories |> Seq.map DirectoryInfo,
                toDirectories |> Seq.map DirectoryInfo,
@@ -420,9 +373,7 @@ module internal Main =
                       (def.IsIncluded).IsInstrumented
                        && (def.MainModule.Attributes &&& ModuleAttributes.ILOnly =
                              ModuleAttributes.ILOnly) then
-                      String.Format
-                        (CultureInfo.CurrentCulture,
-                         (CommandLine.resources.GetString "instrumenting"), fullName)
+                      CommandLine.Format.Local("instrumenting", fullName)
                       |> Output.info
                       { Path = [ fullName ]
                         Name = def.Name.Name
@@ -528,9 +479,7 @@ module internal Main =
                 prepareTargetFiles fromInfo toInfo targetInfo
                   (CoverageParameters.instrumentDirectories())
               Output.info
-              <| String.Format
-                   (CultureInfo.CurrentCulture,
-                    (CommandLine.resources.GetString "reportingto"), report)
+              <| CommandLine.Format.Local("reportingto", report)
               let reporter, document =
                 match CoverageParameters.reportKind() with
                 | ReportFormat.OpenCover -> OpenCover.reportGenerator()
