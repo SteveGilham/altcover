@@ -18,6 +18,7 @@
       "version": "2020.3.9.15370-pre-release",
       "commands": [
         "gendarme"
-      ]    }
+      ]
+    }
   }
 }
