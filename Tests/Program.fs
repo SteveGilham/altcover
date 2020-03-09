@@ -153,6 +153,7 @@ module TestMain =
           Tests.AltCoverTests.CanIdentifyIncludedCSharpProperties, "Tests.CanIdentifyIncludedCSharpProperties"
           Tests.AltCoverTests.FixEnding, "Tests.FixEnding"
           Tests.AltCoverTests.ValidateStaticExemption, "Tests.ValidateStaticExemption"
+          Tests.AltCoverTests.ValidateStaticClass, "Tests.ValidateStaticClass"
           Tests.AltCoverTests.ValidateAutomaticExemption, "Tests.ValidateAutomaticExemption"
           Tests.AltCoverTests.DetectLocalSource, "Tests.DetectLocalSource"
           Tests.AltCoverTests.LocateMatchShouldChooseLongerWildCardPath, "Tests.LocateMatchShouldChooseLongerWildCardPath"

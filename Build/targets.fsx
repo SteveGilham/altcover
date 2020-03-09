@@ -144,9 +144,6 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
-let GendarmePath = 
-  ("./packages/" + (packageVersion "altcode.gendarme") + "/tools/gendarme.exe")
-  |> Path.getFullName
   
 let cliArguments =
   { MSBuild.CliArguments.Create() with
@@ -484,38 +481,20 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  [
-   ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover/altcover.core.fsproj")
-   ("_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Shadow/altcover.shadow.core.fsproj")
-   ("_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.PowerShell/altcover.powershell.core.fsproj")
-   ("_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.FSApi/altcover.fsapi.core.fsproj")
-   ("_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish", "netcoreapp2.1", "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
-   ("_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Fake.DotNet.Testing.AltCover/altcover.fake.dotnet.testing.altcover.core.fsproj")
-   ("_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Cake/altcover.cake.core.csproj")
-   ("_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover.NetCoreApp/altcover.netcoreapp.core.fsproj")
-  ]
-  |> Seq.iter (fun (pub, rt, proj) -> DotNet.publish (fun options ->
-                                    { options with
-                                        OutputPath = Some pub
-                                        Configuration = DotNet.BuildConfiguration.Debug
-                                        NoBuild = true
-                                        MSBuildParams = { MSBuild.CliArguments.Create() with                                                            
-                                                           DisableInternalBinLog = true
-                                                           Properties = [("AltCoverGendarme", "true")] }
-                                        Framework = Some rt }) proj)
-
   [ ("./Build/common-rules.xml",
-     [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish/AltCover.dll"
-       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" 
-       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
-       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" 
-       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" 
-       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll"
-       "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish/altcover.netcoreapp.dll"
+     [ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
+       "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/AltCover.Shadow.dll" 
+       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
+       "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" 
+       "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.FSApi.dll" 
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" 
+       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll"
         ])
     ("./Build/csharp-rules.xml",
-     [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.CSapi.dll"
+     [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.CSapi.dll"
         ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
@@ -527,8 +506,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
              Console = true
              Log = "./_Reports/gendarme.html"
              LogKind = Gendarme.LogKind.Html
-             Targets = files
-             ToolPath = GendarmePath
+             Targets = if Environment.isWindows then files else (List.tail files)
+             ToolType = ToolType.CreateLocalTool()
              FailBuildOnDefect = true }))
 
 _Target "FxCop" (fun _ ->
@@ -545,8 +524,25 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
       "-Microsoft.Usage#CA2208" ]
+  let deprecatedRules = 
+    [ "-Microsoft.Usage#CA2202" ]
 
-  [ ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
+  [ ( [ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/net45/altcover.netcoreapp.exe" ],// TODO netcore support
+      [],
+      [ "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+        "-Microsoft.Naming#CA1709"]) // reconsider @ Genbu
+    ( [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
+      [],
+      deprecatedRules)
+    ( [ "_Binaries/AltCover.Fake/Debug+AnyCPU/net46/AltCover.Fake.dll" ],
+      [],
+      [ "-Microsoft.Design#CA1020"
+        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+        "-Microsoft.Usage#CA2202"
+        "-Microsoft.Usage#CA2208"
+        "-Microsoft.Design#CA2210" ])  // can't strongname this as Fake isn't strongnamed 
+    ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
      [ "AltCover.AltCover"
        "AltCover.Api"
        "AltCover.Args"
@@ -642,7 +638,6 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1724"
        "-Microsoft.Usage#CA2208" ]) 
     ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
-       //"_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
        ],
      [],
      [
@@ -809,9 +804,21 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
              f |> DotNet.test coverletTestOptions
            with x -> eprintf "%A" x
            let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
+
+           // Can't seem to get this any other way
+           let doc = covxml |> XDocument.Load 
+
+           let key = doc.Descendants(XName.Get "Name")
+                     |> Seq.filter (fun x -> x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
+                     |> Seq.toList
+           key
+           |> List.iter (fun x -> x.Parent.Remove())
+
            let target = (Path.getFullName "./_Reports") @@ ((Path.GetFileNameWithoutExtension f) + ".coverlet.xml")
-           Shell.copyFile target covxml
-           covxml :: l) []
+           doc.Save target
+
+           // Shell.copyFile target covxml
+           target :: l) []
 
     ReportGenerator.generateReports (fun p ->
       { p with
@@ -4265,7 +4272,6 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "Gendarme"
 ==> "Analysis"
-//=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
 
 "Compilation"
 ?=> "UnitTest"
