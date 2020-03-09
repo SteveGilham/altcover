@@ -162,7 +162,7 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ (FSApi.CollectParams.Primitive subject)
-            |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+            |> FSApi.Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
   let TypeSafeCollectParamsCanBeValidated() =
@@ -179,7 +179,7 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test
       <@ instance
-         |> FSApi.Args.Collect = [ "Runner"; "-x"; "dotnet"; "-t"; "23"; "--teamcity:+B" ] @>
+         |> FSApi.Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "23"; "--teamcity:+B" ] @>
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ validate.ToString() = "altcover Runner -x dotnet -t 23 --teamcity:+B" @>
@@ -240,7 +240,7 @@ module AltCoverXTests =
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    let rendered = (FSApi.PrepareParams.Primitive subject) |> FSApi.Args.Prepare
+    let rendered = (FSApi.PrepareParams.Primitive subject) |> FSApi.Args.prepare
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
@@ -282,7 +282,7 @@ module AltCoverXTests =
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ instance
-         |> FSApi.Args.Prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
+         |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--opencover"; "--inplace";
                                    "--save" ] @>
     let validate = (FSApi.PrepareParams.TypeSafe subject).WhatIf().ToString()
@@ -316,7 +316,7 @@ module AltCoverXTests =
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ (FSApi.PrepareParams.TypeSafe subject)
-         |> FSApi.Args.Prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
+         |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "--opencover"; "--inplace"; "--save"; "--";
                                    "[Fact]" ] @>
 
@@ -383,7 +383,7 @@ module AltCoverXTests =
 
     let scan = subject.Validate()
     test <@ scan.Length = 2 @>
-    let rendered = subject |> FSApi.Args.Prepare
+    let rendered = subject |> FSApi.Args.prepare
     test
       <@ rendered = [ "-c"; "0"; "--opencover"; "--inplace"; "--save"; "--single";
                       "--linecover"; "--branchcover" ] @>

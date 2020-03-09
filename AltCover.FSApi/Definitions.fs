@@ -74,7 +74,7 @@ module internal Internals =
   let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParams)
       (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
 #else
-  let ToTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
+  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
       (force : DotNet.CLIArgs) =
 #endif
@@ -112,9 +112,10 @@ module internal Internals =
 #if RUNNER
   let ToTestArguments (prepare : AltCover.FSApi.PrepareParams)
       (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
+    ToTestArgumentList prepare collect force |> join
 #else
-  let ToTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
+  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
       (force : DotNet.CLIArgs) =
+    toTestArgumentList prepare collect force |> join
 #endif
-    ToTestArgumentList prepare collect force |> join

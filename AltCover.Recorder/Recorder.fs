@@ -38,6 +38,9 @@ module Instance =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Naming", "UseCorrectCasingRule",
+      Justification = "Code rewritten")>]
   let
 #if DEBUG
       mutable

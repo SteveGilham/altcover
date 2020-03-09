@@ -1,8 +1,9 @@
 #nowarn "25"
 namespace AltCover
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage(
-  "Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
+open System.Diagnostics.CodeAnalysis
+
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
 #if GUI
 module Augment =
@@ -22,21 +23,34 @@ module internal Augment =
         System.Xml.Linq.XName.Get self
 
   type Microsoft.FSharp.Core.Option<'T> with
+    [<SuppressMessage("Gendarme.Rules.Naming",
+                      "UseCorrectCasingRule",
+                      Justification = "F# style")>]
     // fsharplint:disable-next-line MemberNames
     static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
+
+    [<SuppressMessage("Gendarme.Rules.Naming",
+                      "UseCorrectCasingRule",
+                      Justification = "F# style")>]
     // fsharplint:disable-next-line MemberNames
     static member nullable (x : 'T) : option<'T> =
       if isNull (x :> obj) then None else Some x
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
     Justification = "Context in F# has to be sufficient")>]
+  [<SuppressMessage("Gendarme.Rules.Naming",
+                    "UseCorrectCasingRule",
+                    Justification = "F# style")>]
   let Right x : Either<'a, 'b> = Choice1Of2 x
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
     Justification = "Context in F# has to be sufficient")>]
+  [<SuppressMessage("Gendarme.Rules.Naming",
+                    "UseCorrectCasingRule",
+                    Justification = "F# style")>]
   let Left x : Either<'a, 'b> = Choice2Of2 x
 
   let internal (|Right|Left|) =

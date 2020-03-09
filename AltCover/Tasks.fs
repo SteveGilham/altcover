@@ -17,13 +17,13 @@ module Api =
   let Prepare (args : FSApi.PrepareParams) (log : FSApi.Logging) =
     log.Apply()
     args
-    |> FSApi.Args.Prepare
+    |> FSApi.Args.prepare
     |> List.toArray
     |> Main.effectiveMain
 
   let Collect (args : FSApi.CollectParams) (log : FSApi.Logging) =
     log.Apply()
-    FSApi.Args.Collect args
+    FSApi.Args.collect args
     |> List.toArray
     |> Main.effectiveMain
 

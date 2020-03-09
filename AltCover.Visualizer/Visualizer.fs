@@ -155,7 +155,7 @@ module internal Persistence =
 
 #if NETCOREAPP2_1
 
-  let private DefaultDocument() =
+  let private defaultDocument() =
     let doc = XDocument()
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
@@ -165,14 +165,14 @@ module internal Persistence =
       "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
       Justification = "need to exhaustively list the espected ones"
   )>]
-  let private EnsureFile() =
+  let private ensureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
     let file = Path.Combine(dir.FullName, "Visualizer.xml")
     if file
        |> File.Exists
        |> not then
-      (file, DefaultDocument())
+      (file, defaultDocument())
     else
       try
         let doc = XDocument.Load(file)
@@ -189,13 +189,13 @@ module internal Persistence =
         with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
           let nl = Environment.NewLine
           printfn "%A%s%s%A" xx nl nl doc
-          (file, DefaultDocument())
+          (file, defaultDocument())
       with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
         printfn "%A" x
-        (file, DefaultDocument())
+        (file, defaultDocument())
 
   let internal saveSchemaDir (s : string) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
 
     let node =
       config.XPathSelectElements("AltCover.Visualizer")
@@ -215,7 +215,7 @@ module internal Persistence =
     then config.Save file
 
   let internal saveFont (font : string) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//Font")
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
@@ -226,13 +226,13 @@ module internal Persistence =
     config.Save file
 
   let internal readFont() =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
     | [] -> "Monospace 10"
     | x :: _ -> x.FirstNode.ToString()
 
   let internal readSchemaDir() =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
 
     let node =
       config.XPathSelectElements("AltCover.Visualizer")
@@ -243,7 +243,7 @@ module internal Persistence =
     | a -> a.Value
 
   let internal saveFolder (path : string) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] ->
         (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
@@ -253,13 +253,13 @@ module internal Persistence =
     config.Save file
 
   let internal readFolder() =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
   let internal saveCoverageFiles (coverageFiles : string seq) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
@@ -269,7 +269,7 @@ module internal Persistence =
     config.Save file
 
   let internal readCoverageFiles (handler : Handler) =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
 
     let files =
       config.XPathSelectElements("//RecentlyOpened")
@@ -278,7 +278,7 @@ module internal Persistence =
     handler.coverageFiles <- files
 
   let saveGeometry (w : Window) =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
     |> Seq.iter (fun x -> x.Remove())
@@ -295,7 +295,7 @@ module internal Persistence =
     config.Save file
 
   let readGeometry (w : Window) =
-    let _, config = EnsureFile()
+    let _, config = ensureFile()
 
     let attribute (x : XElement) a =
       x.Attribute(XName.Get a).Value
@@ -313,7 +313,7 @@ module internal Persistence =
          w.Move(x, y))
 
   let clearGeometry() =
-    let file, config = EnsureFile()
+    let file, config = ensureFile()
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
     |> Seq.iter (fun f -> f.Remove())
@@ -480,7 +480,7 @@ module private Gui =
                           .GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
   // --------------------------  Persistence ---------------------------
   // -------------------------- Tree View ---------------------------
-  let Mappings = new Dictionary<TreePath, XPathNavigator>()
+  let mappings = new Dictionary<TreePath, XPathNavigator>()
 
   let private populateClassNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
@@ -511,7 +511,7 @@ module private Gui =
              [| displayname.Substring(offset) :> obj
                 methodIcon.Force() :> obj |])
 
-        Mappings.Add(mmodel.GetPath(newrow), x.m)
+        mappings.Add(mmodel.GetPath(newrow), x.m)
 
       if special <> MethodType.Normal then
         let newrow =
@@ -521,7 +521,7 @@ module private Gui =
                 (if special = MethodType.Property then propertyIcon else eventIcon)
                   .Force() :> obj |])
         keys
-          |> Seq.sortBy (fun key -> key.name |> DisplayName)
+          |> Seq.sortBy (fun key -> key.name |> displayName)
           |> Seq.iter (applyMethod theModel newrow)
       else
         applyMethod theModel theRow (keys |> Seq.head)
@@ -530,8 +530,8 @@ module private Gui =
       nodes
       |> Seq.groupBy (fun key ->
            key.name
-           |> DisplayName
-           |> HandleSpecialName)
+           |> displayName
+           |> handleSpecialName)
       |> Seq.toArray
 
     let orderMethods array =
@@ -565,7 +565,7 @@ module private Gui =
         else if group
                 |> snd
                 |> Seq.exists (fun key ->
-                     let d = key.name |> DisplayName
+                     let d = key.name |> displayName
                      (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
                      |> not) then
           classIcon.Force()
@@ -1065,9 +1065,9 @@ module private Gui =
   let private onRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let hitFilter (activated : RowActivatedArgs) (path : TreePath) =
       activated.Path.Compare(path) = 0
-    let hits = Mappings.Keys |> Seq.filter (hitFilter activation)
+    let hits = mappings.Keys |> Seq.filter (hitFilter activation)
     if not (Seq.isEmpty hits) then
-      let m = Mappings.[Seq.head hits]
+      let m = mappings.[Seq.head hits]
       let points = m.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
       if Seq.isEmpty points then
         let noSource() =
@@ -1219,7 +1219,7 @@ module private Gui =
     handler.mainWindow.ShowAll()
     handler
 
-  let ParseCommandLine arguments =
+  let parseCommandLine arguments =
     let options =
       [ ("g|geometry",
          (fun _ ->
@@ -1236,7 +1236,7 @@ module private Gui =
 
   [<EntryPoint; STAThread>]
   let internal main arguments =
-    ParseCommandLine arguments
+    parseCommandLine arguments
     Application.Init()
     let handler = prepareGui()
 #if NETCOREAPP2_1
@@ -1328,7 +1328,7 @@ module private Gui =
                  outdatedCoverageFileMessage h.mainWindow current
                let model = handler.auxModel
                model.Clear()
-               Mappings.Clear()
+               mappings.Clear()
                let toprow = model.AppendValues(current.Name, xmlIcon.Force())
 
                let applyToModel (theModel : TreeStore) theRow

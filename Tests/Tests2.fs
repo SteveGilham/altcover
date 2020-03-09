@@ -255,7 +255,7 @@ module AltCoverTests2 =
       ProgramDatabase.readSymbols prepared
       let bang = fun () -> InvalidOperationException("Bang") |> raise
       Assert.Throws<InvalidOperationException>
-        (fun () -> Instrument.I.Guard prepared bang |> ignore) |> ignore
+        (fun () -> Instrument.I.guard prepared bang |> ignore) |> ignore
       let output = Path.GetTempFileName()
       let outputdll = output + ".dll"
       try
@@ -485,7 +485,7 @@ module AltCoverTests2 =
           Assert.That(CoverageParameters.sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.I.prepareAssembly path
           let traces = System.Collections.Generic.List<string>()
-          Instrument.I.WriteAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
+          Instrument.I.writeAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
           let expectedTraces = [
             "    " + outputdll + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
             "    " + alter + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"

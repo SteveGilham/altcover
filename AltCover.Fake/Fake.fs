@@ -129,7 +129,7 @@ module DotNet =
     member self.WithAltCoverParameters (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
            (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
            (force : AltCoverFake.DotNet.Testing.DotNet.CLIArgs) =
-      AltCoverFake.DotNet.Testing.Internals.ToTestArguments
+      AltCoverFake.DotNet.Testing.Internals.toTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
     member self.WithAltCoverImportModule() =

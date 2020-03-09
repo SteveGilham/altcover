@@ -676,7 +676,7 @@ module internal Runner =
            m.SetAttribute("ordinal", "0")
            m.SetAttribute("offset", "0"))
 
-    let VisitCount nodes =
+    let visitCount nodes =
       nodes
       |> Seq.cast<XmlElement>
       |> Seq.filter (fun s ->
@@ -801,8 +801,8 @@ module internal Runner =
             J.copyFillMethodPoint mp sp
           else
             J.fillMethodPoint mp method dict
-          let pointVisits = J.VisitCount sp
-          let b0 = J.VisitCount bp
+          let pointVisits = J.visitCount sp
+          let b0 = J.visitCount bp
           let branchVisits = b0 + Math.Sign b0
           if pointVisits > 0 || b0 > 0 then
             let fillMethod() =

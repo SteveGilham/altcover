@@ -322,18 +322,18 @@ type PrepareParams =
     | TypeSafe t -> t.ShowGenerated.AsBool()
 
 #if RUNNER
-  static member private validateArray a f key =
-    PrepareParams.validateArraySimple a (f key)
+  static member private ValidateArray a f key =
+    PrepareParams.ValidateArraySimple a (f key)
 
-  static member private validateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
+  static member private ValidateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
 
-  static member private validateOptional f key x =
+  static member private ValidateOptional f key x =
     if x
        |> String.IsNullOrWhiteSpace
        |> not
     then f key x |> ignore
 
-  member private self.consistent() =
+  member private self.Consistent() =
     if self.Single && self.CallContext.Any() then
       CommandLine.error <-
         String.Format
@@ -341,7 +341,7 @@ type PrepareParams =
            CommandLine.resources.GetString "Incompatible", "--single", "--callContext")
         :: CommandLine.error
 
-  member private self.consistent'() =
+  member private self.Consistent'() =
     if self.LineCover && self.BranchCover then
       CommandLine.error <-
         String.Format
@@ -366,19 +366,19 @@ type PrepareParams =
 
     try
       CommandLine.error <- []
-      PrepareParams.validateArray self.InputDirectories CommandLine.validateDirectory
+      PrepareParams.ValidateArray self.InputDirectories CommandLine.validateDirectory
         "--inputDirectory"
-      PrepareParams.validateArray self.OutputDirectories CommandLine.validatePath
+      PrepareParams.ValidateArray self.OutputDirectories CommandLine.validatePath
         "--outputDirectory"
-      PrepareParams.validateOptional CommandLine.validateStrongNameKey "--strongNameKey"
+      PrepareParams.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
         self.StrongNameKey
-      PrepareParams.validateOptional CommandLine.validatePath "--xmlReport"
+      PrepareParams.ValidateOptional CommandLine.validatePath "--xmlReport"
         self.XmlReport
-      PrepareParams.validateArray self.SymbolDirectories CommandLine.validateDirectory
+      PrepareParams.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
         "--symbolDirectory"
-      PrepareParams.validateArray self.Dependencies CommandLine.validateAssembly
+      PrepareParams.ValidateArray self.Dependencies CommandLine.validateAssembly
         "--dependency"
-      PrepareParams.validateArray self.Keys CommandLine.validateStrongNameKey "--key"
+      PrepareParams.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
       [ self.FileFilter
         self.AssemblyFilter
         self.AssemblyExcludeFilter
@@ -387,9 +387,9 @@ type PrepareParams =
         self.AttributeFilter
         self.PathFilter ]
       |> Seq.iter
-           (fun a -> PrepareParams.validateArraySimple a CommandLine.validateRegexes)
-      self.consistent()
-      self.consistent'()
+           (fun a -> PrepareParams.ValidateArraySimple a CommandLine.validateRegexes)
+      self.Consistent()
+      self.Consistent'()
       validateContext self.CallContext
       CommandLine.error |> List.toArray
     finally
@@ -436,10 +436,10 @@ type Logging =
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
 module private ArgsHelper =
-  let Item a x =
+  let item a x =
     if x |> String.IsNullOrWhiteSpace then [] else [ a; x ]
 
-  let OptItem a x l =
+  let optionalItem a x l =
     if x
        |> String.IsNullOrWhiteSpace
        || l |> List.exists (fun i -> i = x) then
@@ -478,11 +478,11 @@ module internal Args =
   let internal items(args : PrepareParams) =
     [ ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport) ]
-    |> List.collect (fun (a, b) -> ArgsHelper.Item a b)
+    |> List.collect (fun (a, b) -> ArgsHelper.item a b)
 
   let internal optItems(args : PrepareParams) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
-    |> List.collect (fun (a, b, c) -> ArgsHelper.OptItem a b c)
+    |> List.collect (fun (a, b, c) -> ArgsHelper.optionalItem a b c)
 
   let internal flags(args : PrepareParams) =
     [ ("--opencover", args.OpenCover)
@@ -499,7 +499,7 @@ module internal Args =
       ("--showGenerated", args.ShowGenerated) ]
     |> List.collect (fun (a, b) -> flag a b)
 
-  let Prepare(args : PrepareParams) =
+  let prepare(args : PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -510,7 +510,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let Collect(args : CollectParams) =
+  let collect(args : CollectParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -519,16 +519,16 @@ module internal Args =
     let exe = args.Executable
 
     [ [ "Runner" ]
-      ArgsHelper.Item "-r" args.RecorderDirectory
-      ArgsHelper.Item "-w" args.WorkingDirectory
-      ArgsHelper.Item "-x" exe
-      ArgsHelper.Item "-l" args.LcovReport
-      ArgsHelper.Item "-t" args.Threshold
-      ArgsHelper.Item "-c" args.Cobertura
-      ArgsHelper.Item "-o" args.OutputFile
+      ArgsHelper.item "-r" args.RecorderDirectory
+      ArgsHelper.item "-w" args.WorkingDirectory
+      ArgsHelper.item "-x" exe
+      ArgsHelper.item "-l" args.LcovReport
+      ArgsHelper.item "-t" args.Threshold
+      ArgsHelper.item "-c" args.Cobertura
+      ArgsHelper.item "-o" args.OutputFile
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      ArgsHelper.OptItem "--teamcity" args.SummaryFormat []
+      ArgsHelper.optionalItem "--teamcity" args.SummaryFormat []
       trailing ]
     |> List.concat
 
@@ -553,15 +553,18 @@ type ValidatedCommandLine =
 
 type CollectParams with
   member self.WhatIf afterPreparation =
-    { Command = Args.Collect self
+    { Command = Args.collect self
       Errors = self.Validate afterPreparation }
 
 type PrepareParams with
   member self.WhatIf() =
-    { Command = Args.Prepare self
+    { Command = Args.prepare self
       Errors = self.Validate() }
 
 #else
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UseCorrectCasingRule",
+                  Justification = "Fake.build style")>]
 let splitCommandLine s =
   s
   |> if Environment.isWindows
@@ -569,6 +572,9 @@ let splitCommandLine s =
      else BlackFox.CommandLine.MonoUnixCommandLine.parse
   |> Seq.toList
 
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UseCorrectCasingRule",
+                  Justification = "Fake.build style")>]
 let buildDotNetTestCommandLine (options : DotNet.TestOptions -> DotNet.TestOptions)
     project =
   let dotnet = typeof<Fake.DotNet.DotNet.TestOptions>.DeclaringType
@@ -636,8 +642,8 @@ type Params =
 
 let internal createArgs parameters =
   match parameters.Args with
-  | Collect c -> Args.Collect c
-  | Prepare p -> Args.Prepare p
+  | Collect c -> Args.collect c
+  | Prepare p -> Args.prepare p
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 
@@ -659,6 +665,9 @@ let internal createProcess parameters args =
     Trace.trace command.CommandLine
     command
 
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UseCorrectCasingRule",
+                  Justification = "Fake.build style")>]
 let composeCommandLine parameters =
   let args = createArgs parameters
   createProcess parameters args
@@ -674,8 +683,14 @@ let internal runCore parameters modifyCommand =
   if 0 <> run.ExitCode then failwithf "AltCover '%s' failed." command.CommandLine
   __.MarkSuccess()
 
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UseCorrectCasingRule",
+                  Justification = "Fake.build style")>]
 let run parameters = runCore parameters id
 
+[<SuppressMessage("Gendarme.Rules.Naming",
+                  "UseCorrectCasingRule",
+                  Justification = "Fake.build style")>]
 let runWithMono monoPath parameters =
   let withMono (command : CreateProcess<_>) =
     if parameters.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"

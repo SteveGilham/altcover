@@ -148,7 +148,7 @@ module internal Instrument =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let Guard (assembly : AssemblyDefinition) (f : unit -> unit) =
+    let guard (assembly : AssemblyDefinition) (f : unit -> unit) =
       try
         f()
         assembly
@@ -165,7 +165,7 @@ module internal Instrument =
            Justification="Return confusing Gendarme -- TODO")>]
     let internal prepareAssembly(location : string) =
       let definition = AssemblyDefinition.ReadAssembly(location)
-      Guard definition (fun () ->  // set the timer interval in ticks
+      guard definition (fun () ->  // set the timer interval in ticks
   #if NETCOREAPP2_0
   #else
         if monoRuntime |> not then ProgramDatabase.readSymbols definition
@@ -624,7 +624,7 @@ module internal Instrument =
               branch.Start.Operand <- preamble
       state
 
-    let WriteAssemblies definition file targets sink =
+    let writeAssemblies definition file targets sink =
       let first = Path.Combine(targets |> Seq.head, file)
       String.Format
         (System.Globalization.CultureInfo.CurrentCulture,
@@ -642,7 +642,7 @@ module internal Instrument =
     let private finishVisit(state : InstrumentContext) =
       try
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
-        WriteAssemblies (state.RecordingAssembly) recorderFileName
+        writeAssemblies (state.RecordingAssembly) recorderFileName
           (CoverageParameters.instrumentDirectories()) ignore
 
         CoverageParameters.instrumentDirectories()
@@ -724,7 +724,7 @@ module internal Instrument =
     let private visitAfterAssembly state (assembly : AssemblyDefinition)
         (paths : string list) =
       let originalFileName = Path.GetFileName assembly.MainModule.FileName
-      WriteAssemblies assembly originalFileName paths Output.info
+      writeAssemblies assembly originalFileName paths Output.info
       state
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",

@@ -28,7 +28,7 @@ module internal GuiCommon =
     | Event = -2
 
   // -------------------------- Method Name Handling ---------------------------
-  let DisplayName(name : string) =
+  let displayName(name : string) =
     let offset =
       match name.LastIndexOf("::", StringComparison.Ordinal) with
       | -1 -> 0
@@ -36,7 +36,7 @@ module internal GuiCommon =
 
     name.Substring(offset).Split('(') |> Seq.head
 
-  let HandleSpecialName(name : string) =
+  let handleSpecialName(name : string) =
     if name.StartsWith("get_", StringComparison.Ordinal)
        || name.StartsWith("set_", StringComparison.Ordinal) then
       (name.Substring(4), MethodType.Property)

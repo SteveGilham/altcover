@@ -132,7 +132,7 @@ module internal CommandLine =
       then f line
 
     module private Uncoverlet = // more event handlers
-      let AddHandlers (proc : Process) =
+      let addHandlers (proc : Process) =
         proc.ErrorDataReceived.Add(fun e -> Output.error |> filter e.Data)
         proc.OutputDataReceived.Add(fun e -> Output.info |> filter e.Data)
 
@@ -156,7 +156,7 @@ module internal CommandLine =
       use proc = new Process()
       proc.StartInfo <- psi
 
-      Uncoverlet.AddHandlers proc
+      Uncoverlet.addHandlers proc
       proc.Start() |> ignore
       proc.BeginErrorReadLine()
       proc.BeginOutputReadLine()
