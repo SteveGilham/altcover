@@ -67,8 +67,8 @@
   <ItemGroup />
 
   <ItemGroup>
-    <PackageReference Include="Expecto" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
-    <PackageReference Include="Expecto.TestResults" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Expecto" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
