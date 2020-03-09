@@ -20,7 +20,7 @@ type internal Exclusion =
 /// <summary>
 /// State object passed from visit to visit
 /// </summary>
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal OpenCoverContext =
   { Stack : XElement list
     Excluded : Exclusion

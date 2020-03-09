@@ -19,7 +19,7 @@ type ShowHidden =
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover", SupportsShouldProcess = true,
          ConfirmImpact = ConfirmImpact.Medium)>]
-[<OutputType([| "System.Void"; "System.String" |])>]
+[<OutputType([| "System.Void"; "System.String" |]); AutoSerializable(false)>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
     "AvoidLargeClassesRule",
     Justification="Has lots of parameters to pass")>]

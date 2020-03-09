@@ -49,7 +49,8 @@ module Api =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
     if ok then Console.ForegroundColor <- colour
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule");
+  AutoSerializable(false)>]
 type Prepare() =
   inherit Task(null)
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -172,6 +173,7 @@ type Prepare() =
 
     Api.Prepare task log = 0
 
+[<AutoSerializable(false)>]
 type Collect() =
   inherit Task(null)
 
@@ -228,6 +230,7 @@ type Collect() =
 
     Api.Collect task log = 0
 
+[<AutoSerializable(false)>]
 type PowerShell() =
   inherit Task(null)
 
@@ -245,6 +248,7 @@ type PowerShell() =
     r |> Output.warn
     true
 
+[<AutoSerializable(false)>]
 type GetVersion() =
   inherit Task(null)
 

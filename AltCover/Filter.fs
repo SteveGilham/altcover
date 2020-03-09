@@ -33,7 +33,8 @@ type internal StaticFilter =
   | Hidden
 
 [<ExcludeFromCodeCoverage; NoComparison; SuppressMessage("Gendarme.Rules.Naming",
- "UseCorrectSuffixRule", Justification="ex is part of Regex")>]
+ "UseCorrectSuffixRule", Justification="ex is part of Regex");
+  AutoSerializable(false)>]
 type internal FilterRegex =
   { Regex : Regex
     Sense : FilterSense }
@@ -41,7 +42,7 @@ type internal FilterRegex =
     { Regex = s
       Sense = Exclude }
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal FilterClass =
   { Scope : FilterScope
     Regex : Regex

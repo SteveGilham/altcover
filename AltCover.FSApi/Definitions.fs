@@ -18,7 +18,8 @@ module DotNet =
                                   Justification = "Idiomatic F#");
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                  Justification = "Idiomatic F#") >]
+                                  Justification = "Idiomatic F#");
+    AutoSerializable(false)>]
   type CLIArgs =
     | Force of bool
     | FailFast of bool

@@ -15,7 +15,7 @@ type CoverageTool =
   | NCoverAlike = 0
   | OpenCover = 2
 
-[<NoComparison>]
+[<NoComparison; AutoSerializable(false)>]
 type InvalidFile =
   { File : FileInfo
     Fault : Exception }
@@ -87,7 +87,7 @@ module Transformer =
     | :? XmlSchemaValidationException as x -> Left(x :> Exception)
     | :? ArgumentException as x -> Left(x :> Exception)
 
-[<NoComparison>]
+[<NoComparison; AutoSerializable(false)>]
 type internal CoverageFile =
   { File : FileInfo
     Document : XDocument }

@@ -9,7 +9,7 @@ open System.Xml.Linq
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 type ConvertToXmlDocumentCommand(xdocument : XDocument) =
   inherit PSCmdlet()
   new() = ConvertToXmlDocumentCommand(null)
@@ -24,7 +24,7 @@ type ConvertToXmlDocumentCommand(xdocument : XDocument) =
     |> self.WriteObject
 
 [<Cmdlet(VerbsData.ConvertTo, "XDocument")>]
-[<OutputType(typeof<XDocument>)>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 type ConvertToXDocumentCommand(xmldocument : XmlDocument) =
   inherit PSCmdlet()
 
@@ -40,7 +40,7 @@ type ConvertToXDocumentCommand(xmldocument : XmlDocument) =
     |> self.WriteObject
 
 [<Cmdlet(VerbsData.ConvertTo, "Lcov")>]
-[<OutputType("System.Void")>]
+[<OutputType("System.Void"); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Lcov is OK")>]
 type ConvertToLcovCommand(outputFile : String) =
   inherit PSCmdlet()
@@ -74,7 +74,7 @@ type ConvertToLcovCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "Cobertura")>]
-[<OutputType(typeof<XDocument>)>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToCoberturaCommand(outputFile : String) =
   inherit PSCmdlet()
@@ -115,7 +115,7 @@ type ConvertToCoberturaCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "NCover")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToNCoverCommand(outputFile : String) =
   inherit PSCmdlet()
@@ -155,7 +155,7 @@ type ConvertToNCoverCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertFromNCoverCommand(outputFile : String) =
   inherit PSCmdlet()

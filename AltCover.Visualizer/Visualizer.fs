@@ -27,7 +27,7 @@ open Microsoft.Win32
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
 
-[<Sealed>]
+[<Sealed; AutoSerializable(false)>]
 type internal Handler() =
   class
 #if NETCOREAPP2_1

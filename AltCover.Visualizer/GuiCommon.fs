@@ -7,7 +7,7 @@ open System.Net
 
 module internal GuiCommon =
   // Binds class name and XML
-  [<NoComparison>]
+  [<NoComparison; AutoSerializable(false)>]
   type internal MethodKey =
     { m : XPathNavigator
       spacename : string
@@ -48,7 +48,7 @@ module internal GuiCommon =
       (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
-  [<NoComparison>]
+  [<NoComparison; AutoSerializable(false)>]
   type internal Source =
     | File of FileInfo
     | Url of Uri

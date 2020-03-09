@@ -9,8 +9,7 @@ module AltCoverFake.DotNet.Testing.Primitive
 open System
 open System.Diagnostics.CodeAnalysis
 
-[<ExcludeFromCodeCoverage; NoComparison>]
-[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type CollectParams =
   { RecorderDirectory : String
     WorkingDirectory : String
@@ -34,9 +33,8 @@ type CollectParams =
       ExposeReturnCode = true
       SummaryFormat = String.Empty }
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
-[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
 type PrepareParams =
   { InputDirectories : String seq
     OutputDirectories : String seq
@@ -99,7 +97,7 @@ type PrepareParams =
       ShowGenerated = false }
 
 #if RUNNER
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false)>]
 type Logging =
   { Info : String -> unit
     Warn : String -> unit

@@ -19,7 +19,7 @@ open Fake.Core
 open Fake.DotNet
 #endif
 
-[<ExcludeFromCodeCoverage; NoComparison;
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
@@ -140,7 +140,7 @@ type CollectParams =
 #else
 #endif
 
-[<ExcludeFromCodeCoverage; NoComparison;
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
@@ -395,7 +395,7 @@ type PrepareParams =
     finally
       CommandLine.error <- saved
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality;
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false);
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
@@ -534,7 +534,7 @@ module internal Args =
 
 #if RUNNER
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type ValidatedCommandLine =
   { Command : string list
     Errors : string seq }
@@ -596,7 +596,7 @@ let buildDotNetTestCommandLine (options : DotNet.TestOptions -> DotNet.TestOptio
   (parameters.Common.DotNetCliPath,
    cmdArgs |> List.filter (String.IsNullOrWhiteSpace >> not))
 
-[<NoComparison>]
+[<NoComparison; AutoSerializable(false)>]
 type ArgType =
   | Collect of CollectParams
   | Prepare of PrepareParams
@@ -605,7 +605,7 @@ type ArgType =
 
 #nowarn "44"
 
-[<NoComparison; NoEquality>]
+[<NoComparison; NoEquality; AutoSerializable(false)>]
 type Params =
   { /// Path to the Altcover executable.
     ToolPath : string

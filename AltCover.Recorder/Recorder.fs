@@ -112,7 +112,7 @@ module Instance =
     /// </summary>
     [<SuppressMessage("Gendarme.Rules.Naming",
       "UseCorrectSuffixRule", Justification="It's the program call stack");
-      Sealed>]
+      Sealed; AutoSerializable(false)>]
     type private CallStack =
       [<ThreadStatic; DefaultValue>]
       static val mutable private instance : Option<CallStack>

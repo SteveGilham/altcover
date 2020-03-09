@@ -8,7 +8,7 @@ open System.Xml
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToBarChartCommand(outputFile : String) =
   inherit PSCmdlet()

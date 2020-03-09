@@ -13,7 +13,7 @@ open System.IO
 open System.Text.RegularExpressions
 
 // No more primitive obsession!
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type FilePath =
   | Tool of String
   | FilePath of String
@@ -26,7 +26,7 @@ type FilePath =
     | FilePath s -> Path.GetFullPath s
     | Tool t -> t
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type DirectoryPath =
   | DirectoryPath of String
   | DInfo of DirectoryInfo
@@ -44,7 +44,7 @@ type CommandArgument =
     match self with
     | CommandArgument s -> s
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type Command =
   | Command of CommandArgument seq
   | NoCommand
@@ -73,7 +73,7 @@ type Flag =
     | Clear -> false
     | Flag b -> b
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type FilePaths =
   | FilePaths of FilePath seq
   | NoPaths
@@ -85,7 +85,7 @@ type FilePaths =
         |> Seq.map (fun a -> a.AsString())
         |> Seq.toList
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type DirectoryPaths =
   | DirectoryPaths of DirectoryPath seq
   | NoDirectories
@@ -97,7 +97,7 @@ type DirectoryPaths =
         |> Seq.map (fun a -> a.AsString())
         |> Seq.toList
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type FilterItem =
   | FilterItem of Regex
   | IncludeItem of Regex
@@ -108,7 +108,7 @@ type FilterItem =
     | IncludeItem r -> "?" + r.ToString()
     | Raw r -> r
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type Filters =
   | Filters of FilterItem seq
   | Unfiltered
@@ -129,7 +129,7 @@ type ContextItem =
     | CallItem c -> c
     | TimeItem t -> t.ToString(CultureInfo.InvariantCulture)
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type Context =
   | Context of ContextItem seq
   | NoContext
@@ -167,8 +167,7 @@ type StaticFormat =
     | Show -> "+"
     | ShowZero -> "++"
 
-[<ExcludeFromCodeCoverage; NoComparison>]
-[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type CollectParams =
   { RecorderDirectory : DirectoryPath
     WorkingDirectory : DirectoryPath
@@ -192,9 +191,8 @@ type CollectParams =
       ExposeReturnCode = Set
       SummaryFormat = SummaryFormat.Default }
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
-[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
 type PrepareParams =
   { InputDirectories : DirectoryPaths
     OutputDirectories : DirectoryPaths

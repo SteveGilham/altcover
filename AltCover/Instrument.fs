@@ -17,7 +17,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Newtonsoft.Json.Linq
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal RecorderRefs =
   { Visit : MethodReference
     Push : MethodReference
@@ -30,7 +30,7 @@ type internal RecorderRefs =
 /// <summary>
 /// State object passed from visit to visit
 /// </summary>
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal InstrumentContext =
   { InstrumentedAssemblies : string list
     ModuleId : String
@@ -361,7 +361,7 @@ module internal Instrument =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
        "VariableNamesShouldNotMatchFieldNamesRule",
        Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" );
-      Sealed>]
+      AutoSerializable(false); Sealed>]
     type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
       /// <summary>
       /// Adjust the IL for exception handling

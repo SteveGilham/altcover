@@ -48,7 +48,7 @@ open Process
 
 type internal StringSink = Action<String> // delegate of string -> unit
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal UsageInfo =
   { Intro : String
     Options : OptionSet

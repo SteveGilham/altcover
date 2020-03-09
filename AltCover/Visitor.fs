@@ -63,7 +63,7 @@ type internal SeqPnt =
       Document = codeSegment.Document.Url
       Offset = codeSegment.Offset }
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal GoTo =
   { Start : Instruction
     SequencePoint : SequencePoint
@@ -71,13 +71,13 @@ type internal GoTo =
     Uid : int
     Path : int
     Offset : int
-    Target : Instruction list
+    [<NonSerialized>] Target : Instruction list
     Included : bool
     VisitCount : Exemption
     Representative : Reporting
     Key : int }
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal Node =
   | Start of seq<string * string list>
   | Assembly of AssemblyDefinition * Inspections * string list
@@ -101,7 +101,7 @@ type internal Node =
      | _ -> [])
     |> List.toSeq
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal StrongNameKeyData =
   { Blob : byte list
     Parameters : System.Security.Cryptography.RSAParameters }
@@ -159,7 +159,7 @@ type internal StrongNameKeyData =
     { Blob = []
       Parameters = System.Security.Cryptography.RSAParameters() }
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal KeyRecord =
   { Pair : StrongNameKeyData
     Token : byte list }

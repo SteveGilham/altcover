@@ -13,7 +13,7 @@ open Augment
 open Mono.Cecil
 open Mono.Options
 
-[<ExcludeFromCodeCoverage>]
+[<ExcludeFromCodeCoverage; AutoSerializable(false)>]
 type internal AssemblyInfo =
   { Path : string list
     Name : string
