@@ -18,7 +18,7 @@ module Trace =
           Error = Trace.traceError
           Echo = Trace.traceVerbose }
 
-  let internal DoDefault(log : FSApi.Logging option) =
+  let internal doDefault(log : FSApi.Logging option) =
     match log with
     | Some logging -> logging
     | None -> Create()
@@ -34,15 +34,15 @@ type Implementation =
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Api private () =
   static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
-    AltCover.Api.Prepare args (Trace.DoDefault log)
+    AltCover.Api.Prepare args (Trace.doDefault log)
   static member Collect(args : FSApi.CollectParams, ?log : FSApi.Logging) =
-    AltCover.Api.Collect args (Trace.DoDefault log)
+    AltCover.Api.Collect args (Trace.doDefault log)
   static member Ipmo() = AltCover.Api.Ipmo()
   static member Version() = AltCover.Api.Version()
   // Finds the tool from within the .nuget package
   [<SuppressMessage("Microsoft.Design", "CA1062",
                     Justification = "Idiomatic F#")>]
-  static member toolPath toolType =
+  static member ToolPath toolType =
     let here = Assembly.GetExecutingAssembly().Location
     let root = Path.Combine(Path.GetDirectoryName here, "../..")
 

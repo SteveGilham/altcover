@@ -3389,9 +3389,9 @@ _Target "DoIt"
 
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
 
-  let corePath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.DotNetCore
+  let corePath = AltCover.Fake.Api.ToolPath AltCover.Fake.Implementation.DotNetCore
   printfn "corePath = %A" corePath
-  let frameworkPath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework
+  let frameworkPath = AltCover.Fake.Api.ToolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
   if frameworkPath |> String.IsNullOrEmpty |> not
