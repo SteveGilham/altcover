@@ -33,7 +33,7 @@
     <rules include="*" from="Gendarme.Rules.Security.Cas.dll" />
     <!-- I have no real use for serialization -->
     <rules include="*"
-           exclude="MarkAllNonSerializableFieldsRule"
+           exclude="MarkAllNonSerializableFieldsRule | RelaxedMarkAllNonSerializableFieldsRule"
            from="Gendarme.Rules.Serialization.dll" />
     <!-- Use the relaxed variant -->
     <rules include="*"
