@@ -150,7 +150,7 @@ module CoverageFormats =
            c.SetAttribute("startTime", now)
            c.SetAttribute("measureTime", now))
     finally
-      thread.CurrentThread.CurrentCulture <- culture
+      thread.CurrentCulture <- culture
     rewrite
 
   let internal Summary() =
@@ -233,7 +233,7 @@ module CoverageFormats =
     // Fix offset, sc, ec in <MethodPoint />
     |> Option.iter(fun path -> modulePath.Value <- (Path.GetFullPath path)
                                m.Attribute(X "hash").Value <- KeyStore.HashFile path
-                               let def = AssemblyDefinition.ReadAssembly path
+                               use def = AssemblyDefinition.ReadAssembly path
                                def.MainModule.ReadSymbols()
                                m.Descendants(X "Method")
                                |> Seq.iter (fun m2 -> UpdateMethod m2 def))
