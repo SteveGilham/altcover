@@ -2007,7 +2007,8 @@ module AltCoverTests2 =
            Does.StartWith
              ("at Tests.AltCoverTests2.ArgumentExceptionWrites@"))
         Assert.That
-          (lines.[3].Trim(), Does.StartWith("at AltCover.CommandLine.I.doPathOperation"))
+          (lines.[3].Trim().Replace("Line+I.doPath","Line.I.doPath"),
+            Does.StartWith("at AltCover.CommandLine.I.doPathOperation"))
         Assert.That(lines |> List.skip 4, Is.Not.Empty)
         Assert.That(info.ToString(), Is.Empty)
         Assert.That
@@ -2076,7 +2077,8 @@ module AltCoverTests2 =
            Does.StartWith
              ("at Tests.AltCoverTests2.ArgumentExceptionWritesEx@"))
         Assert.That
-          (lines.[3].Trim(), Does.StartWith("at AltCover.CommandLine.I.doPathOperation"))
+          (lines.[3].Trim().Replace("Line+I.doPath","Line.I.doPath"),
+             Does.StartWith("at AltCover.CommandLine.I.doPathOperation"))
         Assert.That(lines |> List.skip 4, Is.Not.Empty)
         Assert.That(info.ToString(), Is.Empty)
         Assert.That
