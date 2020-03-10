@@ -262,7 +262,7 @@ module AltCoverCoreTests =
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         let (a, b, c) = expected |> Seq.head
         Instance.I.trace.Push(a, b, c)
-        Adapter.FlushAll()
+        Instance.FlushFinish()
       finally
         Instance.I.trace.Close()
         System.Threading.Thread.Sleep 100

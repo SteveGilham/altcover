@@ -173,7 +173,10 @@ type ConvertFromNCoverCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Assembly = Seq.empty<string> with get, set
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  member val Assembly : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]

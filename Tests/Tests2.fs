@@ -1904,7 +1904,7 @@ module AltCoverTests2 =
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
       |> Seq.filter (fun t ->
            let tokens =
-             [ "Info"; "Echo"; "Error"; "Usage"; "Warn"; "ToConsole" ]
+             [ "info"; "echo"; "error"; "usage"; "warn"; "toConsole" ]
            let name = t.Name
            tokens |> List.exists name.StartsWith)
       |> Seq.iter (fun t ->

@@ -645,7 +645,7 @@ module AltCoverTests =
         Adapter.VisitsClear()
         use stdout = new StringWriter()
         Console.SetOut stdout
-        Adapter.FlushAll()
+        Instance.FlushFinish()
         Assert.That(stdout.ToString(), Is.Empty)
       finally
         Adapter.VisitsClear()

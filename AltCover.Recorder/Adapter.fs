@@ -11,7 +11,6 @@ module Adapter =
   let DoExit() = Instance.I.doExit
   let VisitsClear() = Instance.I.clear()
   let SamplesClear() = Instance.I.samples.Clear()
-  let FlushAll() = Instance.I.flushAll ProcessExit
 
   let Reset() =
     Instance.I.isRunner <- false

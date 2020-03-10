@@ -10,6 +10,7 @@ module Augment =
 #else
 module internal Augment =
 #endif
+
   type System.Object with
     member self.IsNotNull
       with get() =
@@ -17,10 +18,12 @@ module internal Augment =
 
 #if GUI
 #else
+#if !WEAKNAME
   type System.String with
     member self.X
       with get() =
         System.Xml.Linq.XName.Get self
+#endif
 
   type Microsoft.FSharp.Core.Option<'T> with
     [<SuppressMessage("Gendarme.Rules.Naming",
@@ -34,7 +37,7 @@ module internal Augment =
                       Justification = "F# style")>]
     // fsharplint:disable-next-line MemberNames
     static member nullable (x : 'T) : option<'T> =
-      if isNull (x :> obj) then None else Some x
+      if x.IsNotNull then Some x else None
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 
@@ -64,22 +67,19 @@ module internal Augment =
       with get() =
         if self then 1 else 0
 
+#if !WEAKNAME
   type System.Int32 with
     member self.Increment (b : bool) =
       self + b.ToInt32
-
-#if WEAKNAME
-  type System.UInt64 with
-    member self.Increment (b : bool) =
-      self + (uint64 b.ToInt32)
 #endif
 
   type Microsoft.FSharp.Collections.List<'T> with
    member self.Split
      with get () =
       (self.Head, self.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
-
+#if !WEAKNAME
   let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
     use stream = create()
     action stream
+#endif
 #endif

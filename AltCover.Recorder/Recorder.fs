@@ -357,3 +357,5 @@ module Instance =
 
   let Push x = I.push x
   let Pop() = I.pop()
+  // Used by the datacollector
+  let FlushFinish() = I.flushAll ProcessExit
