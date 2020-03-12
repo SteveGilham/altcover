@@ -71,13 +71,11 @@ let dotnetOptions (o: DotNet.Options) =
 
 let fxcop =
   if Environment.isWindows then
-    BlackFox.VsWhere.VsInstances.getAll()
-    |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
-    |> Seq.map
-         (fun i ->
-         i.InstallationPath @@ "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe")
-    |> Seq.filter File.Exists
-    |> Seq.tryHead
+    let expect = "./packages/fxcop/FxCopCmd.exe"
+                 |> Path.getFullName 
+    if File.Exists expect 
+    then Some expect
+    else None
   else
     None
 

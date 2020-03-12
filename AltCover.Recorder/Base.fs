@@ -160,7 +160,8 @@ module internal Counter =
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-   "AvoidLongParameterListsRule")>]
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
   let internal UpdateReport (postProcess : XmlDocument -> unit)
       (pointProcess : XmlElement -> List<Track> -> unit) own
       (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
@@ -262,7 +263,8 @@ module internal Counter =
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "'Target' is disposed")>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-   "AvoidLongParameterListsRule")>]
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
   let internal DoFlush postProcess pointProcess own counts format report output =
     use coverageFile =
       new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
