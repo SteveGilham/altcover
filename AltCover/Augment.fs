@@ -28,13 +28,13 @@ module internal Augment =
   type Microsoft.FSharp.Core.Option<'T> with
     [<SuppressMessage("Gendarme.Rules.Naming",
                       "UseCorrectCasingRule",
-                      Justification = "F# style")>]
+                      Justification = "Idiomatic F# style")>]
     // fsharplint:disable-next-line MemberNames
     static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
 
     [<SuppressMessage("Gendarme.Rules.Naming",
                       "UseCorrectCasingRule",
-                      Justification = "F# style")>]
+                      Justification = "Idiomatic F# style")>]
     // fsharplint:disable-next-line MemberNames
     static member nullable (x : 'T) : option<'T> =
       if x.IsNotNull then Some x else None
@@ -46,14 +46,14 @@ module internal Augment =
     Justification = "Context in F# has to be sufficient")>]
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
-                    Justification = "F# style")>]
+                    Justification = "Idiomatic F# style")>]
   let Right x : Either<'a, 'b> = Choice1Of2 x
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
     Justification = "Context in F# has to be sufficient")>]
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
-                    Justification = "F# style")>]
+                    Justification = "Idiomatic F# style")>]
   let Left x : Either<'a, 'b> = Choice2Of2 x
 
   let internal (|Right|Left|) =
