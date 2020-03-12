@@ -49,7 +49,10 @@ module Api =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
     if ok then Console.ForegroundColor <- colour
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule");
+[<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  "Gendarme.Rules.Smells",
+  "AvoidLargeClassesRule",
+  Justification="So many options available, so many compiler generated fields");
   AutoSerializable(false)>]
 type Prepare() =
   inherit Task(null)
@@ -198,11 +201,14 @@ type Collect() =
   member val SummaryFormat = String.Empty with get, set
 
   [<Output>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822",
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+                                                    "CA1822:MarkMembersAsStatic",
                                                     Justification =
                                                       "Instance property needed");
     System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-                                                      "MethodCanBeMadeStaticRule")>]
+                                                      "MethodCanBeMadeStaticRule",
+                                                      Justification =
+                                                       "Instance property needed")>]
   member self.Summary = Api.Summary()
 
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
