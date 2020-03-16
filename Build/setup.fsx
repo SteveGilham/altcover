@@ -140,7 +140,6 @@ _Target "FxCop" (fun _ ->
                             Shell.copyDir target fx (check target prefix)
 
                             let rules = target @@ "Rules"
-                            let pf2 = dixon.Length
                             Shell.copyDir rules dixon (fun _ -> true)
     )
 )
