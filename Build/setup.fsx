@@ -141,7 +141,7 @@ _Target "FxCop" (fun _ ->
 
                             let rules = target @@ "Rules"
                             let pf2 = dixon.Length
-                            Shell.copyDir rules dixon (check rules pf2)
+                            Shell.copyDir rules dixon (fun _ -> true)
     )
 )
 
