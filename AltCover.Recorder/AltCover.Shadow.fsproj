@@ -20,6 +20,7 @@
     <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <FscToolPath>$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
