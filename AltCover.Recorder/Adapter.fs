@@ -25,47 +25,51 @@ module Adapter =
       let entry = Dictionary<int, PointVisit>()
       Instance.Visits.Add(name, entry)
 
-  let internal Init n l = let tmp = { PointVisit.Create() with Count = n }
-                          tmp.Tracks.AddRange l
-                          tmp
+  let internal Init (n, l) = let tmp = { PointVisit.Create() with Count = n }
+                             tmp.Tracks.AddRange l
+                             tmp
 
-  let VisitsAdd name line number =
+  let internal VisitSelection (a, b, c) = Instance.VisitSelection a b c
+  let Visit (a,b) = Instance.Visit a b
+  let VisitsAdd (name, line, number) =
     prepareName name
-    let v = Init number []
+    let v = Init (number, [])
     Instance.Visits.[name].Add(line, v)
 
-  let VisitsAddTrack name line number =
+  let VisitsAddTrack (name, line, number) =
     prepareName name
     let v1 =
-      Init number
+      Init (number,
         [ Call 17
-          Call 42 ]
+          Call 42 ])
     Instance.Visits.[name].Add(line, v1)
 
     let v2 =
-      Init (number + 1L)
+      Init ((number + 1L),
         [ Time 17L
           Both
             { Time = 42L
-              Call = 23 } ]
+              Call = 23 } ])
     Instance.Visits.[name].Add(line + 1, v2)
 
   let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
   let VisitsEntrySeq key = Instance.Visits.[key] |> Seq.cast<obj>
-  let VisitCount key key2 = (Instance.Visits.[key].[key2]).Count
+  let VisitCount (key, key2) = (Instance.Visits.[key].[key2]).Count
   let Lock = Instance.Visits :> obj
 
-  let VisitImplNone moduleId hitPointId =
+  let VisitImplNone (moduleId, hitPointId) =
     Instance.VisitImpl moduleId hitPointId Track.Null
-  let VisitImplMethod moduleId hitPointId mId =
+  let VisitImplMethod (moduleId, hitPointId, mId) =
     Instance.VisitImpl moduleId hitPointId (Call mId)
+  let internal VisitImpl (a, b, c) =
+    Instance.VisitImpl a b c
 
-  let AddSample moduleId hitPointId =
+  let AddSample (moduleId, hitPointId) =
     Instance.TakeSample Sampling.Single moduleId hitPointId
-  let AddSampleUnconditional moduleId hitPointId =
+  let AddSampleUnconditional (moduleId, hitPointId) =
     Instance.TakeSample Sampling.All moduleId hitPointId
 
-  let internal NewBoth time call =
+  let internal NewBoth (time, call) =
     Both
       { Time = time
         Call = call }
@@ -93,18 +97,18 @@ module Adapter =
     | _ -> ()
     r
 
-  let internal DoFlush visits format report output =
+  let internal DoFlush (visits, format, report, output) =
     let output' = //if System.String.IsNullOrEmpty output
       //then None // this case gets tested elsewhere
       (*else*) Some output
     Counter.DoFlush ignore (fun _ _ -> ()) true visits format report output'
 
-  let internal UpdateReport counts format coverageFile outputFile =
+  let internal UpdateReport (counts, format, coverageFile, outputFile) =
     Counter.UpdateReport ignore (fun _ _ -> ()) true counts format coverageFile
       outputFile
   let internal PayloadSelector x = Instance.PayloadSelector(fun _ -> x)
-  let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
-  let internal PayloadSelection x y z =
+  let internal PayloadControl (x, y) = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
+  let internal PayloadSelection (x, y, z) =
     Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
 
   let internal MakeNullTrace name =
@@ -121,8 +125,7 @@ module Adapter =
       Runner = true
       Definitive = false }
 
-  let internal InvokeIssue71Wrapper<'T when 'T :> System.Exception> (unique : string)
-      (called : bool array) =
+  let internal InvokeIssue71Wrapper<'T when 'T :> System.Exception> ((unique : string), (called : bool array)) =
     let constructor = typeof<'T>.GetConstructor([| typeof<System.String> |])
     let pitcher =
       fun _ _ _ _ -> constructor.Invoke([| unique |]) :?> System.Exception |> raise
@@ -136,4 +139,8 @@ module Adapter =
 
     Instance.Issue71Wrapper () () () () catcher pitcher
 
+  let internal tracePush (a, b, c) =
+    Instance.trace.Push a b c
+  let LogException (a, b, c, d) = Instance.LogException a b c d
+  let FindIndexFromUspid (a,b) = Counter.FindIndexFromUspid a b
 #endif
