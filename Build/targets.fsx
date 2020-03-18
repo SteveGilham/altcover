@@ -71,13 +71,11 @@ let dotnetOptions (o: DotNet.Options) =
 
 let fxcop =
   if Environment.isWindows then
-    BlackFox.VsWhere.VsInstances.getAll()
-    |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
-    |> Seq.map
-         (fun i ->
-         i.InstallationPath @@ "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe")
-    |> Seq.filter File.Exists
-    |> Seq.tryHead
+    let expect = "./packages/fxcop/FxCopCmd.exe"
+                 |> Path.getFullName 
+    if File.Exists expect 
+    then Some expect
+    else None
   else
     None
 
@@ -513,6 +511,57 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 _Target "FxCop" (fun _ ->
   Directory.ensure "./_Reports"
 
+  let dumpSuppressions (report : String) =
+    let x = XDocument.Load report 
+    let messages = x.Descendants(XName.Get "Message")
+    messages
+    |> Seq.iter(fun m -> 
+      let mpp = m.Parent.Parent
+      let target = mpp.Name.LocalName
+      let tname = mpp.Attribute(XName.Get "Name").Value
+
+      let (text, text', fqn) =
+        match target with
+        | "Namespace" -> ("namespace", "namespace", tname)
+        | "Resource" -> ("resource", "resource", tname)
+        | "File"
+        | "Module" -> ("module", "module", String.Empty)
+        | "Type" -> 
+            let spp = mpp.Parent.Parent
+            ("type", null, spp.Attribute(XName.Get "Name").Value + "." + tname)
+        | _ -> 
+            let spp = mpp.Parent.Parent
+            let sp4 = spp.Parent.Parent
+            ("member", null, sp4.Attribute(XName.Get "Name").Value + "." +
+                             spp.Attribute(XName.Get "Name").Value + tname)
+
+      let text2 = "[module: SuppressMessage("
+      
+      let text2' = if text' |> isNull 
+                    then "[SuppressMessage("
+                    else text2
+      let id = m.Attribute(XName.Get "Id")
+      let text3 = (if id |> isNull |> not
+                   then ", MessageId=\"" + id.Value + "\""
+                   else String.Empty)
+                  + ", Justification=\"\")]"
+      let category = m.Attribute(XName.Get "Category").Value
+      let checkId = m.Attribute(XName.Get "CheckId").Value
+      let name = m.Attribute(XName.Get "TypeName").Value
+
+      let finish t t2 =
+        let t5 = t2 + "\"" + category + "\", \"" + checkId + ":" + name + "\""
+        if t |> isNull || t = "module"
+        then t5 + text3
+        else t5 + ", Scope=\"" + t + "\", Target=\"" + fqn + "\"" + text3
+      
+      printfn "%s" (finish text text2)
+      if text2' <> text2
+      then 
+        printfn " "
+        printfn "%s" (finish text' text2')
+      printfn "----")  
+
   let rules =
     [ "-Microsoft.Design#CA1004"
       "-Microsoft.Design#CA1006"
@@ -661,31 +710,39 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Performance#CA1819" // reconsider @ genbu
      ]) ]
   |> Seq.iter (fun (files, types, ruleset) ->
-       files
-       |> FxCop.run
-            { FxCop.Params.Create() with
-                WorkingDirectory = "."
-                ToolPath = Option.get fxcop
-                UseGAC = true
-                Verbose = false
-                ReportFileName = "_Reports/FxCopReport.xml"
-                Types = types
-                Rules = ruleset
-                FailOnError = FxCop.ErrorLevel.Warning
-                IgnoreGeneratedCode = true })
+       try
+         files
+         |> FxCop.run
+              { FxCop.Params.Create() with
+                  WorkingDirectory = "."
+                  ToolPath = Option.get fxcop
+                  UseGAC = true
+                  Verbose = false
+                  ReportFileName = "_Reports/FxCopReport.xml"
+                  Types = types
+                  Rules = ruleset
+                  FailOnError = FxCop.ErrorLevel.Warning
+                  IgnoreGeneratedCode = true }
+        with
+        | _ -> dumpSuppressions "_Reports/FxCopReport.xml"
+               reraise())
 
-  [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ]
-  |> FxCop.run
-       { FxCop.Params.Create() with
-           WorkingDirectory = "."
-           ToolPath = Option.get fxcop
-           UseGAC = true
-           Verbose = false
-           ReportFileName = "_Reports/FxCopReport.xml"
-           RuleLibraries =
-             [ Path.getFullName "ThirdParty/Microsoft.PowerShell.CodeAnalysis.16.dll" ]
-           FailOnError = FxCop.ErrorLevel.Warning
-           IgnoreGeneratedCode = true })
+  try 
+    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ]
+    |> FxCop.run
+         { FxCop.Params.Create() with
+             WorkingDirectory = "."
+             ToolPath = Option.get fxcop
+             UseGAC = true
+             Verbose = false
+             ReportFileName = "_Reports/FxCopReport.xml"
+             RuleLibraries =
+               [ Path.getFullName "ThirdParty/Microsoft.PowerShell.CodeAnalysis.16.dll" ]
+             FailOnError = FxCop.ErrorLevel.Warning
+             IgnoreGeneratedCode = true }
+  with
+  | _ -> dumpSuppressions "_Reports/FxCopReport.xml"
+         reraise())
 
 // Unit Test
 

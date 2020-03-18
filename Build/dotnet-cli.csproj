@@ -18,5 +18,6 @@
     <PackageReference Include="OpenCover" version="4.7.922" />
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
     <PackageReference Include="Pester" version="4.10.1" />
+    <PackageReference Include="AltCode.Dixon" version="2020.3.16.14542-pre-release" />
   </ItemGroup>
 </Project>
