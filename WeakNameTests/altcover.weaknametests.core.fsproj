@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net47</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net47</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.WeakName.Tests</AssemblyName>
