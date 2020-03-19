@@ -50,7 +50,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net471" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net471'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net471" Version="1.0.0" Condition="'$(TargetFramework)' == 'net471'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
