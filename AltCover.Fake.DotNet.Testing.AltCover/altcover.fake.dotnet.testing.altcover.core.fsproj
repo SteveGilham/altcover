@@ -52,6 +52,13 @@
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable" Version="1.6.0"  Condition="'$(TargetFramework)' == 'net462'"/>
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net462'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" />

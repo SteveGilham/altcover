@@ -46,6 +46,13 @@
     <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net45'" />
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net45'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />

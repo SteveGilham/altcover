@@ -614,7 +614,7 @@ _Target "FxCop" (fun _ ->
        "AltCover.Report"
        "AltCover.Runner"
        "AltCover.Visitor" ], rules)
-    ([ "_Binaries/AltCover.Shadow/Debug+AnyCPU/net35/AltCover.Shadow.dll" ],
+    ([ "_Binaries/AltCover.Shadow/Debug+AnyCPU/net20/AltCover.Shadow.dll" ],
      [ "AltCover.Recorder.Assist"
        "AltCover.Recorder.Counter"
        "AltCover.Recorder.Assist"
@@ -765,7 +765,7 @@ _Target "JustUnitTest" (fun _ ->
              WorkingDir = "."
              ResultSpecs = [ "./_Reports/RecorderUnitTestReport.xml" ] })
 
-    !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35/AltCover.Recorder.Tests.dll")
+    !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -896,7 +896,7 @@ _Target "UnitTestWithOpenCover"
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
   let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net47/*Recorder.Tests.dll")
 
-  let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net35/AltCover*Test*.dll")
+  let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
   let scoverage = Path.getFullName "_Reports/RecorderTestWithOpenCover.xml"
   let s4coverage = Path.getFullName "_Reports/Recorder4TestWithOpenCover.xml"
@@ -1029,7 +1029,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       reraise()
 
     printfn "Instrument the Recorder tests"
-    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35"
+    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
     let RecorderReport = reports @@ "RecorderTestWithAltCover.xml"
 
     let prep =
@@ -1049,7 +1049,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the Recorder2 tests"
-    !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35/__RecorderTestWithAltCover/Alt*.Test*.dll")
+    !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -1217,7 +1217,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     printfn "Instrument the Recorder2 tests"
-    let Recorder2Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35"
+    let Recorder2Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
     let Recorder2Report = reports @@ "RecorderTest2WithAltCoverRunner.xml"
 
     let prep =
@@ -1244,7 +1244,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -1783,7 +1783,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
 
 _Target "BasicCSharp"
   (fun _ ->
-  Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU"
+  Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU/net20"
     "_Binaries/AltCover/Debug+AnyCPU/net45" "BasicCSharp")
 
 _Target "BasicCSharpMono"
@@ -1794,7 +1794,7 @@ _Target "BasicCSharpMono"
 _Target "BasicCSharpUnderMono"
   (fun _ ->
   monoOnWindows
-  |> Actions.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU"
+  |> Actions.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU/net20"
        "_Binaries/AltCover/Debug+AnyCPU/net45" "BasicCSharpUnderMono")
 
 _Target "BasicCSharpMonoUnderMono"
@@ -1956,7 +1956,7 @@ _Target "SelfTest" (fun _ ->
 _Target "RecordResumeTest" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTest.xml")
-  let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
+  let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net20"
   let instrumented = "__RecordResumeTest"
 
   let toolPath =
@@ -2033,7 +2033,7 @@ _Target "RecordResumeTest" (fun _ ->
 _Target "RecordResumeTrackingTest" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTrackingTest.xml")
-  let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
+  let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net20"
   let instrumented = "__RecordResumeTrackingTest"
 
   let toolPath =
@@ -2188,7 +2188,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTestUnderMono.xml")
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
-  let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
+  let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net20"
   let instrumented = "__RecordResumeTestUnderMono"
 
   let prep =
@@ -2751,7 +2751,7 @@ _Target "SimpleReleaseTest"
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
   if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack
+  then Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU/net20" unpack
          "SimpleReleaseTest"
   else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
 
