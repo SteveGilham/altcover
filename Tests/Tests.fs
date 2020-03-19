@@ -208,9 +208,17 @@ module AltCoverTests =
       match pdb with
       | None -> Assert.Fail("No .pdb for " + target)
       | Some name ->
-        Assert.That
-          (name, Is.EqualTo "Sample8.pdb",
-          target + " -> " + name)
+        let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+        if isWindows
+        then
+          Assert.That
+            (name , Is.EqualTo "Sample8.pdb",
+            target + " -> " + name)
+        else
+          Assert.That
+            (name, Is.EqualTo <| Path.Combine(SolutionRoot.location,
+                                              "_Intermediate/Sample8/Debug+AnyCPU/net20/Sample8.pdb"),
+            target + " -> " + name)
 #endif
 
     [<Test>]
