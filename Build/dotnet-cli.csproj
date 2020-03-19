@@ -20,5 +20,6 @@
     <PackageReference Include="Pester" version="4.10.1" />
     <PackageReference Include="AltCode.Dixon" version="2020.3.16.14542-pre-release" />
     <PackageReference Include="FSharp.Compiler.Tools" version="10.2.3" />
+    <PackageReference Include="altcode.gendarme" version="2020.3.9.15370-pre-release" />
   </ItemGroup>
 </Project>
