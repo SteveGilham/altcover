@@ -746,6 +746,7 @@ _Target "FxCop" (fun _ ->
 // Unit Test
 
 _Target "UnitTest" ignore
+_Target "UncoveredUnitTest" ignore
 
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -4315,6 +4316,12 @@ Target.activateFinal "ResetConsoleColours"
 
 "UnitTestWithAltCoverRunner"
 ==> "UnitTest"
+
+"JustUnitTest"
+==> "UncoveredUnitTest"
+
+"UnitTestDotNet"
+==> "UncoveredUnitTest"
 
 "Compilation"
 ?=> "OperationalTest"
