@@ -355,7 +355,7 @@ _Target "BuildRelease" (fun _ ->
 _Target "BuildDebug" (fun _ ->
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  if true // Environment.isWindows 
+  if Environment.isWindows
   then
     let temp = Environment.environVar "TEMP"
     Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs")
