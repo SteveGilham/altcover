@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>AltCover.Shadow</AssemblyName>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net20</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net20</TargetFrameworks>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>

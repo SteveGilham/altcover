@@ -325,7 +325,7 @@ module SolutionRoot =
     else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  if Environment.isWindows
+  if true // Environment.isWindows
   then
     !!"**/*.core.*proj"
     |> Seq.iter (fun f ->
@@ -339,12 +339,12 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    (if Environment.isWindows
+    (if true // Environment.isWindows
      then [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "MCS.sln" ]
      else [ "./AltCover.Legacy.sln"])
     |> Seq.iter msbuildRelease
 
-    (if Environment.isWindows
+    (if true // Environment.isWindows
      then []
      else [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ])
     |> Seq.iter dotnetBuildRelease
@@ -355,7 +355,8 @@ _Target "BuildRelease" (fun _ ->
 _Target "BuildDebug" (fun _ ->
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  if Environment.isWindows then
+  if true // Environment.isWindows 
+  then
     let temp = Environment.environVar "TEMP"
     Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs")
       "./Sample14/Sample14/Class3.txt"
@@ -364,12 +365,12 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  (if Environment.isWindows
+  (if true // Environment.isWindows
    then [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "MCS.sln" ]
    else [ "./AltCover.Legacy.sln"])
     |> Seq.iter msbuildDebug
 
-  (if Environment.isWindows
+  (if true // Environment.isWindows
    then [ "./Sample14/Sample14.sln"]
    else [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ])
   |> Seq.iter dotnetBuildDebug
@@ -501,7 +502,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
              Console = true
              Log = "./_Reports/gendarme.html"
              LogKind = Gendarme.LogKind.Html
-             Targets = if Environment.isWindows then files else (List.tail files)
+             Targets = if true // Environment.isWindows 
+                       then files else (List.tail files)
              ToolType = ToolType.CreateLocalTool()
              FailBuildOnDefect = true }))
 
