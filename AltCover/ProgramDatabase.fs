@@ -38,11 +38,9 @@ module internal ProgramDatabase =
          |> Seq.toArray
          |> System.Text.Encoding.UTF8.GetString)
     |> Option.filter (fun s -> s.Length > 0)
-    |> Option.filter (fun s -> // can't use the pathless file name to mean embed on non-Windows
-         File.Exists s || (assembly|> GetEmbeddedPortablePdbEntry).IsNotNull)
-    |> Option.map (if (assembly|> GetEmbeddedPortablePdbEntry).IsNotNull
-                   then Path.GetFileName
-                   else id)
+    |> Option.filter (fun s ->
+         File.Exists s || (s = (assembly.Name.Name + ".pdb") && (assembly
+                                                                 |> GetEmbeddedPortablePdbEntry).IsNotNull))
 
   let GetSymbolsByFolder fileName folderName =
     let name = Path.Combine(folderName, fileName)
