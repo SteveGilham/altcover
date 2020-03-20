@@ -3338,10 +3338,8 @@ _Target "ApiUse" (fun _ ->
     config.Save "./_ApiUse/_DotnetTest/NuGet.config"
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
-    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
-    target.RemoveAttributes()
     let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
-    targets.Remove()
+    targets.SetValue "netcoreapp2.1"
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -3521,10 +3519,8 @@ _Target "DotnetTestIntegration" (fun _ ->
     config.Save "./_DotnetTestFail/NuGet.config"
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
-    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
-    target.RemoveAttributes()
     let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
-    targets.Remove()
+    targets.SetValue "netcoreapp2.1"
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -4001,10 +3997,8 @@ _Target "DotnetCLIIntegration" (fun _ ->
     config.Save "./_DotnetCLITest/NuGet.config"
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
-    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
-    target.RemoveAttributes()
     let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
-    targets.Remove()
+    targets.SetValue "netcoreapp2.1"
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -4114,10 +4108,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Shell.cleanDir working
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
-    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
-    target.RemoveAttributes()
     let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
-    targets.Remove()
+    targets.SetValue "netcoreapp2.1"
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.fs")
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.json")
