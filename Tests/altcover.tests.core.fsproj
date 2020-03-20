@@ -99,12 +99,11 @@
     <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
-    <ProjectReference Include="..\Sample8\sample8.core.csproj" Condition="'$(TargetFramework)' != 'net47'" />
     <ProjectReference Include="..\Sample12\sample12.core.csproj" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
