@@ -371,7 +371,7 @@ _Target "BuildDebug" (fun _ ->
     |> Seq.iter msbuildDebug
 
   (if true // Environment.isWindows
-   then [ "./Sample14/Sample14.sln"]
+   then [ "./Sample14/Sample14.sln"; "./Sample8/sample8.core.csproj" ] // build to embed on non-Windows
    else [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ])
   |> Seq.iter dotnetBuildDebug
 
