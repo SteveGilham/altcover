@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.1.18\lib\net20\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PowerPack">
       <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.dll</HintPath>
