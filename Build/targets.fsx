@@ -3493,7 +3493,7 @@ group NetcoreBuild
     Actions.RunDotnet (withWorkingDirectoryOnly "_ApiUse") "fake" "run ./DriveApi.fsx"
       "running fake script returned with a non-zero exit code"
 
-    let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.xml"
+    let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.netcoreapp2.1.xml"
     Actions.CheckSample4 x
   finally
     [ "altcover"; "altcover.api"; "altcover.fake" ]
@@ -3547,7 +3547,7 @@ _Target "DotnetTestIntegration" (fun _ ->
           .WithAltCoverImportModule()).WithAltCoverParameters pp1 cc0 ForceTrue |> withCLIArgs)
       "dotnettest.fsproj"
 
-    let x = Path.getFullName "./_DotnetTest/coverage.xml"
+    let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
     Actions.CheckSample4 x
 
     // optest failing test
@@ -4088,7 +4088,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
           NoBuild = false }
       |> withCLIArgs) ""
 
-    "./_DotnetCLITest/coverage.xml"
+    "./_DotnetCLITest/coverage.netcoreapp2.1.xml"
     |> Path.getFullName
     |> File.Exists
     |> Assert.That
