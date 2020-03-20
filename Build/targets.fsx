@@ -2124,7 +2124,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
   let instrumented = "__RecordResumeTestDotNet"
 
-  !! ( sampleRoot  @@ "**/*.* )
+  !! ( sampleRoot  @@ "**/*.*" )
   |> printfn "%A"
 
   let prep =
