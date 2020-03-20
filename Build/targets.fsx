@@ -371,7 +371,7 @@ _Target "BuildDebug" (fun _ ->
     |> Seq.iter msbuildDebug
 
   (if true // Environment.isWindows
-   then [ "./Sample14/Sample14.sln"; "./Sample8/sample8.core.csproj" ] // build to embed on non-Windows
+   then [ "./Sample14/Sample14.sln" ]
    else [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ])
   |> Seq.iter dotnetBuildDebug
 
@@ -414,6 +414,9 @@ _Target "BuildLegacy" (fun _ ->
     reraise())
 
 _Target "BuildMonoSamples" (fun _ ->
+  ["./Sample8/sample8.core.csproj" ] // build to embed on non-Windows
+  |> Seq.iter dotnetBuildDebug
+
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1",
      [ "-debug"; "-out:./_Mono/Sample1/Sample1.exe"; "./Sample1/Program.cs" ])
@@ -2120,6 +2123,9 @@ _Target "RecordResumeTestDotNet" (fun _ ->
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
   let instrumented = "__RecordResumeTestDotNet"
+
+  !! ( sampleRoot  @@ "**/*.* )
+  |> printfn "%A"
 
   let prep =
     AltCover.PrepareParams.Primitive
