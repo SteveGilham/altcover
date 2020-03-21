@@ -90,7 +90,7 @@
       <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Gendarme.Framework.dll</HintPath>
     </Reference>
     <Reference Include="Gendarme.Rules.Maintainability">
-      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Gendarme.Rules.Maintainability.dll</HintPath>
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Gendarme.Rules.Maintainability.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.dll</HintPath>
