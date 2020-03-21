@@ -4417,7 +4417,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue23"
-==> "Deployment"
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "Issue67"
