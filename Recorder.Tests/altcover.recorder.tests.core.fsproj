@@ -11,6 +11,8 @@
     <ExtraDefines Condition="'$(TargetFramework)' == 'net47'">NET4</ExtraDefines>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <FscToolPath Condition="'$(TargetFramework)' == 'net35'">$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
+    <FscToolPath Condition="'$(TargetFramework)' == 'net47'">$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
   </PropertyGroup>
 
