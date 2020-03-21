@@ -149,22 +149,13 @@ _Target "FxCop" (fun _ ->
 _Target "Preparation" (fun _ ->
   RestoreMSSolutionPackages restore "./MCS.sln"
 )
-_Target "Legacy" (fun _ ->
-  if File.Exists "./AltCover.Legacy.sln"
-  then RestoreMSSolutionPackages restore "./AltCover.Legacy.sln"
-)
 
 let defaultTarget() =
   resetColours()
-  if Environment.isWindows
-  then "Preparation"
-  else "Legacy"
+  "Preparation"
 
 "FxCop"
 =?> ("Preparation", Environment.isWindows)
-
-"FxCop"
-=?> ("Legacy", Environment.isWindows)
 
 Target.runOrDefault <| defaultTarget ()
 
