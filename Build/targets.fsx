@@ -21,6 +21,7 @@ open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
+open Fake.Tools.Git
 
 open FSharpLint.Application
 open FSharpLint.Framework
@@ -304,6 +305,10 @@ _Target "SetVersion" (fun _ ->
   Directory.ensure "./_Generated"
   Actions.InternalsVisibleTo(!Version)
   let v' = !Version
+  // Information.getCurrentHash()
+  let sha1 = Information.getCurrentSHA1(".")
+  let infoV = Information.showName "." sha1 
+
   [ "./_Generated/AssemblyVersion.fs"; "./_Generated/AssemblyVersion.cs" ]
   |> List.iter
        (fun file ->
@@ -313,6 +318,7 @@ _Target "SetVersion" (fun _ ->
            AssemblyInfo.FileVersion v'
            AssemblyInfo.Company "Steve Gilham"
            AssemblyInfo.Trademark ""
+           AssemblyInfo.InformationalVersion(infoV) 
            AssemblyInfo.Copyright copy ] (Some AssemblyInfoFileConfig.Default))
   let hack = """namespace AltCover
 module SolutionRoot =

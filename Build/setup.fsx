@@ -89,6 +89,7 @@ nuget Fake.DotNet.Testing.XUnit2 >= 5.19.1
 nuget Fake.IO.FileSystem >= 5.19.1
 nuget Fake.DotNet.Testing.Coverlet >= 5.19.1
 nuget Fake.Testing.ReportGenerator >= 5.19.1
+nuget Fake.Tools.Git >= 5.19.1
 nuget AltCode.Fake.DotNet.Gendarme >= 5.18.1.24
 nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.0.0
