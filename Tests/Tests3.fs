@@ -2786,11 +2786,13 @@ or
       Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       Assert.That (subject.Execute(), Is.True)
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
                    |> File.ReadAllText
-      Assert.That (result.Replace("\r", String.Empty),
+      Assert.That (result.Replace("\r", String.Empty).Replace("Collector://AltCover/Recorder/" + assembly.Version.ToString(),
+                                                              "Collector://AltCover/Recorder/1.0.0.0"),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty,
@@ -2801,6 +2803,7 @@ or
       Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
       subject.TestSetting <- settings
@@ -2808,7 +2811,8 @@ or
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
                    |> File.ReadAllText
-      Assert.That (result.Replace("\r", String.Empty),
+      Assert.That (result.Replace("\r", String.Empty).Replace("Collector://AltCover/Recorder/" + assembly.Version.ToString(),
+                                                              "Collector://AltCover/Recorder/1.0.0.0"),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
                                                "  <stuff />\r\n",
@@ -2819,6 +2823,7 @@ or
       Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<Not XML")
       subject.TestSetting <- settings
@@ -2826,7 +2831,8 @@ or
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
                    |> File.ReadAllText
-      Assert.That (result.Replace("\r", String.Empty),
+      Assert.That (result.Replace("\r", String.Empty).Replace("Collector://AltCover/Recorder/" + assembly.Version.ToString(),
+                                                              "Collector://AltCover/Recorder/1.0.0.0"),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty,
