@@ -18,8 +18,9 @@ module Instance =
     ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
 
   let GetResource s =
-    [ System.Globalization.CultureInfo.CurrentUICulture.Name
-      System.Globalization.CultureInfo.CurrentUICulture.Parent.Name
+    let cc = System.Globalization.CultureInfo.CurrentUICulture
+    [ cc.Name
+      cc.Parent.Name
       "en" ]
     |> Seq.map (fun l -> resources.GetString(s + "." + l))
     |> Seq.tryFind (String.IsNullOrEmpty >> not)
@@ -224,7 +225,8 @@ module Instance =
     text |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-   "AvoidLongParameterListsRule")>]
+   "AvoidLongParameterListsRule",
+    Justification="Self-contained internal decorator")>]
   let
 #if DEBUG
 #else

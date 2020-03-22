@@ -1,11 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <UsingTask TaskName="AltCover.Prepare"  
-             Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.exe')" 
-             AssemblyFile="$(AltCoverPath)/AltCover.exe"/>  
+  <UsingTask TaskName="AltCover.Prepare" Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.exe')" AssemblyFile="$(AltCoverPath)/AltCover.exe" />  
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFramework>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.1;net47</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>Sample4</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -25,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
@@ -36,6 +33,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -51,11 +55,6 @@
       <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
       <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>
-    <AltCover.Prepare
-      InputDirectories="@(InputDirectory)"
-      OutputDirectories= "@(OutputDirectory)"
-      XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
-      AssemblyFilter="@(AssemblyFilter)"
-      />  
+    <AltCover.Prepare InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" />  
   </Target>
 </Project>

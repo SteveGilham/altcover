@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.0</TargetFramework>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp3.0;net47</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net47</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
@@ -67,8 +66,8 @@
   <ItemGroup />
 
   <ItemGroup>
-    <PackageReference Include="Expecto" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
-    <PackageReference Include="Expecto.TestResults" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Expecto" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
@@ -80,8 +79,8 @@
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net47'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net47'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net47'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net47'" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
@@ -100,8 +99,14 @@
     <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
-    <ProjectReference Include="..\Sample8\sample8.core.csproj" Condition="'$(TargetFramework)' != 'net47'" />
     <ProjectReference Include="..\Sample12\sample12.core.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
