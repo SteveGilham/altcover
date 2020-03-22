@@ -32,10 +32,11 @@ type Tracer =
       Stream = null
       Formatter = null }
 
-  member internal this.IsConnected with get() =
-    match this.Stream with
-    | null -> false
-    | _ -> this.Runner
+  member internal this.IsConnected
+    with get() =
+      match this.Stream with
+      | null -> false
+      | _ -> this.Runner
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
          "EnsureLocalDisposalRule",

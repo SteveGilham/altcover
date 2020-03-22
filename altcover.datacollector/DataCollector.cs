@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -10,10 +12,20 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
 namespace AltCover
 {
-    public class DataCollector : InProcDataCollection
+  public class DataCollector : InProcDataCollection
+  {
+    // Use the Null Object pattern here
+    private static IEnumerable<Type> RecorderInstance
     {
-        private void Supervise()
+      get
+      {
+        var rec =
+        AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name == "AltCover.Recorder.g")
+            .FirstOrDefault();
+        if (rec == null)
         {
+<<<<<<< HEAD
             var rec =
             AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => a.GetName().Name == "AltCover.Recorder.g")
@@ -54,21 +66,48 @@ namespace AltCover
                     }
                 }
             }
+=======
+          Debug.WriteLine("Recorder not found");
+          yield break;
+>>>>>>> develop/Fukurou
         }
-
-        public void Initialize(IDataCollectionSink _dataCollectionSink)
+        else
         {
-            Debug.WriteLine("Initialize");
-            Supervise();
+          var i = rec.GetTypes()
+              .Where(t => t.Name == "Instance")
+              .FirstOrDefault();
+          if (i == null)
+          {
+            Debug.WriteLine("Instance not found");
+            yield break;
+          }
+          else
+          {
+            yield return i;
+          }
         }
+      }
+    }
 
-        public void TestCaseEnd(TestCaseEndArgs _testCaseEndArgs)
-        { }
-
-        public void TestCaseStart(TestCaseStartArgs _testCaseStartArgs)
+    private static void Supervise()
+    {
+      RecorderInstance.ToList().ForEach(
+        i =>
         {
+          var supervision = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.Public);
+          if (supervision == null)
+          {
+            Debug.WriteLine("Supervision not found");
+          }
+          else
+          {
+            supervision.SetValue(null, true);
+          }
         }
+      );
+    }
 
+<<<<<<< HEAD
         public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
         {
             Debug.WriteLine("TestSessionEnd");
@@ -112,11 +151,47 @@ namespace AltCover
                 }
             }
         }
-
-        public void TestSessionStart(TestSessionStartArgs _testSessionStartArgs)
-        {
-            Debug.WriteLine("TestSessionStart");
-            Supervise();
-        }
+=======
+    public void Initialize(IDataCollectionSink dataCollectionSink)
+    {
+      Debug.WriteLine("Initialize {0}", dataCollectionSink);
+      Supervise();
     }
+>>>>>>> develop/Fukurou
+
+    public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
+    {
+      Debug.WriteLine("TestCaseEnd {0}", testCaseEndArgs);
+    }
+
+    public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
+    {
+      Debug.WriteLine("TestCaseStart {0}", testCaseStartArgs);
+    }
+
+    public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
+    {
+      Debug.WriteLine("TestSessionEnd {0}", testSessionEndArgs);
+      RecorderInstance.ToList().ForEach(
+        i =>
+        {
+          var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
+          if (flush == null)
+          {
+            Debug.WriteLine("Flush not found");
+          }
+          else
+          {
+            flush.Invoke(null, null);
+          }
+        }
+      );
+    }
+
+    public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
+    {
+      Debug.WriteLine("TestSessionStart : {0}", testSessionStartArgs);
+      Supervise();
+    }
+  }
 }

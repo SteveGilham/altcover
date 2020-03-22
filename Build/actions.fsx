@@ -214,7 +214,8 @@ do ()"""
       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+      //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
       (String.Join(" ", recorded), expected |> Is.EqualTo,
        sprintf "Bad visit list %A" recorded)
@@ -448,7 +449,8 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+      //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
       (String.Join(" ", recorded), expected |> Is.EqualTo,
        sprintf "Bad visit list %A" recorded)
@@ -477,6 +479,7 @@ a:hover {color: #ecc;}
        |> Seq.map (fun x -> x.ToString()),
        Is.EquivalentTo
          [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"

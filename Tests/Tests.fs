@@ -55,8 +55,8 @@ module AltCoverTests =
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
 #else
-    let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/Sample1.exe")
-    let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/Sample8.exe")
+    let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
+    let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
 #endif
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
@@ -792,6 +792,15 @@ module AltCoverTests =
       test <@ result = [ Exemption.StaticAnalysis; Exemption.None; Exemption.None ] @>
 
     [<Test>]
+    let ValidateStaticClass () =
+      let where = typeof<AltCover.CommandLine.Format>.Assembly.Location
+      use def = Mono.Cecil.AssemblyDefinition.ReadAssembly where
+      let cl = def.MainModule.GetType("AltCover.CommandLine")
+      test <@ cl |> Visitor.isFSharpStaticClass |> not @>
+      let format = cl.NestedTypes |> Seq.find (fun t -> t.Name = "Format")
+      test <@ format |> Visitor.isFSharpStaticClass @>
+
+    [<Test>]
     let ValidateAutomaticExemption() =
       try
         Visitor.showGenerated := true
@@ -1187,7 +1196,8 @@ module AltCoverTests =
           Some "FI@11::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
           Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
           Some "Module::F1" //System.Int32 Sample6.Module/F1@18::Invoke(System.Object)
-#if LEGACY
+#if !NETCOREAPP3_0
+//LEGACY
 // F# 4.5.1
           Some "fetchUrlAsync@25-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@27-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
           Some "fetchUrlAsync@25-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@27-5::Invoke(System.IO.StreamReader)"

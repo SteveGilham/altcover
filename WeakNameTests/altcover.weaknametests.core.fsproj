@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net47</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>net47</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.WeakName.Tests</AssemblyName>
@@ -16,25 +15,26 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <Reference Include="Gendarme.Framework" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Gendarme.Framework.dll</HintPath>
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Gendarme.Framework.dll</HintPath>
     </Reference>
     <Reference Include="Gendarme.Rules.Maintainability" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Gendarme.Rules.Maintainability.dll</HintPath>
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Gendarme.Rules.Maintainability.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
+    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +52,13 @@
     </Compile>
     <Compile Include="Tests.fs" Condition="'$(TargetFramework)' == 'net47'" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net47'" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
