@@ -89,6 +89,7 @@ nuget Fake.DotNet.Testing.XUnit2 >= 5.19.1
 nuget Fake.IO.FileSystem >= 5.19.1
 nuget Fake.DotNet.Testing.Coverlet >= 5.19.1
 nuget Fake.Testing.ReportGenerator >= 5.19.1
+nuget Fake.Tools.Git >= 5.19.1
 nuget AltCode.Fake.DotNet.Gendarme >= 5.18.1.24
 nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.0.0
@@ -149,22 +150,13 @@ _Target "FxCop" (fun _ ->
 _Target "Preparation" (fun _ ->
   RestoreMSSolutionPackages restore "./MCS.sln"
 )
-_Target "Legacy" (fun _ ->
-  if File.Exists "./AltCover.Legacy.sln"
-  then RestoreMSSolutionPackages restore "./AltCover.Legacy.sln"
-)
 
 let defaultTarget() =
   resetColours()
-  if Environment.isWindows
-  then "Preparation"
-  else "Legacy"
+  "Preparation"
 
 "FxCop"
 =?> ("Preparation", Environment.isWindows)
-
-"FxCop"
-=?> ("Legacy", Environment.isWindows)
 
 Target.runOrDefault <| defaultTarget ()
 
