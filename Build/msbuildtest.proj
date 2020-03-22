@@ -12,7 +12,7 @@
     <OutputDirectory Include="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
   </ItemGroup>
   <Target Name="MSBuildTest">
-    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
+    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj -f netcoreapp2.1" />
     <Message Text="1" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
@@ -22,7 +22,7 @@
       AssemblyFilter="@(AssemblyFilter)"
       />  
     <Message Text="2"/>
-    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
+    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj  -f netcoreapp2.1" />
     <Message Text="3"/>
     <AltCover.Collect 
       RecorderDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"   

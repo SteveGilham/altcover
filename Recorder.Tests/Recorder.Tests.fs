@@ -98,12 +98,12 @@ module AltCoverTests =
 
         let key = " "
         Instance.Recording <- false
-        Instance.Visit("key", 17)
+        Adapter.Visit("key", 17)
         Instance.Recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit(key, 23)
+        Adapter.Visit(key, 23)
         Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-        Instance.Visit(key, 23)
+        Adapter.Visit(key, 23)
         Assert.True( Adapter.VisitsSeq()
                      |> Seq.length = 1 )
         Assert.True( Adapter.VisitsEntrySeq key
@@ -119,7 +119,7 @@ module AltCoverTests =
   [<Test>]
   let JunkUspidGivesNegativeIndex() =
     let key = " "
-    let index = Counter.FindIndexFromUspid(0, key)
+    let index = Adapter.FindIndexFromUspid(0, key)
     Assert.True( index < 0 )
 
   [<Test>]
@@ -172,7 +172,7 @@ module AltCoverTests =
         Instance.Visits.Clear()
         Instance.trace <- Adapter.MakeNullTrace null
         let key = " "
-        Instance.VisitSelection((Adapter.Null()), key, 23)
+        Adapter.VisitSelection((Adapter.Null()), key, 23)
         Assert.That
           (Instance.Visits.Count, Is.EqualTo 1,
            "A visit that should have happened, didn't")
@@ -191,7 +191,7 @@ module AltCoverTests =
     let path = Instance.ReportFile |> Path.GetFullPath
     let where = path |> Path.GetDirectoryName
     let before = Directory.GetFiles(where, "*.exn")
-    Instance.LogException("a", "b", "c", "ex")
+    Adapter.LogException("a", "b", "c", "ex")
     let after = Directory.GetFiles(where, "*.exn")
     Assert.That(after.Length, Is.GreaterThan before.Length)
     let all = HashSet<String>(after)
@@ -292,8 +292,8 @@ module AltCoverTests =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
-        Instance.VisitImpl("key", 42, (Adapter.Null()))
+        Adapter.VisitImpl(key, 23, (Adapter.Null()))
+        Adapter.VisitImpl("key", 42, (Adapter.Null()))
         Assert.That(Instance.Visits.Count, Is.EqualTo 2)
       finally
         Instance.Visits.Clear())
@@ -306,8 +306,8 @@ module AltCoverTests =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
-        Instance.VisitImpl(key, 42, (Adapter.Null()))
+        Adapter.VisitImpl(key, 23, (Adapter.Null()))
+        Adapter.VisitImpl(key, 42, (Adapter.Null()))
         Assert.That(Instance.Visits.Count, Is.EqualTo 1)
         Assert.That(Instance.Visits.[key].Count, Is.EqualTo 2)
       finally
@@ -322,8 +322,8 @@ module AltCoverTests =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
+        Adapter.VisitImpl(key, 23, (Adapter.Null()))
+        Adapter.VisitImpl(key, 23, (Adapter.Null()))
         Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 2)
         Assert.That(Instance.Visits.[key].[23].Tracks, Is.Empty)
       finally
@@ -339,8 +339,8 @@ module AltCoverTests =
         Instance.Visits.Clear()
         let key = " "
         let payload = Adapter.Time DateTime.UtcNow.Ticks
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
-        Instance.VisitImpl(key, 23, payload)
+        Adapter.VisitImpl(key, 23, (Adapter.Null()))
+        Adapter.VisitImpl(key, 23, payload)
         Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That(Instance.Visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
       finally

@@ -5,6 +5,7 @@ open System
 open System.IO
 open System.Reflection
 open AltCover
+open System.Diagnostics.CodeAnalysis
 
 module Trace =
   open Fake.Core
@@ -27,7 +28,11 @@ type Implementation =
   | DotNetCore
   | Framework
 
-type Api =
+[<SuppressMessage("Gendarme.Rules.Performance",
+                  "AvoidUncalledPrivateCodeRule",
+                  Justification = "Can't stop the instance constructor happening")>]
+[<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
+type Api private () =
   static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
   static member Collect(args : FSApi.CollectParams, ?log : FSApi.Logging) =
@@ -35,6 +40,8 @@ type Api =
   static member Ipmo() = AltCover.Api.Ipmo()
   static member Version() = AltCover.Api.Version()
   // Finds the tool from within the .nuget package
+  [<SuppressMessage("Microsoft.Design", "CA1062",
+                    Justification = "Idiomatic F#")>]
   static member toolPath toolType =
     let here = Assembly.GetExecutingAssembly().Location
     let root = Path.Combine(Path.GetDirectoryName here, "../..")
@@ -64,6 +71,23 @@ open AltCover_Fake.DotNet
 module DotNet =
   open Fake.DotNet
 
+  let internal activate (info : ParameterInfo) =
+    let t = info.ParameterType
+    if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null
+
+  let internal setCustomParams common extended current (f : FieldInfo) =
+    f.SetValue
+             (common,
+              (if f.Name <> "CustomParams@" then
+                f.GetValue current
+               else
+                 extended :> obj))
+
+  let internal setCommonParams result common self (f : FieldInfo) =
+    f.SetValue
+             (result,
+              (if f.Name <> "Common@" then f.GetValue self else common))
+
   type DotNet.TestOptions with
 
     // NOTE: the MSBuildParams member of TestOptions did not exist in Fake 5.0.0
@@ -81,33 +105,20 @@ module DotNet =
 
       let args =
         OptionsConstructor.GetParameters()
-        |> Array.map (fun info ->
-             let t = info.ParameterType
-             if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null)
+        |> Array.map activate
 
       let common = OptionsConstructor.Invoke(args)
       self.Common.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
-      |> Array.iter (fun f ->
-           f.SetValue
-             (common,
-              (if f.Name <> "CustomParams@" then
-                f.GetValue self.Common
-               else
-                 extended :> obj)))
+      |> Array.iter (setCustomParams common extended self.Common)
       let TestOptionsConstructor = self.GetType().GetConstructors().[0]
 
       let args' =
         TestOptionsConstructor.GetParameters()
-        |> Array.map (fun info ->
-             let t = info.ParameterType
-             if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null)
+        |> Array.map activate
 
       let result = TestOptionsConstructor.Invoke(args')
       self.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
-      |> Array.iter (fun f ->
-           f.SetValue
-             (result,
-              (if f.Name <> "Common@" then f.GetValue self else common)))
+      |> Array.iter (setCommonParams result common self)
       result :?> DotNet.TestOptions
 
 #if RUNNER
@@ -134,3 +145,13 @@ module DotNet =
 
     [<Obsolete("Prefer equivalent member .WithAltCoverGetVersion")>]
     member self.WithGetVersion() = self.WithAltCoverGetVersion()
+
+#if RUNNER
+[<assembly:CLSCompliant(true)>]
+[<assembly:System.Runtime.InteropServices.ComVisible(false)>]
+[<assembly:SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible",
+                           Scope="type",
+                           Target="AltCover.Fake.Implementation+Tags",
+                           Justification = "Idiomatic F#")>]
+()
+#endif

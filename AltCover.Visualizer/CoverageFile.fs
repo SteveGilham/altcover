@@ -23,9 +23,12 @@ type InvalidFile =
 module Transformer =
   let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   let internal LoadTransform(path : string) =
-    let stylesheet =
-      XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
+    use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
+    use stylesheet =
+      XmlReader.Create(str)
     let xmlTransform = new XslCompiledTransform()
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
@@ -47,14 +50,19 @@ module Transformer =
       TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   // PartCover to NCover style sheet
   let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
     let schemas = new XmlSchemaSet()
-    use ocreader = XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd")))
-    use ncreader = XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd")))
+    use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))
+    use ocreader = XmlReader.Create(sr1)
+    use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))
+
+    use ncreader = XmlReader.Create(sr2)
     try
       match document.XPathSelectElements("/CoverageSession").Count() with
       | 1 ->

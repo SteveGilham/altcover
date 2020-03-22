@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFramework>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.1;net45</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net45</TargetFrameworks>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -108,6 +107,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net45'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+<ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'"/>
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'"/>
   </ItemGroup>

@@ -7,8 +7,9 @@ module Augment =
 module internal Augment =
 #endif
   type System.Object with
-    member self.IsNotNull with get() =
-      self |> isNull |> not
+    member self.IsNotNull
+      with get() =
+        self |> isNull |> not
 
 #if GUI
 #else
