@@ -25,51 +25,12 @@ namespace AltCover
             .FirstOrDefault();
         if (rec == null)
         {
-<<<<<<< HEAD
-            var rec =
-            AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => a.GetName().Name == "AltCover.Recorder.g")
-                .FirstOrDefault();
-            if (rec == null)
-            {
-                if (EqtTrace.IsErrorEnabled)
-                {
-                    // resgen /PublicClass /compile .\Resources\Resources.resx
-                    EqtTrace.Warning(Resources.Resources.RecorderNotFound);
-                }
-            }
-            else
-            {
-                var i = rec.GetTypes()
-                    .Where(t => t.Name == "Instance")
-                    .FirstOrDefault();
-                if (i == null)
-                {
-                    if (EqtTrace.IsErrorEnabled)
-                    {
-                        EqtTrace.Warning(Resources.Resources.InstanceNotFound);
-                    }
-                }
-                else
-                {
-                    var supervision = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.Public);
-                    if (supervision == null)
-                    {
-                        if (EqtTrace.IsErrorEnabled)
-                        {
-                            EqtTrace.Warning(Resources.Resources.SupervisionNotFound);
-                        }
-                    }
-                    else
-                    {
-                        supervision.SetValue(null, true);
-                    }
-                }
-            }
-=======
-          Debug.WriteLine("Recorder not found");
+          if (EqtTrace.IsErrorEnabled)
+          {
+            // resgen /PublicClass /compile .\Resources\Resources.resx
+            EqtTrace.Warning(Resources.Resources.RecorderNotFound);
+          }
           yield break;
->>>>>>> develop/Fukurou
         }
         else
         {
@@ -78,8 +39,10 @@ namespace AltCover
               .FirstOrDefault();
           if (i == null)
           {
-            Debug.WriteLine("Instance not found");
-            yield break;
+            if (EqtTrace.IsErrorEnabled)
+            {
+              EqtTrace.Warning(Resources.Resources.InstanceNotFound);
+            }
           }
           else
           {
@@ -97,7 +60,10 @@ namespace AltCover
           var supervision = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.Public);
           if (supervision == null)
           {
-            Debug.WriteLine("Supervision not found");
+            if (EqtTrace.IsErrorEnabled)
+            {
+              EqtTrace.Warning(Resources.Resources.SupervisionNotFound);
+            }
           }
           else
           {
@@ -107,57 +73,11 @@ namespace AltCover
       );
     }
 
-<<<<<<< HEAD
-        public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
-        {
-            Debug.WriteLine("TestSessionEnd");
-            var rec =
-            AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => a.GetName().Name == "AltCover.Recorder.g")
-                .FirstOrDefault();
-            if (rec == null)
-            {
-                if (EqtTrace.IsErrorEnabled)
-                {
-                    EqtTrace.Warning(Resources.Resources.RecorderNotFound);
-                }
-            }
-            else
-            {
-                var i = rec.GetTypes()
-                    .Where(t => t.Name == "Instance")
-                    .FirstOrDefault();
-                if (i == null)
-                {
-                    if (EqtTrace.IsErrorEnabled)
-                    {
-                        EqtTrace.Warning(Resources.Resources.InstanceNotFound);
-                    }
-                }
-                else
-                {
-                    var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
-                    if (flush == null)
-                    {
-                        if (EqtTrace.IsErrorEnabled)
-                        {
-                            EqtTrace.Warning(Resources.Resources.FlushNotFound);
-                        }
-                    }
-                    else
-                    {
-                        flush.Invoke(null, null);
-                    }
-                }
-            }
-        }
-=======
     public void Initialize(IDataCollectionSink dataCollectionSink)
     {
       Debug.WriteLine("Initialize {0}", dataCollectionSink);
       Supervise();
     }
->>>>>>> develop/Fukurou
 
     public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
     {
@@ -178,7 +98,10 @@ namespace AltCover
           var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
           if (flush == null)
           {
-            Debug.WriteLine("Flush not found");
+            if (EqtTrace.IsErrorEnabled)
+            {
+              EqtTrace.Warning(Resources.Resources.FlushNotFound);
+            }
           }
           else
           {
