@@ -271,6 +271,10 @@ let dotnetBuildDebug proj =
                 { p.WithCommon dotnetOptions with
                     Configuration = DotNet.BuildConfiguration.Debug } |> withMSBuildParams) proj
 
+// Information.getCurrentHash()
+let commitHash = Information.getCurrentSHA1(".")
+let infoV = Information.showName "." commitHash
+
 //----------------------------------------------------------------
 
 let _Target s f =
@@ -305,9 +309,6 @@ _Target "SetVersion" (fun _ ->
   Directory.ensure "./_Generated"
   Actions.InternalsVisibleTo(!Version)
   let v' = !Version
-  // Information.getCurrentHash()
-  let sha1 = Information.getCurrentSHA1(".")
-  let infoV = Information.showName "." sha1 
 
   [ "./_Generated/AssemblyVersion.fs"; "./_Generated/AssemblyVersion.cs" ]
   |> List.iter
@@ -318,7 +319,7 @@ _Target "SetVersion" (fun _ ->
            AssemblyInfo.FileVersion v'
            AssemblyInfo.Company "Steve Gilham"
            AssemblyInfo.Trademark ""
-           AssemblyInfo.InformationalVersion(infoV) 
+           AssemblyInfo.InformationalVersion(infoV)
            AssemblyInfo.Copyright copy ] (Some AssemblyInfoFileConfig.Default))
   let hack = """namespace AltCover
 module SolutionRoot =
@@ -492,8 +493,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
              Console = true
              Log = "./_Reports/gendarme.html"
              LogKind = Gendarme.LogKind.Html
-             Targets = if true // Environment.isWindows 
-                       then files else (List.tail files)
+             Targets = files
              ToolType = ToolType.CreateLocalTool()
              FailBuildOnDefect = true }))
 
@@ -2558,7 +2558,10 @@ _Target "Packaging" (fun _ ->
              Version = !Version
              Copyright = (!Copyright).Replace("©", "(c)")
              Publish = false
-             ReleaseNotes = Path.getFullName "ReleaseNotes.md" |> File.ReadAllText
+             ReleaseNotes =
+               "This build from https://github.com/SteveGilham/altcover/tree/" + commitHash +
+               Environment.NewLine + Environment.NewLine +
+               (Path.getFullName "ReleaseNotes.md" |> File.ReadAllText)
              ToolPath =
                if Environment.isWindows then
                  ("./packages/" + (packageVersion "NuGet.CommandLine")
