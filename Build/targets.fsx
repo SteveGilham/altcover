@@ -332,13 +332,17 @@ module SolutionRoot =
     else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  if true // Environment.isWindows
-  then
-    !!"**/*.core.*proj"
-    |> Seq.iter (fun f ->
-                 let dir = Path.GetDirectoryName f
-                 let proj = Path.GetFileName f
-                 DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
+  [
+    "./AltCover.Recorder/altcover.recorder.core.fsproj"
+    "./AltCover.Shadow/altcover.shadow.core.fsproj"
+    "./AltCover.Visualizer/altcover.visualizer.core.fsproj"
+    "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
+    "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj"
+  ]
+  |> Seq.iter (fun f ->
+               let dir = Path.GetDirectoryName f
+               let proj = Path.GetFileName f
+               DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
 
 // Basic compilation
 
@@ -346,8 +350,11 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "MCS.sln" ]
+    [ "./altcover.recorder.core.sln"; "MCS.sln" ] // gac+net20; mono
     |> Seq.iter msbuildRelease
+    
+    [ "./altcover.core.sln" ]
+    |> Seq.iter dotnetBuildRelease
   with x ->
     printfn "%A" x
     reraise())
@@ -365,10 +372,10 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "MCS.sln" ]
+  [ "./altcover.recorder.core.sln"; "MCS.sln" ] // gac+net20; mono
   |> Seq.iter msbuildDebug
 
-  [ "./Sample14/Sample14.sln" ]
+  [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
   |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
@@ -561,6 +568,7 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
+      "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
       "-Microsoft.Usage#CA2208" ]
   let deprecatedRules =
     [ "-Microsoft.Usage#CA2202" ]
@@ -568,10 +576,11 @@ _Target "FxCop" (fun _ ->
   [ ( [ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/net45/altcover.netcoreapp.exe" ],// TODO netcore support
       [],
       [ "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+        "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
         "-Microsoft.Naming#CA1709"]) // reconsider @ Genbu
     ( [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
       [],
-      deprecatedRules)
+      "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly" :: deprecatedRules)
     ( [ "_Binaries/AltCover.Fake/Debug+AnyCPU/net46/AltCover.Fake.dll" ],
       [],
       [ "-Microsoft.Design#CA1020"
@@ -579,6 +588,7 @@ _Target "FxCop" (fun _ ->
         "-Microsoft.Naming#CA1709" // reconsider @ Genbu
         "-Microsoft.Usage#CA2202"
         "-Microsoft.Usage#CA2208"
+        "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
         "-Microsoft.Design#CA2210" ])  // can't strongname this as Fake isn't strongnamed
     ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
      [ "AltCover.AltCover"
@@ -625,6 +635,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
        "-Microsoft.Naming#CA1707" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ], [],
      [ "-Microsoft.Usage#CA2235"
@@ -639,6 +650,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
        "-Microsoft.Naming#CA1707" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
      [ "AltCover.Augment"
@@ -654,6 +666,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1707"
        "-Microsoft.Naming#CA1715"
        "-Microsoft.Naming#CA1704"
+       "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
        "-Microsoft.Naming#CA1709" ])
     ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net462/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [ "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
@@ -674,6 +687,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1707" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1724"
+       "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
        "-Microsoft.Usage#CA2208" ])
     ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
        ],
@@ -685,6 +699,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Naming#CA1716"  // reconsider @ genbu
+       "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
      ])
     ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net46/AltCover.Cake.dll"
        ],
@@ -697,6 +712,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704" // reconsider @ Genbu
        "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Performance#CA1819" // reconsider @ genbu
+       "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly"
      ]) ]
   |> Seq.iter (fun (files, types, ruleset) ->
        try

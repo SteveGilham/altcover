@@ -18,8 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.cake.core", "AltCo
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fake.core", "AltCover.Fake\altcover.fake.core.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.core", "AltCover.Visualizer\altcover.visualizer.core.fsproj", "{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests\altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1\sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
@@ -87,8 +85,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample17.core", "Sample17\s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-cli.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.tests.core", "Tests.Visualizer\altcover.visualizer.tests.core.fsproj", "{8D6A3745-6CCA-4D64-99A8-31908FE56679}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.weaknametests.core", "WeakNameTests\altcover.weaknametests.core.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.netcoreapp.core", "AltCover.NetCoreApp\altcover.netcoreapp.core.fsproj", "{778014AA-1077-4C6F-B177-BEAAA2030B0B}"
@@ -149,12 +145,6 @@ Global
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|x86.ActiveCfg = Release|Any CPU
-		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|x86.ActiveCfg = Release|Any CPU
 		{440A79BE-7038-44EA-B683-3ED8EFAEC39C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{440A79BE-7038-44EA-B683-3ED8EFAEC39C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{440A79BE-7038-44EA-B683-3ED8EFAEC39C}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -242,11 +232,6 @@ Global
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Release|x86.ActiveCfg = Release|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.ActiveCfg = Release|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|x86.ActiveCfg = Debug|Any CPU
