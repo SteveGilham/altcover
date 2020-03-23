@@ -2234,7 +2234,7 @@ module AltCoverTests3 =
       Assert.That(Api.store, Is.EqualTo "23")
 
     [<Test>]
-    let IpmoIsAsExpected() =
+    let ImportModuleIsAsExpected() =
       Main.init()
       AltCover.toConsole()
       let saved = Console.Out
@@ -2378,7 +2378,7 @@ module AltCoverTests3 =
                                Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
-  ipmo                       Prints out the PowerShell script to import the
+  ImportModule                       Prints out the PowerShell script to import the
                                associated PowerShell module
 or
   version                    Prints out the AltCover build version
@@ -2692,7 +2692,7 @@ or
         0)
         let result = subject.Execute()
         Assert.That(result, Is.True)
-        Assert.That(args, Is.EquivalentTo [ "ipmo" ])
+        Assert.That(args, Is.EquivalentTo [ "ImportModule" ])
         Output.warn "x"
         Output.error "x"
       finally

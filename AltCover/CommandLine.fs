@@ -390,7 +390,7 @@ module internal CommandLine =
         u.Options2.WriteOptionDescriptions(w)
       else if u.Options.Any() then
         w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "ipmo")
+        w.WriteLine(resources.GetString "ImportModule")
         w.WriteLine(resources.GetString "orbinder")
         w.WriteLine(resources.GetString "version")
         )

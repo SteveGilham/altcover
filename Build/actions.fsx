@@ -299,8 +299,8 @@ do ()"""
     let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
-      AltCover.PrepareParams.Primitive
-        { Primitive.PrepareParams.Create() with
+      AltCover.PrepareParameters.Primitive
+        { Primitive.PrepareParameters.Create() with
             TypeFilter = [ """System\.""" ]
             XmlReport = simpleReport
             OutputDirectories = [| "./" + instrumented |]
@@ -310,7 +310,7 @@ do ()"""
       |> AltCover.Prepare
 
     let parameters =
-      { AltCover.Params.Create prep with
+      { AltCover.Parameters.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
           ToolType = framework
           WorkingDirectory = sampleRoot }
@@ -339,8 +339,8 @@ do ()"""
         let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
         let prep =
-          AltCover.PrepareParams.Primitive
-            { Primitive.PrepareParams.Create() with
+          AltCover.PrepareParameters.Primitive
+            { Primitive.PrepareParameters.Create() with
                 TypeFilter = [ """System\.""" ]
                 XmlReport = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
@@ -350,7 +350,7 @@ do ()"""
           |> AltCover.Prepare
 
         let parameters =
-          { AltCover.Params.Create prep with
+          { AltCover.Parameters.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
               ToolType = framework
               WorkingDirectory = sampleRoot }

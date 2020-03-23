@@ -214,6 +214,8 @@ module internal KeyStore =
 [<ExcludeFromCodeCoverage; SuppressMessage("Gendarme.Rules.Design.Generic",
    "AvoidDeclaringCustomDelegatesRule",
     Justification="Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
+[<SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="Anonymous parameter")>]
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
@@ -366,6 +368,8 @@ module internal Visitor =
     branchNumber <- 0
     sourceLinkDocuments <- None
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
+                    Justification = "partitioned into closures")>]
   module I =
     let private specialCaseFilters =
       [ @"^CompareTo\$cont\@\d+\-?\d$"
@@ -408,7 +412,7 @@ module internal Visitor =
       |> Seq.map (fun x ->
            (x,
             getRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
-      |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
+      |> Seq.filter (fun (x, r) -> r.IndexOf("..", StringComparison.Ordinal) < 0)
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead
 
@@ -915,6 +919,8 @@ module internal Visitor =
       |> Seq.sortBy
            (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
 
+    [<SuppressMessage("Microsoft.Maintainability", "CA1506",
+                      Justification = "partitioned into closures")>]
     let private extractBranchPoints dbg methodFullName rawInstructions interesting vc =
       let makeDefault i =
         if !CoverageParameters.coalesceBranches then -1 else i

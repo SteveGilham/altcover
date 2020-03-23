@@ -356,7 +356,19 @@ module Instance =
           then I.payloadSelector I.isOpenCoverRunner
           else Null) moduleId hitPointId
 
-  let Push x = I.push x
+  let Push caller = I.push caller
   let Pop() = I.pop()
   // Used by the datacollector
   let FlushFinish() = I.flushAll ProcessExit
+
+#if SHADOW
+[<assembly: SuppressMessage("Microsoft.Performance",
+  "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
+  Target="<StartupCode$AltCover-Shadow>.$Base.#.cctor()",
+  Justification="Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Performance",
+  "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
+  Target="<StartupCode$AltCover-Shadow>.$Recorder.#.cctor()",
+  Justification="Compiler generated")>]
+()
+#endif

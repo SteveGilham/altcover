@@ -723,7 +723,7 @@ module private Gui =
          b.Autoconnect handler)
 #else
     |> List.iter (fun name ->
-         let xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
+         use xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
          xml.Autoconnect(handler))
 #endif
 
@@ -1385,7 +1385,7 @@ module private Gui =
               ResponseType.Ok then
            let font = selector.Font
 #else
-         let selector = new FontSelectionDialog(format)
+         use selector = new FontSelectionDialog(format)
          selector.SetFontName(Persistence.readFont()) |> ignore
          if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
             ResponseType.Ok then
@@ -1404,3 +1404,41 @@ module private Gui =
     handler.classStructureTree.RowActivated |> Event.add (onRowActivated handler)
     Application.Run()
     0 // needs an int return
+
+#if !NETCOREAPP2_1
+[<assembly: SuppressMessage("Microsoft.Performance",
+                            "CA1810:InitializeReferenceTypeStaticFieldsInline",
+                            Scope="member",
+                            Target="<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
+                            Justification="Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+                            Scope="type",
+                            Target="AltCover.Visualizer.Gui",
+                            Justification="That's the way things are")>]
+[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+                            Scope="member",
+                            Target="AltCover.Visualizer.Gui.#main(System.String[])",
+                            Justification="That's the way things are")>]
+[<assembly: SuppressMessage("Microsoft.Reliability",
+                            "CA2000:Dispose objects before losing scope",
+                            Scope="member",
+                            Target="AltCover.Visualizer.Gui+applyTag@890.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
+                            Justification="Added to GUI widget tree")>]
+[<assembly: SuppressMessage("Microsoft.Reliability",
+                            "CA2000:Dispose objects before losing scope",
+                            Scope="member",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@790.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Justification="Added to GUI widget tree")>]
+[<assembly: SuppressMessage("Microsoft.Usage",
+                            "CA2208:InstantiateArgumentExceptionsCorrectly",
+                             Scope="member",
+                             Target="AltCover.Visualizer.Persistence.#readCoverageFiles(AltCover.Visualizer.Handler)",
+                             Justification="Inlined library code")>]
+[<assembly: SuppressMessage("Microsoft.Naming",
+                            "CA1703:ResourceStringsShouldBeSpelledCorrectly",
+                            Scope="resource",
+                            Target="AltCover.Visualizer.Resource.resources",
+                            MessageId="visualstudio",
+                            Justification="Ot is a name.")>]
+()
+#endif

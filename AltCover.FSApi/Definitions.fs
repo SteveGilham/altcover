@@ -72,11 +72,11 @@ module internal Internals =
   let private join(l : string seq) = String.Join(" ", l)
 
 #if RUNNER
-  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParams)
-      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
+  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParameters)
+      (collect : AltCover.FSApi.CollectParameters) (force : CLIArgs) =
 #else
-  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
-      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
+  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
+      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
       (force : DotNet.CLIArgs) =
 #endif
 
@@ -111,12 +111,12 @@ module internal Internals =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare : AltCover.FSApi.PrepareParams)
-      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
+  let ToTestArguments (prepare : AltCover.FSApi.PrepareParameters)
+      (collect : AltCover.FSApi.CollectParameters) (force : CLIArgs) =
     ToTestArgumentList prepare collect force |> join
 #else
-  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
-      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
+  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
+      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
       (force : DotNet.CLIArgs) =
     toTestArgumentList prepare collect force |> join
 #endif

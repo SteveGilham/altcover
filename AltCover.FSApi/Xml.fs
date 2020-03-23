@@ -16,12 +16,12 @@ open Augment
 module XmlUtilities =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  let ToXmlDocument(xDocument : XDocument) =
+  let ToXmlDocument(document : XDocument) =
     let xmlDocument = XmlDocument()
-    use xmlReader = xDocument.CreateReader()
+    use xmlReader = document.CreateReader()
     xmlDocument.Load(xmlReader)
 
-    let xDeclaration = xDocument.Declaration
+    let xDeclaration = document.Declaration
     if xDeclaration.IsNotNull
     then
       let xmlDeclaration =

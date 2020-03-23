@@ -83,3 +83,30 @@ module internal Augment =
     action stream
 #endif
 #endif
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Left`2(!!0)", MessageId="a",
+  Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Left`2(!!0)", MessageId="b",
+  Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Left`2(!!0)", MessageId="x",
+  Justification="Trivial usage")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Object.get_IsNotNull(System.Object)",
+  MessageId="param",
+  Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
+  Scope="member", Target="AltCover.Augment.#Object.get_IsNotNull(System.Object)",
+  Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Right`2(!!0)", MessageId="a",
+  Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Right`2(!!0)", MessageId="b",
+  Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Right`2(!!0)", MessageId="x",
+  Justification="Trivial usage")>]
+()

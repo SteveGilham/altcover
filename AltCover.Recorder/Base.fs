@@ -23,7 +23,8 @@ type internal Sampling =
 // TODO isolate where
 #if RUNNER
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-  "AvoidUninstantiatedInternalClassesRule")>]
+  "AvoidUninstantiatedInternalClassesRule",
+  Justification="Used as pattern match and compiled away")>]
 #endif
 type internal Tag =
   | Null = 0

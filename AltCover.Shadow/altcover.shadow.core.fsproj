@@ -10,6 +10,7 @@
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
     <FscToolPath Condition="'$(TargetFramework)' == 'net20'">$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -17,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
+    <DefineConstants>SHADOW;TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>52</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

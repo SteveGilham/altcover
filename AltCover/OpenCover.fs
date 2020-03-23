@@ -79,6 +79,8 @@ module internal OpenCover =
         Checked.op_Multiply x <| Math.Max(1, y)
       with :? OverflowException -> Int32.MaxValue
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
+                    Justification = "partitioned into closures")>]
   let internal reportGenerator() =
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure

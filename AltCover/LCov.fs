@@ -10,6 +10,8 @@ open AltCover.Augment
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
   "AvoidSpeculativeGeneralityRule",
   Justification="Delegation = first class functions")>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="'LCov' is jargon")>]
 module internal LCov =
   let internal path : Option<string> ref = ref None
   let internal sortByFirst s = s |> Seq.sortBy fst

@@ -1,5 +1,7 @@
 #if RUNNER
 [<RequireQualifiedAccess>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="'Api' is OK")>]
 module AltCover.FSApi
 #else
 [<RequireQualifiedAccess>]
@@ -23,9 +25,9 @@ open Fake.DotNet
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
-type CollectParams =
-  | Primitive of Primitive.CollectParams
-  | TypeSafe of TypeSafe.CollectParams
+type CollectParameters =
+  | Primitive of Primitive.CollectParameters
+  | TypeSafe of TypeSafe.CollectParameters
 
   static member private ToSeq(s : String seq) =
     match s with
@@ -55,6 +57,8 @@ type CollectParams =
     | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.Tool tool }
 #endif
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704",
+      Justification="'Lcov' is jargon")>]
   member self.LcovReport =
     match self with
     | Primitive p -> p.LcovReport
@@ -65,6 +69,8 @@ type CollectParams =
     | Primitive p -> p.Threshold
     | TypeSafe t -> t.Threshold.AsString()
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704",
+      Justification="'Cobertura' is jargon")>]
   member self.Cobertura =
     match self with
     | Primitive p -> p.Cobertura
@@ -77,7 +83,7 @@ type CollectParams =
 
   member self.CommandLine =
     match self with
-    | Primitive p -> p.CommandLine |> CollectParams.ToSeq
+    | Primitive p -> p.CommandLine |> CollectParameters.ToSeq
     | TypeSafe t -> t.CommandLine.AsStrings()
 
 #if RUNNER
@@ -144,9 +150,9 @@ type CollectParams =
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
-type PrepareParams =
-  | Primitive of Primitive.PrepareParams
-  | TypeSafe of TypeSafe.PrepareParams
+type PrepareParameters =
+  | Primitive of Primitive.PrepareParameters
+  | TypeSafe of TypeSafe.PrepareParameters
 
   static member private ToSeq(s : 'a seq) =
     match s with
@@ -155,32 +161,32 @@ type PrepareParams =
 
   static member private ToList(s : 'a seq) =
     s
-    |> PrepareParams.ToSeq
+    |> PrepareParameters.ToSeq
     |> Seq.toList
 
   member self.InputDirectories =
     match self with
-    | Primitive p -> p.InputDirectories |> PrepareParams.ToList
+    | Primitive p -> p.InputDirectories |> PrepareParameters.ToList
     | TypeSafe t -> t.InputDirectories.AsStrings()
 
   member self.OutputDirectories =
     match self with
-    | Primitive p -> p.OutputDirectories |> PrepareParams.ToList
+    | Primitive p -> p.OutputDirectories |> PrepareParameters.ToList
     | TypeSafe t -> t.OutputDirectories.AsStrings()
 
   member self.SymbolDirectories =
     match self with
-    | Primitive p -> p.SymbolDirectories |> PrepareParams.ToList
+    | Primitive p -> p.SymbolDirectories |> PrepareParameters.ToList
     | TypeSafe t -> t.SymbolDirectories.AsStrings()
 
   member self.Dependencies =
     match self with
-    | Primitive p -> p.Dependencies |> PrepareParams.ToList
+    | Primitive p -> p.Dependencies |> PrepareParameters.ToList
     | TypeSafe t -> t.Dependencies.AsStrings()
 
   member self.Keys =
     match self with
-    | Primitive p -> p.Keys |> PrepareParams.ToList
+    | Primitive p -> p.Keys |> PrepareParameters.ToList
     | TypeSafe t -> t.Keys.AsStrings()
 
   member self.StrongNameKey =
@@ -195,42 +201,42 @@ type PrepareParams =
 
   member self.FileFilter =
     match self with
-    | Primitive p -> p.FileFilter |> PrepareParams.ToList
+    | Primitive p -> p.FileFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.FileFilter.AsStrings()
 
   member self.AssemblyFilter =
     match self with
-    | Primitive p -> p.AssemblyFilter |> PrepareParams.ToList
+    | Primitive p -> p.AssemblyFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.AssemblyFilter.AsStrings()
 
   member self.AssemblyExcludeFilter =
     match self with
-    | Primitive p -> p.AssemblyExcludeFilter |> PrepareParams.ToList
+    | Primitive p -> p.AssemblyExcludeFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.AssemblyExcludeFilter.AsStrings()
 
   member self.TypeFilter =
     match self with
-    | Primitive p -> p.TypeFilter |> PrepareParams.ToList
+    | Primitive p -> p.TypeFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.TypeFilter.AsStrings()
 
   member self.MethodFilter =
     match self with
-    | Primitive p -> p.MethodFilter |> PrepareParams.ToList
+    | Primitive p -> p.MethodFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.MethodFilter.AsStrings()
 
   member self.AttributeFilter =
     match self with
-    | Primitive p -> p.AttributeFilter |> PrepareParams.ToList
+    | Primitive p -> p.AttributeFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.AttributeFilter.AsStrings()
 
   member self.PathFilter =
     match self with
-    | Primitive p -> p.PathFilter |> PrepareParams.ToList
+    | Primitive p -> p.PathFilter |> PrepareParameters.ToList
     | TypeSafe t -> t.PathFilter.AsStrings()
 
   member self.CallContext =
     match self with
-    | Primitive p -> p.CallContext |> PrepareParams.ToList
+    | Primitive p -> p.CallContext |> PrepareParameters.ToList
     | TypeSafe t -> t.CallContext.AsStrings()
 
   member self.OpenCover =
@@ -265,7 +271,7 @@ type PrepareParams =
 
   member self.CommandLine =
     match self with
-    | Primitive p -> p.CommandLine |> PrepareParams.ToSeq
+    | Primitive p -> p.CommandLine |> PrepareParameters.ToSeq
     | TypeSafe t -> t.CommandLine.AsStrings()
 
 #if RUNNER
@@ -323,7 +329,7 @@ type PrepareParams =
 
 #if RUNNER
   static member private ValidateArray a f key =
-    PrepareParams.ValidateArraySimple a (f key)
+    PrepareParameters.ValidateArraySimple a (f key)
 
   static member private ValidateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
 
@@ -360,25 +366,25 @@ type PrepareParams =
         | (_, Left(Some _)) -> true
         | _ -> false
       context
-      |> PrepareParams.ToSeq
+      |> PrepareParameters.ToSeq
       |> Seq.fold select false
       |> ignore
 
     try
       CommandLine.error <- []
-      PrepareParams.ValidateArray self.InputDirectories CommandLine.validateDirectory
+      PrepareParameters.ValidateArray self.InputDirectories CommandLine.validateDirectory
         "--inputDirectory"
-      PrepareParams.ValidateArray self.OutputDirectories CommandLine.validatePath
+      PrepareParameters.ValidateArray self.OutputDirectories CommandLine.validatePath
         "--outputDirectory"
-      PrepareParams.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
+      PrepareParameters.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
         self.StrongNameKey
-      PrepareParams.ValidateOptional CommandLine.validatePath "--xmlReport"
+      PrepareParameters.ValidateOptional CommandLine.validatePath "--xmlReport"
         self.XmlReport
-      PrepareParams.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
+      PrepareParameters.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
         "--symbolDirectory"
-      PrepareParams.ValidateArray self.Dependencies CommandLine.validateAssembly
+      PrepareParameters.ValidateArray self.Dependencies CommandLine.validateAssembly
         "--dependency"
-      PrepareParams.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
+      PrepareParameters.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
       [ self.FileFilter
         self.AssemblyFilter
         self.AssemblyExcludeFilter
@@ -387,7 +393,7 @@ type PrepareParams =
         self.AttributeFilter
         self.PathFilter ]
       |> Seq.iter
-           (fun a -> PrepareParams.ValidateArraySimple a CommandLine.validateRegexes)
+           (fun a -> PrepareParameters.ValidateArraySimple a CommandLine.validateRegexes)
       self.Consistent()
       self.Consistent'()
       validateContext self.CallContext
@@ -404,10 +410,10 @@ type Logging =
 
   static member Create() = Primitive.Logging.Create() |> Primitive
 
-  static member ActionAdapter(a : Action<String>) =
-    match a with
+  static member ActionAdapter(action : Action<String>) =
+    match action with
     | null -> ignore
-    | _ -> a.Invoke
+    | _ -> action.Invoke
 
   member self.Error =
     match self with
@@ -459,7 +465,7 @@ module internal Args =
   let private flag a x =
     if x then [ a ] else []
 
-  let internal itemLists(args : PrepareParams) =
+  let internal itemLists(args : PrepareParameters) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -475,16 +481,16 @@ module internal Args =
       ("-c", args.CallContext) ]
     |> List.collect (fun (a, b) -> itemList a b)
 
-  let internal items(args : PrepareParams) =
+  let internal items(args : PrepareParameters) =
     [ ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport) ]
     |> List.collect (fun (a, b) -> ArgsHelper.item a b)
 
-  let internal optItems(args : PrepareParams) =
+  let internal optItems(args : PrepareParameters) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
     |> List.collect (fun (a, b, c) -> ArgsHelper.optionalItem a b c)
 
-  let internal flags(args : PrepareParams) =
+  let internal flags(args : PrepareParameters) =
     [ ("--opencover", args.OpenCover)
       ("--inplace", args.InPlace)
       ("--save", args.Save)
@@ -499,7 +505,7 @@ module internal Args =
       ("--showGenerated", args.ShowGenerated) ]
     |> List.collect (fun (a, b) -> flag a b)
 
-  let prepare(args : PrepareParams) =
+  let prepare(args : PrepareParameters) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -510,7 +516,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let collect(args : CollectParams) =
+  let collect(args : CollectParameters) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -551,12 +557,12 @@ type ValidatedCommandLine =
          [ [| cl |] |> Array.toSeq
            self.Errors ])
 
-type CollectParams with
+type CollectParameters with
   member self.WhatIf afterPreparation =
     { Command = Args.collect self
       Errors = self.Validate afterPreparation }
 
-type PrepareParams with
+type PrepareParameters with
   member self.WhatIf() =
     { Command = Args.prepare self
       Errors = self.Validate() }
@@ -565,8 +571,8 @@ type PrepareParams with
 [<SuppressMessage("Gendarme.Rules.Naming",
                   "UseCorrectCasingRule",
                   Justification = "Fake.build style")>]
-let splitCommandLine s =
-  s
+let splitCommandLine line =
+  line
   |> if Environment.isWindows
      then BlackFox.CommandLine.MsvcrCommandLine.parse
      else BlackFox.CommandLine.MonoUnixCommandLine.parse
@@ -597,16 +603,16 @@ let buildDotNetTestCommandLine (options : DotNet.TestOptions -> DotNet.TestOptio
    cmdArgs |> List.filter (String.IsNullOrWhiteSpace >> not))
 
 [<NoComparison; AutoSerializable(false)>]
-type ArgType =
-  | Collect of CollectParams
-  | Prepare of PrepareParams
+type ArgumentType =
+  | Collect of CollectParameters
+  | Prepare of PrepareParameters
   | ImportModule
   | GetVersion
 
 #nowarn "44"
 
 [<NoComparison; NoEquality; AutoSerializable(false)>]
-type Params =
+type Parameters =
   { /// Path to the Altcover executable.
     ToolPath : string
     /// Which version of the tool (FAKE 5.18 ToolType)
@@ -614,15 +620,13 @@ type Params =
     /// Working directory for relative file paths.  Default is the current working directory
     WorkingDirectory : string
     /// Command arguments
-    Args : ArgType }
+    Args : ArgumentType }
 
-  [<SuppressMessage("Gendarme.Rules.Maintainability",
-      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
-  static member Create(a : ArgType) =
+  static member Create(argumentType : ArgumentType) =
     { ToolPath = "altcover"
       ToolType = ToolType.CreateGlobalTool()
       WorkingDirectory = String.Empty
-      Args = a }
+      Args = argumentType }
 
   member this.WithCreateProcess(command : CreateProcess<_>) =
     match command.Command with
@@ -631,11 +635,11 @@ type Params =
         | Collect c ->
             { this with
                 Args =
-                  ArgType.Collect
+                  ArgumentType.Collect
                     ((c.SetExecutable tool).SetCommandLine(Arguments.toList args)) }
         | Prepare p ->
             { this with
-                Args = ArgType.Prepare(p.SetCommandLine(tool :: (Arguments.toList args))) }
+                Args = ArgumentType.Prepare(p.SetCommandLine(tool :: (Arguments.toList args))) }
         | ImportModule -> this
         | GetVersion -> this
     | _ -> this
@@ -644,7 +648,7 @@ let internal createArgs parameters =
   match parameters.Args with
   | Collect c -> Args.collect c
   | Prepare p -> Args.prepare p
-  | ImportModule -> [ "ipmo" ]
+  | ImportModule -> [ "ImportModule" ]
   | GetVersion -> [ "version" ]
 
 let internal createProcess parameters args =

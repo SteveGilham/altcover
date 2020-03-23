@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
+[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  MessageId = "Api", Justification = "It's the API for the system")]
 
 namespace AltCover.Parameters
 {
@@ -9,15 +13,23 @@ namespace AltCover.Parameters
     string RecorderDirectory { get; }
     string WorkingDirectory { get; }
     string Executable { get; }
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Lcov is a name")]
     string LcovReport { get; }
+
     string Threshold { get; }
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Cobertura is a name")]
     string Cobertura { get; }
+
     string OutputFile { get; }
     bool ExposeReturnCode { get; }
     string SummaryFormat { get; }
     IEnumerable<string> CommandLine { get; }
 
-    FSApi.CollectParams ToParameters();
+    FSApi.CollectParameters ToParameters();
 
     IEnumerable<string> Validate(bool afterPreparation);
 
@@ -45,7 +57,7 @@ namespace AltCover.Parameters
     bool OpenCover { get; }
     bool InPlace { get; }
     bool Save { get; }
-    bool Single { get; }
+    bool SingleVisit { get; }
     bool LineCover { get; }
     bool BranchCover { get; }
     bool ExposeReturnCode { get; }
@@ -58,7 +70,7 @@ namespace AltCover.Parameters
 
     IEnumerable<string> CommandLine { get; }
 
-    FSApi.PrepareParams ToParameters();
+    FSApi.PrepareParameters ToParameters();
 
     IEnumerable<string> Validate();
 
@@ -69,12 +81,14 @@ namespace AltCover.Parameters
   {
     Action<String> Info { get; }
     Action<String> Warn { get; }
-    Action<String> Error { get; }
+    Action<String> StandardError { get; }
     Action<String> Echo { get; }
 
     FSApi.Logging ToParameters();
   }
 
+  [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
+    Justification = "CLI is a standard TLA")]
   public interface ICLIArg
   {
     bool Force { get; }
@@ -115,9 +129,9 @@ namespace AltCover.Parameters.Primitive
 
     public bool ExposeReturnCode { get; set; }
 
-    public FSApi.CollectParams ToParameters()
+    public FSApi.CollectParameters ToParameters()
     {
-      var primitive = new AltCover.Primitive.CollectParams(
+      var primitive = new AltCover.Primitive.CollectParameters(
           RecorderDirectory,
           WorkingDirectory,
           Executable,
@@ -129,7 +143,7 @@ namespace AltCover.Parameters.Primitive
           ExposeReturnCode,
           SummaryFormat
                                                           );
-      return FSApi.CollectParams.NewPrimitive(primitive);
+      return FSApi.CollectParameters.NewPrimitive(primitive);
     }
 
     public static CollectArgs Create()
@@ -181,7 +195,7 @@ namespace AltCover.Parameters.Primitive
     public bool OpenCover { get; set; }
     public bool InPlace { get; set; }
     public bool Save { get; set; }
-    public bool Single { get; set; }
+    public bool SingleVisit { get; set; }
     public bool LineCover { get; set; }
     public bool BranchCover { get; set; }
     public bool ExposeReturnCode { get; set; }
@@ -194,9 +208,9 @@ namespace AltCover.Parameters.Primitive
 
     public IEnumerable<string> CommandLine { get; set; }
 
-    public FSApi.PrepareParams ToParameters()
+    public FSApi.PrepareParameters ToParameters()
     {
-      var primitive = new AltCover.Primitive.PrepareParams(
+      var primitive = new AltCover.Primitive.PrepareParameters(
                       InputDirectories,
                       OutputDirectories,
                       SymbolDirectories,
@@ -216,7 +230,7 @@ namespace AltCover.Parameters.Primitive
                       OpenCover,
                       InPlace,
                       Save,
-                      Single,
+                      SingleVisit,
                       LineCover,
                       BranchCover,
                       CommandLine,
@@ -228,7 +242,7 @@ namespace AltCover.Parameters.Primitive
                       ShowStatic,
                       ShowGenerated
                                                           );
-      return FSApi.PrepareParams.NewPrimitive(primitive);
+      return FSApi.PrepareParameters.NewPrimitive(primitive);
     }
 
     public static PrepareArgs Create()
@@ -254,7 +268,7 @@ namespace AltCover.Parameters.Primitive
         OpenCover = true,
         InPlace = true,
         Save = true,
-        Single = false,
+        SingleVisit = false,
         LineCover = false,
         BranchCover = false,
         CommandLine = { },
@@ -280,7 +294,7 @@ namespace AltCover.Parameters.Primitive
   {
     public Action<String> Info { get; set; }
     public Action<String> Warn { get; set; }
-    public Action<String> Error { get; set; }
+    public Action<String> StandardError { get; set; }
     public Action<String> Echo { get; set; }
 
     public FSApi.Logging ToParameters()
@@ -288,7 +302,7 @@ namespace AltCover.Parameters.Primitive
       var primitive = new AltCover.Primitive.Logging(
           FSApi.Logging.ActionAdapter(Info),
           FSApi.Logging.ActionAdapter(Warn),
-          FSApi.Logging.ActionAdapter(Error),
+          FSApi.Logging.ActionAdapter(StandardError),
           FSApi.Logging.ActionAdapter(Echo));
       return FSApi.Logging.NewPrimitive(primitive);
     }
@@ -299,12 +313,14 @@ namespace AltCover.Parameters.Primitive
       {
         Info = x => { },
         Warn = x => { },
-        Error = x => { },
+        StandardError = x => { },
         Echo = x => { }
       };
     }
   }
 
+  [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
+    Justification = "CLI is a standard TLA")]
   public class CLIArgs : ICLIArg
   {
     public bool Force { get; set; }
@@ -317,6 +333,8 @@ namespace AltCover
 {
   using AltCover.Parameters;
 
+  [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification = "It's the API for the system")]
   public static class CSApi
   {
     public static int Prepare(IPrepareArgs prepareArgs, ILogArgs log)
@@ -333,9 +351,9 @@ namespace AltCover
       return Api.Collect(collectArgs.ToParameters(), log.ToParameters());
     }
 
-    public static string Ipmo()
+    public static string ImportModule()
     {
-      return Api.Ipmo();
+      return Api.ImportModule();
     }
 
     public static string Version()

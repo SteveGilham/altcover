@@ -31,13 +31,15 @@ type Implementation =
 [<SuppressMessage("Gendarme.Rules.Performance",
                   "AvoidUncalledPrivateCodeRule",
                   Justification = "Can't stop the instance constructor happening")>]
+[<SuppressMessage("Microsoft.Naming", "CA1704",
+  Justification="'Api' works")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Api private () =
-  static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
+  static member Prepare(args : FSApi.PrepareParameters, ?log : FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.doDefault log)
-  static member Collect(args : FSApi.CollectParams, ?log : FSApi.Logging) =
+  static member Collect(args : FSApi.CollectParameters, ?log : FSApi.Logging) =
     AltCover.Api.Collect args (Trace.doDefault log)
-  static member Ipmo() = AltCover.Api.Ipmo()
+  static member ImportModule() = AltCover.Api.ImportModule()
   static member Version() = AltCover.Api.Version()
   // Finds the tool from within the .nuget package
   [<SuppressMessage("Microsoft.Design", "CA1062",
@@ -58,16 +60,17 @@ type Api private () =
 namespace AltCoverFake.DotNet
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Reflection
 open AltCoverFake.DotNet
 #endif
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-  "AvoidSpeculativeGeneralityRule",
-  Justification="Until we remove the [Obsolete] methods")>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
+[<SuppressMessage("Gendarme.Rules.Exceptions",
   "InstantiateArgumentExceptionCorrectlyRule",
   Justification="Inlines Array functions")>]
+[<SuppressMessage("Microsoft.Naming",
+  "CA1724",
+  Justification="clash with '<StartupCode$ type")>]
 module DotNet =
   open Fake.DotNet
 
@@ -92,6 +95,8 @@ module DotNet =
 
     // NOTE: the MSBuildParams member of TestOptions did not exist in Fake 5.0.0
     // so do it this way for backwards compatibility
+    [<SuppressMessage("Microsoft.Usage", "CA2208",
+      Justification="Inlined calls to ArgumentNullException")>]
     member private self.ExtendCustomParams options =
       let custom = self.Common.CustomParams
 
@@ -122,18 +127,22 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithAltCoverParameters (prepare : FSApi.PrepareParams)
-           (collect : FSApi.CollectParams) (force : DotNet.CLIArgs) =
+    member self.WithAltCoverParameters (prepare : FSApi.PrepareParameters)
+           (collect : FSApi.CollectParameters) (force : DotNet.CLIArgs) =
       DotNet.ToTestArguments
 #else
-    member self.WithAltCoverParameters (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
-           (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
+    member self.WithAltCoverParameters (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
+           (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
            (force : AltCoverFake.DotNet.Testing.DotNet.CLIArgs) =
       AltCoverFake.DotNet.Testing.Internals.toTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
+    [<SuppressMessage("Microsoft.Naming", "CA1704",
+      Justification="Anonymous parameter")>]
     member self.WithAltCoverImportModule() =
-      self.ExtendCustomParams "/p:AltCoverIpmo=true"
+      self.ExtendCustomParams "/p:AltCoverImportModule=true"
+    [<SuppressMessage("Microsoft.Naming", "CA1704",
+      Justification="Anonymous parameter")>]
     member self.WithAltCoverGetVersion() =
       self.ExtendCustomParams "/p:AltCoverGetVersion=true"
 
@@ -144,5 +153,11 @@ module DotNet =
                            Scope="type",
                            Target="AltCover.Fake.Implementation+Tags",
                            Justification = "Idiomatic F#")>]
-()
+#else
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+Parameters.#WithCreateProcess`1(Fake.Core.CreateProcess`1<!!0>)", MessageId="a", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@699T.#monoPath", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@699T.#parameters", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withWorkingDirectory@659T.#parameters", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Scope="type", Target="AltCoverFake.DotNet.Testing.DotNet", Justification="That's life I'm afraid")>]
 #endif
+()
