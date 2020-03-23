@@ -2,6 +2,7 @@ namespace AltCover
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.IO.Compression
@@ -14,13 +15,19 @@ open Mono.Options
 open Augment
 open AltCover.Base
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison>]
 type TeamCityFormat =
   | Default
-  | R
-  | B
+  | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="TeamCity notation")>]
+    R
+  | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="TeamCity notation")>]
+    B
   | RPlus
   | BPlus
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="trivial usage")>]
   static member Factory s =
     let (|Select|_|) (pattern : String) offered =
       if offered
@@ -525,9 +532,10 @@ module internal Runner =
           (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
         |> Seq.fold (fun before f ->
              timer.Restart()
-             let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
+             let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentCulture)
              sprintf "... %s (%sb)" f length |> Output.info
-             use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
+             use fileStream = File.OpenRead f
+             use results = new DeflateStream(fileStream, CompressionMode.Decompress)
              use formatter = new System.IO.BinaryReader(results)
 
              let rec sink hitcount =
@@ -606,7 +614,7 @@ module internal Runner =
                      if key
                         |> String.IsNullOrWhiteSpace
                         |> not
-                        || (key = String.Empty && hitPointId = 0
+                        || ((String.IsNullOrEmpty key) && hitPointId = 0
                             && visit.GetType().ToString() = "AltCover.Base.Track+Table") then
                        Base.Counter.addVisit hits key hitPointId visit
                      else
@@ -982,3 +990,7 @@ module internal Runner =
             K.doSummaries document format' result) 255 true
         CommandLine.reportErrors "Collection" false
         value
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TeamCityFormat+Tags.#B", MessageId="B", Justification="TeamCity notation")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TeamCityFormat+Tags.#R", MessageId="R", Justification="TeamCity notation")>]
+()

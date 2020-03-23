@@ -7,7 +7,8 @@ open Augment
 open System.Globalization
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
-
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="'Cobertura' is jargon")>]
 module internal Cobertura =
   let internal path : Option<string> ref = ref None
 
@@ -16,7 +17,8 @@ module internal Cobertura =
     let internal setRate hits total (rate : string) (target : XElement) =
       if total > 0 then
         let ratio = (float hits) / (float total)
-        target.SetAttributeValue(rate.X, String.Format("{0:0.##}", ratio))
+        target.SetAttributeValue(rate.X, String.Format(CultureInfo.InvariantCulture,
+                                                       "{0:0.##}", ratio))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",

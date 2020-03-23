@@ -10,12 +10,16 @@ open System
 open System.Diagnostics.CodeAnalysis
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
-type CollectParams =
+type CollectParameters =
   { RecorderDirectory : String
     WorkingDirectory : String
     Executable : String
+    [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                      Justification="Lcov is a name")>]
     LcovReport : String
     Threshold : String
+    [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                      Justification="Cobertura is a name")>]
     Cobertura : String
     OutputFile : String
     CommandLine : String seq
@@ -34,8 +38,9 @@ type CollectParams =
       SummaryFormat = String.Empty }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
-[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
-type PrepareParams =
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",
+                  Justification="Plenty of options to support")>]
+type PrepareParameters =
   { InputDirectories : String seq
     OutputDirectories : String seq
     SymbolDirectories : String seq
@@ -110,3 +115,24 @@ type Logging =
       Error = ignore
       Echo = ignore }
 #endif
+
+#if RUNNER
+[<assembly: SuppressMessage("Microsoft.Naming",
+  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.Primitive+CollectParameters.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  MessageId="cobertura", Justification="Cobertura is a name")>]
+[<assembly: SuppressMessage("Microsoft.Naming",
+  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.Primitive+CollectParameters.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  MessageId="lcov", Justification="LCov is a name")>]
+#else
+[<assembly: SuppressMessage("Microsoft.Naming",
+  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.Primitive+CollectParameters.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  MessageId="cobertura", Justification="Cobertura is a name")>]
+[<assembly: SuppressMessage("Microsoft.Naming",
+  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.Primitive+CollectParameters.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  MessageId="lcov", Justification="LCov is a name")>]
+#endif
+()

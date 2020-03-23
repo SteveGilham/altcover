@@ -519,7 +519,7 @@ module internal Main =
       | Select "Runner" _ ->
           Runner.init()
           Runner.doCoverage arguments (declareOptions())
-      | Select "ipmo" _ ->
+      | Select "ImportModule" _ ->
           Path.Combine
             (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
              "AltCover.PowerShell.dll")

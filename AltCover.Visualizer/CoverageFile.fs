@@ -1,6 +1,7 @@
 namespace AltCover.Visualizer
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
 open System.Reflection
@@ -11,6 +12,8 @@ open System.Xml.Schema
 open System.Xml.XPath
 open AltCover.Augment
 
+[<SuppressMessage("Microsoft.Design", "CA1027:MarkEnumsWithFlags",
+  Justification="Not used or intended as a flag")>]
 type CoverageTool =
   | NCoverAlike = 0
   | OpenCover = 2
@@ -130,3 +133,10 @@ module Extensions =
       match x with
       | Right y -> Some y
       | _ -> None
+
+[<assembly: SuppressMessage("Microsoft.Naming",
+  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.Visualizer.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  MessageId="x",
+  Justification="Trivial usage")>]
+()

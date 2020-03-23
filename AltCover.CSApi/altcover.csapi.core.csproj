@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFramework>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>AltCover.CSApi</RootNamespace>
     <AssemblyName>AltCover.CSApi</AssemblyName>
@@ -47,6 +46,13 @@
   <ItemGroup>
     <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net45'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

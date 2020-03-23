@@ -1,4 +1,5 @@
 #r "paket:
+nuget BlackFox.VsWhere >= 1.0.0
 nuget Fake.Core.Target >= 5.19.1
 nuget Fake.Core.Environment >= 5.19.1
 nuget Fake.Core.Process >= 5.19.1
@@ -19,8 +20,7 @@ open Fake.Core.TargetOperators
 open Fake.DotNet
 open Fake.DotNet.NuGet.Restore
 open Fake.IO
-
-open Microsoft.Win32
+open Fake.IO.FileSystemOperators
 
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
@@ -54,6 +54,20 @@ let nuget =
   ("./packages/" + (packageVersion "NuGet.CommandLine") + "/tools/NuGet.exe")
   |> Path.getFullName
 
+let dixon =
+  ("./packages/" + (packageVersion "AltCode.Dixon") + "/Rules")
+  |> Path.getFullName
+
+let fxcop =
+  if Environment.isWindows
+  then 
+    BlackFox.VsWhere.VsInstances.getAll()
+    |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
+    |> Seq.map (fun i -> i.InstallationPath @@ "Team Tools/Static Analysis Tools/FxCop")
+    |> Seq.filter Directory.Exists
+    |> Seq.tryHead
+  else None
+
 let restore (o : RestorePackageParams) =
   { o with ToolPath = nuget }
 
@@ -75,6 +89,7 @@ nuget Fake.DotNet.Testing.XUnit2 >= 5.19.1
 nuget Fake.IO.FileSystem >= 5.19.1
 nuget Fake.DotNet.Testing.Coverlet >= 5.19.1
 nuget Fake.Testing.ReportGenerator >= 5.19.1
+nuget Fake.Tools.Git >= 5.19.1
 nuget AltCode.Fake.DotNet.Gendarme >= 5.18.1.24
 nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.0.0
@@ -110,21 +125,38 @@ Target.description "ResetConsoleColours"
 Target.createFinal "ResetConsoleColours" resetColours
 Target.activateFinal "ResetConsoleColours"
 
+_Target "FxCop" (fun _ ->
+  fxcop 
+  |> Option.iter (fun fx -> Directory.ensure "./packages/fxcop/"
+                            let target = Path.getFullName "./packages/fxcop/"
+                            let prefix = fx.Length
+
+                            let check t pf (f : string) =
+                              let destination = t @@ (f.Substring pf)
+                              printfn "%A" destination
+                              destination
+                              |> File.Exists
+                              |> not
+
+                            Shell.copyDir target fx (check target prefix)
+
+                            let rules = target @@ "Rules"
+                            Shell.copyDir rules dixon (fun _ -> true)
+    )
+)
+
 // Restore the NuGet packages used by the build and the Framework version
 
 _Target "Preparation" (fun _ ->
   RestoreMSSolutionPackages restore "./MCS.sln"
 )
-_Target "Legacy" (fun _ ->
-  if File.Exists "./AltCover.Legacy.sln"
-  then RestoreMSSolutionPackages restore "./AltCover.Legacy.sln"
-)
 
 let defaultTarget() =
   resetColours()
-  if Environment.isWindows
-  then "Preparation"
-  else "Legacy"
+  "Preparation"
+
+"FxCop"
+=?> ("Preparation", Environment.isWindows)
 
 Target.runOrDefault <| defaultTarget ()
 

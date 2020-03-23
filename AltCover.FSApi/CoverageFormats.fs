@@ -15,6 +15,8 @@ module CoverageFormats =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification="Lcov is a name")>]
   let ConvertToLcov xmlDocument stream =
     let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
@@ -22,6 +24,8 @@ module CoverageFormats =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification="Cobertura is a name")>]
   let ConvertToCobertura xmlDocument =
     let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
@@ -29,6 +33,8 @@ module CoverageFormats =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+                    Justification="It uses XML; is that a problem?")>]
   let ConvertFromNCover (navigable : IXPathNavigable) (assemblies : string seq) =
     let reporter, rewrite = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
@@ -150,3 +156,7 @@ module CoverageFormats =
     finally
       thread.CurrentCulture <- culture
     rewrite
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  MessageId="Api", Justification="It's an API, damn it.")>]
+()

@@ -12,6 +12,8 @@ nuget:
   disable_publish_on_pr: true
 install:
   - cinst gtksharp
+  # experimental SDK version bump
+  # - cinst dotnetcore-sdk --version 3.1.200
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'

@@ -23,7 +23,8 @@ type internal Sampling =
 // TODO isolate where
 #if RUNNER
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-  "AvoidUninstantiatedInternalClassesRule")>]
+  "AvoidUninstantiatedInternalClassesRule",
+  Justification="Used as pattern match and compiled away")>]
 #endif
 type internal Tag =
   | Null = 0
@@ -160,7 +161,8 @@ module internal Counter =
     /// <param name="hitCounts">The coverage results to incorporate</param>
     /// <param name="coverageFile">The coverage file to update as a stream</param>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-     "AvoidLongParameterListsRule")>]
+     "AvoidLongParameterListsRule",
+     Justification="Most of this gets curried away")>]
     let internal updateReport (postProcess : XmlDocument -> unit)
         (pointProcess : XmlElement -> List<Track> -> unit) own
         (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
@@ -314,7 +316,8 @@ module internal Counter =
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "'Target' is disposed")>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-    "AvoidLongParameterListsRule")>]
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
   let internal doFlush postProcess pointProcess own counts format report output =
     use coverageFile =
       new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,

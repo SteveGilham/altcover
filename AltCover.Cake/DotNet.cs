@@ -4,8 +4,13 @@ using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.IO;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AltCover.Parameters;
+
+[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope = "member", Target = "AltCover.Cake.DotNet.#DotNetCoreTest(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Common.Tools.DotNetCore.Test.DotNetCoreTestSettings,AltCover.Cake.AltCoverSettings)",
+  MessageId = "altcover", Justification = "It's the product name.")]
 
 namespace AltCover.Cake
 {

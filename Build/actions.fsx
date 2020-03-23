@@ -214,7 +214,8 @@ do ()"""
       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+      //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
       (String.Join(" ", recorded), expected |> Is.EqualTo,
        sprintf "Bad visit list %A" recorded)
@@ -298,8 +299,8 @@ do ()"""
     let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
-      AltCover.PrepareParams.Primitive
-        { Primitive.PrepareParams.Create() with
+      AltCover.PrepareParameters.Primitive
+        { Primitive.PrepareParameters.Create() with
             TypeFilter = [ """System\.""" ]
             XmlReport = simpleReport
             OutputDirectories = [| "./" + instrumented |]
@@ -309,7 +310,7 @@ do ()"""
       |> AltCover.Prepare
 
     let parameters =
-      { AltCover.Params.Create prep with
+      { AltCover.Parameters.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
           ToolType = framework
           WorkingDirectory = sampleRoot }
@@ -338,8 +339,8 @@ do ()"""
         let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
         let prep =
-          AltCover.PrepareParams.Primitive
-            { Primitive.PrepareParams.Create() with
+          AltCover.PrepareParameters.Primitive
+            { Primitive.PrepareParameters.Create() with
                 TypeFilter = [ """System\.""" ]
                 XmlReport = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
@@ -349,7 +350,7 @@ do ()"""
           |> AltCover.Prepare
 
         let parameters =
-          { AltCover.Params.Create prep with
+          { AltCover.Parameters.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
               ToolType = framework
               WorkingDirectory = sampleRoot }
@@ -450,7 +451,8 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+      //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
       (String.Join(" ", recorded), expected |> Is.EqualTo,
        sprintf "Bad visit list %A" recorded)
@@ -479,6 +481,7 @@ a:hover {color: #ecc;}
        |> Seq.map (fun x -> x.ToString()),
        Is.EquivalentTo
          [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"

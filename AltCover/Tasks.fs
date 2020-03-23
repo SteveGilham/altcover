@@ -7,21 +7,24 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 #endif
+open System.Diagnostics.CodeAnalysis
 
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open Augment
 
 [<RequireQualifiedAccess>]
+[<SuppressMessage("Microsoft.Naming", "CA1704",
+  Justification="'Api' works")>]
 module Api =
-  let Prepare (args : FSApi.PrepareParams) (log : FSApi.Logging) =
+  let Prepare (args : FSApi.PrepareParameters) (log : FSApi.Logging) =
     log.Apply()
     args
     |> FSApi.Args.prepare
     |> List.toArray
     |> Main.effectiveMain
 
-  let Collect (args : FSApi.CollectParams) (log : FSApi.Logging) =
+  let Collect (args : FSApi.CollectParameters) (log : FSApi.Logging) =
     log.Apply()
     FSApi.Args.collect args
     |> List.toArray
@@ -42,73 +45,76 @@ module Api =
     |> ignore
     store
 
-  let Ipmo() = getStringValue "ipmo"
+  let ImportModule() = getStringValue "ImportModule"
   let Version() = getStringValue "version"
 
   let internal colourize name =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
     if ok then Console.ForegroundColor <- colour
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule");
+[<SuppressMessage(
+  "Gendarme.Rules.Smells",
+  "AvoidLargeClassesRule",
+  Justification="So many options available, so many compiler generated fields");
   AutoSerializable(false)>]
 type Prepare() =
   inherit Task(null)
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
   member val internal ACLog : FSApi.Logging option = None with get, set
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val InputDirectories : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val OutputDirectories : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val SymbolDirectories : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val Dependencies : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
   member val XmlReport = String.Empty with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val FileFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val AssemblyFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val AssemblyExcludeFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val TypeFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val MethodFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val AttributeFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val PathFilter : string array = [||] with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val CallContext : string array = [||] with get, set
@@ -119,7 +125,7 @@ type Prepare() =
   member val Single = false with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
@@ -129,7 +135,7 @@ type Prepare() =
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
 
-  member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
+  member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse
@@ -140,7 +146,7 @@ type Prepare() =
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.PrepareParams.Primitive
+      FSApi.PrepareParameters.Primitive
         { InputDirectories = self.InputDirectories
           OutputDirectories = self.OutputDirectories
           SymbolDirectories = self.SymbolDirectories
@@ -177,7 +183,7 @@ type Prepare() =
 type Collect() =
   inherit Task(null)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
   member val internal ACLog : FSApi.Logging option = None with get, set
@@ -187,25 +193,32 @@ type Collect() =
 
   member val WorkingDirectory = String.Empty with get, set
   member val Executable = String.Empty with get, set
+  [<SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="'LCov' is jargon")>]
   member val LcovReport = String.Empty with get, set
   member val Threshold = String.Empty with get, set
+  [<SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="'  member val Cobertura = String.Empty with get, set
+' is jargon")>]
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
 
   [<Output>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822",
+  [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
                                                     Justification =
                                                       "Instance property needed");
-    System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-                                                      "MethodCanBeMadeStaticRule")>]
+    SuppressMessage("Gendarme.Rules.Correctness",
+                                                      "MethodCanBeMadeStaticRule",
+                                                      Justification =
+                                                       "Instance property needed")>]
   member self.Summary = Api.Summary()
 
-  member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
+  member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse
@@ -216,7 +229,7 @@ type Collect() =
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.CollectParams.Primitive
+      FSApi.CollectParameters.Primitive
         { RecorderDirectory = self.RecorderDirectory
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
@@ -234,7 +247,7 @@ type Collect() =
 type PowerShell() =
   inherit Task(null)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
   member val internal IO = FSApi.Logging.Primitive
@@ -243,7 +256,7 @@ type PowerShell() =
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.Ipmo()
+    let r = Api.ImportModule()
     self.IO.Apply()
     r |> Output.warn
     true
@@ -252,7 +265,7 @@ type PowerShell() =
 type GetVersion() =
   inherit Task(null)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
   member val internal IO = FSApi.Logging.Primitive
@@ -296,7 +309,7 @@ type RunSettings() =
   [<Output>]
   member val Extended = String.Empty with get, set
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set

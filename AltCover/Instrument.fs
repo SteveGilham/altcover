@@ -57,6 +57,8 @@ module internal Instrument =
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
+                    Justification = "partitioned into closures")>]
   module internal I =
 
 #if NETCOREAPP2_0
