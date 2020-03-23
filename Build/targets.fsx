@@ -529,9 +529,9 @@ _Target "FxCop" (fun _ ->
             let spp = mpp.Parent.Parent
             let sp4 = spp.Parent.Parent
             ("member", null, sp4.Attribute(XName.Get "Name").Value + "." +
-                             spp.Attribute(XName.Get "Name").Value + tname)
+                             spp.Attribute(XName.Get "Name").Value + "." + tname)
 
-      let text2 = "[module: SuppressMessage("
+      let text2 = "[<assembly: SuppressMessage("
 
       let text2' = if text' |> isNull
                     then "[SuppressMessage("
@@ -540,7 +540,7 @@ _Target "FxCop" (fun _ ->
       let text3 = (if id |> isNull |> not
                    then ", MessageId=\"" + id.Value + "\""
                    else String.Empty)
-                  + ", Justification=\"\")]"
+                  + ", Justification=\"\")>]"
       let category = m.Attribute(XName.Get "Category").Value
       let checkId = m.Attribute(XName.Get "CheckId").Value
       let name = m.Attribute(XName.Get "TypeName").Value
