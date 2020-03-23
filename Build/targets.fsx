@@ -472,7 +472,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
   Directory.ensure "./_Reports"
 
   [ ("./Build/common-rules.xml",
-     [ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
+     [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/netcoreapp2.0/AltCover.NetCoreApp.dll"
        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/AltCover.Shadow.dll"
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
@@ -579,7 +579,7 @@ _Target "FxCop" (fun _ ->
     standardRules
   ]
 
-  [ ([ "_Binaries/altcover.netcoreapp/Debug+AnyCPU/net45/altcover.netcoreapp.exe"
+  [ ([ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net45/AltCover.NetCoreApp.exe"
        "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
       [],
       standardRules)
@@ -2374,7 +2374,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let apiNetcoreAppFiles where =
-    (!!"./_Binaries/altcover.netcoreapp/Release+AnyCPU/netcoreapp2.0/altcover.netcoreapp.*")
+    (!!"./_Binaries/AltCover.NetCoreApp/Release+AnyCPU/netcoreapp2.0/AltCover.NetCoreApp.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
