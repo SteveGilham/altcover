@@ -2378,7 +2378,7 @@ module AltCoverTests3 =
                                Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
-  ImportModule                       Prints out the PowerShell script to import the
+  ImportModule               Prints out the PowerShell script to import the
                                associated PowerShell module
 or
   version                    Prints out the AltCover build version
