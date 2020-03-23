@@ -215,7 +215,7 @@ Kovra Raporto: {0}
     <value>aŭ</value>
   </data>
   <data name="ImportModule" xml:space="preserve">
-    <value>  ImportModule                       Elprenas la PowerShell-skripton por importi la
+    <value>  ImportModule               Elprenas la PowerShell-skripton por importi la
                                asociita PowerShell-modulo</value>
   </data>
   <data name="opencover" xml:space="preserve">

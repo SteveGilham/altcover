@@ -219,7 +219,7 @@ Coverage Report: {0}
     <value>or</value>
   </data>
   <data name="ImportModule" xml:space="preserve">
-    <value>  ImportModule                       Prints out the PowerShell script to import the
+    <value>  ImportModule               Prints out the PowerShell script to import the
                                associated PowerShell module</value>
   </data>
   <data name="opencover" xml:space="preserve">
