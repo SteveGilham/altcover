@@ -51,7 +51,7 @@ type Api private () =
     let target =
       match toolType with
       | Framework _ -> "AltCover.exe"
-      | _ -> "altcover.netcoreapp.dll"
+      | _ -> "AltCover.NetCoreApp.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
           |> Seq.tryHead with
     | Some path -> path |> Path.GetFullPath
