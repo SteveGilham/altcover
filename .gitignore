@@ -70,3 +70,6 @@ ThirdParty/gendarme/
 Sample4/TestResults/
 Sample18/TestResults/
 *.user
+Altcover.Api.Tests/TestResults/
+*.xsc
+*.xss

@@ -12,6 +12,21 @@ open System.Xml.Xsl
 
 open Augment
 
+module XmlExtensions =
+  type System.Xml.Linq.XElement with
+    member self.SetAttribute(name: string, value : string) =
+      let attr = self.Attribute(XName.Get name)
+      if attr |> isNull
+      then self.Add(XAttribute(XName.Get name, value))
+      else attr.Value <- value
+    member self.SetAttribute(name: string, ns : string, value : string) =
+      self.Attribute(XName.Get (name, ns)).Value <- value
+    member self.GetAttribute(name: string) =
+      let attr = self.Attribute(XName.Get name)
+      if attr |> isNull
+      then String.Empty
+      else attr.Value
+
 [<RequireQualifiedAccess>]
 module XmlUtilities =
   [<SuppressMessage("Microsoft.Design", "CA1059",

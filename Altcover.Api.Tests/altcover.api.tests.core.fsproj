@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenCoverForPester.coverlet.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="FSApiTests.fs" />
@@ -42,6 +46,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
+    <ProjectReference Include="..\Sample18\sample18.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,9 +11,180 @@ open System.Xml.Linq
 open System.Xml.XPath
 
 open Mono.Cecil
+open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module CoverageFormats =
+  let internal CopyFillMethodPoint (mp : XElement seq) (sp : XElement seq) =
+    mp
+    |> Seq.iter (fun m ->
+         m.SetAttribute
+           ("type", "http://www.w3.org/2001/XMLSchema-instance", "SequencePoint")
+         |> ignore
+         sp
+         |> Seq.take 1
+         |> Seq.collect (fun p -> p.Attributes())
+         |> Seq.iter (fun a -> m.SetAttribute(a.Name.LocalName, a.Value)))
+
+  let VisitCount (nodes : XElement seq) =
+    nodes
+    |> Seq.filter (fun s ->
+         Int64.TryParse
+           (s.GetAttribute("vc"), NumberStyles.Integer, CultureInfo.InvariantCulture)
+         |> snd
+         <> 0L)
+    |> Seq.length
+
+  let internal PostProcess(document : XDocument) =
+    let scoreToString raw =
+      (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
+
+    let stringToScore (node : XElement) name =
+      node.GetAttribute(name)
+      |> Runner.InvariantParseDouble
+      |> snd
+
+    let percentCover visits points =
+      if points = 0
+      then "0"
+      else ((float (visits * 100)) / (float points)) |> scoreToString
+
+    let setSummary (x : XContainer) pointVisits branchVisits methodVisits classVisits
+        ptcover brcover minCrap maxCrap =
+      x.Descendants(XName.Get "Summary")
+      |> Seq.tryHead
+      |> Option.iter (fun s ->
+            let minc =
+              (if minCrap = Double.MaxValue then 0.0 else minCrap)
+              |> scoreToString
+
+            let maxc =
+              (if maxCrap = Double.MinValue then 0.0 else maxCrap)
+              |> scoreToString
+
+            s.SetAttribute("visitedSequencePoints", sprintf "%d" pointVisits)
+            s.SetAttribute("visitedBranchPoints", sprintf "%d" branchVisits)
+            s.SetAttribute("visitedMethods", sprintf "%d" methodVisits)
+            classVisits
+            |> Option.iter
+                (fun cvc -> s.SetAttribute("visitedClasses", sprintf "%d" cvc))
+            s.SetAttribute("branchCoverage", brcover)
+            s.SetAttribute("sequenceCoverage", ptcover)
+            s.SetAttribute("minCrapScore", minc)
+            s.SetAttribute("maxCrapScore", maxc))
+
+    let computeBranchExitCount (doc : XDocument) (sp : XElement seq) bp =
+      let tail = XElement(XName.Get "SequencePoint")
+      tail.SetAttribute
+        ("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
+      let nodes =
+        List.concat
+          [ sp
+            |> Seq.toList
+            [ tail ]
+            bp
+            |> Seq.toList ]
+
+      let interleave =
+        nodes
+        |> Seq.sortBy (fun x ->
+              x.GetAttribute("offset")
+              |> Int32.TryParse
+              |> snd)
+
+      interleave
+      |> Seq.fold (fun (bev, sq : XElement) x ->
+            match x.Name.LocalName with
+            | "SequencePoint" ->
+                sq.SetAttribute("bev", sprintf "%d" bev)
+                (0, x)
+            | _ ->
+                (bev + (if x.GetAttribute("vc") = "0" then 0 else 1), sq))
+            (0, nodes.[0])
+      |> ignore
+
+    let crapScore (method : XElement) =
+      let coverage =
+        let cover = stringToScore method "sequenceCoverage"
+        if cover > 0.0 then cover else stringToScore method "branchCoverage"
+
+      let complexity = stringToScore method "cyclomaticComplexity"
+
+      let raw =
+        (Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
+          + complexity)
+      let score = raw |> scoreToString
+      method.SetAttribute("crapScore", score)
+      raw
+
+    let updateMethod (vb, vs, vm, pt, br, minc, maxc) (method : XElement) =
+      let sp = method.Descendants(XName.Get "SequencePoint")
+      let bp = method.Descendants(XName.Get "BranchPoint")
+      let mp =
+        method.Descendants(XName.Get "MethodPoint")
+        |> Seq.toList
+      let count = sp.Count()
+      let rawCount = bp.Count()
+
+      // inconsistent name to shut Gendarme up
+      let numBranches = rawCount + Math.Sign(count + rawCount)
+      if count > 0 then
+        CopyFillMethodPoint mp sp
+      let pointVisits = VisitCount sp
+      let b0 = VisitCount bp
+      let branchVisits = b0 + Math.Sign b0
+      if pointVisits > 0 || b0 > 0 then
+        let FillMethod() =
+          let cover = percentCover pointVisits count
+          let bcover = percentCover branchVisits numBranches
+          method.SetAttribute("visited", "true")
+          method.SetAttribute("sequenceCoverage", cover)
+          method.SetAttribute("branchCoverage", bcover)
+          let raw = crapScore method
+          setSummary method pointVisits branchVisits 1 None cover bcover raw raw
+          computeBranchExitCount method.Document sp bp
+          (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br + numBranches,
+            Math.Min(minc, raw), Math.Max(maxc, raw))
+        FillMethod()
+      else
+        (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
+
+    let updateClass (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XElement) =
+      let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
+        ``class``.Descendants(XName.Get "Method")
+        |> Seq.fold updateMethod
+              (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+      let cover = percentCover cvs cpt
+      let bcover = percentCover cvb cbr
+
+      let cvc =
+        if cvm > 0 then 1 else 0
+      setSummary ``class`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+      (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
+        Math.Min(minc, minc0), Math.Max(maxc, maxc0))
+
+    let updateModule (vb, vs, vm, vc, pt, br, minc0, maxc0)
+                     (``module`` : XElement) =
+      let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
+        ``module``.Descendants(XName.Get "Class")
+        |> Seq.fold updateClass
+              (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+      let cover = percentCover cvs cpt
+      let bcover = percentCover cvb cbr
+      setSummary ``module`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+      (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
+        Math.Min(minc, minc0), Math.Max(maxc, maxc0))
+
+    let (vb, vs, vm, vc, pt, br, minc, maxc) =
+      document.Descendants(XName.Get "Module")
+      |> Seq.fold updateModule
+            (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+    let cover = percentCover vs pt
+    let bcover = percentCover vb br
+    setSummary document vs vb vm (Some vc) cover bcover minc maxc
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
@@ -241,6 +412,7 @@ module CoverageFormats =
   let FormatFromCoverlet (report:XDocument) (files:string array) =
     let X = OpenCover.X
     let rewrite = XDocument(report)
+
     // attributes in <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     rewrite.Descendants(X "CoverageSession")
@@ -263,9 +435,10 @@ module CoverageFormats =
     // TODO list
     // Fix offset, sc, ec in <SequencePoint vc="1" uspid="1" ordinal="0" offset="0" sl="47" sc="21" el="47" ec="26" bec="0" bev="0" fileid="1" />
 
-    // TODO - wants the tidy-up API https://github.com/SteveGilham/altcover/projects/8#card-28301506
-    // complete module level  <Summary numSequencePoints="23" visitedSequencePoints="10" numBranchPoints="21" visitedBranchPoints="7" sequenceCoverage="43.48" branchCoverage="33.33" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="11" minCrapScore="1" maxCrapScore="62.05" />
-    // compute bec and bev values
-    // compute crap score values
+    PostProcess rewrite
 
     rewrite
+
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCover.CoverageFormats+setSummary@54D.#scoreToString",
+  Justification="Compiler Generated")>]
+()

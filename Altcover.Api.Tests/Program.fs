@@ -12,7 +12,7 @@ module TestMain =
   let sync = System.Object()
 
   let regular = [
-          Tests.FSApiTests.IsOK, "FSApiTests.IsOK"
+          Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
         ]
 
   let specials =
