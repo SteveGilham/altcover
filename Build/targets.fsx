@@ -831,6 +831,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
+      |> Seq.filter (fun s -> s.Contains(".api.") |> not)
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
