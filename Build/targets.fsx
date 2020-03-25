@@ -817,7 +817,8 @@ _Target "UnitTestDotNet" (fun _ ->
 _Target "BuildForCoverlet"
   (fun _ ->
   !!(@"./*Tests/*.tests.core.fsproj")
-  |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
+  |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
+  |> Seq.filter (fun s -> s.Contains(".api.") |> not) // done via PoSh
   |> Seq.iter
        (DotNet.build
          (fun p ->
@@ -830,8 +831,8 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   try
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
-      |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
-      |> Seq.filter (fun s -> s.Contains(".api.") |> not)
+      |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
+      |> Seq.filter (fun s -> s.Contains(".api.") |> not) // done via PoSh
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
