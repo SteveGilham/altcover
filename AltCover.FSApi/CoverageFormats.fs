@@ -15,16 +15,13 @@ open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module CoverageFormats =
-  let internal CopyFillMethodPoint (mp : XElement seq) (sp : XElement seq) =
-    mp
-    |> Seq.iter (fun m ->
-         m.SetAttribute
-           ("type", "http://www.w3.org/2001/XMLSchema-instance", "SequencePoint")
-         |> ignore
-         sp
-         |> Seq.take 1
-         |> Seq.collect (fun p -> p.Attributes())
-         |> Seq.iter (fun a -> m.SetAttribute(a.Name.LocalName, a.Value)))
+  let internal CopyFillMethodPoint (m : XElement) (sp : XElement seq) =
+    m.Attribute(XName.Get ("type", "http://www.w3.org/2001/XMLSchema-instance")).Value
+       <- "SequencePoint"
+    sp
+    |> Seq.take 1
+    |> Seq.collect (fun p -> p.Attributes())
+    |> Seq.iter (fun a -> m.SetAttribute(a.Name.LocalName, a.Value))
 
   let VisitCount (nodes : XElement seq) =
     nodes
@@ -129,7 +126,7 @@ module CoverageFormats =
       // inconsistent name to shut Gendarme up
       let numBranches = rawCount + Math.Sign(count + rawCount)
       if count > 0 then
-        CopyFillMethodPoint mp sp
+        mp |> Seq.iter (fun m -> CopyFillMethodPoint m sp)
       let pointVisits = VisitCount sp
       let b0 = VisitCount bp
       let branchVisits = b0 + Math.Sign b0
@@ -439,6 +436,7 @@ module CoverageFormats =
 
     rewrite
 
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCover.CoverageFormats+setSummary@54D.#scoreToString",
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields",
+  Scope="member", Target="AltCover.CoverageFormats+setSummary@51D.#scoreToString",
   Justification="Compiler Generated")>]
 ()
