@@ -14,7 +14,7 @@ For Mono, .net framework and .net core, except as noted
 * `AltCover`, a command-line tool for recording code coverage (including dotnet and global tool versions)
 * MSBuild tasks to drive the tool, including `dotnet test` integration
 * An API for the above functionality, with Fake and Cake integration
-* A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
+* A PowerShell module for PowerShell 5.1 and PowerShell Core 6+ containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
 * A coverage visualizer tool 
   * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
   * For .net core : needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
