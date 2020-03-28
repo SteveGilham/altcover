@@ -209,6 +209,9 @@ let coverletTestOptions (o : DotNet.TestOptions) =
                                     Settings = Some "./Build/coverletArgs.runsettings"}
   |> withCLIArgs
 
+let coverletTestOptionsSample (o : DotNet.TestOptions) =
+  { coverletTestOptions o with Settings = Some "./Build/coverletArgs.sample.runsettings" }
+
 let misses = ref 0
 
 let uncovered (path:string) =
@@ -352,7 +355,7 @@ _Target "BuildRelease" (fun _ ->
   try
     [ "./altcover.recorder.core.sln"; "MCS.sln" ] // gac+net20; mono
     |> Seq.iter msbuildRelease
-    
+
     [ "./altcover.core.sln" ]
     |> Seq.iter dotnetBuildRelease
   with x ->
@@ -671,6 +674,7 @@ _Target "JustUnitTest" (fun _ ->
     |> Seq.filter
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll" &&
                    Path.GetFileName(f).Contains("Tests."))
+    |> Seq.filter (fun s -> s.Contains(".Api.") |> not) // done via PoSh
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -709,7 +713,8 @@ _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
     !!(@"./*Tests/*.tests.core.fsproj")
-  |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
+    |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
+    |> Seq.filter (fun s -> s.Contains(".api.") |> not) // done via PoSh
     |> Seq.iter
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
@@ -724,7 +729,8 @@ _Target "UnitTestDotNet" (fun _ ->
 _Target "BuildForCoverlet"
   (fun _ ->
   !!(@"./*Tests/*.tests.core.fsproj")
-  |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
+  |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
+  |> Seq.filter (fun s -> s.Contains(".api.") |> not) // done via PoSh
   |> Seq.iter
        (DotNet.build
          (fun p ->
@@ -737,7 +743,8 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   try
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
-      |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
+      |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
+      |> Seq.filter (fun s -> s.Contains(".api.") |> not) // done via PoSh
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
@@ -783,6 +790,8 @@ _Target "UnitTestWithOpenCover"
     !!(@"_Binaries/*Tests/Debug+AnyCPU/net4*/*Tests.dll")
     |> Seq.filter
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+    |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
+    |> Seq.filter (fun s -> s.Contains(".Api.") |> not) // done via PoSh
   let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net47/*Recorder.Tests.dll")
 
   let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
@@ -2977,6 +2986,77 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   |> AltCover.run
   Actions.ValidateFSharpTypesCoverage x)
 
+_Target "OpenCoverForPester" (fun _ ->
+  Directory.ensure "./_Reports"
+  let reportDir = Path.getFullName "./_Reports/OpenCoverForPester"
+  Directory.ensure reportDir
+  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let x = Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
+  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
+  let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
+
+  Shell.cleanDir o
+
+  // Instrument the code
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = x
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           AssemblyFilter = [ "xunit" ; "FSharp" ]
+           InPlace = false
+           OpenCover = true
+           Save = false })
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = "AltCover.dll"
+      ToolType = dotnet_altcover
+      WorkingDirectory = unpack }
+  |> AltCover.run
+
+  printfn "Execute the instrumented tests"
+  let sample = Path.getFullName "./Sample18/sample18.core.fsproj"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") sample
+
+  // Run
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = o
+          CommandLine = args }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = runner
+      ToolType = dotnet_altcover
+      WorkingDirectory = o }
+  |> AltCover.run
+
+  // now do it for coverlet
+  let here = Path.GetDirectoryName sample
+  let tr = here @@ "TestResults"
+  Directory.ensure tr
+  Directory.ensure tr
+  Shell.cleanDir tr
+  try
+    DotNet.build
+         (fun p ->
+         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
+         |> withMSBuildParams) sample
+    DotNet.test coverletTestOptionsSample sample
+  with x -> eprintf "%A" x
+  let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
+  let target = reportDir @@ "OpenCoverForPester.coverlet.xml"
+  Shell.copyFile target covxml
+  let binary = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.dll"
+  let binaryTarget = reportDir @@ "Sample18.dll"
+  Shell.copyFile binaryTarget binary
+  let binary2 = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.pdb"
+  let binary2Target = reportDir @@ "Sample18.pdb"
+  Shell.copyFile binary2Target binary2)
+
 _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
@@ -4201,9 +4281,17 @@ Target.activateFinal "ResetConsoleColours"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
 "Unpack"
+==> "OpenCoverForPester"
+=?> ("WindowsPowerShell", Environment.isWindows)
+
+"Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
 ==> "Pester"
 ==> "Deployment"
+
+"Unpack"
+==> "OpenCoverForPester"
+==> "Pester"
 
 "Unpack"
 ==> "SimpleReleaseTest"

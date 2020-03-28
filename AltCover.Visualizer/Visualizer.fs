@@ -1117,7 +1117,7 @@ module private Gui =
                                                     Justification =
                                                       "IDisposables are added to other widgets")>]
   let private addLabelWidget g (button : ToolButton, resource) =
-    let keytext = (resource |> Format.GetResourceString).Split('\n')
+    let keytext = (resource |> Format.GetResourceString).Split('\u2028') // '\u2028'
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))

@@ -16,7 +16,7 @@
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+ --keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
@@ -39,6 +39,7 @@
     <Compile Include="CoverageFormats.fs" />
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
+    <EmbeddedResource Include="xsd\OpenCoverStrict.xsd" />
     <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
     <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
     <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
@@ -49,6 +50,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
   </ItemGroup>
 
   <ItemGroup>

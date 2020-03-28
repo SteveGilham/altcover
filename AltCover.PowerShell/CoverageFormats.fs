@@ -204,3 +204,54 @@ type ConvertFromNCoverCommand() =
       self.WriteObject converted
     finally
       Directory.SetCurrentDirectory here
+
+[<Cmdlet(VerbsCommon.Format, "FromCoverletOpenCover")>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
+type FormatFromCoverletOpenCoverCommand() =
+  inherit PSCmdlet()
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+
+  member val Report : XDocument = null with get, set
+
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile : string = null with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val Assembly : string array = [||] with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile : string = String.Empty with get, set
+
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+
+      if self.ParameterSetName = "FromFile" then
+        self.Report <- XDocument.Load self.InputFile
+
+      let rewrite = AltCover.CoverageFormats.FormatFromCoverlet self.Report self.Assembly
+
+      if self.OutputFile
+         |> String.IsNullOrWhiteSpace
+         |> not
+      then rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
+    finally
+      Directory.SetCurrentDirectory here
