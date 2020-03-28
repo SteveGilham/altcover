@@ -45,6 +45,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
     <ProjectReference Include="..\Sample18\sample18.core.fsproj" />
   </ItemGroup>
