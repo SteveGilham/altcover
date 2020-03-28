@@ -53,6 +53,32 @@ module DU =
     test <@ returnBar "s" = Bar "s" @>
     test <@ (Foo 10).as_bar() = Bar "10" @>
 
+  let LineSpanning1 a =
+    if a > 0
+    then "positive"
+    else "non-positive"
+
+  let LineSpanning2 a =
+    a
+    |> Seq.mapi (fun i j -> if j > 0
+                            then i
+                            else 0)
+    |> Seq.filter (fun i -> i % 2 = 0)
+    |> Seq.sum
+
+  let LineSpanning3 a =
+    "intro " +
+    a.ToString() +
+    " outro"
+
+  let Multiples (a:float) (b:float) (c:float) =
+    let compute a' b' discr' =
+      ((discr' - b')/(2.0 * a'), (-1.0 * (discr' + b'))/(2.0 * a'))
+    let bs = printfn "%A" b;b * b
+    let spread = printfn "%A %A" a c; 4.0 * a * c
+    let discr = if bs < spread then failwith "no real roots" else Math.Sqrt (bs - spread)
+    compute a b discr
+
 #if NETCOREAPP2_1
 module Program =
   [<EntryPoint>]

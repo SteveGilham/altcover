@@ -672,19 +672,35 @@ Describe "Compress-Branching" {
 
 Describe "Format-FromCoverletOpenCover" {
   It "Outputs a document from a file" {
+    $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
     $assemblies = @()
-    $assemblies += "./_Reports/OpenCoverForPester/Sample18.dll"
+    $assemblies += $assembly
+    $hash = Get-FileHash -Algorithm SHA1 $assembly
+    $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
+
+
     $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType "System.Xml.Linq.XDocument"
 
     $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
-    $h1 = $doc.CoverageSession.Modules.Module.hash
-#    [System.Console]::WriteLine($h1)
+    $hactual = $doc.CoverageSession.Modules.Module.hash
+    $hactual | Should -BeExactly $hexpected
 
-    $hash = Get-FileHash -Algorithm SHA1 "./_Reports/OpenCoverForPester/Sample18.dll"
-    $h2 = (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
-#    [System.Console]::WriteLine($h2)
+    $expected = [xml](Get-Content "./Tests/OpenCoverForPester.coverlet.xml")
+    $expected.CoverageSession.Modules.Module.hash = $hactual
+    $expected.CoverageSession.Modules.Module.ModulePath = $assembly
 
-    $h1 | Should -BeExactly $h2
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+
+    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+
+
   }
 }
