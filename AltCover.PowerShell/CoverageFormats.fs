@@ -200,3 +200,49 @@ type ConvertFromNCoverCommand(outputFile : String) =
       self.WriteObject converted
     finally
       Directory.SetCurrentDirectory here
+
+[<Cmdlet(VerbsCommon.Format, "FromCoverletOpenCover")>]
+[<OutputType(typeof<XDocument>)>]
+type FormatFromCoverletOpenCover(outputFile : String, xdocument : XDocument) =
+  inherit PSCmdlet()
+  new() = FormatFromCoverletOpenCover(String.Empty, null)
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val Report : XDocument = xdocument with get, set
+
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile : string = null with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Assembly : string array = [||] with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile : string = outputFile with get, set
+
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+
+      if self.ParameterSetName = "FromFile" then
+        self.Report <- XDocument.Load self.InputFile
+
+      let rewrite = AltCover.CoverageFormats.FormatFromCoverlet self.Report self.Assembly
+
+      if self.OutputFile
+         |> String.IsNullOrWhiteSpace
+         |> not
+      then rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
+    finally
+      Directory.SetCurrentDirectory here
