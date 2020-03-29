@@ -47,7 +47,6 @@
     <EmbeddedResource Include="..\AltCover.Visualizer\XMLFile_16x.png" Link="XMLFile_16x.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\class_16xLG.png" Link="class_16xLG.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\logo.png" Link="logo.png" />
-    <EmbeddedResource Include="..\AltCover.Visualizer\method_16xLG.png" Link="method_16xLG.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\VIcon.ico" Link="VIcon.ico" />
     <None Include="nuget.config" />
     <EmbeddedResource Include="Exit_16x.png" />

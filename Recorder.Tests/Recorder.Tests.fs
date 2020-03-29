@@ -12,6 +12,8 @@ namespace Tests.Recorder.Unknown
 #endif
 #endif
 
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
+
 open System
 open System.Collections.Generic
 open System.Diagnostics
@@ -59,9 +61,9 @@ module AltCoverTests =
   [<Test>]
   let DefaultAccessorsBehaveAsExpected() =
     let v1 = DateTime.UtcNow.Ticks
-    let probe = Instance.Clock()
+    let probe = Instance.I.clock()
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True( Instance.Granularity() = 0L )
+    Assert.True( Instance.I.granularity() = 0L )
     Assert.True( probe >= v1 )
     Assert.True( probe <= v2 )
 
@@ -91,19 +93,19 @@ module AltCoverTests =
   let RealIdShouldIncrementCount() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      let save = Instance.trace
+      let save = Instance.I.trace
       try
         Adapter.VisitsClear()
-        Instance.trace <- Adapter.MakeNullTrace null
+        Instance.I.trace <- Adapter.MakeNullTrace null
 
         let key = " "
-        Instance.Recording <- false
-        Adapter.Visit("key", 17)
-        Instance.Recording <- true
+        Instance.I.recording <- false
+        Instance.Visit("key", 17)
+        Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Adapter.Visit(key, 23)
+        Instance.Visit(key, 23)
         Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-        Adapter.Visit(key, 23)
+        Instance.Visit(key, 23)
         Assert.True( Adapter.VisitsSeq()
                      |> Seq.length = 1 )
         Assert.True( Adapter.VisitsEntrySeq key
@@ -111,21 +113,21 @@ module AltCoverTests =
         Assert.True( Adapter.VisitCount(key, 23) = 2L )
       finally
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Recording <- true
+        Instance.I.recording <- true
         Adapter.VisitsClear()
-        Instance.trace <- save)
+        Instance.I.trace <- save)
     GetMyMethodName "<="
 
   [<Test>]
   let JunkUspidGivesNegativeIndex() =
     let key = " "
-    let index = Adapter.FindIndexFromUspid(0, key)
+    let index = Counter.I.findIndexFromUspid(0, key)
     Assert.True( index < 0 )
 
   [<Test>]
   let PayloadGeneratedIsAsExpected() =
     try
-      Assert.True( Instance.CallerId() = 0 )
+      Assert.True( Instance.I.callerId() = 0 )
       Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
       Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
       Instance.Push 4321
@@ -158,32 +160,32 @@ module AltCoverTests =
         Assert.True( probe <= v2 )
         Assert.True( probe >= (1000L * (v1 / 1000L)) )
     | _ -> Assert.True( false )
-    Assert.True( Instance.CallerId() = 0 )
+    Assert.True( Instance.I.callerId() = 0 )
     Instance.Pop()
-    Assert.True( Instance.CallerId() = 0 )
+    Assert.True( Instance.I.callerId() = 0 )
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
-      let save = Instance.trace
+    lock Instance.I.visits (fun () ->
+      let save = Instance.I.trace
       Adapter.Reset()
       try
-        Instance.Visits.Clear()
-        Instance.trace <- Adapter.MakeNullTrace null
+        Instance.I.visits.Clear()
+        Instance.I.trace <- Adapter.MakeNullTrace null
         let key = " "
-        Adapter.VisitSelection((Adapter.Null()), key, 23)
+        Instance.I.visitSelection((Adapter.Null()), key, 23)
         Assert.That
-          (Instance.Visits.Count, Is.EqualTo 1,
+          (Instance.I.visits.Count, Is.EqualTo 1,
            "A visit that should have happened, didn't")
         Assert.That
-          (Instance.Visits.[key].Count, Is.EqualTo 1,
-           "keys = " + String.Join("; ", Instance.Visits.Keys |> Seq.toArray))
-        Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 1)
-        Assert.That(Instance.Visits.[key].[23].Tracks, Is.Empty)
+          (Instance.I.visits.[key].Count, Is.EqualTo 1,
+           "keys = " + String.Join("; ", Instance.I.visits.Keys |> Seq.toArray))
+        Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
+        Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.Clear()
-        Instance.trace <- save)
+        Instance.I.visits.Clear()
+        Instance.I.trace <- save)
     GetMyMethodName "<="
 
   [<Test>]
@@ -191,7 +193,7 @@ module AltCoverTests =
     let path = Instance.ReportFile |> Path.GetFullPath
     let where = path |> Path.GetDirectoryName
     let before = Directory.GetFiles(where, "*.exn")
-    Adapter.LogException("a", "b", "c", "ex")
+    Instance.I.logException("a", "b", "c", "ex")
     let after = Directory.GetFiles(where, "*.exn")
     Assert.That(after.Length, Is.GreaterThan before.Length)
     let all = HashSet<String>(after)
@@ -251,15 +253,15 @@ module AltCoverTests =
   [<Test>]
   let NullRefShouldBeHandled() =
     GetMyMethodName "=>"
-    let handle = Instance.Visits
+    let handle = Instance.I.visits
     lock handle (fun () ->
       try
-        Instance.Visits <- null
+        Instance.I.visits <- null
         let key = " "
         let path = Instance.ReportFile |> Path.GetFullPath
         let where = path |> Path.GetDirectoryName
         let before = Directory.GetFiles(where, "*.exn")
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl(key, 23, (Adapter.Null()))
         let after = Directory.GetFiles(where, "*.exn")
         Assert.That(after.Length, Is.GreaterThan before.Length)
         let all = HashSet<String>(after)
@@ -280,36 +282,36 @@ module AltCoverTests =
         let third = Directory.GetFiles(where, "*.exn")
         Assert.That(third.Length, Is.EqualTo before.Length)
       finally
-        Instance.Visits <- handle
-        Instance.Visits.Clear())
+        Instance.I.visits <- handle
+        Instance.I.visits.Clear())
     GetMyMethodName "<="
 #endif
 
   [<Test>]
   let DistinctIdShouldBeDistinct() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       try
-        Instance.Visits.Clear()
+        Instance.I.visits.Clear()
         let key = " "
-        Adapter.VisitImpl(key, 23, (Adapter.Null()))
-        Adapter.VisitImpl("key", 42, (Adapter.Null()))
-        Assert.That(Instance.Visits.Count, Is.EqualTo 2)
+        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl("key", 42, (Adapter.Null()))
+        Assert.That(Instance.I.visits.Count, Is.EqualTo 2)
       finally
-        Instance.Visits.Clear())
+        Instance.I.visits.Clear())
     GetMyMethodName "<="
 
   [<Test>]
   let DistinctLineShouldBeDistinct() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       try
-        Instance.Visits.Clear()
+        Instance.I.visits.Clear()
         let key = " "
-        Adapter.VisitImpl(key, 23, (Adapter.Null()))
-        Adapter.VisitImpl(key, 42, (Adapter.Null()))
-        Assert.That(Instance.Visits.Count, Is.EqualTo 1)
-        Assert.That(Instance.Visits.[key].Count, Is.EqualTo 2)
+        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl(key, 42, (Adapter.Null()))
+        Assert.That(Instance.I.visits.Count, Is.EqualTo 1)
+        Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
       finally
         Adapter.VisitsClear())
     GetMyMethodName "<="
@@ -317,45 +319,45 @@ module AltCoverTests =
   [<Test>]
   let RepeatVisitsShouldIncrementCount() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Adapter.Reset()
       try
-        Instance.Visits.Clear()
+        Instance.I.visits.Clear()
         let key = " "
-        Adapter.VisitImpl(key, 23, (Adapter.Null()))
-        Adapter.VisitImpl(key, 23, (Adapter.Null()))
-        Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 2)
-        Assert.That(Instance.Visits.[key].[23].Tracks, Is.Empty)
+        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
+        Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.Clear())
+        Instance.I.visits.Clear())
     GetMyMethodName "<="
 
   [<Test>]
   let RepeatVisitsShouldIncrementTotal() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Adapter.Reset()
       try
-        Instance.Visits.Clear()
+        Instance.I.visits.Clear()
         let key = " "
         let payload = Adapter.Time DateTime.UtcNow.Ticks
-        Adapter.VisitImpl(key, 23, (Adapter.Null()))
-        Adapter.VisitImpl(key, 23, payload)
-        Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 1)
-        Assert.That(Instance.Visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
+        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl(key, 23, payload)
+        Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
+        Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
       finally
-        Instance.Visits.Clear())
+        Instance.I.visits.Clear())
     GetMyMethodName "<="
 
   //[<Test>]
   //let TabledVisitsShouldIncrementCount() =
   //  GetMyMethodName "=>"
-  //  lock Instance.Visits (fun () ->
+  //  lock Instance.I.visits (fun () ->
   //    Adapter.Reset()
   //    try
-  //      Instance.Visits.Clear()
+  //      Instance.I.visits.Clear()
   //      let key = " "
-  //      Instance.VisitImpl(key, 23, (Adapter.Null()))
+  //      Instance.I.visitImpl(key, 23, (Adapter.Null()))
   //      let table = Dictionary<string, Dictionary<int, PointVisit>>()
   //      table.Add(key, Dictionary<int, PointVisit>())
   //      let payloads =
@@ -365,18 +367,18 @@ module AltCoverTests =
 
   //      let pv = PointVisitInit 42L payloads
   //      table.[key].Add(23, pv)
-  //      let n = Counter.AddTable(Instance.Visits, table)
+  //      let n = Counter.AddTable(Instance.I.visits, table)
   //      Assert.That(n, Is.EqualTo 45)
-  //      Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 43)
-  //      Assert.That(Instance.Visits.[key].[23].Tracks, Is.EquivalentTo payloads)
+  //      Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 43)
+  //      Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo payloads)
   //    finally
-  //      Instance.Visits.Clear())
+  //      Instance.I.visits.Clear())
   //  GetMyMethodName "<="
 
   [<Test>]
   let OldDocumentStartIsNotUpdated() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       let epoch = DateTime.UtcNow
       Counter.startTime <- epoch
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -402,7 +404,7 @@ module AltCoverTests =
   [<Test>]
   let NewDocumentStartIsMadeEarlier() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       let epoch = DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
       Counter.startTime <- epoch
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -428,7 +430,7 @@ module AltCoverTests =
   [<Test>]
   let NewDocumentMeasureIsNotMadeEarlier() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       let epoch = DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
       Counter.measureTime <- epoch
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -454,7 +456,7 @@ module AltCoverTests =
   [<Test>]
   let OldDocumentMeasureIsUpdated() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       let epoch = DateTime.UtcNow
       Counter.measureTime <- epoch
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -480,7 +482,7 @@ module AltCoverTests =
   [<Test>]
   let UnknownModuleMakesNoChange() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Counter.measureTime <-
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -510,7 +512,7 @@ module AltCoverTests =
   [<Test>]
   let KnownModuleWithNothingMakesNoChange() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Counter.measureTime <-
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -540,7 +542,7 @@ module AltCoverTests =
   [<Test>]
   let KnownModuleWithNothingInRangeMakesNoChange() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Counter.measureTime <-
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -573,7 +575,7 @@ module AltCoverTests =
   [<Test>]
   let KnownModuleWithPayloadMakesExpectedChange() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Counter.measureTime <-
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -601,7 +603,7 @@ module AltCoverTests =
   [<Test>]
   let KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
     GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
+    lock Instance.I.visits (fun () ->
       Counter.measureTime <-
         DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
@@ -616,7 +618,7 @@ module AltCoverTests =
       |> Seq.iter (fun i -> payload.[10 - i] <- PointVisitInit (int64 (i + 1)) [])
       [ 11 .. 12 ]
       |> Seq.iter (fun i ->
-           payload.[i ||| Counter.BranchFlag] <- PointVisitInit (int64 (i - 10)) [])
+           payload.[i ||| Counter.branchFlag] <- PointVisitInit (int64 (i - 10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
       Adapter.UpdateReport(item, ReportFormat.OpenCover, worker, worker) |> ignore
@@ -643,7 +645,7 @@ module AltCoverTests =
         Adapter.VisitsClear()
         use stdout = new StringWriter()
         Console.SetOut stdout
-        Adapter.FlushAll()
+        Instance.FlushFinish()
         Assert.That(stdout.ToString(), Is.Empty)
       finally
         Adapter.VisitsClear()
@@ -658,12 +660,12 @@ module AltCoverTests =
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
-        let save = Instance.trace
+        let save = Instance.I.trace
         use s = new MemoryStream()
         let s1 = new Compression.DeflateStream(s, CompressionMode.Compress)
-        Instance.trace <- Adapter.MakeStreamTrace s1
+        Instance.I.trace <- Adapter.MakeStreamTrace s1
         try
-          Instance.IsRunner <- true
+          Instance.I.isRunner <- true
           Adapter.VisitsClear()
           use stdout = new StringWriter()
           Console.SetOut stdout
@@ -696,16 +698,16 @@ module AltCoverTests =
              Is.EquivalentTo
                [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
         finally
-          Instance.trace <- save
+          Instance.I.trace <- save
           if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
           Adapter.VisitsClear()
-          Instance.IsRunner <- false
+          Instance.I.isRunner <- false
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           try
             Directory.Delete(unique)
           with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
   let ResumeLeavesExpectedTraces() =
@@ -716,7 +718,7 @@ module AltCoverTests =
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
-        let save = Instance.trace
+        let save = Instance.I.trace
         let tag = unique + ".xml.acv"
 
         do use stream = File.Create tag
@@ -724,7 +726,7 @@ module AltCoverTests =
 
         try
           Adapter.Reset()
-          Instance.trace <- Tracer.Create(tag)
+          Instance.I.trace <- Tracer.Create(tag)
 
           use stdout = new StringWriter()
           Console.SetOut stdout
@@ -746,7 +748,7 @@ module AltCoverTests =
           Adapter.DoResume().Invoke(null, null)
           Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
           Assert.That
-            (Object.ReferenceEquals(Instance.trace, save), Is.False,
+            (Object.ReferenceEquals(Instance.I.trace, save), Is.False,
              "trace should be replaced")
           let recorded = stdout.ToString().Trim()
           Assert.That(recorded, Is.EqualTo "Resuming...", recorded)
@@ -761,7 +763,7 @@ module AltCoverTests =
                [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
         finally
           Adapter.Reset()
-          Instance.trace <- save
+          Instance.I.trace <- save
           if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
@@ -770,20 +772,20 @@ module AltCoverTests =
           try
             Directory.Delete(unique)
           with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
   let FlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      Instance.IsRunner <- false
+      Instance.I.isRunner <- false
       try
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
-        let save = Instance.trace
-        Instance.trace <- Adapter.MakeNullTrace null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.MakeNullTrace null
         try
           Adapter.VisitsClear()
           use stdout = new StringWriter()
@@ -820,7 +822,7 @@ module AltCoverTests =
              |> Seq.map (fun x -> x.GetAttribute("visitcount")),
              Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
         finally
-          Instance.trace <- save
+          Instance.I.trace <- save
           if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
@@ -828,7 +830,7 @@ module AltCoverTests =
           try
             Directory.Delete(unique)
           with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
   [<Test>]
@@ -840,10 +842,10 @@ module AltCoverTests =
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
-        let save = Instance.trace
-        Instance.trace <- Adapter.MakeNullTrace null
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.MakeNullTrace null
 
-        Instance.Supervision <- true
+        Instance.supervision <- true
         try
           Adapter.VisitsClear()
           use stdout = new StringWriter()
@@ -878,8 +880,8 @@ module AltCoverTests =
              Is.EquivalentTo
                [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
         finally
-          Instance.trace <- save
-          Instance.Supervision <- false
+          Instance.I.trace <- save
+          Instance.supervision <- false
           if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
@@ -887,7 +889,7 @@ module AltCoverTests =
           try
             Directory.Delete(unique)
           with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
   [<Test>]

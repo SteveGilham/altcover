@@ -22,13 +22,13 @@ module Xhtml =
       if format = AltCover.Base.ReportFormat.NCover then
         navigable
       else
-        let modify = XmlUtilities.LoadTransform "OpenCoverToNCoverEx"
+        let modify = XmlUtilities.loadTransform "OpenCoverToNCoverEx"
         let temp = XmlDocument()
         do use feed = temp.CreateNavigator().AppendChild()
            modify.Transform(navigable, feed)
         temp :> IXPathNavigable
 
-    let transform = XmlUtilities.LoadTransform "NCoverToBarChart"
+    let transform = XmlUtilities.loadTransform "NCoverToBarChart"
     let rewrite = XmlDocument()
     do use output = rewrite.CreateNavigator().AppendChild()
        transform.Transform(intermediate, output)
@@ -44,5 +44,5 @@ module Xhtml =
 
     let doctype = rewrite.CreateDocumentType("html", null, null, null)
     rewrite.PrependChild(doctype) |> ignore
-    XmlUtilities.PrependDeclaration rewrite
+    XmlUtilities.prependDeclaration rewrite
     rewrite

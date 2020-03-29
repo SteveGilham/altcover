@@ -9,14 +9,13 @@ open System.Xml.Linq
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
-[<OutputType(typeof<XmlDocument>)>]
-type ConvertToXmlDocumentCommand(xdocument : XDocument) =
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+type ConvertToXmlDocumentCommand() =
   inherit PSCmdlet()
-  new() = ConvertToXmlDocumentCommand(null)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = xdocument with get, set
+  member val XDocument : XDocument = null with get, set
 
   override self.ProcessRecord() =
     self.XDocument
@@ -24,15 +23,15 @@ type ConvertToXmlDocumentCommand(xdocument : XDocument) =
     |> self.WriteObject
 
 [<Cmdlet(VerbsData.ConvertTo, "XDocument")>]
-[<OutputType(typeof<XDocument>)>]
-type ConvertToXDocumentCommand(xmldocument : XmlDocument) =
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
+type ConvertToXDocumentCommand() =
   inherit PSCmdlet()
-
-  new() = ConvertToXDocumentCommand(null)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument : XmlDocument = xmldocument with get, set
+  [<SuppressMessage("Microsoft.Design", "CA1059",
+                    Justification = "returns a specific concrete type")>]
+  member val XmlDocument : XmlDocument = null with get, set
 
   override self.ProcessRecord() =
     self.XmlDocument
@@ -40,14 +39,16 @@ type ConvertToXDocumentCommand(xmldocument : XmlDocument) =
     |> self.WriteObject
 
 [<Cmdlet(VerbsData.ConvertTo, "Lcov")>]
-[<OutputType("System.Void")>]
-[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Lcov is OK")>]
-type ConvertToLcovCommand(outputFile : String) =
+[<OutputType("System.Void"); AutoSerializable(false)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Lcov is a name")>]
+[<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Lcov is a name")>]
+type ConvertToLcovCommand() =
   inherit PSCmdlet()
-  new() = ConvertToLcovCommand(String.Empty)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Design", "CA1059",
+                    Justification = "returns a specific concrete type")>]
   member val XmlDocument : XmlDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
@@ -58,7 +59,7 @@ type ConvertToLcovCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = outputFile with get, set
+  member val OutputFile : string = String.Empty with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
@@ -74,14 +75,16 @@ type ConvertToLcovCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "Cobertura")>]
-[<OutputType(typeof<XDocument>)>]
-[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
-type ConvertToCoberturaCommand(outputFile : String) =
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is a name")>]
+[<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Cobertura is a name")>]
+type ConvertToCoberturaCommand() =
   inherit PSCmdlet()
-  new() = ConvertToCoberturaCommand(String.Empty)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Design", "CA1059",
+                    Justification = "returns a specific concrete type")>]
   member val XmlDocument : XmlDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
@@ -92,7 +95,7 @@ type ConvertToCoberturaCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = outputFile with get, set
+  member val OutputFile : string = String.Empty with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
@@ -115,11 +118,9 @@ type ConvertToCoberturaCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "NCover")>]
-[<OutputType(typeof<XmlDocument>)>]
-[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
-type ConvertToNCoverCommand(outputFile : String) =
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+type ConvertToNCoverCommand() =
   inherit PSCmdlet()
-  new() = ConvertToNCoverCommand(String.Empty)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -133,7 +134,7 @@ type ConvertToNCoverCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = outputFile with get, set
+  member val OutputFile : string = String.Empty with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
@@ -155,11 +156,9 @@ type ConvertToNCoverCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
-[<OutputType(typeof<XmlDocument>)>]
-[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
-type ConvertFromNCoverCommand(outputFile : String) =
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+type ConvertFromNCoverCommand() =
   inherit PSCmdlet()
-  new() = ConvertFromNCoverCommand(String.Empty)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -173,13 +172,18 @@ type ConvertFromNCoverCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val Assembly : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = outputFile with get, set
+  member val OutputFile : string = String.Empty with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
@@ -198,5 +202,56 @@ type ConvertFromNCoverCommand(outputFile : String) =
       then converted.Save(self.OutputFile)
 
       self.WriteObject converted
+    finally
+      Directory.SetCurrentDirectory here
+
+[<Cmdlet(VerbsCommon.Format, "FromCoverletOpenCover")>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
+type FormatFromCoverletOpenCoverCommand() =
+  inherit PSCmdlet()
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+
+  member val Report : XDocument = null with get, set
+
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile : string = null with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val Assembly : string array = [||] with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile : string = String.Empty with get, set
+
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+
+      if self.ParameterSetName = "FromFile" then
+        self.Report <- XDocument.Load self.InputFile
+
+      let rewrite = AltCover.CoverageFormats.FormatFromCoverlet self.Report self.Assembly
+
+      if self.OutputFile
+         |> String.IsNullOrWhiteSpace
+         |> not
+      then rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here

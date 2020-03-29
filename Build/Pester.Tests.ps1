@@ -62,18 +62,12 @@ Describe "Invoke-Altcover" {
     It "Shows WhatIf" {
         $m = [AltCover.Commands.ShowHidden]::Reveal
         Start-Transcript -Path "./_Packaging/WhatIf.txt"
-        Invoke-AltCover -WhatIf -ShowStatic "junk"
         Invoke-AltCover -WhatIf -ShowStatic "mark"
-        Invoke-AltCover -WhatIf -ShowStatic "++"
-        Invoke-AltCover -WhatIf -ShowStatic "+"
         Invoke-AltCover -WhatIf -ShowStatic $m
         Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
-                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
+                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
 
@@ -604,7 +598,7 @@ Describe "ConvertFrom-NCover" {
 Describe "Compress-Branching" {
   It "Removes interior branches" {
     $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -622,7 +616,7 @@ Describe "Compress-Branching" {
   }
   It "Unifies equivalent branches" {
     $xml = Compress-Branching -SameSpan -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+  	$xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -640,7 +634,7 @@ Describe "Compress-Branching" {
   }
   It "DoesBoth" {
     $xml = [xml](Get-Content  "./Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -667,5 +661,40 @@ Describe "Compress-Branching" {
 	}
 
 	$fail | Should -BeFalse
+  }
+}
+
+Describe "Format-FromCoverletOpenCover" {
+  It "Outputs a document from a file" {
+    $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
+    $assemblies = @()
+    $assemblies += $assembly
+    $hash = Get-FileHash -Algorithm SHA1 $assembly
+    $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
+
+
+    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+
+    $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
+    $hactual = $doc.CoverageSession.Modules.Module.hash
+    $hactual | Should -BeExactly $hexpected
+
+    $expected = [xml](Get-Content "./Tests/OpenCoverForPester.coverlet.xml")
+    $expected.CoverageSession.Modules.Module.hash = $hactual
+    $expected.CoverageSession.Modules.Module.ModulePath = $assembly
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+
+    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+
+
   }
 }

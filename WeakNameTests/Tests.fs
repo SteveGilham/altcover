@@ -36,7 +36,7 @@ type AltCoverTests() =
           ((fun (m : MethodDefinition) ->
             (m.FullName,
              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-               m, Gendarme.CyclomaticComplexity m))
+               m, Gendarme.cyclomaticComplexity m))
            >> (fun (n, e, r) ->
            if r <> e then Some(n, e, r) else None))
            (def.MainModule.Types
@@ -68,7 +68,7 @@ type AltCoverTests() =
           ((fun (m : MethodDefinition) ->
             (m.FullName,
              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-               m, Gendarme.CyclomaticComplexity m))
+               m, Gendarme.cyclomaticComplexity m))
            >> (fun (n, e, r) ->
            if r <> e then Some(n, e, r) else None))
            (def.MainModule.Types
@@ -108,7 +108,7 @@ type AltCoverTests() =
           ((fun (m : MethodDefinition) ->
             (m.FullName,
              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-               m, Gendarme.CyclomaticComplexity m))
+               m, Gendarme.cyclomaticComplexity m))
            >> (fun (n, e, r) ->
            if r <> e then Some(n, e, r) else None))
            (def.MainModule.Types
@@ -132,15 +132,14 @@ type AltCoverTests() =
       test <@ (23).IsNotNull @>
 
       let output =
-        [ r; l ]
-        |> List.map (fun e ->
-             match e with
-             | Right b -> b.ToString().ToUpperInvariant()
-             | Left i ->
-                 String
-                   (i.ToString()
-                    |> Seq.rev
-                    |> Seq.toArray))
-        |> Split
+        ([ r; l ]
+         |> List.map (fun e ->
+              match e with
+              | Right b -> b.ToString().ToUpperInvariant()
+              | Left i ->
+                  String
+                    (i.ToString()
+                     |> Seq.rev
+                     |> Seq.toArray))).Split
       test <@ output = ("TRUE", [ "32" ]) @>
   end

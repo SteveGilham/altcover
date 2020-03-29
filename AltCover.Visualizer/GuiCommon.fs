@@ -7,7 +7,7 @@ open System.Net
 
 module internal GuiCommon =
   // Binds class name and XML
-  [<NoComparison>]
+  [<NoComparison; AutoSerializable(false)>]
   type internal MethodKey =
     { m : XPathNavigator
       spacename : string
@@ -28,7 +28,7 @@ module internal GuiCommon =
     | Event = -2
 
   // -------------------------- Method Name Handling ---------------------------
-  let DisplayName(name : string) =
+  let displayName(name : string) =
     let offset =
       match name.LastIndexOf("::", StringComparison.Ordinal) with
       | -1 -> 0
@@ -36,7 +36,7 @@ module internal GuiCommon =
 
     name.Substring(offset).Split('(') |> Seq.head
 
-  let HandleSpecialName(name : string) =
+  let handleSpecialName(name : string) =
     if name.StartsWith("get_", StringComparison.Ordinal)
        || name.StartsWith("set_", StringComparison.Ordinal) then
       (name.Substring(4), MethodType.Property)
@@ -48,7 +48,7 @@ module internal GuiCommon =
       (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
-  [<NoComparison>]
+  [<NoComparison; AutoSerializable(false)>]
   type internal Source =
     | File of FileInfo
     | Url of Uri
@@ -82,7 +82,7 @@ module internal GuiCommon =
           use client = new System.Net.WebClient()
           client.DownloadString(u)
 
-  let internal GetSource(document : string) =
+  let internal getSource(document : string) =
     if document.StartsWith("http://", StringComparison.Ordinal)
        || document.StartsWith("https://", StringComparison.Ordinal) then
       System.Uri(document) |> Url

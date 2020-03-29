@@ -4,81 +4,82 @@ open System
 open System.Xml.Linq
 open Mono.Cecil
 
+open Augment
+
 module internal Report =
 
-  let internal ReportGenerator() =
+  let internal reportGenerator() =
     let data =
       XProcessingInstruction("xml-stylesheet", """type="text/xsl" href="coverage.xsl" """) :> Object
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure
     let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [| data |])
-    let X name = XName.Get(name)
 
-    let ToExcluded included =
+    let toExcluded included =
       if included then "false" else "true"
 
-    let StartVisit(s : list<XElement>) =
+    let startVisit(s : list<XElement>) =
       let element =
         XElement
-          (X "coverage",
+          ("coverage".X,
            XAttribute
-             (X "profilerVersion",
+             ("profilerVersion".X,
               "AltCover "
               + (System.Diagnostics.FileVersionInfo.GetVersionInfo
                    (System.Reflection.Assembly.GetExecutingAssembly().Location)).FileVersion),
-           XAttribute(X "driverVersion", 0),
+           XAttribute("driverVersion".X, 0),
            XAttribute
-             (X "startTime",
+             ("startTime".X,
               DateTime.MaxValue.ToString
                 ("o", System.Globalization.CultureInfo.InvariantCulture)),
            XAttribute
-             (X "measureTime",
+             ("measureTime".X,
               DateTime.MinValue.ToString
                 ("o", System.Globalization.CultureInfo.InvariantCulture)))
       document.Add(element)
       element :: s
 
-    let VisitModule (s : list<XElement>) (head : XElement) (moduleDef : ModuleDefinition)
+    let visitModule (s : list<XElement>) (head : XElement) (moduleDef : ModuleDefinition)
         included =
       let element =
         XElement
-          (X "module", XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
-           XAttribute(X "name", moduleDef.Name),
-           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
-           XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName),
-           XAttribute(X "excluded", ToExcluded included))
+          ("module".X, XAttribute("moduleId".X, moduleDef.Mvid.ToString()),
+           XAttribute("name".X, moduleDef.Name),
+           XAttribute("assembly".X, moduleDef.Assembly.Name.Name),
+           XAttribute("assemblyIdentity".X, moduleDef.Assembly.Name.FullName),
+           XAttribute("excluded".X, toExcluded included))
       head.Add(element)
       element :: s
 
-    let VisitMethod (s : list<XElement>) (head : XElement) (methodDef : MethodDefinition)
+    let visitMethod (s : list<XElement>) (head : XElement) (methodDef : MethodDefinition)
         included =
       let element =
         XElement
-          (X "method", XAttribute(X "name", methodDef.Name),
+          ("method".X, XAttribute("name".X, methodDef.Name),
            //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
-           XAttribute(X "class", Naming.FullTypeName methodDef.DeclaringType),
-           XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),
-           XAttribute(X "excluded", ToExcluded included),
+           XAttribute("class".X, Naming.fullTypeName methodDef.DeclaringType),
+           XAttribute("metadataToken".X, methodDef.MetadataToken.ToUInt32().ToString()),
+           XAttribute("excluded".X, toExcluded included),
            XAttribute
-             (X "instrumented",
+             ("instrumented".X,
               (if included then "true" else "false")),
-           XAttribute(X "fullname", Naming.FullMethodName methodDef))
+           XAttribute("fullname".X, Naming.fullMethodName methodDef))
       head.Add(element)
       element :: s
 
-    let VisitMethodPoint (s : list<XElement>) (head : XElement)
+    let visitMethodPoint (s : list<XElement>) (head : XElement)
         (codeSegment' : SeqPnt option) included vc =
       match codeSegment' with
       | Some codeSegment ->
           let element =
             XElement
-              (X "seqpnt", XAttribute(X "visitcount", int vc),
-               XAttribute(X "line", codeSegment.StartLine),
-               XAttribute(X "column", codeSegment.StartColumn),
-               XAttribute(X "endline", codeSegment.EndLine),
-               XAttribute(X "endcolumn", codeSegment.EndColumn),
-               XAttribute(X "excluded", ToExcluded included),
-               XAttribute(X "document", codeSegment.Document |> Visitor.SourceLinkMapping))
+              ("seqpnt".X, XAttribute("visitcount".X, int vc),
+               XAttribute("line".X, codeSegment.StartLine),
+               XAttribute("column".X, codeSegment.StartColumn),
+               XAttribute("endline".X, codeSegment.EndLine),
+               XAttribute("endcolumn".X, codeSegment.EndColumn),
+               XAttribute("excluded".X, toExcluded included),
+               XAttribute("document".X, codeSegment.Document |> Visitor.sourceLinkMapping))
           if head.IsEmpty then
             head.Add(element)
           else
@@ -86,7 +87,7 @@ module internal Report =
       | None -> ()
       s
 
-    let ReportVisitor (s : list<XElement>) (node : Node) =
+    let reportVisitor (s : list<XElement>) (node : Node) =
       let head =
         if List.isEmpty s then null else s.Head
 
@@ -94,13 +95,13 @@ module internal Report =
         if List.isEmpty s then [] else s.Tail
 
       match node with
-      | Start _ -> StartVisit s
+      | Start _ -> startVisit s
       | Module(moduleDef, included) ->
-          VisitModule s head moduleDef (Visitor.IsInstrumented included)
+          visitModule s head moduleDef (included.IsInstrumented)
       | Method(methodDef, included, _, _) ->
-          VisitMethod s head methodDef (Visitor.IsInstrumented included)
+          visitMethod s head methodDef (included.IsInstrumented)
       | MethodPoint(_, codeSegment, _, included, vc) ->
-          VisitMethodPoint s head codeSegment included vc
+          visitMethodPoint s head codeSegment included vc
       | AfterMethod _ ->
           if head.IsEmpty then head.Remove()
           tail
@@ -108,5 +109,5 @@ module internal Report =
       | Finish -> s
       | _ -> s
 
-    let result = Visitor.EncloseState ReportVisitor List.empty<XElement>
+    let result = Visitor.encloseState reportVisitor List.empty<XElement>
     (result, document)

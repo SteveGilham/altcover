@@ -1,7 +1,7 @@
 #if RUNNER
 namespace AltCover
 #else
-namespace AltCover_Fake.DotNet.Testing
+namespace AltCoverFake.DotNet.Testing
 #endif
 
 open System
@@ -18,7 +18,8 @@ module DotNet =
                                   Justification = "Idiomatic F#");
                   SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                  Justification = "Idiomatic F#") >]
+                                  Justification = "Idiomatic F#");
+    AutoSerializable(false)>]
   type CLIArgs =
     | Force of bool
     | FailFast of bool
@@ -57,64 +58,65 @@ module DotNet =
 module internal Internals =
 #endif
 
-  let private Arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
-  let private ListArg name (s : String seq) =
+  let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
+  let private listArg name (s : String seq) =
     (sprintf """/p:AltCover%s="%s" """ name <| String.Join("|", s)).Trim()
 
-  let private IsSet s =
+  let private isSet s =
     s
     |> String.IsNullOrWhiteSpace
     |> not
 
-  let private FromList name (s : String seq) = (ListArg name s, s.Any())
-  let private FromArg name s = (Arg name s, IsSet s)
-  let private Join(l : string seq) = String.Join(" ", l)
+  let private fromList name (s : String seq) = (listArg name s, s.Any())
+  let private fromArg name s = (arg name s, isSet s)
+  let private join(l : string seq) = String.Join(" ", l)
 
 #if RUNNER
-  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParams)
-      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
+  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParameters)
+      (collect : AltCover.FSApi.CollectParameters) (force : CLIArgs) =
 #else
-  let ToTestArgumentList (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
+      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
       (force : DotNet.CLIArgs) =
 #endif
 
-    [ FromArg String.Empty "true"
-      FromArg "XmlReport" prepare.XmlReport
-      (Arg "OpenCover" "false", not prepare.OpenCover)
-      FromList "FileFilter" prepare.FileFilter
-      FromList "PathFilter" prepare.PathFilter
-      FromList "AssemblyFilter" prepare.AssemblyFilter
-      FromList "AssemblyExcludeFilter" prepare.AssemblyExcludeFilter
-      FromList "TypeFilter" prepare.TypeFilter
-      FromList "MethodFilter" prepare.MethodFilter
-      FromList "AttributeFilter" prepare.AttributeFilter
-      (Arg "LocalSource" "true", prepare.LocalSource)
-      (Arg "VisibleBranches" "true", prepare.VisibleBranches)
-      FromList "CallContext" prepare.CallContext
-      FromList "DependencyList" prepare.Dependencies
-      FromArg "LcovReport" collect.LcovReport
-      FromArg "Cobertura" collect.Cobertura
-      FromArg "Threshold" collect.Threshold
-      FromArg "StrongNameKey" prepare.StrongNameKey
-      FromList "Keys" prepare.Keys
-      (Arg "LineCover" "true", prepare.LineCover)
-      (Arg "BranchCover" "true", prepare.BranchCover)
-      (Arg "Force" "true", force.ForceDelete)
-      (Arg "FailFast" "true", force.Fast)
-      (FromArg "ShowSummary" force.Summary)
-      (FromArg "SummaryFormat" collect.SummaryFormat)
-      (FromArg "ShowStatic" prepare.ShowStatic)
-      (Arg "ShowGenerated" "true", prepare.ShowGenerated) ]
+    [ fromArg String.Empty "true"
+      fromArg "XmlReport" prepare.XmlReport
+      (arg "OpenCover" "false", not prepare.OpenCover)
+      fromList "FileFilter" prepare.FileFilter
+      fromList "PathFilter" prepare.PathFilter
+      fromList "AssemblyFilter" prepare.AssemblyFilter
+      fromList "AssemblyExcludeFilter" prepare.AssemblyExcludeFilter
+      fromList "TypeFilter" prepare.TypeFilter
+      fromList "MethodFilter" prepare.MethodFilter
+      fromList "AttributeFilter" prepare.AttributeFilter
+      (arg "LocalSource" "true", prepare.LocalSource)
+      (arg "VisibleBranches" "true", prepare.VisibleBranches)
+      fromList "CallContext" prepare.CallContext
+      fromList "DependencyList" prepare.Dependencies
+      fromArg "LcovReport" collect.LcovReport
+      fromArg "Cobertura" collect.Cobertura
+      fromArg "Threshold" collect.Threshold
+      fromArg "StrongNameKey" prepare.StrongNameKey
+      fromList "Keys" prepare.Keys
+      (arg "LineCover" "true", prepare.LineCover)
+      (arg "BranchCover" "true", prepare.BranchCover)
+      (arg "Force" "true", force.ForceDelete)
+      (arg "FailFast" "true", force.Fast)
+      (fromArg "ShowSummary" force.Summary)
+      (fromArg "SummaryFormat" collect.SummaryFormat)
+      (fromArg "ShowStatic" prepare.ShowStatic)
+      (arg "ShowGenerated" "true", prepare.ShowGenerated) ]
     |> List.filter snd
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare : AltCover.FSApi.PrepareParams)
-      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
+  let ToTestArguments (prepare : AltCover.FSApi.PrepareParameters)
+      (collect : AltCover.FSApi.CollectParameters) (force : CLIArgs) =
+    ToTestArgumentList prepare collect force |> join
 #else
-  let ToTestArguments (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
+      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
       (force : DotNet.CLIArgs) =
+    toTestArgumentList prepare collect force |> join
 #endif
-    ToTestArgumentList prepare collect force |> Join

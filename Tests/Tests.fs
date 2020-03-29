@@ -1,4 +1,5 @@
 namespace Tests
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
 open System.IO
@@ -9,7 +10,6 @@ open System.Xml.Linq
 
 open AltCover
 open AltCover.Augment
-open AltCover.Filter
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -187,7 +187,7 @@ module AltCoverTests =
         files
         |> Seq.iter
              (fun x ->
-             let pdb = AltCover.ProgramDatabase.GetPdbFromImage(snd x)
+             let pdb = AltCover.ProgramDatabase.getPdbFromImage(snd x)
              match pdb with
              | None -> Assert.Fail("No .pdb for " + (fst x))
              | Some name ->
@@ -204,7 +204,7 @@ module AltCoverTests =
     let ShouldGetEmbeddedPdbFromImage() =
       let target = sample8path
       let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
-      let pdb = AltCover.ProgramDatabase.GetPdbFromImage image
+      let pdb = AltCover.ProgramDatabase.getPdbFromImage image
       match pdb with
       | None -> Assert.Fail("No .pdb for " + target)
       | Some name ->
@@ -231,7 +231,7 @@ module AltCoverTests =
       files
       |> Seq.iter (fun x ->
            let probe = (fst x) + ".mdb"
-           let pdb = AltCover.ProgramDatabase.GetPdbFromImage(snd x)
+           let pdb = AltCover.ProgramDatabase.getPdbFromImage(snd x)
            match pdb with
            | None -> Assert.That(File.Exists probe, probe + " not found")
            | Some name -> Assert.Fail("Suddenly, an .mdb for " + (fst x)))
@@ -255,7 +255,7 @@ module AltCoverTests =
       |> Seq.iter
            (fun x ->
            let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-           let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+           let pdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
            match pdb with
            | None ->
              Assert.That
@@ -289,7 +289,7 @@ module AltCoverTests =
            let dll = Path.ChangeExtension(p, ".dll")
            try
              let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
-             let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+             let pdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
              let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
              match pdb with
              | None -> Assert.Fail("Not found " + p)
@@ -321,23 +321,23 @@ module AltCoverTests =
              Directory.CreateDirectory(output) |> ignore
              let dll = Path.Combine(output, Path.GetFileName dll0)
              System.IO.File.Copy(dll0, dll)
-             ProgramDatabase.SymbolFolders.Clear()
+             ProgramDatabase.symbolFolders.Clear()
              p
              |> Path.GetDirectoryName
-             |> ProgramDatabase.SymbolFolders.Add
+             |> ProgramDatabase.symbolFolders.Add
              try
                let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
-               let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+               let pdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
                let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
                match pdb with
                | None -> Assert.Fail("Not found " + p)
                | Some name ->
                  Assert.That(name, Is.EqualTo normalized)
-                 AltCover.ProgramDatabase.ReadSymbols def
+                 AltCover.ProgramDatabase.readSymbols def
                  Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName)
              with :? BadImageFormatException -> ())
       finally
-        ProgramDatabase.SymbolFolders.Clear()
+        ProgramDatabase.symbolFolders.Clear()
 
     [<Test>]
     let ShouldGetMdbWithFallback() =
@@ -353,7 +353,7 @@ module AltCoverTests =
       |> Seq.iter
            (fun x ->
            let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-           let mdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+           let mdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
            match mdb with
            | None -> Assert.That(File.Exists(x + ".mdb"), Is.Not.True, "No .mdb for " + x)
            | Some name ->
@@ -399,7 +399,7 @@ module AltCoverTests =
              x.FullName.EndsWith
                ("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
         |> Seq.iter (fun def ->
-             AltCover.ProgramDatabase.ReadSymbols def
+             AltCover.ProgramDatabase.readSymbols def
              Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
 
     [<Test>]
@@ -408,7 +408,7 @@ module AltCoverTests =
       let here = where |> Path.GetDirectoryName
       let target = sample8path
       let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
-      AltCover.ProgramDatabase.ReadSymbols image
+      AltCover.ProgramDatabase.readSymbols image
       Assert.That(image.MainModule.HasSymbols, image.MainModule.FileName)
 
     [<Test>]
@@ -431,7 +431,7 @@ module AltCoverTests =
            <| x.FullName.EndsWith
                 ("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
       |> Seq.iter (fun def ->
-           AltCover.ProgramDatabase.ReadSymbols def
+           AltCover.ProgramDatabase.readSymbols def
            Assert.That(not def.MainModule.HasSymbols, def.MainModule.FileName))
 
     [<Test>]
@@ -448,74 +448,74 @@ module AltCoverTests =
            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
       |> Seq.iter (fun x ->
            let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-           AltCover.ProgramDatabase.ReadSymbols def
+           AltCover.ProgramDatabase.readSymbols def
            Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
 
     // Filter.fs
     [<Test>]
     let NoneOfTheAboveMatchesNoType() =
-      Assert.That(Match () (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.Type, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Type, Regex "23", Include)), Is.False)
 
     [<Test>]
     let NoneOfTheAboveMatchesNoAttribute() =
-      Assert.That(Match () (FF(FilterScope.Attribute, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.Attribute,Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Attribute, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Attribute,Regex "23", Include)), Is.False)
 
     [<Test>]
     let NoneOfTheAboveMatchesNoAssembly() =
-      Assert.That(Match () (FF(FilterScope.Assembly, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.Assembly, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Assembly, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Assembly, Regex "23", Include)), Is.False)
 
     [<Test>]
     let NoneOfTheAboveMatchesNoModule() =
-      Assert.That(Match () (FF(FilterScope.Module, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.Module, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Module, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Module, Regex "23", Include)), Is.False)
 
     [<Test>]
     let NoneOfTheAboveMatchesNoFile() =
-      Assert.That(Match () (FF(FilterScope.File, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.File, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.File, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.File, Regex "23", Include)), Is.False)
 
     [<Test>]
     let NoneOfTheAboveMatchesNoPath() =
-      Assert.That(Match () (FF(FilterScope.Path, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.Path, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Path, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Path, Regex "23", Include)), Is.False)
 
     [<Test>]
     let NoneOfTheAboveMatchesNoMethod() =
-      Assert.That(Match () (FF(FilterScope.Method, Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FF(FilterScope.Method, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Method, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` () (FF(FilterScope.Method, Regex "23", Include)), Is.False)
 
     [<Test>]
     let FileDoesNotMatchNonFileClass() =
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.Type, Regex "23", Exclude)),
+        (Filter.``match`` (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.Type, Regex "23", Exclude)),
          Is.False)
 
     [<Test>]
     let FileDoesMatchFileClass() =
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.File, Regex "Cove", Exclude)),
+        (Filter.``match`` (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.File, Regex "Cove", Exclude)),
          Is.True)
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.File, Regex "Cove", Include)),
+        (Filter.``match`` (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.File, Regex "Cove", Include)),
          Is.False)
 
     [<Test>]
     let PathDoesNotMatchNonPathClass() =
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.Type, Regex "23", Exclude)),
+        (Filter.``match`` (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.Type, Regex "23", Exclude)),
          Is.False)
 
     [<Test>]
     let PathDoesMatchPathClass() =
       let x = String [| '\\'; Path.DirectorySeparatorChar |]
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location)
+        (Filter.``match`` (Assembly.GetExecutingAssembly().Location)
            (FF(FilterScope.Path, Regex(x + "_Binaries" + x), Exclude)), Is.True)
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location)
+        (Filter.``match`` (Assembly.GetExecutingAssembly().Location)
            (FF(FilterScope.Path, Regex(x + "_Binaries" + x), Include)), Is.False)
 
     [<Test>]
@@ -523,31 +523,31 @@ module AltCoverTests =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
-      Assert.That(Match def (FF(FilterScope.Type, Regex "23", Include)), Is.False)
+      Assert.That(Filter.``match`` def (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` def (FF(FilterScope.Type, Regex "23", Include)), Is.False)
 
     [<Test>]
     let AssemblyDoesMatchAssemblyClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def (FF(FilterScope.Assembly, Regex "Cove", Exclude)), Is.True)
-      Assert.That(Match def (FF(FilterScope.Assembly, Regex "Cove", Include)), Is.False)
+      Assert.That(Filter.``match`` def (FF(FilterScope.Assembly, Regex "Cove", Exclude)), Is.True)
+      Assert.That(Filter.``match`` def (FF(FilterScope.Assembly, Regex "Cove", Include)), Is.False)
 
     [<Test>]
     let ModuleDoesNotMatchNonModuleClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def.MainModule (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
+      Assert.That(Filter.``match`` def.MainModule (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
 
     [<Test>]
     let ModuleDoesMatchModuleClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def.MainModule (FF(FilterScope.Module, Regex "Cove", Exclude)), Is.True)
-      Assert.That(Match def.MainModule (FF(FilterScope.Module, Regex "Cove", Include)), Is.False)
+      Assert.That(Filter.``match`` def.MainModule (FF(FilterScope.Module, Regex "Cove", Exclude)), Is.True)
+      Assert.That(Filter.``match`` def.MainModule (FF(FilterScope.Module, Regex "Cove", Include)), Is.False)
 
     [<Test>]
     let TypeDoesNotMatchNonTypeClass() =
@@ -557,7 +557,7 @@ module AltCoverTests =
       def.MainModule.Types
       |> Seq.iter
            (fun t ->
-           Assert.That(Match t (FF(FilterScope.File, Regex "23", Exclude)), Is.False, t.FullName))
+           Assert.That(Filter.``match`` t (FF(FilterScope.File, Regex "23", Exclude)), Is.False, t.FullName))
 
     [<Test>]
     let TypeDoesMatchTypeClass() =
@@ -568,8 +568,8 @@ module AltCoverTests =
       |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")) // exclude the many compiler generted chaff classes
       |> Seq.iter
            (fun t ->
-           Assert.That(Match t (FF(FilterScope.Type, Regex "Cove", Exclude)), Is.True, t.FullName)
-           Assert.That(Match t (FF(FilterScope.Type, Regex "Cove", Include)), Is.False, t.FullName))
+           Assert.That(Filter.``match`` t (FF(FilterScope.Type, Regex "Cove", Exclude)), Is.True, t.FullName)
+           Assert.That(Filter.``match`` t (FF(FilterScope.Type, Regex "Cove", Include)), Is.False, t.FullName))
 
     [<Test>]
     let MethodDoesNotMatchNonMethodClass() =
@@ -579,7 +579,7 @@ module AltCoverTests =
       def.MainModule.Types
       |> Seq.filter (fun t -> t.IsPublic)
       |> Seq.collect (fun t -> t.Methods)
-      |> Seq.iter (fun m -> Assert.That(Match m (FF(FilterScope.Type, Regex "23", Exclude)), Is.False))
+      |> Seq.iter (fun m -> Assert.That(Filter.``match`` m (FF(FilterScope.Type, Regex "23", Exclude)), Is.False))
 
     [<Test>]
     let MethodDoesMatchMethodClass() =
@@ -590,13 +590,13 @@ module AltCoverTests =
                   |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generted chaff classes
                   |> Seq.collect (fun t -> t.Methods)
                   |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                  |> Seq.filter (fun m -> Match m (FF(FilterScope.Method, Regex "Augment", Exclude)))
+                  |> Seq.filter (fun m -> Filter.``match`` m (FF(FilterScope.Method, Regex "Augment", Exclude)))
                   |> Seq.length, Is.EqualTo(2))
       Assert.That(def.MainModule.Types
                   |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generted chaff classes
                   |> Seq.collect (fun t -> t.Methods)
                   |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                  |> Seq.filter (fun m -> Match m (FF(FilterScope.Method, Regex "Augment", Include)) |> not)
+                  |> Seq.filter (fun m -> Filter.``match`` m (FF(FilterScope.Method, Regex "Augment", Include)) |> not)
                   |> Seq.length, Is.EqualTo(2))
 
     [<Test>]
@@ -608,7 +608,7 @@ module AltCoverTests =
       |> Seq.iter
            (fun t ->
            Assert.That
-             (Match t.CustomAttributes (FF(FilterScope.File, Regex "23", Exclude)), Is.False,
+             (Filter.``match`` t.CustomAttributes (FF(FilterScope.File, Regex "23", Exclude)), Is.False,
               t.FullName))
 
     [<Test>]
@@ -621,8 +621,8 @@ module AltCoverTests =
                                          && (not (t.FullName.Contains("Coverlet.Core.Instrumentation")))) // exclude the many compiler generted chaff classes
       |> Seq.iter
            (fun t ->
-           Assert.That(Match t (FF(FilterScope.Attribute, Regex "Exclu", Exclude)), Is.True, t.FullName)
-           Assert.That(Match t (FF(FilterScope.Attribute, Regex "Exclu", Include)), Is.False, t.FullName))
+           Assert.That(Filter.``match`` t (FF(FilterScope.Attribute, Regex "Exclu", Exclude)), Is.True, t.FullName)
+           Assert.That(Filter.``match`` t (FF(FilterScope.Attribute, Regex "Exclu", Include)), Is.False, t.FullName))
 
     [<Test>]
     let CanExcludeCSharpPropertiesByAttribute() =
@@ -639,7 +639,7 @@ module AltCoverTests =
 
       let pass =
         direct.Methods
-        |> Seq.filter (fun x -> Filter.Match x filter |> not)
+        |> Seq.filter (fun x -> Filter.``match`` x filter |> not)
         |> Seq.map (fun x -> x.Name)
         |> Seq.sort
         |> Seq.toList
@@ -657,7 +657,7 @@ module AltCoverTests =
       |> Seq.filter (fun t -> t.Name = "Class1")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
-      |> Seq.iter (IsCSharpAutoProperty >> Assert.That)
+      |> Seq.iter (Filter.isCSharpAutoProperty >> Assert.That)
 
     [<Test>]
     let Sample3Class2IsNotCSharpAutoproperty() =
@@ -669,7 +669,7 @@ module AltCoverTests =
       |> Seq.filter (fun t -> t.Name = "Class2")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
-      |> Seq.iter (fun m -> Assert.That(IsCSharpAutoProperty m, Is.False))
+      |> Seq.iter (fun m -> Assert.That(Filter.isCSharpAutoProperty m, Is.False))
 
     [<Test>]
     let CanIdentifyExcludedFSharpMethods() =
@@ -706,7 +706,7 @@ module AltCoverTests =
       let pass =
         Seq.concat [ direct; indirect; indirect2 ]
         |> Seq.collect (fun t -> t.Methods)
-        |> Seq.filter (not << Filter.IsFSharpInternal)
+        |> Seq.filter (not << Filter.isFSharpInternal)
         |> Seq.map (fun x -> x.Name)
         |> Seq.sort
         |> Seq.toList
@@ -732,7 +732,7 @@ module AltCoverTests =
 
       let pass =
         direct.Methods
-        |> Seq.filter (not << Filter.IsCSharpAutoProperty)
+        |> Seq.filter (not << Filter.isCSharpAutoProperty)
         |> Seq.map (fun x -> x.Name)
         |> Seq.sort
         |> Seq.toList
@@ -752,7 +752,7 @@ module AltCoverTests =
 
       let pass =
         direct.Methods
-        |> Seq.filter (not << Filter.IsCSharpAutoProperty)
+        |> Seq.filter (not << Filter.isCSharpAutoProperty)
         |> Seq.map (fun x -> x.Name)
         |> Seq.sort
         |> Seq.toList
@@ -763,21 +763,21 @@ module AltCoverTests =
     // Visitor.fs
     [<Test>]
     let CanSwitchSampling() =
-      let save = Visitor.single
+      let save = CoverageParameters.single
       try
-        Visitor.single <- true
-        test <@ Visitor.Sampling() = 1 @>
-        Visitor.single <- false
-        test <@ Visitor.Sampling() = 0 @>
+        CoverageParameters.single <- true
+        test <@ CoverageParameters.sampling() = 1 @>
+        CoverageParameters.single <- false
+        test <@ CoverageParameters.sampling() = 0 @>
       finally
-        Visitor.single <- save
+        CoverageParameters.single <- save
 
     [<Test>]
     let FixEnding() =
-      let a = Visitor.EnsureEndsWith "a" "banana"
+      let a = Visitor.I.ensureEndsWith "a" "banana"
       Assert.That (a, Is.EqualTo "banana")
 
-      let s = Visitor.EnsureEndsWith "s" "banana"
+      let s = Visitor.I.ensureEndsWith "s" "banana"
       Assert.That (s, Is.EqualTo "bananas")
 
     [<Test>]
@@ -788,7 +788,7 @@ module AltCoverTests =
           StaticFilter.Hidden
           StaticFilter.NoFilter
         ]
-        |> List.map (fun k -> Visitor.SelectExemption k [] Exemption.None)
+        |> List.map (fun k -> Visitor.I.selectExemption k [] Exemption.None)
       test <@ result = [ Exemption.StaticAnalysis; Exemption.None; Exemption.None ] @>
 
     [<Test>]
@@ -796,14 +796,14 @@ module AltCoverTests =
       let where = typeof<AltCover.CommandLine.Format>.Assembly.Location
       use def = Mono.Cecil.AssemblyDefinition.ReadAssembly where
       let cl = def.MainModule.GetType("AltCover.CommandLine")
-      test <@ cl |> Visitor.isFSharpStaticClass |> not @>
+      test <@ cl |> Visitor.I.isFSharpStaticClass |> not @>
       let format = cl.NestedTypes |> Seq.find (fun t -> t.Name = "Format")
-      test <@ format |> Visitor.isFSharpStaticClass @>
+      test <@ format |> Visitor.I.isFSharpStaticClass @>
 
     [<Test>]
     let ValidateAutomaticExemption() =
       try
-        Visitor.showGenerated := true
+        CoverageParameters.showGenerated := true
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
@@ -820,10 +820,10 @@ module AltCoverTests =
             StaticFilter.Hidden
             StaticFilter.NoFilter
           ]
-          |> List.map (fun k -> Visitor.SelectExemption k items Exemption.None)
+          |> List.map (fun k -> Visitor.I.selectExemption k items Exemption.None)
         test <@ result = [ Exemption.StaticAnalysis; Exemption.Automatic; Exemption.Automatic ] @>
       finally
-        Visitor.showGenerated := false
+        CoverageParameters.showGenerated := false
 
     [<Test>]
     let DetectLocalSource() =
@@ -850,8 +850,8 @@ module AltCoverTests =
              (x.Attribute(XName.Get("id")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
         |> Map.ofSeq
 
-      Visitor.local := false
-      Visitor.NameFilters.Clear()
+      CoverageParameters.local := false
+      CoverageParameters.nameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.4.5.2/lib/net45") // stable retro version
       let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil." +
                                                       (libPackages.Item "mono.cecil") +
@@ -875,31 +875,31 @@ module AltCoverTests =
       Assert.That(File.Exists pdb3, Is.True, "Mono.Cecil.pdb not found")
 
       let a = AssemblyDefinition.ReadAssembly exe
-      ProgramDatabase.ReadSymbols a
+      ProgramDatabase.readSymbols a
 
       let m = AssemblyDefinition.ReadAssembly dll
-      ProgramDatabase.ReadSymbols m
+      ProgramDatabase.readSymbols m
 
       let f = AssemblyDefinition.ReadAssembly fdll
-      ProgramDatabase.ReadSymbols f
+      ProgramDatabase.readSymbols f
 
-      Assert.That (Visitor.localFilter a, Is.False, "Assembly non-local")
-      Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule non-local")
-      Assert.That (Visitor.localFilter m, Is.False, "dll Assembly non-local")
-      Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule non-local")
-      Assert.That (Visitor.localFilter f, Is.False, "f# Assembly non-local")
-      Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
+      Assert.That (a.LocalFilter, Is.False, "Assembly non-local")
+      Assert.That (a.MainModule.LocalFilter, Is.False, "MainModule non-local")
+      Assert.That (m.LocalFilter, Is.False, "dll Assembly non-local")
+      Assert.That (m.MainModule.LocalFilter, Is.False, "dll MainModule non-local")
+      Assert.That (f.LocalFilter, Is.False, "f# Assembly non-local")
+      Assert.That (f.MainModule.LocalFilter, Is.False, "f# MainModule non-local")
       try
-        Visitor.local := true
-        Assert.That (Visitor.localFilter a, Is.True, "Assembly local")
-        Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule local")
-        Assert.That (Visitor.localFilter m, Is.True, "dll Assembly local")
-        Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule local")
-        Assert.That (Visitor.localFilter f, Is.True, "f# Assembly local")
-        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule local")
+        CoverageParameters.local := true
+        Assert.That (a.LocalFilter, Is.True, "Assembly local")
+        Assert.That (a.MainModule.LocalFilter, Is.False, "MainModule local")
+        Assert.That (m.LocalFilter, Is.True, "dll Assembly local")
+        Assert.That (m.MainModule.LocalFilter, Is.False, "dll MainModule local")
+        Assert.That (f.LocalFilter, Is.True, "f# Assembly local")
+        Assert.That (f.MainModule.LocalFilter, Is.False, "f# MainModule local")
 
       finally
-        Visitor.local := false
+        CoverageParameters.local := false
 
     [<Test>]
     let LocateMatchShouldChooseLongerWildCardPath() =
@@ -911,7 +911,7 @@ module AltCoverTests =
       let pp2 = Path.Combine(p2, "*")
       dict.Add(pp1, pp1)
       dict.Add(pp2, pp2)
-      let find = Visitor.FindClosestMatch file dict
+      let find = Visitor.I.findClosestMatch file dict
       Assert.That(find, Is.EqualTo (Some (pp1, String.Empty)))
 
     [<Test>]
@@ -921,19 +921,19 @@ module AltCoverTests =
       let seq = SequencePoint(nop, Document(null))
 
       // transparent
-      Assert.That(Visitor.fakeSequencePoint Genuine seq nop, Is.SameAs seq)
-      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn seq nop, Is.SameAs seq)
+      Assert.That(Visitor.I.fakeSequencePoint Genuine seq nop, Is.SameAs seq)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn seq nop, Is.SameAs seq)
 
-      Assert.That(Visitor.fakeSequencePoint Genuine null null, Is.Null)
-      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null null, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint Genuine null null, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn null null, Is.Null)
 
-      Assert.That(Visitor.fakeSequencePoint Genuine null nop, Is.Null)
-      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null nop, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint Genuine null nop, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn null nop, Is.Null)
 
-      Assert.That(Visitor.fakeSequencePoint Genuine null ret, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint Genuine null ret, Is.Null)
 
       // One fake-out
-      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null ret, Is.Not.Null)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn null ret, Is.Not.Null)
 
     [<Test>]
     let ReleaseBuildTernaryTestInContext() =
@@ -960,12 +960,12 @@ module AltCoverTests =
          |> Seq.head).Methods
         |> Seq.filter (fun m -> m.Name = "Ternary")
         |> Seq.head
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.NameFilters.Clear()
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 3)
         deeper
         |> List.skip 1
@@ -982,8 +982,8 @@ module AltCoverTests =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ReleaseBuildTernaryTestInContextWithCoalescence() =
@@ -1010,13 +1010,13 @@ module AltCoverTests =
          |> Seq.head).Methods
         |> Seq.filter (fun m -> m.Name = "Ternary")
         |> Seq.head
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.coalesceBranches := true
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.NameFilters.Clear()
+        CoverageParameters.coalesceBranches := true
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Automatic) |> Seq.toList
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Automatic) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 3)
         deeper
         |> List.skip 1
@@ -1033,9 +1033,9 @@ module AltCoverTests =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches := false
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.coalesceBranches := false
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let CSharpNestedMethods() =
@@ -1051,7 +1051,7 @@ module AltCoverTests =
 
       let containing =
         methods
-        |> Seq.map Visitor.ContainingMethod
+        |> Seq.map Visitor.I.containingMethod
 
       let result =
         containing
@@ -1153,12 +1153,12 @@ module AltCoverTests =
       // Disambiguation checks
       let g3 = methods.[10]
       Assert.That(methods
-                  |> Seq.map Visitor.ContainingMethod
+                  |> Seq.map Visitor.I.containingMethod
                   |> Seq.choose id
                   |> Seq.filter (fun m -> m.Name = "G3"), Is.EquivalentTo [ g3; g3; g3 ])
       let g1 = methods.[6]
       Assert.That(methods
-                  |> Seq.map Visitor.ContainingMethod
+                  |> Seq.map Visitor.I.containingMethod
                   |> Seq.choose id
                   |> Seq.filter (fun m -> m.Name = "G1"), Is.EquivalentTo [ g1; g1 ])
 
@@ -1176,7 +1176,7 @@ module AltCoverTests =
 
       let result =
         methods
-        |> Seq.map ( Visitor.ContainingMethod
+        |> Seq.map ( Visitor.I.containingMethod
                      >> (fun (mo : MethodDefinition option) ->
                              mo |> Option.map (fun m -> m.DeclaringType.Name + "::" + m.Name)))
         |> Seq.toList
@@ -1263,7 +1263,7 @@ module AltCoverTests =
     [<Test>]
     let EmptyArrayHasExpectedHash() =
       Assert.That
-        ((KeyStore.TokenOfArray [||]),
+        ((KeyStore.I.tokenOfArray [||]),
          Is.EquivalentTo [| 9uy; 7uy; 216uy; 175uy; 144uy; 24uy; 96uy; 149uy |])
 
     let private ProvideKeyPair() =
@@ -1275,7 +1275,7 @@ module AltCoverTests =
 
     [<Test>]
     let KeyHasExpectedToken() =
-      let token = KeyStore.TokenOfKey <| ProvideKeyPair()
+      let token = KeyStore.tokenOfKey <| ProvideKeyPair()
       let token' =
         String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
       Assert.That(token', Is.EqualTo( "c02b1a9f5b7cade8"))
@@ -1283,18 +1283,18 @@ module AltCoverTests =
     [<Test>]
     let TokenGeneratesExpectedULong() =
       let token = [| 1uy; 0uy; 0uy; 0uy; 0uy; 0uy; 0uy; 0uy |]
-      Assert.That(KeyStore.TokenAsULong token, Is.EqualTo(1UL))
+      Assert.That(KeyStore.tokenAsULong token, Is.EqualTo(1UL))
 
     [<Test>]
     let KeyHasExpectedIndex() =
-      let token = KeyStore.KeyToIndex <| ProvideKeyPair()
+      let token = KeyStore.keyToIndex <| ProvideKeyPair()
       Assert.That(token, Is.EqualTo(
                                     0xe8ad7c5b9f1a2bc0UL
                   ), sprintf "%x" token)
 
     [<Test>]
     let EmptyArrayHasExpectedIndex() =
-      Assert.That((KeyStore.ArrayToIndex [||]), Is.EqualTo(0x95601890afd80709UL))
+      Assert.That((KeyStore.arrayToIndex [||]), Is.EqualTo(0x95601890afd80709UL))
 
     [<Test>]
     let KeyHasExpectedRecord() =
@@ -1306,7 +1306,7 @@ module AltCoverTests =
       Assert.That(computed, Is.EquivalentTo definitive)
 #endif
 
-      let token = KeyStore.KeyToRecord <| pair
+      let token = KeyStore.keyToRecord <| pair
       Assert.That
         (token,
          Is.EqualTo
@@ -1318,50 +1318,48 @@ module AltCoverTests =
     [<Test>]
     let KeyHasExpectedPlaceInIndex() =
       try
-        Visitor.keys.Clear()
-        Assert.That(Visitor.keys.Keys.Count, Is.EqualTo(0))
+        CoverageParameters.keys.Clear()
+        Assert.That(CoverageParameters.keys.Count, Is.EqualTo(0))
         let pair = ProvideKeyPair()
-        Visitor.Add(pair)
+        CoverageParameters.add(pair)
         let key =
                    0xe8ad7c5b9f1a2bc0UL
 
-        Assert.That(Visitor.keys.ContainsKey(key))
-        Assert.That(Visitor.keys.[key],
+        Assert.That(CoverageParameters.keys.ContainsKey(key))
+        Assert.That(CoverageParameters.keys.[key],
                     Is.EqualTo({ Pair = pair
                                  Token = BitConverter.GetBytes(key) |> Array.toList }))
       finally
-        Visitor.keys.Clear()
+        CoverageParameters.keys.Clear()
 
-    let IsIncluded x =
-      x
-      |> Visitor.IsIncluded
-      |> Visitor.IsInstrumented
+    let IsItIncluded x =
+      x.IsIncluded.IsInstrumented
 
     [<Test>]
     let EmptyFiltersPassAll() =
-      Visitor.NameFilters.Clear()
-      Assert.That(Visitor.NameFilters.Count, Is.EqualTo(0))
-      Assert.That(IsIncluded typeof<ProxyObject>)
+      CoverageParameters.nameFilters.Clear()
+      Assert.That(CoverageParameters.nameFilters.Count, Is.EqualTo(0))
+      Assert.That(typeof<ProxyObject> |> IsItIncluded)
 
     [<Test>]
     let NonEmptyFiltersCatchAnExpectedValue() =
       try
-        Assert.That(Visitor.NameFilters.Count, Is.EqualTo(0))
-        Visitor.NameFilters.AddRange([ FF(FilterScope.File, Regex "Cove", Exclude)
-                                       FF(FilterScope.Method, Regex "Augment", Exclude) ])
-        Assert.That(IsIncluded(Assembly.GetExecutingAssembly().Location), Is.False)
+        Assert.That(CoverageParameters.nameFilters.Count, Is.EqualTo(0))
+        CoverageParameters.nameFilters.AddRange([ FF(FilterScope.File, Regex "Cove", Exclude)
+                                                  FF(FilterScope.Method, Regex "Augment", Exclude) ])
+        Assert.That(Assembly.GetExecutingAssembly().Location |> IsItIncluded, Is.False)
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let NonEmptyFiltersPassAnExpectedValue() =
       try
-        Assert.That(Visitor.NameFilters.Count, Is.EqualTo(0))
-        Visitor.NameFilters.AddRange([ FF(FilterScope.File, Regex "System", Exclude)
-                                       FF(FilterScope.Method, Regex "Augment", Exclude) ])
-        Assert.That(IsIncluded(Assembly.GetExecutingAssembly().Location))
+        Assert.That(CoverageParameters.nameFilters.Count, Is.EqualTo(0))
+        CoverageParameters.nameFilters.AddRange([ FF(FilterScope.File, Regex "System", Exclude)
+                                                  FF(FilterScope.Method, Regex "Augment", Exclude) ])
+        Assert.That(Assembly.GetExecutingAssembly().Location |> IsItIncluded, Is.True)
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let AfterProcessingYieldsAnExpectedValue() =
@@ -1406,7 +1404,7 @@ module AltCoverTests =
       |> Seq.filter (fun t -> t.Name = "Class1")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
-      |> Seq.iter (fun m -> Assert.That(Visitor.significant m, Is.False))
+      |> Seq.iter (fun m -> Assert.That(Visitor.I.significant m, Is.False))
 
     [<Test>]
     let Sample3Class2IPropertyIsSignificant() =
@@ -1418,7 +1416,7 @@ module AltCoverTests =
       |> Seq.filter (fun t -> t.Name = "Class2")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
-      |> Seq.iter (Visitor.significant >> Assert.That)
+      |> Seq.iter (Visitor.I.significant >> Assert.That)
 
     [<Test>]
     let TerminalCasesGoNoDeeper() =
@@ -1433,7 +1431,7 @@ module AltCoverTests =
           Node.AfterAssembly (def, [])
           Node.Finish ]
 
-      let outputs = inputs |> Seq.map (Visitor.Deeper >> Seq.toList)
+      let outputs = inputs |> Seq.map (Visitor.I.deeper >> Seq.toList)
 
       let expected =
         [ []
@@ -1448,22 +1446,22 @@ module AltCoverTests =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         (def.MainModule.Types
          |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))
          |> Seq.head).Methods
         |> Seq.head
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.File
-            >> Visitor.NameFilters.Add)
+            >> CoverageParameters.nameFilters.Add)
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 12)
         deeper
         |> List.skip 10
@@ -1480,8 +1478,8 @@ module AltCoverTests =
                Assert.That(b, Is.False, "flag")
              | _ -> Assert.Fail())
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let BranchPointsAreComputedForSwitch() =
@@ -1489,20 +1487,20 @@ module AltCoverTests =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample16.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         (def.MainModule.GetAllTypes()
          |> Seq.filter (fun t -> t.Name = "Foo")
          |> Seq.head).Methods
         |> Seq.filter (fun m -> m.Name = "Bar")
         |> Seq.head
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.coalesceBranches := true
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.NameFilters.Clear()
+        CoverageParameters.coalesceBranches := true
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Declared)
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Declared)
           |> Seq.toList
 
         //deeper |> List.skip 21 |> Seq.iter (fun n -> match n with
@@ -1540,9 +1538,9 @@ module AltCoverTests =
           Is.EquivalentTo [ 0; 1; 0; 1; 2; 3; 0; 1]
         )
       finally
-        Visitor.coalesceBranches := false
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.coalesceBranches := false
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let BranchPointsAreComputedForMatch() =
@@ -1550,20 +1548,20 @@ module AltCoverTests =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample17.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         (def.MainModule.GetAllTypes()
          |> Seq.filter (fun t -> t.Name = "Carrier")
          |> Seq.head).Methods
         |> Seq.filter (fun m -> m.Name = "Function")
         |> Seq.head
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.NameFilters.Clear()
-        Visitor.coalesceBranches := true
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.coalesceBranches := true
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.StaticAnalysis)
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.StaticAnalysis)
           |> Seq.toList
 
         let reported =
@@ -1587,30 +1585,30 @@ module AltCoverTests =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches := false
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.coalesceBranches := false
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let MethodsAreDeeperThanTypes() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let type' =
         (def.MainModule.Types
          |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))
          |> Seq.head)
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         "Main"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Method
-            >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Type(type', Inspections.Instrument, Exemption.None) |> Seq.toList
-        Visitor.Visit [] [] // cheat reset
+            >> CoverageParameters.nameFilters.Add)
+        let deeper = Visitor.I.deeper <| Node.Type(type', Inspections.Instrument, Exemption.None) |> Seq.toList
+        Visitor.visit [] [] // cheat reset
         let expected =
           type'.Methods
           |> Seq.map (fun m ->
@@ -1620,32 +1618,32 @@ module AltCoverTests =
 
                let node = Node.Method(m, flag, None, Exemption.None)
                List.concat [ [ node ]
-                             (Visitor.Deeper >> Seq.toList) node
+                             (Visitor.I.deeper >> Seq.toList) node
                              [ Node.AfterMethod(m, flag, None) ] ])
           |> List.concat
         Assert.That(deeper.Length, Is.EqualTo 17)
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let TypesAreDeeperThanModules() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let module' = def.MainModule
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Type
-            >> Visitor.NameFilters.Add)
+            >> CoverageParameters.nameFilters.Add)
         let deeper =
-          Visitor.Deeper <| Node.Module(module', Inspections.Instrument) |> Seq.toList
-        Visitor.Visit [] [] // cheat reset
+          Visitor.I.deeper <| Node.Module(module', Inspections.Instrument) |> Seq.toList
+        Visitor.visit [] [] // cheat reset
         let expected =
           module'.Types // we have no nested types in this test
           |> Seq.map (fun t ->
@@ -1655,29 +1653,29 @@ module AltCoverTests =
 
                let node = Node.Type(t, flag, Exemption.None)
                List.concat [ [ node ]
-                             (Visitor.Deeper >> Seq.toList) node
+                             (Visitor.I.deeper >> Seq.toList) node
                              [ Node.AfterType ] ])
           |> List.concat
         Assert.That(deeper.Length, Is.EqualTo 18)
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ModulesAreDeeperThanAssemblies() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
-      Visitor.Visit [] [] // cheat reset
-      let deeper = Visitor.Deeper <| Node.Assembly(def, Inspections.Instrument, []) |> Seq.toList
-      Visitor.Visit [] [] // cheat reset
+      ProgramDatabase.readSymbols def
+      Visitor.visit [] [] // cheat reset
+      let deeper = Visitor.I.deeper <| Node.Assembly(def, Inspections.Instrument, []) |> Seq.toList
+      Visitor.visit [] [] // cheat reset
       let expected =
         def.Modules // we have no nested types in this test
         |> Seq.map (fun t ->
              let node = Node.Module(t, Inspections.Instrument)
              List.concat [ [ node ]
-                           (Visitor.Deeper >> Seq.toList) node
+                           (Visitor.I.deeper >> Seq.toList) node
                            [ AfterModule ] ])
         |> List.concat
       Assert.That(deeper.Length, Is.EqualTo 21)
@@ -1686,10 +1684,10 @@ module AltCoverTests =
     [<Test>]
     let AssembliesAreDeeperThanPaths() =
       try
-        Visitor.staticFilter <- Some StaticFilter.AsCovered
+        CoverageParameters.staticFilter <- Some StaticFilter.AsCovered
         let where = Assembly.GetExecutingAssembly().Location
         let path = sample1path
-        let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
+        let deeper = Visitor.I.deeper <| Node.Start [ path, [] ] |> Seq.toList
 
         // assembly definitions care about being separate references in equality tests
         let def =
@@ -1703,25 +1701,25 @@ module AltCoverTests =
 
         let expected =
           List.concat [ [ assembly ]
-                        (Visitor.Deeper >> Seq.toList) assembly
+                        (Visitor.I.deeper >> Seq.toList) assembly
                         [ AfterAssembly (def, []) ] ]
         Assert.That(deeper.Length, Is.EqualTo 23)
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
-        Visitor.staticFilter <- None
+        CoverageParameters.staticFilter <- None
 
     [<Test>]
     let FilteredAssembliesDoNotHaveSequencePoints() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Assert.That(Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.NCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.NCover)
         "Sample"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Assembly
-            >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
+            >> CoverageParameters.nameFilters.Add)
+        let deeper = Visitor.I.deeper <| Node.Start [ path, [] ] |> Seq.toList
 
         // assembly definitions care about being separate references in equality tests
         let def =
@@ -1735,12 +1733,12 @@ module AltCoverTests =
 
         let expected =
           List.concat [ [ assembly ]
-                        (Visitor.Deeper >> Seq.toList) assembly
+                        (Visitor.I.deeper >> Seq.toList) assembly
                         [ AfterAssembly (def, []) ] ]
         Assert.That(deeper.Length, Is.EqualTo 4)
         Assert.That(deeper, Is.EquivalentTo expected)
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let TestFixPointInvoke() =
@@ -1752,7 +1750,7 @@ module AltCoverTests =
         stateful node)
 
       let input = stateful (Start [])
-      let fix = Visitor.invoke (Start []) input
+      let fix = Visitor.I.invoke (Start []) input
       Assert.That(called, Is.EqualTo 1)
       Assert.That(fix, Is.Not.Null)
       Assert.That(fix.GetType(), Is.EqualTo(input.GetType()))
@@ -1770,7 +1768,7 @@ module AltCoverTests =
         [ stateful (Start [])
           stateful (Start []) ]
 
-      let fix = Visitor.apply list (Start []) |> Seq.toList
+      let fix = Visitor.I.apply list (Start []) |> Seq.toList
       Assert.That(called, Is.EqualTo 2)
       Assert.That(Seq.length fix, Is.EqualTo 2)
       Assert.That(fix.[0].GetType(), Is.EqualTo(list.[0].GetType()))
@@ -1779,20 +1777,20 @@ module AltCoverTests =
     [<Test>]
     let PathsAreDeeperThanAVisit() =
       try
-        Visitor.showGenerated := true
+        CoverageParameters.showGenerated := true
         let where = Assembly.GetExecutingAssembly().Location
         let path = sample1path
         let accumulator = System.Collections.Generic.List<Node>()
 
         let fix =
-          Visitor.EncloseState (fun (x : System.Collections.Generic.List<Node>) t ->
+          Visitor.encloseState (fun (x : System.Collections.Generic.List<Node>) t ->
             x.Add t
             x) accumulator
 
         let u = Guid.NewGuid().ToString()
         let u2 = Guid.NewGuid().ToString()
         let ux = [ u; u2 ]
-        Visitor.Visit [ fix ] [ path, ux ]
+        Visitor.visit [ fix ] [ path, ux ]
         // assembly definitions care about being separate references in equality tests
         let def =
           match accumulator.[1] with
@@ -1806,13 +1804,13 @@ module AltCoverTests =
         let expected =
           List.concat [ [ Start [ path, ux ]
                           assembly ]
-                        (Visitor.Deeper >> Seq.toList) assembly
+                        (Visitor.I.deeper >> Seq.toList) assembly
                         [ AfterAssembly (def, ux)
                           Finish ] ]
         Assert.That
           (accumulator |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
-        Visitor.showGenerated := false
+        CoverageParameters.showGenerated := false
 
     [<Test>]
     let TrackingDetectsTests() =
@@ -1820,23 +1818,23 @@ module AltCoverTests =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.AddRange([ "Junk"; "[MoreJunk"; "[Test" ])
-        Visitor.Visit [] [] // cheat reset
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.AddRange([ "Junk"; "[MoreJunk"; "[Test" ])
+        Visitor.visit [] [] // cheat reset
         let tracks =
           def.MainModule.GetAllTypes()
           |> Seq.collect (fun t -> t.Methods)
-          |> Seq.map (Visitor.Track)
+          |> Seq.map (Visitor.I.track)
           |> Seq.choose id
           |> Seq.toList
         Assert.That(tracks,
                     Is.EquivalentTo [ (1, "[Test")
                                       (2, "[Test") ])
       finally
-        Visitor.TrackingNames.Clear()
-        Visitor.Visit [] [] // cheat reset
+        CoverageParameters.trackingNames.Clear()
+        Visitor.visit [] [] // cheat reset
 
     [<Test>]
     let TrackingDetectsExpectedTests() =
@@ -1844,24 +1842,24 @@ module AltCoverTests =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.AddRange([ "Junk"; "[MoreJunk"; "[Test" ])
-        Visitor.Visit [] [] // cheat reset
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.AddRange([ "Junk"; "[MoreJunk"; "[Test" ])
+        Visitor.visit [] [] // cheat reset
         let tracks =
           def.MainModule.GetAllTypes()
           |> Seq.collect (fun t -> t.Methods)
           |> Seq.filter (fun m ->
                m
-               |> Visitor.Track
+               |> Visitor.I.track
                |> Option.isSome)
           |> Seq.map (fun m -> m.Name)
           |> Seq.toList
         Assert.That(tracks, Is.EquivalentTo [ "testMakeUnion"; "testMakeThing" ])
       finally
-        Visitor.TrackingNames.Clear()
-        Visitor.Visit [] [] // cheat reset
+        CoverageParameters.trackingNames.Clear()
+        Visitor.visit [] [] // cheat reset
 
     [<Test>]
     let TrackingDetectsTestsByFullType() =
@@ -1869,24 +1867,24 @@ module AltCoverTests =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.AddRange
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.AddRange
           ([ "Junk"; "[MoreJunk"; "[NUnit.Framework.TestAttribute]" ])
-        Visitor.Visit [] [] // cheat reset
+        Visitor.visit [] [] // cheat reset
         let tracks =
           def.MainModule.GetAllTypes()
           |> Seq.collect (fun t -> t.Methods)
-          |> Seq.map (Visitor.Track)
+          |> Seq.map (Visitor.I.track)
           |> Seq.choose id
           |> Seq.toList
         Assert.That(tracks,
                     Is.EquivalentTo [ (1, "[NUnit.Framework.TestAttribute]")
                                       (2, "[NUnit.Framework.TestAttribute]") ])
       finally
-        Visitor.TrackingNames.Clear()
-        Visitor.Visit [] [] // cheat reset
+        CoverageParameters.trackingNames.Clear()
+        Visitor.visit [] [] // cheat reset
 
     [<Test>]
     let TrackingDetectsMethods() =
@@ -1894,36 +1892,30 @@ module AltCoverTests =
       let path =
         Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.AddRange
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.AddRange
           ([ "Junk"; "[MoreJunk"; "returnFoo"; "N.DU.MyUnion.as_bar" ])
-        Visitor.Visit [] [] // cheat reset
+        Visitor.visit [] [] // cheat reset
         let tracks =
           def.MainModule.GetAllTypes()
           |> Seq.collect (fun t -> t.Methods)
-          |> Seq.map (Visitor.Track)
+          |> Seq.map (Visitor.I.track)
           |> Seq.choose id
           |> Seq.toList
         Assert.That(tracks,
                     Is.EquivalentTo [ (1, "returnFoo")
                                       (2, "N.DU.MyUnion.as_bar") ])
       finally
-        Visitor.TrackingNames.Clear()
-        Visitor.Visit [] [] // cheat reset
+        CoverageParameters.trackingNames.Clear()
+        Visitor.visit [] [] // cheat reset
 
     // Naming.fs
     [<Test>]
-    let NamingDetectNulls() =
-      let input = [ "string"; null; "another string" ]
-      let nulls = input |> Seq.map Naming.isNotNull
-      Assert.That(nulls, Is.EquivalentTo([ true; false; true ]))
-
-    [<Test>]
     let NamingDetectEmpties() =
       let input = [ "string"; null; "another string"; "             " ]
-      let nulls = input |> Seq.map Naming.emptyIfIsNullOrWhiteSpace
+      let nulls = input |> Seq.map Naming.I.emptyIfIsNullOrWhiteSpace
       Assert.That
         (nulls,
          Is.EquivalentTo([ "string"; String.Empty; "another string"; String.Empty ]))
@@ -1931,7 +1923,7 @@ module AltCoverTests =
     [<Test>]
     let NamingSuffixDetectEmpties() =
       let input = [ "string"; null; "another string"; "             " ]
-      let nulls = input |> Seq.map (fun n -> Naming.suffixIfNotIsNullOrWhiteSpace n "*")
+      let nulls = input |> Seq.map (fun n -> Naming.I.suffixIfNotIsNullOrWhiteSpace n "*")
       Assert.That
         (nulls,
          Is.EquivalentTo([ "string*"; String.Empty; "another string*"; String.Empty ]))
@@ -1945,7 +1937,7 @@ module AltCoverTests =
 
       let names =
         def.MainModule.GetAllTypes()
-        |> Seq.map Naming.TypeName
+        |> Seq.map Naming.I.typeName
         |> Seq.toList
 
       let expected = [ "<Module>"; "Class1"; "Class2"; "Class3"; "Class4" ]
@@ -1960,7 +1952,7 @@ module AltCoverTests =
 
       let names =
         def.MainModule.GetAllTypes()
-        |> Seq.map Naming.FullTypeName
+        |> Seq.map Naming.fullTypeName
         |> Seq.toList
 
       let expected =
@@ -1979,7 +1971,7 @@ module AltCoverTests =
         def.MainModule.GetAllTypes()
         |> Seq.map
              (fun td ->
-             Naming.TypeRefName
+             Naming.I.typeRefName
                (TypeReference(td.Namespace, td.Name, def.MainModule, null)))
         |> Seq.toList
 
@@ -1997,11 +1989,11 @@ module AltCoverTests =
         def.MainModule.GetAllTypes()
         |> Seq.map (fun td ->
              let tr = TypeReference(td.Namespace, td.Name, def.MainModule, null)
-             if Naming.isNotNull td.DeclaringType then
+             if td.DeclaringType.IsNotNull then
                tr.DeclaringType <- TypeReference
                                      (td.DeclaringType.Namespace, td.DeclaringType.Name,
                                       def.MainModule, null)
-             Naming.FullTypeRefName(tr))
+             Naming.I.fullTypeRefName(tr))
         |> Seq.toList
 
       let expected =
@@ -2019,7 +2011,7 @@ module AltCoverTests =
       let names =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
-        |> Seq.map Naming.MethodName
+        |> Seq.map Naming.I.methodName
         |> Seq.toList
 
       let expected =
@@ -2041,7 +2033,7 @@ module AltCoverTests =
       let names =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
-        |> Seq.map Naming.FullMethodName
+        |> Seq.map Naming.fullMethodName
         |> Seq.toList
 
       let expected =
@@ -2128,7 +2120,7 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNet() =
-      let visitor, document = Report.ReportGenerator()
+      let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2137,8 +2129,8 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Method
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
 
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = TTBaseline
@@ -2150,21 +2142,21 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithSourceLink() =
-      let visitor, document = Report.ReportGenerator()
+      let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let here = SolutionDir()
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
-        Visitor.sourcelink := true
-        Visitor.staticFilter <- Some StaticFilter.NoFilter
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
-        Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
-        let map = Visitor.SourceLinkDocuments |> Option.get
+        CoverageParameters.sourcelink := true
+        CoverageParameters.staticFilter <- Some StaticFilter.NoFilter
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
+        Assert.That(Visitor.sourceLinkDocuments |> Option.isSome, "Documents should be present")
+        let map = Visitor.sourceLinkDocuments |> Option.get
         let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
 
         let files = document.Descendants(XName.Get "seqpnt")
@@ -2193,13 +2185,13 @@ module AltCoverTests =
         Assert.That (untracked, Is.EquivalentTo expected2)
 
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.sourcelink := false
-        Visitor.staticFilter <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.sourcelink := false
+        CoverageParameters.staticFilter <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter() =
-      let visitor, document = Report.ReportGenerator()
+      let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2208,8 +2200,8 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Path
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = TTBaseline
         let xml' =
@@ -2222,11 +2214,11 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetWhenExcluded() =
-      let visitor, document = Report.ReportGenerator()
+      let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2235,8 +2227,8 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Module
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
@@ -2251,11 +2243,11 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetWhenExcludedEvenIfTracked() =
-      let visitor, document = Report.ReportGenerator()
+      let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2264,9 +2256,9 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Module
-            >> Visitor.NameFilters.Add)
-        Visitor.TrackingNames.Add("Main")
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        CoverageParameters.trackingNames.Add("Main")
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
@@ -2281,8 +2273,8 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.TrackingNames.Clear()
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
 
     // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
     [<Test>]
@@ -2313,14 +2305,14 @@ module AltCoverTests =
         |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
         |> Seq.fold
              (fun state i ->
-             state + (Gendarme.``detect ternary pattern`` <| Some i.Previous.OpCode.Code))
+             state + (Gendarme.I.``detect ternary pattern`` <| Some i.Previous.OpCode.Code))
              0
 
       Assert.That(ternary, Is.EqualTo 1)
-      Assert.That(Gendarme.``detect ternary pattern`` None, Is.EqualTo 0)
-      Assert.That(Gendarme.CyclomaticComplexity target, Is.EqualTo 3)
+      Assert.That(Gendarme.I.``detect ternary pattern`` None, Is.EqualTo 0)
+      Assert.That(Gendarme.cyclomaticComplexity target, Is.EqualTo 3)
       Assert.That
-        (Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 3)
+        (Gendarme.I.switchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 3)
 
     [<Test>]
     let ShouldDetectSwitchNesting() =
@@ -2344,14 +2336,14 @@ module AltCoverTests =
         |> Seq.filter (fun m -> m.Name = "GetOperandType")
         |> Seq.head
       Assert.That
-        (Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 24)
+        (Gendarme.I.switchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 24)
 
     // OpenCover.fs
     [<Test>]
     let SafeMultiplyIsSafe() =
-      Assert.That(OpenCover.SafeMultiply 1 0, Is.EqualTo 1)
-      Assert.That(OpenCover.SafeMultiply 2 3, Is.EqualTo 6)
-      Assert.That(OpenCover.SafeMultiply 65536 65536, Is.EqualTo Int32.MaxValue)
+      Assert.That(OpenCover.safeMultiply 1 0, Is.EqualTo 1)
+      Assert.That(OpenCover.safeMultiply 2 3, Is.EqualTo 6)
+      Assert.That(OpenCover.safeMultiply 65536 65536, Is.EqualTo Int32.MaxValue)
 
     [<Test>]
     let EmptyMethodHasComplexity1() =
@@ -2359,28 +2351,28 @@ module AltCoverTests =
         MethodDefinition
           ("dummy", MethodAttributes.Abstract,
            TypeDefinition("System", "Void", TypeAttributes.Public))
-      Assert.That(Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
+      Assert.That(Gendarme.cyclomaticComplexity m, Is.EqualTo 1)
 
     [<Test>]
     let BranchChainsSerialize() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
       use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.find (fun m -> m.Name = "as_bar")
-      Visitor.Visit [] [] // cheat reset
+      Visitor.visit [] [] // cheat reset
       try
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.File
-            >> Visitor.NameFilters.Add)
+            >> CoverageParameters.nameFilters.Add)
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -2393,25 +2385,25 @@ module AltCoverTests =
         let branch = branches |> Seq.head
         Assert.That(branch.Target.Length, Is.EqualTo 2)
         let xbranch = XElement(XName.Get "test")
-        OpenCover.setChain xbranch branch
+        OpenCover.I.setChain xbranch branch
         Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let BranchChainsTerminate() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
       use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
+      ProgramDatabase.readSymbols def
       let method =
         def.MainModule.GetAllTypes()
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.find (fun m -> m.Name = "as_bar")
 
       let fin = method.Body.Instructions |> Seq.last
-      let list = Visitor.getJumpChain fin fin
+      let list = Visitor.I.getJumpChain fin fin
       Assert.That(list, Is.EquivalentTo [ fin ])
 
     let rec private RecursiveValidateOpenCover result expected' depth zero
@@ -2466,16 +2458,16 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let here = SolutionDir()
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
-        Visitor.sourcelink := true
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
-        Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
-        let map = Visitor.SourceLinkDocuments |> Option.get
+        CoverageParameters.sourcelink := true
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
+        Assert.That(Visitor.sourceLinkDocuments |> Option.isSome, "Documents should be present")
+        let map = Visitor.sourceLinkDocuments |> Option.get
         let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
 
         let files = document.Descendants(XName.Get "File")
@@ -2501,19 +2493,19 @@ module AltCoverTests =
                         ]
         Assert.That (untracked, Is.EquivalentTo expected2)
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.sourcelink := false
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.sourcelink := false
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2524,21 +2516,21 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let X name = XName.Get(name)
       try
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.coverstyle <- CoverStyle.LineOnly
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.coverstyle <- CoverStyle.LineOnly
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2560,22 +2552,22 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
-        Visitor.coverstyle <- CoverStyle.All
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
+        CoverageParameters.coverstyle <- CoverStyle.All
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let X name = XName.Get(name)
       try
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.coverstyle <- CoverStyle.BranchOnly
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.coverstyle <- CoverStyle.BranchOnly
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2593,9 +2585,9 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
-        Visitor.coverstyle <- CoverStyle.All
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
+        CoverageParameters.coverstyle <- CoverStyle.All
 
     let AddTrackingForMain xml =
       let resource =
@@ -2617,28 +2609,28 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyleWithTracking() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Visitor.NameFilters.Clear()
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.Add("Main")
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.Add("Main")
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let baseline = AddTrackingForMain "Sample1WithOpenCover.xml"
         let result = document.Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.reportFormat <- None
-        Visitor.NameFilters.Clear()
-        Visitor.TrackingNames.Clear()
+        CoverageParameters.theReportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2647,8 +2639,8 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Module
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
@@ -2665,24 +2657,25 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true true
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithModuleExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.Add("Main")
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.Add("Main")
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
         "Sample"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Module
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
@@ -2702,25 +2695,25 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true true
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.TrackingNames.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
-      Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+      let visitor, document = OpenCover.reportGenerator()
+      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Assert.That(Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCover)
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Type
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2731,39 +2724,39 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
-      Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+      let visitor, document = OpenCover.reportGenerator()
+      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.Add("Main")
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.Add("Main")
         Assert.That
-          (Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
+          (CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Type
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let baseline = AddTrackingForMain "Sample1ClassExclusion.xml"
         let result = document.Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.TrackingNames.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2772,8 +2765,8 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Method
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2785,11 +2778,11 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2798,8 +2791,8 @@ module AltCoverTests =
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Path
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2820,38 +2813,38 @@ module AltCoverTests =
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle() =
-      let visitor, document = OpenCover.ReportGenerator()
-      Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+      let visitor, document = OpenCover.reportGenerator()
+      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Visitor.TrackingNames.Clear()
-        Visitor.TrackingNames.Add("Main")
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.trackingNames.Add("Main")
         Assert.That
-          (Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
+          (CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
         "Main"
         |> (Regex
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Method
-            >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
         let baseline = AddTrackingForMain "Sample1MethodExclusion.xml"
         let result = document.Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
-        Visitor.NameFilters.Clear()
-        Visitor.TrackingNames.Clear()
-        Visitor.reportFormat <- None
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.trackingNames.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldSortFileIds() =
-      let visitor, document = OpenCover.ReportGenerator()
+      let visitor, document = OpenCover.reportGenerator()
       let X name = XName.Get(name)
       // Hack for running while instrumented
       // Hack for running while instrumented
@@ -2870,7 +2863,7 @@ module AltCoverTests =
 #else
       let path' = path
 #endif
-      Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
+      Visitor.visit [ visitor ] (Visitor.I.toSeq (path',[]))
       Assert.That(document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
       Assert.That(document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
       document.Descendants(X "File")

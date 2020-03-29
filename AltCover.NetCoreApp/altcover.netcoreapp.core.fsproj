@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp2.0;net45</TargetFrameworks>
-    <AssemblyName>altcover.netcoreapp</AssemblyName>
+    <AssemblyName>AltCover.NetCoreApp</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>

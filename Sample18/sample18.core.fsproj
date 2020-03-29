@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0;net47</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>Sample18</AssemblyName>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+   <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+ </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Tests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="1.2.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
+  </ItemGroup>
+</Project>

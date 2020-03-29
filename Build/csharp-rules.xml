@@ -1,48 +1,57 @@
 <gendarme>
   <ruleset name="default">
-    <!-- AvoidAssemblyVersionMismatchRule is silly as assembly version is a contract, and many file versions can satisfy it -->
+    <!-- AvoidAssemblyVersionMismatchRule is silly as assembly version is a contract,
+         and many file versions can satisfy it -->
     <rules include="*"
            exclude="AvoidAssemblyVersionMismatchRule"
            from="Gendarme.Rules.BadPractice.dll" />
-    <rules include="*" from="Gendarme.Rules.Concurrency.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Concurrency.dll" />
     <rules include="*"
            from="Gendarme.Rules.Correctness.dll" />
     <!-- AvoidSmallNamespaceRule doesn't account for specialized code -->
     <rules include="*"
            exclude="AvoidSmallNamespaceRule"
            from="Gendarme.Rules.Design.dll" />
+    <!-- DoNotExposeNestedGenericSignaturesRule is a rule for morts at best and
+         doesn't really make any problems for F# -->
     <rules include="*"
+           exclude="DoNotExposeNestedGenericSignaturesRule"
            from="Gendarme.Rules.Design.Generic.dll" />
     <rules include="*"
            from="Gendarme.Rules.Design.Linq.dll" />
     <rules include="*"
            from="Gendarme.Rules.Exceptions.dll" />
-    <rules include="*" from="Gendarme.Rules.Interoperability.dll" />
-    <rules include="*" from="Gendarme.Rules.Interoperability.Com.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Interoperability.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Interoperability.Com.dll" />
     <rules include="*"
            from="Gendarme.Rules.Naming.dll" />
-    <!-- Do for Genbu -->
     <rules include="*"
-           exclude="AvoidReturningArraysOnPropertiesRule"
            from="Gendarme.Rules.Performance.dll" />
-    <!-- AltCover is operationally tested on Mono; System.Xml.Schema.Extensions::Validate seems to be there now -->
+    <!-- AltCover is operationally tested on Mono;
+         System.Xml.Schema.Extensions::Validate seems to be there now -->
     <rules include="*"
-           exclude="MonoCompatibilityReviewRule"
            from="Gendarme.Rules.Portability.dll" />
-    <rules include="*" from="Gendarme.Rules.Security.dll" />
-    <rules include="*" from="Gendarme.Rules.Security.Cas.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Security.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Security.Cas.dll" />
     <!-- I have no real use for serialization -->
     <rules include="*"
-           exclude="MarkAllNonSerializableFieldsRule | RelaxedMarkAllNonSerializableFieldsRule"
            from="Gendarme.Rules.Serialization.dll" />
     <!-- Use the relaxed variant -->
     <rules include="*"
            exclude="AvoidCodeDuplicatedInSameClassRule"
            from="Gendarme.Rules.Smells.dll" />
-    <rules include="*" from="Gendarme.Rules.Ui.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Ui.dll" />
     <rules include="*"
            from="Gendarme.Rules.Maintainability.dll" />
-    <rules include="*" from="Gendarme.Rules.Gendarme.dll" />
-    <rules include="*" from="Gendarme.Rules.Globalization.dll"/>
+    <rules include="*"
+           from="Gendarme.Rules.Gendarme.dll" />
+    <rules include="*"
+           from="Gendarme.Rules.Globalization.dll" />
   </ruleset>
 </gendarme>
