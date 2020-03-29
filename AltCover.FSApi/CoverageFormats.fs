@@ -523,6 +523,6 @@ module CoverageFormats =
   Scope="member", Target="AltCover.CoverageFormats.#PostProcess(System.Xml.Linq.XDocument,AltCover.CoverageFormats+Ordinal)",
   Justification="Avoid speculative generality")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields",
- Scope="member", Target="AltCover.CoverageFormats+setSummary@63D.#scoreToString",
+ Scope="member", Target="AltCover.CoverageFormats+setSummary@58D.#scoreToString",
  Justification="Compiler Generated")>]
 ()
