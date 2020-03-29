@@ -2341,9 +2341,9 @@ module AltCoverTests =
     // OpenCover.fs
     [<Test>]
     let SafeMultiplyIsSafe() =
-      Assert.That(OpenCover.I.safeMultiply 1 0, Is.EqualTo 1)
-      Assert.That(OpenCover.I.safeMultiply 2 3, Is.EqualTo 6)
-      Assert.That(OpenCover.I.safeMultiply 65536 65536, Is.EqualTo Int32.MaxValue)
+      Assert.That(OpenCover.safeMultiply 1 0, Is.EqualTo 1)
+      Assert.That(OpenCover.safeMultiply 2 3, Is.EqualTo 6)
+      Assert.That(OpenCover.safeMultiply 65536 65536, Is.EqualTo Int32.MaxValue)
 
     [<Test>]
     let EmptyMethodHasComplexity1() =

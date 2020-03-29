@@ -63,6 +63,11 @@ type internal OpenCoverContext =
       TotalBr = 0 }
 
 module internal OpenCover =
+  let internal safeMultiply x y =
+    try
+      Checked.op_Multiply x <| Math.Max(1, y)
+    with :? OverflowException -> Int32.MaxValue
+
   module internal I =
     let internal setChain (xbranch : XElement) branch =
       let chain = branch.Target.Tail |> List.map (fun i -> i.Offset)
@@ -73,11 +78,6 @@ module internal OpenCover =
          | l ->
              String.Join
                (" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
-
-    let internal safeMultiply x y =
-      try
-        Checked.op_Multiply x <| Math.Max(1, y)
-      with :? OverflowException -> Int32.MaxValue
 
   [<SuppressMessage("Microsoft.Maintainability", "CA1506",
                     Justification = "partitioned into closures")>]
@@ -315,7 +315,7 @@ module internal OpenCover =
                match x.Name.LocalName with
                | "SequencePoint" ->
                    sq.SetAttributeValue("bec".X, bec)
-                   (I.safeMultiply np0 bec, 0, x)
+                   (safeMultiply np0 bec, 0, x)
                | _ -> (np0, bec + 1, sq)) (1, 0, sp.Head)
 
         method.SetAttributeValue("nPathComplexity".X, np)
@@ -325,7 +325,7 @@ module internal OpenCover =
         let np =
           bp
           |> List.groupBy (fun bp -> bp.Attribute("offset".X).Value)
-          |> Seq.fold (fun np0 (_, b) -> I.safeMultiply (Seq.length b) np0) 1
+          |> Seq.fold (fun np0 (_, b) -> safeMultiply (Seq.length b) np0) 1
         method.SetAttributeValue("nPathComplexity".X, np)
 
     let addTracking (s : OpenCoverContext) (m : MethodDefinition) t =

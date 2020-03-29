@@ -19,11 +19,6 @@ module CoverageFormats =
   | Offset = 0
   | SL = 1
 
-  let internal safeMultiply x y =
-    try
-      Checked.op_Multiply x <| Math.Max(1, y)
-    with :? OverflowException -> Int32.MaxValue
-
   let internal copyFillMethodPoint (m : XElement) (sp : XElement seq) =
     m.Attribute(XName.Get ("type", "http://www.w3.org/2001/XMLSchema-instance")).Value
        <- "SequencePoint"
@@ -370,7 +365,7 @@ module CoverageFormats =
     // npath complexity
     let np = brapts
              |> List.groupBy (fun bp -> bp.Attribute(XName.Get "sl").Value)
-             |> Seq.fold (fun np0 (_, b) -> safeMultiply (Seq.length b) np0) 1
+             |> Seq.fold (fun np0 (_, b) -> OpenCover.safeMultiply (Seq.length b) np0) 1
     m.SetAttributeValue(XName.Get "nPathComplexity", np)
 
     let declaringTypeName = (m.AncestorsAndSelf(XName.Get "Class") |> Seq.head).Descendants(XName.Get "FullName")
