@@ -286,6 +286,8 @@ let _Target s f =
 
 // Preparation
 
+_Target "Entry" ignore
+
 _Target "Preparation" ignore
 
 _Target "Clean" (fun _ ->
