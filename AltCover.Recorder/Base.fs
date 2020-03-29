@@ -76,18 +76,9 @@ and [<NoComparison>]
     }
     with
     static member Create () = { Count = 0L; Tracks = List<Track>() }
-    static member Init n l = let tmp = { PointVisit.Create() with Count = n }
-                             tmp.Tracks.AddRange l
-                             tmp
     member self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
     member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
     member self.Total() = self.Count + int64 self.Tracks.Count
-
-module internal Assist =
-  let internal SafeDispose x =
-    try
-      (x :> IDisposable).Dispose()
-    with :? ObjectDisposedException -> ()
 
 module internal Counter =
   /// <summary>
@@ -153,11 +144,24 @@ module internal Counter =
     | ReportFormat.OpenCover -> OpenCoverXml
     | _ -> NCoverXml
 
+  let internal MinTime (t1:DateTime) (t2:DateTime) =
+    if t1 < t2
+    then t1
+    else t2
+
+  let internal MaxTime (t1:DateTime) (t2:DateTime) =
+    if t1 > t2
+    then t1
+    else t2
+
   /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
   let internal UpdateReport (postProcess : XmlDocument -> unit)
       (pointProcess : XmlElement -> List<Track> -> unit) own
       (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
@@ -171,10 +175,10 @@ module internal Counter =
       let measureTimeAttr = root.GetAttribute("measureTime")
       let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
       let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
-      startTime <- (if startTime < oldStartTime then startTime
-                    else oldStartTime).ToUniversalTime() // Min
-      measureTime <- (if measureTime > oldMeasureTime then measureTime
-                      else oldMeasureTime).ToUniversalTime() // Max
+      let st = MinTime startTime oldStartTime
+      startTime <- st.ToUniversalTime() // Min
+      let mt = MaxTime measureTime  oldMeasureTime
+      measureTime <- mt.ToUniversalTime() // Max
       root.SetAttribute
         ("startTime",
          startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
@@ -189,7 +193,13 @@ module internal Counter =
 
     let (m, i, m', s, v) = XmlByFormat format
 
-    coverageDocument.SelectNodes(m)
+#if NET2
+    let
+#else
+    use
+#endif
+       moduleNodes = coverageDocument.SelectNodes(m)
+    moduleNodes
     |> Seq.cast<XmlElement>
     |> Seq.map (fun el -> el.GetAttribute(i), el)
     |> Seq.filter (fun (k, _) -> counts.ContainsKey k)
@@ -199,13 +209,24 @@ module internal Counter =
          // affectedModule.Descendants(XName.Get("seqpnt"))
          // Get the methods, then flip their
          // contents before concatenating
-         let nn = affectedModule.SelectNodes(m')
+#if NET2
+         let
+#else
+         use
+#endif
+             nn = affectedModule.SelectNodes(m')
          nn
          |> Seq.cast<XmlElement>
          |> Seq.collect (fun (method : XmlElement) ->
               s
               |> Seq.collect (fun (name, flag) ->
-                   method.SelectNodes(name)
+#if NET2
+                   let
+#else
+                   use
+#endif
+                       nodes = method.SelectNodes(name)
+                   nodes
                    |> Seq.cast<XmlElement>
                    |> Seq.map (fun x -> (x, flag))
                    |> Seq.toList
@@ -241,6 +262,9 @@ module internal Counter =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "'Target' is disposed")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
   let internal DoFlush postProcess pointProcess own counts format report output =
     use coverageFile =
       new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
@@ -274,6 +298,7 @@ module internal Counter =
       if not (counts.ContainsKey hitPointId)
       then counts.Add(hitPointId, PointVisit.Create()))
 
+#if RUNNER
   let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
                         (t : Dictionary<string, Dictionary<int, PointVisit>>) =
     let mutable hitcount = 0L
@@ -290,6 +315,7 @@ module internal Counter =
                                                                v.Tracks.AddRange(add.Tracks)
                           )))
     hitcount
+ #endif
 
   let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =

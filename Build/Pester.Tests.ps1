@@ -15,42 +15,43 @@ Describe "Invoke-Altcover" {
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
-        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-
+        $result = [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount)
+        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+                            #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w = ""
         Invoke-AltCover -Runner -RecorderDirectory $o -WarningVariable w
         $xm = [xml](Get-Content $x)
+
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
-        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        $result = [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount)
+        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+                            #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug",  "sample2.core.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "sample2.core.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
-        [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount) | Should -Be "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
-        $summary.Replace("`r", [String]::Empty).Replace("`n", "|") | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 23 (43.48)|"
+        $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
+        $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+                            #"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        $result = $summary.Replace("`r", [String]::Empty).Replace("`n", "|") 
+        # Write-Host $result
+        # [Console]::WriteLine($result)
+        $result | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 11 of 28 (39.29)|"
+                            #"Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 23 (43.48)|"
     }
 
     It "Fails on garbage" {
-        $saved = [System.Console]::Error
-        $stderr = new-object System.IO.StringWriter @()
-        [System.Console]::SetError($stderr)
         try 
         {
           $ev = ""
           Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory "./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0" -InPlace -ErrorVariable ev -ErrorAction SilentlyContinue
         }
-		catch {
-          $ev | Should -BeTrue
-          $stderr.ToString()  | Should -BeTrue	      	
-		}
         finally
         {
-            [System.Console]::SetError($saved)     
-        }
-
-        $ev | Should -BeTrue
-        $stderr.ToString()  | Should -BeTrue
+          $ev | Should -Be ("--inputDirectory : Directory ./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0 not found" +
+                            [Environment]::NewLine +"255")
+		    }
     }
 
     It "Reports the version" {        
@@ -559,9 +560,11 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
-    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-    $result | Should -Be $expected.Replace("`r", "")
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result | Should -Be $written.Replace("`r", "")
+
+    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+    $result | Should -Be $expected.Replace("`r", "")
   }
 
   It "converts from the pipeline" {
@@ -591,15 +594,17 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
-    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-    $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
+    $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+
+    $result | Should -Be $expected.Replace("`r", "")
   }
 }
 
 Describe "Compress-Branching" {
   It "Removes interior branches" {
     $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -617,7 +622,7 @@ Describe "Compress-Branching" {
   }
   It "Unifies equivalent branches" {
     $xml = Compress-Branching -SameSpan -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+  	$xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -635,7 +640,7 @@ Describe "Compress-Branching" {
   }
   It "DoesBoth" {
     $xml = [xml](Get-Content  "./Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -662,5 +667,40 @@ Describe "Compress-Branching" {
 	}
 
 	$fail | Should -BeFalse
+  }
+}
+
+Describe "Format-FromCoverletOpenCover" {
+  It "Outputs a document from a file" {
+    $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
+    $assemblies = @()
+    $assemblies += $assembly
+    $hash = Get-FileHash -Algorithm SHA1 $assembly
+    $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
+
+
+    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+
+    $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
+    $hactual = $doc.CoverageSession.Modules.Module.hash
+    $hactual | Should -BeExactly $hexpected
+
+    $expected = [xml](Get-Content "./Tests/OpenCoverForPester.coverlet.xml")
+    $expected.CoverageSession.Modules.Module.hash = $hactual
+    $expected.CoverageSession.Modules.Module.ModulePath = $assembly
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+
+    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+
+
   }
 }

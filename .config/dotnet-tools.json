@@ -3,15 +3,21 @@
   "isRoot": true,
   "tools": {
     "dotnet-reportgenerator-globaltool": {
-      "version": "4.3.9",
+      "version": "4.5.0",
       "commands": [
         "reportgenerator"
       ]
     },
     "fake-cli": {
-      "version": "5.19",
+      "version": "5.19.1",
       "commands": [
         "fake"
+      ]
+    },
+    "altcode.gendarme-tool": {
+      "version": "2020.3.9.15370-pre-release",      
+      "commands": [
+        "gendarme"
       ]
     }
   }

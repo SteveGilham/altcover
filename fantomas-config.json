@@ -1,0 +1,15 @@
+{
+  "IndentSpaceNum":2,
+  "PageWidth":90,
+  "SemicolonAtEndOfLine":false,
+  "SpaceBeforeArgument":true ,
+  "SpaceBeforeColon":true,
+  "SpaceAfterComma":true ,
+  "SpaceAfterSemicolon":true ,
+  "IndentOnTryWith":false,
+  "ReorderOpenDeclaration":false,
+  "SpaceAroundDelimiter":true ,
+  "KeepNewlineAfter":false,
+  "MaxIfThenElseShortWidth":40,
+  "StrictMode":false
+}

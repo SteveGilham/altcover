@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net47</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <AssemblyName>AltCover.WeakName.Tests</AssemblyName>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nunit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <Reference Include="Gendarme.Framework" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Gendarme.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Maintainability" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Gendarme.Rules.Maintainability.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
+    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Tests\AssemblyInfo.fs">
+      <Link>AssemblyInfo.fs</Link>
+    </Compile>
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover\Augment.fs" Condition="'$(TargetFramework)' == 'net47'">
+      <Link>Augment.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover\Gendarme.fs" Condition="'$(TargetFramework)' == 'net47'">
+      <Link>Gendarme.fs</Link>
+    </Compile>
+    <Compile Include="Tests.fs" Condition="'$(TargetFramework)' == 'net47'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net47'" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
+  </ItemGroup>
+
+</Project>

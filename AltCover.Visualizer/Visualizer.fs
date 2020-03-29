@@ -25,7 +25,9 @@ open Microsoft.Win32
 #endif
 
 open Mono.Options
+open System.Diagnostics.CodeAnalysis
 
+[<Sealed>]
 type internal Handler() =
   class
 #if NETCOREAPP2_1
@@ -39,7 +41,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable mainWindow : Window
 
     [<
@@ -48,7 +50,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable openButton : MenuToolButton
 
     [<
@@ -57,7 +59,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable separator1 : SeparatorToolItem
 
     [<
@@ -66,7 +68,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable exitButton : ToolButton
 
     [<
@@ -75,7 +77,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable refreshButton : ToolButton
 
     [<
@@ -84,7 +86,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable fontButton : ToolButton
 
     [<
@@ -93,7 +95,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable showAboutButton : ToolButton
 
     [<
@@ -102,7 +104,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable aboutVisualizer : AboutDialog
 
     [<
@@ -111,7 +113,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable fileOpenMenu : Menu
 
     [<
@@ -120,8 +122,11 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable classStructureTree : TreeView
+
+    [<DefaultValue(true)>]
+    val mutable auxModel : TreeStore
 
     [<
 #if NETCOREAPP2_1
@@ -129,7 +134,7 @@ type internal Handler() =
 #else
       Widget;
 #endif
-      DefaultValue(true)>]
+    DefaultValue(true)>]
     val mutable codeView : TextView
 
     [<DefaultValue(true)>]
@@ -145,7 +150,7 @@ type internal Handler() =
     val mutable activeRow : int
   end
 
-module Persistence =
+module internal Persistence =
   let mutable internal save = true
 
 #if NETCOREAPP2_1
@@ -155,45 +160,58 @@ module Persistence =
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions",
+      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+      Justification = "need to exhaustively list the espected ones"
+  )>]
   let private EnsureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
     let file = Path.Combine(dir.FullName, "Visualizer.xml")
     if file
        |> File.Exists
-       |> not
-    then (file, DefaultDocument())
+       |> not then
+      (file, DefaultDocument())
     else
       try
         let doc = XDocument.Load(file)
         try
           let schemas = new XmlSchemaSet()
-          use xsd =
-            new StreamReader(Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-          schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
+          use str = Assembly.GetExecutingAssembly()
+                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
+          use xr = new StreamReader(str)
+          use xsd = xr |> XmlReader.Create
+
+          schemas.Add(String.Empty,  xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)
-        with xx ->
-          printfn "%A\r\n\r\n%A" xx doc
+        with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
+          let nl = Environment.NewLine
+          printfn "%A%s%s%A" xx nl nl doc
           (file, DefaultDocument())
-      with x ->
+      with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
         printfn "%A" x
         (file, DefaultDocument())
 
   let internal saveSchemaDir (s : string) =
     let file, config = EnsureFile()
-    let node = config.XPathSelectElements("AltCover.Visualizer")
-               |> Seq.toList
-               |> Seq.head
+
+    let node =
+      config.XPathSelectElements("AltCover.Visualizer")
+      |> Seq.toList
+      |> Seq.head
     if match (node.Attribute(XName.Get "GSettingsSchemaDir"), String.IsNullOrWhiteSpace s) with
-       | (null, false) -> node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
-                          true
-       | (a, false) -> a.Value <- s
-                       true
+       | (null, false) ->
+           node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
+           true
+       | (a, false) ->
+           a.Value <- s
+           true
        | (null, true) -> false
-       | (a, true) -> a.Remove()
-                      true
+       | (a, true) ->
+           a.Remove()
+           true
     then config.Save file
 
   let internal saveFont (font : string) =
@@ -215,9 +233,11 @@ module Persistence =
 
   let internal readSchemaDir() =
     let file, config = EnsureFile()
-    let node = config.XPathSelectElements("AltCover.Visualizer")
-               |> Seq.toList
-               |> Seq.head
+
+    let node =
+      config.XPathSelectElements("AltCover.Visualizer")
+      |> Seq.toList
+      |> Seq.head
     match node.Attribute(XName.Get "GSettingsSchemaDir") with
     | null -> String.Empty
     | a -> a.Value
@@ -226,10 +246,10 @@ module Persistence =
     let file, config = EnsureFile()
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] ->
-      (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
+        (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
     | x :: _ ->
-      x.RemoveAll()
-      x.Add path
+        x.RemoveAll()
+        x.Add path
     config.Save file
 
   let internal readFolder() =
@@ -238,7 +258,7 @@ module Persistence =
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
-  let internal saveCoverageFiles (coverageFiles : string list) =
+  let internal saveCoverageFiles (coverageFiles : string seq) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
@@ -266,11 +286,8 @@ module Persistence =
     let (width, height) = w.GetSize()
     let element =
       XElement
-        (XName.Get "Geometry",
-         XAttribute(XName.Get "x", x),
-         XAttribute(XName.Get "y", y),
-         XAttribute(XName.Get "width", width),
-         XAttribute(XName.Get "height", height))
+        (XName.Get "Geometry", XAttribute(XName.Get "x", x), XAttribute(XName.Get "y", y),
+         XAttribute(XName.Get "width", width), XAttribute(XName.Get "height", height))
 
     match config.XPathSelectElements("//RecentlyOpened") |> Seq.toList with
     | [] -> (config.FirstNode :?> XElement).Add element
@@ -336,8 +353,14 @@ module Persistence =
     let width = Math.Max(key.GetValue("width", 600) :?> int, 600)
     let height = Math.Max(key.GetValue("height", 450) :?> int, 450)
     let bounds = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea
-    let x = Math.Min(Math.Max(key.GetValue("x", (bounds.Width - width) / 2) :?> int, 0), bounds.Width - width)
-    let y = Math.Min(Math.Max(key.GetValue("y", (bounds.Height - height) / 2) :?> int, 0), bounds.Height - height)
+    let x =
+      Math.Min
+        (Math.Max(key.GetValue("x", (bounds.Width - width) / 2) :?> int, 0),
+         bounds.Width - width)
+    let y =
+      Math.Min
+        (Math.Max(key.GetValue("y", (bounds.Height - height) / 2) :?> int, 0),
+         bounds.Height - height)
     w.DefaultHeight <- height
     w.DefaultWidth <- width
     w.Move(x, y)
@@ -365,86 +388,115 @@ module Persistence =
     // Update the recent files menu and registry store from memory cache
     // with new most recent file
     let RegDeleteKey (key : RegistryKey) (name : string) = key.DeleteValue(name)
-    let RegSetKey (key : RegistryKey) (index : int) (name : string) = key.SetValue(index.ToString(), name)
+    let RegSetKey (key : RegistryKey) (index : int) (name : string) =
+      key.SetValue(index.ToString(), name)
     use fileKey = Registry.CurrentUser.CreateSubKey(recent)
     fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
     files |> Seq.iteri (RegSetKey fileKey)
 
-  let clearGeometry () =
-    do
-      use k1 = Registry.CurrentUser.CreateSubKey(geometry)
-      ()
+  let clearGeometry() =
+    do use k1 = Registry.CurrentUser.CreateSubKey(geometry)
+       ()
     Registry.CurrentUser.DeleteSubKeyTree(geometry)
 #endif
 
-module Gui =
+module private Gui =
+
+  [<SuppressMessage("Gendarme.Rules.Design",
+                    "AbstractTypesShouldNotHavePublicConstructorsRule",
+                    Justification = "The compiler ignores the 'private ()' declaration")>]
+  [<AbstractClass; Sealed>] // ~ Static class for methods with params array arguments
+  type Format private () =
+    static member internal Local(resource, [<ParamArray>] args) =
+      String.Format(
+        CultureInfo.CurrentCulture,
+        resource,
+        args)
+
+    static member GetResourceString(key : string) =
+      let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
+      let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
+      resources.GetString(key)
+
+    static member Resource(resource, [<ParamArray>] args) =
+      Format.Local(Format.GetResourceString resource, args)
+
   // --------------------------  General Purpose ---------------------------
   // Safe event dispatch => GUI update
   let private InvokeOnGuiThread(action : unit -> unit) =
     Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
 
-  let private GetResourceString(key : string) =
-    let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
-    resources.GetString(key)
-
   let private XmlIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
   let private AssemblyIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
   let private EventIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
   let private NamespaceIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
   let private ModuleIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
   let private EffectIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
   let private ClassIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
   let private PropertyIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
   let private MethodIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
   let branched =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_grn.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_grn.png")))
   let branch =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_ylw.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_ylw.png")))
   let redbranch =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_red.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_red.png")))
   let blank =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
-                             .GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
   // --------------------------  Persistence ---------------------------
   // -------------------------- Tree View ---------------------------
   let Mappings = new Dictionary<TreePath, XPathNavigator>()
 
   let private PopulateClassNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
-    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter) (item : ((string * MethodType) * MethodKey seq)) =
+    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter)
+        (item : (string * MethodType) * MethodKey seq) =
       let ((display, special), keys) = item
 
       let ApplyMethod (mmodel : TreeStore) (mrow : TreeIter) (x : MethodKey) =
         let fullname = x.m.GetAttribute("fullname", String.Empty)
 
         let args =
-          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then String.Empty
+          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then
+            String.Empty
           else
             let bracket = fullname.IndexOf('(')
-            if bracket < 0 then String.Empty
-            else fullname.Substring(bracket)
+            if bracket < 0 then String.Empty else fullname.Substring(bracket)
 
         let displayname = x.name + args
 
@@ -454,84 +506,117 @@ module Gui =
           | o -> o + 2
 
         let newrow =
-          mmodel.AppendValues(mrow,
-                                [| displayname.Substring(offset) :> obj
-                                   MethodIcon.Force() :> obj |])
+          mmodel.AppendValues
+            (mrow,
+             [| displayname.Substring(offset) :> obj
+                MethodIcon.Force() :> obj |])
 
         Mappings.Add(mmodel.GetPath(newrow), x.m)
 
-      if special <> MethodType.Normal
-      then let newrow =
-             theModel.AppendValues(theRow,
-                                  [| display :> obj
-                                     (if special = MethodType.Property
-                                      then PropertyIcon
-                                      else EventIcon).Force()  :> obj |])
-           keys
-           |> Seq.sortBy (fun key -> key.name |> DisplayName)
-           |> Seq.iter (ApplyMethod theModel newrow)
-      else ApplyMethod theModel theRow (keys |> Seq.head)
+      if special <> MethodType.Normal then
+        let newrow =
+          theModel.AppendValues
+            (theRow,
+             [| display :> obj
+                (if special = MethodType.Property then PropertyIcon else EventIcon)
+                  .Force() :> obj |])
+        keys
+          |> Seq.sortBy (fun key -> key.name |> DisplayName)
+          |> Seq.iter (ApplyMethod theModel newrow)
+      else
+        ApplyMethod theModel theRow (keys |> Seq.head)
 
-    let methods = nodes
-                  |> Seq.groupBy (fun key -> key.name |> DisplayName |> HandleSpecialName)
-                  |> Seq.toArray
-    methods
-    |> Array.sortInPlaceWith (fun ((l,lb),_) ((r, rb),_) ->
-                                let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
-                                let sort2 = if sort1 = 0
-                                            then String.Compare(l, r, StringComparison.Ordinal)
-                                            else sort1
-                                if sort2 = 0
-                                then lb.CompareTo rb
-                                else sort2)
-    methods |> Array.iter (ApplyToModel model row)
+    let methods =
+      nodes
+      |> Seq.groupBy (fun key ->
+           key.name
+           |> DisplayName
+           |> HandleSpecialName)
+      |> Seq.toArray
+
+    let orderMethods array =
+      array
+      |> Array.sortInPlaceWith (fun ((l, (lb : MethodType)), _) ((r, rb), _) ->
+           let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+
+           let sort2 =
+             if sort1 = 0
+             then String.Compare(l, r, StringComparison.Ordinal)
+             else sort1
+           if sort2 = 0 then lb.CompareTo rb else sort2)
+
+    let applyMethods array =
+      array |> Array.iter (ApplyToModel model row)
+
+    methods |> orderMethods
+    methods |> applyMethods
 
   let private PopulateNamespaceNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
     let ApplyToModel (theModel : TreeStore) (theRow : TreeIter)
         (group : string * seq<MethodKey>) =
       let name = fst group
-      let icon = if group |> snd |> Seq.isEmpty
-                 then ModuleIcon.Force()
-                 else if group |> snd |> Seq.exists (fun key -> let d = key.name |> DisplayName
-                                                                (d.StartsWith(".", StringComparison.Ordinal)
-                                                                 || d.Equals("Invoke")) |> not)
-                      then ClassIcon.Force()
-                      else EffectIcon.Force()
+
+      let icon =
+        if group
+           |> snd
+           |> Seq.isEmpty then
+          ModuleIcon.Force()
+        else if group
+                |> snd
+                |> Seq.exists (fun key ->
+                     let d = key.name |> DisplayName
+                     (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
+                     |> not) then
+          ClassIcon.Force()
+        else
+          EffectIcon.Force()
 
       let newrow =
-        theModel.AppendValues(theRow,
-                              [| name :> obj
-                                 icon :> obj |])
+        theModel.AppendValues
+          (theRow,
+           [| name :> obj
+              icon :> obj |])
+
       PopulateClassNode theModel newrow (snd group)
       newrow
 
     let isNested (name : string) n =
       name.StartsWith(n + "+", StringComparison.Ordinal)
       || name.StartsWith(n + "/", StringComparison.Ordinal)
-    let classlist = nodes
-                    |> Seq.groupBy (fun x -> x.classname)
-                    |> Seq.toList
 
-    let classnames = classlist |> Seq.map fst |> Set.ofSeq
+    let classlist =
+      nodes
+      |> Seq.groupBy (fun x -> x.classname)
+      |> Seq.toList
 
-    let modularize = classnames
-                     |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
-                     |> Seq.map (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
-                     |> Seq.distinct
-                     |> Seq.filter (fun mn -> classnames |> Set.contains mn |> not)
-                     |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
-                     |> Seq.toList
-    let classes = Seq.append classlist modularize
-                  |> Seq.toArray
+    let classnames =
+      classlist
+      |> Seq.map fst
+      |> Set.ofSeq
+
+    let modularize =
+      classnames
+      |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
+      |> Seq.map
+           (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
+      |> Seq.distinct
+      |> Seq.filter (fun mn ->
+           classnames
+           |> Set.contains mn
+           |> not)
+      |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
+      |> Seq.toList
+
+    let classes = Seq.append classlist modularize |> Seq.toArray
 
     Array.sortInPlaceWith (fun l r ->
-                            let left = fst l
-                            let right = fst r
-                            let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
-                            if sort = 0
-                            then String.Compare(left, right, StringComparison.Ordinal)
-                            else sort) classes
+      let left = fst l
+      let right = fst r
+      let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
+      if sort = 0
+      then String.Compare(left, right, StringComparison.Ordinal)
+      else sort) classes
     classes
     |> Seq.fold (fun stack c ->
          let name = fst c
@@ -554,9 +639,10 @@ module Gui =
       let name = fst group
 
       let newrow =
-        theModel.AppendValues(theRow,
-                              [| name :> obj
-                                 NamespaceIcon.Force() :> obj |])
+        theModel.AppendValues
+          (theRow,
+           [| name :> obj
+              NamespaceIcon.Force() :> obj |])
       PopulateNamespaceNode theModel newrow (snd group)
 
     let methods =
@@ -567,11 +653,9 @@ module Gui =
            let lastdot = classfullname.LastIndexOf('.')
            { m = m
              spacename =
-               if lastdot < 0 then String.Empty
-               else classfullname.Substring(0, lastdot)
+               if lastdot < 0 then String.Empty else classfullname.Substring(0, lastdot)
              classname =
-               if lastdot < 0 then classfullname
-               else classfullname.Substring(1 + lastdot)
+               if lastdot < 0 then classfullname else classfullname.Substring(1 + lastdot)
              name = m.GetAttribute("name", String.Empty) })
       |> Seq.groupBy (fun x -> x.spacename)
       |> Seq.sortBy fst
@@ -587,7 +671,7 @@ module Gui =
     md.Title <- "AltCover.Visualizer"
     md.Run() |> ignore
 #if NETCOREAPP2_1
-    // implicit Dispose()
+  // implicit Dispose()
 #else
     md.Destroy()
 #endif
@@ -597,39 +681,34 @@ module Gui =
     InvokeOnGuiThread(SendMessageToWindow)
 
   let private InvalidCoverageFileMessage (parent : Window) (x : InvalidFile) =
-    let format = GetResourceString("InvalidFile")
     let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName,
+      Format.Resource("InvalidFile", x.File.FullName,
          x.Fault.Message)
     ShowMessageOnGuiThread parent MessageType.Error message
 
-  let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
-    let format = GetResourceString("CoverageOutOfDate")
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let private showMessageResourceFileWarning rn (parent : Window) (x : FileInfo)
+      (s : Source) =
+    let message = // rely of the format to drop the source file if not needed
+      Format.Resource(rn, x.FullName, s.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
+  let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
+    showMessageResourceFileWarning "CoverageOutOfDate" parent x
+      (Source.File null)
+
   let private MissingSourceFileMessage (parent : Window) (x : FileInfo) =
-    let format = GetResourceString("MissingSourceFile")
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "MissingSourceFile" parent x
+      (Source.File null)
 
   let private OutdatedCoverageThisFileMessage (parent : Window) (c : FileInfo)
       (s : Source) =
-    let format = GetResourceString("CoverageOutOfDateThisFile")
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "CoverageOutOfDateThisFile" parent c s
 
   let private MissingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : Source) =
-    let format = GetResourceString("MissingSourceThisFile")
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "MissingSourceThisFile" parent c s
 
   // -------------------------- UI set-up  ---------------------------
   let private InitializeHandler() =
@@ -643,8 +722,9 @@ module Gui =
                        name)
          b.Autoconnect handler)
 #else
-    |> List.iter (fun name -> let xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
-                              xml.Autoconnect(handler))
+    |> List.iter (fun name ->
+         let xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
+         xml.Autoconnect(handler))
 #endif
 
     handler.coverageFiles <- []
@@ -664,13 +744,14 @@ module Gui =
          item.Visible <- true
          (item.Child :?> Label).Text <- name)
     // set or clear the menu
-    handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null
-                               else handler.fileOpenMenu :> Widget
+    handler.openButton.Menu <-
+      if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
   let private PrepareAboutDialog(handler : Handler) =
     let ShowUrl(link : string) =
       match System.Environment.GetEnvironmentVariable("OS") with
-      | "Windows_NT" -> System.Diagnostics.Process.Start(link) |> ignore
+      | "Windows_NT" -> use browser = System.Diagnostics.Process.Start(link)
+                        ()
       // TODO -- other OS types
       | _ -> ShowMessage handler.aboutVisualizer link MessageType.Info
     // The first gets the display right, the second the browser launch
@@ -682,28 +763,27 @@ module Gui =
     LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter (fun w ->
-         let t = GetResourceString w.Label
+         let t = Format.GetResourceString w.Label
          if t
             |> String.IsNullOrWhiteSpace
             |> not
          then w.Label <- t)
 #endif
 
-    handler.aboutVisualizer.Title <- GetResourceString("aboutVisualizer.Title")
+    handler.aboutVisualizer.Title <- Format.GetResourceString("aboutVisualizer.Title")
     handler.aboutVisualizer.Modal <- true
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
-    handler.aboutVisualizer.Version <- System.AssemblyVersionInformation.AssemblyFileVersion
-    handler.aboutVisualizer.Copyright <- String.Format
-                                           (System.Globalization.CultureInfo.CurrentCulture,
-                                            GetResourceString("aboutVisualizer.Copyright"),
-                                            System.AssemblyVersionInformation.AssemblyCopyright)
-    handler.aboutVisualizer.License <- String.Format
-                                         (System.Globalization.CultureInfo.CurrentCulture,
-                                          handler.aboutVisualizer.License,
-                                          System.AssemblyVersionInformation.AssemblyCopyright)
-    handler.aboutVisualizer.Comments <- GetResourceString("aboutVisualizer.Comments")
-    handler.aboutVisualizer.WebsiteLabel <- GetResourceString
-                                              ("aboutVisualizer.WebsiteLabel")
+    handler.aboutVisualizer.Version <-
+      System.AssemblyVersionInformation.AssemblyFileVersion
+    handler.aboutVisualizer.Copyright <-
+      Format.Resource("aboutVisualizer.Copyright",
+         System.AssemblyVersionInformation.AssemblyCopyright)
+    handler.aboutVisualizer.License <-
+      Format.Local(handler.aboutVisualizer.License,
+         System.AssemblyVersionInformation.AssemblyCopyright)
+    handler.aboutVisualizer.Comments <- Format.GetResourceString("aboutVisualizer.Comments")
+    handler.aboutVisualizer.WebsiteLabel <-
+      Format.GetResourceString("aboutVisualizer.WebsiteLabel")
 
   let private PrepareTreeView(handler : Handler) =
     [| AssemblyIcon; NamespaceIcon; ClassIcon; MethodIcon |]
@@ -716,15 +796,25 @@ module Gui =
          handler.classStructureTree.AppendColumn(column) |> ignore
          column.AddAttribute(cell, "text", 2 * i)
          column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+    handler.classStructureTree.Model <-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
+    handler.auxModel <-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
 
 #if NETCOREAPP2_1
   let private PrepareOpenFileDialog(handler : Handler) =
     let openFileDialog =
-      new FileChooserDialog(GetResourceString "OpenFile", handler.mainWindow,
-                            FileChooserAction.Open, GetResourceString "OpenFile.Open",
-                            ResponseType.Ok, GetResourceString "OpenFile.Cancel",
+      new FileChooserDialog(Format.GetResourceString "OpenFile", handler.mainWindow,
+                            FileChooserAction.Open, Format.GetResourceString "OpenFile.Open",
+                            ResponseType.Ok, Format.GetResourceString "OpenFile.Cancel",
                             ResponseType.Cancel, null)
-    let data = GetResourceString("SelectXml").Split([| '|' |])
+    let data = Format.GetResourceString("SelectXml").Split([| '|' |])
     let filter = new FileFilter()
     filter.Name <- data.[0]
     filter.AddPattern data.[1]
@@ -736,12 +826,14 @@ module Gui =
     openFileDialog.AddFilter filter
     openFileDialog
 #else
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'openFileDialog' is returned")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+                                                    "CA2000:DisposeObjectsBeforeLosingScope",
+                                                    Justification =
+                                                      "'openFileDialog' is returned")>]
   let private PrepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
     openFileDialog.InitialDirectory <- Persistence.readFolder()
-    openFileDialog.Filter <- GetResourceString("SelectXml")
+    openFileDialog.Filter <- Format.GetResourceString("SelectXml")
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
     openFileDialog
@@ -754,19 +846,20 @@ module Gui =
       (openFileDialogFactory : Handler -> FileChooserDialog) =
     let openFileDialog = openFileDialogFactory handler
 #else
-                                (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
-    use openFileDialog = openFileDialogFactory ()
+      (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
+    use openFileDialog = openFileDialogFactory()
 #endif
 
 #if NETCOREAPP2_1
     let MakeSelection (ofd : FileChooserDialog) x =
       openFileDialog.SetCurrentFolder(Persistence.readFolder()) |> ignore
       try
-        if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
+        if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType =
+             ResponseType.Ok then
           let file = new FileInfo(ofd.Filename)
           let dir = file.Directory.FullName
 #else
-    let MakeSelection (ofd : System.Windows.Forms.OpenFileDialog) x =
+    let MakeSelection (ofd: System.Windows.Forms.OpenFileDialog) x =
         if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
           let file = new FileInfo(ofd.FileName)
           let dir = file.Directory.FullName
@@ -774,7 +867,8 @@ module Gui =
 #endif
           if Persistence.save then Persistence.saveFolder dir
           Some file
-        else None
+        else
+          None
 #if NETCOREAPP2_1
       finally
         ofd.Hide()
@@ -789,7 +883,8 @@ module Gui =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'baseline' is returned")>]
+                                                    Justification =
+                                                      "'baseline' is returned")>]
   let private InitializeTextBuffer(buff : TextBuffer) =
     let Tag (buffer : TextBuffer) (style : string, fg, bg) =
       let tag = new TextTag(style)
@@ -801,21 +896,20 @@ module Gui =
     baseline.Font <- Persistence.readFont()
     baseline.Foreground <- "#8080A0"
     buff.TagTable.Add(baseline) |> ignore
-    [ (// Last declared type is last layer painted
-       "visited", "#404040", "#cefdce") // Dark on Pale Green
+    [ ("visited", "#404040", "#cefdce") // Dark on Pale Green
       ("declared", "#FF8C00", "#FFFFFF") // Dark Orange on White
       ("static", "#F5F5F5", "#808080") // White Smoke on Grey
       ("automatic", "#808080", "#FFFF00") // Grey on Yellow
       ("notVisited", "#ff0000", "#FFFFFF") // Red on White
-      ("excluded", "#00BFFF", "#FFFFFF") // Deep Sky Blue on white
-                                         ]
+      ("excluded", "#00BFFF", "#FFFFFF") ] // Deep Sky Blue on white
     |> Seq.iter (fun x -> Tag buff x |> ignore)
     baseline
 
   let private ParseIntegerAttribute (element : XPathNavigator) (attribute : string) =
     let text = element.GetAttribute(attribute, String.Empty)
     let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
-    if (fst number) then snd number
+    if (fst number) then
+      snd number
     else
       if not <| String.IsNullOrEmpty(text) then
         System.Diagnostics.Debug.WriteLine
@@ -824,15 +918,15 @@ module Gui =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "IDisposables are added to the TextView")>]
+                                                    Justification =
+                                                      "IDisposables are added to the TextView")>]
   let private MarkBranches (root : XPathNavigator) (codeView : TextView)
       (filename : string) =
     let buff = codeView.Buffer
     let branches = new Dictionary<int, int * int>()
     root.Select("//method")
     |> Seq.cast<XPathNavigator>
-    |> Seq.filter
-         (fun n ->
+    |> Seq.filter (fun n ->
          let f = n.Clone()
          f.MoveToFirstChild()
          && filename.Equals
@@ -849,14 +943,16 @@ module Gui =
            |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
            |> Seq.length
          branches.Add(line, (v, num)))
-    for l in 1..buff.LineCount do
+    for l in 1 .. buff.LineCount do
       let counts = branches.TryGetValue l
 
       let (|AllVisited|_|) (b, (v, num)) =
         if b
            |> not
-           || v <> num then None
-        else Some()
+           || v <> num then
+          None
+        else
+          Some()
 
       let pix =
         match counts with
@@ -873,17 +969,17 @@ module Gui =
       codeView.AddChildAtAnchor(image, a)
       if fst counts then
         let v, num = snd counts
-        image.TooltipText <- String.Format
-                               (System.Globalization.CultureInfo.CurrentCulture,
-                                GetResourceString "branchesVisited", v, num)
+        image.TooltipText <-
+          Format.Resource("branchesVisited", v, num)
 
   let internal (|Select|_|) (pattern : String) offered =
     if (fst offered)
        |> String.IsNullOrWhiteSpace
        |> not
-       && pattern.StartsWith(fst offered, StringComparison.Ordinal)
-    then Some offered
-    else None
+       && pattern.StartsWith(fst offered, StringComparison.Ordinal) then
+      Some offered
+    else
+      None
 
   let private SelectStyle because excluded =
     match (because, excluded) with
@@ -905,8 +1001,7 @@ module Gui =
     let because = n.GetAttribute("excluded-because", String.Empty)
     let fallback = SelectStyle because excluded |> int
     { visitcount =
-        if visitcount = 0 then fallback
-        else visitcount
+        if visitcount = 0 then fallback else visitcount
       line = Int32.TryParse(line) |> snd
       column = (Int32.TryParse(column) |> snd) + 1
       endline = Int32.TryParse(endline) |> snd
@@ -919,18 +1014,22 @@ module Gui =
   let private TagByCoverage (buff : TextBuffer) (n : CodeTag) =
     // bound by current line length in case we're looking from stale coverage
     let line = buff.GetIterAtLine(n.line - 1)
+    let chars = line.CharsInLine
 
     let from =
-      if line.CharsInLine = 0 then line
-      else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, line.CharsInLine) - 1)
+      if chars = 0
+      then line
+      else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, chars) - 1)
 
     let endline = buff.GetIterAtLine(n.endline - 1)
+    let endchars = endline.CharsInLine
 
     let until =
-      if endline.CharsInLine = 0 then endline
+      if endchars = 0 then
+        endline
       else
         buff.GetIterAtLineOffset
-          (n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
+          (n.endline - 1, Math.Min(n.endcolumn, endchars) - 1)
 
     let tag =
       match enum n.visitcount with
@@ -952,9 +1051,7 @@ module Gui =
 
   let internal ScrollToRow (h : Handler) _ =
     let buff = h.codeView.Buffer
-    if buff
-       |> isNull
-       |> not
+    if buff.IsNotNull
        && h.activeRow > 0
     then
       let iter = buff.GetIterAtLine(h.activeRow - 1)
@@ -974,8 +1071,7 @@ module Gui =
       if Seq.isEmpty points then
         let noSource() =
           let message =
-            String.Format
-              (CultureInfo.CurrentCulture, GetResourceString "No source location",
+            Format.Resource("No source location",
                (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
                  .Text.Replace("<", "&lt;").Replace(">", "&gt;"))
           ShowMessageOnGuiThread handler.mainWindow MessageType.Info message
@@ -1017,9 +1113,10 @@ module Gui =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "IDisposables are added to other widgets")>]
+                                                    Justification =
+                                                      "IDisposables are added to other widgets")>]
   let private AddLabelWidget g (button : ToolButton, resource) =
-    let keytext = (resource |> GetResourceString).Split('\u2028')
+    let keytext = (resource |> Format.GetResourceString).Split('\u2028') // '\u2028'
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))
@@ -1055,18 +1152,20 @@ module Gui =
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "IDisposables are added to other widgets")>]
+                                                    Justification =
+                                                      "IDisposables are added to other widgets")>]
   let private SetToolButtons(h : Handler) =
     let g = new AccelGroup()
     h.mainWindow.AddAccelGroup(g)
 #if NETCOREAPP2_1
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
     let prov = new CssProvider()
-    let style = """
-* {
-    background-color: white;
-}
-"""
+    let nl = Environment.NewLine
+    let style = nl +
+                "* {" + nl +
+                "     background-color: white;" + nl +
+                "  }" + nl
+
     prov.LoadFromData(style) |> ignore
     h.toolbar1.StyleContext.AddProvider(prov, UInt32.MaxValue)
 #endif
@@ -1079,8 +1178,7 @@ module Gui =
     |> Seq.iter (AddLabelWidget g)
     h.fileOpenMenu.AllChildren
     |> Seq.cast<MenuItem>
-    |> Seq.iteri
-         (fun n (i : MenuItem) ->
+    |> Seq.iteri (fun n (i : MenuItem) ->
          let c = ((n + 1) % 10) |> char
 
          let key =
@@ -1108,12 +1206,15 @@ module Gui =
          if Persistence.save then Persistence.saveGeometry handler.mainWindow
          Application.Quit())
     // Initialize graphics and begin
-    handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly()
-                                                  .GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
-    handler.aboutVisualizer.Icon <- new Pixbuf(Assembly.GetExecutingAssembly()
-                                                       .GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
-    handler.aboutVisualizer.Logo <- new Pixbuf(Assembly.GetExecutingAssembly()
-                                                       .GetManifestResourceStream("AltCover.Visualizer.logo.png"))
+    handler.mainWindow.Icon <-
+      new Pixbuf(Assembly.GetExecutingAssembly()
+                         .GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
+    handler.aboutVisualizer.Icon <-
+      new Pixbuf(Assembly.GetExecutingAssembly()
+                         .GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
+    handler.aboutVisualizer.Logo <-
+      new Pixbuf(Assembly.GetExecutingAssembly()
+                         .GetManifestResourceStream("AltCover.Visualizer.logo.png"))
     handler.mainWindow.ShowAll()
     handler
 
@@ -1121,16 +1222,15 @@ module Gui =
     let options =
       [ ("g|geometry",
          (fun _ ->
-         Persistence.clearGeometry()
-         Persistence.save <- false))
+           Persistence.clearGeometry()
+           Persistence.save <- false))
 #if NETCOREAPP2_1
-        ("schemadir:",
-         (fun s -> Persistence.saveSchemaDir s))
+        ("schemadir:", (fun s -> Persistence.saveSchemaDir s))
 #endif
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
            (fun (o : OptionSet) (p, a) ->
-           o.Add(p, GetResourceString p, new System.Action<string>(a))) (OptionSet())
+             o.Add(p, Format.GetResourceString p, new System.Action<string>(a))) (OptionSet())
     options.Parse(arguments) |> ignore
 
   [<EntryPoint; STAThread>]
@@ -1141,7 +1241,9 @@ module Gui =
 #if NETCOREAPP2_1
     handler.codeView.Drawn |> Event.add (fun _ -> latch.Set() |> ignore)
     let schemaDir = Persistence.readSchemaDir()
-    if schemaDir |> String.IsNullOrWhiteSpace |> not
+    if schemaDir
+       |> String.IsNullOrWhiteSpace
+       |> not
     then Environment.SetEnvironmentVariable("GSETTINGS_SCHEMA_DIR", schemaDir)
 #endif
 
@@ -1178,13 +1280,13 @@ module Gui =
         |> Seq.truncate (9)
         |> Seq.toList
 
-      h.coverageFiles <- (if add then (path :: files)
-                          else files)
-                         |> Seq.distinctBy (fun n ->
-                              match casematch with
-                              | StringComparison.Ordinal -> n
-                              | _ -> n.ToUpperInvariant())
-                         |> Seq.toList
+      h.coverageFiles <-
+        (if add then (path :: files) else files)
+        |> Seq.distinctBy (fun n ->
+             match casematch with
+             | StringComparison.Ordinal -> n
+             | _ -> n.ToUpperInvariant())
+        |> Seq.toList
       populateMenu h
       Persistence.saveCoverageFiles h.coverageFiles
       handler.refreshButton.Sensitive <- h.coverageFiles.Any()
@@ -1196,81 +1298,77 @@ module Gui =
          let h = handler
          async {
            let current =
-             FileInfo(if index < 0 then h.justOpened
-                      else h.coverageFiles.[index])
+             FileInfo(if index < 0 then h.justOpened else h.coverageFiles.[index])
            match CoverageFile.LoadCoverageFile current with
            | Left failed ->
-             InvalidCoverageFileMessage h.mainWindow failed
-             InvokeOnGuiThread(fun () -> updateMRU h current.FullName false)
+               InvalidCoverageFileMessage h.mainWindow failed
+               InvokeOnGuiThread(fun () -> updateMRU h current.FullName false)
            | Right coverage ->
-             // check if coverage is newer that the source files
-             let sourceFiles =
-               coverage.Document.CreateNavigator().Select("//seqpnt/@document")
-               |> Seq.cast<XPathNavigator>
-               |> Seq.map (fun x -> x.Value)
-               |> Seq.distinct
+               // check if coverage is newer that the source files
+               let sourceFiles =
+                 coverage.Document.CreateNavigator().Select("//seqpnt/@document")
+                 |> Seq.cast<XPathNavigator>
+                 |> Seq.map (fun x -> x.Value)
+                 |> Seq.distinct
 
-             let missing =
-               sourceFiles
-               |> Seq.map GetSource
-               |> Seq.filter (fun f -> not f.Exists)
+               let missing =
+                 sourceFiles
+                 |> Seq.map GetSource
+                 |> Seq.filter (fun f -> not f.Exists)
 
-             if not (Seq.isEmpty missing) then
-               MissingSourceFileMessage h.mainWindow current
-             let newer =
-               sourceFiles
-               |> Seq.map GetSource
-               |> Seq.filter
-                    (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
-             // warn if not
-             if not (Seq.isEmpty newer) then
-               OutdatedCoverageFileMessage h.mainWindow current
-             let model =
-               new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                             typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
-                             typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                             typeof<Gdk.Pixbuf>)
-             Mappings.Clear()
-             let toprow = model.AppendValues(current.Name, XmlIcon.Force())
+               if not (Seq.isEmpty missing) then
+                 MissingSourceFileMessage h.mainWindow current
+               let newer =
+                 sourceFiles
+                 |> Seq.map GetSource
+                 |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
+               // warn if not
+               if not (Seq.isEmpty newer) then
+                 OutdatedCoverageFileMessage h.mainWindow current
+               let model = handler.auxModel
+               model.Clear()
+               Mappings.Clear()
+               let toprow = model.AppendValues(current.Name, XmlIcon.Force())
 
-             let ApplyToModel (theModel : TreeStore) theRow
-                 (group : XPathNavigator * string) =
-               let name = snd group
+               let ApplyToModel (theModel : TreeStore) theRow
+                   (group : XPathNavigator * string) =
+                 let name = snd group
 
-               let newrow =
-                 theModel.AppendValues(theRow,
-                                       [| name :> obj
-                                          AssemblyIcon.Force() :> obj |])
-               PopulateAssemblyNode theModel newrow (fst group)
+                 let newrow =
+                   theModel.AppendValues
+                     (theRow,
+                      [| name :> obj
+                         AssemblyIcon.Force() :> obj |])
+                 PopulateAssemblyNode theModel newrow (fst group)
 
-             let assemblies =
-               coverage.Document.CreateNavigator().Select("//module")
-               |> Seq.cast<XPathNavigator>
-             assemblies
-             |> Seq.map
-                  (fun node ->
-                  (node,
-                   node.GetAttribute("assemblyIdentity", String.Empty).Split(',')
-                   |> Seq.head))
-             |> Seq.sortBy snd
-             |> Seq.iter (ApplyToModel model toprow)
-             let UpdateUI (theModel :
+               let assemblies =
+                 coverage.Document.CreateNavigator().Select("//module")
+                 |> Seq.cast<XPathNavigator>
+               assemblies
+               |> Seq.map (fun node ->
+                    (node,
+                     node.GetAttribute("assemblyIdentity", String.Empty).Split(',')
+                     |> Seq.head))
+               |> Seq.sortBy snd
+               |> Seq.iter (ApplyToModel model toprow)
+
+               let UpdateUI (theModel:
 #if NETCOREAPP2_1
                                        ITreeModel
 #else
                                        TreeModel
 #endif
-
-                          ) (info : FileInfo) () =
-               // File is good so enable the refresh button
-               h.refreshButton.Sensitive <- true
-               // Do real UI work here
-               h.classStructureTree.Model <- theModel
-               h.codeView.Buffer.Clear()
-               h.mainWindow.Title <- "AltCover.Visualizer"
-               updateMRU h info.FullName true
-             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
-             InvokeOnGuiThread(UpdateUI model current)
+                             ) (info: FileInfo) () =
+                 // File is good so enable the refresh button
+                 h.refreshButton.Sensitive <- true
+                 // Do real UI work here
+                 h.auxModel <- h.classStructureTree.Model :?> TreeStore
+                 h.classStructureTree.Model <- theModel
+                 h.codeView.Buffer.Clear()
+                 h.mainWindow.Title <- "AltCover.Visualizer"
+                 updateMRU h info.FullName true
+               ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
+               InvokeOnGuiThread(UpdateUI h.auxModel current)
          }
          |> Async.Start)
     handler.fontButton.Clicked
@@ -1282,12 +1380,14 @@ module Gui =
 #if NETCOREAPP2_1
          use selector = new FontChooserDialog(format, handler.mainWindow)
          selector.Font <- Persistence.readFont()
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
+              ResponseType.Ok then
            let font = selector.Font
 #else
          let selector = new FontSelectionDialog(format)
          selector.SetFontName(Persistence.readFont()) |> ignore
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
+            ResponseType.Ok then
            let font = selector.FontName
 #endif
 

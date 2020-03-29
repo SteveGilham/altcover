@@ -23,62 +23,68 @@ type InvalidFile =
 module Transformer =
   let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   let internal LoadTransform(path : string) =
-    let stylesheet =
-      XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
+    use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
+    use stylesheet =
+      XmlReader.Create(str)
     let xmlTransform = new XslCompiledTransform()
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   let internal TransformFromOtherCover (document : XNode) (path : string) =
     let xmlTransform = LoadTransform path
     use buffer = new MemoryStream()
-    let sw = new StreamWriter(buffer)
+    use sw = new StreamWriter(buffer)
     // transform the document:
     xmlTransform.Transform(document.CreateReader(), null, sw)
     buffer.Position <- 0L
-    XDocument.Load(XmlReader.Create(buffer))
+    use reader = XmlReader.Create(buffer)
+    XDocument.Load(reader)
 
   let internal TransformFromOpenCover(document : XNode) =
     let report =
       TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   // PartCover to NCover style sheet
   let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
     let schemas = new XmlSchemaSet()
+    use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))
+    use ocreader = XmlReader.Create(sr1)
+    use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))
+
+    use ncreader = XmlReader.Create(sr2)
     try
       match document.XPathSelectElements("/CoverageSession").Count() with
-      | 1 -> // looks like an OpenCover document so load and apply the XSL transform
-        schemas.Add
-          (String.Empty,
-           XmlReader.Create
-             (new StreamReader(Assembly.GetExecutingAssembly()
-                                       .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))))
-        |> ignore
-        document.Validate(schemas, null)
-        let report = TransformFromOpenCover document
-        let fixedup = helper CoverageTool.OpenCover document report
-        // Consistency check our XSLT
-        let schemas2 = new XmlSchemaSet()
-        schemas2.Add
-          (String.Empty,
-           XmlReader.Create
-             (new StreamReader(Assembly.GetExecutingAssembly()
-                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
-        |> ignore
-        fixedup.Validate(schemas2, null)
-        Right fixedup
-      | _ -> // any other XML
-        schemas.Add
-          (String.Empty,
-           XmlReader.Create
-             (new StreamReader(Assembly.GetExecutingAssembly()
-                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
-        |> ignore
-        document.Validate(schemas, null)
-        Right document
+      | 1 ->
+          schemas.Add
+            (String.Empty, ocreader)
+          |> ignore
+          document.Validate(schemas, null)
+          let report = TransformFromOpenCover document
+          let fixedup = helper CoverageTool.OpenCover document report
+          // Consistency check our XSLT
+          let schemas2 = new XmlSchemaSet()
+          schemas2.Add
+            (String.Empty, ncreader)
+          |> ignore
+          fixedup.Validate(schemas2, null)
+          Right fixedup
+      | _ ->
+          schemas.Add
+            (String.Empty, ncreader)
+          |> ignore
+          document.Validate(schemas, null)
+          Right document
     with
     | :? ArgumentNullException as x -> Left(x :> Exception)
     | :? NullReferenceException as x -> Left(x :> Exception)
@@ -98,21 +104,26 @@ type internal CoverageFile =
       let rawDocument = XDocument.Load(file.FullName)
       match Transformer.ConvertFile helper rawDocument with
       | Left x ->
-        Left { Fault = x
-               File = file }
+          Left
+            { Fault = x
+              File = file }
       | Right doc ->
-        Right { File = file
-                Document = doc }
+          Right
+            { File = file
+              Document = doc }
     with
     | :? NullReferenceException as e ->
-      Left { Fault = e
-             File = file }
+        Left
+          { Fault = e
+            File = file }
     | :? XmlException as e ->
-      Left { Fault = e
-             File = file }
+        Left
+          { Fault = e
+            File = file }
     | :? IOException as e ->
-      Left { Fault = e
-             File = file }
+        Left
+          { Fault = e
+            File = file }
 
   static member LoadCoverageFile(file : FileInfo) =
     CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
