@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0;net47</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>AltCover.Api.Tests</AssemblyName>
+    <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType Condition="'$(TargetFramework)' != 'net47'">Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'net47'">Library</OutputType>
+    <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net47'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenCoverForPester.coverlet.xml" />
+    <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="FSApiTests.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Expecto" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
+    <PackageReference Include="coverlet.collector" Version="1.2.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.8.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
+    <ProjectReference Include="..\Sample18\sample18.core.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
+  </ItemGroup>
+
+</Project>

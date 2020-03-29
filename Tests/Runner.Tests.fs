@@ -34,13 +34,28 @@ module AltCoverRunnerTests =
     // Base.fs
 
     [<Test>]
-    let SafeDisposalProtects() =
-      Runner.init()
-      let obj1 =
-        { new System.IDisposable with
-            member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
-      Assist.SafeDispose obj1
-      test <@ true @>
+    let MaxTimeFirst () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime now ago) = now @>
+
+    [<Test>]
+    let MaxTimeLast () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime ago now) = now @>
+
+    [<Test>]
+    let MinTimeFirst () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MinTime ago now) = ago @>
+
+    [<Test>]
+    let MinTimeLast () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MinTime now ago) = ago @>
 
 #if NETCOREAPP2_0
 #else
@@ -155,6 +170,10 @@ module AltCoverRunnerTests =
       |> Seq.find
            (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
+    let internal Init n l = let tmp = { PointVisit.Create() with Count = n }
+                            tmp.Tracks.AddRange l
+                            tmp
+
 #if NETCOREAPP2_0
 #else
     [<Test>]
@@ -173,8 +192,8 @@ module AltCoverRunnerTests =
       worker.Write(buffer, 0, size)
       worker.Position <- 0L
       let payload = Dictionary<int, PointVisit>()
-      [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- PointVisit.Init (int64(i + 1)) [])
-      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i - 10)) [])
+      [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- Init (int64(i + 1)) [])
+      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- Init (int64(i - 10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
       Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
@@ -220,7 +239,7 @@ module AltCoverRunnerTests =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile None |> ignore
@@ -269,7 +288,7 @@ module AltCoverRunnerTests =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile (Some outputFile) |> ignore
@@ -302,7 +321,7 @@ module AltCoverRunnerTests =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage { Intro = "UsageError"; Options = empty; Options2 = options}
+        CommandLine.UsageBase { Intro = "UsageError"; Options = empty; Options2 = options}
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -r, --recorderDirectory=VALUE
@@ -338,25 +357,11 @@ module AltCoverRunnerTests =
       finally
         Console.SetError saved
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldLaunchWithExpectedOutput() =
       Runner.init()
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -1500,25 +1505,11 @@ module AltCoverRunnerTests =
       finally
         CommandLine.dropReturnCode := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldProcessTrailingArguments() =
       Runner.init()
-      // Hack for running while instrumented
-      let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -1548,7 +1539,7 @@ module AltCoverRunnerTests =
           if nonWindows then "mono" :: baseArgs
           else baseArgs
 
-        let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
+        let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(path)
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
         stdout.Flush()
@@ -1752,25 +1743,11 @@ or
           Runner.recordingDirectory <- None
           Runner.RecorderName <- save)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldProcessPayload() =
       Runner.init()
-      // Hack for running while instrumented
-      let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -1778,7 +1755,7 @@ or
         |> Seq.head
       AltCover.ToConsole()
       let saved = (Console.Out, Console.Error)
-      Runner.workingDirectory <- Some where
+      Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
       try
@@ -1919,11 +1896,11 @@ or
       Assert.That(File.Exists(unique + ".acv"))
       let expected = Dictionary<string, Dictionary<int, PointVisit>>()
       let a = Dictionary<int, PointVisit>()
-      a.Add(0, PointVisit.Init 1L [])
+      a.Add(0, Init 1L [])
       let b = Dictionary<int, PointVisit>()
-      b.Add(1, PointVisit.Init 1L [])
+      b.Add(1, Init 1L [])
       let c = Dictionary<int, PointVisit>()
-      c.Add(3, PointVisit.Init 1L [])
+      c.Add(3, Init 1L [])
       expected.Add ("a", a)
       expected.Add ("b", b)
       expected.Add ("c", c)
@@ -2016,7 +1993,7 @@ or
           Base.Time 42L
           Base.Call 5 ]
 
-      let pv = PointVisit.Init 42L (payloads0 |> List.tail)
+      let pv = Init 42L (payloads0 |> List.tail)
       let table = Dictionary<string, Dictionary<int, PointVisit>>()
       table.Add("Extra", Dictionary<int, PointVisit>())
       table.["Extra"].Add(3, pv)
@@ -2209,8 +2186,8 @@ or
       let visits = Dictionary<string, Dictionary<int, PointVisit>>()
       let visit = Dictionary<int, PointVisit>()
       visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
-      visit.Add(100663297, PointVisit.Init 1L []) // should fill in the expected non-zero value
-      visit.Add(100663298, PointVisit.Init 23L []) // should be ignored
+      visit.Add(100663297, Init 1L []) // should fill in the expected non-zero value
+      visit.Add(100663298, Init 23L []) // should be ignored
       Runner.PostProcess visits Base.ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
@@ -2634,7 +2611,9 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.Summary baseline Base.ReportFormat.OpenCover 0
+        Runner.AddLCovSummary()
+        let summarize = Runner.Summaries |> Seq.head
+        let r = summarize baseline Base.ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo 0)
         let result = File.ReadAllText unique
         let resource2 =
@@ -2697,7 +2676,7 @@ or
       let baseline = XDocument.Load(stream)
       let excluded = XName.Get "excluded"
       baseline.Descendants()
-      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+      |> Seq.iter (fun x -> if x.Attribute(excluded).IsNotNull then
                                x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine
@@ -2781,10 +2760,10 @@ or
 
       use stream =
           Assembly.GetExecutingAssembly()
-#if NETCOREAPP2_0
-                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
-#else
+#if LEGACY
                   .GetManifestResourceStream("coverage-04.xsd")
+#else
+                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
 #endif
       use reader = new StreamReader(stream)
       use xreader = XmlReader.Create(reader)
@@ -2819,7 +2798,9 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+        Runner.AddCoberturaSummary()
+        let summarize = Runner.Summaries |> Seq.head
+        let r = summarize baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -2853,7 +2834,7 @@ or
       let baseline = XDocument.Load(stream)
       let excluded = XName.Get "excluded"
       baseline.Descendants()
-      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+      |> Seq.iter (fun x -> if x.Attribute(excluded) .IsNotNull then
                                x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine

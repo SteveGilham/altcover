@@ -2114,10 +2114,8 @@ module AltCoverTests3 =
     let PreparingNewPlaceShouldCopyEverything() =
       Main.init()
       let monoRuntime =
-        "Mono.Runtime"
-        |> Type.GetType
-        |> isNull
-        |> not
+        ("Mono.Runtime"
+         |> Type.GetType).IsNotNull
       // because mono symbol-writing is broken, work around trying to
       // examine the instrumented files in a self-test run.
       let here = if monoRuntime
@@ -2283,7 +2281,7 @@ module AltCoverTests3 =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage { Intro = "UsageError"; Options = options; Options2 = empty }
+        CommandLine.UsageBase { Intro = "UsageError"; Options = options; Options2 = empty }
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
@@ -2552,6 +2550,10 @@ or
     let EmptyInstrumentIsJustTheDefaults() =
       Main.init()
       let subject = Prepare()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
@@ -2627,6 +2629,10 @@ or
     let EmptyCollectIsJustTheDefaults() =
       Main.init()
       let subject = Collect()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
@@ -2765,7 +2771,7 @@ or
 <RunSettings>
 {1}  <InProcDataCollectionRunSettings>
     <InProcDataCollectors>
-      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, AltCover.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" codebase="{0}">
+      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, {2}" codebase="{0}">
         <Configuration>
           <Offload>true</Offload>
         </Configuration>
@@ -2779,20 +2785,24 @@ or
       Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       Assert.That (subject.Execute(), Is.True)
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
                    |> File.ReadAllText
-      Assert.That (result.Replace("\r", String.Empty),
+      Assert.That (result.Replace("\r", String.Empty).Replace("Collector://AltCover/Recorder/" + assembly.Version.ToString(),
+                                                              "Collector://AltCover/Recorder/1.0.0.0"),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
-                                               String.Empty)).Replace("\r", String.Empty)))
+                                               String.Empty,
+                                               Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
     let RunSettingsExtendsOK() =
       Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
       subject.TestSetting <- settings
@@ -2800,16 +2810,19 @@ or
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
                    |> File.ReadAllText
-      Assert.That (result.Replace("\r", String.Empty),
+      Assert.That (result.Replace("\r", String.Empty).Replace("Collector://AltCover/Recorder/" + assembly.Version.ToString(),
+                                                              "Collector://AltCover/Recorder/1.0.0.0"),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
-                                               "  <stuff />\r\n")).Replace("\r", String.Empty)))
+                                               "  <stuff />\r\n",
+                                               Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
     let RunSettingsRecoversOK() =
       Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<Not XML")
       subject.TestSetting <- settings
@@ -2817,9 +2830,11 @@ or
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
                    |> File.ReadAllText
-      Assert.That (result.Replace("\r", String.Empty),
+      Assert.That (result.Replace("\r", String.Empty).Replace("Collector://AltCover/Recorder/" + assembly.Version.ToString(),
+                                                              "Collector://AltCover/Recorder/1.0.0.0"),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
-                                               String.Empty)).Replace("\r", String.Empty)))
+                                               String.Empty,
+                                               Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 #endif
   // Recorder.fs => Recorder.Tests
