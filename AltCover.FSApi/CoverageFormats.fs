@@ -31,7 +31,7 @@ module CoverageFormats =
     nodes
     |> Seq.filter (fun s ->
          Int64.TryParse
-           (s.GetAttribute("vc"), NumberStyles.Integer, CultureInfo.InvariantCulture)
+           (s.Attribute(XName.Get "vc").Value, NumberStyles.Integer, CultureInfo.InvariantCulture)
          |> snd
          <> 0L)
     |> Seq.length
@@ -44,7 +44,7 @@ module CoverageFormats =
       (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
 
     let stringToScore (node : XElement) name =
-      node.GetAttribute(name)
+      node.Attribute(XName.Get name).Value
       |> Runner.InvariantParseDouble
       |> snd
 
@@ -92,7 +92,7 @@ module CoverageFormats =
       let interleave =
         nodes
         |> Seq.sortBy (fun x ->
-              x.GetAttribute(orderAttr)
+              x.Attribute(XName.Get orderAttr).Value
               |> Int32.TryParse
               |> snd)
 
@@ -104,7 +104,7 @@ module CoverageFormats =
                 sq.SetAttribute("bev", sprintf "%d" bev)
                 ((0, 0), x)
             | _ ->
-                (((bev + (if x.GetAttribute("vc") = "0" then 0 else 1), bec + 1), sq)))
+                (((bev + (if x.Attribute(XName.Get "vc").Value = "0" then 0 else 1), bec + 1), sq)))
             ((0, 0), nodes.[0])
       |> ignore
 
@@ -407,7 +407,7 @@ module CoverageFormats =
 
                              seqpts
                              |> List.fold (fun (dbgpts : Cil.SequencePoint list, offset : int) xmlpt ->
-                                               let (ok, line) = Int32.TryParse(xmlpt.GetAttribute("sl"), NumberStyles.Integer, CultureInfo.InvariantCulture)
+                                               let (ok, line) = Int32.TryParse(xmlpt.Attribute(XName.Get "sl").Value, NumberStyles.Integer, CultureInfo.InvariantCulture)
                                                let maybeDbg = dbgpts |> List.tryHead
 
                                                let filter (d:Cil.SequencePoint) = d.StartLine <= line
@@ -433,7 +433,7 @@ module CoverageFormats =
                              |> Option.map File.ReadAllLines
                              |> Option.iter (fun f -> seqpts
                                                       |> Seq.iter (fun point ->
-                                                                       let (ok, index) = Int32.TryParse(point.GetAttribute("sl"), NumberStyles.Integer, CultureInfo.InvariantCulture)
+                                                                       let (ok, index) = Int32.TryParse(point.Attribute(XName.Get "sl").Value, NumberStyles.Integer, CultureInfo.InvariantCulture)
                                                                        if ok then
                                                                          let line = f.[index - 1]
                                                                          let cols = line.Length + 1
