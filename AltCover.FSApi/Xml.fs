@@ -19,11 +19,6 @@ module XmlExtensions =
       if attr |> isNull
       then self.Add(XAttribute(XName.Get name, value))
       else attr.Value <- value
-    member self.GetAttribute(name: string) =
-      let attr = self.Attribute(XName.Get name)
-      if attr |> isNull
-      then String.Empty
-      else attr.Value
 
 [<RequireQualifiedAccess>]
 module XmlUtilities =
