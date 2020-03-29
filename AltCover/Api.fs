@@ -446,7 +446,6 @@ module private ArgsHelper =
       []
     else
       [ a + ":" + x ]
-module internal Args =
 
 module internal Args =
   let internal ItemList a x =
