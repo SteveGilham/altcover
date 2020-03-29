@@ -1,0 +1,41 @@
+------------------------------------------------------------
+1. AvoidUninstantiatedInternalClassesRule
+
+Problem: The internal type is not instantiated by code within the assembly.
+* Severity: High, Confidence: Low
+* Target:   AltCover.Base.Tag
+
+Solution: Remove the type or add the code that uses it. If the type contains only static methods then either add the static modifier to the type or add the private construtor to the type to prevent the compiler from emitting a default public instance constructor.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Performance.AvoidUninstantiatedInternalClassesRule(2.10)
+
+
+------------------------------------------------------------
+2. AvoidLargeClassesRule
+
+Problem: The class is trying to do too much.  Generally if a class is too large, duplicated code will not be far away.  * Severity: Medium, Confidence: High
+* Target:   AltCover.OpenCover/reportVisitor@482-1
+* Details:  This type contains fields common prefixes: 8 fields prefixed with 'visit'.
+
+Solution: You can apply the Extract Class or Extract Subclass refactoring.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLargeClassesRule(2.10)     
+
+3. AvoidLargeClassesRule
+
+Problem: The class is trying to do too much.  Generally if a class is too large, duplicated code will not be far away.
+* Severity: Medium, Confidence: High
+* Target:   AltCover.Report/reportVisitor@91
+* Details:  This type contains fields common prefixes: 3 fields prefixed with 'visit'.
+
+Solution: You can apply the Extract Class or Extract Subclass refactoring.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLargeClassesRule(2.10)     
+
+------------------------------------------------------------
+4. AvoidSpeculativeGeneralityRule
+
+Problem: If you will need the feature in the future then you should implement it in the future.
+* Severity: Medium, Confidence: Normal
+* Target:   AltCover.Augment
+* Details:  This class contains a lot of methods that only delegates the call to other.  This kind of Delegation could be a sign for Speculative Generality
+
+Solution: You can apply various refactorings: Collapse Hierarchy, Inline Class, Remove Parameter or Rename Method.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidSpeculativeGeneralityRule(2.10)

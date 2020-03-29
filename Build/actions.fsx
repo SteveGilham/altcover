@@ -14,7 +14,7 @@ open HeyRed.MarkdownSharp
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
-open AltCover_Fake.DotNet.Testing
+open AltCoverFake.DotNet.Testing
 
 module Actions =
   let Clean() =
@@ -299,8 +299,8 @@ do ()"""
     let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
-      AltCover.PrepareParams.Primitive
-        { Primitive.PrepareParams.Create() with
+      AltCover.PrepareParameters.Primitive
+        { Primitive.PrepareParameters.Create() with
             TypeFilter = [ """System\.""" ]
             XmlReport = simpleReport
             OutputDirectories = [| "./" + instrumented |]
@@ -310,9 +310,10 @@ do ()"""
       |> AltCover.Prepare
 
     let parameters =
-      { AltCover.Params.Create prep with
+      { AltCover.Parameters.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
-          WorkingDirectory = sampleRoot }.WithToolType framework
+          ToolType = framework
+          WorkingDirectory = sampleRoot }
 
     AltCover.run parameters
     System.Threading.Thread.Sleep(1000)
@@ -338,8 +339,8 @@ do ()"""
         let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
         let prep =
-          AltCover.PrepareParams.Primitive
-            { Primitive.PrepareParams.Create() with
+          AltCover.PrepareParameters.Primitive
+            { Primitive.PrepareParameters.Create() with
                 TypeFilter = [ """System\.""" ]
                 XmlReport = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
@@ -349,9 +350,10 @@ do ()"""
           |> AltCover.Prepare
 
         let parameters =
-          { AltCover.Params.Create prep with
+          { AltCover.Parameters.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
-              WorkingDirectory = sampleRoot }.WithToolType framework
+              ToolType = framework
+              WorkingDirectory = sampleRoot }
 
         AltCover.runWithMono monoOnWindows parameters
 

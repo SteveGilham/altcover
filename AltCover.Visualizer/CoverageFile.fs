@@ -1,6 +1,7 @@
 namespace AltCover.Visualizer
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
 open System.Reflection
@@ -11,21 +12,21 @@ open System.Xml.Schema
 open System.Xml.XPath
 open AltCover.Augment
 
+[<SuppressMessage("Microsoft.Design", "CA1027:MarkEnumsWithFlags",
+  Justification="Not used or intended as a flag")>]
 type CoverageTool =
   | NCoverAlike = 0
   | OpenCover = 2
 
-[<NoComparison>]
+[<NoComparison; AutoSerializable(false)>]
 type InvalidFile =
   { File : FileInfo
     Fault : Exception }
 
 module Transformer =
-  let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
+  let internal defaultHelper (_ : XDocument) (document : XDocument) = document
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
-                                 Justification = "Multiple Close() should be safe")>]
-  let internal LoadTransform(path : string) =
+  let internal loadTransform(path : string) =
     use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
     use stylesheet =
       XmlReader.Create(str)
@@ -33,10 +34,8 @@ module Transformer =
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
-                                 Justification = "Multiple Close() should be safe")>]
-  let internal TransformFromOtherCover (document : XNode) (path : string) =
-    let xmlTransform = LoadTransform path
+  let internal transformFromOtherCover (document : XNode) (path : string) =
+    let xmlTransform = loadTransform path
     use buffer = new MemoryStream()
     use sw = new StreamWriter(buffer)
     // transform the document:
@@ -45,15 +44,13 @@ module Transformer =
     use reader = XmlReader.Create(buffer)
     XDocument.Load(reader)
 
-  let internal TransformFromOpenCover(document : XNode) =
+  let internal transformFromOpenCover(document : XNode) =
     let report =
-      TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
+      transformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
-                                 Justification = "Multiple Close() should be safe")>]
   // PartCover to NCover style sheet
-  let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
+  let internal convertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
     let schemas = new XmlSchemaSet()
     use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
@@ -70,7 +67,7 @@ module Transformer =
             (String.Empty, ocreader)
           |> ignore
           document.Validate(schemas, null)
-          let report = TransformFromOpenCover document
+          let report = transformFromOpenCover document
           let fixedup = helper CoverageTool.OpenCover document report
           // Consistency check our XSLT
           let schemas2 = new XmlSchemaSet()
@@ -93,7 +90,7 @@ module Transformer =
     | :? XmlSchemaValidationException as x -> Left(x :> Exception)
     | :? ArgumentException as x -> Left(x :> Exception)
 
-[<NoComparison>]
+[<NoComparison; AutoSerializable(false)>]
 type internal CoverageFile =
   { File : FileInfo
     Document : XDocument }
@@ -102,7 +99,7 @@ type internal CoverageFile =
                 (file : FileInfo) =
     try
       let rawDocument = XDocument.Load(file.FullName)
-      match Transformer.ConvertFile helper rawDocument with
+      match Transformer.convertFile helper rawDocument with
       | Left x ->
           Left
             { Fault = x
@@ -126,13 +123,20 @@ type internal CoverageFile =
             File = file }
 
   static member LoadCoverageFile(file : FileInfo) =
-    CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
+    CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 
 module Extensions =
   type Choice<'b, 'a> with
-    static member toOption (x : Either<'a, 'b>) =
+    static member ToOption (x : Either<'a, 'b>) =
       match x with
       | Right y -> Some y
       | _ -> None
+
+[<assembly: SuppressMessage("Microsoft.Naming",
+  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.Visualizer.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  MessageId="x",
+  Justification="Trivial usage")>]
+()

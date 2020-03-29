@@ -17,7 +17,7 @@ type internal Close =
   | Pause
   | Resume
 
-[<NoComparison>]
+[<NoComparison; AutoSerializable(false)>]
 type Tracer =
   { Tracer : string
     Runner : bool

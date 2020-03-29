@@ -1,14 +1,17 @@
 namespace AltCover.Commands
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Management.Automation
 open AltCover
 
 type Summary =
   | Default = 0
-  | R = 1
-  | B = 2
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "R is what is expected")>]
+    R = 1
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "B is what is expected")>]
+    B = 2
   | RPlus = 3
   | BPlus = 4
 
@@ -17,49 +20,21 @@ type ShowHidden =
   | Mark = 1
   | Reveal = 2
 
-#if NOT_WINDOWS
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Naming",
-  "UseCorrectSuffixRule",
-  Justification="System.Management.Automation stub is not published")>]
-#endif
-[<Sealed; AttributeUsage(AttributeTargets.Property)>]
-type ShowStaticTransformationAttribute() =
-  inherit ArgumentTransformationAttribute()
-#if NOT_WINDOWS
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design",
-    "DoNotDeclareVirtualMethodsInSealedTypeRule",
-    Justification="System.Management.Automation stub is not published")>]
-#endif
-  override self.Transform(engineIntrinsics : EngineIntrinsics, inputData : Object) =
-    if inputData.GetType() = typeof<ShowHidden> then
-      inputData
-    else
-      let o = inputData.ToString()
-      let (a, b) = Enum.TryParse<ShowHidden>(o, true)
-      (if a then
-        b
-       else
-         match o with
-         | "+" -> ShowHidden.Mark
-         | "++" -> ShowHidden.Reveal
-         | _ -> ShowHidden.KeepHidden) :> obj
-
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover", SupportsShouldProcess = true,
          ConfirmImpact = ConfirmImpact.Medium)>]
-[<OutputType([| "System.Void"; "System.String" |])>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+[<OutputType([| "System.Void"; "System.String" |]); AutoSerializable(false)>]
+[<SuppressMessage("Gendarme.Rules.Smells",
     "AvoidLargeClassesRule",
     Justification="Has lots of parameters to pass")>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell",
-                                                  "PS1101:AllCmdletsShouldAcceptPipelineInput",
-                                                  Justification = "No valid input")>]
-type InvokeAltCoverCommand(runner : bool) =
+[<SuppressMessage("Microsoft.PowerShell",
+                  "PS1101:AllCmdletsShouldAcceptPipelineInput",
+                  Justification = "No valid input")>]
+type InvokeAltCoverCommand() =
   inherit PSCmdlet()
-  new() = InvokeAltCoverCommand(false)
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = true, Position = 1,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Runner : SwitchParameter = SwitchParameter(runner) with get, set
+  member val Runner = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = true, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
@@ -75,6 +50,7 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Lcov is a name")>]
   member val LcovReport = String.Empty with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
@@ -83,6 +59,7 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Cobertura is a name")>]
   member val Cobertura = String.Empty with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
@@ -93,31 +70,56 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val CommandLine : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("InputDirectories")>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val InputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("OutputDirectories")>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val OutputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("SymbolDirectories")>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val SymbolDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("Dependencies")>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val Dependency : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Alias("Keys")>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val Key : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
@@ -130,34 +132,74 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val FileFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val PathFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val AssemblyFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val AssemblyExcludeFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val TypeFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val MethodFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val AttributeFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
   member val CallContext : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
@@ -215,7 +257,7 @@ type InvokeAltCoverCommand(runner : bool) =
   member val ShowGenerated : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false); ShowStaticTransformation>]
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val ShowStatic = ShowHidden.KeepHidden with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
@@ -226,7 +268,7 @@ type InvokeAltCoverCommand(runner : bool) =
 
   member private self.Collect() =
     let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
-    FSApi.CollectParams.Primitive
+    FSApi.CollectParameters.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
         Executable = self.Executable
@@ -240,7 +282,7 @@ type InvokeAltCoverCommand(runner : bool) =
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
-    FSApi.PrepareParams.Primitive
+    FSApi.PrepareParameters.Primitive
       { InputDirectories = self.InputDirectory
         OutputDirectories = self.OutputDirectory
         SymbolDirectories = self.SymbolDirectory
@@ -278,9 +320,34 @@ type InvokeAltCoverCommand(runner : bool) =
           Info = (fun s -> self.WriteInformation(s, [||]))
           Warn = (fun s -> self.WriteWarning s) }
 
+  member private self.Dispatch() =
+    let log = self.Log()
+    let zero _ = 0
+
+    (match (self.Version.IsPresent, self.Runner.IsPresent) with
+     | (true, _) ->
+         (fun _ ->
+           Api.Version() |> log.Info
+           0)
+     | (_, true) ->
+         let task = self.Collect()
+         // unset is error, but if set the recorder may not exist yet
+         let recording =
+           self.RecorderDirectory
+           |> String.IsNullOrWhiteSpace
+           || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
+              |> File.Exists
+         if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
+         then Api.Collect task
+         else zero
+     | _ ->
+         let task = self.Prepare()
+         if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
+         then Api.Prepare task
+         else zero) log
+
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
-    let log = self.Log()
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
@@ -288,31 +355,7 @@ type InvokeAltCoverCommand(runner : bool) =
         ErrorRecord(InvalidOperationException(s), s, ErrorCategory.InvalidOperation, self)
         |> self.WriteError
 
-      let zero _ = 0
-
-      let status =
-        (match (self.Version.IsPresent, self.Runner.IsPresent) with
-         | (true, _) ->
-             (fun _ ->
-               Api.Version() |> log.Info
-               0)
-         | (_, true) ->
-             let task = self.Collect()
-             // unset is error, but if set the recorder may not exist yet
-             let recording =
-               self.RecorderDirectory
-               |> String.IsNullOrWhiteSpace
-               || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
-                  |> File.Exists
-             if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString())) then
-               Api.Collect task
-             else
-               zero
-         | _ ->
-             let task = self.Prepare()
-             if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
-             then Api.Prepare task
-             else zero) log
+      let status = self.Dispatch()
       if status <> 0 then status.ToString() |> self.Log().Error
       else if self.Runner.IsPresent then Api.Summary() |> self.WriteObject
 

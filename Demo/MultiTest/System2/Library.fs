@@ -1,4 +1,5 @@
 namespace System2
+// fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
 open System.Reflection

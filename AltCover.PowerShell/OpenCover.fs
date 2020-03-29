@@ -7,7 +7,7 @@ open System.Xml
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.Compress, "Branching")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 type CompressBranchingCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = CompressBranchingCommand(String.Empty)

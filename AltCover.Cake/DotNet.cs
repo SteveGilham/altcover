@@ -4,8 +4,13 @@ using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.IO;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AltCover.Parameters;
+
+[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope = "member", Target = "AltCover.Cake.DotNet.#DotNetCoreTest(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Common.Tools.DotNetCore.Test.DotNetCoreTestSettings,AltCover.Cake.AltCoverSettings)",
+  MessageId = "altcover", Justification = "It's the product name.")]
 
 namespace AltCover.Cake
 {
@@ -13,7 +18,7 @@ namespace AltCover.Cake
   {
     public IPrepareArgs PreparationPhase { get; set; }
     public ICollectArgs CollectionPhase { get; set; }
-    public ICLIArg Force { get; set; }
+    public ICLIArg Control { get; set; }
 
     public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
     {
@@ -27,7 +32,7 @@ namespace AltCover.Cake
         var args = CSApi.ToTestArgumentList(
                     this.PreparationPhase,
                     this.CollectionPhase,
-                    this.Force);
+            this.Control).ToArray();
         Array.Reverse(args);
         Array.ForEach(
             args,
@@ -56,8 +61,8 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")]
+"Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+Justification = "AvoidSpeculativeGenerality too")]
     public static void DotNetCoreTest(
                 this ICakeContext context,
                 FilePath project,

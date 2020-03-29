@@ -1,5 +1,10 @@
 namespace AltCover
+open System.Diagnostics.CodeAnalysis
 
+[<SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
+  Justification="Data size is important")>]
+[<SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
+  Justification="What is 'None', then?")>]
 type internal Exemption =
   | NonCode = 2y // Grey (comments etc.) or
   | Visited = 1y // White on Green (covered) or

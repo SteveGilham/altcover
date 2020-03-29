@@ -9,32 +9,32 @@ open System.Xml
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToBarChartCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = ConvertToBarChartCommand(String.Empty)
-  
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1, 
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument : IXPathNavigable = null with get, set
-  
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1, 
+
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val InputFile : string = null with get, set
-  
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2, 
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2, 
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = outputFile with get, set
-  
+
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
-    try 
+    try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
-      if self.ParameterSetName = "FromFile" then 
+      if self.ParameterSetName = "FromFile" then
         self.XmlDocument <- XPathDocument self.InputFile
       let rewrite = AltCover.Xhtml.ConvertToBarChart self.XmlDocument
       if self.OutputFile
@@ -51,7 +51,7 @@ type ConvertToBarChartCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "SourceMap")>]
-[<OutputType(typeof<Dictionary<string, XmlDocument>>)>]
+[<OutputType(typeof<Dictionary<string, XmlDocument>>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToSourceMapCommand(outputFolder : String) =
   inherit PSCmdlet()
@@ -59,6 +59,8 @@ type ConvertToSourceMapCommand(outputFolder : String) =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes",
+    Justification="Avoids premature generalization")>]
   member val XmlDocument : XmlDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,

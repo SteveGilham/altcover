@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <UsingTask TaskName="AltCover.Prepare" Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.exe')" AssemblyFile="$(AltCoverPath)/AltCover.exe" />  
+  <UsingTask TaskName="AltCover.Prepare"  
+             Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.exe')" 
+             AssemblyFile="$(AltCoverPath)/AltCover.exe"/>  
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
@@ -22,6 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="1.2.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
