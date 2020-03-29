@@ -10,6 +10,8 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
+[assembly: System.Resources.NeutralResourcesLanguageAttribute("en-GB")]
+
 namespace AltCover
 {
   public class DataCollector : InProcDataCollection
@@ -57,7 +59,7 @@ namespace AltCover
       RecorderInstance.ToList().ForEach(
         i =>
         {
-          var supervision = i.GetProperty("supervision", 
+          var supervision = i.GetProperty("supervision",
                                   BindingFlags.Static | BindingFlags.NonPublic);
           if (supervision == null)
           {
