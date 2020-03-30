@@ -676,7 +676,6 @@ _Target "JustUnitTest" (fun _ ->
     |> Seq.filter
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll" &&
                    Path.GetFileName(f).Contains("Tests."))
-    |> Seq.filter (fun s -> s.Contains(".Api.") |> not) // done via PoSh
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -715,8 +714,6 @@ _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
     !!(@"./*Tests/*.tests.core.fsproj")
-    |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
-    |> Seq.filter (fun s -> s.Contains(".api.") |> not) // done via PoSh
     |> Seq.iter
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
