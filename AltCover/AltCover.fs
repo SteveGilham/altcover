@@ -13,48 +13,48 @@ open Augment
 open Mono.Cecil
 open Mono.Options
 
-[<ExcludeFromCodeCoverage>]
+[<ExcludeFromCodeCoverage; AutoSerializable(false)>]
 type internal AssemblyInfo =
   { Path : string list
     Name : string
     Refs : string list }
 
 module internal Main =
-  let init() =
+  let internal init() =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
-    Visitor.defer := None
-    Visitor.inputDirectories.Clear()
-    Visitor.outputDirectories.Clear()
-    ProgramDatabase.SymbolFolders.Clear()
-    Instrument.ResolutionTable.Clear()
+    CoverageParameters.defer := None
+    CoverageParameters.theInputDirectories.Clear()
+    CoverageParameters.theOutputDirectories.Clear()
+    ProgramDatabase.symbolFolders.Clear()
+    Instrument.resolutionTable.Clear()
 
-    Visitor.keys.Clear()
-    Visitor.defaultStrongNameKey <- None
+    CoverageParameters.keys.Clear()
+    CoverageParameters.defaultStrongNameKey <- None
     use stream =
       Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let snk = StrongNameKeyData.Make(buffer.ToArray())
-    Visitor.Add snk
-    Visitor.recorderStrongNameKey <- Some(snk)
+    CoverageParameters.add snk
+    CoverageParameters.recorderStrongNameKey <- Some(snk)
 
-    Visitor.reportPath <- None
-    Visitor.NameFilters.Clear()
-    Visitor.interval <- None
-    Visitor.TrackingNames.Clear()
-    Visitor.reportFormat <- None
-    Visitor.inplace := false // ddFlag
-    Visitor.collect := false // ddFlag
-    Visitor.local := false // ddFlag
-    Visitor.single <- false // more complicated
-    Visitor.coverstyle <- CoverStyle.All
-    Visitor.sourcelink := false // ddFlag
-    Visitor.coalesceBranches := false // ddFlag
-    Visitor.staticFilter <- None
-    Visitor.showGenerated := false
+    CoverageParameters.theReportPath <- None
+    CoverageParameters.nameFilters.Clear()
+    CoverageParameters.theInterval <- None
+    CoverageParameters.trackingNames.Clear()
+    CoverageParameters.theReportFormat <- None
+    CoverageParameters.inplace := false // ddFlag
+    CoverageParameters.collect := false // ddFlag
+    CoverageParameters.local := false // ddFlag
+    CoverageParameters.single <- false // more complicated
+    CoverageParameters.coverstyle <- CoverStyle.All
+    CoverageParameters.sourcelink := false // ddFlag
+    CoverageParameters.coalesceBranches := false // ddFlag
+    CoverageParameters.staticFilter <- None
+    CoverageParameters.showGenerated := false
 
-  let ValidateCallContext predicate x =
+  let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
       let k = x.Trim()
       if Char.IsDigit <| k.Chars(0) then
@@ -78,462 +78,463 @@ module internal Main =
         (true, Right k)
     else
       CommandLine.error <-
-        CommandLine.Format.Local("InvalidValue",
-           "--callContext", x) :: CommandLine.error
+        String.Format
+          (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
+            "--callContext", x) :: CommandLine.error
       (false, Left None)
 
-  let internal DeclareOptions() =
-    let makeFilter filterscope (x : String) =
-      x.Replace(char 0, '\\').Replace(char 1, '|')
-      |> CommandLine.ValidateRegexes
-      |> Seq.iter (FilterClass.Build filterscope >> Visitor.NameFilters.Add)
+  module internal I =
+    let internal declareOptions() =
+      let makeFilter filterscope (x : String) =
+        x.Replace(char 0, '\\').Replace(char 1, '|')
+        |> CommandLine.validateRegexes
+        |> Seq.iter (FilterClass.Build filterscope >> CoverageParameters.nameFilters.Add)
 
-    [ ("i|inputDirectory=",
-       (fun x ->
-         if CommandLine.ValidateDirectory "--inputDirectory" x then
-           let arg = Path.GetFullPath x
-           if Visitor.inputDirectories.Contains arg then
-             CommandLine.error <-
-               CommandLine.Format.Local("DuplicatesNotAllowed", arg,
-                  "--inputDirectory") :: CommandLine.error
-           else
-             Visitor.inputDirectories.Add arg))
-
-      ("o|outputDirectory=",
-       (fun x ->
-         if CommandLine.ValidatePath "--outputDirectory" x then
-           let arg = Path.GetFullPath x
-           if Visitor.outputDirectories.Contains arg then
-             CommandLine.error <-
-               CommandLine.Format.Local("DuplicatesNotAllowed", arg,
-                  "--outputDirectory") :: CommandLine.error
-           else
-             CommandLine.doPathOperation (fun _ -> Visitor.outputDirectories.Add arg) ()
-               false))
-
-      ("y|symbolDirectory=",
-       (fun x ->
-         if CommandLine.ValidateDirectory "--symbolDirectory" x then
-           ProgramDatabase.SymbolFolders.Add x))
-      ("d|dependency=",
-       (fun x ->
-         CommandLine.doPathOperation (fun _ ->
-           let path =
-             x
-             |> Environment.ExpandEnvironmentVariables
-             |> Path.GetFullPath
-
-           let name, ok = CommandLine.ValidateAssembly "--dependency" path
-           if ok then
-             Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
-           () false))
-
-      ("k|key=",
-       (fun x ->
-         let (pair, ok) = CommandLine.ValidateStrongNameKey "--key" x
-         if ok then Visitor.Add pair))
-      ("sn|strongNameKey=",
-       (fun x ->
-         let (pair, ok) = CommandLine.ValidateStrongNameKey "--strongNameKey" x
-         if ok then
-           if Option.isSome Visitor.defaultStrongNameKey then
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--strongNameKey")
-               :: CommandLine.error
-           else
-             Visitor.defaultStrongNameKey <- Some pair
-             Visitor.Add pair))
-
-      ("x|xmlReport=",
-       (fun x ->
-         if CommandLine.ValidatePath "--xmlReport" x then
-           if Option.isSome Visitor.reportPath then
-             CommandLine.error <-
-             CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
-               :: CommandLine.error
-           else
-             CommandLine.doPathOperation
-               (fun () -> Visitor.reportPath <- Some(Path.GetFullPath x)) () false))
-      ("f|fileFilter=", makeFilter FilterScope.File)
-      ("p|pathFilter=", makeFilter FilterScope.Path)
-      ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
-      ("e|assemblyExcludeFilter=", makeFilter FilterScope.Module)
-      ("t|typeFilter=", makeFilter FilterScope.Type)
-      ("m|methodFilter=", makeFilter FilterScope.Method)
-      ("a|attributeFilter=", makeFilter FilterScope.Attribute)
-      (CommandLine.ddFlag "l|localSource" Visitor.local)
-      ("c|callContext=",
-       (fun x ->
-         if Visitor.single then
-           CommandLine.error <-
-             CommandLine.Format.Local("Incompatible",
-                "--single", "--callContext") :: CommandLine.error
-         else
-           let (ok, selection) = ValidateCallContext (Option.isSome Visitor.interval) x
-           if ok then
-             match selection with
-             | Left n -> Visitor.interval <- n
-             | Right name -> Visitor.TrackingNames.Add(name)))
-      ("opencover",
-       (fun _ ->
-         if Option.isSome Visitor.reportFormat then
-           CommandLine.error <-
-             CommandLine.Format.Local("MultiplesNotAllowed", "--opencover")
-             :: CommandLine.error
-         else
-           Visitor.reportFormat <- Some ReportFormat.OpenCover))
-      (CommandLine.ddFlag "inplace" Visitor.inplace)
-      (CommandLine.ddFlag "save" Visitor.collect)
-      ("single",
-       (fun _ ->
-         if Visitor.single then
-           CommandLine.error <-
-             CommandLine.Format.Local("MultiplesNotAllowed", "--single")
-             :: CommandLine.error
-         else if Option.isSome Visitor.interval || Visitor.TrackingNames.Any() then
-           CommandLine.error <-
-             CommandLine.Format.Local("Incompatible",
-                "--single", "--callContext") :: CommandLine.error
-         else
-           Visitor.single <- true))
-      ("linecover",
-       (fun _ ->
-         match Visitor.coverstyle with
-         | CoverStyle.LineOnly ->
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--linecover")
-               :: CommandLine.error
-         | CoverStyle.BranchOnly ->
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible", "--linecover",
-                  "--branchcover") :: CommandLine.error
-         | _ -> Visitor.coverstyle <- CoverStyle.LineOnly))
-      ("branchcover",
-       (fun _ ->
-         match Visitor.coverstyle with
-         | CoverStyle.BranchOnly ->
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--branchcover")
-               :: CommandLine.error
-         | CoverStyle.LineOnly ->
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible", "--branchcover",
-                  "--linecover") :: CommandLine.error
-         | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
-      (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
-      (CommandLine.ddFlag "sourcelink" Visitor.sourcelink)
-      ("defer:",
-       (fun x ->
-         if !Visitor.defer = None then
-           Visitor.defer := if String.IsNullOrWhiteSpace x then
-                              Some true
-                            else
-                              let (|Select|_|) (pattern : String) offered =
-                                if offered
-                                   |> String.IsNullOrWhiteSpace
-                                   |> not
-                                   && pattern.Equals
-                                        (offered, StringComparison.OrdinalIgnoreCase) then
-                                  Some offered
-                                else
-                                  None
-                              match x with
-                              | Select "-" _ -> Some false
-                              | Select "+" _ -> Some true
-                              | _ -> None
-           if !Visitor.defer = None then
-             CommandLine.error <-
-               CommandLine.Format.Local("InvalidValue", "--defer", x)
-               :: CommandLine.error
-         else
-           CommandLine.error <-
-             CommandLine.Format.Local("MultiplesNotAllowed", "--defer")
-             :: CommandLine.error))
-      (CommandLine.ddFlag "v|visibleBranches" Visitor.coalesceBranches)
-      ("showstatic:",
-       (fun x ->
-         if Visitor.staticFilter = None then
-           Visitor.staticFilter <-
-             if String.IsNullOrWhiteSpace x || x = "+" then Some StaticFilter.AsCovered
-             else if x = "++" then Some StaticFilter.NoFilter
-             else if x = "-" then Some StaticFilter.Hidden
-             else None
-           if Visitor.staticFilter = None then
-             CommandLine.error <-
-               CommandLine.Format.Local("InvalidValue", "--showstatic", x)
-               :: CommandLine.error
-         else
-           CommandLine.error <-
-             CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
-             :: CommandLine.error))
-      (CommandLine.ddFlag "showGenerated" Visitor.showGenerated)
-      ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
-
-      ("<>",
-       (fun x ->
-         CommandLine.error <-
-           CommandLine.Format.Local("InvalidValue",
-              "AltCover", x) :: CommandLine.error)) ] // default end stop
-    |> List.fold
-         (fun (o : OptionSet) (p, a) ->
-           o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
-         (OptionSet())
-
-  let internal ProcessOutputLocation(action : Either<string * OptionSet, string list * OptionSet>) =
-    match action with
-    | Right(rest, options) ->
-        // Check that the directories are distinct
-        let fromDirectories = Visitor.InputDirectories()
-        let toDirectories = Visitor.OutputDirectories()
-        fromDirectories
-        |> Seq.iter (fun fromDirectory ->
-             if toDirectories.Contains fromDirectory then
+      [ ("i|inputDirectory=",
+         (fun x ->
+           if CommandLine.validateDirectory "--inputDirectory" x then
+             let arg = Path.GetFullPath x
+             if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
-                 CommandLine.Format.Local("NotInPlace", fromDirectory)
-                 :: CommandLine.error)
+                 CommandLine.Format.Local("DuplicatesNotAllowed", arg,
+                    "--inputDirectory") :: CommandLine.error
+             else
+               CoverageParameters.theInputDirectories.Add arg))
 
-        CommandLine.doPathOperation (fun () ->
-          let found = toDirectories |> Seq.filter Directory.Exists
-          if !Visitor.inplace && CommandLine.error |> List.isEmpty && found.Any() then
-            found
-            |> Seq.iter (fun toDirectory ->
+        ("o|outputDirectory=",
+         (fun x ->
+           if CommandLine.validatePath "--outputDirectory" x then
+             let arg = Path.GetFullPath x
+             if CoverageParameters.theOutputDirectories.Contains arg then
+               CommandLine.error <-
+                 CommandLine.Format.Local("DuplicatesNotAllowed", arg,
+                    "--outputDirectory") :: CommandLine.error
+             else
+               CommandLine.doPathOperation (fun _ -> CoverageParameters.theOutputDirectories.Add arg) ()
+                 false))
+
+        ("y|symbolDirectory=",
+         (fun x ->
+           if CommandLine.validateDirectory "--symbolDirectory" x then
+             ProgramDatabase.symbolFolders.Add x))
+        ("d|dependency=",
+         (fun x ->
+           CommandLine.doPathOperation (fun _ ->
+             let path =
+               x
+               |> Environment.ExpandEnvironmentVariables
+               |> Path.GetFullPath
+
+             let name, ok = CommandLine.validateAssembly "--dependency" path
+             if ok then
+               Instrument.resolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
+             () false))
+
+        ("k|key=",
+         (fun x ->
+           let (pair, ok) = CommandLine.validateStrongNameKey "--key" x
+           if ok then CoverageParameters.add pair))
+        ("sn|strongNameKey=",
+         (fun x ->
+           let (pair, ok) = CommandLine.validateStrongNameKey "--strongNameKey" x
+           if ok then
+             if Option.isSome CoverageParameters.defaultStrongNameKey then
+               CommandLine.error <-
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--strongNameKey")
+                 :: CommandLine.error
+             else
+               CoverageParameters.defaultStrongNameKey <- Some pair
+               CoverageParameters.add pair))
+
+        ("x|xmlReport=",
+         (fun x ->
+           if CommandLine.validatePath "--xmlReport" x then
+             if Option.isSome CoverageParameters.theReportPath then
+               CommandLine.error <-
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
+                 :: CommandLine.error
+             else
+               CommandLine.doPathOperation
+                 (fun () -> CoverageParameters.theReportPath <- Some(Path.GetFullPath x)) () false))
+        ("f|fileFilter=", makeFilter FilterScope.File)
+        ("p|pathFilter=", makeFilter FilterScope.Path)
+        ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
+        ("e|assemblyExcludeFilter=", makeFilter FilterScope.Module)
+        ("t|typeFilter=", makeFilter FilterScope.Type)
+        ("m|methodFilter=", makeFilter FilterScope.Method)
+        ("a|attributeFilter=", makeFilter FilterScope.Attribute)
+        (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
+        ("c|callContext=",
+         (fun x ->
+           if CoverageParameters.single then
+             CommandLine.error <-
+               CommandLine.Format.Local("Incompatible",
+                  "--single", "--callContext") :: CommandLine.error
+           else
+             let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.theInterval) x
+             if ok then
+               match selection with
+               | Left n -> CoverageParameters.theInterval <- n
+               | Right name -> CoverageParameters.trackingNames.Add(name)))
+        ("opencover",
+         (fun _ ->
+           if Option.isSome CoverageParameters.theReportFormat then
+             CommandLine.error <-
+               CommandLine.Format.Local("MultiplesNotAllowed", "--opencover")
+               :: CommandLine.error
+           else
+             CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover))
+        (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
+        (CommandLine.ddFlag "save" CoverageParameters.collect)
+        ("single",
+         (fun _ ->
+           if CoverageParameters.single then
+             CommandLine.error <-
+               CommandLine.Format.Local("MultiplesNotAllowed", "--single")
+               :: CommandLine.error
+           else if Option.isSome CoverageParameters.theInterval || CoverageParameters.trackingNames.Any() then
+             CommandLine.error <-
+               CommandLine.Format.Local("Incompatible",
+                  "--single", "--callContext") :: CommandLine.error
+           else
+             CoverageParameters.single <- true))
+        ("linecover",
+         (fun _ ->
+           match CoverageParameters.coverstyle with
+           | CoverStyle.LineOnly ->
+               CommandLine.error <-
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--linecover")
+                 :: CommandLine.error
+           | CoverStyle.BranchOnly ->
+               CommandLine.error <-
+                 CommandLine.Format.Local("Incompatible", "--linecover",
+                    "--branchcover") :: CommandLine.error
+           | _ -> CoverageParameters.coverstyle <- CoverStyle.LineOnly))
+        ("branchcover",
+         (fun _ ->
+           match CoverageParameters.coverstyle with
+           | CoverStyle.BranchOnly ->
+               CommandLine.error <-
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--branchcover")
+                 :: CommandLine.error
+           | CoverStyle.LineOnly ->
+               CommandLine.error <-
+                 CommandLine.Format.Local("Incompatible", "--branchcover",
+                    "--linecover") :: CommandLine.error
+           | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
+        (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
+        (CommandLine.ddFlag "sourcelink" CoverageParameters.sourcelink)
+        ("defer:",
+         (fun x ->
+           if !CoverageParameters.defer = None then
+             CoverageParameters.defer := if String.IsNullOrWhiteSpace x then
+                                           Some true
+                                         else
+                                           let (|Select|_|) (pattern : String) offered =
+                                             if offered
+                                                |> String.IsNullOrWhiteSpace
+                                                |> not
+                                                && pattern.Equals
+                                                     (offered, StringComparison.OrdinalIgnoreCase) then
+                                               Some offered
+                                             else
+                                               None
+                                           match x with
+                                           | Select "-" _ -> Some false
+                                           | Select "+" _ -> Some true
+                                           | _ -> None
+             if !CoverageParameters.defer = None then
+               CommandLine.error <-
+                 CommandLine.Format.Local("InvalidValue", "--defer", x)
+                 :: CommandLine.error
+           else
+             CommandLine.error <-
+               CommandLine.Format.Local("MultiplesNotAllowed", "--defer")
+               :: CommandLine.error))
+        (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
+        ("showstatic:",
+         (fun x ->
+           if CoverageParameters.staticFilter = None then
+             CoverageParameters.staticFilter <-
+               if String.IsNullOrWhiteSpace x || x = "+" then Some StaticFilter.AsCovered
+               else if x = "++" then Some StaticFilter.NoFilter
+               else if x = "-" then Some StaticFilter.Hidden
+               else None
+             if CoverageParameters.staticFilter = None then
+               CommandLine.error <-
+                 CommandLine.Format.Local("InvalidValue", "--showstatic", x)
+                 :: CommandLine.error
+           else
+             CommandLine.error <-
+               CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
+               :: CommandLine.error))
+        (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
+        ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
+
+        ("<>",
+         (fun x ->
+           CommandLine.error <-
+             CommandLine.Format.Local("InvalidValue",
+                "AltCover", x) :: CommandLine.error)) ] // default end stop
+      |> List.fold
+           (fun (o : OptionSet) (p, a) ->
+             o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
+           (OptionSet())
+
+    let internal processOutputLocation(action : Either<string * OptionSet, string list * OptionSet>) =
+      match action with
+      | Right(rest, options) ->
+          // Check that the directories are distinct
+          let fromDirectories = CoverageParameters.inputDirectories()
+          let toDirectories = CoverageParameters.outputDirectories()
+          fromDirectories
+          |> Seq.iter (fun fromDirectory ->
+               if toDirectories.Contains fromDirectory then
                  CommandLine.error <-
-                   CommandLine.Format.Local("SaveExists", toDirectory)
+                   CommandLine.Format.Local("NotInPlace", fromDirectory)
                    :: CommandLine.error)
-          if CommandLine.error |> List.isEmpty then
-            (Seq.iter CommandLine.ensureDirectory toDirectories)) () false
-        if CommandLine.error
-           |> List.isEmpty
-           |> not then
-          Left("UsageError", options)
-        else
-          Seq.zip toDirectories fromDirectories
-          |> Seq.iter (fun (toDirectory, fromDirectory) ->
-               if !Visitor.inplace then
-                 Output.Info
-                 <| CommandLine.Format.Local("savingto", toDirectory)
-                 Output.Info
-                 <| CommandLine.Format.Local("instrumentingin", fromDirectory)
-               else
-                 Output.Info
-                 <| CommandLine.Format.Local("instrumentingfrom",
-                       fromDirectory)
-                 Output.Info
-                 <| CommandLine.Format.Local("instrumentingto", toDirectory))
-          Right
-            (rest, fromDirectories |> Seq.map DirectoryInfo,
-             toDirectories |> Seq.map DirectoryInfo,
-             Visitor.SourceDirectories() |> Seq.map DirectoryInfo)
-    | Left intro -> Left intro
 
-  let internal ImageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
-    try
-      f()
-    with
-    | :? Mono.Cecil.Cil.SymbolsNotMatchingException
-    | :? BadImageFormatException
-    | :? ArgumentException
-    | :? IOException -> tidy()
-
-  let internal PrepareTargetFiles (fromInfos : DirectoryInfo seq)
-      (toInfos : DirectoryInfo seq) (sourceInfos : DirectoryInfo seq)
-      (targets : string seq) =
-    // Copy all the files into the target directory
-    let mapping = Dictionary<string, string>()
-    Seq.zip sourceInfos targets
-    |> Seq.map (fun (x, y) ->
-         let f = x.FullName // trim separator
-         (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
-    |> Seq.iter mapping.Add
-
-    Seq.zip fromInfos toInfos
-    |> Seq.iter (fun (fromInfo, toInfo) ->
-         let files = fromInfo.GetFiles()
-         files
-         |> Seq.iter (fun info ->
-              let fullName = info.FullName
-              let filename = info.Name
-              let copy = Path.Combine(toInfo.FullName, filename)
-              File.Copy(fullName, copy, true)))
-
-    // Track the symbol-bearing assemblies
-    let assemblies =
-      sourceInfos
-      |> Seq.map (fun sourceInfo ->
-           sourceInfo.GetFiles()
-           |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
-                let fullName = info.FullName
-                ImageLoadResilient (fun () ->
-                  use stream = File.OpenRead(fullName)
-                  use def = AssemblyDefinition.ReadAssembly(stream)
-                  ProgramDatabase.ReadSymbols def
-                  if def.MainModule.HasSymbols && def
-                                                  |> Visitor.IsIncluded
-                                                  |> Visitor.IsInstrumented
-                     && (def.MainModule.Attributes &&& ModuleAttributes.ILOnly =
-                           ModuleAttributes.ILOnly) then
-                    CommandLine.Format.Local("instrumenting", fullName)
-                    |> Output.Info
-                    { Path = [ fullName ]
-                      Name = def.Name.Name
-                      Refs =
-                        def.MainModule.AssemblyReferences
-                        |> Seq.map (fun r -> r.Name)
-                        |> Seq.toList }
-                    :: accumulator
+          CommandLine.doPathOperation (fun () ->
+            let found = toDirectories |> Seq.filter Directory.Exists
+            if !CoverageParameters.inplace && CommandLine.error |> List.isEmpty && found.Any() then
+              found
+              |> Seq.iter (fun toDirectory ->
+                   CommandLine.error <-
+                     CommandLine.Format.Local("SaveExists", toDirectory)
+                     :: CommandLine.error)
+            if CommandLine.error |> List.isEmpty then
+              (Seq.iter CommandLine.ensureDirectory toDirectories)) () false
+          if CommandLine.error
+             |> List.isEmpty
+             |> not then
+            Left("UsageError", options)
+          else
+            Seq.zip toDirectories fromDirectories
+            |> Seq.iter (fun (toDirectory, fromDirectory) ->
+                 if !CoverageParameters.inplace then
+                   Output.info
+                   <| CommandLine.Format.Local("savingto", toDirectory)
+                   Output.info
+                   <| CommandLine.Format.Local("instrumentingin", fromDirectory)
                   else
-                    accumulator) (fun () -> accumulator)) [])
-      |> Seq.toList
-      |> Seq.concat
-      |> Seq.groupBy (fun a -> a.Name) // assume name is unique
-      |> Seq.map (fun (n, agroup) ->
-           { (agroup |> Seq.head) with
-               Path =
-                 agroup
-                 |> Seq.map (fun aa -> aa.Path)
-                 |> Seq.concat
-                 |> Seq.toList })
-      |> Seq.toList
+                   Output.info
+                   <| CommandLine.Format.Local("instrumentingfrom",
+                       fromDirectory)
+                   Output.info
+                   <| CommandLine.Format.Local("instrumentingto", toDirectory))
+            Right
+              (rest, fromDirectories |> Seq.map DirectoryInfo,
+               toDirectories |> Seq.map DirectoryInfo,
+               CoverageParameters.sourceDirectories() |> Seq.map DirectoryInfo)
+      | Left intro -> Left intro
 
-    // sort the assemblies into order so that the depended-upon are processed first
+    let internal imageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
+      try
+        f()
+      with
+      | :? Mono.Cecil.Cil.SymbolsNotMatchingException
+      | :? BadImageFormatException
+      | :? ArgumentException
+      | :? IOException -> tidy()
 
-    // The set of all names w/o location
-    let candidates =
-      assemblies
-      |> Seq.map (fun a -> a.Name)
-      |> Seq.fold (fun (s : Set<string>) n -> Set.add n s) Set.empty<string>
+    let internal prepareTargetFiles (fromInfos : DirectoryInfo seq)
+        (toInfos : DirectoryInfo seq) (sourceInfos : DirectoryInfo seq)
+        (targets : string seq) =
+      // Copy all the files into the target directory
+      let mapping = Dictionary<string, string>()
+      Seq.zip sourceInfos targets
+      |> Seq.map (fun (x, y) ->
+           let f = x.FullName // trim separator
+           (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
+      |> Seq.iter mapping.Add
 
-    let simplified =
-      assemblies
-      |> List.map (fun a ->
-           { a with Refs = a.Refs |> List.filter (fun n -> Set.contains n candidates) })
+      Seq.zip fromInfos toInfos
+      |> Seq.iter (fun (fromInfo, toInfo) ->
+           let files = fromInfo.GetFiles()
+           files
+           |> Seq.iter (fun info ->
+                let fullName = info.FullName
+                let filename = info.Name
+                let copy = Path.Combine(toInfo.FullName, filename)
+                File.Copy(fullName, copy, true)))
 
-    let rec bundle unassigned unresolved collection n =
-      match unassigned with
-      | [] -> collection
-      | _ ->
-          let stage =
-            (if n <= 1
-             then unassigned
-             else unassigned |> List.filter (fun u -> u.Refs |> List.isEmpty))
-            |> List.sortBy (fun u -> u.Name)
+      // Track the symbol-bearing assemblies
+      let assemblies =
+        sourceInfos
+        |> Seq.map (fun sourceInfo ->
+             sourceInfo.GetFiles()
+             |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
+                  let fullName = info.FullName
+                  imageLoadResilient (fun () ->
+                    use stream = File.OpenRead(fullName)
+                    use def = AssemblyDefinition.ReadAssembly(stream)
+                    ProgramDatabase.readSymbols def
+                    if def.MainModule.HasSymbols &&
+                      (def.IsIncluded).IsInstrumented
+                       && (def.MainModule.Attributes &&& ModuleAttributes.ILOnly =
+                             ModuleAttributes.ILOnly) then
+                      CommandLine.Format.Local("instrumenting", fullName)
+                      |> Output.info
+                      { Path = [ fullName ]
+                        Name = def.Name.Name
+                        Refs =
+                          def.MainModule.AssemblyReferences
+                          |> Seq.map (fun r -> r.Name)
+                          |> Seq.toList }
+                      :: accumulator
+                    else
+                      accumulator) (fun () -> accumulator)) [])
+        |> Seq.toList
+        |> Seq.concat
+        |> Seq.groupBy (fun a -> a.Name) // assume name is unique
+        |> Seq.map (fun (n, agroup) ->
+             { (agroup |> Seq.head) with
+                 Path =
+                   agroup
+                   |> Seq.map (fun aa -> aa.Path)
+                   |> Seq.concat
+                   |> Seq.toList })
+        |> Seq.toList
 
-          let waiting = stage |> List.fold (fun s a -> Set.remove a.Name s) unresolved
+      // sort the assemblies into order so that the depended-upon are processed first
 
-          let next =
-            unassigned
-            |> List.filter (fun u ->
-                 u.Refs
-                 |> List.isEmpty
-                 |> not)
-            |> List.map (fun a ->
-                 { a with Refs = a.Refs |> List.filter (fun n -> Set.contains n waiting) })
-          bundle next waiting (stage :: collection) (n - 1)
+      // The set of all names w/o location
+      let candidates =
+        assemblies
+        |> Seq.map (fun a -> a.Name)
+        |> Seq.fold (fun (s : Set<string>) n -> Set.add n s) Set.empty<string>
 
-    let sorted =
-      bundle simplified candidates [] (simplified |> List.length)
-      |> List.concat
-      |> List.rev
-      |> List.map (fun a ->
-           let proto = a.Path.Head
-           let targets =
-             a.Path |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
-           ((proto, targets), a.Name))
+      let simplified =
+        assemblies
+        |> List.map (fun a ->
+             { a with Refs = a.Refs |> List.filter (fun n -> Set.contains n candidates) })
 
-    List.unzip sorted
+      let rec bundle unassigned unresolved collection n =
+        match unassigned with
+        | [] -> collection
+        | _ ->
+            let stage =
+              (if n <= 1
+               then unassigned
+               else unassigned |> List.filter (fun u -> u.Refs |> List.isEmpty))
+              |> List.sortBy (fun u -> u.Name)
 
-  let internal DoInstrumentation arguments =
+            let waiting = stage |> List.fold (fun s a -> Set.remove a.Name s) unresolved
+
+            let next =
+              unassigned
+              |> List.filter (fun u ->
+                   u.Refs
+                   |> List.isEmpty
+                   |> not)
+              |> List.map (fun a ->
+                   { a with Refs = a.Refs |> List.filter (fun n -> Set.contains n waiting) })
+            bundle next waiting (stage :: collection) (n - 1)
+
+      let sorted =
+        bundle simplified candidates [] (simplified |> List.length)
+        |> List.concat
+        |> List.rev
+        |> List.map (fun a ->
+             let proto = a.Path.Head
+             let targets =
+               a.Path |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
+             ((proto, targets), a.Name))
+
+      List.unzip sorted
+
+    let internal doInstrumentation arguments =
 #if NETCOREAPP2_0
-    let dotnetBuild =
-      Assembly.GetEntryAssembly() // is null for unit tests
-      |> Option.nullable
-      |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
-      |> Option.getOrElse false
+      let dotnetBuild =
+        Assembly.GetEntryAssembly() // is null for unit tests
+        |> Option.nullable
+        |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
+        |> Option.getOrElse false
 
 #else
-    let dotnetBuild = false
+      let dotnetBuild = false
 
 #endif
-    let check1 =
-      DeclareOptions()
-      |> CommandLine.ParseCommandLine arguments
-      |> CommandLine.ProcessHelpOption
-      |> ProcessOutputLocation
-    match check1 with
-    | Left(intro, options) ->
-        CommandLine.HandleBadArguments dotnetBuild arguments
-          { Intro = intro
-            Options = options
-            Options2 = Runner.DeclareOptions() }
-        255
-    | Right(rest, fromInfo, toInfo, targetInfo) ->
-        let report = Visitor.ReportPath()
+      let check1 =
+        declareOptions()
+        |> CommandLine.parseCommandLine arguments
+        |> CommandLine.processHelpOption
+        |> processOutputLocation
+      match check1 with
+      | Left(intro, options) ->
+          CommandLine.handleBadArguments dotnetBuild arguments
+            { Intro = intro
+              Options = options
+              Options2 = Runner.declareOptions() }
+          255
+      | Right(rest, fromInfo, toInfo, targetInfo) ->
+          let report = CoverageParameters.reportPath()
 
-        let result =
-          CommandLine.doPathOperation (fun () ->
-            report
-            |> Path.GetDirectoryName
-            |> CommandLine.ensureDirectory
-            let (assemblies, assemblyNames) =
-              PrepareTargetFiles fromInfo toInfo targetInfo
-                (Visitor.InstrumentDirectories())
-            Output.Info
-            <| CommandLine.Format.Local("reportingto", report)
-            let reporter, document =
-              match Visitor.ReportKind() with
-              | ReportFormat.OpenCover -> OpenCover.ReportGenerator()
-              | _ -> Report.ReportGenerator()
+          let result =
+            CommandLine.doPathOperation (fun () ->
+              report
+              |> Path.GetDirectoryName
+              |> CommandLine.ensureDirectory
+              let (assemblies, assemblyNames) =
+                prepareTargetFiles fromInfo toInfo targetInfo
+                  (CoverageParameters.instrumentDirectories())
+              Output.info
+              <| CommandLine.Format.Local("reportingto", report)
+              let reporter, document =
+                match CoverageParameters.reportKind() with
+                | ReportFormat.OpenCover -> OpenCover.reportGenerator()
+                | _ -> Report.reportGenerator()
 
-            let visitors =
-              [ reporter
-                Instrument.InstrumentGenerator assemblyNames ]
+              let visitors =
+                [ reporter
+                  Instrument.instrumentGenerator assemblyNames ]
 
-            Visitor.Visit visitors (assemblies)
-            report
-            |> Path.GetDirectoryName
-            |> Directory.CreateDirectory
-            |> ignore
-            document.Save(report)
-            if !Visitor.collect then Runner.SetRecordToFile report
-            CommandLine.ProcessTrailingArguments rest (toInfo |> Seq.head)) 255 true
-        CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Visitor.inplace)
-        result
+              Visitor.visit visitors (assemblies)
+              report
+              |> Path.GetDirectoryName
+              |> Directory.CreateDirectory
+              |> ignore
+              document.Save(report)
+              if !CoverageParameters.collect then Runner.setRecordToFile report
+              CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
+          CommandLine.reportErrors "Instrumentation" (dotnetBuild && !CoverageParameters.inplace)
+          result
 
-  let internal (|Select|_|) (pattern : String) offered =
-    if offered
-       |> String.IsNullOrWhiteSpace
-       |> not
-       && pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) then
-      Some offered
-    else
-      None
+    let internal (|Select|_|) (pattern : String) offered =
+      if offered
+         |> String.IsNullOrWhiteSpace
+         |> not
+         && pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) then
+        Some offered
+      else
+        None
 
-  let internal Main arguments =
-    let first =
-      arguments
-      |> Seq.tryHead
-      |> Option.getOrElse String.Empty
-    init()
-    match first with
-    | Select "Runner" _ ->
-        Runner.init()
-        Runner.DoCoverage arguments (DeclareOptions())
-    | Select "ipmo" _ ->
-        Path.Combine
-          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-           "AltCover.PowerShell.dll")
-        |> Path.GetFullPath
-        |> sprintf "Import-Module %A"
-        |> (Output.Info)
-        0
-    | Select "version" _ ->
-        Runner.WriteResourceWithFormatItems "AltCover.Version"
-          [| AssemblyVersionInformation.AssemblyFileVersion |] false
-        0
-    | _ -> DoInstrumentation arguments
+    let internal main arguments =
+      let first =
+        arguments
+        |> Seq.tryHead
+        |> Option.getOrElse String.Empty
+      init()
+      match first with
+      | Select "Runner" _ ->
+          Runner.init()
+          Runner.doCoverage arguments (declareOptions())
+      | Select "ImportModule" _ ->
+          Path.Combine
+            (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+             "AltCover.PowerShell.dll")
+          |> Path.GetFullPath
+          |> sprintf "Import-Module %A"
+          |> (Output.info)
+          0
+      | Select "version" _ ->
+          CommandLine.writeResourceWithFormatItems "AltCover.Version"
+            [| AssemblyVersionInformation.AssemblyFileVersion |] false
+          0
+      | _ -> doInstrumentation arguments
 
   // mocking point
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  let mutable internal EffectiveMain = Main
+  let mutable internal effectiveMain = I.main

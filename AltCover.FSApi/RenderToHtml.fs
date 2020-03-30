@@ -10,12 +10,13 @@ module RenderToHtml =
   [<SuppressMessage("Microsoft.Design", "CA1059",
     Justification="Premature abstraction")>]
   let Action (xmlDocument:XmlDocument) =
-    let format = XmlUtilities.DiscoverFormat xmlDocument
+    let format = XmlUtilities.discoverFormat xmlDocument
 
-    let files = match format with
+    use nodes = match format with
                 | AltCover.Base.ReportFormat.OpenCover -> "//Files/File/@fullPath"
                 | _ -> "//@document"
                 |> xmlDocument.SelectNodes
+    let files = nodes
                 |> Seq.cast<XmlNode>
                 |> Seq.map (fun n -> n.Value)
                 |> Seq.distinct

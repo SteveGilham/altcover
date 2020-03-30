@@ -9,7 +9,7 @@ open System.Xml
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToBarChartCommand(outputFile : String) =
   inherit PSCmdlet()
@@ -51,7 +51,7 @@ type ConvertToBarChartCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "SourceMap")>]
-[<OutputType(typeof<Dictionary<string, XmlDocument>>)>]
+[<OutputType(typeof<Dictionary<string, XmlDocument>>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToSourceMapCommand(outputFolder : String) =
   inherit PSCmdlet()
@@ -59,6 +59,8 @@ type ConvertToSourceMapCommand(outputFolder : String) =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes",
+    Justification="Avoids premature generalization")>]
   member val XmlDocument : XmlDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,

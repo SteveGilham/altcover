@@ -159,7 +159,7 @@ See also '--inplace'</value>
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
 or
-AltCover ipmo
+AltCover ImportModule
 or
 AltCover version
 See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
@@ -218,8 +218,8 @@ Coverage Report: {0}
   <data name="orbinder" xml:space="preserve">
     <value>or</value>
   </data>
-  <data name="ipmo" xml:space="preserve">
-    <value>  ipmo                       Prints out the PowerShell script to import the
+  <data name="ImportModule" xml:space="preserve">
+    <value>  ImportModule               Prints out the PowerShell script to import the
                                associated PowerShell module</value>
   </data>
   <data name="opencover" xml:space="preserve">

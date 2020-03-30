@@ -63,10 +63,7 @@ RegressionTesting/issue20/xunit-tests/coverage.xml
 RegressionTesting/issue20/xunit-tests/xunit-tests.csproj
 scratch/
 Demo/MultiTest/**/coverage.xml
-Recorder.Tests/TestResults/
-Tests/TestResults/
-ThirdParty/gendarme.zip
-ThirdParty/gendarme/
-Sample4/TestResults/
-Sample18/TestResults/
 *.user
+*.xsc
+*.xss
+TestResults/

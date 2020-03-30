@@ -10,7 +10,7 @@ open System.Xml.XPath
 [<RequireQualifiedAccess>]
 module OpenCoverUtilities =
 
-  let private CompressMethod withinSequencePoint sameSpan (m : XmlElement) =
+  let private compressMethod withinSequencePoint sameSpan (m : XmlElement) =
     use sp0 = m.GetElementsByTagName("SequencePoint")
     let sp = sp0.OfType<XmlElement>() |> Seq.toList
     use bp0 =m.GetElementsByTagName("BranchPoint")
@@ -112,14 +112,14 @@ module OpenCoverUtilities =
     let xmlDocument = new XmlDocument()
     use reader = navigable.CreateNavigator().ReadSubtree()
     reader |> xmlDocument.Load
-    xmlDocument.Schemas <- XmlUtilities.LoadSchema AltCover.Base.ReportFormat.OpenCover
+    xmlDocument.Schemas <- XmlUtilities.loadSchema AltCover.Base.ReportFormat.OpenCover
     xmlDocument.Validate(null)
     // Get all the methods
     use methods = xmlDocument.SelectNodes("//Method")
     methods
     |> Seq.cast<XmlElement>
-    |> Seq.iter (CompressMethod withinSequencePoint sameSpan)
+    |> Seq.iter (compressMethod withinSequencePoint sameSpan)
     // tidy up here
-    AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
-    XmlUtilities.PrependDeclaration xmlDocument
+    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
+    XmlUtilities.prependDeclaration xmlDocument
     xmlDocument

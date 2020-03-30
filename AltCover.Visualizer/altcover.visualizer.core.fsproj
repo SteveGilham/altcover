@@ -24,15 +24,13 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
     <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
-</PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
   </PropertyGroup>
 
   <ItemGroup>

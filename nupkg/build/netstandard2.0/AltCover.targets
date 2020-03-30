@@ -35,7 +35,7 @@
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework).xml</AltCoverXmlReport>
       <AltCoverShowStatic Condition="'$(AltCoverShowStatic' != '+' AND '$(AltCoverShowStatic' != '++'">-</AltCoverShowStatic>
     </PropertyGroup>
-    <AltCover.PowerShell Condition="'$(AltCoverIpmo)' == 'true'" />
+    <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
@@ -60,7 +60,7 @@
       LocalSource="$(AltCoverLocalSource)"
       VisibleBranches="$(AltCoverVisibleBranches)"
       ShowStatic="$(AltCoverShowStatic)"
-      ShowGenerated="$(AltCoverShowGenerated)"/>
+      ShowGenerated="$(AltCoverShowGenerated)" />
   </Target>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">
