@@ -82,7 +82,7 @@
             <Method cyclomaticComplexity="17" nPathComplexity="0" sequenceCoverage="16.66" branchCoverage="17.64" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="6" visitedSequencePoints="1" numBranchPoints="17" visitedBranchPoints="3" sequenceCoverage="16.66" branchCoverage="17.64" maxCyclomaticComplexity="17" minCyclomaticComplexity="17" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()</Name>
+              <Name>Tests.DU/MyUnion Tests.DU/MyUnion::AsBar()</Name>
               <FileRef uid="1" />
               <SequencePoints>
                 <SequencePoint vc="0" uspid="34" ordinal="0" sl="34" sc="1" el="34" ec="2" bec="0" bev="0" fileid="1" />
@@ -210,7 +210,7 @@
             <Method cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="100" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>System.Byte[] Tests.M/Thing::bytes()</Name>
+              <Name>System.Byte[] Tests.M/Thing::Bytes()</Name>
               <FileRef uid="1" />
               <SequencePoints>
                 <SequencePoint vc="1" uspid="16" ordinal="0" sl="16" sc="1" el="16" ec="2" bec="0" bev="0" fileid="1" />
