@@ -1122,74 +1122,65 @@ _Target "UnitTestWithAltCoverCore"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover = Path.getFullName "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
-  let testDirectory =
-    Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
-  let output =
-    Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
-  let altReport = reports @@ "UnitTestWithAltCoverCore.xml"
-  printfn "Instrumented the code"
-  let prep =
-    AltCover.PrepareParameters.Primitive
-      ({ Primitive.PrepareParameters.Create() with
-           XmlReport = altReport
-           OutputDirectories = [| output |]
-           StrongNameKey = keyfile
-           OpenCover = false
-           InPlace = false
-           Save = false }
-       |> AltCoverFilter)
-    |> AltCover.Prepare
-  { AltCover.Parameters.Create prep with
-      ToolPath = altcover
-      ToolType = dotnet_altcover
-      WorkingDirectory = testDirectory }
-  |> AltCover.run
 
-  printfn "Unit test the instrumented code"
-  try
-    "altcover.tests.core.fsproj"
-    |> DotNet.test (fun p ->
-         { p.WithCommon(withWorkingDirectoryVM "Tests") with
-             Configuration = DotNet.BuildConfiguration.Debug
-             Framework = Some "netcoreapp3.0"
-             NoBuild = true }
-         |> withCLIArgs)
-  with x ->
-    printfn "%A" x
-    reraise()
+  let tests = 
+   [
+     (
+       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "UnitTestWithAltCoverCore.xml", // report
+       "altcover.tests.core.fsproj", // project
+       Path.getFullName "Tests", // workingDirectory
+       AltCoverFilter // filter
+     )
+     (
+       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       reports @@ "RecorderTestWithAltCoverCore.xml",
+       "altcover.recorder.tests.core.fsproj",
+       Path.getFullName "Recorder.Tests",
+       AltCoverFilterG
+     )
+   ]
 
-  printfn "Instrument the Recorder tests"
-  let RecorderDir = "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
-  let RecorderReport = reports @@ "RecorderTestWithAltCoverCore.xml"
-  let RecorderOut =
-    Path.getFullName
-      "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
+  tests 
+  |> List.iter (fun (testDirectory, output, report, project,
+                      workingDirectory, filter) ->
 
-  let prep =
-    AltCover.PrepareParameters.Primitive
-      ({ Primitive.PrepareParameters.Create() with
-           XmlReport = RecorderReport
-           OutputDirectories = [| RecorderOut |]
-           StrongNameKey = keyfile
-           OpenCover = false
-           InPlace = false
-           Save = false }
-       |> AltCoverFilterG)
-    |> AltCover.Prepare
-  { AltCover.Parameters.Create prep with
-      ToolPath = altcover
-      ToolType = dotnet_altcover
-      WorkingDirectory = RecorderDir }
-  |> AltCover.run
+    printfn "Instrument the code %s" testDirectory
+    let prep =
+      AltCover.PrepareParameters.Primitive
+        ({ Primitive.PrepareParameters.Create() with
+             XmlReport = report
+             OutputDirectories = [| output |]
+             StrongNameKey = keyfile
+             OpenCover = false
+             InPlace = false
+             Save = false }
+         |> filter)
+      |> AltCover.Prepare
+    { AltCover.Parameters.Create prep with
+        ToolPath = altcover
+        ToolType = dotnet_altcover
+        WorkingDirectory = testDirectory }
+    |> AltCover.run
 
-  printfn "Execute the Recorder tests"
-  "altcover.recorder.tests.core.fsproj"
-  |> DotNet.test (fun p ->
-       { p.WithCommon(withWorkingDirectoryVM "Recorder.Tests") with
-           Configuration = DotNet.BuildConfiguration.Debug
-           Framework = Some "netcoreapp3.0"
-           NoBuild = true }
-       |> withCLIArgs)
+    printfn "Unit test the instrumented code %s" project
+    try
+      project
+      |> DotNet.test (fun p ->
+           { p.WithCommon(withWorkingDirectoryVM workingDirectory) with
+               Configuration = DotNet.BuildConfiguration.Debug
+               Framework = Some "netcoreapp3.0"
+               NoBuild = true }
+           |> withCLIArgs)
+    with x ->
+      printfn "%A" x
+      reraise())
+
+  let xmlreports = tests
+                   |> List.map (fun (_,_, report, _,_,_) -> report)
+                   |> List.filter (fun f -> f.Contains("GTKV") |> not)
 
   ReportGenerator.generateReports (fun p ->
     { p with
@@ -1197,119 +1188,78 @@ _Target "UnitTestWithAltCoverCore"
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
-    [ altReport; RecorderReport ]
+    xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
   |> printfn "%A uncovered lines"  )
 
 _Target "UnitTestWithAltCoverCoreRunner"
   (fun _ ->
-  Directory.ensure "./_Reports/_UnitTestWithAltCover"
+  Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
+  let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover =
-    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
-  let testDirectory =
-    Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
-  let output =
-    Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
+  let altcover = Path.getFullName "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
 
-  // W/o --single
-  // UnitTestWithAltCoverCoreRunner.xml.0.acv (3,066,500b)
-  // 2,319,766 visits recorded in 00:00:03.6291581 (639,202 visits/sec)
-  // ShadowTestWithAltCoverCoreRunner.xml.0.acv (5,503b)
-  // 3,162 visits recorded in 00:00:00.0589018 (53,683 visits/sec)
-  // XTestWithAltCoverCoreRunner.xml.0.acv (50,201b)
-  // 32,134 visits recorded in 00:00:00.0859144 (374,023 visits/sec)
-  // UnitTestWithAltCoverCoreRunner   00:01:01.8200156
 
-  // W/ --single
-  // UnitTestWithAltCoverCoreRunner.xml.0.acv (10,373b)
-  // 3,082 visits recorded in 00:00:00.0586471 (52,552 visits/sec)
-  // ShadowTestWithAltCoverCoreRunner.xml.0.acv (1,614b)
-  // 453 visits recorded in 00:00:00.0542989 (8,343 visits/sec)
-  // XTestWithAltCoverCoreRunner.xml.0.acv (5,365b)
-  // 1,537 visits recorded in 00:00:00.0556820 (27,603 visits/sec)
-  // UnitTestWithAltCoverCoreRunner   00:00:54.7479602
+  let tests = 
+   [
+     (
+       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "./Tests/altcover.tests.core.fsproj"
+     )
+     (
+       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
+       Path.getFullName "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
+     )
+   ]
 
-  let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
-  printfn "Instrument the code"
-  Shell.cleanDir output
-  let prep =
-    AltCover.PrepareParameters.Primitive
-      ({ Primitive.PrepareParameters.Create() with
-           XmlReport = altReport
-           OutputDirectories = [| output |]
-           VisibleBranches = true
-           StrongNameKey = Path.getFullName "Build/SelfTest.snk"
-           Single = true
-           InPlace = false
-           Save = false }
-       |> AltCoverFilter)
-    |> AltCover.Prepare
-  { AltCover.Parameters.Create prep with
-      ToolPath = altcover
-      ToolType = dotnet_altcover
-      WorkingDirectory = testDirectory }
-  |> AltCover.run
-  printfn "Unit test the instrumented code"
+  tests 
+  |> List.iter (fun (testDirectory, output, report, testproject) ->
 
-  let testproject = Path.getFullName "./Tests/altcover.tests.core.fsproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") testproject
+    printfn "Instrument the code %s" testDirectory
+    Shell.cleanDir output
+    let prep =
+      AltCover.PrepareParameters.Primitive
+        ({ Primitive.PrepareParameters.Create() with
+             XmlReport = report
+             OutputDirectories = [| output |]
+             VisibleBranches = true
+             StrongNameKey = keyfile
+             Single = true
+             InPlace = false
+             Save = false }
+         |> AltCoverFilter)
+      |> AltCover.Prepare
+    { AltCover.Parameters.Create prep with
+        ToolPath = altcover
+        ToolType = dotnet_altcover
+        WorkingDirectory = testDirectory }
+    |> AltCover.run
+    
+    
+    printfn "Unit test the instrumented code %s" testproject
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") testproject
 
-  let collect =
-    AltCover.CollectParameters.Primitive
-      { Primitive.CollectParameters.Create() with
-          Executable = dotnetexe
-          RecorderDirectory = output
-          CommandLine = args }
-    |> AltCover.Collect
-  { AltCover.Parameters.Create collect with
-      ToolPath = altcover
-      ToolType = dotnet_altcover
-      WorkingDirectory = output }
-  |> AltCover.run
+    let collect =
+      AltCover.CollectParameters.Primitive
+        { Primitive.CollectParameters.Create() with
+            Executable = dotnetexe
+            RecorderDirectory = output
+            CommandLine = args }
+      |> AltCover.Collect
+    { AltCover.Parameters.Create collect with
+        ToolPath = altcover
+        ToolType = dotnet_altcover
+        WorkingDirectory = output }
+    |> AltCover.run)
 
-  printfn "Instrument the Recorder tests"
-  let RecorderDir = "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
-  let RecorderReport = reports @@ "RecorderTestWithAltCoverCoreRunner.xml"
-  let RecorderOut =
-    Path.getFullName
-      "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
-  Shell.cleanDir RecorderOut
-  let prep =
-    AltCover.PrepareParameters.Primitive
-      ({ Primitive.PrepareParameters.Create() with
-           XmlReport = RecorderReport
-           OutputDirectories = [| RecorderOut |]
-           VisibleBranches = true
-           Single = true
-           InPlace = false
-           Save = false }
-       |> AltCoverFilter)
-    |> AltCover.Prepare
-  { AltCover.Parameters.Create prep with
-      ToolPath = altcover
-      ToolType = dotnet_altcover
-      WorkingDirectory = RecorderDir }
-  |> AltCover.run
-
-  let RecorderProject =
-    Path.getFullName "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
-
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") RecorderProject
-
-  let collect =
-    AltCover.CollectParameters.Primitive
-      { Primitive.CollectParameters.Create() with
-          Executable = dotnetexe
-          RecorderDirectory = RecorderOut
-          CommandLine = args }
-    |> AltCover.Collect
-  { AltCover.Parameters.Create collect with
-      ToolPath = altcover
-      ToolType = dotnet_altcover
-      WorkingDirectory = RecorderOut }
-  |> AltCover.run
+  let xmlreports = tests
+                   |> List.map (fun (_,_, report, _) -> report)
+                   |> List.filter (fun f -> f.Contains("GTKV") |> not)
 
   ReportGenerator.generateReports (fun p ->
     { p with
@@ -1317,7 +1267,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
-    [ altReport; RecorderReport ]
+    xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
   |> printfn "%A uncovered lines" )
