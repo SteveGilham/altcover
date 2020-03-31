@@ -873,101 +873,96 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
 
-  if !!(testDirectory @@ "AltCov*.pdb")
-     |> Seq.length > 0 then
-    printfn "Instrumented the code"
+  printfn "Instrumented the code"
 
-    let altReport = reports @@ "UnitTestWithAltCover.xml"
-    let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
-    let Recorder4Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
-    printfn "Instrumented the code"
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = altReport
-             InputDirectories = [| "."; weakDir; Recorder4Dir |]
-             OutputDirectories =
-               [| "./__UnitTestWithAltCover"
-                  weakDir @@ "__WeakNameTestWithAltCover"
-                  Recorder4Dir @@ "__RecorderTestWithAltCover"|]
-             StrongNameKey = keyfile
-             OpenCover = false
-             InPlace = false
-             Save = false }
-         |> AltCoverFilterX)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = testDirectory }
-    |> AltCover.run
+  let altReport = reports @@ "UnitTestWithAltCover.xml"
+  let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
+  let Recorder4Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
+  printfn "Instrumented the code"
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = altReport
+           InputDirectories = [| "."; weakDir; Recorder4Dir |]
+           OutputDirectories =
+             [| "./__UnitTestWithAltCover"
+                weakDir @@ "__WeakNameTestWithAltCover"
+                Recorder4Dir @@ "__RecorderTestWithAltCover"|]
+           StrongNameKey = keyfile
+           OpenCover = false
+           InPlace = false
+           Save = false }
+       |> AltCoverFilterX)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = testDirectory }
+  |> AltCover.run
 
-    let sn = "sn" |> Fake.Core.ProcessUtils.tryFindFileOnPath
-    if sn |> Option.isSome then
-      Actions.Run
-        (sn |> Option.get, testDirectory,
-         [ "-vf"; "./__UnitTestWithAltCover/AltCover.Recorder.g.dll" ])
-        "Recorder assembly strong-name verified OK"
+  let sn = "sn" |> Fake.Core.ProcessUtils.tryFindFileOnPath
+  if sn |> Option.isSome then
+    Actions.Run
+      (sn |> Option.get, testDirectory,
+       [ "-vf"; "./__UnitTestWithAltCover/AltCover.Recorder.g.dll" ])
+      "Recorder assembly strong-name verified OK"
 
-    printfn "Unit test the instrumented code"
-    try
-      [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCover/*.Tests.dll"
-        !!"_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
-        !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCover/Alt*Test*.dll"
-        !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net461/__UnitTestWithAltCover/*ple2.dll" ]
-      |> Seq.concat
-      |> Seq.distinct
-      |> NUnit3.run (fun p ->
-           { p with
-               ToolPath = nunitConsole
-               WorkingDir = "."
-               ResultSpecs = [ "./_Reports/UnitTestWithAltCoverReport.xml" ] })
-    with x ->
-      printfn "%A" x
-      reraise()
-
-    printfn "Instrument the Recorder tests"
-    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
-    let RecorderReport = reports @@ "RecorderTestWithAltCover.xml"
-
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = RecorderReport
-             OutputDirectories = [| "./__RecorderTestWithAltCover" |]
-             StrongNameKey = shadowkeyfile
-             OpenCover = false
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = RecorderDir }
-    |> AltCover.run
-
-    printfn "Execute the Recorder2 tests"
-    !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
+  printfn "Unit test the instrumented code"
+  try
+    [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCover/*.Tests.dll"
+      !!"_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
+      !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCover/Alt*Test*.dll"
+      !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net461/__UnitTestWithAltCover/*ple2.dll" ]
+    |> Seq.concat
+    |> Seq.distinct
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
              WorkingDir = "."
-             ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverReport.xml" ] })
+             ResultSpecs = [ "./_Reports/UnitTestWithAltCoverReport.xml" ] })
+  with x ->
+    printfn "%A" x
+    reraise()
 
-    ReportGenerator.generateReports (fun p ->
-      { p with
-          ToolType = ToolType.CreateLocalTool()
-          ReportTypes =
-            [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-          TargetDir = "_Reports/_UnitTestWithAltCover" })
-      [ altReport; RecorderReport ]
+  printfn "Instrument the Recorder tests"
+  let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
+  let RecorderReport = reports @@ "RecorderTestWithAltCover.xml"
 
-    uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
-    |> printfn "%A uncovered lines"
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = RecorderReport
+           OutputDirectories = [| "./__RecorderTestWithAltCover" |]
+           StrongNameKey = shadowkeyfile
+           OpenCover = false
+           InPlace = false
+           Save = false }
+       |> AltCoverFilter)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = RecorderDir }
+  |> AltCover.run
 
-  else
-    printfn "Symbols not present; skipping")
+  printfn "Execute the Recorder2 tests"
+  !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
+  |> NUnit3.run (fun p ->
+       { p with
+           ToolPath = nunitConsole
+           WorkingDir = "."
+           ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverReport.xml" ] })
+
+  ReportGenerator.generateReports (fun p ->
+    { p with
+        ToolType = ToolType.CreateLocalTool()
+        ReportTypes =
+          [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+        TargetDir = "_Reports/_UnitTestWithAltCover" })
+    [ altReport; RecorderReport ]
+
+  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
+  |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
@@ -977,98 +972,46 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" |> Path.getFullName
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
-  if !!(testDirectory @@ "AltCov*.pdb")
-     |> Seq.length > 0 then
 
-    let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
-    printfn "Instrumented the code"
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = altReport
-             OutputDirectories = [| "./__UnitTestWithAltCoverRunner" |]
-             StrongNameKey = keyfile
-             Single = true
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = testDirectory }
-    |> AltCover.run
+  let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
+  printfn "Instrumented the code"
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = altReport
+           OutputDirectories = [| "./__UnitTestWithAltCoverRunner" |]
+           StrongNameKey = keyfile
+           Single = true
+           InPlace = false
+           Save = false }
+       |> AltCoverFilter)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = testDirectory }
+  |> AltCover.run
 
-    printfn "Unit test the instrumented code"
-    let nunitparams =
-      { NUnit3Defaults with
-          ToolPath = nunitConsole
-          WorkingDir = "."
-          ResultSpecs = [ "./_Reports/UnitTestWithAltCoverRunnerReport.xml" ] }
+  printfn "Unit test the instrumented code"
+  let nunitparams =
+    { NUnit3Defaults with
+        ToolPath = nunitConsole
+        WorkingDir = "."
+        ResultSpecs = [ "./_Reports/UnitTestWithAltCoverRunnerReport.xml" ] }
 
-    let nunitcmd =
-      NUnit3.buildArgs nunitparams
-        [ Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-          Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCoverRunner/Sample2.dll" ]
+  let nunitcmd =
+    NUnit3.buildArgs nunitparams
+      [ Path.getFullName
+          "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
+        Path.getFullName
+          "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCoverRunner/Sample2.dll" ]
 
-    try
-      let collect =
-        AltCover.CollectParameters.Primitive
-          { Primitive.CollectParameters.Create() with
-              Executable = nunitConsole
-              RecorderDirectory = testDirectory @@ "__UnitTestWithAltCoverRunner"
-              CommandLine = AltCover.splitCommandLine nunitcmd }
-        |> AltCover.Collect
-      { AltCover.Parameters.Create collect with
-          ToolPath = altcover
-          ToolType = framework_altcover
-          WorkingDirectory = "." }
-      |> AltCover.run
-    with x ->
-      printfn "%A" x
-      reraise()
-
-    printfn "Instrument the weakname tests"
-    let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
-    let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
-
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = weakReport
-             OutputDirectories = [| "./__WeakNameTestWithAltCoverRunner" |]
-             TypeFilter = [ "WeakNameTest" ]
-             StrongNameKey = keyfile
-             Single = true
-             InPlace = false
-             Save = false }
-         |> AltCoverFilterX)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = weakDir }
-    |> AltCover.run
-
-    printfn "Execute the weakname tests"
-    let nunitparams =
-      { NUnit3Defaults with
-          ToolPath = nunitConsole
-          WorkingDir = "."
-          ResultSpecs = [ "./_Reports/WeakNameTestWithAltCoverRunnerReport.xml" ] }
-
-    let nunitcmd =
-      NUnit3.buildArgs nunitparams
-        [ Path.getFullName
-            "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ]
-
+  try
     let collect =
       AltCover.CollectParameters.Primitive
         { Primitive.CollectParameters.Create() with
             Executable = nunitConsole
-            RecorderDirectory = weakDir @@ "__WeakNameTestWithAltCoverRunner"
+            RecorderDirectory = testDirectory @@ "__UnitTestWithAltCoverRunner"
             CommandLine = AltCover.splitCommandLine nunitcmd }
       |> AltCover.Collect
     { AltCover.Parameters.Create collect with
@@ -1076,196 +1019,244 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         ToolType = framework_altcover
         WorkingDirectory = "." }
     |> AltCover.run
+  with x ->
+    printfn "%A" x
+    reraise()
 
-    printfn "Instrument the Recorder tests"
-    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
-    let RecorderReport = reports @@ "RecorderTestWithAltCoverRunner.xml"
+  printfn "Instrument the weakname tests"
+  let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
+  let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
 
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = RecorderReport
-             OutputDirectories = [| "./__RecorderTestWithAltCoverRunner" |]
-             StrongNameKey = shadowkeyfile
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = RecorderDir }
-    |> AltCover.run
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = weakReport
+           OutputDirectories = [| "./__WeakNameTestWithAltCoverRunner" |]
+           TypeFilter = [ "WeakNameTest" ]
+           StrongNameKey = keyfile
+           Single = true
+           InPlace = false
+           Save = false }
+       |> AltCoverFilterX)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = weakDir }
+  |> AltCover.run
 
-    let nunitparams =
-      { NUnit3Defaults with
-          ToolPath = nunitConsole
-          WorkingDir = "."
-          ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverRunnerReport.xml" ] }
+  printfn "Execute the weakname tests"
+  let nunitparams =
+    { NUnit3Defaults with
+        ToolPath = nunitConsole
+        WorkingDir = "."
+        ResultSpecs = [ "./_Reports/WeakNameTestWithAltCoverRunnerReport.xml" ] }
 
-    let nunitcmd =
-      NUnit3.buildArgs nunitparams
-        [ Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
+  let nunitcmd =
+    NUnit3.buildArgs nunitparams
+      [ Path.getFullName
+          "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ]
 
-    let collect =
-      AltCover.CollectParameters.Primitive
-        { Primitive.CollectParameters.Create() with
-            Executable = nunitConsole
-            RecorderDirectory = RecorderDir @@ "__RecorderTestWithAltCoverRunner"
-            CommandLine = AltCover.splitCommandLine nunitcmd }
-      |> AltCover.Collect
-    { AltCover.Parameters.Create collect with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = "." }
-    |> AltCover.run
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with
+          Executable = nunitConsole
+          RecorderDirectory = weakDir @@ "__WeakNameTestWithAltCoverRunner"
+          CommandLine = AltCover.splitCommandLine nunitcmd }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = "." }
+  |> AltCover.run
 
-    printfn "Instrument the Recorder2 tests"
-    let Recorder2Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
-    let Recorder2Report = reports @@ "RecorderTest2WithAltCoverRunner.xml"
+  printfn "Instrument the Recorder tests"
+  let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
+  let RecorderReport = reports @@ "RecorderTestWithAltCoverRunner.xml"
 
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = Recorder2Report
-             OutputDirectories = [| "./__RecorderTest2WithAltCoverRunner" |]
-             StrongNameKey = shadowkeyfile
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = Recorder2Dir }
-    |> AltCover.run
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = RecorderReport
+           OutputDirectories = [| "./__RecorderTestWithAltCoverRunner" |]
+           StrongNameKey = shadowkeyfile
+           InPlace = false
+           Save = false }
+       |> AltCoverFilter)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = RecorderDir }
+  |> AltCover.run
 
-    let nunitparams =
-      { NUnit3Defaults with
-          ToolPath = nunitConsole
-          WorkingDir = "."
-          ResultSpecs = [ "./_Reports/RecorderTest2WithAltCoverRunnerReport.xml" ] }
+  let nunitparams =
+    { NUnit3Defaults with
+        ToolPath = nunitConsole
+        WorkingDir = "."
+        ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverRunnerReport.xml" ] }
 
-    let nunitcmd =
-      NUnit3.buildArgs nunitparams
-        [ Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
+  let nunitcmd =
+    NUnit3.buildArgs nunitparams
+      [ Path.getFullName
+          "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
 
-    let collect =
-      AltCover.CollectParameters.Primitive
-        { Primitive.CollectParameters.Create() with
-            Executable = nunitConsole
-            RecorderDirectory = Recorder2Dir @@ "__RecorderTest2WithAltCoverRunner"
-            CommandLine = AltCover.splitCommandLine nunitcmd }
-      |> AltCover.Collect
-    { AltCover.Parameters.Create collect with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = "." }
-    |> AltCover.run
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with
+          Executable = nunitConsole
+          RecorderDirectory = RecorderDir @@ "__RecorderTestWithAltCoverRunner"
+          CommandLine = AltCover.splitCommandLine nunitcmd }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = "." }
+  |> AltCover.run
 
-    printfn "Instrument the GTK# visualizer tests"
-    let gtkDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471"
-    let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
+  printfn "Instrument the Recorder2 tests"
+  let Recorder2Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20"
+  let Recorder2Report = reports @@ "RecorderTest2WithAltCoverRunner.xml"
 
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = gtkReport
-             OutputDirectories = [| "./__GTKVTestWithAltCoverRunner" |]
-             TypeFilter = [ "Gui" ]
-             AssemblyFilter = [ "\\-sharp" ]
-             StrongNameKey = keyfile
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = gtkDir }
-    |> AltCover.run
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = Recorder2Report
+           OutputDirectories = [| "./__RecorderTest2WithAltCoverRunner" |]
+           StrongNameKey = shadowkeyfile
+           InPlace = false
+           Save = false }
+       |> AltCoverFilter)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = Recorder2Dir }
+  |> AltCover.run
 
-    printfn "Execute the the GTK# visualizer tests"
-    let nunitparams =
-      { NUnit3Defaults with
-          ToolPath = nunitConsole
-          WorkingDir = "."
-          ResultSpecs = [ "./_Reports/GTKVTestWithAltCoverRunnerReport.xml" ] }
+  let nunitparams =
+    { NUnit3Defaults with
+        ToolPath = nunitConsole
+        WorkingDir = "."
+        ResultSpecs = [ "./_Reports/RecorderTest2WithAltCoverRunnerReport.xml" ] }
 
-    let nunitcmd =
-      NUnit3.buildArgs nunitparams
-        [ Path.getFullName
-            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ]
+  let nunitcmd =
+    NUnit3.buildArgs nunitparams
+      [ Path.getFullName
+          "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
 
-    let collect =
-      AltCover.CollectParameters.Primitive
-        { Primitive.CollectParameters.Create() with
-            Executable = nunitConsole
-            RecorderDirectory = gtkDir @@ "__GTKVTestWithAltCoverRunner"
-            CommandLine = AltCover.splitCommandLine nunitcmd }
-      |> AltCover.Collect
-    { AltCover.Parameters.Create collect with
-        ToolPath = altcover
-        ToolType = framework_altcover
-        WorkingDirectory = "." }
-    |> AltCover.run
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with
+          Executable = nunitConsole
+          RecorderDirectory = Recorder2Dir @@ "__RecorderTest2WithAltCoverRunner"
+          CommandLine = AltCover.splitCommandLine nunitcmd }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = "." }
+  |> AltCover.run
 
-    let pester = Path.getFullName "_Reports/Pester.xml"
+  printfn "Instrument the GTK# visualizer tests"
+  let gtkDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471"
+  let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
 
-    ReportGenerator.generateReports (fun p ->
-      { p with
-          ToolType = ToolType.CreateLocalTool()
-          ReportTypes =
-            [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-          TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
-      [ altReport; RecorderReport; Recorder2Report; weakReport; pester ]
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = gtkReport
+           OutputDirectories = [| "./__GTKVTestWithAltCoverRunner" |]
+           TypeFilter = [ "Gui" ]
+           AssemblyFilter = [ "\\-sharp" ]
+           StrongNameKey = keyfile
+           InPlace = false
+           Save = false }
+       |> AltCoverFilter)
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = gtkDir }
+  |> AltCover.run
 
-    uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
-    |> printfn "%A uncovered lines"
+  printfn "Execute the the GTK# visualizer tests"
+  let nunitparams =
+    { NUnit3Defaults with
+        ToolPath = nunitConsole
+        WorkingDir = "."
+        ResultSpecs = [ "./_Reports/GTKVTestWithAltCoverRunnerReport.xml" ] }
 
-    let cover1 =
-      altReport
-      |> File.ReadAllLines
-      |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+  let nunitcmd =
+    NUnit3.buildArgs nunitparams
+      [ Path.getFullName
+          "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ]
 
-    let cover2 =
-      RecorderReport
-      |> File.ReadAllLines
-      |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-      |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with
+          Executable = nunitConsole
+          RecorderDirectory = gtkDir @@ "__GTKVTestWithAltCoverRunner"
+          CommandLine = AltCover.splitCommandLine nunitcmd }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = altcover
+      ToolType = framework_altcover
+      WorkingDirectory = "." }
+  |> AltCover.run
 
-    let cover2a =
-      Recorder2Report
-      |> File.ReadAllLines
-      |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-      |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+  let pester = Path.getFullName "_Reports/Pester.xml"
 
-    let cover3 =
-      weakReport
-      |> File.ReadAllLines
-      |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-      |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+  ReportGenerator.generateReports (fun p ->
+    { p with
+        ToolType = ToolType.CreateLocalTool()
+        ReportTypes =
+          [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+        TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
+    [ altReport; RecorderReport; Recorder2Report; weakReport; pester ]
 
-    let cover4 =
-      pester
-      |> File.ReadAllLines
-      |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+  uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
+  |> printfn "%A uncovered lines"
 
-    let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
-    let coveralls =
-      ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
-      |> Path.getFullName
+  let cover1 =
+    altReport
+    |> File.ReadAllLines
+    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
 
-    File.WriteAllLines
-      (coverage,
-       Seq.concat [ cover1; cover2; cover2a; cover3; cover4 ] |> Seq.toArray)
-    if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
-      Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage ])
-        "Coveralls upload failed"
-  else
-    printfn "Symbols not present; skipping")
+  let cover2 =
+    RecorderReport
+    |> File.ReadAllLines
+    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+
+  let cover2a =
+    Recorder2Report
+    |> File.ReadAllLines
+    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+
+  let cover3 =
+    weakReport
+    |> File.ReadAllLines
+    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+
+  let cover4 =
+    pester
+    |> File.ReadAllLines
+    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+
+  let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
+  let coveralls =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
+    |> Path.getFullName
+
+  File.WriteAllLines
+    (coverage,
+     Seq.concat [ cover1; cover2; cover2a; cover3; cover4 ] |> Seq.toArray)
+  if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
+    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage ])
+      "Coveralls upload failed")
 
 _Target "UnitTestWithAltCoverCore"
   (fun _ ->
@@ -1483,26 +1474,23 @@ _Target "FSharpTypes" (fun _ ->
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net461"
   let instrumented = "__FSharpTypes"
-  if sampleRoot @@ "Sample2.pdb" |> File.Exists then
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = simpleReport
-             OutputDirectories = [| "./" + instrumented |]
-             AssemblyFilter = [ "Adapter"; "nunit" ]
-             TypeFilter = [ "System\\."; "Microsoft\\." ]
-             InPlace = false
-             OpenCover = false
-             Save = false })
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = binRoot @@ "AltCover.exe"
-        ToolType = framework_altcover
-        WorkingDirectory = sampleRoot }
-    |> AltCover.run
-    Actions.ValidateFSharpTypes simpleReport []
-  else
-    printfn "Symbols not present; skipping")
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = simpleReport
+           OutputDirectories = [| "./" + instrumented |]
+           AssemblyFilter = [ "Adapter"; "nunit" ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           InPlace = false
+           OpenCover = false
+           Save = false })
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = binRoot @@ "AltCover.exe"
+      ToolType = framework_altcover
+      WorkingDirectory = sampleRoot }
+  |> AltCover.run
+  Actions.ValidateFSharpTypes simpleReport [])
 
 _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   Directory.ensure "./_Reports"
@@ -1891,72 +1879,70 @@ _Target "RecordResumeTest" (fun _ ->
       Trace.traceImportant "Using the NuGet package"
       test
     | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
-  if File.Exists toolPath
-  then
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = simpleReport
-             OutputDirectories = [ instrumented ]
-             TypeFilter = [ "System\\."; "Microsoft\\." ]
-             AssemblyFilter = [ "Adapter"; "nunit"; "xunit" ]
-             InPlace = false
-             OpenCover = false
-             Save = false })
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = toolPath
-        ToolType = framework_altcover
-        WorkingDirectory = sampleRoot }
-    |> AltCover.run
-    let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-    Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
-    do use coverageFile =
-         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                        FileOptions.SequentialScan)
-       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       let recorded =
-         coverageDocument.Descendants(XName.Get("seqpnt"))
-         |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-         |> Seq.toList
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = simpleReport
+           OutputDirectories = [ instrumented ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           AssemblyFilter = [ "Adapter"; "nunit"; "xunit" ]
+           InPlace = false
+           OpenCover = false
+           Save = false })
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = toolPath
+      ToolType = framework_altcover
+      WorkingDirectory = sampleRoot }
+  |> AltCover.run
+  let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
+  Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
+  do use coverageFile =
+       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       let expected = Array.create 20 "0"
-       Assert.That
-         (recorded, expected |> Is.EquivalentTo,
-          sprintf "Bad visit list %A -- should be empty now" recorded)
+     let recorded =
+       coverageDocument.Descendants(XName.Get("seqpnt"))
+       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+       |> Seq.toList
 
-    let collect =
-      AltCover.CollectParameters.Primitive
-        { Primitive.CollectParameters.Create() with RecorderDirectory = instrumented }
-      |> AltCover.Collect
-    { AltCover.Parameters.Create collect with
-        ToolPath = toolPath
-        ToolType = framework_altcover
-        WorkingDirectory = sampleRoot }
-    |> AltCover.run
+     let expected = Array.create 20 "0"
+     Assert.That
+       (recorded, expected |> Is.EquivalentTo,
+        sprintf "Bad visit list %A -- should be empty now" recorded)
 
-    do use coverageFile =
-         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                        FileOptions.SequentialScan)
-       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with RecorderDirectory = instrumented }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = toolPath
+      ToolType = framework_altcover
+      WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
-       let recorded =
-         coverageDocument.Descendants(XName.Get("seqpnt"))
-         |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-         |> Seq.toList
+  do use coverageFile =
+       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       Assert.That
-         (recorded |> Seq.length, Is.EqualTo 20,
-          sprintf "Bad visit list %A -- bad length" recorded)
+     let recorded =
+       coverageDocument.Descendants(XName.Get("seqpnt"))
+       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+       |> Seq.toList
 
-       let hits =
-         recorded
-         |> Seq.filter (fun i -> i = "1")
-         |> Seq.length
-       Assert.That(hits, Is.GreaterThanOrEqualTo 6)
-       Assert.That(hits, Is.LessThanOrEqualTo 8)
-  else Trace.traceImportant "Skipping -- AltCover.exe not built")
+     Assert.That
+       (recorded |> Seq.length, Is.EqualTo 20,
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits =
+       recorded
+       |> Seq.filter (fun i -> i = "1")
+       |> Seq.length
+     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That(hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTrackingTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -1970,76 +1956,74 @@ _Target "RecordResumeTrackingTest" (fun _ ->
       Trace.traceImportant "Using the NuGet package"
       test
     | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
-  if File.Exists toolPath
-  then
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = simpleReport
-             OutputDirectories = [ instrumented ]
-             CallContext = [ "Main" ]
-             TypeFilter = [ "System\\."; "Microsoft\\." ]
-             AssemblyFilter = [ "Adapter"; "nunit" ]
-             InPlace = false
-             OpenCover = true
-             Save = false })
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = toolPath
-        ToolType = framework_altcover
-        WorkingDirectory = sampleRoot }
-    |> AltCover.run
-    let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-    Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
-      "RecordResumeTrackingTest 2"
-    do use coverageFile =
-         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                        FileOptions.SequentialScan)
-       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       let recorded =
-         coverageDocument.Descendants(XName.Get("SequencePoint"))
-         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-         |> Seq.toList
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = simpleReport
+           OutputDirectories = [ instrumented ]
+           CallContext = [ "Main" ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           AssemblyFilter = [ "Adapter"; "nunit" ]
+           InPlace = false
+           OpenCover = true
+           Save = false })
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = toolPath
+      ToolType = framework_altcover
+      WorkingDirectory = sampleRoot }
+  |> AltCover.run
+  let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
+  Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
+    "RecordResumeTrackingTest 2"
+  do use coverageFile =
+       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       let expected = Array.create 20 "0"
-       Assert.That
-         (recorded, expected |> Is.EquivalentTo,
-          sprintf "Bad visit list %A -- should be empty now" recorded)
+     let recorded =
+       coverageDocument.Descendants(XName.Get("SequencePoint"))
+       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+       |> Seq.toList
 
-    let collect =
-      AltCover.CollectParameters.Primitive
-        { Primitive.CollectParameters.Create() with RecorderDirectory = instrumented }
-      |> AltCover.Collect
-    { AltCover.Parameters.Create collect with
-        ToolPath = toolPath
-        ToolType = framework_altcover
-        WorkingDirectory = sampleRoot }
-    |> AltCover.run
+     let expected = Array.create 20 "0"
+     Assert.That
+       (recorded, expected |> Is.EquivalentTo,
+        sprintf "Bad visit list %A -- should be empty now" recorded)
 
-    do use coverageFile =
-         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                        FileOptions.SequentialScan)
-       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+  let collect =
+    AltCover.CollectParameters.Primitive
+      { Primitive.CollectParameters.Create() with RecorderDirectory = instrumented }
+    |> AltCover.Collect
+  { AltCover.Parameters.Create collect with
+      ToolPath = toolPath
+      ToolType = framework_altcover
+      WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
-       let recorded =
-         coverageDocument.Descendants(XName.Get("SequencePoint"))
-         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-         |> Seq.toList
-       Assert.That
-         (recorded |> Seq.length, Is.EqualTo 20,
-          sprintf "Bad visit list %A -- bad length" recorded)
+  do use coverageFile =
+       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       let hits =
-         recorded
-         |> Seq.filter (fun i -> i = "1")
-         |> Seq.length
-       Assert.That(hits, Is.GreaterThanOrEqualTo 6)
-       Assert.That(hits, Is.LessThanOrEqualTo 8)
-       let tracked =
-         coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
-       Assert.That(tracked, Is.Not.Empty)
-  else Trace.traceImportant "Skipping -- AltCover.exe not built")
+     let recorded =
+       coverageDocument.Descendants(XName.Get("SequencePoint"))
+       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+       |> Seq.toList
+     Assert.That
+       (recorded |> Seq.length, Is.EqualTo 20,
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits =
+       recorded
+       |> Seq.filter (fun i -> i = "1")
+       |> Seq.length
+     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That(hits, Is.LessThanOrEqualTo 8)
+     let tracked =
+       coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
+     Assert.That(tracked, Is.Not.Empty))
 
 _Target "RecordResumeTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2242,8 +2226,6 @@ _Target "Packaging" (fun _ ->
         (Path.getFullName "./AltCover.Visualizer/logo.*", Some "", None) ]
 
   let applicationFiles =
-    if File.Exists AltCover
-    then
       [ (AltCover, Some "tools/net45", None)
         (config, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
@@ -2254,11 +2236,8 @@ _Target "Packaging" (fun _ ->
         (fox, Some "tools/net45", None)
         (options, Some "tools/net45", None)
         (packable, Some "", None) ]
-    else []
 
   let apiFiles =
-    if File.Exists AltCover
-    then
       [ (AltCover, Some "lib/net45", None)
         (config, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
@@ -2271,11 +2250,8 @@ _Target "Packaging" (fun _ ->
         (fox, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
-    else []
 
   let resourceFiles path =
-    if File.Exists AltCover
-    then
       [ "_Binaries/AltCover/Release+AnyCPU/net45"; "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
       |> List.map (fun f ->
            Directory.GetDirectories(Path.getFullName f)
@@ -2286,7 +2262,6 @@ _Target "Packaging" (fun _ ->
            (fun x -> (x, Some(path + Path.GetFileName(Path.GetDirectoryName(x))), None))
       |> Seq.distinctBy (fun (x, y, _) -> (Option.get y) + "/" + (Path.GetFileName x))
       |> Seq.toList
-    else []
 
   let nupkg = (Path.getFullName "./nupkg").Length
 
@@ -2464,10 +2439,8 @@ _Target "Packaging" (fun _ ->
      "altcover.visualizer")
 
     let frameworkFake2Files =
-      if File.Exists fake2
-      then [ (fake2, Some "lib/net45", None)
-             (fox, Some "lib/net45", None) ]
-      else []
+      [ (fake2, Some "lib/net45", None)
+        (fox, Some "lib/net45", None) ]
 
     (List.concat
       [ fake2Files "lib/netstandard2.0/"
@@ -2662,10 +2635,8 @@ _Target "SimpleReleaseTest"
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU/net20" unpack
-         "SimpleReleaseTest"
-  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
+  Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU/net20" unpack
+         "SimpleReleaseTest")
 
 _Target "SimpleMonoReleaseTest" (fun _ ->
   let unpack =
@@ -2675,9 +2646,7 @@ _Target "SimpleMonoReleaseTest" (fun _ ->
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
-  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
+  Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest")
 
 _Target "ReleaseDotNetWithFramework"
   (fun _ ->
@@ -2689,35 +2658,32 @@ _Target "ReleaseDotNetWithFramework"
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then
-    let simpleReport =
-      (Path.getFullName "./_Reports") @@ ("ReleaseDotNetWithFramework.xml")
-    let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
+  let simpleReport =
+    (Path.getFullName "./_Reports") @@ ("ReleaseDotNetWithFramework.xml")
+  let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+  let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
 
-    let prep =
-      AltCover.PrepareParameters.Primitive
-        ({ Primitive.PrepareParameters.Create() with
-             XmlReport = simpleReport
-             OutputDirectories = [ instrumented ]
-             TypeFilter = [ "System\\."; "Microsoft\\." ]
-             InPlace = false
-             OpenCover = false
-             Save = false })
-      |> AltCover.Prepare
-    { AltCover.Parameters.Create prep with
-        ToolPath = (unpack @@ "AltCover.exe")
-        ToolType = framework_altcover
-        WorkingDirectory = sampleRoot }
-    |> AltCover.run
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      ({ Primitive.PrepareParameters.Create() with
+           XmlReport = simpleReport
+           OutputDirectories = [ instrumented ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           InPlace = false
+           OpenCover = false
+           Save = false })
+    |> AltCover.Prepare
+  { AltCover.Parameters.Create prep with
+      ToolPath = (unpack @@ "AltCover.exe")
+      ToolType = framework_altcover
+      WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
-    Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
-      "" "Sample1.dll" "ReleaseDotNetWithFramework test"
+  Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
+    "" "Sample1.dll" "ReleaseDotNetWithFramework test"
 
-    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml"
-      "ReleaseDotNetWithFramework"
-  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
+  Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml"
+    "ReleaseDotNetWithFramework")
 
 _Target "ReleaseMonoWithDotNet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -3295,17 +3261,14 @@ _Target "MSBuildTest" (fun _ ->
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then
-    MSBuild.build (fun p ->
-      { p with
-          Verbosity = Some MSBuildVerbosity.Minimal
-          Properties =
-            [ "Configuration", "Debug"
-              "MSBuildTest", "true"
-              "AltCoverPath", unpack.Replace('\\', '/')
-              "DebugSymbols", "True" ] }) "./Sample4/Sample4.fsproj"
-  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
+  MSBuild.build (fun p ->
+    { p with
+        Verbosity = Some MSBuildVerbosity.Minimal
+        Properties =
+          [ "Configuration", "Debug"
+            "MSBuildTest", "true"
+            "AltCoverPath", unpack.Replace('\\', '/')
+            "DebugSymbols", "True" ] }) "./Sample4/Sample4.fsproj")
 
 _Target "ApiUse" (fun _ ->
   try
