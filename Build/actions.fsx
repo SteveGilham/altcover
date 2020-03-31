@@ -288,8 +288,11 @@ do ()"""
   let RunDotnet (o : DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args |> (HandleResults msg)
 
-  let SimpleInstrumentingRun (samplePath : string) (binaryPath : string)
-      (reportSigil : string) =
+  let SimpleInstrumentingRun
+      (samplePath : string)
+      (binaryPath : string)
+      (reportSigil : string)
+    =
     printfn "Instrument and run a simple executable"
     Directory.ensure "./_Reports"
     let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
@@ -324,8 +327,12 @@ do ()"""
 
     ValidateSample1 simpleReport reportSigil
 
-  let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)
-      (reportSigil' : string) (monoOnWindows : string option) =
+  let SimpleInstrumentingRunUnderMono
+      (samplePath : string)
+      (binaryPath : string)
+      (reportSigil' : string)
+      (monoOnWindows : string option)
+    =
     printfn "Instrument and run a simple executable under mono"
     match monoOnWindows with
     | None -> Assert.Fail "Mono executable expected"
