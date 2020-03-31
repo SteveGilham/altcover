@@ -286,7 +286,7 @@ let _Target s f =
 
 // Preparation
 
-_Target "Entry" ignore
+_Target "RebuildPaketLock" ignore
 
 _Target "Preparation" ignore
 
@@ -338,11 +338,11 @@ module SolutionRoot =
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
   [
-    "./AltCover.Recorder/altcover.recorder.core.fsproj"
-    "./AltCover.Shadow/altcover.shadow.core.fsproj"
-    "./AltCover.Visualizer/altcover.visualizer.core.fsproj"
-    "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
-    "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj"
+    "./AltCover.Recorder/altcover.recorder.core.fsproj" // net20
+    "./AltCover.Shadow/altcover.shadow.core.fsproj" // net20
+    "./AltCover.Visualizer/altcover.visualizer.core.fsproj" // GAC
+    "./Recorder.Tests/altcover.recorder.tests.core.fsproj" // net20
+    "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj" // GAC
   ]
   |> Seq.iter (fun f ->
                let dir = Path.GetDirectoryName f
