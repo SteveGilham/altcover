@@ -245,7 +245,7 @@ type FormatFromCoverletOpenCoverCommand() =
       if self.ParameterSetName = "FromFile" then
         self.Report <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.FormatFromCoverlet self.Report self.Assembly
+      let rewrite = AltCover.OpenCoverUtilities.FormatFromCoverlet self.Report self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace

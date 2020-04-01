@@ -33,7 +33,7 @@ module FSApiTests =
             (fun n -> n.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal))
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
     let baseline = XDocument.Load(stream)
-    let transformed = AltCover.CoverageFormats.FormatFromCoverlet baseline [| probe |]
+    let transformed = AltCover.OpenCoverUtilities.FormatFromCoverlet baseline [| probe |]
     test <@ transformed |> isNull |> not @>
 
     let schemata = XmlSchemaSet()
