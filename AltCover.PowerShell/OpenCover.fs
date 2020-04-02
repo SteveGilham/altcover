@@ -6,8 +6,27 @@ open System.Management.Automation
 open System.Xml
 open System.Xml.XPath
 
+[<AutoOpen>]
+module XmlExtensions =
+  let private save (doc:IXPathNavigable)
+                   (writer : ('a * XmlWriterSettings) -> XmlWriter)
+                   (sink : 'a) =
+    let s = XmlWriterSettings()
+    s.Indent <- true
+    use out = writer(sink, s)
+    let nav = doc.CreateNavigator()
+    nav.WriteSubtree(out)
+
+  type System.Xml.XPath.IXPathNavigable with
+    member self.Save (path:string) =
+      save self (fun (p:string, s) -> XmlWriter.Create(p, s)) path
+
+    member self.Save (writer:TextWriter) =
+      use out = XmlWriter.Create(writer)
+      save self (fun (w:TextWriter, s) -> XmlWriter.Create(w, s)) writer
+
 [<Cmdlet(VerbsData.Compress, "Branching")>]
-[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+[<OutputType(typeof<IXPathNavigable>); AutoSerializable(false)>]
 type CompressBranchingCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = CompressBranchingCommand(String.Empty)

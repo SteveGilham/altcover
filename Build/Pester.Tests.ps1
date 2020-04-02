@@ -98,7 +98,7 @@ Describe "ConvertTo-XDocument" {
         $xd = $xml | ConvertTo-XDocument
         $xd.ToString() | Should -Be $xml.OuterXml
         $x2 = $xd | ConvertTo-XmlDocument
-        $x2.OuterXml | Should -Be $xml.OuterXml
+        $x2.DocumentElement.OuterXml | Should -Be $xml.OuterXml
     }
 }
 
@@ -122,35 +122,7 @@ Describe "ConvertTo-XmlDocument" {
 Describe "ConvertTo-Lcov" {
     It "Converts OpenCover Data" {
         ConvertTo-LCov -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
-        $expected = @"
-TN:
-SF:altcover/Sample1/Program.cs
-FN:11,System.Void TouchTest.Program::Main(System.String[])
-FNDA:1,System.Void TouchTest.Program::Main(System.String[])
-FNF:1
-FNH:1
-BRDA:13,0,0,1
-BRDA:13,0,1,-
-BRF:2
-BRH:1
-DA:11,1
-DA:12,1
-DA:13,1
-DA:13,1
-DA:14,1
-DA:15,1
-DA:15,1
-DA:15,1
-DA:16,1
-DA:18,0
-DA:19,0
-DA:19,0
-DA:20,0
-DA:21,1
-LH:10
-LF:14
-end_of_record
-"@
+        $expected = [String]::Join("`n", (Get-Content "./Tests/HandRolledMonoCoverage.lcov"))
         $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.lcov"))
         $got | Should -Be $expected.Replace("`r", "")
     }
@@ -386,7 +358,7 @@ Describe "ConvertTo-NCover" {
       $time = $result.coverage.startTime
 
       $expected = @"
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-16"?>
 <coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="$time" measureTime="$time" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:user="urn:my-scripts">
   <module moduleId="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F" name="Sample1.exe" assembly="Sample1" assemblyIdentity="Sample1">
     <method excluded="false" instrumented="true" name=".ctor" class="TouchTest.Program" fullname="System.Void TouchTest.Program::.ctor()" />
@@ -410,7 +382,7 @@ Describe "ConvertTo-NCover" {
 </coverage>
 "@
     $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "")
-    $sw.ToString().Replace("`r", "") | Should -Be $written.Replace("`r", "")
+    $sw.ToString().Replace("`r", "") | Should -Be $written.Replace("`r", "").Replace("utf-8", "utf-16")
   }
 
   It "converts with the pipeline" {
@@ -427,7 +399,7 @@ Describe "ConvertTo-NCover" {
     $time = $xml.coverage.startTime
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-16"?>
 <coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="$time" measureTime="$time" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:user="urn:my-scripts">
   <module moduleId="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F" name="Sample1.exe" assembly="Sample1" assemblyIdentity="Sample1">
     <method excluded="false" instrumented="true" name=".ctor" class="TouchTest.Program" fullname="System.Void TouchTest.Program::.ctor()" />
@@ -470,8 +442,8 @@ Describe "ConvertTo-BarChart" {
     $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
-    $result | Should -Be $expected.Replace("`r", "")
-    $result | Should -Be $written.Replace("`r", "")
+    $result | Should -Be $expected.Replace("`r", "").Replace("`"utf-8`"?>", "`"utf-16`"?>")
+    $written.Replace("`r", "") | Should -Be $expected.Replace("`r", "")
   }
 
   It "converts NCover through the pipeline" {
@@ -503,7 +475,7 @@ Describe "ConvertTo-BarChart" {
     $expected = $expected -replace "toggle\([A-Z0-9]+class","toggle(xxxclass" 
     $expected = $expected -replace "toggle\([A-Z0-9]+\)","toggle(xxx)" 
 
-    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $expected.Replace("`r", "").Replace("`"utf-8`"?>", "`"utf-16`"?>")
   }
 
   It "converts OpenCover" {
@@ -521,8 +493,8 @@ Describe "ConvertTo-BarChart" {
     $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
-    $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
-    $result | Should -Be $written.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
+    $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString()).Replace("`"utf-8`"?>", "`"utf-16`"?>")
+    $written.Replace("`r", "") | Should -Be $expected.Replace("`r", "")
   }
 }
 
@@ -555,9 +527,10 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
-    $result | Should -Be $written.Replace("`r", "")
-
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+    $result | Should -Be $expected.Replace("`r", "")
+
+    $written = $written.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("`r", "")
     $result | Should -Be $expected.Replace("`r", "")
   }
 

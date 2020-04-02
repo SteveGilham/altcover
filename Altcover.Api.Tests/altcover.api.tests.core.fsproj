@@ -17,6 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
     <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>
     </EmbeddedResource>
@@ -45,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

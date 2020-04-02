@@ -9,7 +9,7 @@ open System.Xml.Linq
 open System.Xml.XPath
 
 [<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
-[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+[<OutputType(typeof<IXPathNavigable>); AutoSerializable(false)>]
 type ConvertToXmlDocumentCommand() =
   inherit PSCmdlet()
 
@@ -29,9 +29,7 @@ type ConvertToXDocumentCommand() =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  member val XmlDocument : IXPathNavigable = null with get, set
 
   override self.ProcessRecord() =
     self.XmlDocument
@@ -47,9 +45,7 @@ type ConvertToLcovCommand() =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  member val XmlDocument : IXPathNavigable = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -67,8 +63,9 @@ type ConvertToLcovCommand() =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XmlDocument()
-        self.XmlDocument.Load self.InputFile
+        let doc = XmlDocument()
+        doc.Load self.InputFile
+        self.XmlDocument <- doc
       use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
       AltCover.CoverageFormats.ConvertToLcov self.XmlDocument stream
     finally
@@ -83,9 +80,7 @@ type ConvertToCoberturaCommand() =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  member val XmlDocument : IXPathNavigable = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -103,8 +98,9 @@ type ConvertToCoberturaCommand() =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XmlDocument()
-        self.XmlDocument.Load self.InputFile
+        let doc = XmlDocument()
+        doc.Load self.InputFile
+        self.XmlDocument <- doc
 
       let rewrite = AltCover.CoverageFormats.ConvertToCobertura self.XmlDocument
 
@@ -118,7 +114,7 @@ type ConvertToCoberturaCommand() =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "NCover")>]
-[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+[<OutputType(typeof<IXPathNavigable>); AutoSerializable(false)>]
 type ConvertToNCoverCommand() =
   inherit PSCmdlet()
 
@@ -149,14 +145,15 @@ type ConvertToNCoverCommand() =
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not
-      then rewrite.Save(self.OutputFile)
+      then
+        rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
-[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+[<OutputType(typeof<IXPathNavigable>); AutoSerializable(false)>]
 type ConvertFromNCoverCommand() =
   inherit PSCmdlet()
 

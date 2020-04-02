@@ -110,8 +110,6 @@ module OpenCoverUtilities =
            | _ -> (s, x :: bs)) (sp.Head, [])
       |> ignore
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
   let CompressBranching (navigable : IXPathNavigable) withinSequencePoint sameSpan =
     // Validate
     let xmlDocument = new XmlDocument()
@@ -127,11 +125,7 @@ module OpenCoverUtilities =
     // tidy up here
     AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
     XmlUtilities.prependDeclaration xmlDocument
-    xmlDocument
-
-  type Ordinal =
-  | Offset = 0
-  | SL = 1
+    xmlDocument :> IXPathNavigable
 
   let internal copyFillMethodPoint (m : XElement) (sp : XElement seq) =
     m.Attribute(XName.Get ("type", "http://www.w3.org/2001/XMLSchema-instance")).Value
@@ -151,8 +145,8 @@ module OpenCoverUtilities =
     |> Seq.length
 
   [<SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase",
-      Justification="No Turkish I's involved here, just specifgic XML tags")>]
-  let PostProcess(document : XDocument) (ordinal:Ordinal) =
+      Justification="No Turkish I's involved here, just specific XML tags")>]
+  let PostProcess(document : XContainer) (ordinal: AltCover.Ordinal) =
     let orderAttr = ordinal.ToString().ToLowerInvariant()
     let scoreToString raw =
       (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
@@ -487,10 +481,7 @@ module OpenCoverUtilities =
   "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
   Target="<StartupCode$AltCover-FSApi>.$OpenCover.#.cctor()",
   Justification="Compiler Generated")>]
-[<assembly: SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
-  Scope="member", Target="AltCover.OpenCoverUtilities.#PostProcess(System.Xml.Linq.XDocument,AltCover.OpenCoverUtilities+Ordinal)",
-  Justification="Avoid speculative generality")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields",
-  Scope="member", Target="AltCover.OpenCoverUtilities+setSummary@172D.#scoreToString",
+  Scope="member", Target="AltCover.OpenCoverUtilities+setSummary@166D.#scoreToString",
   Justification="Compiler Generated")>]
 ()

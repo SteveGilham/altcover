@@ -3,13 +3,10 @@ namespace AltCover
 open System.Diagnostics.CodeAnalysis
 open System.Linq
 open System.Xml
-open System.Xml.Linq
 open System.Xml.XPath
 
 [<RequireQualifiedAccess>]
 module Xhtml =
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
   let ConvertToBarChart(navigable : IXPathNavigable) =
     let navigator = navigable.CreateNavigator()
 
@@ -45,4 +42,4 @@ module Xhtml =
     let doctype = rewrite.CreateDocumentType("html", null, null, null)
     rewrite.PrependChild(doctype) |> ignore
     XmlUtilities.prependDeclaration rewrite
-    rewrite
+    rewrite :> IXPathNavigable

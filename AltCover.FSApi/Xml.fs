@@ -8,6 +8,7 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
+open System.Xml.XPath
 open System.Xml.Xsl
 
 open Augment
@@ -22,8 +23,6 @@ module XmlExtensions =
 
 [<RequireQualifiedAccess>]
 module XmlUtilities =
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
   let ToXmlDocument(document : XDocument) =
     let xmlDocument = XmlDocument()
     use xmlReader = document.CreateReader()
@@ -37,31 +36,16 @@ module XmlUtilities =
           (xDeclaration.Version, xDeclaration.Encoding, xDeclaration.Standalone)
 
       xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild) |> ignore
-    xmlDocument
+    xmlDocument :> IXPathNavigable
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")>]
-  let ToXDocument(xmlDocument : XmlDocument) =
-    use nodeReader = new XmlNodeReader(xmlDocument)
-    nodeReader.MoveToContent() |> ignore // skips leading comments
+  let ToXDocument(xmlDocument : IXPathNavigable) =
+    let nav = xmlDocument.CreateNavigator()
+    nav.MoveToRoot()
+    use nodeReader = nav.ReadSubtree()
     let xdoc = XDocument.Load(nodeReader)
-    let cn = xmlDocument.ChildNodes
-    let decl' = cn.OfType<XmlDeclaration>() |> Seq.tryHead
-    match decl' with
-    | None -> ()
-    | Some decl ->
-        xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone)
-    cn.OfType<XmlProcessingInstruction>()
-    |> Seq.rev
-    |> Seq.iter
-         (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
+    xdoc.Declaration  <- XDeclaration("1.0", "utf-8", String.Empty)
     xdoc
 
-  // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-  // Also, this rule is deprecated
   let internal loadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
 
@@ -86,17 +70,15 @@ module XmlUtilities =
     transform.Load(xreader, XsltSettings.TrustedXslt, XmlUrlResolver())
     transform
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
-  let internal discoverFormat(xmlDocument : XmlDocument) =
+  let internal discoverFormat(xmlDocument : IXPathNavigable) =
+    let nav = xmlDocument.CreateNavigator()
     let format =
-      if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any()
+      if nav.SelectChildren("CoverageSession", String.Empty).OfType<XPathNavigator>().Any()
       then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
     let schema = loadSchema format
-    xmlDocument.Schemas <- schema
-    xmlDocument.Validate(null)
+    nav.CheckValidity(schema, null) |> ignore
     format
 
   let internal assemblyNameWithFallback path fallback =
@@ -109,7 +91,6 @@ module XmlUtilities =
     | :? BadImageFormatException
     | :? FileLoadException -> fallback
 
-  [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
-  let internal prependDeclaration(x : XmlDocument) =
-    let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
-    x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore
+  let internal prependDeclaration(x : IXPathNavigable) =
+    x.CreateNavigator().PrependChild("""<?xml version="1.0" encoding="utf-8"?>""" +
+                                     Environment.NewLine)

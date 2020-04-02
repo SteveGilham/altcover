@@ -2,9 +2,8 @@ namespace Tests
 
 open System
 open System.IO
-open System.Linq
 open System.Reflection
-open System.Text.RegularExpressions
+open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
 
@@ -49,3 +48,22 @@ module FSApiTests =
     transformed.Validate(schemata, null)
 
     test <@ transformed |> isNull |> not @>
+
+  [<Test>]
+  let OpenCoverToLcov() =
+    let doc = XmlDocument()
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
+    doc.Load stream
+    use stream2 = new MemoryStream()
+    AltCover.CoverageFormats.ConvertToLcov doc stream2
+    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use rdr = new StreamReader(stream2a)
+    let result = rdr.ReadToEnd()
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.lcov")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    test <@ result = expected @>

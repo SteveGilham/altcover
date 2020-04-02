@@ -12,28 +12,22 @@ open System.Xml.XPath
 
 [<RequireQualifiedAccess>]
 module CoverageFormats =
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
   [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification="Lcov is a name")>]
-  let ConvertToLcov xmlDocument stream =
+  let ConvertToLcov (xmlDocument:IXPathNavigable) stream =
     let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
     AltCover.LCov.convertReport xdoc format stream
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
   [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification="Cobertura is a name")>]
-  let ConvertToCobertura xmlDocument =
+  let ConvertToCobertura (xmlDocument :IXPathNavigable) =
     let format = XmlUtilities.discoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
     AltCover.Cobertura.convertReport xdoc format
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
   [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-                    Justification="It uses XML; is that a problem?")>]
+     Justification="That's XML + code reuse for you.")>]
   let ConvertFromNCover (navigable : IXPathNavigable) (assemblies : string seq) =
     let reporter, rewrite = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
@@ -110,11 +104,9 @@ module CoverageFormats =
     dec.Standalone <- null
 
     let converted = XmlUtilities.ToXmlDocument rewrite
-    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover converted
+    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover (converted :?> XmlDocument)
     converted
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
   let ConvertToNCover(navigable : IXPathNavigable) =
     let transform = XmlUtilities.loadTransform "OpenCoverToNCover"
     let rewrite = XmlDocument()
@@ -154,4 +146,4 @@ module CoverageFormats =
            c.SetAttribute("measureTime", now))
     finally
       thread.CurrentCulture <- culture
-    rewrite
+    rewrite :> IXPathNavigable
