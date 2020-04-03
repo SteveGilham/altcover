@@ -3,43 +3,39 @@ namespace AltCover
 open System.Diagnostics.CodeAnalysis
 open System.Linq
 open System.Xml
+open System.Xml.Linq
 open System.Xml.XPath
 
 [<RequireQualifiedAccess>]
 module Xhtml =
-  let ConvertToBarChart(navigable : IXPathNavigable) =
-    let navigator = navigable.CreateNavigator()
-
+  let ConvertToBarChart(document : XContainer) =
     let format =
-      if navigator.Select("/CoverageSession").OfType<XPathNavigator>().Any()
+      if document.Descendants(XName.Get "CoverageSession").Any()
       then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
     let intermediate =
       if format = AltCover.Base.ReportFormat.NCover then
-        navigable
+        document
       else
         let modify = XmlUtilities.loadTransform "OpenCoverToNCoverEx"
-        let temp = XmlDocument()
-        do use feed = temp.CreateNavigator().AppendChild()
-           modify.Transform(navigable, feed)
-        temp :> IXPathNavigable
+        let temp = XDocument()
+        do use feed = temp.CreateWriter()
+           use from = document.CreateReader()
+           modify.Transform(from, feed)
+        temp :> XContainer
 
     let transform = XmlUtilities.loadTransform "NCoverToBarChart"
-    let rewrite = XmlDocument()
-    do use output = rewrite.CreateNavigator().AppendChild()
-       transform.Transform(intermediate, output)
+    let rewrite = XDocument()
+    do use output = rewrite.CreateWriter()
+       use source = intermediate.CreateReader()
+       transform.Transform(source, output)
 
-    use scripts = rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']")
-    scripts.OfType<XmlNode>
-      ()
+    rewrite.XPathSelectElements("//script[@language='JavaScript']")
     |> Seq.iter (fun n ->
-         let text = n.InnerText
-         let cdata = rewrite.CreateCDataSection(text)
-         n.InnerText <- "//"
-         n.AppendChild cdata |> ignore)
+         let text = n.Value
+         n.Value <- "//"
+         n.Add(XCData(text)))
 
-    let doctype = rewrite.CreateDocumentType("html", null, null, null)
-    rewrite.PrependChild(doctype) |> ignore
-    XmlUtilities.prependDeclaration rewrite
-    rewrite :> IXPathNavigable
+    rewrite.AddFirst(XDocumentType("html", null, null, null))
+    rewrite

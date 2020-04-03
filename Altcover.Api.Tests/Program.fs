@@ -14,6 +14,7 @@ module TestMain =
   let regular = [
           Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
           Tests.FSApiTests.OpenCoverToLcov, "FSApiTests.OpenCoverToLcov"
+          Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"
         ]
 
   let specials =

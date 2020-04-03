@@ -21,9 +21,6 @@ module XmlExtensions =
     member self.Save (path:string) =
       save self (fun (p:string, s) -> XmlWriter.Create(p, s)) path
 
-    member self.Save (writer:TextWriter) =
-      use out = XmlWriter.Create(writer)
-      save self (fun (w:TextWriter, s) -> XmlWriter.Create(w, s)) writer
 
 [<Cmdlet(VerbsData.Compress, "Branching")>]
 [<OutputType(typeof<IXPathNavigable>); AutoSerializable(false)>]

@@ -429,7 +429,7 @@ Describe "ConvertTo-NCover" {
 Describe "ConvertTo-BarChart" {
   It "converts NCover" {
     $xml = ConvertTo-BarChart -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
-    $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -443,12 +443,12 @@ Describe "ConvertTo-BarChart" {
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
     $result | Should -Be $expected.Replace("`r", "").Replace("`"utf-8`"?>", "`"utf-16`"?>")
-    $written.Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+    $written.Replace("`r", "").Replace("html >", "html>")  | Should -Be $expected.Replace("`r", "")
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [xml](Get-Content "./Tests/HandRolledVisualized.xml" ) | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
-    $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml = [System.Xml.Linq.XDocument]::Load("./Tests/HandRolledVisualized.xml") | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -480,7 +480,7 @@ Describe "ConvertTo-BarChart" {
 
   It "converts OpenCover" {
     $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
-    $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -492,7 +492,7 @@ Describe "ConvertTo-BarChart" {
     $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
     $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
-    $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
+    $result = $sw.ToString().Replace("`r", "")
     $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString()).Replace("`"utf-8`"?>", "`"utf-16`"?>")
     $written.Replace("`r", "") | Should -Be $expected.Replace("`r", "")
   }

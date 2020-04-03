@@ -17,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
     <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
