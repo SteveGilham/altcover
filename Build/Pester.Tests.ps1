@@ -22,8 +22,21 @@ if (Test-Path $x) { Remove-Item -force $x }
 #$xdoctype = $xd.GetType("System.Xml.Linq.XDocument")
 #[accelerators]::add("xdoc", $xdoctype) 
 
+# let's have a cmdlet for that
 $accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo") }
 Add-Accelerator -Accelerator -Xdocument -Mapping $accel
+
+Describe "Get-Accelerator" {
+  It "Has the expected values" {
+    $a = Get-Accelerator
+    # $a.Keys | % { Write-Host "$_ => $($a[$_])"}
+    $a["xdoc"].FullName | Should -Be "System.Xml.Linq.XDocument"
+    $a["accelerators"].FullName | Should -Be "System.Management.Automation.TypeAccelerators"
+    $a["minfo"].FullName | Should -Be "System.Reflection.MethodInfo"
+    $a["xml"].FullName | Should -Be "System.Xml.XmlDocument"
+    $a.Count | Should -BeGreaterThan 3
+  }
+}
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {

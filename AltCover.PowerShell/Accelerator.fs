@@ -72,3 +72,21 @@ type AddAcceleratorCommand() =
     then
       finalmap
       |> Seq.iter (fun kv -> adder.Invoke(null, [| kv.Key :> obj; kv.Value :> obj |]) |> ignore)
+
+[<Cmdlet(VerbsCommon.Get, "Accelerator")>]
+[<OutputType([| "System.Collections.Hashtable" |]); AutoSerializable(false)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1101:AllCmdletsShouldAcceptPipelineInput",
+  Justification="No valid input to accept")>]
+type GetAcceleratorCommand() =
+  inherit PSCmdlet()
+  override self.EndProcessing() =
+    let env = System.AppDomain.CurrentDomain.GetAssemblies()
+    let sma = env |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")
+    let acceleratorsType = sma.GetType("System.Management.Automation.TypeAccelerators")
+    let finder = acceleratorsType.GetProperty("Get")
+
+    let result = Hashtable()
+    (finder.GetValue(null, [||]) :?> Dictionary<string, Type>)
+    |> Seq.iter(fun kv -> result.Add(kv.Key, kv.Value))
+
+    self.WriteObject result
