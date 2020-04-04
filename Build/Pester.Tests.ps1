@@ -5,6 +5,22 @@ $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
 if (Test-Path $x) { del -force $x }
 
+
+# inspired by https://web.archive.org/web/20100330061256/http://www.nivot.org/2008/12/25/ListOfTypeAcceleratorsForPowerShellCTP3.aspx
+# get a reference to the Type   
+#$acceleratorsType = [type]::gettype("System.Management.Automation.TypeAccelerators")  
+# with everything split up, it's not as easy as giving the namespaced name
+$dummy = new-object "System.Management.Automation.SwitchParameter" @($true)
+$acceleratorsType = $dummy.GetType().Assembly.GetType("System.Management.Automation.TypeAccelerators")
+
+# add an accelerator for this type ;-)  
+$acceleratorsType::Add("accelerators", $acceleratorsType)  
+
+# add a user-defined accelerator 
+Add-Type -AssemblyName System.Xml.Linq
+$dummy = new-object "System.Xml.Linq.XDocument"
+[accelerators]::add("xdoc", $dummy.GetType()) 
+
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
         if (Test-Path $o) {
@@ -81,7 +97,7 @@ Describe "ConvertTo-XDocument" {
     It "converts" {
         $xml = [xml](Get-Content "./Tests/Sample1WithNCover.xml")
         $xd = $xml | ConvertTo-XDocument
-        $xd | Should -BeOfType "System.Xml.Linq.XDocument"
+        $xd | Should -BeOfType [xdoc]
         $header = $xd.Declaration.ToString().Replace(" standalone=`"`"", "") + "`n" 
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
@@ -104,7 +120,7 @@ Describe "ConvertTo-XDocument" {
 
 Describe "ConvertTo-XmlDocument" {
     It "converts" {
-        $xd = [System.Xml.Linq.XDocument]::Load("./Tests/Sample1WithNCover.xml")
+        $xd = [xdoc]::Load("./Tests/Sample1WithNCover.xml")
         $xml = $xd | ConvertTo-XmlDocument
         $xml | Should -BeOfType "System.Xml.XmlDocument"
         $sw = new-object System.IO.StringWriter @()
@@ -429,7 +445,7 @@ Describe "ConvertTo-NCover" {
 Describe "ConvertTo-BarChart" {
   It "converts NCover" {
     $xml = ConvertTo-BarChart -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
-    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -447,8 +463,8 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [System.Xml.Linq.XDocument]::Load("./Tests/HandRolledVisualized.xml") | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
-    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+    $xml = [xdoc]::Load("./Tests/HandRolledVisualized.xml") | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -480,7 +496,7 @@ Describe "ConvertTo-BarChart" {
 
   It "converts OpenCover" {
     $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
-    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -647,7 +663,7 @@ Describe "Format-FromCoverletOpenCover" {
 
 
     $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
-    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+    $xml | Should -BeOfType [xdoc]
 
     $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
     $hactual = $doc.CoverageSession.Modules.Module.hash
