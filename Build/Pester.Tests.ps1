@@ -10,17 +10,20 @@ if (Test-Path $x) { Remove-Item -force $x }
 # get a reference to the Type   
 #$acceleratorsType = [type]::gettype("System.Management.Automation.TypeAccelerators")  
 # with everything split up, it's not as easy as giving the namespaced name
-$sma = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Management.Automation" }
-$acceleratorsType = $sma.GetType("System.Management.Automation.TypeAccelerators")
+#$sma = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Management.Automation" }
+#$acceleratorsType = $sma.GetType("System.Management.Automation.TypeAccelerators")
 
 # add an accelerator for this type ;-)  
-$acceleratorsType::Add("accelerators", $acceleratorsType)  
+#$acceleratorsType::Add("accelerators", $acceleratorsType)  
 
 # add a user-defined accelerator 
-Add-Type -AssemblyName System.Xml.Linq
-$xd = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Xml.Linq" }
-$xdoctype = $xd.GetType("System.Xml.Linq.XDocument")
-[accelerators]::add("xdoc", $xdoctype) 
+#Add-Type -AssemblyName System.Xml.Linq
+#$xd = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Xml.Linq" }
+#$xdoctype = $xd.GetType("System.Xml.Linq.XDocument")
+#[accelerators]::add("xdoc", $xdoctype) 
+
+$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo") }
+Add-Accelerator -Accelerator -Xdocument -Mapping $accel
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
