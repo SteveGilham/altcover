@@ -2,24 +2,25 @@ param([string]$ACV="0.0.0.0")
 $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
 $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
-dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
-if (Test-Path $x) { del -force $x }
+Get-ChildItem "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { Remove-Item -force $_.FullName }}
+if (Test-Path $x) { Remove-Item -force $x }
 
 
 # inspired by https://web.archive.org/web/20100330061256/http://www.nivot.org/2008/12/25/ListOfTypeAcceleratorsForPowerShellCTP3.aspx
 # get a reference to the Type   
 #$acceleratorsType = [type]::gettype("System.Management.Automation.TypeAccelerators")  
 # with everything split up, it's not as easy as giving the namespaced name
-$dummy = new-object "System.Management.Automation.SwitchParameter" @($true)
-$acceleratorsType = $dummy.GetType().Assembly.GetType("System.Management.Automation.TypeAccelerators")
+$sma = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Management.Automation" }
+$acceleratorsType = $sma.GetType("System.Management.Automation.TypeAccelerators")
 
 # add an accelerator for this type ;-)  
 $acceleratorsType::Add("accelerators", $acceleratorsType)  
 
 # add a user-defined accelerator 
 Add-Type -AssemblyName System.Xml.Linq
-$dummy = new-object "System.Xml.Linq.XDocument"
-[accelerators]::add("xdoc", $dummy.GetType()) 
+$xd = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Xml.Linq" }
+$xdoctype = $xd.GetType("System.Xml.Linq.XDocument")
+[accelerators]::add("xdoc", $xdoctype) 
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
