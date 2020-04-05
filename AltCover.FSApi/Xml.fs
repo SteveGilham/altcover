@@ -8,7 +8,6 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
-open System.Xml.XPath
 open System.Xml.Xsl
 
 open Augment
@@ -23,6 +22,8 @@ module XmlExtensions =
 
 [<RequireQualifiedAccess>]
 module XmlUtilities =
+  [<SuppressMessage("Microsoft.Design", "CA1059",
+                    Justification = "converts concrete types")>]
   let ToXmlDocument(document : XDocument) =
     let xmlDocument = XmlDocument()
     use xmlReader = document.CreateReader()
@@ -36,14 +37,27 @@ module XmlUtilities =
           (xDeclaration.Version, xDeclaration.Encoding, xDeclaration.Standalone)
 
       xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild) |> ignore
-    xmlDocument :> IXPathNavigable
+    xmlDocument
 
-  let ToXDocument(xmlDocument : IXPathNavigable) =
-    let nav = xmlDocument.CreateNavigator()
-    nav.MoveToRoot()
-    use nodeReader = nav.ReadSubtree()
+  [<SuppressMessage("Microsoft.Design", "CA1059",
+                    Justification = "converts concrete types")>]
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let ToXDocument(xmlDocument : XmlDocument) =
+    use nodeReader = new XmlNodeReader(xmlDocument)
+    nodeReader.MoveToContent() |> ignore // skips leading comments
     let xdoc = XDocument.Load(nodeReader)
-    xdoc.Declaration  <- XDeclaration("1.0", "utf-8", String.Empty)
+    let cn = xmlDocument.ChildNodes
+    let decl' = cn.OfType<XmlDeclaration>() |> Seq.tryHead
+    match decl' with
+    | None -> ()
+    | Some decl ->
+        xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone)
+    cn.OfType<XmlProcessingInstruction>()
+    |> Seq.rev
+    |> Seq.iter
+         (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
     xdoc
 
   let internal loadSchema(format : AltCover.Base.ReportFormat) =
@@ -70,15 +84,14 @@ module XmlUtilities =
     transform.Load(xreader, XsltSettings.TrustedXslt, XmlUrlResolver())
     transform
 
-  let internal discoverFormat(xmlDocument : IXPathNavigable) =
-    let nav = xmlDocument.CreateNavigator()
+  let internal discoverFormat(xmlDocument : XDocument) =
     let format =
-      if nav.SelectChildren("CoverageSession", String.Empty).OfType<XPathNavigator>().Any()
+      if xmlDocument.Descendants(XName.Get "CoverageSession").Any()
       then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
     let schema = loadSchema format
-    nav.CheckValidity(schema, null) |> ignore
+    xmlDocument.Validate(schema, null) |> ignore
     format
 
   let internal assemblyNameWithFallback path fallback =
@@ -90,7 +103,3 @@ module XmlUtilities =
     | :? System.Security.SecurityException
     | :? BadImageFormatException
     | :? FileLoadException -> fallback
-
-  let internal prependDeclaration(x : IXPathNavigable) =
-    x.CreateNavigator().PrependChild("""<?xml version="1.0" encoding="utf-8"?>""" +
-                                     Environment.NewLine)

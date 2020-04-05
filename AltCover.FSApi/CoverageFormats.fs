@@ -6,36 +6,39 @@ open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.Linq
-open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
+
+open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module CoverageFormats =
   [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification="Lcov is a name")>]
-  let ConvertToLcov (xmlDocument:IXPathNavigable) stream =
-    let format = XmlUtilities.discoverFormat xmlDocument
-    let xdoc = XmlUtilities.ToXDocument xmlDocument
-    AltCover.LCov.convertReport xdoc format stream
+  let ConvertToLcov (document:XDocument) stream =
+    let format = XmlUtilities.discoverFormat document
+    AltCover.LCov.convertReport document format stream
 
   [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification="Cobertura is a name")>]
-  let ConvertToCobertura (xmlDocument :IXPathNavigable) =
-    let format = XmlUtilities.discoverFormat xmlDocument
-    let xdoc = XmlUtilities.ToXDocument xmlDocument
-    AltCover.Cobertura.convertReport xdoc format
+  let ConvertToCobertura (document:XDocument) =
+    let format = XmlUtilities.discoverFormat document
+    AltCover.Cobertura.convertReport document format
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
+    Justification = "AvoidSpeculativeGenerality too")>]
   [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
      Justification="That's XML + code reuse for you.")>]
-  let ConvertFromNCover (navigable : IXPathNavigable) (assemblies : string seq) =
+  let ConvertFromNCover (document:XDocument) (assemblies : string seq) =
     let reporter, rewrite = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
-    let navigator = navigable.CreateNavigator()
-    let identities = Dictionary<string, XPathNavigator>()
-    navigator.Select("//module").OfType<XPathNavigator>()
+    let identities = Dictionary<string, XElement>()
+    document.Descendants(XName.Get "module")
     |> Seq.iter (fun n ->
-         let key = n.GetAttribute("assemblyIdentity", String.Empty)
+         let key = n.Attribute(XName.Get "assemblyIdentity").Value
          identities.Add(key, n))
 
     let paths = Dictionary<string, string>()
@@ -77,14 +80,14 @@ module CoverageFormats =
                    f.Attribute(XName.Get "uid").Value))
 
          // Copy sequence points across
-         source.Select(".//seqpnt").OfType<XPathNavigator>()
+         source.Descendants(XName.Get "seqpnt")
          |> Seq.iter (fun s ->
-              let sl = s.GetAttribute("line", String.Empty)
-              let sc = s.GetAttribute("column", String.Empty)
-              let el = s.GetAttribute("endline", String.Empty)
-              let ec = s.GetAttribute("endcolumn", String.Empty)
-              let uid = files.[s.GetAttribute("document", String.Empty)]
-              let vc = parse <| s.GetAttribute("visitcount", String.Empty)
+              let sl = s.Attribute(XName.Get "line").Value
+              let sc = s.Attribute(XName.Get "column").Value
+              let el = s.Attribute(XName.Get "endline").Value
+              let ec = s.Attribute(XName.Get "endcolumn").Value
+              let uid = files.[s.Attribute(XName.Get "document").Value]
+              let vc = parse <| s.Attribute(XName.Get "visitcount").Value
               let xpath =
                 ".//SequencePoint[@sl='" + sl + "' and @sc='" + sc + "' and @el='" + el
                 + "' and @ec='" + ec + "' and @fileid='" + uid + "']"
@@ -103,33 +106,35 @@ module CoverageFormats =
     dec.Encoding <- "utf-8"
     dec.Standalone <- null
 
-    let converted = XmlUtilities.ToXmlDocument rewrite
-    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover (converted :?> XmlDocument)
-    converted
+    OpenCoverUtilities.PostProcess rewrite Ordinal.Offset
+    rewrite
 
-  let ConvertToNCover(navigable : IXPathNavigable) =
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let ConvertToNCover(document:XDocument) =
     let transform = XmlUtilities.loadTransform "OpenCoverToNCover"
-    let rewrite = XmlDocument()
-    do use output = rewrite.CreateNavigator().AppendChild()
-       transform.Transform(navigable, output)
-    XmlUtilities.prependDeclaration rewrite
+    let rewrite = XDocument()
+    do use output = rewrite.CreateWriter()
+       use source = document.CreateReader()
+       transform.Transform(source, output)
 
-    use methods = rewrite.SelectNodes("//method")
-    methods.OfType<XmlElement>()
+    rewrite.Descendants(XName.Get "method")
     |> Seq.iter (fun m ->
-         let c = m.GetAttribute("class")
+         let c = m.Attribute(XName.Get "class").Value
          m.SetAttribute("class", c.Replace('/', '+'))
-         let name = m.GetAttribute("name")
+         let name = m.Attribute(XName.Get "name").Value
          let lead = name.Substring(name.LastIndexOf("::", StringComparison.Ordinal) + 2)
          m.SetAttribute("name", lead.Substring(0, lead.IndexOf('('))))
 
-    use modules = rewrite.SelectNodes("//module")
-    modules.OfType<XmlElement>()
+    rewrite.Descendants(XName.Get "module")
     |> Seq.iter (fun m ->
-         let path = m.GetAttribute("name")
+         let path = m.Attribute(XName.Get "name").Value
          let info = System.IO.FileInfo path
          m.SetAttribute("name", info.Name)
-         let assembly = m.GetAttribute("assembly")
+         let assembly = m.Attribute(XName.Get "assembly").Value
          m.SetAttribute
            ("assemblyIdentity", XmlUtilities.assemblyNameWithFallback path assembly))
 
@@ -137,8 +142,7 @@ module CoverageFormats =
     let culture = thread.CurrentCulture
     try
       thread.CurrentCulture <- CultureInfo.InvariantCulture
-      use coverage = rewrite.SelectNodes("//coverage")
-      coverage.OfType<XmlElement>()
+      rewrite.Descendants(XName.Get "coverage")
       |> Seq.iter (fun c ->
            let now =
              DateTime.UtcNow.ToLongDateString() + ":" + DateTime.UtcNow.ToLongTimeString()
@@ -146,4 +150,4 @@ module CoverageFormats =
            c.SetAttribute("measureTime", now))
     finally
       thread.CurrentCulture <- culture
-    rewrite :> IXPathNavigable
+    rewrite

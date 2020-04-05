@@ -131,7 +131,7 @@ Describe "ConvertTo-XDocument" {
         $xd = $xml | ConvertTo-XDocument
         $xd.ToString() | Should -Be $xml.OuterXml
         $x2 = $xd | ConvertTo-XmlDocument
-        $x2.DocumentElement.OuterXml | Should -Be $xml.OuterXml
+        $x2.OuterXml | Should -Be $xml.OuterXml
     }
 }
 
@@ -171,7 +171,7 @@ Describe "ConvertTo-Lcov" {
 
   It "Converts Real NCover Data" {
     $ev = ""
-    [xml](Get-Content "./Tests/GenuineNCover158.Xml") | ConvertTo-LCov -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
+    [xdoc]::Load("./Tests/GenuineNCover158.Xml") | ConvertTo-LCov -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
     $ev | Should -BeFalse
   }
 }
@@ -312,8 +312,11 @@ Describe "ConvertTo-Cobertura" {
   }
 
   It "Converts With the pipeline" {
-    $lines = (Get-Content "./Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
-    $x = [xml] ($lines) | ConvertTo-Cobertura
+    $raw = [xdoc]::Load("./Tests/Sample1WithNCover.xml")
+    $raw.Descendants() | % {
+      if ($_.Attribute("excluded")) { $_.Attribute("excluded").Value = "false" }
+    }
+    $x = $raw | ConvertTo-Cobertura
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
@@ -377,7 +380,7 @@ Describe "ConvertTo-Cobertura" {
 Describe "ConvertTo-NCover" {
   It "converts" {
       $xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
-      $xml | Should -BeOfType "System.Xml.XmlDocument"
+      $xml | Should -BeOfType [xdoc]
 
       $sw = new-object System.IO.StringWriter @()
       $settings = new-object System.Xml.XmlWriterSettings @()
@@ -419,8 +422,8 @@ Describe "ConvertTo-NCover" {
   }
 
   It "converts with the pipeline" {
-    $xml = [xml](Get-Content "./Tests/HandRolledMonoCoverage.xml") | ConvertTo-NCover
-    $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml = [xdoc]::Load("./Tests/HandRolledMonoCoverage.xml") | ConvertTo-NCover
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -429,33 +432,10 @@ Describe "ConvertTo-NCover" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-    $time = $xml.coverage.startTime
-
-    $expected = @"
-<?xml version="1.0" encoding="utf-16"?>
-<coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="$time" measureTime="$time" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:user="urn:my-scripts">
-  <module moduleId="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F" name="Sample1.exe" assembly="Sample1" assemblyIdentity="Sample1">
-    <method excluded="false" instrumented="true" name=".ctor" class="TouchTest.Program" fullname="System.Void TouchTest.Program::.ctor()" />
-    <method excluded="false" instrumented="true" name="Main" class="TouchTest.Program" fullname="System.Void TouchTest.Program::Main(System.String[])">
-      <seqpnt visitcount="1" line="11" column="9" endline="11" endcolumn="10" offset="0" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="12" column="32" endline="12" endcolumn="33" offset="1" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="13" column="13" endline="13" endcolumn="14" offset="7" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="13" column="21" endline="13" endcolumn="22" offset="9" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="14" column="13" endline="14" endcolumn="14" offset="24" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="15" column="17" endline="15" endcolumn="18" offset="25" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="15" column="72" endline="15" endcolumn="73" offset="36" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="15" column="25" endline="15" endcolumn="26" offset="46" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="16" column="13" endline="16" endcolumn="14" offset="51" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="18" column="13" endline="18" endcolumn="14" offset="57" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="19" column="17" endline="19" endcolumn="18" offset="58" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="19" column="25" endline="19" endcolumn="26" offset="63" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="20" column="13" endline="20" endcolumn="14" offset="68" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="21" column="9" endline="21" endcolumn="10" offset="69" excluded="false" document="altcover/Sample1/Program.cs" />
-    </method>
-  </module>
-</coverage>
-"@
-    $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+    $time = $xml.Descendants("coverage") | Select-Object -First 1 
+    $time = $time.Attribute("startTime").Value
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledToNCover.xml")
+    $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("{0}", $time)
   }
 }
 
@@ -536,7 +516,7 @@ Describe "ConvertFrom-NCover" {
     $assemblies = @()
     $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
     $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
-    $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -570,8 +550,8 @@ Describe "ConvertFrom-NCover" {
   It "converts from the pipeline" {
     $assemblies = @()
     $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
-    $xml = [xml](Get-Content  "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
-    $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml = [xdoc]::Load("./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -604,7 +584,7 @@ Describe "ConvertFrom-NCover" {
 Describe "Compress-Branching" {
   It "Removes interior branches" {
     $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
-	  $xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -622,7 +602,7 @@ Describe "Compress-Branching" {
   }
   It "Unifies equivalent branches" {
     $xml = Compress-Branching -SameSpan -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
-  	$xml | Should -BeOfType "System.Xml.XmlDocument"
+  	$xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -639,8 +619,8 @@ Describe "Compress-Branching" {
     $written.Replace("`r", "") | Should -Be  $expected
   }
   It "DoesBoth" {
-    $xml = [xml](Get-Content  "./Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
-	  $xml | Should -BeOfType "System.Xml.XmlDocument"
+    $xml = [xdoc]::Load("./Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
+	  $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -700,7 +680,5 @@ Describe "Format-FromCoverletOpenCover" {
 
     $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-
-
   }
 }

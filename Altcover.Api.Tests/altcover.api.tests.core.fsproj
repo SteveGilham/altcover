@@ -20,6 +20,7 @@
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
+    <EmbeddedResource Include="..\Tests\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
     <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>
     </EmbeddedResource>

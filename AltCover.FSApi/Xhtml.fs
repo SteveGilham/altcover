@@ -2,13 +2,17 @@ namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 open System.Linq
-open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
 
 [<RequireQualifiedAccess>]
 module Xhtml =
-  let ConvertToBarChart(document : XContainer) =
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let ConvertToBarChart(document : XDocument) =
     let format =
       if document.Descendants(XName.Get "CoverageSession").Any()
       then AltCover.Base.ReportFormat.OpenCover
@@ -23,7 +27,7 @@ module Xhtml =
         do use feed = temp.CreateWriter()
            use from = document.CreateReader()
            modify.Transform(from, feed)
-        temp :> XContainer
+        temp
 
     let transform = XmlUtilities.loadTransform "NCoverToBarChart"
     let rewrite = XDocument()

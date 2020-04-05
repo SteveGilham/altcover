@@ -74,13 +74,13 @@ open System.Runtime.CompilerServices
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
-[<assembly: InternalsVisibleTo("AltCover.XTests")>]
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer")>]
 #else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
-[<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests2, PublicKey={1}")>]

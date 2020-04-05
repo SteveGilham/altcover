@@ -3,27 +3,11 @@ namespace AltCover.Commands
 open System
 open System.IO
 open System.Management.Automation
-open System.Xml
+open System.Xml.Linq
 open System.Xml.XPath
 
-[<AutoOpen>]
-module XmlExtensions =
-  let private save (doc:IXPathNavigable)
-                   (writer : ('a * XmlWriterSettings) -> XmlWriter)
-                   (sink : 'a) =
-    let s = XmlWriterSettings()
-    s.Indent <- true
-    use out = writer(sink, s)
-    let nav = doc.CreateNavigator()
-    nav.WriteSubtree(out)
-
-  type System.Xml.XPath.IXPathNavigable with
-    member self.Save (path:string) =
-      save self (fun (p:string, s) -> XmlWriter.Create(p, s)) path
-
-
 [<Cmdlet(VerbsData.Compress, "Branching")>]
-[<OutputType(typeof<IXPathNavigable>); AutoSerializable(false)>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 type CompressBranchingCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = CompressBranchingCommand(String.Empty)
@@ -32,7 +16,7 @@ type CompressBranchingCommand(outputFile : String) =
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "XmlDocB", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument : IXPathNavigable = null with get, set
+  member val XDocument : XDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFileA", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -72,10 +56,10 @@ type CompressBranchingCommand(outputFile : String) =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName.StartsWith("FromFile", StringComparison.Ordinal) then
-        self.XmlDocument <- XPathDocument self.InputFile
+        self.XDocument <- XDocument.Load self.InputFile
 
       let xmlDocument =
-        AltCover.OpenCoverUtilities.CompressBranching self.XmlDocument
+        AltCover.OpenCoverUtilities.CompressBranching self.XDocument
           self.WithinSequencePoint.IsPresent self.SameSpan.IsPresent
 
       if self.OutputFile

@@ -7,6 +7,7 @@ open System.IO
 open System.Linq
 open System.Xml
 open System.Xml.Linq
+open System.Xml.Schema
 open System.Xml.XPath
 
 open Mono.Cecil
@@ -15,11 +16,14 @@ open AltCover.XmlExtensions
 [<RequireQualifiedAccess>]
 module OpenCoverUtilities =
 
-  let private compressMethod withinSequencePoint sameSpan (m : XmlElement) =
-    use sp0 = m.GetElementsByTagName("SequencePoint")
-    let sp = sp0.OfType<XmlElement>() |> Seq.toList
-    use bp0 =m.GetElementsByTagName("BranchPoint")
-    let bp = bp0.OfType<XmlElement>() |> Seq.toList
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let private compressMethod withinSequencePoint sameSpan (m : XElement) =
+    let sp = m.Descendants(XName.Get "SequencePoint")
+             |> Seq.toList
+    let bp = m.Descendants(XName.Get "BranchPoint")
+             |> Seq.toList
     if sp
        |> List.isEmpty
        |> not
@@ -27,36 +31,36 @@ module OpenCoverUtilities =
           |> List.isEmpty
           |> not
     then
-      let tail = m.OwnerDocument.CreateElement("SequencePoint")
-      tail.SetAttribute("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
+      let tail = XElement(XName.Get "SequencePoint")
+      tail.Add(XAttribute (XName.Get "offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture)))
       let interleave =
         List.concat
           [ sp
             bp
             [ tail ] ]
         |> List.sortBy (fun x ->
-             x.GetAttribute("offset")
+             x.Attribute(XName.Get "offset").Value
              |> Int32.TryParse
              |> snd)
       interleave
-      |> Seq.fold (fun (s : XmlElement, bs : XmlElement list) x ->
-           match x.Name with
+      |> Seq.fold (fun (s : XElement, bs : XElement list) x ->
+           match x.Name.LocalName with
            | "SequencePoint" ->
                let bx =
                  if withinSequencePoint then
                    let next =
-                     x.GetAttribute("offset")
+                     x.Attribute(XName.Get "offset").Value
                      |> Int32.TryParse
                      |> snd
 
                    let (kill, keep) =
                      bs
                      |> List.partition (fun b ->
-                          b.GetAttribute("offsetend")
+                          b.Attribute(XName.Get "offsetend").Value
                           |> Int32.TryParse
                           |> snd < next)
 
-                   kill |> Seq.iter (fun b -> b.ParentNode.RemoveChild(b) |> ignore)
+                   kill |> Seq.iter (fun b -> b.Remove())
                    keep
                  else
                    bs
@@ -67,13 +71,14 @@ module OpenCoverUtilities =
                      bx
                      |> List.groupBy
                           (fun b ->
-                            (b.GetAttribute("offset"), b.GetAttribute("offsetchain"),
-                             b.GetAttribute("offsetend")))
+                            (b.Attribute(XName.Get "offset").Value,
+                             b.Attribute(XName.Get "offsetchain").Value,
+                             b.Attribute(XName.Get "offsetend").Value))
                      |> List.fold (fun (ki, ke) (_, bz) ->
                           let totalVisits =
                             bz
                             |> Seq.sumBy (fun b ->
-                                 b.GetAttribute("vc")
+                                 b.Attribute(XName.Get "vc").Value
                                  |> Int32.TryParse
                                  |> snd)
 
@@ -85,7 +90,7 @@ module OpenCoverUtilities =
                               bz
                               |> Seq.tail
                               |> Seq.toList ], h :: ke)) ([], [])
-                   kill |> Seq.iter (fun b -> b.ParentNode.RemoveChild(b) |> ignore)
+                   kill |> Seq.iter (fun b -> b.Remove())
                    keep
                  else
                    bx
@@ -94,11 +99,11 @@ module OpenCoverUtilities =
                by
                |> List.rev // because the list will have been built up in reverse order
                |> Seq.mapi (fun i b -> (i, b))
-               |> Seq.groupBy (fun (_, b) -> b.GetAttribute("offset"))
+               |> Seq.groupBy (fun (_, b) -> b.Attribute(XName.Get "offset").Value)
                |> Seq.iter (fun (_, paths) ->
                     paths // assume likely ranges for these numbers!
                     |> Seq.sortBy (fun (n, p) ->
-                         n + 100 * (p.GetAttribute("offsetend")
+                         n + 100 * (p.Attribute(XName.Get "offsetend").Value
                                     |> Int32.TryParse
                                     |> snd))
                     |> Seq.iteri (fun i (_, p) ->
@@ -110,26 +115,12 @@ module OpenCoverUtilities =
            | _ -> (s, x :: bs)) (sp.Head, [])
       |> ignore
 
-  let CompressBranching (navigable : IXPathNavigable) withinSequencePoint sameSpan =
-    // Validate
-    let xmlDocument = new XmlDocument()
-    use reader = navigable.CreateNavigator().ReadSubtree()
-    reader |> xmlDocument.Load
-    xmlDocument.Schemas <- XmlUtilities.loadSchema AltCover.Base.ReportFormat.OpenCover
-    xmlDocument.Validate(null)
-    // Get all the methods
-    use methods = xmlDocument.SelectNodes("//Method")
-    methods
-    |> Seq.cast<XmlElement>
-    |> Seq.iter (compressMethod withinSequencePoint sameSpan)
-    // tidy up here
-    AltCover.Runner.postProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
-    XmlUtilities.prependDeclaration xmlDocument
-    xmlDocument :> IXPathNavigable
-
   let internal copyFillMethodPoint (m : XElement) (sp : XElement seq) =
-    m.Attribute(XName.Get ("type", "http://www.w3.org/2001/XMLSchema-instance")).Value
-       <- "SequencePoint"
+    let attr = m.Attribute(XName.Get ("type", "http://www.w3.org/2001/XMLSchema-instance"))
+    if attr |> isNull
+    then m.Add(XAttribute(XName.Get ("type", "http://www.w3.org/2001/XMLSchema-instance"), "SequencePoint"))
+    else attr.Value <- "SequencePoint"
+
     sp
     |> Seq.take 1
     |> Seq.collect (fun p -> p.Attributes())
@@ -146,7 +137,9 @@ module OpenCoverUtilities =
 
   [<SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase",
       Justification="No Turkish I's involved here, just specific XML tags")>]
-  let PostProcess(document : XContainer) (ordinal: AltCover.Ordinal) =
+  [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let PostProcess(document : XDocument) (ordinal: AltCover.Ordinal) =
     let orderAttr = ordinal.ToString().ToLowerInvariant()
     let scoreToString raw =
       (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
@@ -475,13 +468,24 @@ module OpenCoverUtilities =
 
     rewrite
 
+  let CompressBranching (document : XDocument) withinSequencePoint sameSpan =
+    // Validate
+    let xmlDocument = new XDocument(document)
+    let schemas = XmlUtilities.loadSchema AltCover.Base.ReportFormat.OpenCover
+    xmlDocument.Validate(schemas, null)
+    // Get all the methods
+    xmlDocument.Descendants(XName.Get "Method")
+    |> Seq.iter (compressMethod withinSequencePoint sameSpan)
+    // tidy up here
+    PostProcess xmlDocument Ordinal.Offset
+    xmlDocument
+
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
   MessageId="Api", Justification="It's an API, damn it.")>]
-[<assembly: SuppressMessage("Microsoft.Performance",
-  "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
-  Target="<StartupCode$AltCover-FSApi>.$OpenCover.#.cctor()",
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline",
+  Scope="member", Target="<StartupCode$AltCover-FSApi>.$OpenCover.#.cctor()",
   Justification="Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields",
-  Scope="member", Target="AltCover.OpenCoverUtilities+setSummary@166D.#scoreToString",
+  Scope="member", Target="AltCover.OpenCoverUtilities+setSummary@159D.#scoreToString",
   Justification="Compiler Generated")>]
 ()

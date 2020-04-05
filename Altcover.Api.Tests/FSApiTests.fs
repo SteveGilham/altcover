@@ -51,10 +51,9 @@ module FSApiTests =
 
   [<Test>]
   let OpenCoverToLcov() =
-    let doc = XmlDocument()
     use stream=
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
-    doc.Load stream
+    let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
     AltCover.CoverageFormats.ConvertToLcov doc stream2
     use stream2a = new MemoryStream(stream2.GetBuffer())
@@ -87,3 +86,34 @@ module FSApiTests =
 
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     //test <@ result = expected @>
+
+  [<Test>]
+  let OpenCoverToNCover() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
+    let doc = XDocument.Load stream
+    use mstream = new MemoryStream()
+    let rewrite = AltCover.CoverageFormats.ConvertToNCover doc
+    rewrite.Save mstream
+    use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+    use rdr = new StreamReader(mstream2)
+    let result = rdr.ReadToEnd()
+
+    use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledToNCover.xml")
+    use rdr2 = new StreamReader(stream2)
+    let time = (rewrite.Descendants(XName.Get "coverage")
+                |> Seq.head).Attribute(XName.Get "startTime").Value
+    let expected = rdr2.ReadToEnd().Replace("{0}", time).Replace("utf-16", "utf-8")
+
+    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+
+  [<Test>]
+  let OpenCoverFromNCover() =
+    let sample = typeof<M.Thing>.Assembly.Location
+    let reporter, doc = AltCover.Report.reportGenerator()
+    let visitors = [ reporter ]
+    Visitor.visit visitors [(sample, [])]
+    use mstream = new MemoryStream()
+    let rewrite = AltCover.CoverageFormats.ConvertFromNCover doc [ sample ]
+    test <@ rewrite |> isNull |> not @>
