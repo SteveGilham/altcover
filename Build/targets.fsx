@@ -1002,7 +1002,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         [ Path.getFullName
             "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
         AltCoverFilter,
-        shadowkeyfile          
+        shadowkeyfile
       )
       (
         Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20",
@@ -1012,7 +1012,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         [ Path.getFullName
             "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
         AltCoverFilter,
-        shadowkeyfile          
+        shadowkeyfile
       )
       (
         Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471",
@@ -1026,7 +1026,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         keyfile
       )
     ]
-   
+
   tests
   |> List.iter (fun (testDirectory, outputDirectory, coverageReport, nunitReport, nunitAssemblies, filter, signingKey) ->
        let altReport = reports @@ coverageReport
@@ -1129,7 +1129,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
   let reports = Path.getFullName "./_Reports"
   let altcover = Path.getFullName "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
 
-  let tests = 
+  let tests =
    [
      (
        Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
@@ -1146,6 +1146,14 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        "altcover.recorder.tests.core.fsproj",
        Path.getFullName "Recorder.Tests",
        AltCoverFilterG
+     )
+     (
+       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
+       "altcover.api.tests.core.fsproj", // project
+       Path.getFullName "AltCover.Api.Tests", // workingDirectory
+       AltCoverFilter // filter
      )
    ]
 
@@ -1205,13 +1213,19 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
 
-  let tests = 
+  let tests =
    [
      (
        Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
        Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
        reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./Tests/altcover.tests.core.fsproj"
+     )
+     (
+       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "./AltCover.Api.Tests/altcover.api.tests.core.fsproj"
      )
      (
        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
@@ -1841,7 +1855,6 @@ _Target "RecordResumeTestDotNet" (fun _ ->
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
   let instrumented = "__RecordResumeTestDotNet"
-
 
   let prep =
     AltCover.PrepareParameters.Primitive
