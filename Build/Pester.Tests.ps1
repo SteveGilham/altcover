@@ -321,51 +321,8 @@ Describe "ConvertTo-Cobertura" {
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
 
-    $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
-  <sources>
-    <source>Sample1</source>
-  </sources>
-  <packages>
-    <package name="Sample1.exe" line-rate="0.7" branch-rate="1" complexity="1">
-      <classes>
-        <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
-          <methods>
-            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1" complexity="1">
-              <lines>
-                <line number="11" hits="1" branch="false" />
-                <line number="12" hits="1" branch="false" />
-                <line number="13" hits="1" branch="false" />
-                <line number="14" hits="1" branch="false" />
-                <line number="15" hits="1" branch="false" />
-                <line number="16" hits="1" branch="false" />
-                <line number="18" hits="0" branch="false" />
-                <line number="19" hits="0" branch="false" />
-                <line number="20" hits="0" branch="false" />
-                <line number="21" hits="1" branch="false" />
-              </lines>
-            </method>
-          </methods>
-          <lines>
-            <line number="11" hits="1" branch="false" />
-            <line number="12" hits="1" branch="false" />
-            <line number="13" hits="1" branch="false" />
-            <line number="14" hits="1" branch="false" />
-            <line number="15" hits="1" branch="false" />
-            <line number="16" hits="1" branch="false" />
-            <line number="18" hits="0" branch="false" />
-            <line number="19" hits="0" branch="false" />
-            <line number="20" hits="0" branch="false" />
-            <line number="21" hits="1" branch="false" />
-          </lines>
-        </class>
-      </classes>
-    </package>
-  </packages>
-</coverage>
-"@
+    $expected = [System.IO.File]::ReadAllText("./Tests/Sample1WithNCover.cob.xml")
+    $expected = $expected.Replace("{0}", $v).Replace("{1}", $t)
     $header = $x.Declaration.ToString() + "`n"
     ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
   }

@@ -20,6 +20,7 @@ module TestMain =
           Tests.FSApiTests.FormatsConvertToXmlDocument, "FSApiTests.FormatsConvertToXmlDocument"
           Tests.FSApiTests.FormatsConvertToXDocument, "FSApiTests.FormatsConvertToXDocument"
           Tests.FSApiTests.FormatsRoundTripSimply, "FSApiTests.FormatsRoundTripSimply"
+          Tests.FSApiTests.NCoverToCobertura, "FSApiTests.NCoverToCobertura"
         ]
 
   let specials =

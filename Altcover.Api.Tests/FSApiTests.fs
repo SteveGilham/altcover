@@ -162,3 +162,33 @@ module FSApiTests =
     let reverted = AltCover.XmlUtilities.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
     test <@ reverted.ToString() =  documentText @>
+
+  [<Test>]
+  let NCoverToCobertura() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.xml")
+    let doc = XDocument.Load(stream)
+    doc.Descendants()
+    |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
+    |> Seq.filter (fun a -> a |> isNull |> not)
+    |> Seq.iter (fun a -> a.Value <- "false")
+
+    let cob = AltCover.CoverageFormats.ConvertToCobertura doc
+    use stream2 = new MemoryStream()
+    cob.Save stream2
+    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use rdr = new StreamReader(stream2a)
+    let result = rdr.ReadToEnd()
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.cob.xml")
+    use rdr2 = new StreamReader(stream3)
+
+    let coverage = cob.Descendants(XName.Get "coverage") |> Seq.head
+    let v = coverage.Attribute(XName.Get "version").Value
+    let t = coverage.Attribute(XName.Get "timestamp").Value
+
+    let expected = rdr2.ReadToEnd().Replace("{0}", v).Replace("{1}", t)
+
+    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    //test <@ result = expected @>
