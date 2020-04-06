@@ -22,7 +22,9 @@ module XmlExtensions =
 
 [<RequireQualifiedAccess>]
 module XmlUtilities =
-  let nullIfEmpty s =
+  [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",
+    Justification="Null means absent, completely void, in this case")>]
+  let private nullIfEmpty s =
     if String.IsNullOrEmpty s
     then null
     else s
