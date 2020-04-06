@@ -190,5 +190,25 @@ module FSApiTests =
 
     let expected = rdr2.ReadToEnd().Replace("{0}", v).Replace("{1}", t)
 
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
+
+  [<Test>]
+  let NCoverToBarChart() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
+    let doc = XDocument.Load stream
+    use mstream = new MemoryStream()
+    let rewrite = AltCover.Xhtml.ConvertToBarChart doc
+    rewrite.Save mstream
+    use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+    use rdr = new StreamReader(mstream2)
+    let result = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty)
+
+    use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158Chart.html")
+    use rdr2 = new StreamReader(stream2)
+    let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
+
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     //test <@ result = expected @>

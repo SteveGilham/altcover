@@ -17,6 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Tests\GenuineNCover158.Xml" Link="GenuineNCover158.Xml" />
+    <EmbeddedResource Include="..\Tests\GenuineNCover158Chart.html" Link="GenuineNCover158Chart.html" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
