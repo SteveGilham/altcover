@@ -155,13 +155,14 @@ module FSApiTests =
 
   [<Test>]
   let FormatsRoundTripSimply() =
-    let documentText = "<document />"
+    let documentText = """<?xml-stylesheet href="mystyle.xslt" type="text/xsl"?><document />"""
     use rdr = new StringReader(documentText)
     let doc = XDocument.Load rdr
     let converted = AltCover.XmlUtilities.ToXmlDocument doc
+    test <@ converted.OuterXml.Replace(Environment.NewLine, String.Empty) =  documentText @>
     let reverted = AltCover.XmlUtilities.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
-    test <@ reverted.ToString() =  documentText @>
+    test <@ reverted.ToString().Replace(Environment.NewLine, String.Empty) =  documentText @>
 
   [<Test>]
   let NCoverToCobertura() =
