@@ -210,5 +210,51 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream2)
     let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    //test <@ result = expected @>
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
+
+  [<Test>]
+  let OpenCoverBranchCompression() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
+    let doc = XDocument.Load stream
+
+    [("CompressInterior", true, false)
+     ("SameSpan",false, true)
+     ("CompressBoth", true, true)]
+    |> List.iter (fun (test, inSeq, sameSpan) ->
+        use mstream = new MemoryStream()
+        let rewrite = AltCover.OpenCoverUtilities.CompressBranching doc inSeq sameSpan
+        rewrite.Save mstream
+        use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+        use rdr = new StreamReader(mstream2)
+        let result = rdr.ReadToEnd().Replace("\r", String.Empty)
+
+        use stream2 =
+            Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core."+ test + ".xml")
+        use rdr2 = new StreamReader(stream2)
+        let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
+
+        NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected, test))
+        //test <@ result = expected @>)
+
+  [<Test>]
+  let ArgumentsBuilt() =
+    let force = DotNet.CLIArgs.Force true
+    let fail = DotNet.CLIArgs.FailFast true
+    let summary = DotNet.CLIArgs.ShowSummary "R"
+    let combined =DotNet.CLIArgs.Many [ force; fail; summary ]
+    test <@ fail.ForceDelete |> not @>
+    test <@ force.Fast |> not @>
+    test <@ combined.ForceDelete @>
+    test <@ combined.Fast @>
+    test <@ combined.Summary = "R" @>
+    test <@ (DotNet.CLIArgs.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
+
+    let pprep =Primitive.PrepareParameters.Create()
+    let prep = AltCover.FSApi.PrepareParameters.Primitive pprep
+
+    let pcoll = Primitive.CollectParameters.Create()
+    let coll = AltCover.FSApi.CollectParameters.Primitive pcoll
+
+    test <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\" /p:AltCoverShowStatic=\"-\"" @>

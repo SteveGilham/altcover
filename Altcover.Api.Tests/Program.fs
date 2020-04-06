@@ -22,6 +22,8 @@ module TestMain =
           Tests.FSApiTests.FormatsRoundTripSimply, "FSApiTests.FormatsRoundTripSimply"
           Tests.FSApiTests.NCoverToCobertura, "FSApiTests.NCoverToCobertura"
           Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
+          Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
+          Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
         ]
 
   let specials =
