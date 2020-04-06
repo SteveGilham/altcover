@@ -84,8 +84,8 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream2)
     let expected = rdr2.ReadToEnd().Replace("&#x2442;", "\u2442")
 
-    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
-    //test <@ result = expected @>
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
 
   [<Test>]
   let OpenCoverToNCover() =
@@ -117,3 +117,48 @@ module FSApiTests =
     use mstream = new MemoryStream()
     let rewrite = AltCover.CoverageFormats.ConvertFromNCover doc [ sample ]
     test <@ rewrite |> isNull |> not @>
+
+  [<Test>]
+  let FormatsConvertToXmlDocument() =
+    use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.html")
+    use rdr = new StreamReader(stream)
+    let expected = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
+    rdr.BaseStream.Position <- 0L
+    let doc = XDocument.Load rdr
+    let converted = AltCover.XmlUtilities.ToXmlDocument doc
+    use mstream = new MemoryStream()
+    converted.Save mstream
+    use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+    use rdr2 = new StreamReader(mstream2)
+    let result = rdr2.ReadToEnd().Replace("\r", String.Empty)
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
+
+  [<Test>]
+  let FormatsConvertToXDocument() =
+    use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.html")
+    use rdr = new StreamReader(stream)
+    let expected = rdr.ReadToEnd().Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
+    rdr.BaseStream.Position <- 0L
+    let doc = XmlDocument()
+    doc.Load rdr
+    let converted = AltCover.XmlUtilities.ToXDocument doc
+    use mstream = new MemoryStream()
+    converted.Save mstream
+    use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+    use rdr2 = new StreamReader(mstream2)
+    let result = rdr2.ReadToEnd().Replace("\r", String.Empty)
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
+
+  [<Test>]
+  let FormatsRoundTripSimply() =
+    let documentText = "<document />"
+    use rdr = new StringReader(documentText)
+    let doc = XDocument.Load rdr
+    let converted = AltCover.XmlUtilities.ToXmlDocument doc
+    let reverted = AltCover.XmlUtilities.ToXDocument converted
+    //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
+    test <@ reverted.ToString() =  documentText @>

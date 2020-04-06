@@ -22,12 +22,27 @@ module XmlExtensions =
 
 [<RequireQualifiedAccess>]
 module XmlUtilities =
+  let nullIfEmpty s =
+    if String.IsNullOrEmpty s
+    then null
+    else s
+
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   let ToXmlDocument(document : XDocument) =
     let xmlDocument = XmlDocument()
     use xmlReader = document.CreateReader()
     xmlDocument.Load(xmlReader)
+
+    let cn = xmlDocument.ChildNodes
+    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
+    | None -> ()
+    | Some doctype -> let xDoctype = document.DocumentType
+                      let newDoctype = xmlDocument.CreateDocumentType(nullIfEmpty xDoctype.Name,
+                                                                      nullIfEmpty xDoctype.PublicId,
+                                                                      nullIfEmpty xDoctype.SystemId,
+                                                                      nullIfEmpty xDoctype.InternalSubset)
+                      xmlDocument.ReplaceChild(newDoctype, doctype) |> ignore
 
     let xDeclaration = document.Declaration
     if xDeclaration.IsNotNull
@@ -49,6 +64,13 @@ module XmlUtilities =
     nodeReader.MoveToContent() |> ignore // skips leading comments
     let xdoc = XDocument.Load(nodeReader)
     let cn = xmlDocument.ChildNodes
+    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
+    | None -> ()
+    | Some doctype -> xdoc.AddFirst(XDocumentType(nullIfEmpty doctype.Name,
+                                                  nullIfEmpty doctype.PublicId,
+                                                  nullIfEmpty doctype.SystemId,
+                                                  nullIfEmpty doctype.InternalSubset))
+
     let decl' = cn.OfType<XmlDeclaration>() |> Seq.tryHead
     match decl' with
     | None -> ()

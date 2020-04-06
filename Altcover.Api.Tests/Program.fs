@@ -17,6 +17,9 @@ module TestMain =
           Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"
           Tests.FSApiTests.OpenCoverToNCover, "FSApiTests.OpenCoverToNCover"
           Tests.FSApiTests.OpenCoverFromNCover, "FSApiTests.OpenCoverFromNCover"
+          Tests.FSApiTests.FormatsConvertToXmlDocument, "FSApiTests.FormatsConvertToXmlDocument"
+          Tests.FSApiTests.FormatsConvertToXDocument, "FSApiTests.FormatsConvertToXDocument"
+          Tests.FSApiTests.FormatsRoundTripSimply, "FSApiTests.FormatsRoundTripSimply"
         ]
 
   let specials =
