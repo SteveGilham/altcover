@@ -42,6 +42,14 @@ let AltCoverFilter(p : Primitive.PrepareParameters) =
       TypeFilter =
         [ @"System\."; @"Sample3\.Class2"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
 
+let AltCoverApiFilter(p : Primitive.PrepareParameters) =
+  { p with
+      AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
+      AssemblyFilter = [ "?AltCover\.FSApi" ] @ (p.AssemblyFilter |> Seq.toList)
+      LocalSource = true
+      TypeFilter =
+        [ @"System\."; @"Sample3\.Class2"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
+
 let AltCoverFilterX(p : Primitive.PrepareParameters) =
   { p with
       MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
@@ -1147,7 +1155,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        reports @@ "UnitTestWithAltCoverCore.xml", // report
        "altcover.tests.core.fsproj", // project
        Path.getFullName "Tests", // workingDirectory
-       AltCoverFilter // filter
+       AltCoverFilter >> (fun p -> { p with AssemblyExcludeFilter = [ "?^AltCover$" ]}) // filter
      )
      (
        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
@@ -1163,7 +1171,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
        "altcover.api.tests.core.fsproj", // project
        Path.getFullName "AltCover.Api.Tests", // workingDirectory
-       AltCoverFilter // filter
+       AltCoverApiFilter // filter
      )
    ]
 
