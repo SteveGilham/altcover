@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
 		Build\actions.fsx = Build\actions.fsx
+		Build\AddStrongName.fsx = Build\AddStrongName.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
 		nupkg\build\netstandard2.0\AltCover.props = nupkg\build\netstandard2.0\AltCover.props
 		nupkg\build\netstandard2.0\AltCover.targets = nupkg\build\netstandard2.0\AltCover.targets
@@ -89,7 +90,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.netcoreapp.core", 
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample18.core", "Sample18\sample18.core.fsproj", "{8F488261-3FF5-4983-AE1E-17B151507552}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.api.tests.core", "Altcover.Api.Tests\altcover.api.tests.core.fsproj", "{40FF8254-82F7-4875-A731-EB746B12F83B}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.api.tests.core", "AltCover.Api.Tests\altcover.api.tests.core.fsproj", "{40FF8254-82F7-4875-A731-EB746B12F83B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -252,7 +253,6 @@ Global
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Debug|x86.Build.0 = Debug|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|x86.ActiveCfg = Release|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection

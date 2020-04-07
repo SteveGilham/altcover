@@ -489,7 +489,7 @@ module internal Main =
                 [ reporter
                   Instrument.instrumentGenerator assemblyNames ]
 
-              Visitor.visit visitors (assemblies)
+              Visitor.visit visitors assemblies
               report
               |> Path.GetDirectoryName
               |> Directory.CreateDirectory
