@@ -51,7 +51,7 @@ type ConvertToBarChartCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "SourceMap")>]
-[<OutputType(typeof<Dictionary<string, XmlDocument>>); AutoSerializable(false)>]
+[<OutputType(typeof<Dictionary<string, XDocument>>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToSourceMapCommand(outputFolder : String) =
   inherit PSCmdlet()
@@ -61,7 +61,7 @@ type ConvertToSourceMapCommand(outputFolder : String) =
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes",
     Justification="Avoids premature generalization")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  member val XDocument : XDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -79,10 +79,9 @@ type ConvertToSourceMapCommand(outputFolder : String) =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        let doc = XmlDocument()
-        doc.Load self.InputFile
-        self.XmlDocument <- doc
-      let rewrite = AltCover.RenderToHtml.Action self.XmlDocument
+        let doc = XDocument.Load self.InputFile
+        self.XDocument <- doc
+      let rewrite = AltCover.RenderToHtml.Action self.XDocument
       if self.OutputFolder
          |> String.IsNullOrWhiteSpace
          |> not
@@ -90,7 +89,7 @@ type ConvertToSourceMapCommand(outputFolder : String) =
         let folder = Directory.CreateDirectory(self.OutputFolder)
         rewrite
         |> Seq.iter( fun (name, doc) -> Path.Combine(folder.FullName, name + ".html") |> doc.Save)
-      let result = new Dictionary<string, XmlDocument>()
+      let result = new Dictionary<string, System.Xml.XmlDocument>() //todo
       rewrite |> Seq.iter (fun (name, doc) -> result.Add(name, doc))
       result |> self.WriteObject
     finally

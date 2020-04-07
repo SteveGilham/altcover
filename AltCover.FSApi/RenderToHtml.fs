@@ -1,23 +1,24 @@
 ﻿namespace AltCover
 
+open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml
+open System.Xml.Linq
 open System.Xml.XPath
-open System
 
 module RenderToHtml =
   [<SuppressMessage("Microsoft.Design", "CA1059",
     Justification="Premature abstraction")>]
-  let Action (xmlDocument:XmlDocument) =
+  let Action (xmlDocument:XDocument) =
     let format = XmlUtilities.discoverFormat xmlDocument
 
-    use nodes = match format with
+    let nodes = match format with
                 | AltCover.Base.ReportFormat.OpenCover -> "//Files/File/@fullPath"
                 | _ -> "//@document"
-                |> xmlDocument.SelectNodes
+                |> xmlDocument.XPathSelectElements
     let files = nodes
-                |> Seq.cast<XmlNode>
+                |> Seq.cast<XAttribute>
                 |> Seq.map (fun n -> n.Value)
                 |> Seq.distinct
 
