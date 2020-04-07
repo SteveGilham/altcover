@@ -98,14 +98,14 @@ module FSApiTests =
     rewrite.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
     use rdr = new StreamReader(mstream2)
-    let result = rdr.ReadToEnd()
+    let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream2 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledToNCover.xml")
     use rdr2 = new StreamReader(stream2)
     let time = (rewrite.Descendants(XName.Get "coverage")
                 |> Seq.head).Attribute(XName.Get "startTime").Value
-    let expected = rdr2.ReadToEnd().Replace("{0}", time).Replace("utf-16", "utf-8")
+    let expected = rdr2.ReadToEnd().Replace("{0}", time).Replace("utf-16", "utf-8").Replace("\r", String.Empty)
 
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
