@@ -29,8 +29,8 @@ type ConvertToXDocumentCommand() =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
+  [<SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes",
+    Justification = "AvoidSpeculativeGenerality too")>]
   member val XmlDocument : XmlDocument = null with get, set
 
   override self.ProcessRecord() =
@@ -47,9 +47,7 @@ type ConvertToLcovCommand() =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  member val XDocument : XDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -67,10 +65,9 @@ type ConvertToLcovCommand() =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XmlDocument()
-        self.XmlDocument.Load self.InputFile
+        self.XDocument <- XDocument.Load self.InputFile
       use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
-      AltCover.CoverageFormats.ConvertToLcov self.XmlDocument stream
+      AltCover.CoverageFormats.ConvertToLcov self.XDocument stream
     finally
       Directory.SetCurrentDirectory here
 
@@ -83,9 +80,7 @@ type ConvertToCoberturaCommand() =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "returns a specific concrete type")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  member val XDocument : XDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -103,10 +98,9 @@ type ConvertToCoberturaCommand() =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XmlDocument()
-        self.XmlDocument.Load self.InputFile
+        self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.ConvertToCobertura self.XmlDocument
+      let rewrite = AltCover.CoverageFormats.ConvertToCobertura self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -118,13 +112,13 @@ type ConvertToCoberturaCommand() =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "NCover")>]
-[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 type ConvertToNCoverCommand() =
   inherit PSCmdlet()
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument : IXPathNavigable = null with get, set
+  member val XDocument : XDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -142,27 +136,28 @@ type ConvertToNCoverCommand() =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XPathDocument self.InputFile
+        self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.ConvertToNCover self.XmlDocument
+      let rewrite = AltCover.CoverageFormats.ConvertToNCover self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not
-      then rewrite.Save(self.OutputFile)
+      then
+        rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
-[<OutputType(typeof<XmlDocument>); AutoSerializable(false)>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 type ConvertFromNCoverCommand() =
   inherit PSCmdlet()
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument : IXPathNavigable = null with get, set
+  member val XDocument : XDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -191,10 +186,10 @@ type ConvertFromNCoverCommand() =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XPathDocument self.InputFile
+        self.XDocument <- XDocument.Load self.InputFile
 
       let converted =
-        AltCover.CoverageFormats.ConvertFromNCover self.XmlDocument self.Assembly
+        AltCover.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -245,7 +240,7 @@ type FormatFromCoverletOpenCoverCommand() =
       if self.ParameterSetName = "FromFile" then
         self.Report <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.FormatFromCoverlet self.Report self.Assembly
+      let rewrite = AltCover.OpenCoverUtilities.FormatFromCoverlet self.Report self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace

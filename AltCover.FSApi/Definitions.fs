@@ -12,6 +12,12 @@ open System.Linq
 [<assembly:System.Runtime.InteropServices.ComVisible(false)>]
 do ()
 
+#if RUNNER
+type Ordinal =
+| Offset = 0
+| SL = 1
+#endif
+
 [<RequireQualifiedAccess>]
 module DotNet =
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
@@ -53,8 +59,7 @@ module DotNet =
           | Some x -> x
           | _ -> String.Empty
 
-#if RUNNER
-#else
+#if !RUNNER
 module internal Internals =
 #endif
 
