@@ -17,10 +17,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Tests\CompressBoth.xml" Link="CompressBoth.xml" />
+    <EmbeddedResource Include="..\Tests\Compressible.xml" Link="Compressible.xml" />
+    <EmbeddedResource Include="..\Tests\CompressInterior.xml" Link="CompressInterior.xml" />
+    <EmbeddedResource Include="..\Tests\GenuineNCover158.Xml" Link="GenuineNCover158.Xml" />
+    <EmbeddedResource Include="..\Tests\GenuineNCover158Chart.html" Link="GenuineNCover158Chart.html" />
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
+    <EmbeddedResource Include="..\Tests\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
     <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="OpenCoverForPester.coverlet.xml" />
+    <EmbeddedResource Include="..\Tests\SameSpan.xml" Link="SameSpan.xml" />
+    <EmbeddedResource Include="..\Tests\Sample1WithNCover.xml" Link="Sample1WithNCover.xml" />
+    <EmbeddedResource Include="..\Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="FSApiTests.fs" />
@@ -45,7 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

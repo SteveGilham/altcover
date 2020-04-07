@@ -22,12 +22,29 @@ module XmlExtensions =
 
 [<RequireQualifiedAccess>]
 module XmlUtilities =
+  [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",
+    Justification="Null means absent, completely void, in this case")>]
+  let private nullIfEmpty s =
+    if String.IsNullOrEmpty s
+    then null
+    else s
+
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   let ToXmlDocument(document : XDocument) =
     let xmlDocument = XmlDocument()
     use xmlReader = document.CreateReader()
     xmlDocument.Load(xmlReader)
+
+    let cn = xmlDocument.ChildNodes
+    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
+    | None -> ()
+    | Some doctype -> let xDoctype = document.DocumentType
+                      let newDoctype = xmlDocument.CreateDocumentType(nullIfEmpty xDoctype.Name,
+                                                                      nullIfEmpty xDoctype.PublicId,
+                                                                      nullIfEmpty xDoctype.SystemId,
+                                                                      nullIfEmpty xDoctype.InternalSubset)
+                      xmlDocument.ReplaceChild(newDoctype, doctype) |> ignore
 
     let xDeclaration = document.Declaration
     if xDeclaration.IsNotNull
@@ -41,7 +58,7 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let ToXDocument(xmlDocument : XmlDocument) =
@@ -49,6 +66,13 @@ module XmlUtilities =
     nodeReader.MoveToContent() |> ignore // skips leading comments
     let xdoc = XDocument.Load(nodeReader)
     let cn = xmlDocument.ChildNodes
+    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
+    | None -> ()
+    | Some doctype -> xdoc.AddFirst(XDocumentType(nullIfEmpty doctype.Name,
+                                                  nullIfEmpty doctype.PublicId,
+                                                  nullIfEmpty doctype.SystemId,
+                                                  nullIfEmpty doctype.InternalSubset))
+
     let decl' = cn.OfType<XmlDeclaration>() |> Seq.tryHead
     match decl' with
     | None -> ()
@@ -60,8 +84,6 @@ module XmlUtilities =
          (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
     xdoc
 
-  // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-  // Also, this rule is deprecated
   let internal loadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
 
@@ -86,17 +108,14 @@ module XmlUtilities =
     transform.Load(xreader, XsltSettings.TrustedXslt, XmlUrlResolver())
     transform
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
-  let internal discoverFormat(xmlDocument : XmlDocument) =
+  let internal discoverFormat(xmlDocument : XDocument) =
     let format =
-      if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any()
+      if xmlDocument.Descendants(XName.Get "CoverageSession").Any()
       then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
     let schema = loadSchema format
-    xmlDocument.Schemas <- schema
-    xmlDocument.Validate(null)
+    xmlDocument.Validate(schema, null) |> ignore
     format
 
   let internal assemblyNameWithFallback path fallback =
@@ -108,8 +127,3 @@ module XmlUtilities =
     | :? System.Security.SecurityException
     | :? BadImageFormatException
     | :? FileLoadException -> fallback
-
-  [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
-  let internal prependDeclaration(x : XmlDocument) =
-    let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
-    x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore
