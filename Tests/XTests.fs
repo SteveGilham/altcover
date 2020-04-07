@@ -700,7 +700,7 @@ module AltCoverXTests =
 
       test <@ actual = theFiles @>
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
-      let recordedXml = Runner.K.loadReport report
+      let recordedXml = Runner.J.loadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
       CoverageParameters.theOutputDirectories.Clear()
@@ -843,9 +843,9 @@ module AltCoverXTests =
          let updated = Instrument.I.prepareAssembly from
          Instrument.I.writeAssembly updated create
     let save = Runner.J.recorderName
-    let save1 = Runner.K.getPayload
-    let save2 = Runner.K.getMonitor
-    let save3 = Runner.K.doReport
+    let save1 = Runner.J.getPayload
+    let save2 = Runner.J.getMonitor
+    let save3 = Runner.J.doReport
     let codedreport = "coverage.xml" |> Path.GetFullPath
     let alternate = "not-coverage.xml" |> Path.GetFullPath
     try
@@ -867,9 +867,9 @@ module AltCoverXTests =
         test <@ hits |> Seq.isEmpty @>
         TimeSpan.Zero
 
-      Runner.K.getPayload <- payload
-      Runner.K.getMonitor <- monitor
-      Runner.K.doReport <- write
+      Runner.J.getPayload <- payload
+      Runner.J.getMonitor <- monitor
+      Runner.J.doReport <- write
       let empty = OptionSet()
       let dummy = codedreport + ".xx.acv"
       do use temp = File.Create dummy
@@ -882,9 +882,9 @@ module AltCoverXTests =
               |> not @>
       test <@ r = 127 @>
     finally
-      Runner.K.getPayload <- save1
-      Runner.K.getMonitor <- save2
-      Runner.K.doReport <- save3
+      Runner.J.getPayload <- save1
+      Runner.J.getMonitor <- save2
+      Runner.J.doReport <- save3
       Runner.J.recorderName <- save
       Directory.SetCurrentDirectory start
 
