@@ -285,6 +285,8 @@ type Echo() =
   [<Required>]
   member val Text = String.Empty with get, set
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="Queen's English, m80!")>]
   member val Colour = String.Empty with get, set
 
   override self.Execute() =
