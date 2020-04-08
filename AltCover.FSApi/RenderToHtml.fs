@@ -12,15 +12,20 @@ module RenderToHtml =
     Justification="Premature abstraction")>]
   let Action (xmlDocument:XDocument) =
     let format = XmlUtilities.discoverFormat xmlDocument
+    let nav = xmlDocument.CreateNavigator()
 
     let nodes = match format with
                 | AltCover.Base.ReportFormat.OpenCover -> "//Files/File/@fullPath"
                 | _ -> "//@document"
-                |> xmlDocument.XPathSelectElements
+                |> nav.Select
+                |> Seq.cast<obj>
+                |> Seq.toList
+
     let files = nodes
-                |> Seq.cast<XAttribute>
-                |> Seq.map (fun n -> n.Value)
+                |> Seq.map (fun n -> let pi = n.GetType().GetProperty("Value")
+                                     pi.GetValue(n).ToString())
                 |> Seq.distinct
+                |> Seq.toList
 
     files // TODO handle repeated names in different folders
     |> Seq.filter File.Exists

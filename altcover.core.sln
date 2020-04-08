@@ -48,6 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
 		Build\common-rules.xml = Build\common-rules.xml
+		.config\dotnet-tools.json = .config\dotnet-tools.json
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk

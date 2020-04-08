@@ -702,183 +702,181 @@ module internal Runner =
       | null -> (false, Unchecked.defaultof<'b>)
       | _ -> d.TryGetValue key
 
-  // "public"
-  let internal postProcess (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
-      format (document : XmlDocument) =
-    match format with
-    | Base.ReportFormat.OpenCoverWithTracking
-    | Base.ReportFormat.OpenCover ->
-        let scoreToString raw =
-          (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
+    let internal postProcess (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+        format (document : XmlDocument) =
+      match format with
+      | Base.ReportFormat.OpenCoverWithTracking
+      | Base.ReportFormat.OpenCover ->
+          let scoreToString raw =
+            (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
 
-        let stringToScore (node : XmlElement) name =
-          node.GetAttribute(name)
-          |> I.invariantParseDouble
-          |> snd
+          let stringToScore (node : XmlElement) name =
+            node.GetAttribute(name)
+            |> I.invariantParseDouble
+            |> snd
 
-        let percentCover visits points =
-          if points = 0
-          then "0"
-          else ((float (visits * 100)) / (float points)) |> scoreToString
+          let percentCover visits points =
+            if points = 0
+            then "0"
+            else ((float (visits * 100)) / (float points)) |> scoreToString
 
-        let setSummary (x : XmlElement) pointVisits branchVisits methodVisits classVisits
-            ptcover brcover minCrap maxCrap =
-          use elements = x.GetElementsByTagName("Summary")
-          elements
-          |> Seq.cast<XmlElement>
-          |> Seq.tryHead
-          |> Option.iter (fun s ->
-               let minc =
-                 (if minCrap = Double.MaxValue then 0.0 else minCrap)
-                 |> scoreToString
-
-               let maxc =
-                 (if maxCrap = Double.MinValue then 0.0 else maxCrap)
-                 |> scoreToString
-
-               s.SetAttribute("visitedSequencePoints", sprintf "%d" pointVisits)
-               s.SetAttribute("visitedBranchPoints", sprintf "%d" branchVisits)
-               s.SetAttribute("visitedMethods", sprintf "%d" methodVisits)
-               classVisits
-               |> Option.iter
-                    (fun cvc -> s.SetAttribute("visitedClasses", sprintf "%d" cvc))
-               s.SetAttribute("branchCoverage", brcover)
-               s.SetAttribute("sequenceCoverage", ptcover)
-               s.SetAttribute("minCrapScore", minc)
-               s.SetAttribute("maxCrapScore", maxc))
-
-        let computeBranchExitCount (doc : XmlDocument) (sp : XmlNodeList) bp =
-          let tail = doc.CreateElement("SequencePoint")
-          tail.SetAttribute
-            ("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
-          let nodes =
-            List.concat
-              [ sp
-                |> Seq.cast<XmlElement>
-                |> Seq.toList
-                [ tail ]
-                bp
-                |> Seq.cast<XmlElement>
-                |> Seq.toList ]
-
-          let interleave =
-            nodes
-            |> Seq.sortBy (fun x ->
-                 x.GetAttribute("offset")
-                 |> Int32.TryParse
-                 |> snd)
-
-          interleave
-          |> Seq.fold (fun (bev, sq : XmlElement) x ->
-               match x.Name with
-               | "SequencePoint" ->
-                   sq.SetAttribute("bev", sprintf "%d" bev)
-                   (0, x)
-               | _ ->
-                   (bev + (if x.GetAttribute("vc") = "0" then 0 else 1), sq))
-               (0, nodes.[0])
-          |> ignore
-
-        let crapScore (method : XmlElement) =
-          let coverage =
-            let cover = stringToScore method "sequenceCoverage"
-            if cover > 0.0 then cover else stringToScore method "branchCoverage"
-
-          let complexity = stringToScore method "cyclomaticComplexity"
-
-          let raw =
-            (Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
-             + complexity)
-          let score = raw |> scoreToString
-          method.SetAttribute("crapScore", score)
-          raw
-
-        let updateMethod (dict : Dictionary<int, Base.PointVisit>)
-            (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
-          use sp = method.GetElementsByTagName("SequencePoint")
-          use bp = method.GetElementsByTagName("BranchPoint")
-          let mp =
-            use elements = method.GetElementsByTagName("MethodPoint")
-            elements |> Seq.cast<XmlElement> |> Seq.toList
-          let count = sp.Count
-          let rawCount = bp.Count
-
-          // inconsistent name to shut Gendarme up
-          let numBranches = rawCount + Math.Sign(count + rawCount)
-          if count > 0 then
-            J.copyFillMethodPoint mp sp
-          else
-            J.fillMethodPoint mp method dict
-          let pointVisits = J.visitCount sp
-          let b0 = J.visitCount bp
-          let branchVisits = b0 + Math.Sign b0
-          if pointVisits > 0 || b0 > 0 then
-            let fillMethod() =
-              let cover = percentCover pointVisits count
-              let bcover = percentCover branchVisits numBranches
-              method.SetAttribute("visited", "true")
-              method.SetAttribute("sequenceCoverage", cover)
-              method.SetAttribute("branchCoverage", bcover)
-              let raw = crapScore method
-              setSummary method pointVisits branchVisits 1 None cover bcover raw raw
-              computeBranchExitCount method.OwnerDocument sp bp
-              (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br + numBranches,
-               Math.Min(minc, raw), Math.Max(maxc, raw))
-            fillMethod()
-          else
-            (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
-
-        let updateClass (dict : Dictionary<int, Base.PointVisit>)
-            (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
-          let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
-            use elements = ``class``.GetElementsByTagName("Method")
+          let setSummary (x : XmlElement) pointVisits branchVisits methodVisits classVisits
+              ptcover brcover minCrap maxCrap =
+            use elements = x.GetElementsByTagName("Summary")
             elements
             |> Seq.cast<XmlElement>
-            |> Seq.fold (updateMethod dict)
-                 (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+            |> Seq.tryHead
+            |> Option.iter (fun s ->
+                 let minc =
+                   (if minCrap = Double.MaxValue then 0.0 else minCrap)
+                   |> scoreToString
 
-          let cover = percentCover cvs cpt
-          let bcover = percentCover cvb cbr
+                 let maxc =
+                   (if maxCrap = Double.MinValue then 0.0 else maxCrap)
+                   |> scoreToString
 
-          let cvc =
-            if cvm > 0 then 1 else 0
-          setSummary ``class`` cvs cvb cvm (Some cvc) cover bcover minc maxc
-          (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
-           Math.Min(minc, minc0), Math.Max(maxc, maxc0))
+                 s.SetAttribute("visitedSequencePoints", sprintf "%d" pointVisits)
+                 s.SetAttribute("visitedBranchPoints", sprintf "%d" branchVisits)
+                 s.SetAttribute("visitedMethods", sprintf "%d" methodVisits)
+                 classVisits
+                 |> Option.iter
+                      (fun cvc -> s.SetAttribute("visitedClasses", sprintf "%d" cvc))
+                 s.SetAttribute("branchCoverage", brcover)
+                 s.SetAttribute("sequenceCoverage", ptcover)
+                 s.SetAttribute("minCrapScore", minc)
+                 s.SetAttribute("maxCrapScore", maxc))
 
-        let updateModule (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
-            (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module`` : XmlElement) =
-          let dict =
-            match (J.tryGetValue counts) <| ``module``.GetAttribute("hash") with
-            | (false, _) -> Dictionary<int, Base.PointVisit>()
-            | (true, d) -> d
+          let computeBranchExitCount (doc : XmlDocument) (sp : XmlNodeList) bp =
+            let tail = doc.CreateElement("SequencePoint")
+            tail.SetAttribute
+              ("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
+            let nodes =
+              List.concat
+                [ sp
+                  |> Seq.cast<XmlElement>
+                  |> Seq.toList
+                  [ tail ]
+                  bp
+                  |> Seq.cast<XmlElement>
+                  |> Seq.toList ]
 
-          let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
-            use elements = ``module``.GetElementsByTagName("Class")
+            let interleave =
+              nodes
+              |> Seq.sortBy (fun x ->
+                   x.GetAttribute("offset")
+                   |> Int32.TryParse
+                   |> snd)
+
+            interleave
+            |> Seq.fold (fun (bev, sq : XmlElement) x ->
+                 match x.Name with
+                 | "SequencePoint" ->
+                     sq.SetAttribute("bev", sprintf "%d" bev)
+                     (0, x)
+                 | _ ->
+                     (bev + (if x.GetAttribute("vc") = "0" then 0 else 1), sq))
+                 (0, nodes.[0])
+            |> ignore
+
+          let crapScore (method : XmlElement) =
+            let coverage =
+              let cover = stringToScore method "sequenceCoverage"
+              if cover > 0.0 then cover else stringToScore method "branchCoverage"
+
+            let complexity = stringToScore method "cyclomaticComplexity"
+
+            let raw =
+              (Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
+               + complexity)
+            let score = raw |> scoreToString
+            method.SetAttribute("crapScore", score)
+            raw
+
+          let updateMethod (dict : Dictionary<int, Base.PointVisit>)
+              (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
+            use sp = method.GetElementsByTagName("SequencePoint")
+            use bp = method.GetElementsByTagName("BranchPoint")
+            let mp =
+              use elements = method.GetElementsByTagName("MethodPoint")
+              elements |> Seq.cast<XmlElement> |> Seq.toList
+            let count = sp.Count
+            let rawCount = bp.Count
+
+            // inconsistent name to shut Gendarme up
+            let numBranches = rawCount + Math.Sign(count + rawCount)
+            if count > 0 then
+              copyFillMethodPoint mp sp
+            else
+              fillMethodPoint mp method dict
+            let pointVisits = visitCount sp
+            let b0 = visitCount bp
+            let branchVisits = b0 + Math.Sign b0
+            if pointVisits > 0 || b0 > 0 then
+              let fillMethod() =
+                let cover = percentCover pointVisits count
+                let bcover = percentCover branchVisits numBranches
+                method.SetAttribute("visited", "true")
+                method.SetAttribute("sequenceCoverage", cover)
+                method.SetAttribute("branchCoverage", bcover)
+                let raw = crapScore method
+                setSummary method pointVisits branchVisits 1 None cover bcover raw raw
+                computeBranchExitCount method.OwnerDocument sp bp
+                (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br + numBranches,
+                 Math.Min(minc, raw), Math.Max(maxc, raw))
+              fillMethod()
+            else
+              (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
+
+          let updateClass (dict : Dictionary<int, Base.PointVisit>)
+              (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
+            let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
+              use elements = ``class``.GetElementsByTagName("Method")
+              elements
+              |> Seq.cast<XmlElement>
+              |> Seq.fold (updateMethod dict)
+                   (0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+            let cover = percentCover cvs cpt
+            let bcover = percentCover cvb cbr
+
+            let cvc =
+              if cvm > 0 then 1 else 0
+            setSummary ``class`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+            (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
+             Math.Min(minc, minc0), Math.Max(maxc, maxc0))
+
+          let updateModule (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+              (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module`` : XmlElement) =
+            let dict =
+              match (tryGetValue counts) <| ``module``.GetAttribute("hash") with
+              | (false, _) -> Dictionary<int, Base.PointVisit>()
+              | (true, d) -> d
+
+            let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
+              use elements = ``module``.GetElementsByTagName("Class")
+              elements
+              |> Seq.cast<XmlElement>
+              |> Seq.fold (dict |> updateClass)
+                   (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
+
+            let cover = percentCover cvs cpt
+            let bcover = percentCover cvb cbr
+            setSummary ``module`` cvs cvb cvm (Some cvc) cover bcover minc maxc
+            (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
+             Math.Min(minc, minc0), Math.Max(maxc, maxc0))
+
+          let (vb, vs, vm, vc, pt, br, minc, maxc) =
+            use elements = document.DocumentElement.SelectNodes("//Module")
             elements
             |> Seq.cast<XmlElement>
-            |> Seq.fold (dict |> updateClass)
+            |> Seq.fold (updateModule counts)
                  (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
 
-          let cover = percentCover cvs cpt
-          let bcover = percentCover cvb cbr
-          setSummary ``module`` cvs cvb cvm (Some cvc) cover bcover minc maxc
-          (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
-           Math.Min(minc, minc0), Math.Max(maxc, maxc0))
+          let cover = percentCover vs pt
+          let bcover = percentCover vb br
+          setSummary document.DocumentElement vs vb vm (Some vc) cover bcover minc maxc
+      | _ -> ()
 
-        let (vb, vs, vm, vc, pt, br, minc, maxc) =
-          use elements = document.DocumentElement.SelectNodes("//Module")
-          elements
-          |> Seq.cast<XmlElement>
-          |> Seq.fold (updateModule counts)
-               (0, 0, 0, 0, 0, 0, Double.MaxValue, Double.MinValue)
-
-        let cover = percentCover vs pt
-        let bcover = percentCover vb br
-        setSummary document.DocumentElement vs vb vm (Some vc) cover bcover minc maxc
-    | _ -> ()
-
-  module internal K =
     let internal point (pt : XmlElement) items outername innername attribute =
       match items with
       | [] -> ()
@@ -920,11 +918,11 @@ module internal Runner =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
         Justification = "Unit test accessor")>]
-    let mutable internal getPayload = J.payloadBase
+    let mutable internal getPayload = payloadBase
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
         Justification = "Unit test accessor")>]
-    let mutable internal getMonitor = J.monitorBase
+    let mutable internal getMonitor = monitorBase
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
         Justification = "Unit test accessor")>]
@@ -973,10 +971,10 @@ module internal Runner =
             let format =
               (J.getMethod instance "get_CoverageFormat") |> J.getFirstOperandAsNumber
             let hits = Dictionary<string, Dictionary<int, Base.PointVisit>>()
-            let payload = K.getPayload
-            let result = K.getMonitor hits report payload rest
+            let payload = J.getPayload
+            let result = J.getMonitor hits report payload rest
             let format' = enum format
-            let delta = K.doReport hits format' report output
+            let delta = J.doReport hits format' report output
             CommandLine.writeResourceWithFormatItems
               "Coverage statistics flushing took {0:N} seconds" [| delta.TotalSeconds |]
               false
@@ -986,8 +984,8 @@ module internal Runner =
             Directory.GetFiles
               (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
-            let document = K.loadReport report
-            K.doSummaries document format' result) 255 true
+            let document = J.loadReport report
+            J.doSummaries document format' result) 255 true
         CommandLine.reportErrors "Collection" false
         value
 

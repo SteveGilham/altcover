@@ -1779,7 +1779,7 @@ or
           if nonWindows then "mono" :: baseArgs
           else baseArgs
 
-        let r = Runner.K.getPayload args
+        let r = Runner.J.getPayload args
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
         stdout.Flush()
@@ -1838,7 +1838,7 @@ or
              (fun (moduleId, hitPointId, hit) ->
              AltCover.Base.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
-        Runner.K.doReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+        Runner.J.doReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -1866,7 +1866,7 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       do use s = File.Create(unique + ".0.acv")
          s.Close()
-      let r = Runner.K.getMonitor counts unique List.length []
+      let r = Runner.J.getMonitor counts unique List.length []
       Assert.That(r, Is.EqualTo 0)
       Assert.That(File.Exists(unique + ".acv"))
       Assert.That(counts, Is.Empty)
@@ -1882,7 +1882,7 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
       let r =
-        Runner.K.getMonitor counts unique (fun l ->
+        Runner.J.getMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           use formatter = new BinaryWriter(sink)
@@ -1932,7 +1932,7 @@ or
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
         let r =
-          Runner.K.getMonitor counts unique (fun l ->
+          Runner.J.getMonitor counts unique (fun l ->
             use sink =
               new DeflateStream(File.OpenWrite(unique + ".0.acv"),
                                 CompressionMode.Compress)
@@ -1946,7 +1946,7 @@ or
             |> List.length) [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
-        let doc = Runner.K.loadReport(unique + ".acv")
+        let doc = Runner.J.loadReport(unique + ".acv")
         Assert.That(doc.Nodes(), Is.Empty)
         Assert.That(counts, Is.Empty)
       finally
@@ -1964,7 +1964,7 @@ or
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
 
       let r =
-        Runner.K.getMonitor counts unique (fun l ->
+        Runner.J.getMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           l
@@ -2003,7 +2003,7 @@ or
       let inputs = [ String.Empty; "a"; "b"; "c"; "d"; String.Empty; "e" ]
 
       let r =
-        Runner.K.getMonitor counts unique (fun l ->
+        Runner.J.getMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           use formatter = new BinaryWriter(sink)
@@ -2104,7 +2104,7 @@ or
           Base.Both { Time = 5L;  Call = 42 }
           Base.Time 42L
           Base.Time 5L ]
-      Runner.K.pointProcess root hits
+      Runner.J.pointProcess root hits
       Assert.That
         (x.DocumentElement.OuterXml,
          Is.EqualTo
@@ -2142,7 +2142,7 @@ or
       |> Seq.cast<XmlElement>
       |> Seq.iter (fun el -> el.SetAttribute("bev", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
@@ -2189,7 +2189,7 @@ or
       visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
       visit.Add(100663297, Init 1L []) // should fill in the expected non-zero value
       visit.Add(100663298, Init 23L []) // should be ignored
-      Runner.postProcess visits Base.ReportFormat.OpenCover after
+      Runner.J.postProcess visits Base.ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
@@ -2262,7 +2262,7 @@ or
               |> not
            then el.SetAttribute("crapScore", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
 #if NETCOREAPP2_0
@@ -2331,7 +2331,7 @@ or
               |> not
            then el.SetAttribute("crapScore", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
 #if NETCOREAPP2_0
@@ -2926,7 +2926,7 @@ or
         Runner.I.summaries <- [ (fun _ _ _ -> 23) ]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
         Runner.threshold <- Some 42
-        let delta = Runner.K.doSummaries (XDocument()) Base.ReportFormat.NCover 0
+        let delta = Runner.J.doSummaries (XDocument()) Base.ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),
