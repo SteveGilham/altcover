@@ -23,7 +23,7 @@ if (Test-Path $x) { Remove-Item -force $x }
 #[accelerators]::add("xdoc", $xdoctype) 
 
 # let's have a cmdlet for that
-$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo") }
+$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo"); "pinfo" =  [type]::gettype("System.Type").GetProperty("FullName")}
 Add-Accelerator -Accelerator -Xdocument -Mapping $accel
 
 Describe "Get-Accelerator" {
@@ -33,8 +33,26 @@ Describe "Get-Accelerator" {
     $a["xdoc"].FullName | Should -Be "System.Xml.Linq.XDocument"
     $a["accelerators"].FullName | Should -Be "System.Management.Automation.TypeAccelerators"
     $a["minfo"].FullName | Should -Be "System.Reflection.MethodInfo"
+    $a["pinfo"].FullName | Should -Be "System.Reflection.RuntimePropertyInfo"
     $a["xml"].FullName | Should -Be "System.Xml.XmlDocument"
     $a.Count | Should -BeGreaterThan 3
+  }
+}
+
+Describe "Get-Accelerator" {
+  It "Accepts WhatIf" {
+
+    Start-Transcript -Path "./_Packaging/AccelWhatIf.txt"
+    Add-Accelerator -WhatIf
+    Add-Accelerator -Accelerator -Xdocument -Mapping $accel -WhatIf
+    Stop-Transcript
+    $expected = [string]::Join([System.Environment]::NewLine, 
+                ('What if: Performing the operation "Add-Accelerator" on target "Command Line : ".',
+                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Type @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"; "accelerators" = "System.Management.Automation.TypeAccelerators"; "xdoc" = "System.Xml.Linq.XDocument"} -XDocument -Accelerator".'))
+
+    $lines = Get-Content "./_Packaging/AccelWhatIf.txt"
+    $ll = $lines | ? { $_ -like "What if: *" }
+    [string]::Join([System.Environment]::NewLine, $ll) | Should -Be $expected
   }
 }
 

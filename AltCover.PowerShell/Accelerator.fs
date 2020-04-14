@@ -57,7 +57,7 @@ type AddAcceleratorCommand() =
                    |> Seq.distinctBy(fun kv -> kv.Value)
                    |> Seq.toList
     let display = String.Join("; ", finalmap
-                                    |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key, kv.Value.FullName ))
+                                    |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key kv.Value.FullName ))
 
     if  self.ShouldProcess("Command Line : " +
                             (if List.isEmpty finalmap
