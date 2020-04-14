@@ -614,7 +614,7 @@ Describe "Compress-Branching" {
   It "DoesAtLeastOne" {
     $fail = $false
     try {
-	  $xml = Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+	  Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
 	  $fail = $true
 	}
 	catch {
@@ -655,5 +655,6 @@ Describe "Format-FromCoverletOpenCover" {
 
     $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $written | Should -BeExactly $result
   }
 }
