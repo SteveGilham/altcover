@@ -39,7 +39,7 @@ Describe "Get-Accelerator" {
   }
 }
 
-Describe "Get-Accelerator" {
+Describe "Add-Accelerator" {
   It "Accepts WhatIf" {
 
     Start-Transcript -Path "./_Packaging/AccelWhatIf.txt"
@@ -48,7 +48,7 @@ Describe "Get-Accelerator" {
     Stop-Transcript
     $expected = [string]::Join([System.Environment]::NewLine, 
                 ('What if: Performing the operation "Add-Accelerator" on target "Command Line : ".',
-                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Type @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"; "accelerators" = "System.Management.Automation.TypeAccelerators"; "xdoc" = "System.Xml.Linq.XDocument"} -XDocument -Accelerator".'))
+                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Type @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"} -XDocument -Accelerator".'))
 
     $lines = Get-Content "./_Packaging/AccelWhatIf.txt"
     $ll = $lines | ? { $_ -like "What if: *" }
