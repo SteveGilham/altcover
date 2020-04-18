@@ -155,7 +155,7 @@ See also '--inplace'</value>
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALUE]] [--showGenerated] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--reportFormat=VALUE] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALUE]] [--showGenerated] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
 or
@@ -222,8 +222,8 @@ Coverage Report: {0}
     <value>  ImportModule               Prints out the PowerShell script to import the
                                associated PowerShell module</value>
   </data>
-  <data name="opencover" xml:space="preserve">
-    <value>Optional: Generate the report in OpenCover format</value>
+  <data name="reportFormat=" xml:space="preserve">
+    <value>Optional: Generate the report in the specified format (NCover or the default OpenCover)</value>
   </data>
   <data name="CommandLine" xml:space="preserve">
     <value>Command line : '{0} {1}'</value>
@@ -366,11 +366,11 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     Incompatible with --callContext.</value>
   </data>
   <data name="linecover" xml:space="preserve">
-    <value>Optional: Do not record branch coverage.  Implies, and is compatible with, the --opencover option.
+    <value>Optional: Do not record branch coverage.  Implies, and is compatible with, the --reportFormat=opencover option.
     Incompatible with --branchcover.</value>
   </data>
   <data name="branchcover" xml:space="preserve">
-    <value>Optional: Do not record line coverage.  Implies, and is compatible with, the --opencover option.
+    <value>Optional: Do not record line coverage.  Implies, and is compatible with, the --reportFormat=opencover option.
     Incompatible with --linecover.</value>
   </data>
   <data name="p|pathFilter=" xml:space="preserve">

@@ -61,7 +61,7 @@ Describe "Invoke-Altcover" {
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
-        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -InformationAction Continue
+        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
         $o | Should -Exist
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
@@ -118,8 +118,8 @@ Describe "Invoke-Altcover" {
         Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
-                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
+                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:+".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:++ ".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
 
         $lines = Get-Content "./_Packaging/WhatIf.txt"

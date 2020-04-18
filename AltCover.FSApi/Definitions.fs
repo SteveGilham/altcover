@@ -87,7 +87,7 @@ module internal Internals =
 
     [ fromArg String.Empty "true"
       fromArg "XmlReport" prepare.XmlReport
-      (arg "OpenCover" "false", not prepare.OpenCover)
+      fromArg "ReportFormat" prepare.ReportFormat
       fromList "FileFilter" prepare.FileFilter
       fromList "PathFilter" prepare.PathFilter
       fromList "AssemblyFilter" prepare.AssemblyFilter

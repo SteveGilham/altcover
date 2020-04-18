@@ -253,10 +253,10 @@ module FSApiTests =
     test <@ combined.Summary = "R" @>
     test <@ (DotNet.CLIArgs.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
 
-    let pprep =Primitive.PrepareParameters.Create()
+    let pprep = Primitive.PrepareParameters.Create()
     let prep = AltCover.FSApi.PrepareParameters.Primitive pprep
 
     let pcoll = Primitive.CollectParameters.Create()
     let coll = AltCover.FSApi.CollectParameters.Primitive pcoll
 
-    test <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\" /p:AltCoverShowStatic=\"-\"" @>
+    test <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\" /p:AltCoverShowStatic=\"-\"" @>

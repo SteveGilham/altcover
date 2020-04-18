@@ -1636,6 +1636,7 @@ module AltCoverTests =
       let module' = def.MainModule
       Visitor.visit [] [] // cheat reset
       try
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1660,31 +1661,38 @@ module AltCoverTests =
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ModulesAreDeeperThanAssemblies() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path = sample1path
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.readSymbols def
-      Visitor.visit [] [] // cheat reset
-      let deeper = Visitor.I.deeper <| Node.Assembly(def, Inspections.Instrument, []) |> Seq.toList
-      Visitor.visit [] [] // cheat reset
-      let expected =
-        def.Modules // we have no nested types in this test
-        |> Seq.map (fun t ->
-             let node = Node.Module(t, Inspections.Instrument)
-             List.concat [ [ node ]
-                           (Visitor.I.deeper >> Seq.toList) node
-                           [ AfterModule ] ])
-        |> List.concat
-      Assert.That(deeper.Length, Is.EqualTo 21)
-      Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+      try
+        let where = Assembly.GetExecutingAssembly().Location
+        let path = sample1path
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+
+        ProgramDatabase.readSymbols def
+        Visitor.visit [] [] // cheat reset
+        let deeper = Visitor.I.deeper <| Node.Assembly(def, Inspections.Instrument, []) |> Seq.toList
+        Visitor.visit [] [] // cheat reset
+        let expected =
+          def.Modules // we have no nested types in this test
+          |> Seq.map (fun t ->
+               let node = Node.Module(t, Inspections.Instrument)
+               List.concat [ [ node ]
+                             (Visitor.I.deeper >> Seq.toList) node
+                             [ AfterModule ] ])
+          |> List.concat
+        Assert.That(deeper.Length, Is.EqualTo 21)
+        Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+      finally
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let AssembliesAreDeeperThanPaths() =
       try
         CoverageParameters.staticFilter <- Some StaticFilter.AsCovered
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
         let where = Assembly.GetExecutingAssembly().Location
         let path = sample1path
         let deeper = Visitor.I.deeper <| Node.Start [ path, [] ] |> Seq.toList
@@ -1707,11 +1715,13 @@ module AltCoverTests =
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.staticFilter <- None
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let FilteredAssembliesDoNotHaveSequencePoints() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
+      CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
       try
         Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.NCover)
         "Sample"
@@ -1739,6 +1749,7 @@ module AltCoverTests =
         Assert.That(deeper, Is.EquivalentTo expected)
       finally
         CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let TestFixPointInvoke() =
@@ -2251,6 +2262,7 @@ module AltCoverTests =
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
+      CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
       try
         "Sample"
         |> (Regex
@@ -2275,6 +2287,7 @@ module AltCoverTests =
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
+        CoverageParameters.theReportFormat <- None
 
     // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
     [<Test>]
@@ -2464,6 +2477,7 @@ module AltCoverTests =
       let here = SolutionDir()
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
         CoverageParameters.sourcelink := true
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         Assert.That(Visitor.sourceLinkDocuments |> Option.isSome, "Documents should be present")
@@ -2495,6 +2509,7 @@ module AltCoverTests =
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.sourcelink := false
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle() =

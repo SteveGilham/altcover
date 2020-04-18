@@ -173,6 +173,13 @@ type StaticFormat =
     | Show -> "+"
     | ShowZero -> "++"
 
+[<ExcludeFromCodeCoverage; NoComparison>]
+type ReportFormat =
+  | NCover
+  | OpenCover
+  member self.AsString() =
+    self.ToString()
+
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type CollectParameters =
   { RecorderDirectory : DirectoryPath
@@ -220,7 +227,7 @@ type PrepareParameters =
     AttributeFilter : Filters
     PathFilter : Filters
     CallContext : Context
-    OpenCover : Flag
+    ReportFormat : ReportFormat
     InPlace : Flag
     Save : Flag
     Single : Flag
@@ -250,7 +257,7 @@ type PrepareParameters =
       AttributeFilter = Unfiltered
       PathFilter = Unfiltered
       CallContext = NoContext
-      OpenCover = Set
+      ReportFormat = ReportFormat.OpenCover
       InPlace = Set
       Save = Set
       Single = Clear

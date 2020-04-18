@@ -1581,68 +1581,76 @@ module AltCoverTests2 =
 
     [<Test>]
     let ExcludedModuleJustRecordsMVid() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.readSymbols def
-      let visited = Node.Module(def.MainModule, Inspections.Ignore)
-      let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let result = Instrument.I.instrumentationVisitor state visited
-      Assert.That
-        (result, Is.EqualTo { state with ModuleId = def.MainModule.Mvid.ToString() })
+      try
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        let where = Assembly.GetExecutingAssembly().Location
+        let path =
+          Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        ProgramDatabase.readSymbols def
+        let visited = Node.Module(def.MainModule, Inspections.Ignore)
+        let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
+        let result = Instrument.I.instrumentationVisitor state visited
+        Assert.That
+          (result, Is.EqualTo { state with ModuleId = def.MainModule.Mvid.ToString() })
+      finally
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let IncludedModuleEnsuresRecorder() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.readSymbols def
-      let visited = Node.Module(def.MainModule, Inspections.Instrument)
-      let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let path' =
-        Path.Combine
-          (Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
-      let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+      try
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        let where = Assembly.GetExecutingAssembly().Location
+        let path =
+          Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        ProgramDatabase.readSymbols def
+        let visited = Node.Module(def.MainModule, Inspections.Instrument)
+        let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
+        let path' =
+          Path.Combine
+            (Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+        let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
 
-      let visit =
-        def'.MainModule.GetAllTypes()
-        |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
-        |> Seq.collect (fun t -> t.Methods)
-        |> Seq.filter (fun m -> m.Name = "Visit" || m.Name = "Push" || m.Name = "Pop")
-        |> Seq.sortBy (fun m -> m.Name)
-        |> Seq.toList
-        |> List.rev
+        let visit =
+          def'.MainModule.GetAllTypes()
+          |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.filter (fun m -> m.Name = "Visit" || m.Name = "Push" || m.Name = "Pop")
+          |> Seq.sortBy (fun m -> m.Name)
+          |> Seq.toList
+          |> List.rev
 
-      let state' = { state with RecordingAssembly = def' }
-      let result = Instrument.I.instrumentationVisitor state' visited
+        let state' = { state with RecordingAssembly = def' }
+        let result = Instrument.I.instrumentationVisitor state' visited
 
-      test <@ result.RecordingMethodRef.Visit.Module = def.MainModule @>
-      test <@ string result.RecordingMethodRef.Visit =
-                 (visit
-                  |> Seq.head
-                  |> string) @>
-      test <@ string result.RecordingMethodRef.Push =
-                 (visit
-                  |> Seq.skip 1
-                  |> Seq.head
-                  |> string) @>
-      test <@ string result.RecordingMethodRef.Pop =
-                 (visit
-                  |> Seq.skip 2
-                  |> Seq.head
-                  |> string) @>
-      test <@ { result with RecordingMethodRef =
-                                  { Visit = null
-                                    Push = null
-                                    Pop = null } } =
-                             { state' with ModuleId = def.MainModule.Mvid.ToString()
-                                           RecordingMethod = visit
-                                           RecordingMethodRef =
-                                             { Visit = null
-                                               Push = null
-                                               Pop = null } } @>
+        test <@ result.RecordingMethodRef.Visit.Module = def.MainModule @>
+        test <@ string result.RecordingMethodRef.Visit =
+                   (visit
+                    |> Seq.head
+                    |> string) @>
+        test <@ string result.RecordingMethodRef.Push =
+                   (visit
+                    |> Seq.skip 1
+                    |> Seq.head
+                    |> string) @>
+        test <@ string result.RecordingMethodRef.Pop =
+                   (visit
+                    |> Seq.skip 2
+                    |> Seq.head
+                    |> string) @>
+        test <@ { result with RecordingMethodRef =
+                                    { Visit = null
+                                      Push = null
+                                      Pop = null } } =
+                               { state' with ModuleId = def.MainModule.Mvid.ToString()
+                                             RecordingMethod = visit
+                                             RecordingMethodRef =
+                                               { Visit = null
+                                                 Push = null
+                                                 Pop = null } } @>
+       finally
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ExcludedMethodPointIsPassThrough() =
@@ -1700,45 +1708,49 @@ module AltCoverTests2 =
 
     [<Test>]
     let IncludedModuleDoesNotChangeRecorderJustTheReference() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.readSymbols def
-      let visited = Node.Module(def.MainModule, Inspections.Instrument)
-      let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let path' =
-        Path.Combine
-          (Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
-      let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+      try
+        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        let where = Assembly.GetExecutingAssembly().Location
+        let path =
+          Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        ProgramDatabase.readSymbols def
+        let visited = Node.Module(def.MainModule, Inspections.Instrument)
+        let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
+        let path' =
+          Path.Combine
+            (Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+        let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
 
-      let visit =
-        def'.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
-        |> Seq.filter (fun m -> m.Name = "Visit")
-        |> Seq.head
+        let visit =
+          def'.MainModule.GetAllTypes()
+          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.filter (fun m -> m.Name = "Visit")
+          |> Seq.head
 
-      let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
-      let v = def''.MainModule.ImportReference visit
+        let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
+        let v = def''.MainModule.ImportReference visit
 
-      let r =
-        { RecorderRefs.Build() with Visit = v
-                                    Push = v
-                                    Pop = v }
+        let r =
+          { RecorderRefs.Build() with Visit = v
+                                      Push = v
+                                      Pop = v }
 
-      let state' =
-        { state with RecordingAssembly = def'
-                     RecordingMethod = [ visit; visit; visit ]
-                     RecordingMethodRef = r }
+        let state' =
+          { state with RecordingAssembly = def'
+                       RecordingMethod = [ visit; visit; visit ]
+                       RecordingMethodRef = r }
 
-      let result = Instrument.I.instrumentationVisitor state' visited
-      let ref'' = def.MainModule.ImportReference visit
-      Assert.That(result.RecordingMethodRef.Visit.Module, Is.EqualTo(def.MainModule))
-      Assert.That(string result.RecordingMethodRef, Is.EqualTo(string r))
-      Assert.That({ result with RecordingMethodRef = RecorderRefs.Build() },
-                  Is.EqualTo { state' with ModuleId = def.MainModule.Mvid.ToString()
-                                           RecordingMethod = [ visit; visit; visit ]
-                                           RecordingMethodRef = RecorderRefs.Build() })
+        let result = Instrument.I.instrumentationVisitor state' visited
+        let ref'' = def.MainModule.ImportReference visit
+        Assert.That(result.RecordingMethodRef.Visit.Module, Is.EqualTo(def.MainModule))
+        Assert.That(string result.RecordingMethodRef, Is.EqualTo(string r))
+        Assert.That({ result with RecordingMethodRef = RecorderRefs.Build() },
+                    Is.EqualTo { state' with ModuleId = def.MainModule.Mvid.ToString()
+                                             RecordingMethod = [ visit; visit; visit ]
+                                             RecordingMethodRef = RecorderRefs.Build() })
+      finally
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let AfterModuleShouldNotChangeState() =

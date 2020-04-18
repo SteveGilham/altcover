@@ -249,7 +249,7 @@ module AltCoverXTests =
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
-                      "[Fact]"; "--opencover"; "--inplace"; "--save" ] @>
+                      "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace"; "--save" ] @>
 
   [<Test>]
   let TypeSafePrepareParametersCanBeValidated() =
@@ -289,10 +289,10 @@ module AltCoverXTests =
     test
       <@ instance
          |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
-                                   "-p"; "ok"; "-c"; "[Fact]"; "--opencover"; "--inplace";
+                                   "-p"; "ok"; "-c"; "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace";
                                    "--save" ] @>
     let validate = (FSApi.PrepareParameters.TypeSafe subject).WhatIf().ToString()
-    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --opencover --inplace --save" @>
+    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --reportFormat OpenCover --inplace --save" @>
 
   [<Test>]
   let TypeSafePrepareParametersCanBeValidatedAgain() =
@@ -314,6 +314,7 @@ module AltCoverXTests =
                                              CommandLine =
                                                TypeSafe.Command
                                                  [| TypeSafe.CommandArgument "[Fact]" |]
+                                             ReportFormat = TypeSafe.ReportFormat.NCover
                                              PathFilter =
                                                TypeSafe.Filters
                                                  [| TypeSafe.FilterItem <| Regex "ok" |] }
@@ -324,7 +325,7 @@ module AltCoverXTests =
     test
       <@ (FSApi.PrepareParameters.TypeSafe subject)
          |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
-                                   "-p"; "ok"; "--opencover"; "--inplace"; "--save"; "--";
+                                   "-p"; "ok"; "--reportFormat"; "NCover"; "--inplace"; "--save"; "--";
                                    "[Fact]" ] @>
 
   [<Test>]
@@ -396,7 +397,7 @@ module AltCoverXTests =
     test <@ scan.Length = 2 @>
     let rendered = subject |> FSApi.Args.prepare
     test
-      <@ rendered = [ "-c"; "0"; "--opencover"; "--inplace"; "--save"; "--single";
+      <@ rendered = [ "-c"; "0"; "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--single";
                       "--linecover"; "--branchcover" ] @>
 
   [<Test>]
@@ -469,7 +470,7 @@ module AltCoverXTests =
       Console.SetOut stdout
       Console.SetError stderr
       let args =
-        [| "-i"; input; "-o"; output; "-x"; report; "--opencover"
+        [| "-i"; input; "-o"; output; "-x"; report;
            "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
@@ -632,6 +633,7 @@ module AltCoverXTests =
       Console.SetOut stdout
       Console.SetError stderr
       let args = [| "-i"; path; "-o"; output; "-x"; report
+                    "--reportFormat"; "ncov"
                     "-sn"; key
                  |]
       let result = Main.I.doInstrumentation args
@@ -824,7 +826,7 @@ module AltCoverXTests =
   [<Test>]
   let ShouldDoCoverage() =
     let start = Directory.GetCurrentDirectory()
-    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.XTests/Debug+AnyCPU")
+    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU")
     let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let here =
@@ -839,9 +841,14 @@ module AltCoverXTests =
        |> File.Exists
        |> not
     then
-      do let from = Path.Combine(here, "AltCover.Recorder.dll")
+      try
+         CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+         let from = Path.Combine(here, "AltCover.Recorder.dll")
          let updated = Instrument.I.prepareAssembly from
          Instrument.I.writeAssembly updated create
+      finally
+         CoverageParameters.theReportFormat <- None
+
     let save = Runner.J.recorderName
     let save1 = Runner.J.getPayload
     let save2 = Runner.J.getMonitor

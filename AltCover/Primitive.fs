@@ -56,7 +56,7 @@ type PrepareParameters =
     AttributeFilter : String seq
     PathFilter : String seq
     CallContext : String seq
-    OpenCover : bool
+    ReportFormat : String
     InPlace : bool
     Save : bool
     Single : bool
@@ -86,7 +86,7 @@ type PrepareParameters =
       AttributeFilter = Seq.empty
       PathFilter = Seq.empty
       CallContext = Seq.empty
-      OpenCover = true
+      ReportFormat = String.Empty
       InPlace = true
       Save = true
       Single = false

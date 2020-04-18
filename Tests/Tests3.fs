@@ -1387,12 +1387,31 @@ module AltCoverTests3 =
         CoverageParameters.trackingNames.Clear()
 
     [<Test>]
-    let ParsingOpenCoverGivesOpenCover() =
+    let ParsingNCoverFormatGivesNCover() =
       Main.init()
       try
         CoverageParameters.theReportFormat <- None
         let options = Main.I.declareOptions()
-        let input = [| "--opencover" |]
+        let input = [| "--reportFormat"; "ncover" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match CoverageParameters.theReportFormat with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.NCover)
+      finally
+        CoverageParameters.theReportFormat <- None
+
+    [<Test>]
+    let ParsingOpenCoverFormatGivesOpenCover() =
+      Main.init()
+      try
+        CoverageParameters.theReportFormat <- None
+        let options = Main.I.declareOptions()
+        let input = [| "--reportFormat"; "any" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -1406,19 +1425,19 @@ module AltCoverTests3 =
         CoverageParameters.theReportFormat <- None
 
     [<Test>]
-    let ParsingMultipleOpenCoverGivesFailure() =
+    let ParsingMultipleReportFormatGivesFailure() =
       Main.init()
       try
         CoverageParameters.theReportFormat <- None
         let options = Main.I.declareOptions()
-        let input = [| "--opencover"; "--opencover" |]
+        let input = [| "--reportFormat=opencover"; "--reportFormat=ncover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
-          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--opencover : specify this only once")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--reportFormat : specify this only once")
       finally
         CoverageParameters.theReportFormat <- None
 
@@ -1573,7 +1592,7 @@ module AltCoverTests3 =
         CoverageParameters.coverstyle <- CoverStyle.All
         CoverageParameters.theReportFormat <- None
         let options = Main.I.declareOptions()
-        let input = [| "--linecover"; "--opencover" |]
+        let input = [| "--linecover"; "--reportFormat=opencover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -1595,7 +1614,7 @@ module AltCoverTests3 =
         CoverageParameters.coverstyle <- CoverStyle.All
         CoverageParameters.theReportFormat <- None
         let options = Main.I.declareOptions()
-        let input = [| "--opencover"; "--linecover" |]
+        let input = [| "--reportFormat=opencover"; "--linecover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -1675,7 +1694,7 @@ module AltCoverTests3 =
         CoverageParameters.theReportFormat <- None
         CoverageParameters.coverstyle <- CoverStyle.All
         let options = Main.I.declareOptions()
-        let input = [| "--branchcover"; "--opencover" |]
+        let input = [| "--branchcover"; "--reportFormat=opencover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -1697,7 +1716,7 @@ module AltCoverTests3 =
         CoverageParameters.theReportFormat <- None
         CoverageParameters.coverstyle <- CoverStyle.All
         let options = Main.I.declareOptions()
-        let input = [| "--opencover"; "--branchcover" |]
+        let input = [| "--reportFormat=opencover"; "--branchcover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -2343,7 +2362,8 @@ module AltCoverTests3 =
                                names (fully qualified if the string contains
                                any "." characters).
                                    Incompatible with --single
-      --opencover            Optional: Generate the report in OpenCover format
+      --reportFormat=VALUE   Optional: Generate the report in the specified
+                               format (NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
@@ -2352,10 +2372,12 @@ module AltCoverTests3 =
                                location.
                                    Incompatible with --callContext.
       --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --opencover option.
+                               and is compatible with, the --reportFormat=
+                               opencover option.
                                    Incompatible with --branchcover.
       --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --opencover option.
+                               and is compatible with, the --reportFormat=
+                               opencover option.
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
@@ -2462,7 +2484,8 @@ or
                                names (fully qualified if the string contains
                                any "." characters).
                                    Incompatible with --single
-      --opencover            Optional: Generate the report in OpenCover format
+      --reportFormat=VALUE   Optional: Generate the report in the specified
+                               format (NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
@@ -2471,10 +2494,12 @@ or
                                location.
                                    Incompatible with --callContext.
       --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --opencover option.
+                               and is compatible with, the --reportFormat=
+                               opencover option.
                                    Incompatible with --branchcover.
       --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --opencover option.
+                               and is compatible with, the --reportFormat=
+                               opencover option.
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
@@ -2565,7 +2590,7 @@ or
         255)
         let result = subject.Execute()
         Assert.That(result, Is.False)
-        Assert.That(args, Is.EquivalentTo [ "--opencover"; "--inplace"; "--save" ])
+        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2583,7 +2608,7 @@ or
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
-        subject.OpenCover <- false
+        subject.ReportFormat <- "Ncover"
         subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
         subject.SymbolDirectories <- [| "a"; "b" |]
         let result = subject.Execute()
@@ -2591,7 +2616,7 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2608,7 +2633,7 @@ or
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
-        subject.OpenCover <- false
+        subject.ReportFormat <- "ncover"
         subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
         subject.SymbolDirectories <- [| "a"; "b" |]
         let result = subject.Execute()
@@ -2616,7 +2641,7 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x") |> ignore

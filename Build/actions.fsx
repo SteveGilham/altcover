@@ -307,7 +307,7 @@ do ()"""
             TypeFilter = [ """System\.""" ]
             XmlReport = simpleReport
             OutputDirectories = [| "./" + instrumented |]
-            OpenCover = false
+            ReportFormat = "NCover"
             InPlace = false
             Save = false }
       |> AltCover.Prepare
@@ -351,7 +351,7 @@ do ()"""
                 TypeFilter = [ """System\.""" ]
                 XmlReport = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
-                OpenCover = false
+                ReportFormat = "NCover"
                 InPlace = false
                 Save = false }
           |> AltCover.Prepare

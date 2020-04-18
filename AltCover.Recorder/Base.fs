@@ -10,7 +10,6 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-// These conditionally internal for Gendarme
 type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1

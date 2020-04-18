@@ -43,7 +43,7 @@
       StrongNameKey="$(AltCoverStrongNameKey)"
       Keys="$(AltCoverKeys.Split('|'))"
       XmlReport="$(AltCoverXmlReport)"
-      OpenCover="$(AltCoverOpenCover)"
+      ReportFormat="$(AltCoverReportFormat)"
       FileFilter="$(AltCoverFileFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       PathFilter="$(AltCoverPathFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
