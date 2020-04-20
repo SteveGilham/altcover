@@ -9,7 +9,6 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
-    <FscToolPath Condition="'$(TargetFramework)' == 'net20'">$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 

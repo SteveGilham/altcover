@@ -12,7 +12,6 @@
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone</OtherFlags>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
-    <FscToolPath  Condition="'$(TargetFramework)' == 'net20'">$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
