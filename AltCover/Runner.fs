@@ -450,6 +450,8 @@ module internal Runner =
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+    Justification="It's OK, really.")>]
   module internal J =
     let internal requireExe(parse : Either<string * OptionSet, string list * OptionSet>) =
       match parse with
@@ -912,8 +914,18 @@ module internal Runner =
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
     let internal writeReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
-        report =
-      AltCover.Base.Counter.doFlush (postProcess hits report) pointProcess true hits report
+        format report =
+      if File.Exists report
+      then
+        AltCover.Base.Counter.doFlushFile (postProcess hits format) pointProcess true hits format report
+      else
+        use zip = ZipFile.OpenRead(report + ".zip")
+        let entry = report
+                    |> Path.GetFileName
+                    |> zip.GetEntry
+        use stream = entry.Open()
+        AltCover.Base.Counter.doFlushStream (postProcess hits format) pointProcess true hits format stream
+
     // mocking points
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",

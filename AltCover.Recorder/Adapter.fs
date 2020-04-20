@@ -101,7 +101,7 @@ module Adapter =
     let output' = //if System.String.IsNullOrEmpty output
       //then None // this case gets tested elsewhere
       (*else*) Some output
-    Counter.doFlush ignore (fun _ _ -> ()) true visits format report output'
+    Counter.doFlushFile ignore (fun _ _ -> ()) true visits format report output'
 
   let internal UpdateReport (counts, format, coverageFile, outputFile) =
     Counter.I.updateReport ignore (fun _ _ -> ()) true counts format coverageFile

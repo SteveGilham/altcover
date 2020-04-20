@@ -278,6 +278,7 @@ module internal CoverageParameters =
   let internal sourceDirectories() = (inplaceSelection outputDirectories inputDirectories)()
 
   let mutable internal theReportPath : Option<string> = None
+  let mutable internal zipReport = false
   let internal defaultReportPath = "coverage.xml"
   let internal reportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath theReportPath)
 

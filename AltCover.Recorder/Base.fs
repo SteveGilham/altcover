@@ -311,17 +311,13 @@ module internal Counter =
            1L
 #endif
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'Target' is disposed")>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
-  let internal doFlush postProcess pointProcess own counts format report output =
-    use coverageFile =
-      new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+                                                    "CA2000:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "'Target' is disposed")>]
+  let internal doFlushStream postProcess pointProcess own counts format coverageFile output =
     use target =
       match output with
       | None -> new MemoryStream() :> Stream
@@ -336,3 +332,13 @@ module internal Counter =
     let flushStart =
       I.updateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
+  let internal doFlushFile postProcess pointProcess own counts format report output =
+    use coverageFile =
+      new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+
+    doFlushStream postProcess pointProcess own counts format coverageFile output

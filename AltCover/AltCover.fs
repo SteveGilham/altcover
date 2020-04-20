@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Reflection
 
@@ -49,6 +50,7 @@ module internal Main =
     CoverageParameters.recorderStrongNameKey <- Some(snk)
 
     CoverageParameters.theReportPath <- None
+    CoverageParameters.zipReport <- false
     CoverageParameters.nameFilters.Clear()
     CoverageParameters.theInterval <- None
     CoverageParameters.trackingNames.Clear()
@@ -501,11 +503,16 @@ module internal Main =
                   Instrument.instrumentGenerator assemblyNames ]
 
               Visitor.visit visitors assemblies
-              report
-              |> Path.GetDirectoryName
-              |> Directory.CreateDirectory
-              |> ignore
-              document.Save(report)
+              if CoverageParameters.zipReport
+              then
+                use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
+                let entry = report
+                            |> Path.GetFileName
+                            |> archive.CreateEntry
+                use sink = entry.Open()
+                document.Save(sink)
+
+              else document.Save(report)
               if !CoverageParameters.collect then Runner.setRecordToFile report
               CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
           CommandLine.reportErrors "Instrumentation" (dotnetBuild && !CoverageParameters.inplace)
