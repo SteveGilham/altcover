@@ -1506,6 +1506,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
+           ZipFile = true
            Save = true })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1533,6 +1534,9 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
       ToolType = dotnet_altcover
       WorkingDirectory = sampleRoot }
   |> AltCover.run
+
+  System.IO.Compression.ZipFile.ExtractToDirectory(simpleReport + ".zip", Path.getFullName "./_Reports")
+
   Actions.ValidateFSharpTypesCoverage simpleReport)
 
 _Target "BasicCSharp"
