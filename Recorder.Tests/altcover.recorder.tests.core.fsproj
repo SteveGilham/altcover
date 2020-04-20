@@ -40,14 +40,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="1.2.0">
+    <PackageReference Include="coverlet.collector" Version="1.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="NUnit" Version="3.12.0"   Condition="'$(TargetFramework)' != 'net20'" />
+    <PackageReference Include="NUnit" Version="3.12.0" Condition="'$(TargetFramework)' != 'net20'" />
     <!-- last net2.0 support here -->
-    <PackageReference Include="NUnit" Version="3.11.0"   Condition="'$(TargetFramework)' == 'net20'" />
+    <PackageReference Include="NUnit" Version="3.11.0" Condition="'$(TargetFramework)' == 'net20'" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -59,11 +59,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net20'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" Condition="'$(TargetFramework)' == 'net20'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net47'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
