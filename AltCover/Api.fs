@@ -503,7 +503,7 @@ module internal Args =
   let internal flags(args : PrepareParameters) =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
-      ("--zipFile", args.ZipFile)
+      ("--zipfile", args.ZipFile)
       ("--single", args.Single)
       ("--linecover", args.LineCover)
       ("--branchcover", args.BranchCover)

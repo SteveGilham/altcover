@@ -50,7 +50,7 @@ module internal Main =
     CoverageParameters.recorderStrongNameKey <- Some(snk)
 
     CoverageParameters.theReportPath <- None
-    CoverageParameters.zipReport <- false
+    CoverageParameters.zipReport := false
     CoverageParameters.nameFilters.Clear()
     CoverageParameters.theInterval <- None
     CoverageParameters.trackingNames.Clear()
@@ -199,7 +199,7 @@ module internal Main =
                                                          | _ ->  ReportFormat.OpenCover)))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
-        (CommandLine.ddFlag "zipfile" CoverageParameters.collect)
+        (CommandLine.ddFlag "zipfile" CoverageParameters.zipReport)
         ("single",
          (fun _ ->
            if CoverageParameters.single then
@@ -504,7 +504,7 @@ module internal Main =
                   Instrument.instrumentGenerator assemblyNames ]
 
               Visitor.visit visitors assemblies
-              if CoverageParameters.zipReport
+              if !CoverageParameters.zipReport
               then
                 use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
                 let entry = report
