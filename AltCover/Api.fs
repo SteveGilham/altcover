@@ -239,10 +239,14 @@ type PrepareParameters =
     | Primitive p -> p.CallContext |> PrepareParameters.ToList
     | TypeSafe t -> t.CallContext.AsStrings()
 
-  member self.OpenCover =
-    match self with
-    | Primitive p -> p.OpenCover
-    | TypeSafe t -> t.OpenCover.AsBool()
+  member self.ReportFormat =
+    let simple =
+      match self with
+      | Primitive p -> p.ReportFormat
+      | TypeSafe t -> t.ReportFormat.AsString()
+    if String.IsNullOrWhiteSpace simple
+    then "OpenCover"
+    else simple
 
   member self.InPlace =
     match self with
@@ -483,6 +487,7 @@ module internal Args =
 
   let internal items(args : PrepareParameters) =
     [ ("--sn", args.StrongNameKey)
+      ("--reportFormat", args.ReportFormat)
       ("-x", args.XmlReport) ]
     |> List.collect (fun (a, b) -> ArgsHelper.item a b)
 
@@ -491,8 +496,7 @@ module internal Args =
     |> List.collect (fun (a, b, c) -> ArgsHelper.optionalItem a b c)
 
   let internal flags(args : PrepareParameters) =
-    [ ("--opencover", args.OpenCover)
-      ("--inplace", args.InPlace)
+    [ ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--single", args.Single)
       ("--linecover", args.LineCover)

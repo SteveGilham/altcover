@@ -23,7 +23,7 @@ if (Test-Path $x) { Remove-Item -force $x }
 #[accelerators]::add("xdoc", $xdoctype) 
 
 # let's have a cmdlet for that
-$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo") }
+$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo"); "pinfo" =  [type]::gettype("System.Type").GetProperty("FullName")}
 Add-Accelerator -Accelerator -Xdocument -Mapping $accel
 
 Describe "Get-Accelerator" {
@@ -33,8 +33,26 @@ Describe "Get-Accelerator" {
     $a["xdoc"].FullName | Should -Be "System.Xml.Linq.XDocument"
     $a["accelerators"].FullName | Should -Be "System.Management.Automation.TypeAccelerators"
     $a["minfo"].FullName | Should -Be "System.Reflection.MethodInfo"
+    $a["pinfo"].FullName | Should -Be "System.Reflection.RuntimePropertyInfo"
     $a["xml"].FullName | Should -Be "System.Xml.XmlDocument"
     $a.Count | Should -BeGreaterThan 3
+  }
+}
+
+Describe "Add-Accelerator" {
+  It "Accepts WhatIf" {
+
+    Start-Transcript -Path "./_Packaging/AccelWhatIf.txt"
+    Add-Accelerator -WhatIf
+    Add-Accelerator -Accelerator -Xdocument -Mapping $accel -WhatIf
+    Stop-Transcript
+    $expected = [string]::Join([System.Environment]::NewLine, 
+                ('What if: Performing the operation "Add-Accelerator" on target "Command Line : ".',
+                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Type @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"} -XDocument -Accelerator".'))
+
+    $lines = Get-Content "./_Packaging/AccelWhatIf.txt"
+    $ll = $lines | ? { $_ -like "What if: *" }
+    [string]::Join([System.Environment]::NewLine, $ll) | Should -Be $expected
   }
 }
 
@@ -43,7 +61,7 @@ Describe "Invoke-Altcover" {
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
-        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -InformationAction Continue
+        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
         $o | Should -Exist
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
@@ -100,8 +118,8 @@ Describe "Invoke-Altcover" {
         Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
-                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
+                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:+".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:++ ".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
 
         $lines = Get-Content "./_Packaging/WhatIf.txt"
@@ -596,7 +614,7 @@ Describe "Compress-Branching" {
   It "DoesAtLeastOne" {
     $fail = $false
     try {
-	  $xml = Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+	  Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
 	  $fail = $true
 	}
 	catch {
@@ -637,5 +655,6 @@ Describe "Format-FromCoverletOpenCover" {
 
     $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $written | Should -BeExactly $result
   }
 }

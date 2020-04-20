@@ -119,7 +119,7 @@ type Prepare() =
       Justification = "MSBuild tasks use arrays")>]
   member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
-  member val OpenCover = true with get, set
+  member val ReportFormat = "OpenCover" with get, set
   member val InPlace = true with get, set
   member val Save = true with get, set
   member val Single = false with get, set // work around Gendarme insistence on non-default values only
@@ -162,7 +162,7 @@ type Prepare() =
           AttributeFilter = self.AttributeFilter
           PathFilter = self.PathFilter
           CallContext = self.CallContext
-          OpenCover = self.OpenCover
+          ReportFormat = self.ReportFormat
           InPlace = self.InPlace
           Save = self.Save
           Single = self.Single
@@ -285,6 +285,8 @@ type Echo() =
   [<Required>]
   member val Text = String.Empty with get, set
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="Queen's English, m80!")>]
   member val Colour = String.Empty with get, set
 
   override self.Execute() =

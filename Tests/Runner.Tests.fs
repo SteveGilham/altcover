@@ -1646,7 +1646,8 @@ module AltCoverRunnerTests =
                                names (fully qualified if the string contains
                                any "." characters).
                                    Incompatible with --single
-      --opencover            Optional: Generate the report in OpenCover format
+      --reportFormat=VALUE   Optional: Generate the report in the specified
+                               format (NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
@@ -1655,10 +1656,12 @@ module AltCoverRunnerTests =
                                location.
                                    Incompatible with --callContext.
       --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --opencover option.
+                               and is compatible with, the --reportFormat=
+                               opencover option.
                                    Incompatible with --branchcover.
       --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --opencover option.
+                               and is compatible with, the --reportFormat=
+                               opencover option.
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.

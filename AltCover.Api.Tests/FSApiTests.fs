@@ -59,12 +59,12 @@ module FSApiTests =
     AltCover.CoverageFormats.ConvertToLcov doc stream2
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
-    let result = rdr.ReadToEnd()
+    let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream3 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.lcov")
     use rdr2 = new StreamReader(stream3)
-    let expected = rdr2.ReadToEnd()
+    let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
 
     test <@ result = expected @>
 
@@ -78,12 +78,12 @@ module FSApiTests =
     rewrite.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
     use rdr = new StreamReader(mstream2)
-    let result = rdr.ReadToEnd()
+    let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream2 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.html")
     use rdr2 = new StreamReader(stream2)
-    let expected = rdr2.ReadToEnd().Replace("&#x2442;", "\u2442")
+    let expected = rdr2.ReadToEnd().Replace("&#x2442;", "\u2442").Replace("\r", String.Empty)
 
     //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     test <@ result = expected @>
@@ -180,7 +180,7 @@ module FSApiTests =
     cob.Save stream2
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
-    let result = rdr.ReadToEnd()
+    let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream3 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.cob.xml")
@@ -190,7 +190,7 @@ module FSApiTests =
     let v = coverage.Attribute(XName.Get "version").Value
     let t = coverage.Attribute(XName.Get "timestamp").Value
 
-    let expected = rdr2.ReadToEnd().Replace("{0}", v).Replace("{1}", t)
+    let expected = rdr2.ReadToEnd().Replace("{0}", v).Replace("{1}", t).Replace("\r", String.Empty)
 
     //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     test <@ result = expected @>
@@ -253,10 +253,10 @@ module FSApiTests =
     test <@ combined.Summary = "R" @>
     test <@ (DotNet.CLIArgs.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
 
-    let pprep =Primitive.PrepareParameters.Create()
+    let pprep = Primitive.PrepareParameters.Create()
     let prep = AltCover.FSApi.PrepareParameters.Primitive pprep
 
     let pcoll = Primitive.CollectParameters.Create()
     let coll = AltCover.FSApi.CollectParameters.Primitive pcoll
 
-    test <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\" /p:AltCoverShowStatic=\"-\"" @>
+    test <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\" /p:AltCoverShowStatic=\"-\"" @>

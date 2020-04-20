@@ -20,6 +20,15 @@ type internal AssemblyInfo =
     Refs : string list }
 
 module internal Main =
+  let internal (|Select|_|) (pattern : String) offered =
+    if offered
+        |> String.IsNullOrWhiteSpace
+        |> not
+        && pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) then
+      Some offered
+    else
+      None
+
   let internal init() =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
@@ -176,14 +185,16 @@ module internal Main =
                match selection with
                | Left n -> CoverageParameters.theInterval <- n
                | Right name -> CoverageParameters.trackingNames.Add(name)))
-        ("opencover",
-         (fun _ ->
+        ("reportFormat=",
+         (fun x ->
            if Option.isSome CoverageParameters.theReportFormat then
              CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--opencover")
+               CommandLine.Format.Local("MultiplesNotAllowed", "--reportFormat")
                :: CommandLine.error
            else
-             CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover))
+             CoverageParameters.theReportFormat <- Some (match x with
+                                                         | Select "NCover" _ -> ReportFormat.NCover
+                                                         | _ ->  ReportFormat.OpenCover)))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
         ("single",
@@ -499,15 +510,6 @@ module internal Main =
               CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
           CommandLine.reportErrors "Instrumentation" (dotnetBuild && !CoverageParameters.inplace)
           result
-
-    let internal (|Select|_|) (pattern : String) offered =
-      if offered
-         |> String.IsNullOrWhiteSpace
-         |> not
-         && pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) then
-        Some offered
-      else
-        None
 
     let internal main arguments =
       let first =

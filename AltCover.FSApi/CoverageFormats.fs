@@ -52,9 +52,10 @@ module CoverageFormats =
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
       |> Seq.map (fun p -> (p, []))
 
-    // ensure default state -- this switches branch recording off
+    // ensure default state
     AltCover.Main.init()
-
+    // this switches branch recording off
+    AltCover.CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.NCover
     AltCover.Visitor.visit visitors usefulAssemblies
 
     let parse s =

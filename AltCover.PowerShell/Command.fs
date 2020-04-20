@@ -20,6 +20,10 @@ type ShowHidden =
   | Mark = 1
   | Reveal = 2
 
+type ReportFormat =
+  | NCover = 0
+  | OpenCover = 1
+
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover", SupportsShouldProcess = true,
          ConfirmImpact = ConfirmImpact.Medium)>]
 [<OutputType([| "System.Void"; "System.String" |]); AutoSerializable(false)>]
@@ -204,7 +208,7 @@ type InvokeAltCoverCommand() =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OpenCover : SwitchParameter = SwitchParameter(false) with get, set
+  member val ReportFormat : ReportFormat = ReportFormat.OpenCover with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -298,7 +302,7 @@ type InvokeAltCoverCommand() =
         AttributeFilter = self.AttributeFilter
         PathFilter = self.PathFilter
         CallContext = self.CallContext
-        OpenCover = self.OpenCover.IsPresent
+        ReportFormat = self.ReportFormat.ToString()
         InPlace = self.InPlace.IsPresent
         Save = self.Save.IsPresent
         Single = self.Single.IsPresent

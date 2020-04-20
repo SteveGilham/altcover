@@ -895,7 +895,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
                 Recorder4Dir @@ "__RecorderTestWithAltCover"
                 apiDir @@ "__ApiTestWithAltCover" |]
            StrongNameKey = keyfile
-           OpenCover = false
+           ReportFormat = "NCover"
            InPlace = false
            Save = false }
        |> AltCoverFilterX)
@@ -941,7 +941,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
            XmlReport = RecorderReport
            OutputDirectories = [| "./__RecorderTestWithAltCover" |]
            StrongNameKey = shadowkeyfile
-           OpenCover = false
+           ReportFormat = "NCover"
            InPlace = false
            Save = false }
        |> AltCoverFilter)
@@ -1185,7 +1185,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
                 XmlReport = report
                 OutputDirectories = [| output |]
                 StrongNameKey = keyfile
-                OpenCover = false
+                ReportFormat = "NCover"
                 InPlace = false
                 Save = false }
             |> filter)
@@ -1325,7 +1325,7 @@ _Target "FSharpTypes" (fun _ ->
            AssemblyFilter = [ "Adapter"; "nunit" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1358,7 +1358,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
            AssemblyFilter = [ "Adapter" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1405,7 +1405,7 @@ _Target "FSharpTests" (fun _ ->
            AssemblyFilter = [ "Adapter" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
-           OpenCover = true
+           ReportFormat = "OpenCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1451,7 +1451,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
            AssemblyFilter = [ "Adapter" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1505,7 +1505,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
            AssemblyFilter = [ "Adapter" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = true })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1571,7 +1571,7 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
            InputDirectories = [ i ]
            TypeFilter = [ "System\\." ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1597,7 +1597,7 @@ _Target "CSharpDotNetWithDotNet" (fun _ ->
            InputDirectories = [ i ]
            TypeFilter = [ "System\\." ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1625,7 +1625,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
            OutputDirectories = [| instrumented |]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1654,7 +1654,7 @@ _Target "SelfTest" (fun _ ->
            OutputDirectories = [| "__SelfTest" |]
            AssemblyExcludeFilter = [ "xunit"; "NUnit" ]
            StrongNameKey = keyfile
-           OpenCover = false
+           ReportFormat = "NCover"
            InPlace = false
            Save = false })
     |> AltCover.Prepare
@@ -1691,7 +1691,7 @@ _Target "SelfTest" (fun _ ->
            XmlReport = altReport2
            OutputDirectories = [| "./__SelfTestDummy" |]
            StrongNameKey = keyfile
-           OpenCover = false
+           ReportFormat = "NCover"
            InPlace = false
            Save = false }
        |> AltCoverFilter)
@@ -1728,7 +1728,7 @@ _Target "RecordResumeTest" (fun _ ->
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit"; "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
 
@@ -1807,7 +1807,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
            InPlace = false
-           OpenCover = true
+           ReportFormat = "OpenCover"
            Save = false })
     |> AltCover.Prepare
 
@@ -1882,7 +1882,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -1956,7 +1956,7 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2428,7 +2428,7 @@ _Target "Pester" (fun _ ->
            TypeFilter = [ "System\\."; "DotNet" ]
            AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
            InPlace = true
-           OpenCover = true
+           ReportFormat = "OpenCover"
            Save = true
            VisibleBranches = true })
     |> AltCover.Prepare
@@ -2507,7 +2507,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2536,7 +2536,7 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2562,7 +2562,7 @@ _Target "ReleaseDotNetWithDotNet" (fun _ ->
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2592,7 +2592,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "Adapter" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2665,7 +2665,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
                InputDirectories = [ i ]
                AssemblyFilter = [ "Adapter" ]
                InPlace = false
-               OpenCover = false
+               ReportFormat = "NCover"
                Save = false })
         |> AltCover.Prepare
       { AltCover.Parameters.Create prep with
@@ -2719,7 +2719,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2758,7 +2758,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2809,7 +2809,7 @@ _Target "OpenCoverForPester" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit"; "FSharp" ]
            InPlace = false
-           OpenCover = true
+           ReportFormat = "OpenCover"
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with
@@ -2880,7 +2880,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false
            ShowStatic = "+" })
     |> AltCover.Prepare
@@ -2915,7 +2915,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false
            ShowStatic = "++" })
     |> AltCover.Prepare
@@ -2950,7 +2950,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false
            ShowGenerated = true })
     |> AltCover.Prepare
@@ -2986,7 +2986,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = false
+           ReportFormat = "NCover"
            Save = false
            ShowGenerated = true })
     |> AltCover.Prepare
@@ -3052,7 +3052,6 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
            CallContext = [ "0"; "[Fact]" ]
            AssemblyFilter = [ "xunit" ]
            InPlace = false
-           OpenCover = true
            Save = false })
     |> AltCover.Prepare
   { AltCover.Parameters.Create prep with

@@ -54,7 +54,7 @@ namespace AltCover.Parameters
     IEnumerable<string> PathFilter { get; }
     IEnumerable<string> CallContext { get; }
 
-    bool OpenCover { get; }
+    string ReportFormat { get; }
     bool InPlace { get; }
     bool Save { get; }
     bool SingleVisit { get; }
@@ -192,7 +192,7 @@ namespace AltCover.Parameters.Primitive
     public IEnumerable<string> PathFilter { get; set; }
     public IEnumerable<string> CallContext { get; set; }
 
-    public bool OpenCover { get; set; }
+    public string ReportFormat { get; set; }
     public bool InPlace { get; set; }
     public bool Save { get; set; }
     public bool SingleVisit { get; set; }
@@ -227,7 +227,7 @@ namespace AltCover.Parameters.Primitive
                       PathFilter,
                       CallContext,
 
-                      OpenCover,
+                      ReportFormat,
                       InPlace,
                       Save,
                       SingleVisit,
@@ -265,7 +265,7 @@ namespace AltCover.Parameters.Primitive
         PathFilter = new string[0],
         CallContext = new string[0],
 
-        OpenCover = true,
+        ReportFormat = "OpenCover",
         InPlace = true,
         Save = true,
         SingleVisit = false,

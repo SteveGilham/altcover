@@ -288,10 +288,7 @@ module internal CoverageParameters =
   let mutable internal theReportFormat : Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
-  let internal defaultReportFormat() =
-    if coverstyle = CoverStyle.All then ReportFormat.NCover else ReportFormat.OpenCover
-
-  let internal reportKind() = (Option.getOrElse (defaultReportFormat()) theReportFormat)
+  let internal reportKind() = (Option.getOrElse ReportFormat.OpenCover theReportFormat)
 
   let internal reportFormat() =
     let fmt = reportKind()

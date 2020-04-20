@@ -55,9 +55,16 @@ type AddAcceleratorCommand() =
     let finalmap = self.TypeMap
                    |> Seq.distinctBy(fun kv -> kv.Key)
                    |> Seq.distinctBy(fun kv -> kv.Value)
+                   |> Seq.sortBy(fun kv -> kv.Key)
                    |> Seq.toList
     let display = String.Join("; ", finalmap
-                                    |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key, kv.Value.FullName ))
+                                    |> Seq.filter (fun kv -> (((self.Accelerator.IsPresent &&
+                                                                kv.Key = "accelerators" &&
+                                                                kv.Value = acceleratorsType) ||
+                                                               (self.XDocument.IsPresent &&
+                                                                kv.Key = "xdoc" &&
+                                                                kv.Value = typeof<System.Xml.Linq.XDocument>)) |> not))
+                                    |> Seq.map (fun kv -> sprintf "%A = %A" kv.Key kv.Value.FullName ))
 
     if  self.ShouldProcess("Command Line : " +
                             (if List.isEmpty finalmap
