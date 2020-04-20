@@ -55,6 +55,7 @@ type AddAcceleratorCommand() =
     let finalmap = self.TypeMap
                    |> Seq.distinctBy(fun kv -> kv.Key)
                    |> Seq.distinctBy(fun kv -> kv.Value)
+                   |> Seq.sortBy(fun kv -> kv.Key)
                    |> Seq.toList
     let display = String.Join("; ", finalmap
                                     |> Seq.filter (fun kv -> (((self.Accelerator.IsPresent &&
