@@ -57,6 +57,7 @@ namespace AltCover.Parameters
     string ReportFormat { get; }
     bool InPlace { get; }
     bool Save { get; }
+    bool ZipFile { get; }
     bool SingleVisit { get; }
     bool LineCover { get; }
     bool BranchCover { get; }
@@ -195,6 +196,7 @@ namespace AltCover.Parameters.Primitive
     public string ReportFormat { get; set; }
     public bool InPlace { get; set; }
     public bool Save { get; set; }
+    public bool ZipFile { get; set; }
     public bool SingleVisit { get; set; }
     public bool LineCover { get; set; }
     public bool BranchCover { get; set; }
@@ -230,6 +232,7 @@ namespace AltCover.Parameters.Primitive
                       ReportFormat,
                       InPlace,
                       Save,
+                      ZipFile,
                       SingleVisit,
                       LineCover,
                       BranchCover,

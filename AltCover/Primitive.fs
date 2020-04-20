@@ -59,6 +59,7 @@ type PrepareParameters =
     ReportFormat : String
     InPlace : bool
     Save : bool
+    ZipFile : bool
     Single : bool
     LineCover : bool
     BranchCover : bool
@@ -89,6 +90,7 @@ type PrepareParameters =
       ReportFormat = String.Empty
       InPlace = true
       Save = true
+      ZipFile = false
       Single = false
       LineCover = false
       BranchCover = false

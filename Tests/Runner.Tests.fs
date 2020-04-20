@@ -1652,6 +1652,7 @@ module AltCoverRunnerTests =
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --zipfile              Optional: Emit the XML report inside a zip archive.
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.

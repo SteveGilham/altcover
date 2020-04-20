@@ -199,6 +199,7 @@ module internal Main =
                                                          | _ ->  ReportFormat.OpenCover)))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
+        (CommandLine.ddFlag "zipfile" CoverageParameters.collect)
         ("single",
          (fun _ ->
            if CoverageParameters.single then

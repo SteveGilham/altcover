@@ -155,7 +155,7 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/l[ocalSource]] [/c[allContext]=VALO] [--reportFormat=VALO] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALO]] [--showGenerated] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/l[ocalSource]] [/c[allContext]=VALO] [--reportFormat=VALO] [--inplace] [--save] [--zipfile]= [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALO]] [--showGenerated] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
 aŭ
@@ -398,5 +398,8 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   </data>
   <data name="showGenerated" xml:space="preserve">
     <value>Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
+  </data>
+  <data name="zipfile" xml:space="preserve">
+    <value>Laŭvola: Resendu la XML-raporton ene de zip-arkivo.</value>
   </data>
 </root>

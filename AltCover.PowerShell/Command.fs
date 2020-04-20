@@ -220,6 +220,10 @@ type InvokeAltCoverCommand() =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val ZipFile : SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Single : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
@@ -305,6 +309,7 @@ type InvokeAltCoverCommand() =
         ReportFormat = self.ReportFormat.ToString()
         InPlace = self.InPlace.IsPresent
         Save = self.Save.IsPresent
+        ZipFile = self.ZipFile.IsPresent
         Single = self.Single.IsPresent
         LineCover = self.LineCover.IsPresent
         BranchCover = self.BranchCover.IsPresent

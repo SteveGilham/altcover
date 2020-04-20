@@ -34,28 +34,31 @@
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework).xml</AltCoverXmlReport>
       <AltCoverShowStatic Condition="'$(AltCoverShowStatic' != '+' AND '$(AltCoverShowStatic' != '++'">-</AltCoverShowStatic>
+      <AltCoverReportFormat Condition="'$(AltCoverReportFormat)' == ''">OpenCover</AltCoverReportFormat>
     </PropertyGroup>
     <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories="@(OutputDirectory)"
-      StrongNameKey="$(AltCoverStrongNameKey)"
+      SymbolDirectories="$(AltCoverSymbolDirectories.Split('|'))"
+      Dependencies="$(AltCoverDependencyList.Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"
+      StrongNameKey="$(AltCoverStrongNameKey)"
       XmlReport="$(AltCoverXmlReport)"
-      ReportFormat="$(AltCoverReportFormat)"
       FileFilter="$(AltCoverFileFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
-      PathFilter="$(AltCoverPathFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       TypeFilter="$(AltCoverTypeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       MethodFilter="$(AltCoverMethodFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AttributeFilter="$(AltCoverAttributeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      PathFilter="$(AltCoverPathFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      ReportFormat="$(AltCoverReportFormat)"
       CallContext="$(AltCoverCallContext.Split('|'))"
+      ZipFile="$(AltCoverZipFile)"
       Single="$(AltCoverSingle)"
       LineCover="$(AltCoverLineCover)"
       BranchCover="$(AltCoverBranchCover)"
-      Dependencies="@(AltCoverDependencies)"
       SourceLink="$(AltCoverSourceLink)"
       LocalSource="$(AltCoverLocalSource)"
       VisibleBranches="$(AltCoverVisibleBranches)"

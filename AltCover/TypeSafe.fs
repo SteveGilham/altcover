@@ -230,6 +230,7 @@ type PrepareParameters =
     ReportFormat : ReportFormat
     InPlace : Flag
     Save : Flag
+    ZipFile : Flag
     Single : Flag
     LineCover : Flag
     BranchCover : Flag
@@ -260,6 +261,7 @@ type PrepareParameters =
       ReportFormat = ReportFormat.OpenCover
       InPlace = Set
       Save = Set
+      ZipFile = Clear
       Single = Clear
       LineCover = Clear
       BranchCover = Clear

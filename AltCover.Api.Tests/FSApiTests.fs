@@ -259,4 +259,5 @@ module FSApiTests =
     let pcoll = Primitive.CollectParameters.Create()
     let coll = AltCover.FSApi.CollectParameters.Primitive pcoll
 
-    test <@ DotNet.ToTestArguments prep coll combined = "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\" /p:AltCoverShowStatic=\"-\"" @>
+    test <@ DotNet.ToTestArguments prep coll combined =
+      "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\" /p:AltCoverShowSummary=\"R\"" @>

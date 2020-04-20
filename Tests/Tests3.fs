@@ -84,7 +84,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      Assert.That(options.Count, Is.EqualTo 30)
+      Assert.That(options.Count, Is.EqualTo 31)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2368,6 +2368,7 @@ module AltCoverTests3 =
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --zipfile              Optional: Emit the XML report inside a zip archive.
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.
@@ -2490,6 +2491,7 @@ or
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --zipfile              Optional: Emit the XML report inside a zip archive.
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.

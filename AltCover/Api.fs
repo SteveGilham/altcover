@@ -258,6 +258,11 @@ type PrepareParameters =
     | Primitive p -> p.Save
     | TypeSafe t -> t.Save.AsBool()
 
+  member self.ZipFile =
+    match self with
+    | Primitive p -> p.ZipFile
+    | TypeSafe t -> t.ZipFile.AsBool()
+
   member self.Single =
     match self with
     | Primitive p -> p.Single
@@ -498,6 +503,7 @@ module internal Args =
   let internal flags(args : PrepareParameters) =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
+      ("--zipFile", args.ZipFile)
       ("--single", args.Single)
       ("--linecover", args.LineCover)
       ("--branchcover", args.BranchCover)

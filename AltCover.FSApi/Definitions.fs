@@ -86,32 +86,36 @@ module internal Internals =
 #endif
 
     [ fromArg String.Empty "true"
+      fromList "SymbolDirectories" prepare.SymbolDirectories
+      fromList "DependencyList" prepare.Dependencies
+      fromList "Keys" prepare.Keys
+      fromArg "StrongNameKey" prepare.StrongNameKey
       fromArg "XmlReport" prepare.XmlReport
-      fromArg "ReportFormat" prepare.ReportFormat
       fromList "FileFilter" prepare.FileFilter
-      fromList "PathFilter" prepare.PathFilter
       fromList "AssemblyFilter" prepare.AssemblyFilter
       fromList "AssemblyExcludeFilter" prepare.AssemblyExcludeFilter
       fromList "TypeFilter" prepare.TypeFilter
       fromList "MethodFilter" prepare.MethodFilter
       fromList "AttributeFilter" prepare.AttributeFilter
+      fromList "PathFilter" prepare.PathFilter
+      fromList "CallContext" prepare.CallContext
+      fromArg "ReportFormat" prepare.ReportFormat
+      (arg "ZipFile" "false", prepare.ZipFile)
+      (arg "Single" "false", prepare.Single)
+      (arg "LineCover" "true", prepare.LineCover)
+      (arg "BranchCover" "true", prepare.BranchCover)
+      (arg "SourceLink" "false", prepare.SourceLink)
       (arg "LocalSource" "true", prepare.LocalSource)
       (arg "VisibleBranches" "true", prepare.VisibleBranches)
-      fromList "CallContext" prepare.CallContext
-      fromList "DependencyList" prepare.Dependencies
+      (fromArg "ShowStatic" prepare.ShowStatic)
+      (arg "ShowGenerated" "true", prepare.ShowGenerated)
       fromArg "LcovReport" collect.LcovReport
       fromArg "Cobertura" collect.Cobertura
       fromArg "Threshold" collect.Threshold
-      fromArg "StrongNameKey" prepare.StrongNameKey
-      fromList "Keys" prepare.Keys
-      (arg "LineCover" "true", prepare.LineCover)
-      (arg "BranchCover" "true", prepare.BranchCover)
       (arg "Force" "true", force.ForceDelete)
       (arg "FailFast" "true", force.Fast)
       (fromArg "ShowSummary" force.Summary)
-      (fromArg "SummaryFormat" collect.SummaryFormat)
-      (fromArg "ShowStatic" prepare.ShowStatic)
-      (arg "ShowGenerated" "true", prepare.ShowGenerated) ]
+      (fromArg "SummaryFormat" collect.SummaryFormat) ]
     |> List.filter snd
     |> List.map fst
 
