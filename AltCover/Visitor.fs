@@ -1006,18 +1006,23 @@ module internal Visitor =
         i && (s.Document.Url.IsIncluded).IsInstrumented
 
       let methodPointOnly() =
-        interesting && (instructions
-                        |> Seq.isEmpty
-                        || CoverageParameters.coverstyle = CoverStyle.BranchOnly) && rawInstructions
-                                                                                |> Seq.isEmpty
-                                                                                |> not
+        interesting && (((instructions
+                           |> Seq.isEmpty
+                           || CoverageParameters.coverstyle = CoverStyle.BranchOnly) && rawInstructions
+                                                                                        |> Seq.isEmpty
+                                                                                        |> not)
+                           || !CoverageParameters.methodPoint)
 
       let sp =
         if methodPointOnly() then
           rawInstructions
           |> Seq.take 1
           |> Seq.map
-               (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting, vc))
+               (fun i -> MethodPoint(i, dbg.GetSequencePoint(i)
+                                        |> Option.nullable
+                                        |> Option.filter (fun _ -> !CoverageParameters.methodPoint)
+                                        |> Option.map SeqPnt.Build,
+                                        m.MetadataToken.ToInt32(), interesting, vc))
         else
           instructions.OrderByDescending(fun (x : Instruction) -> x.Offset)
           |> Seq.mapi (fun i x ->
@@ -1031,6 +1036,7 @@ module internal Visitor =
       let includeBranches() =
         instructions.Any() && CoverageParameters.reportKind() = Base.ReportFormat.OpenCover
         && (CoverageParameters.coverstyle <> CoverStyle.LineOnly)
+        && (!CoverageParameters.methodPoint |> not)
 
       let bp =
         if includeBranches() then

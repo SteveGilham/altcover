@@ -53,9 +53,11 @@ module AltCoverTests =
     let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 #if NETCOREAPP2_0
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
+    let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
 #else
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
+    let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net47/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
 #endif
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
@@ -2154,6 +2156,36 @@ module AltCoverTests =
         RecursiveValidate result expected 0 true
       finally
         CoverageParameters.nameFilters.Clear()
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly() =
+      let visitor, document = Report.reportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = sample4path
+      try
+        CoverageParameters.methodPoint := true
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
+        document.Descendants(XName.Get "method")
+        |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "seqpnt")
+                              test <@ sx |> Seq.length = 1 @>)
+      finally
+        CoverageParameters.methodPoint := false
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly() =
+      let visitor, document = OpenCover.reportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = sample4path
+      try
+        CoverageParameters.methodPoint := true
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
+        document.Descendants(XName.Get "Method")
+        |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "SequencePoint")
+                              test <@ sx |> Seq.length = 1 @>)
+      finally
+        CoverageParameters.methodPoint := false
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithSourceLink() =
