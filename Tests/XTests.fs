@@ -277,6 +277,7 @@ module AltCoverXTests =
                                              CallContext =
                                                TypeSafe.Context
                                                  [| TypeSafe.CallItem "[Fact]" |]
+                                             MethodPoint = TypeSafe.Set
                                              PathFilter =
                                                TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
 
@@ -290,9 +291,9 @@ module AltCoverXTests =
       <@ instance
          |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace";
-                                   "--save" ] @>
+                                   "--save"; "--methodpoint" ] @>
     let validate = (FSApi.PrepareParameters.TypeSafe subject).WhatIf().ToString()
-    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --reportFormat OpenCover --inplace --save" @>
+    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --reportFormat OpenCover --inplace --save --methodpoint" @>
 
   [<Test>]
   let TypeSafePrepareParametersCanBeValidatedAgain() =

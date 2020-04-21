@@ -263,6 +263,11 @@ type PrepareParameters =
     | Primitive p -> p.ZipFile
     | TypeSafe t -> t.ZipFile.AsBool()
 
+  member self.MethodPoint =
+    match self with
+    | Primitive p -> p.MethodPoint
+    | TypeSafe t -> t.MethodPoint.AsBool()
+
   member self.Single =
     match self with
     | Primitive p -> p.Single
@@ -504,6 +509,7 @@ module internal Args =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--zipfile", args.ZipFile)
+      ("--methodpoint", args.MethodPoint)
       ("--single", args.Single)
       ("--linecover", args.LineCover)
       ("--branchcover", args.BranchCover)
@@ -725,4 +731,9 @@ let runWithMono monoPath parameters =
           command
 
   runCore parameters withMono
+
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@715T.#monoPath", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@715T.#parameters", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withWorkingDirectory@675T.#parameters", Justification="Generated code")>]
+()
 #endif

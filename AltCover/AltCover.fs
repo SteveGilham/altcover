@@ -50,6 +50,7 @@ module internal Main =
 
     CoverageParameters.theReportPath <- None
     CoverageParameters.zipReport := false
+    CoverageParameters.methodPoint := false
     CoverageParameters.nameFilters.Clear()
     CoverageParameters.theInterval <- None
     CoverageParameters.trackingNames.Clear()
@@ -199,6 +200,7 @@ module internal Main =
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
         (CommandLine.ddFlag "zipfile" CoverageParameters.zipReport)
+        (CommandLine.ddFlag "methodpoint" CoverageParameters.methodPoint)
         ("single",
          (fun _ ->
            if CoverageParameters.single then

@@ -101,6 +101,7 @@ module internal Internals =
       fromList "CallContext" prepare.CallContext
       fromArg "ReportFormat" prepare.ReportFormat
       (arg "ZipFile" "false", prepare.ZipFile)
+      (arg "MethodPoint" "false", prepare.MethodPoint)
       (arg "Single" "false", prepare.Single)
       (arg "LineCover" "true", prepare.LineCover)
       (arg "BranchCover" "true", prepare.BranchCover)

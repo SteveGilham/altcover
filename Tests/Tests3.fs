@@ -84,14 +84,16 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      Assert.That(options.Count, Is.EqualTo 31)
+      Assert.That(options.Count, Is.EqualTo 32)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
-         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
+         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description),
+         "empty description for one or more items" )
       Assert.That(options
                   |> Seq.filter (fun x -> x.Prototype = "<>")
-                  |> Seq.length, Is.EqualTo 1)
+                  |> Seq.length, Is.EqualTo 1,
+                 "more than one fallback")
 
     [<Test>]
     let ParsingJunkIsAnError() =
@@ -2369,6 +2371,9 @@ module AltCoverTests3 =
       --save                 Optional: Write raw coverage data to file for
                                later processing
       --zipfile              Optional: Emit the XML report inside a zip archive.
+      --methodpoint          Optional: record only whether a method has been
+                               visited or not.  Overrides the --linecover and --
+                               branchcover options.
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.
@@ -2492,6 +2497,9 @@ or
       --save                 Optional: Write raw coverage data to file for
                                later processing
       --zipfile              Optional: Emit the XML report inside a zip archive.
+      --methodpoint          Optional: record only whether a method has been
+                               visited or not.  Overrides the --linecover and --
+                               branchcover options.
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.

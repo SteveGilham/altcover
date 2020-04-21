@@ -1479,6 +1479,9 @@ module AltCoverRunnerTests =
       --save                 Optional: Write raw coverage data to file for
                                later processing
       --zipfile              Optional: Emit the XML report inside a zip archive.
+      --methodpoint          Optional: record only whether a method has been
+                               visited or not.  Overrides the --linecover and --
+                               branchcover options.
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.

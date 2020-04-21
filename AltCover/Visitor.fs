@@ -221,6 +221,7 @@ type Fix<'T> = delegate of 'T -> Fix<'T>
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =
 
+  let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
   let internal nameFilters = new List<FilterClass>()

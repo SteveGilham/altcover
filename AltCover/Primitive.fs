@@ -60,6 +60,7 @@ type PrepareParameters =
     InPlace : bool
     Save : bool
     ZipFile : bool
+    MethodPoint : bool
     Single : bool
     LineCover : bool
     BranchCover : bool
@@ -91,6 +92,7 @@ type PrepareParameters =
       InPlace = true
       Save = true
       ZipFile = false
+      MethodPoint = false
       Single = false
       LineCover = false
       BranchCover = false

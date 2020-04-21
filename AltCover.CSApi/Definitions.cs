@@ -58,6 +58,7 @@ namespace AltCover.Parameters
     bool InPlace { get; }
     bool Save { get; }
     bool ZipFile { get; }
+    bool MethodPoint { get; }
     bool SingleVisit { get; }
     bool LineCover { get; }
     bool BranchCover { get; }
@@ -197,6 +198,7 @@ namespace AltCover.Parameters.Primitive
     public bool InPlace { get; set; }
     public bool Save { get; set; }
     public bool ZipFile { get; set; }
+    public bool MethodPoint { get; set; }
     public bool SingleVisit { get; set; }
     public bool LineCover { get; set; }
     public bool BranchCover { get; set; }
@@ -233,6 +235,7 @@ namespace AltCover.Parameters.Primitive
                       InPlace,
                       Save,
                       ZipFile,
+                      MethodPoint,
                       SingleVisit,
                       LineCover,
                       BranchCover,

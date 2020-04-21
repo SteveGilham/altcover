@@ -231,6 +231,7 @@ type PrepareParameters =
     InPlace : Flag
     Save : Flag
     ZipFile : Flag
+    MethodPoint : Flag
     Single : Flag
     LineCover : Flag
     BranchCover : Flag
@@ -262,6 +263,7 @@ type PrepareParameters =
       InPlace = Set
       Save = Set
       ZipFile = Clear
+      MethodPoint = Clear
       Single = Clear
       LineCover = Clear
       BranchCover = Clear
