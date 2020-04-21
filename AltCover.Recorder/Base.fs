@@ -333,6 +333,7 @@ module internal Counter =
       I.updateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
+#if !RUNNER
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
@@ -342,3 +343,4 @@ module internal Counter =
                       FileOptions.SequentialScan)
 
     doFlushStream postProcess pointProcess own counts format coverageFile output
+#endif

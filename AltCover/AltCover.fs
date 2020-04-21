@@ -5,7 +5,6 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
-open System.IO.Compression
 open System.Linq
 open System.Reflection
 
@@ -504,16 +503,7 @@ module internal Main =
                   Instrument.instrumentGenerator assemblyNames ]
 
               Visitor.visit visitors assemblies
-              if !CoverageParameters.zipReport
-              then
-                use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
-                let entry = report
-                            |> Path.GetFileName
-                            |> archive.CreateEntry
-                use sink = entry.Open()
-                document.Save(sink)
-
-              else document.Save(report)
+              Zip.save document report !CoverageParameters.zipReport
               if !CoverageParameters.collect then Runner.setRecordToFile report
               CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
           CommandLine.reportErrors "Instrumentation" (dotnetBuild && !CoverageParameters.inplace)

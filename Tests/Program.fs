@@ -82,6 +82,7 @@ module TestMain =
           Tests.AltCoverRunnerTests.ShouldGetStringConstants, "Runner.ShouldGetStringConstants"
           Tests.AltCoverRunnerTests.ShouldProcessPayload, "Runner.ShouldProcessPayload"
           Tests.AltCoverRunnerTests.WriteLeavesExpectedTraces, "Runner.WriteLeavesExpectedTraces"
+          Tests.AltCoverRunnerTests.ZipWriteLeavesExpectedTraces, "Runner.ZipWriteLeavesExpectedTraces"
           Tests.AltCoverRunnerTests.NullPayloadShouldReportNothing, "Runner.NullPayloadShouldReportNothing"
           Tests.AltCoverRunnerTests.ActivePayloadShouldReportAsExpected, "Runner.ActivePayloadShouldReportAsExpected"
           Tests.AltCoverRunnerTests.CollectShouldReportAsExpected, "Runner.CollectShouldReportAsExpected"

@@ -1487,17 +1487,21 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport =
     (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
+  let simpleReport2 =
+    (Path.getFullName "./_Reports/unzip") @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
+  let simpleReport3 =
+    (Path.getFullName "./_Reports/unzip2") @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
   let sampleRoot =
     Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 
-  // Test the --inplace operation
+  printfn "Build and test normally"
   Shell.cleanDir sampleRoot
   "sample2.core.fsproj"
   |> DotNet.test (fun o ->
        { o.WithCommon(withWorkingDirectoryVM "Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug } |> withCLIArgs)
 
-  // inplace instrument and save
+  printfn  "inplace instrument and save"
   let prep =
     AltCover.PrepareParameters.Primitive
       ({ Primitive.PrepareParameters.Create() with
@@ -1514,7 +1518,10 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
       ToolType = dotnet_altcover
       WorkingDirectory = sampleRoot }
   |> AltCover.run
-  Actions.ValidateFSharpTypes simpleReport [ "main" ]
+
+  printfn "Extract and verify the first results"
+  System.IO.Compression.ZipFile.ExtractToDirectory(simpleReport + ".zip", Path.GetDirectoryName simpleReport3)
+  Actions.ValidateFSharpTypes simpleReport3 [ "main" ]
   Assert.That(Path.Combine(sampleRoot, "__Saved") |> Directory.Exists)
 
   printfn "Execute the instrumented tests"
@@ -1525,6 +1532,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
            NoBuild = true }
        |> withCLIArgs)
 
+  printfn "Collect the results"
   let collect =
     AltCover.CollectParameters.Primitive
       { Primitive.CollectParameters.Create() with RecorderDirectory = sampleRoot }
@@ -1535,9 +1543,9 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
       WorkingDirectory = sampleRoot }
   |> AltCover.run
 
-  System.IO.Compression.ZipFile.ExtractToDirectory(simpleReport + ".zip", Path.getFullName "./_Reports")
-
-  Actions.ValidateFSharpTypesCoverage simpleReport)
+  printfn "Extract and verify the results"
+  System.IO.Compression.ZipFile.ExtractToDirectory(simpleReport + ".zip", Path.GetDirectoryName simpleReport2)
+  Actions.ValidateFSharpTypesCoverage simpleReport2)
 
 _Target "BasicCSharp"
   (fun _ ->

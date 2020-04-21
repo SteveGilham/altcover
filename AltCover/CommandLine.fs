@@ -4,12 +4,14 @@ open System
 open System.Diagnostics
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Reflection
 open System.Resources
 open System.Security
 open System.Security.Cryptography
 open System.Text.RegularExpressions
+open System.Xml.Linq
 
 open Augment
 open BlackFox.CommandLine
@@ -45,6 +47,37 @@ module internal Process =
 
 open Process
 #endif
+
+module internal Zip =
+  let internal save (document : XDocument) (report : string) (zip : bool) =
+    if zip
+    then
+      use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
+      let entry = report
+                  |> Path.GetFileName
+                  |> archive.CreateEntry
+      use sink = entry.Open()
+      document.Save(sink)
+    else document.Save(report)
+
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "This rule does not check to see whether this method opens the stream for a consumer to use and dispose")>]
+  [<SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+                    Justification="ditto, ditto.")>]
+  let internal openUpdate (report : string) =
+    if File.Exists report
+    then
+      let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+      (null, stream :> Stream)
+    else
+      let zip = ZipFile.Open(report + ".zip", ZipArchiveMode.Update)
+      let entry = report
+                  |> Path.GetFileName
+                  |> zip.GetEntry
+      let stream = entry.Open()
+      (zip, stream)
 
 type internal StringSink = Action<String> // delegate of string -> unit
 

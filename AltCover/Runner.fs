@@ -915,16 +915,14 @@ module internal Runner =
 
     let internal writeReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
         format report =
-      if File.Exists report
-      then
-        AltCover.Base.Counter.doFlushFile (postProcess hits format) pointProcess true hits format report
-      else
-        use zip = ZipFile.OpenRead(report + ".zip")
-        let entry = report
-                    |> Path.GetFileName
-                    |> zip.GetEntry
-        use stream = entry.Open()
-        AltCover.Base.Counter.doFlushStream (postProcess hits format) pointProcess true hits format stream
+      let reporter (arg: string option) =
+        let (container, file) = Zip.openUpdate report
+        try
+          AltCover.Base.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
+        finally
+          if container.IsNotNull then container.Dispose()
+          file.Dispose()
+      reporter
 
     // mocking points
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
