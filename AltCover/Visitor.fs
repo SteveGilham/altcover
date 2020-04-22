@@ -738,15 +738,18 @@ module internal Visitor =
                | Some f -> f
            (m, key))
       |> Seq.filter (fun (m, k) -> k <> StaticFilter.Hidden)
+      |> Seq.map (fun (m, k) -> let methods =
+                                 Seq.unfold (fun (state : MethodDefinition option) ->
+                                   match state with
+                                   | None -> None
+                                   | Some x -> Some(x, containingMethod x)) (Some m)
+                                 |> Seq.toList
+                                (m, k, methods))
+      // Skip nested methods when in method-point mode
+      |> Seq.filter (fun (_,_,methods) -> !CoverageParameters.methodPoint |> not ||
+                                          methods |> List.tail |> List.isEmpty)
       |> Seq.collect
-           ((fun (m, k) ->
-             let methods =
-               Seq.unfold (fun (state : MethodDefinition option) ->
-                 match state with
-                 | None -> None
-                 | Some x -> Some(x, containingMethod x)) (Some m)
-               |> Seq.toList
-
+           ((fun (m, k, methods) ->
              let visitcount = selectExemption k methods basevc
 
              let inclusion = Seq.fold updateInspection included methods
