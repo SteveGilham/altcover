@@ -167,27 +167,20 @@ module AltCoverXTests =
 
   [<Test>]
     let TypeSafeEmptyThresholdCanBeValidated() =
-      let empty = TypeSafe.Threshold {
-                                        Statements = 0uy
-                                        Branches = 0uy
-                                        Methods = 0uy
-                                        MaxCrap = 0uy
-                                     }
+      let empty = TypeSafe.Threshold <| TypeSafe.Thresholds.Create()
       test <@ empty.AsString() = String.Empty @>
 
   [<Test>]
   let TypeSafeCollectParametersCanBeValidated() =
     let here = Assembly.GetExecutingAssembly().Location
+    let t = { TypeSafe.Thresholds.Create() with Statements = 23uy
+                                                Branches = 16uy
+                                                Methods = 7uy
+                                                MaxCrap = 3uy
+                                                           }
     let subject =
       { TypeSafe.CollectParameters.Create() with
-                                             Threshold = TypeSafe.Threshold
-                                                           {
-                                                             Statements = 23uy
-                                                             Branches = 16uy
-                                                             Methods = 7uy
-                                                             MaxCrap = 3uy
-                                                           }
-
+                                             Threshold = TypeSafe.Threshold t
                                              SummaryFormat = TypeSafe.BPlus
                                              Executable = TypeSafe.Tool "dotnet" }
 

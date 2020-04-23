@@ -57,6 +57,13 @@ type internal Threshold =
     Methods : uint8
     Crap : uint8
   }
+  static member Default() =
+    {
+      Statements = 0uy
+      Branches = 0uy
+      Methods = 0uy
+      Crap = 0uy
+    }
   static member Create (x :  string) =
     let chars = x.ToUpperInvariant()
                 |> Seq.toList
@@ -70,34 +77,28 @@ type internal Threshold =
         let t2 = t |> List.skipWhile Char.IsDigit
         partition t2 ((String(h), String(h2)) :: result)
 
-    let parse f t x =
+    let parse top f t x =
       let part, v = Byte.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
-      if part then (part, f t v)
+      if part && v <= top then (part, f t v)
       else (false, t)
 
     let parts =
       partition chars []
       |> List.fold (fun (ok, t) (h, h2) ->  let fail t _ = (false, t)
-                                            let mapper = if ok then
-                                                           match h with
-                                                                        | ""
-                                                                        | "S" ->
-                                                                          parse (fun t v -> { t with Statements = v })
-                                                                        | "B" ->
-                                                                          parse (fun t v -> { t with Branches = v })
-                                                                        | "M" ->
-                                                                          parse (fun t v -> { t with Methods = v })
-                                                                        | "C" ->
-                                                                          parse (fun t v -> { t with Crap = v })
-                                                                        | _ -> fail
-                                                           else fail
+                                            let defaultMapper = parse 100uy (fun t v -> { t with Statements = v })
+                                            let mapper = match (ok, h) with // can't say String.Empty
+                                                         | (true, x) when x.Length = 0 ->
+                                                           defaultMapper
+                                                         | (true, "S") -> defaultMapper
+                                                         | (true, "B") ->
+                                                           parse 100uy (fun t v -> { t with Branches = v })
+                                                         | (true, "M") ->
+                                                           parse 100uy (fun t v -> { t with Methods = v })
+                                                         | (true, "C") ->
+                                                           parse 255uy (fun t v -> { t with Crap = v })
+                                                         | _ -> fail
                                             mapper t h2)
-         (true, {
-                  Statements = 0uy
-                  Branches = 0uy
-                  Methods = 0uy
-                  Crap = 0uy
-                })
+         (true, Threshold.Default())
 
     parts
     |> (fun (a,b) -> (a, if a then Some b else None))
@@ -345,15 +346,20 @@ module internal Runner =
         writeTC coverTC tag vb
 
       let crap = summary.Attribute("maxCrapScore".X)
+      let crapvalue = if crap.IsNotNull then crap.Value else "0.0"
 
       [covered
        bcovered
        mcovered
-       if crap.IsNotNull then crap.Value else "0.0"]
+       crapvalue]
 
     let internal invariantParseDouble d =
       Double.TryParse(d, NumberStyles.Number, CultureInfo.InvariantCulture)
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Inlined library code")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Inlined library code")>]
     let internal standardSummary (report : XDocument) (format : Base.ReportFormat) result =
       let covered =
         report
@@ -361,27 +367,32 @@ module internal Runner =
            | Base.ReportFormat.NCover -> nCoverSummary
            | _ -> openCoverSummary
 
+      let best = (result, 0uy, String.Empty)
+
       let possibles =
         match threshold with
-        | None -> [ result ]
+        | None -> [ best ]
         | Some t -> let found = covered
                                 |> List.map invariantParseDouble
-                                |> List.map (fun (ok, parsed) -> if ok then parsed else 0.0)
                     let ceil (f:float) (value : float) =
-                      if f <= value && value > 0.0 && f > 0.0 then result else Math.Ceiling(f - value) |> int
+                      if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
+                    let sink _ : int option = None
                     let funs = [
-                      ceil (float t.Statements);
-                      if format = Base.ReportFormat.NCover
-                      then int else ceil (float t.Branches);
-                      ceil (float t.Methods);
-                      if format = Base.ReportFormat.NCover
-                      then int else (fun c -> ceil c (float t.Crap))
+                      (ceil (float t.Statements), t.Statements, "Statements");
+                      (if format = Base.ReportFormat.NCover
+                       then sink else ceil (float t.Branches)), t.Branches, "Branches";
+                      (ceil (float t.Methods), t.Methods, "Methods");
+                      (if format = Base.ReportFormat.NCover
+                       then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
                     ]
                     List.zip found funs
-                    |> List.map (fun (c, f) -> f c)
-      possibles |> List.max
+                    |> List.filter (fst >> fst)
+                    |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
+                                                       | Some q -> (q, x, y)
+                                                       | None -> best)
+      possibles |> List.maxBy (fun (a, b, c) -> a)
 
-    let mutable internal summaries : (XDocument -> Base.ReportFormat -> int -> int) list =
+    let mutable internal summaries : (XDocument -> Base.ReportFormat -> int -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary() =
@@ -1003,12 +1014,14 @@ module internal Runner =
     let mutable internal doReport = writeReportBase
 
     let internal doSummaries (document : XDocument) (format : Base.ReportFormat) result =
-      let code =
-        I.summaries |> List.fold (fun r summary -> summary document format r) result
-      if (code > 0 && code <> result) then
-        CommandLine.writeErrorResourceWithFormatItems "threshold"
+      let (code, t, f) =
+        I.summaries |> List.fold (fun (r,t,f) summary -> let rx,t2,f2 = summary document format r
+                                                         if rx > r then (rx, t2, f2)
+                                                         else (r, t, f)) (result, 0uy, String.Empty)
+      if (code > 0 && result = 0 && code <> result) then
+        CommandLine.writeErrorResourceWithFormatItems f
           [| code :> obj
-             (Option.get threshold) :> obj |]
+             t :> obj |]
       code
 
     let internal loadReport report =

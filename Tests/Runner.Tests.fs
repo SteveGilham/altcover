@@ -844,6 +844,54 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
 
     [<Test>]
+    let ParsingTopThresholdGivesThreshold() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M100C255S100B100" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match Runner.threshold with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 100uy
+                                                Branches = 100uy
+                                                Methods = 100uy
+                                                Crap = 255uy
+                                              })
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingLowThresholdGivesThreshold() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M0C0S0B0" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match Runner.threshold with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 0uy
+                                                Branches = 0uy
+                                                Methods = 0uy
+                                                Crap = 0uy
+                                              })
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
     let ParsingMultipleThresholdGivesFailure() =
       Runner.init()
       try
@@ -867,6 +915,102 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
         let options = Runner.declareOptions()
         let input = [| "-t"; "-111" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold2GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "S" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold3GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "X666" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold4GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "S101" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold5GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M101" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold6GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "B101" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold7GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "C256" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
@@ -2235,7 +2379,7 @@ or
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
-          Assert.That(r, Is.EqualTo 0)
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
           Assert.That
             (builder.ToString(),
@@ -2258,7 +2402,7 @@ or
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
-          Assert.That(r, Is.EqualTo 0)
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
           Assert.That
@@ -2283,7 +2427,7 @@ or
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
-          Assert.That(r, Is.EqualTo 0)
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
           Assert.That
@@ -2319,7 +2463,7 @@ or
             finally
               Runner.threshold <- None
           // 80% coverage > threshold so expect return code coming in
-          Assert.That(r, Is.EqualTo 42)
+          Assert.That(r, Is.EqualTo (42, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2341,7 +2485,7 @@ or
           Runner.summaryFormat <- Default
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
-          Assert.That(r, Is.EqualTo 0)
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2364,7 +2508,7 @@ or
           Runner.summaryFormat <- B
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
-          Assert.That(r, Is.EqualTo 0)
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2391,7 +2535,7 @@ or
           Runner.summaryFormat <- RPlus
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
-          Assert.That(r, Is.EqualTo 0)
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2419,34 +2563,48 @@ or
              (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
-      let builder = System.Text.StringBuilder()
-      try
-        lock Runner.summaryFormat (fun () ->
-          Runner.summaryFormat <- BPlus
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r =
-            try
-              Runner.threshold <- Some { Statements = 75uy
-                                         Branches = 0uy
-                                         Methods = 0uy
-                                         Crap = 0uy }
-              Runner.I.standardSummary baseline Base.ReportFormat.OpenCover 23
-            finally
-              Runner.threshold <- None
-          // 70% coverage < threshold so expect shortfall
-          Assert.That(r, Is.EqualTo 5)
-          Assert.That
-            (builder.ToString(),
-             Is.EqualTo
-               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
-                + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
-                + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-                + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
-                + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
-                + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
-               ))
-      finally
-        Output.info <- ignore
+      let thresholds = [
+        { Threshold.Default() with Statements = 75uy }
+        { Threshold.Default() with Branches = 70uy }
+        { Threshold.Default() with Methods = 100uy }
+        { Threshold.Default() with Crap = 1uy }
+        { Threshold.Default() with Crap = 255uy }
+      ]
+      let results = [
+        (5, 75, "Statements")
+        (4, 70, "Branches")
+        (23, 0, String.Empty)
+        (2, 1, "Crap")
+        (23, 0, String.Empty)
+      ]
+
+      List.zip thresholds results
+      |> List.iter (fun (threshold, expected) ->
+        try
+          lock Runner.summaryFormat (fun () ->
+            Runner.summaryFormat <- BPlus
+            let builder = System.Text.StringBuilder()
+            Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+            let r =
+              try
+                Runner.threshold <- Some threshold
+                Runner.I.standardSummary baseline Base.ReportFormat.OpenCover 23
+              finally
+                Runner.threshold <- None
+            // 70% coverage < threshold so expect shortfall
+            Assert.That(r, Is.EqualTo expected)
+            Assert.That
+              (builder.ToString(),
+               Is.EqualTo
+                 ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+                  + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
+                  + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                  + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+                  + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+                  + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
+                 ))
+        finally
+          Output.info <- ignore)
 
     [<Test>]
     let OpenCoverShouldGeneratePlausibleLcov() =
@@ -2470,7 +2628,7 @@ or
         Runner.I.addLCovSummary()
         let summarize = Runner.I.summaries |> Seq.head
         let r = summarize baseline Base.ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo 0)
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2502,7 +2660,7 @@ or
       |> ignore
       try
         let r = LCov.summary baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2539,7 +2697,7 @@ or
       |> ignore
       try
         let r = LCov.summary baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2644,7 +2802,7 @@ or
         Runner.I.addCoberturaSummary()
         let summarize = Runner.I.summaries |> Seq.head
         let r = summarize baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
@@ -2687,7 +2845,7 @@ or
       |> ignore
       try
         let r = Cobertura.summary baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
@@ -2727,7 +2885,7 @@ or
       |> ignore
       try
         let r = Cobertura.summary baseline Base.ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo 0)
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace
             (File.ReadAllText unique, """timestamp=\"\d*\">""", """timestamp="xx">""")
@@ -2757,17 +2915,15 @@ or
       let builder = System.Text.StringBuilder()
       let saved = Runner.threshold
       try
-        Runner.I.summaries <- [ (fun _ _ _ -> 23) ]
+        Runner.I.summaries <- [ (fun _ _ a  -> (a, 0uy, String.Empty))
+                                (fun _ _ _ -> (23, 42uy, "Statements"))
+                                (fun _ _ a  -> (a, 0uy, String.Empty))]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.threshold <- Some { Statements = 42uy
-                                   Branches = 0uy
-                                   Methods = 0uy
-                                   Crap = 0uy }
         let delta = Runner.J.doSummaries (XDocument()) Base.ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),
-           Is.EqualTo "Coverage percentage achieved is 23% below the threshold of 42%.|")
+           Is.EqualTo "Statement coverage percentage achieved is 23% below the threshold of 42%.|")
       finally
         Output.error <- saveErr
         Runner.I.summaries <- saveSummaries

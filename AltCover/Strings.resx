@@ -334,8 +334,8 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   <data name="c|cobertura=" xml:space="preserve">
     <value>Optional: File for Cobertura format version of the collected data</value>
   </data>
-  <data name="threshold" xml:space="preserve">
-    <value>Coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  <data name="Statements" xml:space="preserve">
+    <value>Statement coverage percentage achieved is {0}% below the threshold of {1}%.</value>
   </data>
   <data name="o|outputFile=" xml:space="preserve">
     <value>Optional: write the recorded coverage to this file rather than overwriting the original report file.</value>
@@ -408,5 +408,14 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   </data>
   <data name="methodpoint" xml:space="preserve">
     <value>Optional: record only whether a method has been visited or not.  Overrides the --linecover and --branchcover options.</value>
+  </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Branch coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
+  <data name="Crap" xml:space="preserve">
+    <value>Maximum CRAP score achieved is {0} above the threshold of {1}.</value>
+  </data>
+  <data name="Methods" xml:space="preserve">
+    <value>Method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
   </data>
 </root>

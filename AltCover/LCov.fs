@@ -280,4 +280,4 @@ module internal LCov =
   let internal summary (report : XDocument) (format : Base.ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
       (convertReport report format)
-    result
+    (result, 0uy, String.Empty)

@@ -330,8 +330,8 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="c|cobertura=" xml:space="preserve">
     <value>Laŭvola: Dosiero por la versio de formato Cobertura de la datumoj kolektitaj</value>
   </data>
-  <data name="threshold" xml:space="preserve">
-    <value>Kovra procento atingita estas {0}% sub la sojlo de {1}%.</value>
+  <data name="Statements" xml:space="preserve">
+    <value>La procenta raporto atingita estas {0}% sub la sojlo de {1}%.</value>
   </data>
   <data name="o|outputFile=" xml:space="preserve">
     <value>Laŭvola: skribu la registradan kovradon al ĉi tiu dosiero anstataŭ anstataŭi la originalan raportan dosieron.</value>
@@ -404,5 +404,14 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   </data>
   <data name="methodpoint" xml:space="preserve">
     <value>Laŭvola: registru nur ĉu metodo estis vizitita aŭ ne. Nuligas la --linecover kaj --branchcover elektojn.</value>
+  </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Branĉa kovrada procento atingita estas {0}% sub la sojlo de {1}%.</value>
+  </data>
+  <data name="Crap" xml:space="preserve">
+    <value>Maksimuma CRAP-poentaro atingita estas {0} super la sojlo de {1}.</value>
+  </data>
+  <data name="Methods" xml:space="preserve">
+    <value>Metoda priraportado atingita estas {0}% sub la sojlo de {1}%.</value>
   </data>
 </root>

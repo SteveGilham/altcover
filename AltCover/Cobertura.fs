@@ -336,4 +336,4 @@ module internal Cobertura =
   let internal summary (report : XDocument) (format : Base.ReportFormat) result =
     let rewrite = convertReport report format
     rewrite.Save(!path |> Option.get)
-    result
+    (result, 0uy, String.Empty)
