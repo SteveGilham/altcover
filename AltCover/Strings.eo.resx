@@ -325,7 +325,7 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
                 &lt;=  {0}</value>
   </data>
   <data name="t|threshold=" xml:space="preserve">
-    <value>Laŭvola: minimuma akceptebla kovra procento (entjero, 0 ĝis 100). Se la rezulto de kovraĵo estas sub sojlo, la rondkodo de la procezo estas (sojlo - reala) rondigita ĝis la plej proksima entjero.</value>
+    <value>Laŭvola: unu aŭ pluraj el minimuma akceptebla deklaro (S), branĉo (B) aŭ metodo (M) kovranta procento (entjero, 1 ĝis 100) aŭ maksimume akceptebla CRAP-poentaro (C sekvita per entjero, 1 ĝis 255) t.e. M80C40B50. Se la valoro komenciĝas per nombro, majstro S supozas. Se iu sojlo estas specifita pli ol unu fojon, la lasta petskribo supozas - do 25S50 estas interpretita kiel S50. Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub sojlo, aŭ la CRAP-poentaro estas super la sojlo, la revena kodo de la procezo estas la plej granda abs (sojlo - reala) rondeta ĝis la plej proksima entjero.</value>
   </data>
   <data name="c|cobertura=" xml:space="preserve">
     <value>Laŭvola: Dosiero por la versio de formato Cobertura de la datumoj kolektitaj</value>
