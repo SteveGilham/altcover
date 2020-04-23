@@ -166,6 +166,16 @@ module AltCoverXTests =
             |> FSApi.Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
+    let TypeSafeEmptyThresholdCanBeValidated() =
+      let empty = TypeSafe.Threshold {
+                                        Statements = 0uy
+                                        Branches = 0uy
+                                        Methods = 0uy
+                                        MaxCrap = 0uy
+                                     }
+      test <@ empty.AsString() = String.Empty @>
+
+  [<Test>]
   let TypeSafeCollectParametersCanBeValidated() =
     let here = Assembly.GetExecutingAssembly().Location
     let subject =
@@ -173,9 +183,9 @@ module AltCoverXTests =
                                              Threshold = TypeSafe.Threshold
                                                            {
                                                              Statements = 23uy
-                                                             Branches = 0uy
-                                                             Methods = 0uy
-                                                             MaxCrap = 0uy
+                                                             Branches = 16uy
+                                                             Methods = 7uy
+                                                             MaxCrap = 3uy
                                                            }
 
                                              SummaryFormat = TypeSafe.BPlus
@@ -188,10 +198,10 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test
       <@ instance
-         |> FSApi.Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "23"; "--teamcity:+B" ] @>
+         |> FSApi.Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    test <@ validate.ToString() = "altcover Runner -x dotnet -t 23 --teamcity:+B" @>
+    test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --teamcity:+B" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =

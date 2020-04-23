@@ -50,6 +50,7 @@ module TestMain =
           Tests.AltCoverRunnerTests.ParsingMultipleLcovGivesFailure, "Runner.ParsingMultipleLcovGivesFailure"
           Tests.AltCoverRunnerTests.ParsingNoLcovGivesFailure, "Runner.ParsingNoLcovGivesFailure"
           Tests.AltCoverRunnerTests.ParsingThresholdGivesThreshold, "Runner.ParsingThresholdGivesThreshold"
+          Tests.AltCoverRunnerTests.ParsingComplexThresholdGivesThreshold, "Runner.ParsingComplexThresholdGivesThreshold"
           Tests.AltCoverRunnerTests.ParsingMultipleThresholdGivesFailure, "Runner.ParsingMultipleThresholdGivesFailure"
           Tests.AltCoverRunnerTests.ParsingBadThresholdGivesFailure, "Runner.ParsingBadThresholdGivesFailure"
           Tests.AltCoverRunnerTests.ParsingEmptyThresholdGivesFailure, "Runner.ParsingEmptyThresholdGivesFailure"
@@ -426,6 +427,7 @@ module TestMain =
 #else
 #endif
           Tests.AltCoverXTests.CollectParametersCanBeValidated, "XTests.CollectParametersCanBeValidated"
+          Tests.AltCoverXTests.TypeSafeEmptyThresholdCanBeValidated, "XTests.TypeSafeEmptyThresholdCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectParametersCanBeValidated, "XTests.TypeSafeCollectParametersCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectSummaryCanBeValidated, "XTests.TypeSafeCollectSummaryCanBeValidated"
           Tests.AltCoverXTests.CollectParametersCanBeValidatedWithErrors, "XTests.CollectParametersCanBeValidatedWithErrors"

@@ -810,7 +810,36 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.Empty)
         match Runner.threshold with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo 57)
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 57uy
+                                                Branches = 0uy
+                                                Methods = 0uy
+                                                Crap = 0uy
+                                              })
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingComplexThresholdGivesThreshold() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M57C42S16B7" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match Runner.threshold with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 16uy
+                                                Branches = 7uy
+                                                Methods = 57uy
+                                                Crap = 42uy
+                                              })
       finally
         Runner.threshold <- None
 

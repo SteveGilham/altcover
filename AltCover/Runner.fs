@@ -58,13 +58,49 @@ type internal Threshold =
     Crap : uint8
   }
   static member Create (x :  string) =
-    (false, None) // TODO
-  //// "Public"
-  //let internal validateThreshold x =
-  //  let (q, n) =
-  //    Int32.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
-    //let ok = q && (n >= 0) && (n <= 100)
-    //(ok, n)
+    let chars = x.ToUpperInvariant()
+                |> Seq.toList
+    let rec partition data result =
+      match data with
+      | [] -> result
+      | _ ->
+        let h = data |> List.takeWhile (Char.IsDigit >> not) |> List.toArray
+        let t = data |> List.skipWhile (Char.IsDigit >> not)
+        let h2 = t |> List.takeWhile Char.IsDigit |> List.toArray
+        let t2 = t |> List.skipWhile Char.IsDigit
+        partition t2 ((String(h), String(h2)) :: result)
+
+    let parse f t x =
+      let part, v = Byte.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
+      if part then (part, f t v)
+      else (false, t)
+
+    let parts =
+      partition chars []
+      |> List.fold (fun (ok, t) (h, h2) ->  let fail t _ = (false, t)
+                                            let mapper = if ok then
+                                                           match h with
+                                                                        | ""
+                                                                        | "S" ->
+                                                                          parse (fun t v -> { t with Statements = v })
+                                                                        | "B" ->
+                                                                          parse (fun t v -> { t with Branches = v })
+                                                                        | "M" ->
+                                                                          parse (fun t v -> { t with Methods = v })
+                                                                        | "C" ->
+                                                                          parse (fun t v -> { t with Crap = v })
+                                                                        | _ -> fail
+                                                           else fail
+                                            mapper t h2)
+         (true, {
+                  Statements = 0uy
+                  Branches = 0uy
+                  Methods = 0uy
+                  Crap = 0uy
+                })
+
+    parts
+    |> (fun (a,b) -> (a, if a then Some b else None))
 
   static member Validate (x : string) =
     let result = Threshold.Create x
@@ -353,6 +389,7 @@ module internal Runner =
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
 
+  // "Public"
   let internal declareOptions() =
     I.summaries <- []
     I.summaries <- I.standardSummary :: I.summaries
