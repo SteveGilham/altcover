@@ -2282,7 +2282,10 @@ or
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r =
             try
-              Runner.threshold <- Some 25
+              Runner.threshold <- Some { Statements = 25uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy }
               Runner.I.standardSummary baseline Base.ReportFormat.NCover 42
             finally
               Runner.threshold <- None
@@ -2394,7 +2397,10 @@ or
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r =
             try
-              Runner.threshold <- Some 75
+              Runner.threshold <- Some { Statements = 75uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy }
               Runner.I.standardSummary baseline Base.ReportFormat.OpenCover 23
             finally
               Runner.threshold <- None
@@ -2724,7 +2730,10 @@ or
       try
         Runner.I.summaries <- [ (fun _ _ _ -> 23) ]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.threshold <- Some 42
+        Runner.threshold <- Some { Statements = 42uy
+                                   Branches = 0uy
+                                   Methods = 0uy
+                                   Crap = 0uy }
         let delta = Runner.J.doSummaries (XDocument()) Base.ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That

@@ -54,13 +54,34 @@ type Command =
     | Command c -> c |> Seq.map (fun a -> a.AsString())
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type Thresholds =
+  {
+    Statements : uint8
+    Branches : uint8
+    Methods : uint8
+    MaxCrap : uint8
+  }
+  static member Create() =
+    {
+      Statements = 0uy
+      Branches = 0uy
+      Methods = 0uy
+      MaxCrap = 0uy
+    }
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type Threshold =
-  | Threshold of uint8
+  | Threshold of Thresholds
   | NoThreshold
   member self.AsString() =
     match self with
     | NoThreshold -> String.Empty
-    | Threshold t -> t.ToString(CultureInfo.InvariantCulture)
+    | Threshold t -> let facet k n =
+                       (if n <> 0uy then k + n.ToString(CultureInfo.InvariantCulture) else String.Empty)
+                     (facet "S" t.Statements) +
+                     (facet "B" t.Branches) +
+                     (facet "M" t.Methods) +
+                     (facet "C" t.MaxCrap)
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type Flag =

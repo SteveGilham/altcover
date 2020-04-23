@@ -170,7 +170,14 @@ module AltCoverXTests =
     let here = Assembly.GetExecutingAssembly().Location
     let subject =
       { TypeSafe.CollectParameters.Create() with
-                                             Threshold = TypeSafe.Threshold 23uy
+                                             Threshold = TypeSafe.Threshold
+                                                           {
+                                                             Statements = 23uy
+                                                             Branches = 0uy
+                                                             Methods = 0uy
+                                                             MaxCrap = 0uy
+                                                           }
+
                                              SummaryFormat = TypeSafe.BPlus
                                              Executable = TypeSafe.Tool "dotnet" }
 

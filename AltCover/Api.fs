@@ -138,7 +138,7 @@ type CollectParameters =
         ("--cobertura", self.Cobertura)
         ("--outputFile", self.OutputFile) ]
       |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
-      validate Runner.validateThreshold self.Threshold
+      validate Threshold.Validate self.Threshold
       if afterPreparation then Runner.requireRecorderTest (recorder |> toOption) () ()
       CommandLine.error |> List.toArray
     finally

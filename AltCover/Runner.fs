@@ -50,13 +50,36 @@ type TeamCityFormat =
     | Select "+R" _ -> RPlus
     | _ -> Default
 
+type internal Threshold =
+  {
+    Statements : uint8
+    Branches : uint8
+    Methods : uint8
+    Crap : uint8
+  }
+  static member Create (x :  string) =
+    (false, None) // TODO
+  //// "Public"
+  //let internal validateThreshold x =
+  //  let (q, n) =
+  //    Int32.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
+    //let ok = q && (n >= 0) && (n <= 100)
+    //(ok, n)
+
+  static member Validate (x : string) =
+    let result = Threshold.Create x
+    if not (fst result) then
+      CommandLine.error <-
+              CommandLine.Format.Local("InvalidValue", "--threshold", x) :: CommandLine.error
+    result
+
 module internal Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
   let internal executable : Option<string> ref = ref None
   let internal collect = ref false // ddFlag
-  let mutable internal threshold : Option<int> = None
+  let mutable internal threshold : Threshold option = None
   let mutable internal output : Option<string> = None
   let internal summary = StringBuilder()
   let mutable internal summaryFormat = TeamCityFormat.Default
@@ -165,7 +188,10 @@ module internal Runner =
 
       emitSummary()
 
-      makepc vpoints points.Length
+      [makepc vpoints points.Length
+       "0" // branches
+       makepc vmethods methods.Length
+       "0"] // crap
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -255,12 +281,12 @@ module internal Runner =
       let go = [ Default; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat)
       let (vc, nc, _) =
         summarise go "visitedClasses" "numClasses" None "VisitedClasses"
-      let (vm, nm, _) =
+      let (vm, nm, mcovered) =
         summarise go "visitedMethods" "numMethods" None "VisitedMethods"
       let (vs, ns, covered) =
         summarise go "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage")
           "VisitedPoints"
-      let (vb, nb, _) =
+      let (vb, nb, bcovered) =
         summarise go "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
           "VisitedBranches"
       if go then
@@ -282,7 +308,12 @@ module internal Runner =
         writeTC totalTC tag nb
         writeTC coverTC tag vb
 
-      covered
+      let crap = summary.Attribute("maxCrapScore".X)
+
+      [covered
+       bcovered
+       mcovered
+       if crap.IsNotNull then crap.Value else "0.0"]
 
     let internal invariantParseDouble d =
       Double.TryParse(d, NumberStyles.Number, CultureInfo.InvariantCulture)
@@ -293,18 +324,26 @@ module internal Runner =
         |> match format with
            | Base.ReportFormat.NCover -> nCoverSummary
            | _ -> openCoverSummary
-        |> invariantParseDouble
 
-      let value =
-        match covered with
-        | (false, _) -> 0.0
-        | (_, x) -> x
-
-      match threshold with
-      | None -> result
-      | Some x ->
-          let f = float x
-          if f <= value then result else Math.Ceiling(f - value) |> int
+      let possibles =
+        match threshold with
+        | None -> [ result ]
+        | Some t -> let found = covered
+                                |> List.map invariantParseDouble
+                                |> List.map (fun (ok, parsed) -> if ok then parsed else 0.0)
+                    let ceil (f:float) (value : float) =
+                      if f <= value && value > 0.0 && f > 0.0 then result else Math.Ceiling(f - value) |> int
+                    let funs = [
+                      ceil (float t.Statements);
+                      if format = Base.ReportFormat.NCover
+                      then int else ceil (float t.Branches);
+                      ceil (float t.Methods);
+                      if format = Base.ReportFormat.NCover
+                      then int else (fun c -> ceil c (float t.Crap))
+                    ]
+                    List.zip found funs
+                    |> List.map (fun (c, f) -> f c)
+      possibles |> List.max
 
     let mutable internal summaries : (XDocument -> Base.ReportFormat -> int -> int) list =
       []
@@ -313,18 +352,6 @@ module internal Runner =
       summaries <- LCov.summary :: summaries
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
-
-  // "Public"
-  let internal validateThreshold x =
-    let (q, n) =
-      Int32.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
-
-    let ok = q && (n >= 0) && (n <= 100)
-    if ok |> not then
-      CommandLine.error <-
-        CommandLine.Format.Local("InvalidValue",
-           "--threshold", x) :: CommandLine.error
-    (ok, n)
 
   let internal declareOptions() =
     I.summaries <- []
@@ -371,14 +398,14 @@ module internal Runner =
              I.addLCovSummary()))
       ("t|threshold=",
        (fun x ->
-         let ok, n = validateThreshold x
+         let ok, t = Threshold.Validate x
          if ok then
            if Option.isSome threshold then
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--threshold")
                :: CommandLine.error
            else
-             threshold <- Some n))
+             threshold <- t))
       ("c|cobertura=",
        (fun x ->
          if CommandLine.validatePath "--cobertura" x then
