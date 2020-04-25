@@ -24,6 +24,7 @@ module TestMain =
           Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
           Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
           Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
+          Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
         ]
 
   let specials =

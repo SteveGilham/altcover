@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net47</TargetFrameworks>
@@ -13,10 +13,11 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\nupkg\build\netstandard2.0\AltCover.targets" Link="AltCover.targets" />
     <EmbeddedResource Include="..\Tests\CompressBoth.xml" Link="CompressBoth.xml" />
     <EmbeddedResource Include="..\Tests\Compressible.xml" Link="Compressible.xml" />
     <EmbeddedResource Include="..\Tests\CompressInterior.xml" Link="CompressInterior.xml" />
@@ -72,5 +73,4 @@
     <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
   </ItemGroup>
-
 </Project>

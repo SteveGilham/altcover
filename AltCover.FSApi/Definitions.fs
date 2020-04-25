@@ -76,47 +76,124 @@ module internal Internals =
   let private fromArg name s = (arg name s, isSet s)
   let private join(l : string seq) = String.Join(" ", l)
 
+  [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
+                     Justification="Compiler Generated")>]
+#if RUNNER
+  let internal toPrepareListArgumentList (prepare : AltCover.FSApi.PrepareParameters) =
+#else
+  let internal toPrepareListArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters) =
+#endif
+    [
+      fromList, "SymbolDirectories", prepare.SymbolDirectories
+      fromList, "DependencyList", prepare.Dependencies
+      fromList, "Keys", prepare.Keys
+      fromList, "FileFilter", prepare.FileFilter
+      fromList, "AssemblyFilter", prepare.AssemblyFilter
+      fromList, "AssemblyExcludeFilter", prepare.AssemblyExcludeFilter
+      fromList, "TypeFilter", prepare.TypeFilter
+      fromList, "MethodFilter", prepare.MethodFilter
+      fromList, "AttributeFilter", prepare.AttributeFilter
+      fromList, "PathFilter", prepare.PathFilter
+      fromList, "CallContext", prepare.CallContext
+    ]
+
+#if RUNNER
+  let internal toPrepareFromArgArgumentList (prepare : AltCover.FSApi.PrepareParameters) =
+#else
+  let internal toPrepareFromArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters) =
+#endif
+    [
+      fromArg, "StrongNameKey", prepare.StrongNameKey
+      fromArg, "XmlReport", prepare.XmlReport
+      fromArg, "ReportFormat", prepare.ReportFormat
+      fromArg, "ShowStatic", prepare.ShowStatic
+    ]
+
+#if RUNNER
+  let internal toPrepareArgArgumentList (prepare : AltCover.FSApi.PrepareParameters) =
+#else
+  let internal toPrepareArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters) =
+#endif
+    [
+      (arg, "ZipFile", "false", prepare.ZipFile)
+      (arg, "MethodPoint", "false", prepare.MethodPoint)
+      (arg, "Single", "false", prepare.Single)
+      (arg, "LineCover", "true", prepare.LineCover)
+      (arg, "BranchCover", "true", prepare.BranchCover)
+      (arg, "SourceLink", "false", prepare.SourceLink)
+      (arg, "LocalSource", "true", prepare.LocalSource)
+      (arg, "VisibleBranches", "true", prepare.VisibleBranches)
+      (arg, "ShowGenerated", "true", prepare.ShowGenerated)
+    ]
+
+#if RUNNER
+  let internal toCollectFromArgArgumentList (collect : AltCover.FSApi.CollectParameters) =
+#else
+  let internal toCollectFromArgArgumentList (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters) =
+#endif
+    [
+      fromArg, "LcovReport", collect.LcovReport
+      fromArg, "Cobertura", collect.Cobertura
+      fromArg, "Threshold", collect.Threshold
+      fromArg, "SummaryFormat", collect.SummaryFormat
+    ]
+
+  [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
+                     Justification="Internal implementation detail")>]
+#if RUNNER
+  let internal toCLIOptionsFromArgArgumentList (options : CLIOptions) =
+#else
+  let internal toCLIOptionsFromArgArgumentList (options : DotNet.CLIOptions) =
+#endif
+    [
+      fromArg, "ShowSummary", options.Summary
+    ]
+
+  [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
+                     Justification="Internal implementation detail")>]
+#if RUNNER
+  let internal toCLIOptionsArgArgumentList (options : CLIOptions) =
+#else
+  let internal toCLIOptionsArgArgumentList (options : DotNet.CLIOptions) =
+#endif
+    [
+      arg, "Force", "true", options.ForceDelete
+      arg, "FailFast", "true", options.Fast
+    ]
+
 #if RUNNER
   let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParameters)
-      (collect : AltCover.FSApi.CollectParameters) (force : CLIOptions) =
+      (collect : AltCover.FSApi.CollectParameters) (options : CLIOptions) =
 #else
   let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
       (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
-      (force : DotNet.CLIOptions) =
+      (options : DotNet.CLIOptions) =
 #endif
+    [
+      [ fromArg String.Empty "true" ]
+      prepare
+      |> toPrepareListArgumentList
+      |> List.map(fun (f,n,a) -> f n a)
+      prepare
+      |> toPrepareFromArgArgumentList
+      |> List.map(fun (f,n,a) -> f n a)
+      prepare
+      |> toPrepareArgArgumentList
+      |> List.map(fun (f,n,a,x) -> (f n a,x))
 
-    [ fromArg String.Empty "true"
-      fromList "SymbolDirectories" prepare.SymbolDirectories
-      fromList "DependencyList" prepare.Dependencies
-      fromList "Keys" prepare.Keys
-      fromArg "StrongNameKey" prepare.StrongNameKey
-      fromArg "XmlReport" prepare.XmlReport
-      fromList "FileFilter" prepare.FileFilter
-      fromList "AssemblyFilter" prepare.AssemblyFilter
-      fromList "AssemblyExcludeFilter" prepare.AssemblyExcludeFilter
-      fromList "TypeFilter" prepare.TypeFilter
-      fromList "MethodFilter" prepare.MethodFilter
-      fromList "AttributeFilter" prepare.AttributeFilter
-      fromList "PathFilter" prepare.PathFilter
-      fromList "CallContext" prepare.CallContext
-      fromArg "ReportFormat" prepare.ReportFormat
-      (arg "ZipFile" "false", prepare.ZipFile)
-      (arg "MethodPoint" "false", prepare.MethodPoint)
-      (arg "Single" "false", prepare.Single)
-      (arg "LineCover" "true", prepare.LineCover)
-      (arg "BranchCover" "true", prepare.BranchCover)
-      (arg "SourceLink" "false", prepare.SourceLink)
-      (arg "LocalSource" "true", prepare.LocalSource)
-      (arg "VisibleBranches" "true", prepare.VisibleBranches)
-      (fromArg "ShowStatic" prepare.ShowStatic)
-      (arg "ShowGenerated" "true", prepare.ShowGenerated)
-      fromArg "LcovReport" collect.LcovReport
-      fromArg "Cobertura" collect.Cobertura
-      fromArg "Threshold" collect.Threshold
-      (arg "Force" "true", force.ForceDelete)
-      (arg "FailFast" "true", force.Fast)
-      (fromArg "ShowSummary" force.Summary)
-      (fromArg "SummaryFormat" collect.SummaryFormat) ]
+      collect
+      |> toCollectFromArgArgumentList
+      |> List.map(fun (f,n,a) -> f n a)
+
+      options
+      |> toCLIOptionsFromArgArgumentList
+      |> List.map(fun (f,n,a) -> f n a)
+
+      options
+      |> toCLIOptionsArgArgumentList
+      |> List.map(fun (f,n,a,x) -> (f n a,x))
+    ]
+    |> List.concat
     |> List.filter snd
     |> List.map fst
 
