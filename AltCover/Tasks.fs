@@ -136,6 +136,7 @@ type Prepare() =
   member val VisibleBranches = false with get, set
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
+  member val ExposeReturnCode = true with get, set
 
   member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
@@ -173,7 +174,7 @@ type Prepare() =
           LineCover = self.LineCover
           BranchCover = self.BranchCover
           CommandLine = self.CommandLine
-          ExposeReturnCode = true
+          ExposeReturnCode = self.ExposeReturnCode
           SourceLink = self.SourceLink
           Defer = self.Defer
           LocalSource = self.LocalSource
@@ -211,6 +212,7 @@ type Collect() =
       Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
+  member val ExposeReturnCode = true with get, set
 
   [<Output>]
   [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
@@ -242,7 +244,7 @@ type Collect() =
           Cobertura = self.Cobertura
           OutputFile = self.OutputFile
           CommandLine = self.CommandLine
-          ExposeReturnCode = true
+          ExposeReturnCode = self.ExposeReturnCode
           SummaryFormat = self.SummaryFormat }
 
     Api.Collect task log = 0

@@ -15,6 +15,7 @@ open System.Xml.Schema
 open AltCover
 open AltCover.Augment
 open AltCover.Base
+open Microsoft.FSharp.Reflection
 open Mono.Options
 open Swensen.Unquote
 
@@ -396,7 +397,64 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      Assert.That(options.Count, Is.EqualTo 12)
+      let optionCount = 10
+      let optionNames = options
+                        |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
+                        |> Seq.sort
+                        |> Seq.toList
+
+      // Options add "<>" and "help"
+      Assert.That(options.Count, Is.EqualTo (optionCount + 2), String.Join("; ", optionNames))
+
+      let optionNames = options
+                        |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
+                        |> Seq.sort
+                        |> Seq.toList
+
+      let primitiveNames = typeof<Primitive.CollectParameters>
+                           |> FSharpType.GetRecordFields
+                           |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                           |> Seq.sort
+                           |> Seq.toList
+
+      // swap "collect" and "commandline"
+      Assert.That(primitiveNames |> List.length, Is.EqualTo optionCount,
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", primitiveNames))
+
+      let typesafeNames = typeof<TypeSafe.CollectParameters>
+                          |> FSharpType.GetRecordFields
+                          |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                          |> Seq.sort
+                          |> Seq.toList
+
+      Assert.That(typesafeNames |> List.length, Is.EqualTo optionCount,
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", typesafeNames))
+
+      let fsapiNames = typeof<FSApi.CollectParameters>.GetProperties()
+                       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                       |> Seq.sort
+                       |> Seq.toList
+      let fsapiCases = (typeof<FSApi.CollectParameters>
+                        |> FSharpType.GetUnionCases).Length
+
+      // Adds "Tag", "IsPrimitive", "IsTypeSafe"
+      Assert.That(fsapiNames
+                  |> Seq.length, Is.EqualTo (optionCount + fsapiCases + 1),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", fsapiNames))
+
+      let taskNames = typeof<Collect>.GetProperties(BindingFlags.DeclaredOnly ||| BindingFlags.Public ||| BindingFlags.Instance)
+                      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                      |> Seq.sort
+                      |> Seq.toList
+
+      // gains summary (output)
+      Assert.That(taskNames
+                  |> Seq.length, Is.EqualTo (optionCount + 1),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", taskNames))
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
