@@ -128,12 +128,12 @@ module DotNet =
 
 #if RUNNER
     member self.WithAltCoverParameters (prepare : FSApi.PrepareParameters)
-           (collect : FSApi.CollectParameters) (force : DotNet.CLIArgs) =
+           (collect : FSApi.CollectParameters) (force : DotNet.CLIOptions) =
       DotNet.ToTestArguments
 #else
     member self.WithAltCoverParameters (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
            (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
-           (force : AltCoverFake.DotNet.Testing.DotNet.CLIArgs) =
+           (force : AltCoverFake.DotNet.Testing.DotNet.CLIOptions) =
       AltCoverFake.DotNet.Testing.Internals.toTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams

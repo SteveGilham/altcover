@@ -6,7 +6,6 @@ using Cake.Core.IO;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using AltCover.Parameters;
 
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
   Scope = "member", Target = "AltCover.Cake.DotNet.#DotNetCoreTest(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Common.Tools.DotNetCore.Test.DotNetCoreTestSettings,AltCover.Cake.AltCoverSettings)",
@@ -16,9 +15,9 @@ namespace AltCover.Cake
 {
   public class AltCoverSettings
   {
-    public IPrepareArgs PreparationPhase { get; set; }
-    public ICollectArgs CollectionPhase { get; set; }
-    public ICLIArg Control { get; set; }
+    public CSApi.IPrepareParameters PreparationPhase { get; set; }
+    public CSApi.ICollectParameters CollectionPhase { get; set; }
+    public CSApi.ICLIOptions Control { get; set; }
 
     public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
     {

@@ -3,8 +3,6 @@ using Cake.Core;
 using Cake.Core.Annotations;
 using LogLevel = Cake.Core.Diagnostics.LogLevel;
 using Verbosity = Cake.Core.Diagnostics.Verbosity;
-using AltCover.Parameters;
-using AltCover.Parameters.Primitive;
 
 namespace AltCover.Cake
 {
@@ -12,13 +10,13 @@ namespace AltCover.Cake
                     Justification = "It's the API for the system")]
   public static class Api
   {
-    private static ILogArgs MakeLog(ICakeContext context, ILogArgs log)
+    private static CSApi.ILogging MakeLog(ICakeContext context, CSApi.ILogging log)
     {
       if (log != null)
         return log;
 
       if (context != null)
-        return new LogArgs()
+        return new CSApi.Primitive.LoggingParameters()
         {
           Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x),
           Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x),
@@ -26,7 +24,7 @@ namespace AltCover.Cake
           StandardError = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x),
         };
 
-      return new LogArgs()
+      return new CSApi.Primitive.LoggingParameters()
       {
         Info = x => { },
         Warn = x => { },
@@ -38,7 +36,7 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Prepare(this ICakeContext context, IPrepareArgs prepareArgs, ILogArgs log = null)
+    public static int Prepare(this ICakeContext context, CSApi.IPrepareParameters prepareArgs, CSApi.ILogging log = null)
     {
       return CSApi.Prepare(prepareArgs, MakeLog(context, log));
     }
@@ -46,7 +44,7 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Collect(this ICakeContext context, ICollectArgs collectArgs, ILogArgs log = null)
+    public static int Collect(this ICakeContext context, CSApi.ICollectParameters collectArgs, CSApi.ILogging log = null)
     {
       return CSApi.Collect(collectArgs, MakeLog(context, log));
     }

@@ -242,16 +242,16 @@ module FSApiTests =
 
   [<Test>]
   let ArgumentsBuilt() =
-    let force = DotNet.CLIArgs.Force true
-    let fail = DotNet.CLIArgs.FailFast true
-    let summary = DotNet.CLIArgs.ShowSummary "R"
-    let combined =DotNet.CLIArgs.Many [ force; fail; summary ]
+    let force = DotNet.CLIOptions.Force true
+    let fail = DotNet.CLIOptions.FailFast true
+    let summary = DotNet.CLIOptions.ShowSummary "R"
+    let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
     test <@ fail.ForceDelete |> not @>
     test <@ force.Fast |> not @>
     test <@ combined.ForceDelete @>
     test <@ combined.Fast @>
     test <@ combined.Summary = "R" @>
-    test <@ (DotNet.CLIArgs.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
+    test <@ (DotNet.CLIOptions.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
 
     let pprep = Primitive.PrepareParameters.Create()
     let prep = AltCover.FSApi.PrepareParameters.Primitive pprep

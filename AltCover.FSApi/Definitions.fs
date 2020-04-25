@@ -26,11 +26,11 @@ module DotNet =
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#");
     AutoSerializable(false)>]
-  type CLIArgs =
+  type CLIOptions =
     | Force of bool
     | FailFast of bool
     | ShowSummary of String
-    | Many of CLIArgs seq
+    | Many of CLIOptions seq
 
     member self.ForceDelete =
       match self with
@@ -78,11 +78,11 @@ module internal Internals =
 
 #if RUNNER
   let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParameters)
-      (collect : AltCover.FSApi.CollectParameters) (force : CLIArgs) =
+      (collect : AltCover.FSApi.CollectParameters) (force : CLIOptions) =
 #else
   let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
       (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
-      (force : DotNet.CLIArgs) =
+      (force : DotNet.CLIOptions) =
 #endif
 
     [ fromArg String.Empty "true"
@@ -122,11 +122,11 @@ module internal Internals =
 
 #if RUNNER
   let ToTestArguments (prepare : AltCover.FSApi.PrepareParameters)
-      (collect : AltCover.FSApi.CollectParameters) (force : CLIArgs) =
+      (collect : AltCover.FSApi.CollectParameters) (force : CLIOptions) =
     ToTestArgumentList prepare collect force |> join
 #else
   let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
       (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
-      (force : DotNet.CLIArgs) =
+      (force : DotNet.CLIOptions) =
     toTestArgumentList prepare collect force |> join
 #endif

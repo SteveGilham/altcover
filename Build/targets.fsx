@@ -162,9 +162,9 @@ let withWorkingDirectoryVM dir o =
 let withWorkingDirectoryOnly dir o =
   { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
-let withCLIArgs (o : Fake.DotNet.DotNet.TestOptions) =
+let testWithCLIArguments (o : Fake.DotNet.DotNet.TestOptions) =
   { o with MSBuildParams = cliArguments }
-let withMSBuildParams (o : Fake.DotNet.DotNet.BuildOptions) =
+let buildWithCLIArguments (o : Fake.DotNet.DotNet.BuildOptions) =
   { o with MSBuildParams = cliArguments }
 
 let NuGetAltCover =
@@ -176,12 +176,12 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
-let ForceTrueOnly = DotNet.CLIArgs.Force true
-let FailTrue = DotNet.CLIArgs.FailFast true
+let ForceTrueOnly = DotNet.CLIOptions.Force true
+let FailTrue = DotNet.CLIOptions.FailFast true
 
-let GreenSummary = DotNet.CLIArgs.ShowSummary "Green"
-let ForceTrue = DotNet.CLIArgs.Many [ ForceTrueOnly; GreenSummary ]
-let ForceTrueFast = DotNet.CLIArgs.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
+let GreenSummary = DotNet.CLIOptions.ShowSummary "Green"
+let ForceTrue = DotNet.CLIOptions.Many [ ForceTrueOnly; GreenSummary ]
+let ForceTrueFast = DotNet.CLIOptions.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
 
 let dotnet_altcover =
   Fake.DotNet.ToolType.CreateFrameworkDependentDeployment dotnetOptions
@@ -211,7 +211,7 @@ let coverletTestOptions (o : DotNet.TestOptions) =
       NoBuild = true
       Framework = Some "netcoreapp3.0"
       Settings = Some "./Build/coverletArgs.runsettings" }
-  |> withCLIArgs
+  |> testWithCLIArguments
 
 let coverletTestOptionsSample (o : DotNet.TestOptions) =
   { coverletTestOptions o with Settings = Some "./Build/coverletArgs.sample.runsettings" }
@@ -271,12 +271,12 @@ let msbuildDebug proj =
 let dotnetBuildRelease proj =
   DotNet.build (fun p ->
     { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Release }
-    |> withMSBuildParams) proj
+    |> buildWithCLIArguments) proj
 
 let dotnetBuildDebug proj =
   DotNet.build (fun p ->
     { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
-    |> withMSBuildParams) proj
+    |> buildWithCLIArguments) proj
 
 // Information.getCurrentHash()
 let commitHash = Information.getCurrentSHA1 (".")
@@ -709,7 +709,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
              Framework = Some "netcoreapp3.0" }
-         |> withMSBuildParams)))
+         |> buildWithCLIArguments)))
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -721,7 +721,7 @@ _Target "UnitTestDotNet" (fun _ ->
                Configuration = DotNet.BuildConfiguration.Debug
                Framework = Some "netcoreapp3.0"
                NoBuild = true }
-           |> withCLIArgs))
+           |> testWithCLIArguments))
   with x ->
     printfn "%A" x
     reraise())
@@ -734,7 +734,7 @@ _Target "BuildForCoverlet" (fun _ ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
              Framework = Some "netcoreapp3.0" }
-         |> withMSBuildParams)))
+         |> buildWithCLIArguments)))
 
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -1204,7 +1204,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
                   Configuration = DotNet.BuildConfiguration.Debug
                   Framework = Some "netcoreapp3.0"
                   NoBuild = true }
-              |> withCLIArgs)
+              |> testWithCLIArguments)
        with x ->
          printfn "%A" x
          reraise())
@@ -1349,7 +1349,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
        { o.WithCommon(withWorkingDirectoryVM "Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug
            Framework = Some "netcoreapp2.1" }
-       |> withCLIArgs)
+       |> testWithCLIArguments)
 
   let prep =
     AltCover.PrepareParameters.Primitive
@@ -1378,7 +1378,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
            Configuration = DotNet.BuildConfiguration.Debug
            Framework = Some "netcoreapp2.1"
            NoBuild = true }
-       |> withCLIArgs)
+       |> testWithCLIArguments)
   Actions.ValidateFSharpTypesCoverage simpleReport)
 
 _Target "FSharpTests" (fun _ ->
@@ -1394,7 +1394,7 @@ _Target "FSharpTests" (fun _ ->
   "sample7.core.fsproj"
   |> DotNet.test (fun o ->
        { o.WithCommon(withWorkingDirectoryVM "Sample7") with
-           Configuration = DotNet.BuildConfiguration.Debug } |> withCLIArgs)
+           Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
 
   // inplace instrument
   let prep =
@@ -1499,7 +1499,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   "sample2.core.fsproj"
   |> DotNet.test (fun o ->
        { o.WithCommon(withWorkingDirectoryVM "Sample2") with
-           Configuration = DotNet.BuildConfiguration.Debug } |> withCLIArgs)
+           Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
 
   printfn  "inplace instrument and save"
   let prep =
@@ -1530,7 +1530,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
        { o.WithCommon(withWorkingDirectoryVM "Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug
            NoBuild = true }
-       |> withCLIArgs)
+       |> testWithCLIArguments)
 
   printfn "Collect the results"
   let collect =
@@ -2749,7 +2749,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
            Configuration = DotNet.BuildConfiguration.Debug
            Framework = Some "netcoreapp2.1"
            NoBuild = true }
-       |> withCLIArgs)
+       |> testWithCLIArguments)
   Actions.ValidateFSharpTypesCoverage x)
 
 _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
@@ -2858,7 +2858,7 @@ _Target "OpenCoverForPester" (fun _ ->
   try
     DotNet.build (fun p ->
       { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
-      |> withMSBuildParams) sample
+      |> buildWithCLIArguments) sample
     DotNet.test coverletTestOptionsSample sample
   with x -> eprintf "%A" x
   let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
@@ -3202,7 +3202,7 @@ _Target "DoIt"
   let prepare =
     FSApi.PrepareParameters.Primitive
       { AltCover.Primitive.PrepareParameters.Create() with TypeFilter = [| "a"; "b" |] }
-  let ForceTrue = DotNet.CLIArgs.Force true
+  let ForceTrue = DotNet.CLIOptions.Force true
   printfn "Test arguments : '%s'" (DotNet.ToTestArguments prepare collect ForceTrue)
 
   let t = DotNet.TestOptions.Create().WithAltCoverParameters prepare collect ForceTrue
@@ -3354,7 +3354,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest").WithAltCoverGetVersion()
           .WithAltCoverImportModule()).WithAltCoverParameters pp1 cc0 ForceTrue
-      |> withCLIArgs) "dotnettest.fsproj"
+      |> testWithCLIArguments) "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
     Actions.CheckSample4 x
@@ -3378,7 +3378,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     try
       DotNet.test (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFail")).WithAltCoverParameters
-          pf1 cc0 ForceTrue |> withCLIArgs) "dotnettest.fsproj"
+          pf1 cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
@@ -3415,7 +3415,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     try
       DotNet.test (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFast")).WithAltCoverParameters
-          pf1 cc0 FailTrue |> withCLIArgs) "dotnettest.fsproj"
+          pf1 cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
@@ -3458,7 +3458,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let pp2 = AltCover.PrepareParameters.Primitive p2
     DotNet.test (fun to' ->
       to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithAltCoverParameters
-        pp2 cc0 ForceTrue |> withCLIArgs) ""
+        pp2 cc0 ForceTrue |> testWithCLIArguments) ""
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
 
@@ -3501,7 +3501,7 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     DotNet.test (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithAltCoverParameters
-        pp3 cc0 ForceTrue) |> withCLIArgs) ""
+        pp3 cc0 ForceTrue) |> testWithCLIArguments) ""
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
 
@@ -3531,7 +3531,7 @@ _Target "DotnetTestIntegration" (fun _ ->
 
       DotNet.test (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithAltCoverParameters
-          pp29 cc0 ForceTrueFast) |> withCLIArgs) ""
+          pp29 cc0 ForceTrueFast) |> testWithCLIArguments) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -3547,7 +3547,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test (fun to' ->
       { ((to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue37")).WithAltCoverParameters
           pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
-      |> withCLIArgs) ""
+      |> testWithCLIArguments) ""
 
     let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
     Assert.That(cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
@@ -3589,7 +3589,7 @@ _Target "Issue20" (fun _ ->
       ({ to'.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests") with
            Configuration = DotNet.BuildConfiguration.Debug
            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue
-      |> withCLIArgs) ""
+      |> testWithCLIArguments) ""
 
   //let shared =
   //  if Environment.isWindows then
@@ -3646,7 +3646,7 @@ _Target "Issue23" (fun _ ->
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
-      |> withCLIArgs) ""
+      |> testWithCLIArguments) ""
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -3687,7 +3687,7 @@ _Target "Issue67" (fun _ ->
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
-      |> withCLIArgs) ""
+      |> testWithCLIArguments) ""
 
     let cover = XDocument.Load "./_Issue67/coverage.xml"
 
@@ -3740,7 +3740,7 @@ _Target "Issue72" (fun _ ->
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
-      |> withCLIArgs) ""
+      |> testWithCLIArguments) ""
 
     do use coverageFile =
          new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open,
@@ -3771,7 +3771,7 @@ _Target "Issue72" (fun _ ->
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverParameters pp1 cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
-      |> withCLIArgs) ""
+      |> testWithCLIArguments) ""
 
     do use coverageFile =
          new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open,
