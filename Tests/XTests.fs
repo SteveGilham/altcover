@@ -166,7 +166,7 @@ module AltCoverXTests =
             |> FSApi.Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
-    let TypeSafeEmptyThresholdCanBeValidated() =
+  let TypeSafeEmptyThresholdCanBeValidated() =
       let empty = TypeSafe.Threshold <| TypeSafe.Thresholds.Create()
       test <@ empty.AsString() = String.Empty @>
 
