@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="coverage-04.xsd" />
+    <EmbeddedResource Include="..\nupkg\build\netstandard2.0\AltCover.targets" Link="AltCover.targets" />
     <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />

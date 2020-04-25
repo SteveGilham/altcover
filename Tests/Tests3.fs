@@ -4,6 +4,7 @@ namespace Tests
 open System
 open System.IO
 open System.Reflection
+open System.Xml.Linq
 
 open AltCover
 open AltCover.Augment
@@ -143,6 +144,28 @@ module AltCoverTests3 =
                   |> Seq.length, Is.EqualTo (optionCount + 1),
                   "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", taskNames))
+
+      let targets =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("AltCover.targets", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(targets)
+      let doc = XDocument.Load stream
+      let prepare = doc.Descendants()
+                    |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Prepare")
+                    |> Seq.head
+      let attributeNames = prepare.Attributes()
+                           |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+                           |> Seq.sort
+                           |> Seq.toList
+
+      // dotnet test loses commandline, defer, exposereturncode, inplace, save
+      //                   N/A,         fixed, N/A,              fixed,   fixed
+      Assert.That(attributeNames
+                  |> Seq.length, Is.EqualTo (optionCount - 4),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", attributeNames))
 
       Assert.That
         (options

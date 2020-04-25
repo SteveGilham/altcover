@@ -455,6 +455,29 @@ module AltCoverRunnerTests =
                   |> Seq.length, Is.EqualTo (optionCount + 1),
                   "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", taskNames))
+
+      let targets =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("AltCover.targets", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(targets)
+      let doc = XDocument.Load stream
+      let collect = doc.Descendants()
+                    |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Collect")
+                    |> Seq.head
+      let attributeNames = collect.Attributes()
+                           |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+                           |> Seq.sort
+                           |> Seq.toList
+
+      // loses commandline; executable; exposereturncode; outputfile; workingdirectory
+      //       N/A,         N/A,        N/A,              fixed,      N/A
+      Assert.That(attributeNames
+                  |> Seq.length, Is.EqualTo (optionCount - 5),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", attributeNames))
+
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
