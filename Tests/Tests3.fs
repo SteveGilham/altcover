@@ -129,6 +129,17 @@ module AltCoverTests3 =
       let fsapiCases = (typeof<FSApi.PrepareParameters>
                         |> FSharpType.GetUnionCases).Length
 
+      let args = Primitive.PrepareParameters.Create() |> FSApi.PrepareParameters.Primitive
+      let commandFragments = [FSApi.Args.listItems >> (List.map fst)
+                              FSApi.Args.plainItems >> (List.map fst)
+                              FSApi.Args.options >> List.map (fun (a,_,_) -> a)
+                              FSApi.Args.flagItems >> (List.map fst)]
+                             |> List.collect (fun f -> f args)
+                             |> List.sort
+      Assert.That(commandFragments |> List.length, Is.EqualTo optionCount,
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", typesafeNames))
+
       // Adds "Tag", "IsPrimitive", "IsTypeSafe"
       Assert.That(fsapiNames
                   |> Seq.length, Is.EqualTo (optionCount + 1 + fsapiCases + 1),

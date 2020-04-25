@@ -439,6 +439,14 @@ module AltCoverRunnerTests =
       let fsapiCases = (typeof<FSApi.CollectParameters>
                         |> FSharpType.GetUnionCases).Length
 
+      let args = Primitive.CollectParameters.Create() |> FSApi.CollectParameters.Primitive
+      let commandFragments = FSApi.Args.buildCollect args
+
+      // adds Runner and the trailing command line arguments
+      Assert.That(commandFragments |> List.length, Is.EqualTo (optionCount + 2),
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", typesafeNames))  // todo
+
       // Adds "Tag", "IsPrimitive", "IsTypeSafe"
       Assert.That(fsapiNames
                   |> Seq.length, Is.EqualTo (optionCount + fsapiCases + 1),

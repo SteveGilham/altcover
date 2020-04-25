@@ -479,7 +479,7 @@ module internal Args =
   let private flag a x =
     if x then [ a ] else []
 
-  let internal itemLists(args : PrepareParameters) =
+  let internal listItems(args : PrepareParameters) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -493,19 +493,31 @@ module internal Args =
       ("-a", args.AttributeFilter)
       ("-p", args.PathFilter)
       ("-c", args.CallContext) ]
+
+  let internal itemLists(args : PrepareParameters) =
+    args
+    |> listItems
     |> List.collect (fun (a, b) -> itemList a b)
 
-  let internal items(args : PrepareParameters) =
+  let internal plainItems(args : PrepareParameters) =
     [ ("--sn", args.StrongNameKey)
       ("--reportFormat", args.ReportFormat)
       ("-x", args.XmlReport) ]
+
+  let internal items(args : PrepareParameters) =
+    args
+    |> plainItems
     |> List.collect (fun (a, b) -> ArgsHelper.item a b)
 
-  let internal optItems(args : PrepareParameters) =
+  let internal options(args : PrepareParameters) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
+
+  let internal optItems(args : PrepareParameters) =
+    args
+    |> options
     |> List.collect (fun (a, b, c) -> ArgsHelper.optionalItem a b c)
 
-  let internal flags(args : PrepareParameters) =
+  let internal flagItems(args : PrepareParameters) =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--zipfile", args.ZipFile)
@@ -519,6 +531,10 @@ module internal Args =
       ("--localSource", args.LocalSource)
       ("--visibleBranches", args.VisibleBranches)
       ("--showGenerated", args.ShowGenerated) ]
+
+  let internal flags(args : PrepareParameters) =
+    args
+    |> flagItems
     |> List.collect (fun (a, b) -> flag a b)
 
   let prepare(args : PrepareParameters) =
@@ -532,7 +548,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let collect(args : CollectParameters) =
+  let internal buildCollect(args : CollectParameters) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -552,6 +568,10 @@ module internal Args =
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       ArgsHelper.optionalItem "--teamcity" args.SummaryFormat []
       trailing ]
+
+  let collect(args : CollectParameters) =
+    args
+    |> buildCollect
     |> List.concat
 
 #if RUNNER
@@ -732,8 +752,8 @@ let runWithMono monoPath parameters =
 
   runCore parameters withMono
 
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@715T.#monoPath", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@715T.#parameters", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withWorkingDirectory@675T.#parameters", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@735T.#monoPath", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@735T.#parameters", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withWorkingDirectory@695T.#parameters", Justification="Generated code")>]
 ()
 #endif
