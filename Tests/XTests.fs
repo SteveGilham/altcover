@@ -524,6 +524,7 @@ module AltCoverXTests =
 #endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
+          "testhost.dll"; "testhost.exe"
           "xunit.runner.reporters.netcoreapp10.dll";
           "xunit.runner.utility.netcoreapp10.dll";
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
