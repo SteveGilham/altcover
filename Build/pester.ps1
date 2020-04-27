@@ -5,3 +5,10 @@ Import-Module "./packages/pester/4.10.1/tools/Pester.psm1"
 
 Invoke-Altcover -?
 Invoke-Pester -Script @{ Path='.\Build'; Parameters = @{ ACV = $ACV}} -EnableExit -OutputFormat NUnitXml -OutputFile "./_Reports/PesterReport.xml"
+
+$m = Get-Module -Name "AltCover.PowerShell"
+$m.ExportedCmdlets.Keys
+
+$m.ExportedCmdlets.Keys | % { 
+  Invoke-Expression ($_ + " -?")
+}
