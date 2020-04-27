@@ -995,8 +995,8 @@ module internal Runner =
         try
           AltCover.Base.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
         finally
-          if container.IsNotNull then container.Dispose()
           file.Dispose()
+          if container.IsNotNull then container.Dispose()
       reporter
 
     // mocking points
