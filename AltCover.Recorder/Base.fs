@@ -6,9 +6,14 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Xml
+
+#if !RUNNER
+open ICSharpCode.SharpZipLib.Zip
+#endif
 
 type internal ReportFormat =
   | NCover = 0
@@ -290,6 +295,14 @@ module internal Counter =
                             )))
       hitcount
 #endif
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+     "AvoidLongParameterListsRule",
+     Justification="Most of this gets curried away")>]
+    let doFlush postProcess pointProcess own counts format coverageFile outputFile =
+      let flushStart =
+        updateReport postProcess pointProcess own counts format coverageFile outputFile
+      TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+
   // "Public" API
   let internal addSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
@@ -314,9 +327,9 @@ module internal Counter =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+  [<SuppressMessage("Microsoft.Reliability",
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'Target' is disposed")>]
+                                                    Justification = "'target' is disposed")>]
   let internal doFlushStream postProcess pointProcess own counts format coverageFile output =
     use target =
       match output with
@@ -329,18 +342,48 @@ module internal Counter =
       if Option.isSome output then target
       else coverageFile :> Stream
 
-    let flushStart =
-      I.updateReport postProcess pointProcess own counts format coverageFile outputFile
-    TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+    I.doFlush postProcess pointProcess own counts format coverageFile outputFile
 
 #if !RUNNER
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+  [<SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
+  [<SuppressMessage("Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+   Justification="'zip' owns 'container' and is 'Close()'d")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "ald also 'target' is disposed")>]
   let internal doFlushFile postProcess pointProcess own counts format report output =
-    use coverageFile =
-      new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
+    if File.Exists report
+    then
+      use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                                        FileOptions.SequentialScan)
+      doFlushStream postProcess pointProcess own counts format coverageFile output
+    else
+      let container = new FileStream(report + ".zip", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                                        FileOptions.SequentialScan)
+      let zip = new ZipFile(container)
+      try
+        let entryName = report |> Path.GetFileName
+        let entry = zip.GetEntry(entryName)
+        use target =
+          match output with
+          | None -> new MemoryStream() :> Stream
+          | Some f ->
+            new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
+                            FileOptions.SequentialScan) :> Stream
+        let result = use reader = zip.GetInputStream(entry)
+                     I.doFlush postProcess pointProcess own counts format reader target
+        if output.IsNone then
+          zip.BeginUpdate()
+          zip.Delete entry
+          target.Seek(0L, SeekOrigin.Begin) |> ignore
+          let source = { new IStaticDataSource with
+                           member self.GetSource() = target }
+          zip.Add(source, entryName)
+          zip.CommitUpdate();
 
-    doFlushStream postProcess pointProcess own counts format coverageFile output
+        result
+      finally
+        zip.Close()
 #endif
