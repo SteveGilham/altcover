@@ -2488,6 +2488,54 @@ _Target "SimpleReleaseTest" (fun _ ->
   Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU/net20" unpack
     "SimpleReleaseTest")
 
+_Target "SimpleZipReleaseTest" (fun _ ->
+  let binaryPath =
+    match NuGetAltCover with
+    | Some test ->
+        Trace.traceImportant "Using the NuGet package"
+        Path.GetDirectoryName test
+    | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
+
+  let reportSigil = "SimpleZipReleaseTest"
+
+  printfn "Instrument and run a simple executable"
+  Directory.ensure "./_Reports"
+  let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
+  let binRoot = Path.getFullName binaryPath
+  let sampleRoot = Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/net20"
+  let instrumented = "__Instrumented." + reportSigil
+  let framework = Fake.DotNet.ToolType.CreateFullFramework()
+
+  let prep =
+    AltCover.PrepareParameters.Primitive
+      { Primitive.PrepareParameters.Create() with
+          TypeFilter = [ """System\.""" ]
+          XmlReport = simpleReport
+          OutputDirectories = [| "./" + instrumented |]
+          ReportFormat = "NCover"
+          ZipFile = true
+          InPlace = false
+          Save = false }
+    |> AltCover.Prepare
+
+  let parameters =
+    { AltCover.Parameters.Create prep with
+        ToolPath = binRoot @@ "AltCover.exe"
+        ToolType = framework
+        WorkingDirectory = sampleRoot }
+
+  AltCover.run parameters
+  System.Threading.Thread.Sleep(1000)
+
+  Actions.Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
+    "Instrumented .exe failed"
+  System.Threading.Thread.Sleep(1000)
+
+  printfn "Extract and verify the first results"
+  System.IO.Compression.ZipFile.ExtractToDirectory(simpleReport + ".zip", (Path.GetDirectoryName simpleReport) @@ ("unzip" + reportSigil))
+
+  Actions.ValidateSample1 (((Path.GetDirectoryName simpleReport) @@ ("unzip" + reportSigil)) @@ (Path.GetFileName simpleReport)) reportSigil)
+
 _Target "SimpleMonoReleaseTest" (fun _ ->
   let unpack =
     match NuGetAltCover with
@@ -4107,6 +4155,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "SimpleReleaseTest"
+==> "Deployment"
+
+"Unpack"
+==> "SimpleZipReleaseTest"
 ==> "Deployment"
 
 "Unpack"
