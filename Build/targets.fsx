@@ -2413,6 +2413,8 @@ _Target "Unpack" (fun _ ->
   System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
 
 _Target "WindowsPowerShell" (fun _ ->
+  Directory.ensure "./_Documentation"
+
   let v = (!Version).Split([| '-' |]).[0]
   CreateProcess.fromRawCommand "powershell.exe"
     [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ]
