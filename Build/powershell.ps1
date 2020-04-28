@@ -88,21 +88,21 @@ Summary information is also written to the object pipeline.
 "@;
 }
 
-$preamble | Out-File "./_Documentation/PowerShell-integration.md"
+$preamble | Out-File -Encoding UTF8 "./_Documentation/PowerShell-integration.md"
 
 $m.ExportedCmdlets.Keys | % {
-    "[$_](#$_)" | Out-File -Append "./_Documentation/PowerShell-integration.md"
+    "[$_](#$_)" | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
 }
 
-" " | Out-File -Append "./_Documentation/PowerShell-integration.md"
+" " | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
 
 $m.ExportedCmdlets.Keys | % { 
-  "###    $_"  | Out-File -Append "./_Documentation/PowerShell-integration.md"
-  '```' | Out-File -Append "./_Documentation/PowerShell-integration.md"
-  Invoke-Expression ($_ + " -?") | Out-File -Append "./_Documentation/PowerShell-integration.md"
-  '```' | Out-File -Append "./_Documentation/PowerShell-integration.md"
-  " " | Out-File -Append "./_Documentation/PowerShell-integration.md"
+  "###    $_"  | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+  '```' | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+  Invoke-Expression ($_ + " -?") | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+  '```' | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+  " " | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
   if (-not $comments[$_]) { throw "No documentation for $_" }
-  $comments[$_]  | Out-File -Append "./_Documentation/PowerShell-integration.md"
-  " " | Out-File -Append "./_Documentation/PowerShell-integration.md"
+  $comments[$_]  | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+  " " | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
 }
