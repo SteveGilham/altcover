@@ -79,19 +79,19 @@ and [<NoComparison>]
 module internal Counter =
   // "Public" "fields"
 
-  /// <summary>
-  /// The time at which coverage run began
-  /// </summary>
+  // // <summary>
+  // // The time at which coverage run began
+  // // </summary>
   let mutable internal startTime = DateTime.UtcNow
 
-  /// <summary>
-  /// The finishing time taken of the coverage run
-  /// </summary>
+  // // <summary>
+  // // The finishing time taken of the coverage run
+  // // </summary>
   let mutable internal measureTime = DateTime.UtcNow
 
-  /// <summary>
-  /// The offset flag for branch counts
-  /// </summary>
+  // // <summary>
+  // // The offset flag for branch counts
+  // // </summary>
   let internal branchFlag = 0x80000000
 
   let internal branchMask = 0x7FFFFFFF
@@ -103,27 +103,27 @@ module internal Counter =
   module private I =
 #endif
 
-    /// <summary>
-    /// Load the XDocument
-    /// </summary>
-    /// <param name="path">The XML file to load</param>
-    /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
-    /// If this is ever a problem, we will need mutability and two streams, with explicit
-    /// stream disposal if and only if the reader or writer doesn't take ownership
-    /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-    /// Also, this rule is deprecated
-    /// </remarks>
+    // // <summary>
+    // // Load the XDocument
+    // // </summary>
+    // // <param name="path">The XML file to load</param>
+    // // <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
+    // // If this is ever a problem, we will need mutability and two streams, with explicit
+    // // stream disposal if and only if the reader or writer doesn't take ownership
+    // // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+    // // Also, this rule is deprecated
+    // // </remarks>
     let private readXDocument(stream : Stream) =
       let doc = XmlDocument()
       doc.Load(stream)
       doc
 
-    /// <summary>
-    /// Write the XDocument
-    /// </summary>
-    /// <param name="coverageDocument">The XML document to write</param>
-    /// <param name="path">The XML file to write to</param>
-    /// <remarks>Idiom to work with CA2202 as above</remarks>
+    // // <summary>
+    // // Write the XDocument
+    // // </summary>
+    // // <param name="coverageDocument">The XML document to write</param>
+    // // <param name="path">The XML file to write to</param>
+    // // <remarks>Idiom to work with CA2202 as above</remarks>
     let private writeXDocument (coverageDocument : XmlDocument) (stream : Stream) =
       coverageDocument.Save(stream)
 
@@ -159,11 +159,11 @@ module internal Counter =
       then t1
       else t2
 
-    /// <summary>
-    /// Save sequence point hit counts to xml report file
-    /// </summary>
-    /// <param name="hitCounts">The coverage results to incorporate</param>
-    /// <param name="coverageFile">The coverage file to update as a stream</param>
+    // // <summary>
+    // // Save sequence point hit counts to xml report file
+    // // </summary>
+    // // <param name="hitCounts">The coverage results to incorporate</param>
+    // // <param name="coverageFile">The coverage file to update as a stream</param>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule",
      Justification="Most of this gets curried away")>]

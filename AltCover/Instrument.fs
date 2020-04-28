@@ -27,9 +27,9 @@ type internal RecorderRefs =
       Push = null
       Pop = null }
 
-/// <summary>
-/// State object passed from visit to visit
-/// </summary>
+// // <summary>
+// // State object passed from visit to visit
+// // </summary>
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal InstrumentContext =
   { InstrumentedAssemblies : string list
@@ -48,9 +48,9 @@ type internal InstrumentContext =
       MethodBody = null
       MethodWorker = null } // to save fetching repeatedly
 
-/// <summary>
-/// Module to handle instrumentation visitor
-/// </summary>
+// // <summary>
+// // Module to handle instrumentation visitor
+// // </summary>
 module internal Instrument =
   let private resources =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
@@ -77,11 +77,11 @@ module internal Instrument =
       (resources.GetString "frameworkLibraries")
         .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
 
-    /// <summary>
-    /// Locate the method that must be called to register a code point for coverage visit.
-    /// </summary>
-    /// <param name="assembly">The assembly containing the recorder method</param>
-    /// <returns>A representation of the method to call to signal a coverage visit.</returns>
+    // // <summary>
+    // // Locate the method that must be called to register a code point for coverage visit.
+    // // </summary>
+    // // <param name="assembly">The assembly containing the recorder method</param>
+    // // <returns>A representation of the method to call to signal a coverage visit.</returns>
     let internal recordingMethod(recordingAssembly : AssemblyDefinition) =
       recordingAssembly.MainModule.GetAllTypes()
       |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
@@ -93,11 +93,11 @@ module internal Instrument =
       |> Seq.toList
       |> List.rev
 
-    /// <summary>
-    /// Applies a new key to an assembly name
-    /// </summary>
-    /// <param name="assemblyName">The name to update</param>
-    /// <param name="key">The possibly empty key to use</param>
+    // // <summary>
+    // // Applies a new key to an assembly name
+    // // </summary>
+    // // <param name="assemblyName">The name to update</param>
+    // // <param name="key">The possibly empty key to use</param>
     let internal updateStrongNaming (assembly : AssemblyDefinition)
         (key : StrongNameKeyData option) =
       let assemblyName = assembly.Name
@@ -112,11 +112,11 @@ module internal Instrument =
           assemblyName.HasPublicKey <- true
           assemblyName.PublicKey <- key'.PublicKey |> Seq.toArray // sets token implicitly
 
-    /// <summary>
-    /// Locate the key, if any, which was used to name this assembly.
-    /// </summary>
-    /// <param name="name">The name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
+    // // <summary>
+    // // Locate the key, if any, which was used to name this assembly.
+    // // </summary>
+    // // <param name="name">The name of the assembly</param>
+    // // <returns>A key, if we have a match.</returns>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
@@ -129,11 +129,11 @@ module internal Instrument =
         | (false, _) -> None
         | (_, record) -> Some record.Pair
 
-    /// <summary>
-    /// Locate the key, if any, which was used to name this assembly.
-    /// </summary>
-    /// <param name="name">The name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
+    // // <summary>
+    // // Locate the key, if any, which was used to name this assembly.
+    // // </summary>
+    // // <param name="name">The name of the assembly</param>
+    // // <returns>A key, if we have a match.</returns>
     let internal knownToken(name : AssemblyNameReference) =
       let pktoken = name.PublicKeyToken
       if pktoken.Length <> 8 then
@@ -158,10 +158,10 @@ module internal Instrument =
         (assembly :> IDisposable).Dispose()
         reraise()
 
-    /// <summary>
-    /// Create the new assembly that will record visits, based on the prototype.
-    /// </summary>
-    /// <returns>A representation of the assembly used to record all coverage visits.</returns>
+    // // <summary>
+    // // Create the new assembly that will record visits, based on the prototype.
+    // // </summary>
+    // // <returns>A representation of the assembly used to record all coverage visits.</returns>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
            "EnsureLocalDisposalRule",
            Justification="Return confusing Gendarme -- TODO")>]
@@ -300,13 +300,13 @@ module internal Instrument =
       | _ -> null
   #endif
 
-    /// <summary>
-    /// Commit an instrumented assembly to disk
-    /// </summary>
-    /// <param name="assembly">The instrumented assembly object</param>
-    /// <param name="path">The full path of the output file</param>
-    /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
-    /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
+    // // <summary>
+    // // Commit an instrumented assembly to disk
+    // // </summary>
+    // // <param name="assembly">The instrumented assembly object</param>
+    // // <param name="path">The full path of the output file</param>
+    // // <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
+    // // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
     let internal writeAssembly (assembly : AssemblyDefinition) (path : string) =
       let pkey = Mono.Cecil.WriterParameters()
       let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -365,12 +365,12 @@ module internal Instrument =
        Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" );
       AutoSerializable(false); Sealed>]
     type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
-      /// <summary>
-      /// Adjust the IL for exception handling
-      /// </summary>
-      /// <param name="handler">The exception handler</param>
-      /// <param name="oldBoundary">The uninstrumented location</param>
-      /// <param name="newBoundary">Where it has moved to</param>
+      // // <summary>
+      // // Adjust the IL for exception handling
+      // // </summary>
+      // // <param name="handler">The exception handler</param>
+      // // <param name="oldBoundary">The uninstrumented location</param>
+      // // <param name="newBoundary">Where it has moved to</param>
       member this.SubstituteExceptionBoundary(handler : ExceptionHandler) =
         if handler.FilterStart = oldValue then handler.FilterStart <- newValue
         if handler.HandlerEnd = oldValue then handler.HandlerEnd <- newValue
@@ -378,12 +378,12 @@ module internal Instrument =
         if handler.TryEnd = oldValue then handler.TryEnd <- newValue
         if handler.TryStart = oldValue then handler.TryStart <- newValue
 
-      /// <summary>
-      /// Adjust the IL to substitute an opcode
-      /// </summary>
-      /// <param name="instruction">Instruction being processed</param>
-      /// <param name="oldOperand">Type we are looking for</param>
-      /// <param name="newOperand">Type to replace it with</param>
+      // // <summary>
+      // // Adjust the IL to substitute an opcode
+      // // </summary>
+      // // <param name="instruction">Instruction being processed</param>
+      // // <param name="oldOperand">Type we are looking for</param>
+      // // <param name="newOperand">Type to replace it with</param>
       member this.SubstituteInstructionOperand(instruction : Instruction) =
         // Performance reasons - only 3 types of operators have operands of Instruction types
         // instruction.Operand getter - is rather slow to execute it for every operator
@@ -412,12 +412,12 @@ module internal Instrument =
       methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
       instrLoadModuleId
 
-    /// <summary>
-    /// Determine new names for input strong-named assemblies; if we have a key and
-    /// the assembly was already strong-named then give it the new key token, otherwise
-    /// set that there is no strongname.
-    /// </summary>
-    /// <param name="assembly">The assembly object being operated upon</param>
+    // // <summary>
+    // // Determine new names for input strong-named assemblies; if we have a key and
+    // // the assembly was already strong-named then give it the new key token, otherwise
+    // // set that there is no strongname.
+    // // </summary>
+    // // <param name="assembly">The assembly object being operated upon</param>
     let internal updateStrongReferences (assembly : AssemblyDefinition)
         (assemblies : string list) =
       let effectiveKey =
@@ -737,12 +737,12 @@ module internal Instrument =
       let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
       { state with RecordingAssembly = recordingAssembly }
 
-    /// <summary>
-    /// Perform visitor operations
-    /// </summary>
-    /// <param name="state">Contextual information for the visit</param>
-    /// <param name="node">The node being visited</param>
-    /// <returns>Updated state</returns>
+    // // <summary>
+    // // Perform visitor operations
+    // // </summary>
+    // // <param name="state">Contextual information for the visit</param>
+    // // <param name="node">The node being visited</param>
+    // // <returns>Updated state</returns>
     let internal instrumentationVisitorCore (state : InstrumentContext) (node : Node) =
       match node with
       | Start _ -> visitStart state
@@ -781,10 +781,10 @@ module internal Instrument =
       instrumentationVisitorWrapper instrumentationVisitorCore state node
 
   // "Public" API
-  /// <summary>
-  /// Higher-order function that returns a visitor
-  /// </summary>
-  /// <param name="assemblies">List of assembly paths to visit</param>
-  /// <returns>Stateful visitor function</returns>
+  // // <summary>
+  // // Higher-order function that returns a visitor
+  // // </summary>
+  // // <param name="assemblies">List of assembly paths to visit</param>
+  // // <returns>Stateful visitor function</returns>
   let internal instrumentGenerator(assemblies : string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
