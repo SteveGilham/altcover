@@ -630,10 +630,15 @@ Describe "Format-FromCoverletOpenCover" {
     $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
     $assemblies = @()
     $assemblies += $assembly
-    $hash = Get-FileHash -Algorithm SHA1 $assembly
-    $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
-
-
+    # $hash = Get-FileHash -Algorithm SHA1 $assembly
+    # $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
+    $sha1 = new-object "System.Security.Cryptography.SHA1Managed"
+    $fs = [System.IO.File]::OpenRead($assembly)
+    $bytes = $sha1.ComputeHash($fs)
+    $fs.Close()
+    $sha1.Dispose()
+    $hexpected = [System.BitConverter]::ToString($bytes)
+    
     $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType [xdoc]
 
