@@ -32,6 +32,11 @@
     <DocumentationFile>$(SolutionDir)_Documentation\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="_Intermediate\**" />
+    <EmbeddedResource Remove="_Intermediate\**" />
+    <None Remove="_Intermediate\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="packages.config" />
   </ItemGroup>
 
