@@ -6,6 +6,9 @@ using Verbosity = Cake.Core.Diagnostics.Verbosity;
 
 namespace AltCover.Cake
 {
+  /// <summary>
+  ///
+  /// </summary>
   [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification = "It's the API for the system")]
   public static class Api
@@ -33,6 +36,13 @@ namespace AltCover.Cake
       };
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="prepareArgs"></param>
+    /// <param name="log"></param>
+    /// <returns></returns>
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
@@ -41,6 +51,13 @@ namespace AltCover.Cake
       return CSApi.Prepare(prepareArgs, MakeLog(context, log));
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="collectArgs"></param>
+    /// <param name="log"></param>
+    /// <returns></returns>
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
@@ -49,6 +66,11 @@ namespace AltCover.Cake
       return CSApi.Collect(collectArgs, MakeLog(context, log));
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
     [CakeMethodAlias]
     public static string ImportModule(this ICakeContext context)
     {
@@ -56,6 +78,11 @@ namespace AltCover.Cake
       return CSApi.ImportModule();
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
     [CakeMethodAlias]
     public static string Version(this ICakeContext context)
     {

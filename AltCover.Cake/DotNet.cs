@@ -13,12 +13,30 @@ using System.Linq;
 
 namespace AltCover.Cake
 {
+  /// <summary>
+  ///
+  /// </summary>
   public class AltCoverSettings
   {
+    /// <summary>
+    ///
+    /// </summary>
     public CSApi.IPrepareParameters PreparationPhase { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
     public CSApi.ICollectParameters CollectionPhase { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
     public CSApi.ICLIOptions Control { get; set; }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns></returns>
     public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
     {
       return pabIn =>
@@ -40,6 +58,11 @@ namespace AltCover.Cake
       };
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="customIn"></param>
+    /// <returns></returns>
     public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Concatenate(Func<ProcessArgumentBuilder, ProcessArgumentBuilder> customIn)
     {
       var altcover = Customize();
@@ -54,9 +77,19 @@ namespace AltCover.Cake
     }
   }
 
+  /// <summary>
+  ///
+  /// </summary>
   [CakeAliasCategory("DotNetCore")]
   public static class DotNet
   {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="project"></param>
+    /// <param name="settings"></param>
+    /// <param name="altcover"></param>
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage(

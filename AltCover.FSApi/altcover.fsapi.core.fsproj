@@ -29,6 +29,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net45|AnyCPU'">
+    <DocumentationFile>$(SolutionDir)_Documentation\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
@@ -26,6 +26,9 @@
     <WarningsAsErrors />
     <NoWarn />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net46|AnyCPU'">
+    <DocumentationFile>$(SolutionDir)_Documentation\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
@@ -39,9 +42,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  
+
     <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net46" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net46'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net46" Version="1.0.0" Condition="'$(TargetFramework)' == 'net46'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -51,5 +54,4 @@
     <ProjectReference Include="..\AltCover.CSApi\altcover.csapi.core.csproj" />
     <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
   </ItemGroup>
-
 </Project>
