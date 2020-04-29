@@ -2051,6 +2051,8 @@ _Target "Packaging" (fun _ ->
   let poshHelp =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll-Help.xml"
+  if (poshHelp |> File.Exist |> not) && (Environment.isWindows |> not)
+  the File.WriteAllText(poshHelp, "DUMMY TEXT")
   let csapi =
     Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/net45/AltCover.CSApi.dll"
   let fsapi =
