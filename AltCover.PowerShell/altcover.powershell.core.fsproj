@@ -18,15 +18,14 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
     <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +47,8 @@
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0">
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(TargetFramework)'=='net47'">
+    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13"
+       Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net47|Windows_NT'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -70,10 +70,10 @@
     <AltCoverExe Include="$(OutputPath)AltCover.exe" />
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
-  
+
    <Target Name="PreXmlDoc2CmdletDoc"
                BeforeTargets="XmlDoc2CmdletDoc"
-	       Condition="'$(TargetFramework)'=='net47'">
+	       Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net47|Windows_NT'">
 	       <Copy SourceFiles="@(AltCoverExe)"
 	                  DestinationFiles="@(AltCoverDll)" />
   </Target>
