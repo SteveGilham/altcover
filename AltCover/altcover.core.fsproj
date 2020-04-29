@@ -111,8 +111,4 @@
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
 
-  <!-- Target Name="PostBuild"  AfterTargets="PostBuildEvent" 
-          Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
-    <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
-  </Target -->
 </Project>

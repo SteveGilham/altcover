@@ -60,10 +60,4 @@
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
   </ItemGroup>
 
-  <!-- Target Name="PostBuild"  AfterTargets="PostBuildEvent" 
-          Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
-    <Copy SourceFiles="@(AltCoverExe)"
-	        DestinationFiles="@(AltCoverDll)" />
-    <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
-  </Target -->
 </Project>
