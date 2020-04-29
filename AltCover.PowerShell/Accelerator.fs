@@ -8,22 +8,44 @@ open System.IO
 open System.Management.Automation
 open AltCover
 
+/// <summary>
+/// <para type="synopsis">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
+/// <para type="description">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.  Two common abbreviations are supplied as switch parameters, and then others can be added free-form.</para>
+/// <example>
+///   <code>Add-Accelerator -XDocument</code>
+///   <para>Add `[xdoc]` the easy way</para>
+/// </example>
+/// <example>
+///   <code>Add-Accelerator -Mapping @{ "xdoc" = [type]::gettype("System.Xml.Linq.XDocument")</code>
+///   <para>Add `[xdoc]` by the long way round</para>
+/// </example>
+/// </summary>
 [<Cmdlet(VerbsCommon.Add, "Accelerator", SupportsShouldProcess = true,
          ConfirmImpact = ConfirmImpact.Medium)>]
 [<OutputType([| "System.Void" |]); AutoSerializable(false)>]
 type AddAcceleratorCommand() =
   inherit PSCmdlet()
 
+  /// <summary>
+  /// <para type="description">Mapping of name to type</para>
+  /// <para type="description">`[Key.ToString()]` is the accelerator for `Value.GetType()` (or just `Value` if that is a `System.Type` already.</para>
+  /// </summary>
   [<Parameter(Mandatory = false,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)>]
   [<SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
     Justification="PowerShell parameter type")>]
   member val Mapping = Hashtable() with get, set
 
+  /// <summary>
+  /// <para type="description">Add [accelerators] for the accelerator type</para>
+  /// </summary>
   [<Parameter(Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Accelerator = SwitchParameter(false) with get, set
 
+  /// <summary>
+  /// <para type="description">Add [xdoc] for the `System.Xml.Linq.XDocument` type</para>
+  /// </summary>
   [<Parameter(Mandatory = false, Position = 1,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val XDocument = SwitchParameter(false) with get, set
@@ -80,6 +102,13 @@ type AddAcceleratorCommand() =
       finalmap
       |> Seq.iter (fun kv -> adder.Invoke(null, [| kv.Key :> obj; kv.Value :> obj |]) |> ignore)
 
+/// <summary>
+/// <para type="synopsis">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
+/// <para type="description">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
+/// <example>
+///   <code>$a = Get-Accelerator</code>
+/// </example>
+/// </summary>
 [<Cmdlet(VerbsCommon.Get, "Accelerator")>]
 [<OutputType([| "System.Collections.Hashtable" |]); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1101:AllCmdletsShouldAcceptPipelineInput",

@@ -2048,6 +2048,9 @@ _Target "Packaging" (fun _ ->
   let posh =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll"
+  let poshHelp =
+    Path.getFullName
+      "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll-Help.xml"
   let csapi =
     Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/net45/AltCover.CSApi.dll"
   let fsapi =
@@ -2084,6 +2087,7 @@ _Target "Packaging" (fun _ ->
       (config, Some "tools/net45", None)
       (recorder, Some "tools/net45", None)
       (posh, Some "tools/net45", None)
+      (poshHelp, Some "tools/net45", None)
       (fsapi, Some "tools/net45", None)
       (vis, Some "tools/net45", None)
       (fscore, Some "tools/net45", None)
@@ -2096,6 +2100,7 @@ _Target "Packaging" (fun _ ->
       (config, Some "lib/net45", None)
       (recorder, Some "lib/net45", None)
       (posh, Some "lib/net45", None)
+      (poshHelp, Some "lib/net45", None)
       (fsapi, Some "lib/net45", None)
       (csapi, Some "lib/net45", None)
       (cake, Some "lib/net45", None)
@@ -2154,6 +2159,11 @@ _Target "Packaging" (fun _ ->
     [ (!!"./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
       (!!"./_Binaries/AltCover.FSApi/Release+AnyCPU/netstandard2.0/*.FSApi.*") ]
     |> Seq.concat
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
+  let poshHelpFiles where =
+    [poshHelp]
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2246,6 +2256,7 @@ _Target "Packaging" (fun _ ->
          libFiles "tools/net45/"
          netcoreFiles "tools/netcoreapp2.0/"
          poshFiles "tools/netcoreapp2.0/"
+         poshHelpFiles "tools/netcoreapp2.0/"
          vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
          otherFiles
@@ -2261,6 +2272,7 @@ _Target "Packaging" (fun _ ->
         dataFiles "lib/netstandard2.0/"
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
+        poshHelpFiles "lib/netstandard2.0/"
         vizFiles "tools/netcoreapp2.1"
         otherFilesApi
         housekeeping
@@ -2276,6 +2288,7 @@ _Target "Packaging" (fun _ ->
       [ globalFiles
         netcoreFiles "tools/netcoreapp2.1/any"
         poshFiles "tools/netcoreapp2.1/any/"
+        poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles

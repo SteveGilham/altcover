@@ -11,6 +11,8 @@
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <XmlDoc2CmdletDocStrict>true</XmlDoc2CmdletDocStrict>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -46,6 +48,10 @@
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0">
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(TargetFramework)'=='net47'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -59,6 +65,18 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  
+  <ItemGroup>
+    <AltCoverExe Include="$(OutputPath)AltCover.exe" />
+    <AltCoverDll Include="$(OutputPath)AltCover.dll" />
+  </ItemGroup>
+  
+   <Target Name="PreXmlDoc2CmdletDoc"
+               BeforeTargets="XmlDoc2CmdletDoc"
+	       Condition="'$(TargetFramework)'=='net47'">
+	       <Copy SourceFiles="@(AltCoverExe)"
+	                  DestinationFiles="@(AltCoverDll)" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net47'" />
