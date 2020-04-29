@@ -73,10 +73,10 @@
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
-  <!-- Target Name="PostBuild"  AfterTargets="PostBuildEvent" 
+  <Target Name="PostBuild"  AfterTargets="PostBuildEvent" 
           Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
     <Copy SourceFiles="@(AltCoverExe)"
 	        DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
-  </Target -->
+  </Target>
 </Project>
