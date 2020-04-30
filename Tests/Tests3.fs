@@ -2380,10 +2380,14 @@ module AltCoverTests3 =
         Assert.That(rc, Is.EqualTo 0)
         let result = stdout.ToString().Replace("\r\n", "\n")
         let expected = "AltCover version "
-                       + AssemblyVersionInformation.AssemblyFileVersion + """
-"""
+                       + AssemblyVersionInformation.AssemblyFileVersion + Environment.NewLine
         Assert.That
           (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+        Assert.That
+          (result.Replace("\r\n", "\n"),
+                         (AltCover.CommandLine.Format.Local("AltCover.Version",
+                                                            [| Api.Version() :> obj |]) +
+                          "\n") |> Is.EqualTo)
       finally
         Console.SetOut saved
 
@@ -2854,7 +2858,7 @@ or
         0)
         let result = subject.Execute()
         Assert.That(result, Is.True)
-        Assert.That(args, Is.EquivalentTo [ "version" ])
+        Assert.That(args, Is.EquivalentTo [ "Version" ])
         Output.warn "x"
         Output.error "x"
       finally

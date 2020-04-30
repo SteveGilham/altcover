@@ -518,7 +518,7 @@ type InvokeAltCoverCommand() =
     (match (self.Version.IsPresent, self.Runner.IsPresent) with
      | (true, _) ->
          (fun _ ->
-           Api.Version() |> log.Info
+           Api.FormattedVersion() |> log.Info
            0)
      | (_, true) ->
          let task = self.Collect()

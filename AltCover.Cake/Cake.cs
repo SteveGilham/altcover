@@ -7,7 +7,7 @@ using Verbosity = Cake.Core.Diagnostics.Verbosity;
 namespace AltCover.Cake
 {
   /// <summary>
-  ///
+  /// A C#-friendly expression of the core API to drive the instrumentation and collection process.
   /// </summary>
   [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification = "It's the API for the system")]
@@ -37,12 +37,13 @@ namespace AltCover.Cake
     }
 
     /// <summary>
-    ///
+    /// <para>Performs the instrumentation phase of the coverage operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="prepareArgs"></param>
-    /// <param name="log"></param>
-    /// <returns></returns>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <param name="prepareArgs">C# definition of the instrumentation (and optional execution) process.</param>
+    /// <param name="log">[Optional]C# definition of the process logging; if no logging support is supplied, then Cake logging at an appropriate severity is used.</param>
+    /// <returns>The integer return code for the instrumentation process.</returns>
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
@@ -52,12 +53,13 @@ namespace AltCover.Cake
     }
 
     /// <summary>
-    ///
+    /// <para>Performs the collection phase of the coverage operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="collectArgs"></param>
-    /// <param name="log"></param>
-    /// <returns></returns>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <param name="collectArgs">C# definition of the collection (and optional execution) process.</param>
+    /// <param name="log">[Optional]C# efinition of the process logging; if no logging support is supplied, then Cake logging at an appropriate severity is used.</param>
+    /// <returns>The integer return code for the collection process.</returns>
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
@@ -67,10 +69,11 @@ namespace AltCover.Cake
     }
 
     /// <summary>
-    ///
+    /// <para>Performs the `AltCover ImportModule` operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <returns>The PowerShell Import-Module command to access the AltCover cmdlets</returns>
     [CakeMethodAlias]
     public static string ImportModule(this ICakeContext context)
     {
@@ -79,12 +82,13 @@ namespace AltCover.Cake
     }
 
     /// <summary>
-    ///
+    /// <para>Performs the `AltCover Version` operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <returns>The AltCover built version</returns>
     [CakeMethodAlias]
-    public static string Version(this ICakeContext context)
+    public static System.Version Version(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
       return CSApi.Version();

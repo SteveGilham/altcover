@@ -46,7 +46,8 @@ module Api =
     store
 
   let ImportModule() = getStringValue "ImportModule"
-  let Version() = getStringValue "version"
+  let Version() = Version(AssemblyVersionInformation.AssemblyFileVersion)
+  let FormattedVersion() = getStringValue "Version"
 
   let internal colourize name =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
@@ -280,7 +281,7 @@ type GetVersion() =
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.Version()
+    let r = Api.FormattedVersion()
     self.IO.Apply()
     r |> Output.warn
     true

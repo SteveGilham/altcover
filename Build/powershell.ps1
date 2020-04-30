@@ -26,7 +26,7 @@ $mdfiles | % {
 $m = Get-Module -Name "AltCover.PowerShell"
 
 $preamble = @"
-This is the PowerShell Help/scripting use version of the ``AltCover.PowerShell.dll`` API; the .net programmable API documentation is [here](AltCover.PowerShell/AltCover.PowerShell-apidoc)
+This is the PowerShell Help/scripting use version of the ``AltCover.PowerShell.dll`` API; the .net programmable API documentation is [here](AltCover.PowerShell/AltCover.PowerShell-apidoc).  This functionality is present in all NuGet packages except the ``altcover.visualizer`` global tool package.
 
 Use ``Import-Module`` either by specific path using the command given by ``AltCover.exe ImportModule`` (or ``dotnet AltCover.dll ImportModule`` or ``altcover ImportModule``), or add the appropriate directory to your ``PSModulePath`` and do a simple import.
 
@@ -45,7 +45,7 @@ $mdfile = "./_Documentation/PowerShell-integration.md"
 $preamble | Out-File -Encoding UTF8 $mdfile
 
 $m.ExportedCmdlets.Keys | % {
-    "[$_](#$_)" | Out-File -Encoding UTF8 -Append $mdfile
+    "* [$_](#$_)" | Out-File -Encoding UTF8 -Append $mdfile
 }
 
 " " | Out-File -Encoding UTF8 -Append $mdfile
@@ -53,7 +53,7 @@ $m.ExportedCmdlets.Keys | % {
 $m.ExportedCmdlets.Keys | % { 
   $cmdletname = $_
   Write-Host "processing $_"
-  $cmdlet = "./_Documentation/$($_).md"
+  $cmdlet = "./_Documentation/$($_).txt"
   Invoke-Expression ("Get-Help " + $_ + " -full") | Out-File -Encoding UTF8 $cmdlet
   $lines = Get-Content $cmdlet
 

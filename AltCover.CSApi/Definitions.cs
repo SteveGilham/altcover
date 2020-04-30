@@ -899,7 +899,7 @@ namespace AltCover
     ///
     /// </summary>
     /// <returns></returns>
-    public static string Version()
+    public static Version Version()
     {
       return Api.Version();
     }
