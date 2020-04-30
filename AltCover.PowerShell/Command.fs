@@ -108,14 +108,14 @@ type InvokeAltCoverCommand() =
   member val WorkingDirectory = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">The executable to run e.g. dotnet</para>
+  /// <para type="description">The executable to run e.g. `dotnet`</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
   member val Executable = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">File for lcov format version of the collected data</para>
+  /// <para type="description">File path for lcov format version of the collected data</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
@@ -130,7 +130,7 @@ type InvokeAltCoverCommand() =
   member val Threshold = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">File for Cobertura format version of the collected data</para>
+  /// <para type="description">File path for Cobertura format version of the collected data</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
@@ -207,7 +207,7 @@ type InvokeAltCoverCommand() =
   member val Dependency : string array = [||] with get, set
 
   /// <summary>
-  /// <para type="description">Strong name key or keys used to sign the inputs</para>
+  /// <para type="description">Strong name key or keys that were used to sign the inputs</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -361,7 +361,7 @@ type InvokeAltCoverCommand() =
   member val ZipFile : SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">record only whether a method has been visited or not.  Overrides the `-LineCover` and `-BranchCover` options.</para>
+  /// <para type="description">Record only whether a method has been visited or not.  Overrides the `-LineCover` and `-BranchCover` options.</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
