@@ -3258,7 +3258,8 @@ let _Target s f =
 _Target "DoIt"
   (fun _ ->
   AltCover.Api.Version() |> printfn "AltCover.Api.Version - Returned %A"
-  AltCover.Fake.Api.Version() |> Trace.trace
+  AltCover.Api.FormattedVersion() |> printfn "AltCover.Api.FormattedVersion - Returned '%s'"
+  AltCover.Fake.Api.Version().ToString() |> Trace.trace
   AltCover.CSApi.Version() |> printfn " - Returned %A"
 
   let collect =
