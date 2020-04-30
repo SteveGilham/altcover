@@ -109,8 +109,6 @@ $m.ExportedCmdlets.Keys | % {
     $closeBlock = $closeBlock -or 
       ($line.Contains($cmdletname)  -and ($state -eq "example")) -or  ## actually opens
       (($_ -match "^    \S") -and ($state -eq "io"))  -or
-      (($line -like "-*") -and ($state -eq "parameters"))  -or
-      (($line -like "<CommonParameters>") -and ($state -eq "parameters"))  -or
       (($line.StartsWith("Required?")) -and ($state -eq "parameters"))
 
     if ($closeBlock) {
@@ -119,6 +117,12 @@ $m.ExportedCmdlets.Keys | % {
     }
 
 # echo    
+    
+    $decorate = (($line -like "-*") -and ($state -eq "parameters"))  -or
+                (($line -like "<CommonParameters>") -and ($state -eq "parameters")) 
+
+    if ($decorate) { $line = "#### ``$line`` "}
+
     if ($state -ne "related") {
       $line | Out-File -Encoding UTF8 -Append $mdfile
     }
@@ -133,8 +137,6 @@ $m.ExportedCmdlets.Keys | % {
     $openBlock = $openBlock -or
       ($line.Contains($cmdletname)  -and ($state -eq "example")) -or   ## actually closes
       (($_ -match "^    \S") -and ($state -eq "io")) -or
-      (($line -like "-*") -and ($state -eq "parameters")) -or
-      (($line -like "<CommonParameters>") -and ($state -eq "parameters")) -or
       (($line.StartsWith("Accept wildcard characters?")) -and ($state -eq "parameters"))
 
     if ($openBlock) {
