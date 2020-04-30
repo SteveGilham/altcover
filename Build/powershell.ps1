@@ -6,6 +6,23 @@ Import-Module "./packages/pester/4.10.1/tools/Pester.psm1"
 Invoke-Altcover -?
 Invoke-Pester -Script @{ Path='.\Build'; Parameters = @{ ACV = $ACV}} -EnableExit -OutputFormat NUnitXml -OutputFile "./_Reports/PoshReport.xml"
 
+## Documentation
+
+$mdfiles = dir -Recurse "./_Documentation/AltCov*/*.md"
+
+$mdfiles | % {
+  $fromFile = $_.FullName
+  $toFile = $fromFile.Replace(".md", "-apidoc.md")
+
+  $lines = Get-Content $fromFile
+  #$lines | Set-Content $toFile
+  $lines | % { $_.Replace(".md)", "-apidoc)") } | Set-Content $toFile
+  
+  del $fromFile
+}
+
+
+
 $m = Get-Module -Name "AltCover.PowerShell"
 
 $preamble = @"
