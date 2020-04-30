@@ -63,7 +63,7 @@ type ConvertToXDocumentCommand() =
 /// <para type="synopsis">Takes either OpenCover or classic NCover format and returns an Lcov report.</para>
 /// <para type="description">Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline. Writes the Lcov report to a file.</para>
 /// <example>
-///   <code>ConvertTo-LCov -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"</code>
+///   <code>ConvertTo-Lcov -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsData.ConvertTo, "Lcov")>]
@@ -113,7 +113,7 @@ type ConvertToLcovCommand() =
 /// <para type="description">Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline.</para>
 /// <para type="description">Writes the Cobertura report to the object pipeline as an `XDocument`, and optionally to a file.</para>
 /// <example>
-///   <code>ConvertTo-Comertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"</code>
+///   <code>ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsData.ConvertTo, "Cobertura")>]

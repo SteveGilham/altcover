@@ -9,6 +9,8 @@ Invoke-Pester -Script @{ Path='.\Build'; Parameters = @{ ACV = $ACV}} -EnableExi
 $m = Get-Module -Name "AltCover.PowerShell"
 
 $preamble = @"
+This is the PowerShell Help/scripting use version of the ``AltCover.PowerShell.dll`` API; the .net programmable API documentation is [here](AltCover.PowerShell/AltCover.PowerShell-apidoc)
+
 Use ``Import-Module`` either by specific path using the command given by ``AltCover.exe ImportModule`` (or ``dotnet AltCover.dll ImportModule`` or ``altcover ImportModule``), or add the appropriate directory to your ``PSModulePath`` and do a simple import.
 
 The string output from ``AltCover ImportModule`` is intended for convenient cutting and pasting; it can be used in a script like
@@ -21,16 +23,107 @@ which unpeels the wrapper around the file path.  Just substitute in the appropri
 ## Cmdlets
 "@
 
-$preamble | Out-File -Encoding UTF8 "./_Documentation/PowerShell-integration.md"
+$mdfile = "./_Documentation/PowerShell-integration.md"
+
+$preamble | Out-File -Encoding UTF8 $mdfile
 
 $m.ExportedCmdlets.Keys | % {
-    "[$_](#$_)" | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+    "[$_](#$_)" | Out-File -Encoding UTF8 -Append $mdfile
 }
 
-" " | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+" " | Out-File -Encoding UTF8 -Append $mdfile
 
 $m.ExportedCmdlets.Keys | % { 
+  $cmdletname = $_
+  Write-Host "processing $_"
+  $cmdlet = "./_Documentation/$($_).md"
+  Invoke-Expression ("Get-Help " + $_ + " -full") | Out-File -Encoding UTF8 $cmdlet
+  $lines = Get-Content $cmdlet
+
   "###    $_"  | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
-  Invoke-Expression ("Get-Help " + $_ + " -full") | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
-  " " | Out-File -Encoding UTF8 -Append "./_Documentation/PowerShell-integration.md"
+  $cmdletname = $_
+
+  $state="start"
+  $nl = $false
+  $closeBlock = $false
+  $openBlock = $false
+
+  $lines | % {
+    $line = $_.Trim()
+
+# state machine
+
+  $header = ($line -eq "NAME") -or ($line -eq "SYNOPSIS") -or ($line -eq "SYNTAX") -or ($line -eq "DESCRIPTION")
+  $header1 = ($line -eq "SYNOPSIS") -or ($line -eq "DESCRIPTION")
+  $header2 = ($line -eq "NAME") -or ($line -eq "SYNTAX")
+
+    if ($state -eq "start") {
+      $nl = $header
+      $closeBlock = $header1
+      $openBlock = $header2
+    }
+
+    if (($line -eq "DESCRIPTION") -and ($state -eq "start")) {
+      $state="description"
+    }
+
+    if ($line -eq "RELATED LINKS") {
+      $state="related"
+    }
+
+    if (($line -eq "PARAMETERS") -and ($state -eq "description")) {
+      $state="parameters"
+    }
+
+    if (($line -eq "INPUTS") -and ($state -eq "parameters")) {
+      $state="io"
+    }
+
+    if ($line.StartsWith("----------  EXAMPLE")  -and ($state -eq "io")) {
+      $state="example"
+    }
+
+# prefix    
+    # use the change of state immediately above to our advantage
+    if ($line.StartsWith("----------  EXAMPLE")  -and ($state -eq "example")) {
+      $nl = $true
+    }
+
+    $closeBlock = $closeBlock -or 
+      ($line.Contains($cmdletname)  -and ($state -eq "example")) -or  ## actually opens
+      (($_ -match "^    \S") -and ($state -eq "io"))  -or
+      (($line -like "-*") -and ($state -eq "parameters"))  -or
+      (($line -like "<CommonParameters>") -and ($state -eq "parameters"))  -or
+      (($line.StartsWith("Required?")) -and ($state -eq "parameters"))
+
+    if ($closeBlock) {
+      '```' | Out-File -Encoding UTF8 -Append  $mdfile
+      $closeBlock = $false
+    }
+
+# echo    
+    if ($state -ne "related") {
+      $line | Out-File -Encoding UTF8 -Append $mdfile
+    }
+
+# postfix    
+
+    if ($nl) {
+      '' | Out-File -Encoding UTF8 -Append  $mdfile
+      $nl = $false
+    }
+
+    $openBlock = $openBlock -or
+      ($line.Contains($cmdletname)  -and ($state -eq "example")) -or   ## actually closes
+      (($_ -match "^    \S") -and ($state -eq "io")) -or
+      (($line -like "-*") -and ($state -eq "parameters")) -or
+      (($line -like "<CommonParameters>") -and ($state -eq "parameters")) -or
+      (($line.StartsWith("Accept wildcard characters?")) -and ($state -eq "parameters"))
+
+    if ($openBlock) {
+      '```' | Out-File -Encoding UTF8 -Append  $mdfile
+      $openBlock = $false
+    }
+
+  }
 }
