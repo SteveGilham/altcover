@@ -54,6 +54,7 @@
     <Compile Include="Cobertura.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="AltCover.fs" />
+    <Compile Include="Primitive.fsi" />
     <Compile Include="Primitive.fs" />
     <Compile Include="TypeSafe.fs" />
     <Compile Include="Api.fs" />

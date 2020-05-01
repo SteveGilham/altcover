@@ -30,10 +30,12 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\AltCover\Primitive.fsi" Link="Primitive.fsi" />
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
     <Compile Include="..\AltCover\TypeSafe.fs" Link="TypeSafe.fs" />
     <Compile Include="..\AltCover\Api.fs" Link="Api.fs" />
     <Compile Include="..\AltCover.FSApi\Definitions.fs" Link="Definitions.fs" />
+    <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>
 
@@ -48,7 +50,7 @@
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable" Version="1.6.0" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.0" Condition="'$(TargetFramework)' == 'net462'">
       <PrivateAssets>all</PrivateAssets>
@@ -59,5 +61,4 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
   </ItemGroup>
-
 </Project>

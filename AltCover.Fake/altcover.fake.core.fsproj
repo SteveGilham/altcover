@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="Fake.fsi" />
     <Compile Include="Fake.fs" />
   </ItemGroup>
 
