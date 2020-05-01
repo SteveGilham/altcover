@@ -18,22 +18,17 @@ namespace AltCover.Cake
       if (log != null)
         return log;
 
-      if (context != null)
-        return new CSApi.Primitive.LoggingParameters()
-        {
-          Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x),
-          Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x),
-          Echo = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x),
-          StandardError = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x),
-        };
+      var result = CSApi.Primitive.LoggingParameters.Create();
 
-      return new CSApi.Primitive.LoggingParameters()
+      if (context != null)
       {
-        Info = x => { },
-        Warn = x => { },
-        Echo = x => { },
-        StandardError = x => { }
-      };
+        result.Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x);
+        result.Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x);
+        result.StandardError = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
+        result.Echo = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x);
+      }
+
+      return result;
     }
 
     /// <summary>
