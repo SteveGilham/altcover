@@ -12,7 +12,7 @@ open System.Xml.Xsl
 
 open Augment
 
-module XmlExtensions =
+module internal XmlExtensions =
   type System.Xml.Linq.XElement with
     member self.SetAttribute(name: string, value : string) =
       let attr = self.Attribute(XName.Get name)
@@ -20,6 +20,9 @@ module XmlExtensions =
       then self.Add(XAttribute(XName.Get name, value))
       else attr.Value <- value
 
+/// <summary>
+/// <para type="description">Methods for working on XML types</para>
+/// </summary>
 [<RequireQualifiedAccess>]
 module XmlUtilities =
   [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",
@@ -29,6 +32,11 @@ module XmlUtilities =
     then null
     else s
 
+  /// <summary>
+  /// <para type="description">Takes an `XDocument` in and returns an equivalent `XmlDocument`.</para>
+  /// </summary>
+  /// <param name="document">The input document</param>
+  /// <returns>The equivalent `XmlDocument`</returns>
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   let ToXmlDocument(document : XDocument) =
@@ -56,6 +64,11 @@ module XmlUtilities =
       xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild) |> ignore
     xmlDocument
 
+  /// <summary>
+  /// <para type="description">Takes an `XmlDocument` in and returns an equivalent `XDocument`.</para>
+  /// </summary>
+  /// <param name="document">The input document</param>
+  /// <returns>The equivalent `XDocument`</returns>
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
   [<SuppressMessage(

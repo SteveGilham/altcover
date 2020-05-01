@@ -8,8 +8,8 @@ open System.Xml.Linq
 open System.Xml.XPath
 
 /// <summary>
-/// <para type="synopsis">Generates an HTML report, based on the old NCover 1.5.8 XSLT, for both NCover and OpenCover coverage format data.</para>
-/// <para type="description">Generates an HTML report, based on the old NCover 1.5.8 XSLT, for both NCover and OpenCover coverage format data.  The input is as a file name or an `XDocument` from the pipeline, the output is to the pipeline as an `XDocument`, and, optionally, to a file. </para>
+/// <para type="synopsis">Generates a simple HTML report from coverage data.</para>
+/// <para type="description">The report produced is based on the old NCover 1.5.8 XSLT, for both NCover and OpenCover coverage format data.  The input is as a file name or an `XDocument` from the pipeline, the output is to the pipeline as an `XDocument`, and, optionally, to a file. </para>
 /// <example>
 ///   <code>    $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"</code>
 /// </example>

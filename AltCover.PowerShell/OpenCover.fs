@@ -7,7 +7,7 @@ open System.Xml.Linq
 open System.Xml.XPath
 
 /// <summary>
-/// <para type="synopsis">Takes output from the OpenCover program, and adjust from OpenCover's liberal idea of significant branches towards AltCover's more restricted approach -- chose either or both of `-SameSpan` to unify branches that go from the same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and `-WithinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807 being instances of this).</para>
+/// <para type="synopsis">Removes compiler-generated hidden branches from OpenCover.</para>
 /// <para type="description">Takes output from the OpenCover program, and adjust from OpenCover's liberal idea of significant branches towards AltCover's more restricted approach -- chose either or both of `-SameSpan` to unify branches that go from the same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and `-WithinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807 being instances of this).</para>
 /// <para type="description">Either takes an `XDocument` from the pipeline or from a file; emits the result as an `XDocument` to the pipeline and optionally to a file.</para>
 /// <example>

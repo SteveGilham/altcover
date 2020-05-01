@@ -13,13 +13,31 @@ open System.Linq
 do ()
 
 #if RUNNER
+/// <summary>
+/// <para type="description">Index used to order branches for branch visit computation.</para>
+/// </summary>
 type Ordinal =
 | Offset = 0
 | SL = 1
 #endif
 
+/// <summary>
+/// <para type="description">Construction of `dotnet test` command lines.</para>
+/// </summary>
 [<RequireQualifiedAccess>]
 module DotNet =
+  /// <summary>
+  /// <para type="description">Union type defining general command line arguments for `dotnet test` use.</para>
+  /// <para type="description">The F# code is</para>
+  /// <code>
+  ///   type CLIOptions =
+  ///     | Force of bool
+  ///     | FailFast of bool
+  ///     | ShowSummary of String
+  ///     | Many of CLIOptions seq
+  /// </code>
+  /// <para type="description">C# methods without documentation are compiler generated.  Most important for non-F# use are the `NewXxx` factory methods.</para>
+  /// </summary>
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
                                   Justification = "Idiomatic F#");
                   SuppressMessage("Gendarme.Rules.Smells",
@@ -32,6 +50,9 @@ module DotNet =
     | ShowSummary of String
     | Many of CLIOptions seq
 
+    /// <summary>
+    /// <para type="description">The `/AltCoverForce` value this represents</para>
+    /// </summary>
     member self.ForceDelete =
       match self with
       | Force b -> b
@@ -39,6 +60,9 @@ module DotNet =
       | FailFast _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
 
+    /// <summary>
+    /// <para type="description">The `/AltCoverFailFast` value this represents</para>
+    /// </summary>
     member self.Fast =
       match self with
       | FailFast b -> b
@@ -46,6 +70,9 @@ module DotNet =
       | Force _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.Fast)
 
+    /// <summary>
+    /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
+    /// </summary>
     member self.Summary =
       match self with
       | ShowSummary b -> b
@@ -161,6 +188,13 @@ module internal Internals =
       arg, "FailFast", "true", options.Fast
     ]
 
+  /// <summary>
+  /// Converts the input into the command line for `dotnet test`
+  /// </summary>
+  /// <param name="prepare">Description of the instrumentation operation to perform</param>
+  /// <param name="collect">Description of the collection operation to perform</param>
+  /// <param name="options">All other `altcover` related command line arguments</param>
+  /// <returns>The command line as a sequence of individual items</returns>
 #if RUNNER
   let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParameters)
       (collect : AltCover.FSApi.CollectParameters) (options : CLIOptions) =
@@ -197,13 +231,20 @@ module internal Internals =
     |> List.filter snd
     |> List.map fst
 
+  /// <summary>
+  /// Converts the input into the command line for `dotnet test`
+  /// </summary>
+  /// <param name="prepare">Description of the instrumentation operation to perform</param>
+  /// <param name="collect">Description of the collection operation to perform</param>
+  /// <param name="options">All other `altcover` related command line arguments</param>
+  /// <returns>The composed command line</returns>
 #if RUNNER
   let ToTestArguments (prepare : AltCover.FSApi.PrepareParameters)
-      (collect : AltCover.FSApi.CollectParameters) (force : CLIOptions) =
-    ToTestArgumentList prepare collect force |> join
+      (collect : AltCover.FSApi.CollectParameters) (options : CLIOptions) =
+    ToTestArgumentList prepare collect options |> join
 #else
   let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
       (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
-      (force : DotNet.CLIOptions) =
-    toTestArgumentList prepare collect force |> join
+      (options : DotNet.CLIOptions) =
+    toTestArgumentList prepare collect options |> join
 #endif
