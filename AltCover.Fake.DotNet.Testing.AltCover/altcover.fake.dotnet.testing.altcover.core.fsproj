@@ -32,7 +32,9 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover\Primitive.fsi" Link="Primitive.fsi" />
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
+    <Compile Include="..\AltCover\TypeSafe.fsi" Link="TypeSafe.fsi" />
     <Compile Include="..\AltCover\TypeSafe.fs" Link="TypeSafe.fs" />
+    <Compile Include="..\AltCover\Api.fsi" Link="Api.fsi" />
     <Compile Include="..\AltCover\Api.fs" Link="Api.fs" />
     <Compile Include="..\AltCover.FSApi\Definitions.fs" Link="Definitions.fs" />
     <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
