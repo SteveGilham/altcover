@@ -148,6 +148,7 @@ dir -recurse *.fsproj | % {
   if ($signatures) {  
     $name = $x.project.propertygroup.assemblyname | Select-Object -First 1
     mkdir -Force "./_Documentation/$name" | Out-Null 
+    mkdir -Force "../altcover.wiki/$name" | Out-Null 
     }
 
   $globals = $x.project.propertygroup.GlobalDefineConstants.'#text'
@@ -172,7 +173,7 @@ dir -recurse *.fsproj | % {
     Write-Host $command
     Invoke-Expression $command
     $lines = Get-Content $ifile
-    $docfile = $iFile.Replace(".i", ".md")
+    $docfile = (Resolve-Path $iFile).Path.Replace(".i", ".md").Replace("`\_Documentation",".wiki")
     $lines | % { $_.Replace("// ", "")} | Set-Content $docFile
   }
 }
