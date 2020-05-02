@@ -292,8 +292,8 @@ type ConvertFromNCoverCommand() =
       Directory.SetCurrentDirectory here
 
 /// <summary>
-/// <para type="synopsis">Fills in gaps in `coverlet``'s OpenCover dialect.</para>
-/// <para type="description">Adds summary data and other items to report in ``coverlet``'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
+/// <para type="synopsis">Fills in gaps in `coverlet`'s OpenCover dialect.</para>
+/// <para type="description">Adds summary data and other items to report in `coverlet`'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
 /// <example>
 ///   <code>    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"</code>
 /// </example>

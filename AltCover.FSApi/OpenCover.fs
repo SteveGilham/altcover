@@ -448,8 +448,8 @@ module OpenCoverUtilities =
                                |> Seq.iter (fun m2 -> fixFormatMethod m2 def))
 
   /// <summary>
-  /// <para type="synopsis">Fills in gaps in `coverlet``'s OpenCover dialect.</para>
-  /// <para type="description">Adds summary data and other items to report in ``coverlet``'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
+  /// <para type="synopsis">Fills in gaps in `coverlet`'s OpenCover dialect.</para>
+  /// <para type="description">Adds summary data and other items to report in `coverlet`'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
   /// </summary>
   /// <param name="document">The input report</param>
   /// <returns>The filled-in report</returns>

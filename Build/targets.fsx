@@ -3941,6 +3941,13 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
 // AOB
 
+_Target "MakeDocumentation" (fun _ ->
+  CreateProcess.fromRawCommand "powershell.exe"
+    [ "-NoProfile"; "./Build/prepareDocumentation.ps1" ]
+  |> CreateProcess.withWorkingDirectory "."
+  |> Proc.run
+  |> (Actions.AssertResult "powershell"))
+
 _Target "BulkReport" (fun _ ->
   printfn "Overall coverage reporting"
   Directory.ensure "./_Reports/_BulkReport"
