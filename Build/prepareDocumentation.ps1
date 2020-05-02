@@ -138,3 +138,41 @@ $m.ExportedCmdlets.Keys | % {
 
   }
 }
+
+dir -recurse *.fsproj | % {
+  $x = [xml](Get-Content $_.FullName) 
+  $projectDir = Split-Path $_.FullName
+  $name = "junk"
+
+  $signatures = $x.project.ItemGroup.Compile.Include | ? { $_ -like "*.fsi" }
+  if ($signatures) {  
+    $name = $x.project.propertygroup.assemblyname | Select-Object -First 1
+    mkdir -Force "./_Documentation/$name" | Out-Null 
+    }
+
+  $globals = $x.project.propertygroup.GlobalDefineConstants.'#text'
+  
+  if ($globals) {
+    $globals = [string]::join(";", $globals).Split(";") | Select-Object -Unique
+    $globals = $globals | % { "/D " + $_ + "=1" }
+    $globals = [string]::join(" ", $globals)
+  }
+  else {
+    $globals = ""
+  }
+
+  $signatures | % {
+    $sigpath = Join-Path $projectDir $_
+    Write-Host "Processing $sigpath"
+    $signame = (Split-Path $sigpath -Leaf).replace(".fsi", ".i")
+    $iFile = Join-Path (Join-Path "./_Documentation" $name) $signame
+    Write-Host "`tto $ifile"
+    Write-Host "`twith $globals"
+    $command = "& cl $globals /C /EP $sigpath > $ifile"
+    Write-Host $command
+    Invoke-Expression $command
+    $lines = Get-Content $ifile
+    $docfile = $iFile.Replace(".i", ".md")
+    $lines | % { $_.Replace("// ", "")} | Set-Content $docFile
+  }
+}
