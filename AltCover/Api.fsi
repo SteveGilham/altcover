@@ -31,7 +31,6 @@ namespace AltCoverFake.DotNet.Testing
         member WorkingDirectory : System.String
 #if RUNNER
         member Validate : bool -> string []
-        member WhatIf : afterPreparation:bool -> ValidatedCommandLine
 #endif
       end
     [<NoComparison>]
@@ -72,7 +71,6 @@ namespace AltCoverFake.DotNet.Testing
         member ZipFile : bool
 #if RUNNER
         member Validate : unit -> string []
-        member WhatIf : unit -> ValidatedCommandLine
 #endif
     end
 #if RUNNER
@@ -89,33 +87,5 @@ namespace AltCoverFake.DotNet.Testing
                             (System.String -> unit)
         static member Create : unit -> Logging
       end
-#else
-    val splitCommandLine : line:string -> string list
-    val buildDotNetTestCommandLine :
-      options:(Fake.DotNet.DotNet.TestOptions -> Fake.DotNet.DotNet.TestOptions) ->
-        project:string -> string * string list
-    [<NoComparison>]
-    type ArgumentType =
-      | Collect of CollectParameters
-      | Prepare of PrepareParameters
-      | ImportModule
-      | GetVersion
-    [<NoComparison; NoEquality>]
-    type Parameters =
-      { ToolPath: string
-        ToolType: Fake.DotNet.ToolType
-        WorkingDirectory: string
-        Args: ArgumentType }
-      with
-        member
-          WithCreateProcess : command:Fake.Core.CreateProcess<'a> -> Parameters
-        static member Create : argumentType:ArgumentType -> Parameters
-      end
-    val composeCommandLine :
-      parameters:Parameters ->
-        Fake.Core.CreateProcess<Fake.Core.ProcessResult<unit>>
-    val run : parameters:Parameters -> unit
-    val runWithMono :
-      monoPath:Fake.Core.FilePath option -> parameters:Parameters -> unit
 #endif
   end

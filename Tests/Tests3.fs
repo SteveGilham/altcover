@@ -130,10 +130,10 @@ module AltCoverTests3 =
                         |> FSharpType.GetUnionCases).Length
 
       let args = Primitive.PrepareParameters.Create() |> FSApi.PrepareParameters.Primitive
-      let commandFragments = [FSApi.Args.listItems >> (List.map fst)
-                              FSApi.Args.plainItems >> (List.map fst)
-                              FSApi.Args.options >> List.map (fun (a,_,_) -> a)
-                              FSApi.Args.flagItems >> (List.map fst)]
+      let commandFragments = [Args.listItems >> (List.map fst)
+                              Args.plainItems >> (List.map fst)
+                              Args.options >> List.map (fun (a,_,_) -> a)
+                              Args.flagItems >> (List.map fst)]
                              |> List.collect (fun f -> f args)
                              |> List.sort
       Assert.That(commandFragments |> List.length, Is.EqualTo optionCount,
@@ -2343,9 +2343,9 @@ module AltCoverTests3 =
     [<Test>]
     let StoresAsExpected() =
       Main.init()
-      Api.store <- String.Empty
-      Api.logToStore.Info "23"
-      Assert.That(Api.store, Is.EqualTo "23")
+      ApiStore.store <- String.Empty
+      ApiStore.logToStore.Info "23"
+      Assert.That(ApiStore.store, Is.EqualTo "23")
 
     [<Test>]
     let ImportModuleIsAsExpected() =
@@ -2698,8 +2698,10 @@ or
       let save = Main.effectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
-        subject.ACLog <- Some <| FSApi.Logging.Create()
+        // subject.ACLog <- Some <| FSApi.Logging.Create()
+        aclog.SetValue(subject, Some <| FSApi.Logging.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2718,8 +2720,10 @@ or
       let save = Main.effectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
-        subject.ACLog <- Some <| FSApi.Logging.Create()
+        // subject.ACLog <- Some <| FSApi.Logging.Create()
+        aclog.SetValue(subject, Some <| FSApi.Logging.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
@@ -2777,8 +2781,10 @@ or
       let save = Main.effectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
-        subject.ACLog <- Some <| FSApi.Logging.Create()
+        // subject.ACLog <- Some <| FSApi.Logging.Create()
+        aclog.SetValue(subject, Some <| FSApi.Logging.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2823,9 +2829,12 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.info, Output.error)
       let warned = Output.warn
-      Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
-      Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
-      subject.IO <- FSApi.Logging.Create()
+      let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      let defaultIO = io.GetValue(subject) :?> FSApi.Logging
+      Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
+      Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
+      // subject.IO <- FSApi.Logging.Create()
+      io.SetValue(subject, FSApi.Logging.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2849,9 +2858,12 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.info, Output.error)
       let warned = Output.warn
-      Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
-      Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
-      subject.IO <- FSApi.Logging.Create()
+      let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      let defaultIO = io.GetValue(subject) :?> FSApi.Logging
+      Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
+      Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
+      // subject.IO <- FSApi.Logging.Create()
+      io.SetValue(subject, FSApi.Logging.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2904,7 +2916,9 @@ or
     let RunSettingsFailsIfCollectorNotFound() =
       Main.init()
       let subject = RunSettings()
-      subject.DataCollector <- Guid.NewGuid().ToString();
+      let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      // subject.DataCollector <- Guid.NewGuid().ToString()
+      dc.SetValue(subject, Guid.NewGuid().ToString())
       Assert.That (subject.Execute(), Is.False)
       Assert.That (subject.Extended, Is.Empty)
 
@@ -2925,7 +2939,9 @@ or
     let RunSettingsWorksIfOK() =
       Main.init()
       let subject = RunSettings()
-      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       Assert.That (subject.Execute(), Is.True)
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
@@ -2942,7 +2958,9 @@ or
     let RunSettingsExtendsOK() =
       Main.init()
       let subject = RunSettings()
-      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
@@ -2962,7 +2980,9 @@ or
     let RunSettingsRecoversOK() =
       Main.init()
       let subject = RunSettings()
-      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<Not XML")

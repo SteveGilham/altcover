@@ -5,6 +5,9 @@ open System.Linq
 open System.Xml.Linq
 open System.Xml.XPath
 
+/// <summary>
+/// <para>Functions for building HTML-based reports</para>
+/// </summary>
 [<RequireQualifiedAccess>]
 module Xhtml =
   /// <summary>

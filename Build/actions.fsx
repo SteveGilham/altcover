@@ -311,15 +311,15 @@ do ()"""
             ReportFormat = "NCover"
             InPlace = false
             Save = false }
-      |> AltCover.Prepare
+      |> AltCoverCommand.Prepare
 
     let parameters =
-      { AltCover.Parameters.Create prep with
+      { AltCoverCommand.Parameters.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
           ToolType = framework
           WorkingDirectory = sampleRoot }
 
-    AltCover.run parameters
+    AltCoverCommand.run parameters
     System.Threading.Thread.Sleep(1000)
 
     Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
@@ -355,15 +355,15 @@ do ()"""
                 ReportFormat = "NCover"
                 InPlace = false
                 Save = false }
-          |> AltCover.Prepare
+          |> AltCoverCommand.Prepare
 
         let parameters =
-          { AltCover.Parameters.Create prep with
+          { AltCoverCommand.Parameters.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
               ToolType = framework
               WorkingDirectory = sampleRoot }
 
-        AltCover.runWithMono monoOnWindows parameters
+        AltCoverCommand.runWithMono monoOnWindows parameters
 
         Run
           (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])

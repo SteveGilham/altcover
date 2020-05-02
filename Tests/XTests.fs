@@ -10,6 +10,7 @@ open System.Xml.Linq
 
 open AltCover
 open AltCover.Augment
+open AltCover.ApiExtension.FSApiExtension
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Swensen.Unquote
@@ -163,7 +164,7 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ (FSApi.CollectParameters.Primitive subject)
-            |> FSApi.Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+            |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
   let TypeSafeEmptyThresholdCanBeValidated() =
@@ -191,7 +192,7 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test
       <@ instance
-         |> FSApi.Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
+         |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --teamcity:+B" @>
@@ -255,7 +256,7 @@ module AltCoverXTests =
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    let rendered = (FSApi.PrepareParameters.Primitive subject) |> FSApi.Args.prepare
+    let rendered = (FSApi.PrepareParameters.Primitive subject) |> Args.prepare
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
@@ -299,7 +300,7 @@ module AltCoverXTests =
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ instance
-         |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
+         |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace";
                                    "--save"; "--methodpoint" ] @>
     let validate = (FSApi.PrepareParameters.TypeSafe subject).WhatIf().ToString()
@@ -335,7 +336,7 @@ module AltCoverXTests =
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ (FSApi.PrepareParameters.TypeSafe subject)
-         |> FSApi.Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
+         |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "--reportFormat"; "NCover"; "--inplace"; "--save"; "--";
                                    "[Fact]" ] @>
 
@@ -406,7 +407,7 @@ module AltCoverXTests =
 
     let scan = subject.Validate()
     test <@ scan.Length = 2 @>
-    let rendered = subject |> FSApi.Args.prepare
+    let rendered = subject |> Args.prepare
     test
       <@ rendered = [ "-c"; "0"; "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--single";
                       "--linecover"; "--branchcover" ] @>
@@ -435,7 +436,7 @@ module AltCoverXTests =
 
   [<Test>]
   let NullListsAreEmpty() =
-    let subject = FSApi.Args.itemList String.Empty null
+    let subject = Args.itemList String.Empty null
     test <@ subject |> List.isEmpty @>
 
   [<Test>]

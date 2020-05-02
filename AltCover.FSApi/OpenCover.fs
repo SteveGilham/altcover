@@ -13,6 +13,9 @@ open System.Xml.XPath
 open Mono.Cecil
 open AltCover.XmlExtensions
 
+/// <summary>
+/// <para>Functions manipulating OpenCover format reports from various generators</para>
+/// </summary>
 [<RequireQualifiedAccess>]
 module OpenCoverUtilities =
 

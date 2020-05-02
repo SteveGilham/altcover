@@ -22,10 +22,27 @@ open Fake.DotNet
     Justification="'Api' is OK")>]
 [<RequireQualifiedAccess>]
 module FSApi =
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+  type ValidatedCommandLine =
+    { Command : string list
+      Errors : string seq }
+    override self.ToString() =
+      let cl =
+        String.Join
+          (" ",
+           Seq.concat
+             [ [ "altcover" ]
+               self.Command ])
+      String.Join
+        (Environment.NewLine,
+         Seq.concat
+           [ [| cl |] |> Array.toSeq
+             self.Errors ])
 #else
 [<RequireQualifiedAccess>]
 module AltCover =
 #endif
+
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
                     SuppressMessage("Gendarme.Rules.Smells",
                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -53,14 +70,6 @@ module AltCover =
       match self with
       | Primitive p -> p.Executable
       | TypeSafe t -> t.Executable.AsString()
-
-#if RUNNER
-#else
-    member internal self.SetExecutable tool =
-      match self with
-      | Primitive p -> Primitive { p with Executable = tool }
-      | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.Tool tool }
-#endif
 
     [<SuppressMessage("Microsoft.Naming", "CA1704",
         Justification="'Lcov' is jargon")>]
@@ -90,24 +99,6 @@ module AltCover =
       match self with
       | Primitive p -> p.CommandLine |> CollectParameters.ToSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
-
-#if RUNNER
-#else
-    member internal self.SetCommandLine(args : string seq) =
-      match self with
-      | Primitive p -> Primitive { p with CommandLine = args }
-      | TypeSafe t ->
-          TypeSafe
-            { t with
-                CommandLine =
-                  let newargs =
-                    args
-                    |> (Seq.map TypeSafe.CommandArgument)
-                    |> Seq.toList
-                  match newargs with
-                  | [] -> TypeSafe.NoCommand
-                  | _ -> TypeSafe.Command newargs }
-#endif
 
     member self.ExposeReturnCode =
       match self with
@@ -293,24 +284,6 @@ module AltCover =
       | Primitive p -> p.CommandLine |> PrepareParameters.ToSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
-#if RUNNER
-#else
-    member internal self.SetCommandLine(args : string seq) =
-      match self with
-      | Primitive p -> Primitive { p with CommandLine = args }
-      | TypeSafe t ->
-          TypeSafe
-            { t with
-                CommandLine =
-                  let newargs =
-                    args
-                    |> (Seq.map TypeSafe.CommandArgument)
-                    |> Seq.toList
-                  match newargs with
-                  | [] -> TypeSafe.NoCommand
-                  | _ -> TypeSafe.Command newargs }
-#endif
-
     member self.ExposeReturnCode =
       match self with
       | Primitive p -> p.ExposeReturnCode
@@ -455,310 +428,4 @@ module AltCover =
       Output.warn <- self.Warn
       Output.info <- self.Info
       Output.echo <- self.Echo
-#else
-#endif
-  [<SuppressMessage("Gendarme.Rules.Smells",
-                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                    Justification = "Not worth trying to unify these functions")>]
-  module private ArgsHelper =
-    let item a x =
-      if x |> String.IsNullOrWhiteSpace then [] else [ a; x ]
-
-    let optionalItem a x l =
-      if x
-         |> String.IsNullOrWhiteSpace
-         || l |> List.exists (fun i -> i = x) then
-        []
-      else
-        [ a + ":" + x ]
-
-  module internal Args =
-    let internal itemList a x =
-      if x |> isNull then
-        []
-      else
-        x
-        |> Seq.collect (fun i -> [ a; i ])
-        |> Seq.toList
-
-    let private flag a x =
-      if x then [ a ] else []
-
-    let internal listItems(args : PrepareParameters) =
-      [ ("-i", args.InputDirectories)
-        ("-o", args.OutputDirectories)
-        ("-y", args.SymbolDirectories)
-        ("-d", args.Dependencies)
-        ("-k", args.Keys)
-        ("-f", args.FileFilter)
-        ("-s", args.AssemblyFilter)
-        ("-e", args.AssemblyExcludeFilter)
-        ("-t", args.TypeFilter)
-        ("-m", args.MethodFilter)
-        ("-a", args.AttributeFilter)
-        ("-p", args.PathFilter)
-        ("-c", args.CallContext) ]
-
-    let internal itemLists(args : PrepareParameters) =
-      args
-      |> listItems
-      |> List.collect (fun (a, b) -> itemList a b)
-
-    let internal plainItems(args : PrepareParameters) =
-      [ ("--sn", args.StrongNameKey)
-        ("--reportFormat", args.ReportFormat)
-        ("-x", args.XmlReport) ]
-
-    let internal items(args : PrepareParameters) =
-      args
-      |> plainItems
-      |> List.collect (fun (a, b) -> ArgsHelper.item a b)
-
-    let internal options(args : PrepareParameters) =
-      [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
-
-    let internal optItems(args : PrepareParameters) =
-      args
-      |> options
-      |> List.collect (fun (a, b, c) -> ArgsHelper.optionalItem a b c)
-
-    let internal flagItems(args : PrepareParameters) =
-      [ ("--inplace", args.InPlace)
-        ("--save", args.Save)
-        ("--zipfile", args.ZipFile)
-        ("--methodpoint", args.MethodPoint)
-        ("--single", args.Single)
-        ("--linecover", args.LineCover)
-        ("--branchcover", args.BranchCover)
-        ("--dropReturnCode", (args.ExposeReturnCode |> not))
-        ("--sourcelink", args.SourceLink)
-        ("--defer", args.Defer)
-        ("--localSource", args.LocalSource)
-        ("--visibleBranches", args.VisibleBranches)
-        ("--showGenerated", args.ShowGenerated) ]
-
-    let internal flags(args : PrepareParameters) =
-      args
-      |> flagItems
-      |> List.collect (fun (a, b) -> flag a b)
-
-    let prepare(args : PrepareParameters) =
-      let argsList = args.CommandLine |> Seq.toList
-
-      let trailing =
-        if List.isEmpty argsList then [] else "--" :: argsList
-
-      let parameters =
-        [ itemLists; items; optItems; flags ] |> List.collect (fun f -> f args)
-
-      [ parameters; trailing ] |> List.concat
-
-    let internal buildCollect(args : CollectParameters) =
-      let argsList = args.CommandLine |> Seq.toList
-
-      let trailing =
-        if List.isEmpty argsList then [] else "--" :: argsList
-
-      let exe = args.Executable
-
-      [ [ "Runner" ]
-        ArgsHelper.item "-r" args.RecorderDirectory
-        ArgsHelper.item "-w" args.WorkingDirectory
-        ArgsHelper.item "-x" exe
-        ArgsHelper.item "-l" args.LcovReport
-        ArgsHelper.item "-t" args.Threshold
-        ArgsHelper.item "-c" args.Cobertura
-        ArgsHelper.item "-o" args.OutputFile
-        flag "--collect" (exe |> String.IsNullOrWhiteSpace)
-        flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-        ArgsHelper.optionalItem "--teamcity" args.SummaryFormat []
-        trailing ]
-
-    let collect(args : CollectParameters) =
-      args
-      |> buildCollect
-      |> List.concat
-
-#if RUNNER
-
-  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
-  type ValidatedCommandLine =
-    { Command : string list
-      Errors : string seq }
-    override self.ToString() =
-      let cl =
-        String.Join
-          (" ",
-           Seq.concat
-             [ [ "altcover" ]
-               self.Command ])
-      String.Join
-        (Environment.NewLine,
-         Seq.concat
-           [ [| cl |] |> Array.toSeq
-             self.Errors ])
-
-  type CollectParameters with
-    member self.WhatIf afterPreparation =
-      { Command = Args.collect self
-        Errors = self.Validate afterPreparation }
-
-  type PrepareParameters with
-    member self.WhatIf() =
-      { Command = Args.prepare self
-        Errors = self.Validate() }
-
-#else
-  [<SuppressMessage("Gendarme.Rules.Naming",
-                    "UseCorrectCasingRule",
-                    Justification = "Fake.build style")>]
-  let splitCommandLine line =
-    line
-    |> if Environment.isWindows
-       then BlackFox.CommandLine.MsvcrCommandLine.parse
-       else BlackFox.CommandLine.MonoUnixCommandLine.parse
-    |> Seq.toList
-
-  [<SuppressMessage("Gendarme.Rules.Naming",
-                    "UseCorrectCasingRule",
-                    Justification = "Fake.build style")>]
-  let buildDotNetTestCommandLine (options : DotNet.TestOptions -> DotNet.TestOptions)
-      project =
-    let dotnet = typeof<Fake.DotNet.DotNet.TestOptions>.DeclaringType
-    let builder =
-      dotnet.GetMethod("buildTestArgs", BindingFlags.Static ||| BindingFlags.NonPublic)
-    let builder2 =
-      dotnet.GetMethod("buildCommand", BindingFlags.Static ||| BindingFlags.NonPublic)
-    let parameters = Fake.DotNet.DotNet.TestOptions.Create() |> options
-    let args = builder.Invoke(null, [| parameters |]) :?> string list
-
-    let cmdArgs =
-      builder2.Invoke
-        (null,
-         [| ("test"
-             |> Args.fromWindowsCommandLine
-             |> Seq.toList)
-            project :: args
-            parameters.Common |]) :?> string list
-    (parameters.Common.DotNetCliPath,
-     cmdArgs |> List.filter (String.IsNullOrWhiteSpace >> not))
-
-  [<NoComparison; AutoSerializable(false)>]
-  type ArgumentType =
-    | Collect of CollectParameters
-    | Prepare of PrepareParameters
-    | ImportModule
-    | GetVersion
-
-#nowarn "44"
-
-  [<NoComparison; NoEquality; AutoSerializable(false)>]
-  type Parameters =
-    { /// Path to the Altcover executable.
-      ToolPath : string
-      /// Which version of the tool (FAKE 5.18 ToolType)
-      ToolType : ToolType
-      /// Working directory for relative file paths.  Default is the current working directory
-      WorkingDirectory : string
-      /// Command arguments
-      Args : ArgumentType }
-
-    static member Create(argumentType : ArgumentType) =
-      { ToolPath = "altcover"
-        ToolType = ToolType.CreateGlobalTool()
-        WorkingDirectory = String.Empty
-        Args = argumentType }
-
-    member this.WithCreateProcess(command : CreateProcess<_>) =
-      match command.Command with
-      | RawCommand(tool, args) ->
-          match this.Args with
-          | Collect c ->
-              { this with
-                  Args =
-                    ArgumentType.Collect
-                      ((c.SetExecutable tool).SetCommandLine(Arguments.toList args)) }
-          | Prepare p ->
-              { this with
-                  Args = ArgumentType.Prepare(p.SetCommandLine(tool :: (Arguments.toList args))) }
-          | ImportModule -> this
-          | GetVersion -> this
-      | _ -> this
-
-  let internal createArgs parameters =
-    match parameters.Args with
-    | Collect c -> Args.collect c
-    | Prepare p -> Args.prepare p
-    | ImportModule -> [ "ImportModule" ]
-    | GetVersion -> [ "version" ]
-
-  let internal createProcess parameters args =
-    let doTool (tool : Fake.DotNet.ToolType) =
-      CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
-      |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
-
-    let withWorkingDirectory c =
-      c
-      |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
-         then id
-         else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
-
-    doTool parameters.ToolType
-    |> withWorkingDirectory
-    |> CreateProcess.ensureExitCode
-    |> fun command ->
-      Trace.trace command.CommandLine
-      command
-
-  [<SuppressMessage("Gendarme.Rules.Naming",
-                    "UseCorrectCasingRule",
-                    Justification = "Fake.build style")>]
-  let composeCommandLine parameters =
-    let args = createArgs parameters
-    createProcess parameters args
-
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
-                                                    Justification =
-                                                      "Generic types are implicit")>]
-
-  let internal runCore parameters modifyCommand =
-    use __ = Trace.traceTask "AltCover" String.Empty
-    let command = (composeCommandLine parameters) |> modifyCommand
-    let run = command |> Proc.run
-    if 0 <> run.ExitCode then failwithf "AltCover '%s' failed." command.CommandLine
-    __.MarkSuccess()
-
-  [<SuppressMessage("Gendarme.Rules.Naming",
-                    "UseCorrectCasingRule",
-                    Justification = "Fake.build style")>]
-  let run parameters = runCore parameters id
-
-  [<SuppressMessage("Gendarme.Rules.Naming",
-                    "UseCorrectCasingRule",
-                    Justification = "Fake.build style")>]
-  let runWithMono monoPath parameters =
-    let withMono (command : CreateProcess<_>) =
-      if parameters.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
-             && Fake.Core.Environment.isWindows then
-            match command.Command with
-            | RawCommand(tool, args) ->
-                let newArgs = tool :: "--debug" :: (Arguments.toList args)
-
-                let newRaw =
-                  RawCommand
-                    ((match monoPath with
-                      | Some x -> x
-                      | _ -> "mono"), Arguments.OfArgs newArgs)
-                command |> CreateProcess.withCommand newRaw
-
-            | _ -> command
-          else
-            command
-
-    runCore parameters withMono
-
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@735T.#monoPath", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withMono@735T.#parameters", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCover+withWorkingDirectory@695T.#parameters", Justification="Generated code")>]
-()
 #endif

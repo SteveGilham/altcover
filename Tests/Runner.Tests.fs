@@ -440,7 +440,7 @@ module AltCoverRunnerTests =
                         |> FSharpType.GetUnionCases).Length
 
       let args = Primitive.CollectParameters.Create() |> FSApi.CollectParameters.Primitive
-      let commandFragments = FSApi.Args.buildCollect args
+      let commandFragments = Args.buildCollect args
 
       // adds Runner and the trailing command line arguments
       Assert.That(commandFragments |> List.length, Is.EqualTo (optionCount + 2),
