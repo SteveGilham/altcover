@@ -1,5 +1,6 @@
-﻿// ```
-#if RUNNER
+﻿#if RUNNER
+// # namespace AltCover.Fake
+// ```
 namespace AltCover.Fake
 // ```
 // ## `module AltCover.Fake.Trace`
@@ -29,16 +30,16 @@ type Api =
   static member ToolPath : Implementation -> string
 // ```
 // wraps the core API functions.  If the optional logging argument is not given, then `AltCover.Fake.Trace.Default` is assumed.
+//
 // The `int` results are 0 for success and otherwise for failure (this would be the return code of the operation if run as a command-line function); and string return is the location of the indicated command-line executable from the current NuGet package
 // 
 // ## Extension methods for type `Fake.DotNet.DotNet.TestOptions` (in module `AltCover.Fake.DotNet`)
 // ```
 #else
+// # namespace AltCoverFake.DotNet
+// ```
 namespace AltCoverFake.DotNet
 // ```
-// wraps the core API functions.  If the optional logging argument is not given, then `AltCover.Fake.Trace.Default` is assumed.
-// The `int` results are 0 for success and otherwise for failure (this would be the return code of the operation if run as a command-line function); and string return is the location of the indicated command-line executable from the current NuGet package
-// 
 // ## Extension methods for type `Fake.DotNet.DotNet.TestOptions` (in module `AltCoverFake.DotNet`)
 // ```
 #endif

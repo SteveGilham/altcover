@@ -11,6 +11,9 @@ $mdfiles | % {
   $toFile = $fromFile.Replace(".md", "-apidoc.md").Replace("`\_Documentation",".wiki")
   Write-Host "`tto $toFile"
 
+  $wikidir = Split-Path $toFile
+  mkdir -Force $wikidir | Out-Null 
+
   $lines = Get-Content $fromFile
   $lines | % { $_.Replace(".md)", "-apidoc)") } | Set-Content $toFile
 }
@@ -173,7 +176,7 @@ dir -recurse *.fsproj | % {
     Write-Host $command
     Invoke-Expression $command
     $lines = Get-Content $ifile
-    $docfile = (Resolve-Path $iFile).Path.Replace(".i", ".md").Replace("`\_Documentation",".wiki")
+    $docfile = (Resolve-Path $iFile).Path.Replace(".i", "-apidoc.md").Replace("`\_Documentation",".wiki")
     $lines | % { $_.Replace("// ", "")} | Set-Content $docFile
   }
 }
