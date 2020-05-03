@@ -176,7 +176,7 @@ dir -recurse *.fsproj | % {
     $command = "& cl $globals /C /EP $sigpath > $ifile"
     Write-Host $command
     Invoke-Expression $command
-    $lines = Get-Content $ifile
+    $lines = Get-Content $ifile | ?  { -not $_.Contains("///") } # skip XML doc comments
     $docfile = (Resolve-Path $iFile).Path.Replace(".i", "-apidoc.md").Replace("`\_Documentation",".wiki")
     $lines | % { $_.Replace("// ", "").Replace("//", "")} | Set-Content $docFile
   }
