@@ -129,12 +129,12 @@ module DotNet =
 #if RUNNER
     member self.WithAltCoverOptions (prepare : FSApi.PrepareOptions)
            (collect : FSApi.CollectOptions) (force : DotNet.CLIOptions) =
-      DotNet.ToTestArguments
+      DotNetCLI.ToTestArguments
 #else
     member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
            (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
            (force : AltCoverFake.DotNet.Testing.DotNet.CLIOptions) =
-      AltCoverFake.DotNet.Testing.Internals.toTestArguments
+      AltCoverFake.DotNet.Testing.DotNetCLI.toTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
     [<SuppressMessage("Microsoft.Naming", "CA1704",

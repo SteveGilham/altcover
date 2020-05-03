@@ -13,12 +13,11 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-    <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -31,7 +30,14 @@
   <ItemGroup>
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="Definitions.fs" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Ordinal.fsi" />
+    <Compile Include="Ordinal.fs" />
+    <Compile Include="DotNet.fsi" />
+    <Compile Include="DotNet.fs" />
+    <Compile Include="CLIInternals.fs" />
+    <Compile Include="DotNetCLI.fsi" />
+    <Compile Include="DotNetCLI.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Xhtml.fs" />
     <Compile Include="OpenCover.fs" />
@@ -73,10 +79,8 @@
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
-  <Target Name="PostBuild"  AfterTargets="PostBuildEvent" 
-          Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
-    <Copy SourceFiles="@(AltCoverExe)"
-	        DestinationFiles="@(AltCoverDll)" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
+    <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
   </Target>
 </Project>

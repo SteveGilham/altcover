@@ -269,9 +269,9 @@ module FSApiTests =
                        |> Seq.sort
                        |> Seq.toList
 
-    let prepareFragments = [DotNet.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
+    let prepareFragments = [Internals.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            Internals.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            Internals.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
                             |> List.collect (fun f -> f prep)
                             |> List.sort
 
@@ -291,9 +291,9 @@ module FSApiTests =
                        |> Seq.sort
                        |> Seq.toList
 
-    let collectFragments = [//DotNet.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
-                            //DotNet.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
+    let collectFragments = [//Internals.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            Internals.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            //Internals.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]
                             |> List.collect (fun f -> f coll)
                             |> List.sort
@@ -314,9 +314,9 @@ module FSApiTests =
                       |> FSharpType.GetUnionCases).Length
 
     let opt = DotNet.CLIOptions.FailFast true
-    let optionsFragments = [//DotNet.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.toCLIOptionsFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.toCLIOptionsArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
+    let optionsFragments = [//Internals.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            Internals.toCLIOptionsFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            Internals.toCLIOptionsArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]
                             |> List.collect (fun f -> f opt)
                             |> List.sort
@@ -348,5 +348,5 @@ module FSApiTests =
     let pcoll = Primitive.CollectOptions.Create()
     let coll = AltCover.FSApi.CollectOptions.Primitive pcoll
 
-    test <@ DotNet.ToTestArguments prep coll combined =
+    test <@ DotNetCLI.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>

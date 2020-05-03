@@ -40,7 +40,7 @@ type Api =
 // ```
 namespace AltCoverFake.DotNet
 // ```
-// ## Extension methods for type `Fake.DotNet.DotNet.TestOptions` (in module `AltCoverFake.DotNet`)
+// ## Extension methods for type `Fake.DotNet.DotNet.TestOptions` (in module `AltCoverFake.DotNet.DotNet`)
 // ```
 #endif
 module DotNet =

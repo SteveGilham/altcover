@@ -985,7 +985,7 @@ namespace AltCover
     {
       if (prepareArgs == null) throw new ArgumentNullException(nameof(prepareArgs));
       if (collectArgs == null) throw new ArgumentNullException(nameof(collectArgs));
-      return DotNet.ToTestArguments(prepareArgs.ToOptions(),
+      return DotNetCLI.ToTestArguments(prepareArgs.ToOptions(),
                                     collectArgs.ToOptions(),
                                     ToCLIOptions(control));
     }
@@ -1003,7 +1003,7 @@ namespace AltCover
     {
       if (prepareArgs == null) throw new ArgumentNullException(nameof(prepareArgs));
       if (collectArgs == null) throw new ArgumentNullException(nameof(collectArgs));
-      return DotNet.ToTestArgumentList(prepareArgs.ToOptions(),
+      return DotNetCLI.ToTestArgumentList(prepareArgs.ToOptions(),
                                        collectArgs.ToOptions(),
                                        ToCLIOptions(control)).
       ToArray();

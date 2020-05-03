@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\AltCover.FSApi\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
     <Compile Include="..\AltCover\Primitive.fsi" Link="Primitive.fsi" />
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
     <Compile Include="..\AltCover\TypeSafe.fsi" Link="TypeSafe.fsi" />
@@ -39,7 +40,10 @@
     <Compile Include="..\AltCover\Args.fs" Link="Args.fs" />
     <Compile Include="ApiExtension.fsi" />
     <Compile Include="ApiExtension.fs" />
-    <Compile Include="..\AltCover.FSApi\Definitions.fs" Link="Definitions.fs" />
+    <Compile Include="..\AltCover.FSApi\DotNet.fsi" Link="DotNet.fsi" />
+    <Compile Include="..\AltCover.FSApi\DotNet.fs" Link="DotNet.fs" />
+    <Compile Include="..\AltCover.FSApi\CLIInternals.fs" Link="CLIInternals.fs" />
+    <Compile Include="..\AltCover.FSApi\DotNetCLI.fs" Link="DotNetCLI.fs" />
     <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>
