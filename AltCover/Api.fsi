@@ -1,7 +1,15 @@
 ﻿#if RUNNER
+// # namespace AltCover
+// ```
 namespace AltCover
+// ```
+// ## module FSApi
+// ```
   [<RequireQualifiedAccess>]
   module FSApi = begin
+// ```
+// ### type ValidatedCommandLine
+// ```  
     [<NoComparison>]
     type ValidatedCommandLine =
       { Command: string list
@@ -9,11 +17,25 @@ namespace AltCover
       with
         override ToString : unit -> string
       end
+// ```
+// Holds the composed command line in `Command`, and any validations errors in `Errors`.
+// 
+// The `ToString()` override formats the ourcome for pretty-printing
 #else
+// # namespace AltCoverFake.DotNet.Testing
+// ```
 namespace AltCoverFake.DotNet.Testing
+// ```
+// ## module AltCover
+// ```
   [<RequireQualifiedAccess>]
   module AltCover = begin
+// ```
 #endif
+// ### type CollectOptions
+//
+// 
+// ```  
     [<NoComparison>]
     type CollectOptions =
       | Primitive of Primitive.CollectOptions
@@ -29,10 +51,27 @@ namespace AltCoverFake.DotNet.Testing
         member SummaryFormat : System.String
         member Threshold : System.String
         member WorkingDirectory : System.String
+// ```
 #if RUNNER
+// ```
         member Validate : bool -> string []
-#endif
       end
+// ```
+// `Validate` does simple checking of the arguments without causing any changes to the system; set the input argument `true` if the Prepare step has already run (and there should be instrumented code the `RecorderDirectory`; returns all the problems that the application command-line could report, so empty is success.
+//
+#else
+// ```
+      end
+// ```
+#endif
+// 
+// The property members corresponding to the command line options read the values from the contained instance; null strings will be retrurned as null, but null sequences will be returned as empty ones.
+//
+//  Values that are not applicable to the use case or platform are silently ignored.
+// ### type PrepareOptions
+//
+// 
+// ```  
     [<NoComparison>]
     type PrepareOptions =
       | Primitive of Primitive.PrepareOptions
@@ -69,15 +108,31 @@ namespace AltCoverFake.DotNet.Testing
         member VisibleBranches : bool
         member XmlReport : System.String
         member ZipFile : bool
+// ```
 #if RUNNER
+// ```
         member Validate : unit -> string []
+      end
+// ```
+// `Validate` does simple checking of the arguments without causing any changes to the system; returns all the problems that the application command-line could report, so empty is success.
+//
+#else      
+// ```
+      end
+// ```
 #endif
-    end
+// 
+// The property members corresponding to the command line options read the values from the contained instance; null strings will be retrurned as null, but null sequences will be returned as empty ones.
+//
+//  Values that are not applicable to the use case or platform are silently ignored.
 #if RUNNER
+// ### type LoggingOptions
+//
+// 
+// ```  
     type LoggingOptions =
       | Primitive of Primitive.LoggingOptions
       with
-        member internal Apply : unit -> unit
         member Echo : (System.String -> unit)
         member Error : (System.String -> unit)
         member Info : (System.String -> unit)
@@ -87,5 +142,9 @@ namespace AltCoverFake.DotNet.Testing
                             (System.String -> unit)
         static member Create : unit -> LoggingOptions
       end
+// ```
+// `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.      
 #endif
+// ```
   end
+// ```

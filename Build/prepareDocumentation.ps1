@@ -177,6 +177,6 @@ dir -recurse *.fsproj | % {
     Invoke-Expression $command
     $lines = Get-Content $ifile
     $docfile = (Resolve-Path $iFile).Path.Replace(".i", "-apidoc.md").Replace("`\_Documentation",".wiki")
-    $lines | % { $_.Replace("// ", "")} | Set-Content $docFile
+    $lines | % { $_.Replace("// ", "").Replace("//", "")} | Set-Content $docFile
   }
 }
