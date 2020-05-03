@@ -98,4 +98,5 @@ namespace AltCoverFake.DotNet.Testing
 // `Create()` returns an instance that just discards all strings input.  For your particular use, direct message severities appropriately.  `Echo` is used to echo the synthetic command line in case of inconsistent inputs.
 #endif
 // ```
-  end// ```
+  end
+// ```

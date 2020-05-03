@@ -549,7 +549,7 @@ type InvokeAltCoverCommand() =
 
       let status = self.Dispatch()
       if status <> 0 then status.ToString() |> self.Log().Error
-      else if self.Runner.IsPresent then Api.Summary() |> self.WriteObject
+      else if self.Runner.IsPresent then AltCover.Runner.summary.ToString() |> self.WriteObject
 
       match self.Fail with
       | [] -> ()

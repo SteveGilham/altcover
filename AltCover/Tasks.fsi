@@ -1,10 +1,16 @@
-﻿// # namespace AltCover
+﻿// Both the .net framework/mono and .net core releases publish MSBuld tasks from the main assembly (AltCover.exe or AltCover.dll, respectively) that wrap the command-line functionality (as documented here under [Usage](https://github.com/SteveGilham/altcover/wiki/Usage)).
+//
+// # namespace AltCover
+//
+// For the C# programmer, `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
+//
 // ```
 namespace AltCover
 open Microsoft.Build.Framework
 open Microsoft.Build.Utilities
 // ```
-// ## type Prepare
+// ## Task `AltCover.Prepare`
+// This is the instrumentation mode with `--opencover --save --inplace` as default.  Associated parameters are
 // ```
 type Prepare =
   class
@@ -45,7 +51,8 @@ type Prepare =
     member ZipFile : bool with get, set
   end
 // ```
-// ## type Collect
+// ## Task `AltCover.Collect`
+// This is `runner` mode with `--collect` as default.  Associated parameters are
 // ```
 type Collect =
   class
@@ -68,7 +75,8 @@ type Collect =
     member WorkingDirectory : string with get, set
   end
 // ```
-// ## type PowerShell
+// ## Task `AltCover.PowerShell`
+// This is the `ImportModule` option; it takes no parameters.
 // ```
 type PowerShell =
   class
@@ -77,7 +85,8 @@ type PowerShell =
     override Execute : unit -> bool
   end
 // ```
-// ## type GetVersion
+// ## Task `AltCover.GetVersion`
+// This is the `Version` option; it takes no parameters.
 // ```
 type GetVersion =
   class
@@ -86,7 +95,8 @@ type GetVersion =
     override Execute : unit -> bool
   end
 // ```
-// ## type Echo
+// ## Task `AltCover.Echo`
+// Outputs a possibly coloured string of text to `stdout`.
 // ```
 type Echo =
   class
@@ -99,7 +109,10 @@ type Echo =
   end
 // ```
 #if NETCOREAPP2_0
-// ## type RunSettings
+// ## Task RunSettings
+// Used by the .net core implementation to inject an altcover datacollector, by creating a temporary tun settings file that includes AltCover as well as any user-defined settings.
+//
+// Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
 // ```
 type RunSettings =
   class
@@ -111,3 +124,6 @@ type RunSettings =
     member TestSetting : string with get, set
   end
 #endif
+// ```
+// ## General
+// The task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, and the deprecated `CommandLine` is everything after a `--` as one single string.  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
