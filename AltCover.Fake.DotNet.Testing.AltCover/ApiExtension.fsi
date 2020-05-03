@@ -2,8 +2,8 @@
   module AltCoverCommand = begin
     [<NoComparison>]
     type ArgumentType =
-      | Collect of AltCover.CollectParameters
-      | Prepare of AltCover.PrepareParameters
+      | Collect of AltCover.CollectOptions
+      | Prepare of AltCover.PrepareOptions
       | ImportModule
       | GetVersion
     val splitCommandLine : line:string -> string list
@@ -11,20 +11,20 @@
       options:(Fake.DotNet.DotNet.TestOptions -> Fake.DotNet.DotNet.TestOptions) ->
         project:string -> string * string list
     [<NoComparison; NoEquality>]
-    type Parameters =
+    type Options =
       { ToolPath: string
         ToolType: Fake.DotNet.ToolType
         WorkingDirectory: string
         Args: ArgumentType }
       with
         member
-          WithCreateProcess : command:Fake.Core.CreateProcess<'a> -> Parameters
-        static member Create : argumentType:ArgumentType -> Parameters
+          WithCreateProcess : command:Fake.Core.CreateProcess<'a> -> Options
+        static member Create : argumentType:ArgumentType -> Options
       end
     val composeCommandLine :
-      parameters:Parameters ->
+      options:Options ->
         Fake.Core.CreateProcess<Fake.Core.ProcessResult<unit>>
-    val run : parameters:Parameters -> unit
+    val run : options:Options -> unit
     val runWithMono :
-      monoPath:Fake.Core.FilePath option -> parameters:Parameters -> unit
+      monoPath:Fake.Core.FilePath option -> options:Options -> unit
   end

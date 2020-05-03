@@ -15,9 +15,9 @@ namespace AltCoverFake.DotNet.Testing
   module AltCover = begin
 #endif
     [<NoComparison>]
-    type CollectParameters =
-      | Primitive of Primitive.CollectParameters
-      | TypeSafe of TypeSafe.CollectParameters
+    type CollectOptions =
+      | Primitive of Primitive.CollectOptions
+      | TypeSafe of TypeSafe.CollectOptions
       with
         member Cobertura : System.String
         member CommandLine : seq<string>
@@ -34,9 +34,9 @@ namespace AltCoverFake.DotNet.Testing
 #endif
       end
     [<NoComparison>]
-    type PrepareParameters =
-      | Primitive of Primitive.PrepareParameters
-      | TypeSafe of TypeSafe.PrepareParameters
+    type PrepareOptions =
+      | Primitive of Primitive.PrepareOptions
+      | TypeSafe of TypeSafe.PrepareOptions
       with
         member AssemblyExcludeFilter : System.String list
         member AssemblyFilter : System.String list
@@ -74,8 +74,8 @@ namespace AltCoverFake.DotNet.Testing
 #endif
     end
 #if RUNNER
-    type Logging =
-      | Primitive of Primitive.Logging
+    type LoggingOptions =
+      | Primitive of Primitive.LoggingOptions
       with
         member internal Apply : unit -> unit
         member Echo : (System.String -> unit)
@@ -85,7 +85,7 @@ namespace AltCoverFake.DotNet.Testing
         static member
           ActionAdapter : action:System.Action<System.String> ->
                             (System.String -> unit)
-        static member Create : unit -> Logging
+        static member Create : unit -> LoggingOptions
       end
 #endif
   end

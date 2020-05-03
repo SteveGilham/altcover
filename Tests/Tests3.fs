@@ -101,7 +101,7 @@ module AltCoverTests3 =
                         |> Seq.sort
                         |> Seq.toList
 
-      let primitiveNames = typeof<Primitive.PrepareParameters>
+      let primitiveNames = typeof<Primitive.PrepareOptions>
                            |> FSharpType.GetRecordFields
                            |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                            |> Seq.sort
@@ -112,7 +112,7 @@ module AltCoverTests3 =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", primitiveNames))
 
-      let typesafeNames = typeof<TypeSafe.PrepareParameters>
+      let typesafeNames = typeof<TypeSafe.PrepareOptions>
                           |> FSharpType.GetRecordFields
                           |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                           |> Seq.sort
@@ -122,14 +122,14 @@ module AltCoverTests3 =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<FSApi.PrepareParameters>.GetProperties()
+      let fsapiNames = typeof<FSApi.PrepareOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<FSApi.PrepareParameters>
+      let fsapiCases = (typeof<FSApi.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareParameters.Create() |> FSApi.PrepareParameters.Primitive
+      let args = Primitive.PrepareOptions.Create() |> FSApi.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
@@ -2675,17 +2675,17 @@ or
     [<Test>]
     let LoggingCanBeExercised() =
       Main.init()
-      Assert.That(FSApi.Logging.ActionAdapter null, Is.Not.Null)
-      (FSApi.Logging.ActionAdapter null) "23"
-      Assert.That(FSApi.Logging.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(FSApi.LoggingOptions.ActionAdapter null, Is.Not.Null)
+      (FSApi.LoggingOptions.ActionAdapter null) "23"
+      Assert.That(FSApi.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (FSApi.Logging.ActionAdapter(new Action<String>(f))) "42"
+      (FSApi.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      FSApi.Logging.Create().Info "32"
-      FSApi.Logging.Create().Warn "32"
-      FSApi.Logging.Create().Error "32"
-      FSApi.Logging.Create().Echo "32"
+      FSApi.LoggingOptions.Create().Info "32"
+      FSApi.LoggingOptions.Create().Warn "32"
+      FSApi.LoggingOptions.Create().Error "32"
+      FSApi.LoggingOptions.Create().Echo "32"
 
     [<Test>]
     let EmptyInstrumentIsJustTheDefaults() =
@@ -2701,7 +2701,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| FSApi.Logging.Create())
+        aclog.SetValue(subject, Some <| FSApi.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2723,7 +2723,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| FSApi.Logging.Create())
+        aclog.SetValue(subject, Some <| FSApi.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
@@ -2784,7 +2784,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| FSApi.Logging.Create())
+        aclog.SetValue(subject, Some <| FSApi.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2830,11 +2830,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> FSApi.Logging
+      let defaultIO = io.GetValue(subject) :?> FSApi.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, FSApi.Logging.Create())
+      io.SetValue(subject, FSApi.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2859,11 +2859,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> FSApi.Logging
+      let defaultIO = io.GetValue(subject) :?> FSApi.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, FSApi.Logging.Create())
+      io.SetValue(subject, FSApi.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a

@@ -47,9 +47,9 @@ module AltCover =
                     SuppressMessage("Gendarme.Rules.Smells",
                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                     Justification = "Idiomatic F#")>]
-  type CollectParameters =
-    | Primitive of Primitive.CollectParameters
-    | TypeSafe of TypeSafe.CollectParameters
+  type CollectOptions =
+    | Primitive of Primitive.CollectOptions
+    | TypeSafe of TypeSafe.CollectOptions
 
     static member private ToSeq(s : String seq) =
       match s with
@@ -97,7 +97,7 @@ module AltCover =
 
     member self.CommandLine =
       match self with
-      | Primitive p -> p.CommandLine |> CollectParameters.ToSeq
+      | Primitive p -> p.CommandLine |> CollectOptions.ToSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
     member self.ExposeReturnCode =
@@ -146,9 +146,9 @@ module AltCover =
                     SuppressMessage("Gendarme.Rules.Smells",
                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                     Justification = "Idiomatic F#")>]
-  type PrepareParameters =
-    | Primitive of Primitive.PrepareParameters
-    | TypeSafe of TypeSafe.PrepareParameters
+  type PrepareOptions =
+    | Primitive of Primitive.PrepareOptions
+    | TypeSafe of TypeSafe.PrepareOptions
 
     static member private ToSeq(s : 'a seq) =
       match s with
@@ -157,32 +157,32 @@ module AltCover =
 
     static member private ToList(s : 'a seq) =
       s
-      |> PrepareParameters.ToSeq
+      |> PrepareOptions.ToSeq
       |> Seq.toList
 
     member self.InputDirectories =
       match self with
-      | Primitive p -> p.InputDirectories |> PrepareParameters.ToList
+      | Primitive p -> p.InputDirectories |> PrepareOptions.ToList
       | TypeSafe t -> t.InputDirectories.AsStrings()
 
     member self.OutputDirectories =
       match self with
-      | Primitive p -> p.OutputDirectories |> PrepareParameters.ToList
+      | Primitive p -> p.OutputDirectories |> PrepareOptions.ToList
       | TypeSafe t -> t.OutputDirectories.AsStrings()
 
     member self.SymbolDirectories =
       match self with
-      | Primitive p -> p.SymbolDirectories |> PrepareParameters.ToList
+      | Primitive p -> p.SymbolDirectories |> PrepareOptions.ToList
       | TypeSafe t -> t.SymbolDirectories.AsStrings()
 
     member self.Dependencies =
       match self with
-      | Primitive p -> p.Dependencies |> PrepareParameters.ToList
+      | Primitive p -> p.Dependencies |> PrepareOptions.ToList
       | TypeSafe t -> t.Dependencies.AsStrings()
 
     member self.Keys =
       match self with
-      | Primitive p -> p.Keys |> PrepareParameters.ToList
+      | Primitive p -> p.Keys |> PrepareOptions.ToList
       | TypeSafe t -> t.Keys.AsStrings()
 
     member self.StrongNameKey =
@@ -197,42 +197,42 @@ module AltCover =
 
     member self.FileFilter =
       match self with
-      | Primitive p -> p.FileFilter |> PrepareParameters.ToList
+      | Primitive p -> p.FileFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.FileFilter.AsStrings()
 
     member self.AssemblyFilter =
       match self with
-      | Primitive p -> p.AssemblyFilter |> PrepareParameters.ToList
+      | Primitive p -> p.AssemblyFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.AssemblyFilter.AsStrings()
 
     member self.AssemblyExcludeFilter =
       match self with
-      | Primitive p -> p.AssemblyExcludeFilter |> PrepareParameters.ToList
+      | Primitive p -> p.AssemblyExcludeFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.AssemblyExcludeFilter.AsStrings()
 
     member self.TypeFilter =
       match self with
-      | Primitive p -> p.TypeFilter |> PrepareParameters.ToList
+      | Primitive p -> p.TypeFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.TypeFilter.AsStrings()
 
     member self.MethodFilter =
       match self with
-      | Primitive p -> p.MethodFilter |> PrepareParameters.ToList
+      | Primitive p -> p.MethodFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.MethodFilter.AsStrings()
 
     member self.AttributeFilter =
       match self with
-      | Primitive p -> p.AttributeFilter |> PrepareParameters.ToList
+      | Primitive p -> p.AttributeFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.AttributeFilter.AsStrings()
 
     member self.PathFilter =
       match self with
-      | Primitive p -> p.PathFilter |> PrepareParameters.ToList
+      | Primitive p -> p.PathFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.PathFilter.AsStrings()
 
     member self.CallContext =
       match self with
-      | Primitive p -> p.CallContext |> PrepareParameters.ToList
+      | Primitive p -> p.CallContext |> PrepareOptions.ToList
       | TypeSafe t -> t.CallContext.AsStrings()
 
     member self.ReportFormat =
@@ -281,7 +281,7 @@ module AltCover =
 
     member self.CommandLine =
       match self with
-      | Primitive p -> p.CommandLine |> PrepareParameters.ToSeq
+      | Primitive p -> p.CommandLine |> PrepareOptions.ToSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
     member self.ExposeReturnCode =
@@ -321,7 +321,7 @@ module AltCover =
 
 #if RUNNER
     static member private ValidateArray a f key =
-      PrepareParameters.ValidateArraySimple a (f key)
+      PrepareOptions.ValidateArraySimple a (f key)
 
     static member private ValidateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
 
@@ -358,25 +358,25 @@ module AltCover =
           | (_, Left(Some _)) -> true
           | _ -> false
         context
-        |> PrepareParameters.ToSeq
+        |> PrepareOptions.ToSeq
         |> Seq.fold select false
         |> ignore
 
       try
         CommandLine.error <- []
-        PrepareParameters.ValidateArray self.InputDirectories CommandLine.validateDirectory
+        PrepareOptions.ValidateArray self.InputDirectories CommandLine.validateDirectory
           "--inputDirectory"
-        PrepareParameters.ValidateArray self.OutputDirectories CommandLine.validatePath
+        PrepareOptions.ValidateArray self.OutputDirectories CommandLine.validatePath
           "--outputDirectory"
-        PrepareParameters.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
+        PrepareOptions.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
           self.StrongNameKey
-        PrepareParameters.ValidateOptional CommandLine.validatePath "--xmlReport"
+        PrepareOptions.ValidateOptional CommandLine.validatePath "--xmlReport"
           self.XmlReport
-        PrepareParameters.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
+        PrepareOptions.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
           "--symbolDirectory"
-        PrepareParameters.ValidateArray self.Dependencies CommandLine.validateAssembly
+        PrepareOptions.ValidateArray self.Dependencies CommandLine.validateAssembly
           "--dependency"
-        PrepareParameters.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
+        PrepareOptions.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
         [ self.FileFilter
           self.AssemblyFilter
           self.AssemblyExcludeFilter
@@ -385,7 +385,7 @@ module AltCover =
           self.AttributeFilter
           self.PathFilter ]
         |> Seq.iter
-             (fun a -> PrepareParameters.ValidateArraySimple a CommandLine.validateRegexes)
+             (fun a -> PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
         self.Consistent()
         self.Consistent'()
         validateContext self.CallContext
@@ -397,10 +397,10 @@ module AltCover =
                     SuppressMessage("Gendarme.Rules.Smells",
                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                     Justification = "Idiomatic F#")>]
-  type Logging =
-    | Primitive of Primitive.Logging
+  type LoggingOptions =
+    | Primitive of Primitive.LoggingOptions
 
-    static member Create() = Primitive.Logging.Create() |> Primitive
+    static member Create() = Primitive.LoggingOptions.Create() |> Primitive
 
     static member ActionAdapter(action : Action<String>) =
       match action with

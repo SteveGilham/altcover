@@ -12,8 +12,8 @@ open Fake.DotNet
 module AltCoverCommand =
   [<NoComparison; AutoSerializable(false)>]
   type ArgumentType =
-    | Collect of AltCover.CollectParameters
-    | Prepare of AltCover.PrepareParameters
+    | Collect of AltCover.CollectOptions
+    | Prepare of AltCover.PrepareOptions
     | ImportModule
     | GetVersion
 
@@ -91,7 +91,7 @@ module AltCoverCommand =
      cmdArgs |> List.filter (String.IsNullOrWhiteSpace >> not))
 
   [<NoComparison; NoEquality; AutoSerializable(false)>]
-  type Parameters =
+  type Options =
     { /// Path to the Altcover executable.
       ToolPath : string
       /// Which version of the tool (FAKE 5.18 ToolType)
@@ -127,25 +127,25 @@ module AltCoverCommand =
           | GetVersion -> this
       | _ -> this
 
-  let internal createArgs parameters =
-    match parameters.Args with
+  let internal createArgs options =
+    match options.Args with
     | Collect c -> Args.collect c
     | Prepare p -> Args.prepare p
     | ImportModule -> [ "ImportModule" ]
     | GetVersion -> [ "version" ]
 
-  let internal createProcess parameters args =
+  let internal createProcess options args =
     let doTool (tool : Fake.DotNet.ToolType) =
-      CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
+      CreateProcess.fromCommand (RawCommand(options.ToolPath, args |> Arguments.OfArgs))
       |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
 
     let withWorkingDirectory c = // withWorkingDirectory line
       c
-      |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
+      |> if String.IsNullOrWhiteSpace options.WorkingDirectory
          then id
-         else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
+         else CreateProcess.withWorkingDirectory options.WorkingDirectory
 
-    doTool parameters.ToolType
+    doTool options.ToolType
     |> withWorkingDirectory
     |> CreateProcess.ensureExitCode
     |> fun command ->
@@ -155,17 +155,17 @@ module AltCoverCommand =
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
                     Justification = "Fake.build style")>]
-  let composeCommandLine parameters =
-    let args = createArgs parameters
-    createProcess parameters args
+  let composeCommandLine options =
+    let args = createArgs options
+    createProcess options args
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                     Justification =
                                                       "Generic types are implicit")>]
 
-  let internal runCore parameters modifyCommand =
+  let internal runCore options modifyCommand =
     use __ = Trace.traceTask "AltCover" String.Empty
-    let command = (composeCommandLine parameters) |> modifyCommand
+    let command = (composeCommandLine options) |> modifyCommand
     let run = command |> Proc.run
     if 0 <> run.ExitCode then failwithf "AltCover '%s' failed." command.CommandLine
     __.MarkSuccess()
@@ -173,14 +173,14 @@ module AltCoverCommand =
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
                     Justification = "Fake.build style")>]
-  let run parameters = runCore parameters id
+  let run options = runCore options id
 
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
                     Justification = "Fake.build style")>]
-  let runWithMono monoPath parameters =
+  let runWithMono monoPath options =
     let withMono (command : CreateProcess<_>) = // withMono line
-      if parameters.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
+      if options.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
              && Fake.Core.Environment.isWindows then
             match command.Command with
             | RawCommand(tool, args) ->
@@ -197,8 +197,8 @@ module AltCoverCommand =
           else
             command
 
-    runCore parameters withMono
+    runCore options withMono
 
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@182T.#monoPath", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@182T.#parameters", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@142T.#parameters", Justification="Generated code")>]()
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@182T.#options", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@142T.#options", Justification="Generated code")>]()

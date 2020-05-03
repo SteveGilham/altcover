@@ -8,11 +8,11 @@ open System
 open System.Diagnostics.CodeAnalysis
 
 #if RUNNER
-type PrepareParams = AltCover.FSApi.PrepareParameters
-type CollectParams = AltCover.FSApi.CollectParameters
+type PrepareParams = AltCover.FSApi.PrepareOptions
+type CollectParams = AltCover.FSApi.CollectOptions
 #else
-type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareParameters
-type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectParameters
+type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions
+type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
 #endif
 
 [<SuppressMessage("Gendarme.Rules.Smells",

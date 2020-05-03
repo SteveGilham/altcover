@@ -21,12 +21,12 @@ namespace AltCover.Cake
     /// <summary>
     /// Gets or sets the parameters for the preparation phase
     /// </summary>
-    public CSApi.IPrepareParameters PreparationPhase { get; set; }
+    public CSApi.IPrepareOptions PreparationPhase { get; set; }
 
     /// <summary>
     /// Gets or sets the parameters for the collection phase
     /// </summary>
-    public CSApi.ICollectParameters CollectionPhase { get; set; }
+    public CSApi.ICollectOptions CollectionPhase { get; set; }
 
     /// <summary>
     ///  Gets or sets the other command line options for the operation

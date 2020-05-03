@@ -5,17 +5,17 @@ open AltCover
 
 module Prepare = begin
   [<Extension>]
-  val WhatIf : prepare:FSApi.PrepareParameters -> FSApi.ValidatedCommandLine
+  val WhatIf : prepare:FSApi.PrepareOptions -> FSApi.ValidatedCommandLine
 end
 module Collect = begin
   [<Extension>]
   val WhatIf :
-    collect:FSApi.CollectParameters ->
+    collect:FSApi.CollectOptions ->
       afterPreparation:bool -> FSApi.ValidatedCommandLine
 end
 module FSApiExtension = begin
-  type FSApi.CollectParameters with
+  type FSApi.CollectOptions with
     member WhatIf : afterPreparation:bool -> FSApi.ValidatedCommandLine
-  type FSApi.PrepareParameters with
+  type FSApi.PrepareOptions with
     member WhatIf : unit -> FSApi.ValidatedCommandLine
 end

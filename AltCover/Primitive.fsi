@@ -6,7 +6,7 @@ namespace AltCoverFake.DotNet.Testing
   [<RequireQualifiedAccess>]
   module Primitive = begin
     [<NoComparisonAttribute ()>]
-    type CollectParameters =
+    type CollectOptions =
       { RecorderDirectory: System.String
         WorkingDirectory: System.String
         Executable: System.String
@@ -18,10 +18,10 @@ namespace AltCoverFake.DotNet.Testing
         ExposeReturnCode: bool
         SummaryFormat: System.String }
       with
-        static member Create : unit -> CollectParameters
+        static member Create : unit -> CollectOptions
       end
     [<NoComparisonAttribute ()>]
-    type PrepareParameters =
+    type PrepareOptions =
       { InputDirectories: seq<System.String>
         OutputDirectories: seq<System.String>
         SymbolDirectories: seq<System.String>
@@ -54,17 +54,17 @@ namespace AltCoverFake.DotNet.Testing
         ShowStatic: string
         ShowGenerated: bool }
       with
-        static member Create : unit -> PrepareParameters
+        static member Create : unit -> PrepareOptions
       end
 #if RUNNER
     [<NoComparison; NoEquality>]
-    type Logging =
+    type LoggingOptions =
       { Info : System.String -> unit
         Warn : System.String -> unit
         Error : System.String -> unit
         Echo : System.String -> unit }
       with
-        static member Create : unit -> Logging
+        static member Create : unit -> LoggingOptions
       end
 #endif
   end

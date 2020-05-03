@@ -128,7 +128,7 @@ namespace AltCoverFake.DotNet.Testing
         member AsString : unit -> string
       end
     [<NoComparison>]
-    type CollectParameters =
+    type CollectOptions =
       { RecorderDirectory: DirectoryPath
         WorkingDirectory: DirectoryPath
         Executable: FilePath
@@ -140,10 +140,10 @@ namespace AltCoverFake.DotNet.Testing
         ExposeReturnCode: Flag
         SummaryFormat: SummaryFormat }
       with
-        static member Create : unit -> CollectParameters
+        static member Create : unit -> CollectOptions
       end
     [<NoComparison>]
-    type PrepareParameters =
+    type PrepareOptions =
       { InputDirectories: DirectoryPaths
         OutputDirectories: DirectoryPaths
         SymbolDirectories: DirectoryPaths
@@ -176,6 +176,6 @@ namespace AltCoverFake.DotNet.Testing
         ShowStatic: StaticFormat
         ShowGenerated: Flag }
       with
-        static member Create : unit -> PrepareParameters
+        static member Create : unit -> PrepareOptions
       end
   end

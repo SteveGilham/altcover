@@ -3,8 +3,8 @@ open Microsoft.Build.Framework
 open Microsoft.Build.Utilities
 
 module Api = begin
-  val Prepare : args:FSApi.PrepareParameters -> log:FSApi.Logging -> int
-  val Collect : args:FSApi.CollectParameters -> log:FSApi.Logging -> int
+  val Prepare : args:FSApi.PrepareOptions -> log:FSApi.LoggingOptions -> int
+  val Collect : args:FSApi.CollectOptions -> log:FSApi.LoggingOptions -> int
   val Summary : unit -> string
   val ImportModule : unit -> string
   val Version : unit -> System.Version

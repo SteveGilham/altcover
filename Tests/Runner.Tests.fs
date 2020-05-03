@@ -411,7 +411,7 @@ module AltCoverRunnerTests =
                         |> Seq.sort
                         |> Seq.toList
 
-      let primitiveNames = typeof<Primitive.CollectParameters>
+      let primitiveNames = typeof<Primitive.CollectOptions>
                            |> FSharpType.GetRecordFields
                            |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                            |> Seq.sort
@@ -422,7 +422,7 @@ module AltCoverRunnerTests =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", primitiveNames))
 
-      let typesafeNames = typeof<TypeSafe.CollectParameters>
+      let typesafeNames = typeof<TypeSafe.CollectOptions>
                           |> FSharpType.GetRecordFields
                           |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                           |> Seq.sort
@@ -432,14 +432,14 @@ module AltCoverRunnerTests =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<FSApi.CollectParameters>.GetProperties()
+      let fsapiNames = typeof<FSApi.CollectOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<FSApi.CollectParameters>
+      let fsapiCases = (typeof<FSApi.CollectOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.CollectParameters.Create() |> FSApi.CollectParameters.Primitive
+      let args = Primitive.CollectOptions.Create() |> FSApi.CollectOptions.Primitive
       let commandFragments = Args.buildCollect args
 
       // adds Runner and the trailing command line arguments

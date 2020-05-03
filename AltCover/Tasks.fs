@@ -17,14 +17,14 @@ open Augment
 [<SuppressMessage("Microsoft.Naming", "CA1704",
   Justification="'Api' works")>]
 module Api =
-  let Prepare (args : FSApi.PrepareParameters) (log : FSApi.Logging) =
+  let Prepare (args : FSApi.PrepareOptions) (log : FSApi.LoggingOptions) =
     log.Apply()
     args
     |> Args.prepare
     |> List.toArray
     |> Main.effectiveMain
 
-  let Collect (args : FSApi.CollectParameters) (log : FSApi.Logging) =
+  let Collect (args : FSApi.CollectOptions) (log : FSApi.LoggingOptions) =
     log.Apply()
     Args.collect args
     |> List.toArray
@@ -49,7 +49,7 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : FSApi.Logging option = None with get, set
+  member val internal ACLog : FSApi.LoggingOptions option = None with get, set
 
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
@@ -129,14 +129,14 @@ type Prepare() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (FSApi.Logging.Primitive
-          { Primitive.Logging.Create() with
+        (FSApi.LoggingOptions.Primitive
+          { Primitive.LoggingOptions.Create() with
               Error = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.PrepareParameters.Primitive
+      FSApi.PrepareOptions.Primitive
         { InputDirectories = self.InputDirectories
           OutputDirectories = self.OutputDirectories
           SymbolDirectories = self.SymbolDirectories
@@ -178,7 +178,7 @@ type Collect() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : FSApi.Logging option = None with get, set
+  member val internal ACLog : FSApi.LoggingOptions option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -215,14 +215,14 @@ type Collect() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (FSApi.Logging.Primitive
-          { Primitive.Logging.Create() with
+        (FSApi.LoggingOptions.Primitive
+          { Primitive.LoggingOptions.Create() with
               Error = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.CollectParameters.Primitive
+      FSApi.CollectOptions.Primitive
         { RecorderDirectory = self.RecorderDirectory
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
@@ -243,8 +243,8 @@ type PowerShell() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = FSApi.Logging.Primitive
-                             { Primitive.Logging.Create() with
+  member val internal IO = FSApi.LoggingOptions.Primitive
+                             { Primitive.LoggingOptions.Create() with
                                  Error = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
@@ -261,8 +261,8 @@ type GetVersion() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = FSApi.Logging.Primitive
-                             { Primitive.Logging.Create() with
+  member val internal IO = FSApi.LoggingOptions.Primitive
+                             { Primitive.LoggingOptions.Create() with
                                  Error = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 

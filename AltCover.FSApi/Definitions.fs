@@ -106,9 +106,9 @@ module internal Internals =
   [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
                      Justification="Compiler Generated")>]
 #if RUNNER
-  let internal toPrepareListArgumentList (prepare : AltCover.FSApi.PrepareParameters) =
+  let internal toPrepareListArgumentList (prepare : AltCover.FSApi.PrepareOptions) =
 #else
-  let internal toPrepareListArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters) =
+  let internal toPrepareListArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions) =
 #endif
     [
       fromList, "SymbolDirectories", prepare.SymbolDirectories
@@ -125,9 +125,9 @@ module internal Internals =
     ]
 
 #if RUNNER
-  let internal toPrepareFromArgArgumentList (prepare : AltCover.FSApi.PrepareParameters) =
+  let internal toPrepareFromArgArgumentList (prepare : AltCover.FSApi.PrepareOptions) =
 #else
-  let internal toPrepareFromArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters) =
+  let internal toPrepareFromArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions) =
 #endif
     [
       fromArg, "StrongNameKey", prepare.StrongNameKey
@@ -137,9 +137,9 @@ module internal Internals =
     ]
 
 #if RUNNER
-  let internal toPrepareArgArgumentList (prepare : AltCover.FSApi.PrepareParameters) =
+  let internal toPrepareArgArgumentList (prepare : AltCover.FSApi.PrepareOptions) =
 #else
-  let internal toPrepareArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters) =
+  let internal toPrepareArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions) =
 #endif
     [
       (arg, "ZipFile", "false", prepare.ZipFile)
@@ -154,9 +154,9 @@ module internal Internals =
     ]
 
 #if RUNNER
-  let internal toCollectFromArgArgumentList (collect : AltCover.FSApi.CollectParameters) =
+  let internal toCollectFromArgArgumentList (collect : AltCover.FSApi.CollectOptions) =
 #else
-  let internal toCollectFromArgArgumentList (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters) =
+  let internal toCollectFromArgArgumentList (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions) =
 #endif
     [
       fromArg, "LcovReport", collect.LcovReport
@@ -196,11 +196,11 @@ module internal Internals =
   /// <param name="options">All other `altcover` related command line arguments</param>
   /// <returns>The command line as a sequence of individual items</returns>
 #if RUNNER
-  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParameters)
-      (collect : AltCover.FSApi.CollectParameters) (options : CLIOptions) =
+  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareOptions)
+      (collect : AltCover.FSApi.CollectOptions) (options : CLIOptions) =
 #else
-  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
-      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
+  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
+      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
       (options : DotNet.CLIOptions) =
 #endif
     [
@@ -239,12 +239,12 @@ module internal Internals =
   /// <param name="options">All other `altcover` related command line arguments</param>
   /// <returns>The composed command line</returns>
 #if RUNNER
-  let ToTestArguments (prepare : AltCover.FSApi.PrepareParameters)
-      (collect : AltCover.FSApi.CollectParameters) (options : CLIOptions) =
+  let ToTestArguments (prepare : AltCover.FSApi.PrepareOptions)
+      (collect : AltCover.FSApi.CollectOptions) (options : CLIOptions) =
     ToTestArgumentList prepare collect options |> join
 #else
-  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParameters)
-      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParameters)
+  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
+      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
       (options : DotNet.CLIOptions) =
     toTestArgumentList prepare collect options |> join
 #endif

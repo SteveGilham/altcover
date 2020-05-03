@@ -458,7 +458,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Collect() =
     let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
-    FSApi.CollectParameters.Primitive
+    FSApi.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
         Executable = self.Executable
@@ -472,7 +472,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
-    FSApi.PrepareParameters.Primitive
+    FSApi.PrepareOptions.Primitive
       { InputDirectories = self.InputDirectory
         OutputDirectories = self.OutputDirectory
         SymbolDirectories = self.SymbolDirectory
@@ -506,8 +506,8 @@ type InvokeAltCoverCommand() =
         ShowGenerated = self.ShowGenerated.IsPresent }
 
   member private self.Log() =
-    FSApi.Logging.Primitive
-      { Primitive.Logging.Create() with
+    FSApi.LoggingOptions.Primitive
+      { Primitive.LoggingOptions.Create() with
           Error = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))
           Warn = (fun s -> self.WriteWarning s) }

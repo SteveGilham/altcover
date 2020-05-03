@@ -13,12 +13,12 @@ namespace AltCover.Cake
                     Justification = "It's the API for the system")]
   public static class Api
   {
-    private static CSApi.ILogging MakeLog(ICakeContext context, CSApi.ILogging log)
+    private static CSApi.ILoggingOptions MakeLog(ICakeContext context, CSApi.ILoggingOptions log)
     {
       if (log != null)
         return log;
 
-      var result = CSApi.Primitive.LoggingParameters.Create();
+      var result = CSApi.Primitive.LoggingOptions.Create();
 
       if (context != null)
       {
@@ -42,7 +42,7 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Prepare(this ICakeContext context, CSApi.IPrepareParameters prepareArgs, CSApi.ILogging log = null)
+    public static int Prepare(this ICakeContext context, CSApi.IPrepareOptions prepareArgs, CSApi.ILoggingOptions log = null)
     {
       return CSApi.Prepare(prepareArgs, MakeLog(context, log));
     }
@@ -58,7 +58,7 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Collect(this ICakeContext context, CSApi.ICollectParameters collectArgs, CSApi.ILogging log = null)
+    public static int Collect(this ICakeContext context, CSApi.ICollectOptions collectArgs, CSApi.ILoggingOptions log = null)
     {
       return CSApi.Collect(collectArgs, MakeLog(context, log));
     }

@@ -248,11 +248,11 @@ module FSApiTests =
     let summary = DotNet.CLIOptions.ShowSummary "R"
     let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
 
-    let pprep = Primitive.PrepareParameters.Create()
-    let prep = AltCover.FSApi.PrepareParameters.Primitive pprep
+    let pprep = Primitive.PrepareOptions.Create()
+    let prep = AltCover.FSApi.PrepareOptions.Primitive pprep
 
-    let pcoll = Primitive.CollectParameters.Create()
-    let coll = AltCover.FSApi.CollectParameters.Primitive pcoll
+    let pcoll = Primitive.CollectOptions.Create()
+    let coll = AltCover.FSApi.CollectOptions.Primitive pcoll
 
     let targets =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -342,11 +342,11 @@ module FSApiTests =
     test <@ combined.Summary = "R" @>
     test <@ (DotNet.CLIOptions.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
 
-    let pprep = Primitive.PrepareParameters.Create()
-    let prep = AltCover.FSApi.PrepareParameters.Primitive pprep
+    let pprep = Primitive.PrepareOptions.Create()
+    let prep = AltCover.FSApi.PrepareOptions.Primitive pprep
 
-    let pcoll = Primitive.CollectParameters.Create()
-    let coll = AltCover.FSApi.CollectParameters.Primitive pcoll
+    let pcoll = Primitive.CollectOptions.Create()
+    let coll = AltCover.FSApi.CollectOptions.Primitive pcoll
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>

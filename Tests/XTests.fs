@@ -153,17 +153,17 @@ module AltCoverXTests =
            expectSkipped)
 
   [<Test>]
-  let CollectParametersCanBeValidated() =
+  let CollectOptionsCanBeValidated() =
     let subject =
-      { Primitive.CollectParameters.Create() with
+      { Primitive.CollectOptions.Create() with
                                               Threshold = "23"
                                               CommandLine = null }
 
-    let instance = FSApi.CollectParameters.Primitive subject
+    let instance = FSApi.CollectOptions.Primitive subject
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    test <@ (FSApi.CollectParameters.Primitive subject)
+    test <@ (FSApi.CollectOptions.Primitive subject)
             |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
@@ -172,7 +172,7 @@ module AltCoverXTests =
       test <@ empty.AsString() = String.Empty @>
 
   [<Test>]
-  let TypeSafeCollectParametersCanBeValidated() =
+  let TypeSafeCollectOptionsCanBeValidated() =
     let here = Assembly.GetExecutingAssembly().Location
     let t = { TypeSafe.Thresholds.Create() with Statements = 23uy
                                                 Branches = 16uy
@@ -180,12 +180,12 @@ module AltCoverXTests =
                                                 MaxCrap = 3uy
                                                            }
     let subject =
-      { TypeSafe.CollectParameters.Create() with
+      { TypeSafe.CollectOptions.Create() with
                                              Threshold = TypeSafe.Threshold t
                                              SummaryFormat = TypeSafe.BPlus
                                              Executable = TypeSafe.Tool "dotnet" }
 
-    let instance = FSApi.CollectParameters.TypeSafe subject
+    let instance = FSApi.CollectOptions.TypeSafe subject
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
 
     let scan = instance.Validate(false)
@@ -208,42 +208,42 @@ module AltCoverXTests =
     |> List.iter (fun (a, b) -> test <@ a = b @>)
 
   [<Test>]
-  let CollectParametersCanBeValidatedWithErrors() =
-    let subject = Primitive.CollectParameters.Create()
-    let scan = (FSApi.CollectParameters.Primitive subject).Validate(true)
+  let CollectOptionsCanBeValidatedWithErrors() =
+    let subject = Primitive.CollectOptions.Create()
+    let scan = (FSApi.CollectOptions.Primitive subject).Validate(true)
     test <@ scan.Length = 1 @>
 
   [<Test>]
-  let TypeSafeCollectParametersCanBeValidatedWithErrors() =
-    let subject = TypeSafe.CollectParameters.Create()
-    let scan = (FSApi.CollectParameters.TypeSafe subject).Validate(true)
+  let TypeSafeCollectOptionsCanBeValidatedWithErrors() =
+    let subject = TypeSafe.CollectOptions.Create()
+    let scan = (FSApi.CollectOptions.TypeSafe subject).Validate(true)
     test <@ scan.Length = 1 @>
 
   [<Test>]
-  let CollectParametersCanBePositivelyValidatedWithErrors() =
+  let CollectOptionsCanBePositivelyValidatedWithErrors() =
     let test =
-      { Primitive.CollectParameters.Create() with
+      { Primitive.CollectOptions.Create() with
                                               RecorderDirectory =
                                                 Guid.NewGuid().ToString() }
-    let scan = (FSApi.CollectParameters.Primitive test).Validate(true)
+    let scan = (FSApi.CollectOptions.Primitive test).Validate(true)
     test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
 
   [<Test>]
-  let TypeSafeCollectParametersCanBePositivelyValidatedWithErrors() =
+  let TypeSafeCollectOptionsCanBePositivelyValidatedWithErrors() =
     let test =
-      { TypeSafe.CollectParameters.Create() with
+      { TypeSafe.CollectOptions.Create() with
                                              RecorderDirectory =
                                                TypeSafe.DInfo
                                                <| DirectoryInfo(Guid.NewGuid().ToString()) }
-    let scan = (FSApi.CollectParameters.TypeSafe test).Validate(true)
+    let scan = (FSApi.CollectOptions.TypeSafe test).Validate(true)
     test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
 
   [<Test>]
-  let PrepareParametersCanBeValidated() =
+  let PrepareOptionsCanBeValidated() =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { Primitive.PrepareParameters.Create() with
+      { Primitive.PrepareOptions.Create() with
                                               InputDirectories = [| here |]
                                               OutputDirectories = [| here |]
                                               SymbolDirectories = [| here |]
@@ -252,18 +252,18 @@ module AltCoverXTests =
                                               CallContext = [| "[Fact]" |]
                                               PathFilter = [| "ok" |] }
 
-    let instance = FSApi.PrepareParameters.Primitive subject
+    let instance = FSApi.PrepareOptions.Primitive subject
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    let rendered = (FSApi.PrepareParameters.Primitive subject) |> Args.prepare
+    let rendered = (FSApi.PrepareOptions.Primitive subject) |> Args.prepare
     let location = Assembly.GetExecutingAssembly().Location
     test
       <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
                       "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace"; "--save" ] @>
 
   [<Test>]
-  let TypeSafePrepareParametersCanBeValidated() =
+  let TypeSafePrepareOptionsCanBeValidated() =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     test <@ (TypeSafe.Tool ".").AsString() = "." @>
@@ -271,7 +271,7 @@ module AltCoverXTests =
     test <@ ("fred" |> Regex |> TypeSafe.IncludeItem ).AsString() = "?fred" @>
 
     let subject =
-      { TypeSafe.PrepareParameters.Create() with
+      { TypeSafe.PrepareOptions.Create() with
                                              InputDirectories =
                                                TypeSafe.DirectoryPaths
                                                   [| TypeSafe.DirectoryPath here |]
@@ -292,7 +292,7 @@ module AltCoverXTests =
                                              PathFilter =
                                                TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
 
-    let instance = FSApi.PrepareParameters.TypeSafe subject
+    let instance = FSApi.PrepareOptions.TypeSafe subject
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
 
     let scan = instance.Validate()
@@ -303,15 +303,15 @@ module AltCoverXTests =
          |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace";
                                    "--save"; "--methodpoint" ] @>
-    let validate = (FSApi.PrepareParameters.TypeSafe subject).WhatIf().ToString()
+    let validate = (FSApi.PrepareOptions.TypeSafe subject).WhatIf().ToString()
     test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --reportFormat OpenCover --inplace --save --methodpoint" @>
 
   [<Test>]
-  let TypeSafePrepareParametersCanBeValidatedAgain() =
+  let TypeSafePrepareOptionsCanBeValidatedAgain() =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { TypeSafe.PrepareParameters.Create() with
+      { TypeSafe.PrepareOptions.Create() with
                                              InputDirectories =
                                                TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
                                              OutputDirectories =
@@ -331,25 +331,25 @@ module AltCoverXTests =
                                                TypeSafe.Filters
                                                  [| TypeSafe.FilterItem <| Regex "ok" |] }
 
-    let scan = (FSApi.PrepareParameters.TypeSafe subject).Validate()
+    let scan = (FSApi.PrepareOptions.TypeSafe subject).Validate()
     test <@ scan.Length = 0 @>
     let location = Assembly.GetExecutingAssembly().Location
     test
-      <@ (FSApi.PrepareParameters.TypeSafe subject)
+      <@ (FSApi.PrepareOptions.TypeSafe subject)
          |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "--reportFormat"; "NCover"; "--inplace"; "--save"; "--";
                                    "[Fact]" ] @>
 
   [<Test>]
-  let PrepareParametersStrongNamesCanBeValidated() =
+  let PrepareOptionsStrongNamesCanBeValidated() =
     let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
 
     let subject =
-      { Primitive.PrepareParameters.Create() with
+      { Primitive.PrepareOptions.Create() with
                                               StrongNameKey = input
                                               Keys = [| input |] }
 
-    let scan = (FSApi.PrepareParameters.Primitive subject).Validate()
+    let scan = (FSApi.PrepareOptions.Primitive subject).Validate()
 #if NETCOREAPP2_1
     ()
 #else
@@ -357,18 +357,18 @@ module AltCoverXTests =
 #endif
 
   [<Test>]
-  let TypeSafePrepareParametersStrongNamesCanBeValidated() =
+  let TypeSafePrepareOptionsStrongNamesCanBeValidated() =
     let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
 
     let subject =
-      { TypeSafe.PrepareParameters.Create() with
+      { TypeSafe.PrepareOptions.Create() with
                                              StrongNameKey =
                                                TypeSafe.FInfo <| FileInfo(input)
                                              Keys =
                                                TypeSafe.FilePaths
                                                  [| TypeSafe.FilePath input |] }
 
-    let scan = (FSApi.PrepareParameters.TypeSafe subject).Validate()
+    let scan = (FSApi.PrepareOptions.TypeSafe subject).Validate()
 #if NETCOREAPP2_1
     ()
 #else
@@ -376,34 +376,34 @@ module AltCoverXTests =
 #endif
 
   [<Test>]
-  let PrepareParametersCanBeValidatedWithNulls() =
-    let subject = { Primitive.PrepareParameters.Create() with CallContext = null }
-    let scan = (FSApi.PrepareParameters.Primitive subject).Validate()
+  let PrepareOptionsCanBeValidatedWithNulls() =
+    let subject = { Primitive.PrepareOptions.Create() with CallContext = null }
+    let scan = (FSApi.PrepareOptions.Primitive subject).Validate()
     test <@ scan.Length = 0 @>
 
   [<Test>]
-  let PrepareParametersCanBeValidatedAndDetectInconsistency() =
+  let PrepareOptionsCanBeValidatedAndDetectInconsistency() =
     let subject =
-      { Primitive.PrepareParameters.Create() with
+      { Primitive.PrepareOptions.Create() with
                                               BranchCover = true
                                               LineCover = true
                                               Single = true
                                               CallContext = [| "0" |] }
 
-    let scan = (FSApi.PrepareParameters.Primitive subject).Validate()
+    let scan = (FSApi.PrepareOptions.Primitive subject).Validate()
     test <@ scan.Length = 2 @>
 
   [<Test>]
-  let TypeSafePrepareParametersCanBeValidatedAndDetectInconsistency() =
+  let TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency() =
     let subject =
-      { TypeSafe.PrepareParameters.Create() with
+      { TypeSafe.PrepareOptions.Create() with
                                              BranchCover = TypeSafe.Flag true
                                              LineCover = TypeSafe.Flag true
                                              Single = TypeSafe.Flag true
                                              CallContext =
                                                TypeSafe.Context
                                                  [| TypeSafe.TimeItem 0uy |] }
-      |> FSApi.PrepareParameters.TypeSafe
+      |> FSApi.PrepareOptions.TypeSafe
 
     let scan = subject.Validate()
     test <@ scan.Length = 2 @>
@@ -424,14 +424,14 @@ module AltCoverXTests =
     test <@  inputs |> List.map (fun i -> i.AsString()) = expected @>
 
   [<Test>]
-  let PrepareParametersCanBeValidatedWithErrors() =
+  let PrepareOptionsCanBeValidatedWithErrors() =
     let subject =
-      { Primitive.PrepareParameters.Create() with
+      { Primitive.PrepareOptions.Create() with
                                               XmlReport =
                                                 String(Path.GetInvalidPathChars())
                                               CallContext = [| "0"; "1" |] }
 
-    let scan = (FSApi.PrepareParameters.Primitive subject).Validate()
+    let scan = (FSApi.PrepareOptions.Primitive subject).Validate()
     test <@ scan.Length = 2 @>
 
   [<Test>]
