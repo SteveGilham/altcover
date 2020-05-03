@@ -155,9 +155,10 @@ dir -recurse *.fsproj | % {
     }
 
   $globals = $x.project.propertygroup.GlobalDefineConstants.'#text'
+  if (-not $globals) { $globals = @() + $x.project.propertygroup.GlobalDefineConstants  | ? { $_ }}
   
   if ($globals) {
-    $globals = [string]::join(";", $globals).Split(";") | Select-Object -Unique
+    $globals = [string]::join(";", $globals).Split(";") | Select-Object -Unique | ? { $_ }
     $globals = $globals | % { "/D " + $_ + "=1" }
     $globals = [string]::join(" ", $globals)
   }
