@@ -4,7 +4,7 @@
 namespace AltCover
 // ```
 #else
-// # namespace AltCover
+// # namespace AltCoverFake.DotNet.Testing
 // ```
 namespace AltCoverFake.DotNet.Testing
 // ```

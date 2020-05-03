@@ -4,6 +4,7 @@ namespace AltCoverFake.DotNet.Testing
 // ```
 // ## module AltCoverCommand
 // ```
+  [<RequireQualifiedAccess>]
   module AltCoverCommand = begin
 // ```
 // ## type ArgumentType 
