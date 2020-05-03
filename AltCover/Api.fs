@@ -422,10 +422,4 @@ module AltCover =
     member self.Info =
       match self with
       | Primitive p -> p.Info
-
-    member internal self.Apply() =
-      Output.error <- self.Error
-      Output.warn <- self.Warn
-      Output.info <- self.Info
-      Output.echo <- self.Echo
 #endif

@@ -1,16 +1,11 @@
-﻿namespace AltCover
+﻿// # namespace AltCover
+// ```
+namespace AltCover
 open Microsoft.Build.Framework
 open Microsoft.Build.Utilities
-
-module Api = begin
-  val Prepare : args:FSApi.PrepareOptions -> log:FSApi.LoggingOptions -> int
-  val Collect : args:FSApi.CollectOptions -> log:FSApi.LoggingOptions -> int
-  val Summary : unit -> string
-  val ImportModule : unit -> string
-  val Version : unit -> System.Version
-  val FormattedVersion : unit -> string
-end
-
+// ```
+// ## type Prepare
+// ```
 type Prepare =
   class
     inherit Task
@@ -49,7 +44,9 @@ type Prepare =
     member XmlReport : string with get, set
     member ZipFile : bool with get, set
   end
-
+// ```
+// ## type Collect
+// ```
 type Collect =
   class
     inherit Task
@@ -70,18 +67,27 @@ type Collect =
     member Threshold : string with get, set
     member WorkingDirectory : string with get, set
   end
+// ```
+// ## type PowerShell
+// ```
 type PowerShell =
   class
     inherit Task
     new : unit -> PowerShell
     override Execute : unit -> bool
   end
+// ```
+// ## type GetVersion
+// ```
 type GetVersion =
   class
     inherit Task
     new : unit -> GetVersion
     override Execute : unit -> bool
   end
+// ```
+// ## type Echo
+// ```
 type Echo =
   class
     inherit Task
@@ -91,7 +97,10 @@ type Echo =
     [<Required>]
     member Text : string with get, set
   end
+// ```
 #if NETCOREAPP2_0
+// ## type RunSettings
+// ```
 type RunSettings =
   class
     inherit Task

@@ -16,6 +16,8 @@ namespace AltCoverFake.DotNet.Testing
       | GetVersion
 // ```      
 // This type defines what operation to use AltCover for
+//
+// ## Related module level functions
 // ```
     val splitCommandLine : line:string -> string list
 // ```      
@@ -70,6 +72,7 @@ namespace AltCoverFake.DotNet.Testing
 //
 // `WithCreateProcess` turns the specified process information into a suitable command line for AltCover to execute as a sub-process
 //
+// ## Related module level functions
 // ```
     val composeCommandLine :
       options:Options ->
@@ -87,4 +90,4 @@ namespace AltCoverFake.DotNet.Testing
 //  Runs AltCover expressed as a `Fake.DotNet.ToolType.FullFramework` under the supplied mono path (defaulting to just `mono`) on Windows
 // ```        
   end
- // ```.
+ // ```

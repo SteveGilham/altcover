@@ -11,30 +11,10 @@ open System.Diagnostics.CodeAnalysis
 
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
+open ApiStore
 open Augment
 
-[<RequireQualifiedAccess>]
-[<SuppressMessage("Microsoft.Naming", "CA1704",
-  Justification="'Api' works")>]
-module Api =
-  let Prepare (args : FSApi.PrepareOptions) (log : FSApi.LoggingOptions) =
-    log.Apply()
-    args
-    |> Args.prepare
-    |> List.toArray
-    |> Main.effectiveMain
-
-  let Collect (args : FSApi.CollectOptions) (log : FSApi.LoggingOptions) =
-    log.Apply()
-    Args.collect args
-    |> List.toArray
-    |> Main.effectiveMain
-
-  let Summary() = Runner.summary.ToString()
-  let ImportModule() = ApiStore.getStringValue "ImportModule"
-  let Version() = Version(AssemblyVersionInformation.AssemblyFileVersion)
-  let FormattedVersion() = ApiStore.getStringValue "Version"
-
+module ColourHelper =
   let internal colourize name =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
     if ok then Console.ForegroundColor <- colour
@@ -209,7 +189,7 @@ type Collect() =
                                                       "MethodCanBeMadeStaticRule",
                                                       Justification =
                                                        "Instance property needed")>]
-  member self.Summary = Api.Summary()
+  member self.Summary = Runner.summary.ToString()
 
   member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
@@ -289,7 +269,7 @@ type Echo() =
     then
       let original = Console.ForegroundColor
       try
-        Api.colourize self.Colour
+        ColourHelper.colourize self.Colour
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original

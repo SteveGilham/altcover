@@ -1,11 +1,24 @@
 ﻿#if RUNNER
+// # namespace AltCover
+// ```
 namespace AltCover
+// ```
 #else
+// # namespace AltCover
+// ```
 namespace AltCoverFake.DotNet.Testing
+// ```
 #endif
+// ```
+// ## module Primitive
+// This holds the weakly ("stringly") typed equivalent of the command line options
+// ```
   [<RequireQualifiedAccess>]
   module Primitive = begin
-    [<NoComparisonAttribute ()>]
+// ```
+// ### type CollectOptions
+// ```  
+    [<NoComparison>]
     type CollectOptions =
       { RecorderDirectory: System.String
         WorkingDirectory: System.String
@@ -20,7 +33,14 @@ namespace AltCoverFake.DotNet.Testing
       with
         static member Create : unit -> CollectOptions
       end
-    [<NoComparisonAttribute ()>]
+// ```
+// `Create()` returns an instance with all values empty and `ExposeReturnCode` is `true`.
+//
+// Fields that are not applicable to the use case or platform are silently ignored.
+// 
+// ### type PrepareOptions
+// ```
+    [<NoComparison>]
     type PrepareOptions =
       { InputDirectories: seq<System.String>
         OutputDirectories: seq<System.String>
@@ -56,7 +76,15 @@ namespace AltCoverFake.DotNet.Testing
       with
         static member Create : unit -> PrepareOptions
       end
+// ```
+// `Create()` returns an instance that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
+//
+// Fields that are not applicable to the use case or platform are silently ignored.
+// 
 #if RUNNER
+// ```
+// ### type LoggingOptions
+// ```  
     [<NoComparison; NoEquality>]
     type LoggingOptions =
       { Info : System.String -> unit
@@ -66,5 +94,8 @@ namespace AltCoverFake.DotNet.Testing
       with
         static member Create : unit -> LoggingOptions
       end
+// ```
+// `Create()` returns an instance that just discards all strings input.  For your particular use, direct message severities appropriately.  `Echo` is used to echo the synthetic command line in case of inconsistent inputs.
 #endif
-  end
+// ```
+  end// ```
