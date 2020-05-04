@@ -30,7 +30,7 @@ type ConvertToXmlDocumentCommand() =
 
   override self.ProcessRecord() =
     self.XDocument
-    |> AltCover.XmlUtilities.ToXmlDocument
+    |> AltCover.Xml.ToXmlDocument
     |> self.WriteObject
 
 /// <summary>
@@ -56,7 +56,7 @@ type ConvertToXDocumentCommand() =
 
   override self.ProcessRecord() =
     self.XmlDocument
-    |> AltCover.XmlUtilities.ToXDocument
+    |> AltCover.Xml.ToXDocument
     |> self.WriteObject
 
 /// <summary>
@@ -349,7 +349,7 @@ type FormatFromCoverletOpenCoverCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.OpenCoverUtilities.FormatFromCoverlet self.XDocument self.Assembly
+      let rewrite = AltCover.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace

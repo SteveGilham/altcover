@@ -38,9 +38,14 @@
     <Compile Include="CLIInternals.fs" />
     <Compile Include="DotNetCLI.fsi" />
     <Compile Include="DotNetCLI.fs" />
+    <Compile Include="XmlInternal.fs" />
+    <Compile Include="Xml.fsi" />
     <Compile Include="Xml.fs" />
+    <Compile Include="Xhtml.fsi" />
     <Compile Include="Xhtml.fs" />
+    <Compile Include="OpenCover.fsi" />
     <Compile Include="OpenCover.fs" />
+    <Compile Include="CoverageFormats.fsi" />
     <Compile Include="CoverageFormats.fs" />
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />

@@ -34,7 +34,7 @@ module FSApiTests =
             (fun n -> n.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal))
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
     let baseline = XDocument.Load(stream)
-    let transformed = AltCover.OpenCoverUtilities.FormatFromCoverlet baseline [| probe |]
+    let transformed = AltCover.OpenCover.FormatFromCoverlet baseline [| probe |]
     test <@ transformed |> isNull |> not @>
 
     let schemata = XmlSchemaSet()
@@ -128,7 +128,7 @@ module FSApiTests =
     let expected = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
     rdr.BaseStream.Position <- 0L
     let doc = XDocument.Load rdr
-    let converted = AltCover.XmlUtilities.ToXmlDocument doc
+    let converted = AltCover.Xml.ToXmlDocument doc
     use mstream = new MemoryStream()
     converted.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
@@ -146,7 +146,7 @@ module FSApiTests =
     rdr.BaseStream.Position <- 0L
     let doc = XmlDocument()
     doc.Load rdr
-    let converted = AltCover.XmlUtilities.ToXDocument doc
+    let converted = AltCover.Xml.ToXDocument doc
     use mstream = new MemoryStream()
     converted.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
@@ -160,9 +160,9 @@ module FSApiTests =
     let documentText = """<?xml-stylesheet href="mystyle.xslt" type="text/xsl"?><document />"""
     use rdr = new StringReader(documentText)
     let doc = XDocument.Load rdr
-    let converted = AltCover.XmlUtilities.ToXmlDocument doc
+    let converted = AltCover.Xml.ToXmlDocument doc
     test <@ converted.OuterXml.Replace(Environment.NewLine, String.Empty) =  documentText @>
-    let reverted = AltCover.XmlUtilities.ToXDocument converted
+    let reverted = AltCover.Xml.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
     test <@ reverted.ToString().Replace(Environment.NewLine, String.Empty) =  documentText @>
 
@@ -227,7 +227,7 @@ module FSApiTests =
      ("CompressBoth", true, true)]
     |> List.iter (fun (test, inSeq, sameSpan) ->
         use mstream = new MemoryStream()
-        let rewrite = AltCover.OpenCoverUtilities.CompressBranching doc inSeq sameSpan
+        let rewrite = AltCover.OpenCover.CompressBranching doc inSeq sameSpan
         rewrite.Save mstream
         use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
         use rdr = new StreamReader(mstream2)

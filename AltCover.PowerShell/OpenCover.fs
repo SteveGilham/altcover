@@ -82,7 +82,7 @@ type CompressBranchingCommand(outputFile : String) =
         self.XDocument <- XDocument.Load self.InputFile
 
       let xmlDocument =
-        AltCover.OpenCoverUtilities.CompressBranching self.XDocument
+        AltCover.OpenCover.CompressBranching self.XDocument
           self.WithinSequencePoint.IsPresent self.SameSpan.IsPresent
 
       if self.OutputFile

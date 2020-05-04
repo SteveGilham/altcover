@@ -14,13 +14,6 @@ module DotNetCLI =
 #else
 module internal DotNetCLI =
 #endif
-  /// <summary>
-  /// Converts the input into the command line for `dotnet test`
-  /// </summary>
-  /// <param name="prepare">Description of the instrumentation operation to perform</param>
-  /// <param name="collect">Description of the collection operation to perform</param>
-  /// <param name="options">All other `altcover` related command line arguments</param>
-  /// <returns>The command line as a sequence of individual items</returns>
 #if RUNNER
   let ToTestArgumentList (prepare : AltCover.FSApi.PrepareOptions)
       (collect : AltCover.FSApi.CollectOptions) (options : DotNet.CLIOptions) =
@@ -57,13 +50,6 @@ module internal DotNetCLI =
     |> List.filter snd
     |> List.map fst
 
-  /// <summary>
-  /// Converts the input into the command line for `dotnet test`
-  /// </summary>
-  /// <param name="prepare">Description of the instrumentation operation to perform</param>
-  /// <param name="collect">Description of the collection operation to perform</param>
-  /// <param name="options">All other `altcover` related command line arguments</param>
-  /// <returns>The composed command line</returns>
 #if RUNNER
   let ToTestArguments (prepare : AltCover.FSApi.PrepareOptions)
       (collect : AltCover.FSApi.CollectOptions) (options : DotNet.CLIOptions) =
