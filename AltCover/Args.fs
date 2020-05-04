@@ -8,8 +8,8 @@ open System
 open System.Diagnostics.CodeAnalysis
 
 #if RUNNER
-type PrepareParams = AltCover.FSApi.PrepareOptions
-type CollectParams = AltCover.FSApi.CollectOptions
+type PrepareParams = AltCover.OptionApi.PrepareOptions
+type CollectParams = AltCover.OptionApi.CollectOptions
 #else
 type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions
 type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
@@ -18,11 +18,11 @@ type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
 [<SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
-module private ArgsHelper =
-  let item a x =
+module internal Args =
+  let private item a x =
     if x |> String.IsNullOrWhiteSpace then [] else [ a; x ]
 
-  let optionalItem a x l =
+  let private optionalItem a x l =
     if x
         |> String.IsNullOrWhiteSpace
         || l |> List.exists (fun i -> i = x) then
@@ -30,8 +30,7 @@ module private ArgsHelper =
     else
       [ a + ":" + x ]
 
-module internal Args =
-  let internal itemList a x =
+  let private itemList a x =
     if x |> isNull then
       []
     else
@@ -70,7 +69,7 @@ module internal Args =
   let internal items(args : PrepareParams) =
     args
     |> plainItems
-    |> List.collect (fun (a, b) -> ArgsHelper.item a b)
+    |> List.collect (fun (a, b) -> item a b)
 
   let internal options(args : PrepareParams) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
@@ -78,7 +77,7 @@ module internal Args =
   let internal optItems(args : PrepareParams) =
     args
     |> options
-    |> List.collect (fun (a, b, c) -> ArgsHelper.optionalItem a b c)
+    |> List.collect (fun (a, b, c) -> optionalItem a b c)
 
   let internal flagItems(args : PrepareParams) =
     [ ("--inplace", args.InPlace)
@@ -120,16 +119,16 @@ module internal Args =
     let exe = args.Executable
 
     [ [ "Runner" ]
-      ArgsHelper.item "-r" args.RecorderDirectory
-      ArgsHelper.item "-w" args.WorkingDirectory
-      ArgsHelper.item "-x" exe
-      ArgsHelper.item "-l" args.LcovReport
-      ArgsHelper.item "-t" args.Threshold
-      ArgsHelper.item "-c" args.Cobertura
-      ArgsHelper.item "-o" args.OutputFile
+      item "-r" args.RecorderDirectory
+      item "-w" args.WorkingDirectory
+      item "-x" exe
+      item "-l" args.LcovReport
+      item "-t" args.Threshold
+      item "-c" args.Cobertura
+      item "-o" args.OutputFile
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      ArgsHelper.optionalItem "--teamcity" args.SummaryFormat []
+      optionalItem "--teamcity" args.SummaryFormat []
       trailing ]
 
   let collect(args : CollectParams) =

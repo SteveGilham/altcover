@@ -11,13 +11,8 @@ open System.Diagnostics.CodeAnalysis
 
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
-open ApiStore
+open TaskIO
 open Augment
-
-module ColourHelper =
-  let internal colourize name =
-    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
-    if ok then Console.ForegroundColor <- colour
 
 [<SuppressMessage(
   "Gendarme.Rules.Smells",
@@ -29,7 +24,7 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : FSApi.LoggingOptions option = None with get, set
+  member val internal ACLog : OptionApi.LoggingOptions option = None with get, set
 
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
@@ -109,14 +104,14 @@ type Prepare() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (FSApi.LoggingOptions.Primitive
+        (OptionApi.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
               Error = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.PrepareOptions.Primitive
+      OptionApi.PrepareOptions.Primitive
         { InputDirectories = self.InputDirectories
           OutputDirectories = self.OutputDirectories
           SymbolDirectories = self.SymbolDirectories
@@ -158,7 +153,7 @@ type Collect() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : FSApi.LoggingOptions option = None with get, set
+  member val internal ACLog : OptionApi.LoggingOptions option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -195,14 +190,14 @@ type Collect() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (FSApi.LoggingOptions.Primitive
+        (OptionApi.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
               Error = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.CollectOptions.Primitive
+      OptionApi.CollectOptions.Primitive
         { RecorderDirectory = self.RecorderDirectory
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
@@ -223,7 +218,7 @@ type PowerShell() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = FSApi.LoggingOptions.Primitive
+  member val internal IO = OptionApi.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
                                  Error = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
@@ -241,7 +236,7 @@ type GetVersion() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = FSApi.LoggingOptions.Primitive
+  member val internal IO = OptionApi.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
                                  Error = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
@@ -269,7 +264,7 @@ type Echo() =
     then
       let original = Console.ForegroundColor
       try
-        ColourHelper.colourize self.Colour
+        TaskIO.colourize self.Colour
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original

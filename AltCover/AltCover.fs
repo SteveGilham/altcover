@@ -8,7 +8,6 @@ open System.IO
 open System.Linq
 open System.Reflection
 
-open AltCover.Base
 open Augment
 open Mono.Cecil
 open Mono.Options

@@ -289,7 +289,7 @@ module internal Cobertura =
       extract (report.Descendants("CoverageSession".X) |> Seq.head) packages.Parent
       addSources report packages.Parent "File" "fullPath"
 
-  let internal convertReport (report : XDocument) (format : Base.ReportFormat) =
+  let internal convertReport (report : XDocument) (format : ReportFormat) =
     let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
     let doctype =
       XDocumentType
@@ -312,7 +312,7 @@ module internal Cobertura =
     element.Add(packages)
 
     match format with
-    | Base.ReportFormat.NCover -> I.nCover report packages
+    | ReportFormat.NCover -> I.nCover report packages
     | _ -> I.openCover report packages
 
     // lines reprise
@@ -333,7 +333,7 @@ module internal Cobertura =
               reprise.Add copy))
     rewrite
 
-  let internal summary (report : XDocument) (format : Base.ReportFormat) result =
+  let internal summary (report : XDocument) (format : ReportFormat) result =
     let rewrite = convertReport report format
     rewrite.Save(!path |> Option.get)
     (result, 0uy, String.Empty)

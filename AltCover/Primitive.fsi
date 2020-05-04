@@ -1,23 +1,23 @@
 ﻿#if RUNNER
-// # namespace AltCover
+// # namespace `AltCover`
 // ```
 namespace AltCover
 // ```
 #else
-// # namespace AltCoverFake.DotNet.Testing
+// # namespace `AltCoverFake.DotNet.Testing`
 // ```
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
 // ```
-// ## module Primitive
+// ## module `Primitive`
 // This holds the weakly ("stringly") typed equivalent of the command line options
 // ```
   [<RequireQualifiedAccess>]
   module Primitive = begin
 // ```
-// ### type CollectOptions
-// ```  
+// ### type `CollectOptions`
+// ```
     [<NoComparison>]
     type CollectOptions =
       { RecorderDirectory: System.String
@@ -37,8 +37,8 @@ namespace AltCoverFake.DotNet.Testing
 // `Create()` returns an instance with all values empty and `ExposeReturnCode` is `true`.
 //
 // Fields that are not applicable to the use case or platform are silently ignored.
-// 
-// ### type PrepareOptions
+//
+// ### type `PrepareOptions`
 // ```
     [<NoComparison>]
     type PrepareOptions =
@@ -80,11 +80,11 @@ namespace AltCoverFake.DotNet.Testing
 // `Create()` returns an instance that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
 //
 // Fields that are not applicable to the use case or platform are silently ignored.
-// 
+//
 #if RUNNER
 // ```
-// ### type LoggingOptions
-// ```  
+// ### type `LoggingOptions`
+// ```
     [<NoComparison; NoEquality>]
     type LoggingOptions =
       { Info : System.String -> unit

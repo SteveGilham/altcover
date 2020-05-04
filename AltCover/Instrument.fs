@@ -531,7 +531,7 @@ module internal Instrument =
       { restate with
           ModuleId =
             match CoverageParameters.reportKind() with
-            | AltCover.Base.ReportFormat.OpenCover -> KeyStore.hashFile m.FileName
+            | ReportFormat.OpenCover -> KeyStore.hashFile m.FileName
             | _ -> m.Mvid.ToString() }
 
     let private visitMethod (state : InstrumentContext) (m : MethodDefinition)
@@ -561,7 +561,7 @@ module internal Instrument =
     let internal visitBranchPoint (state : InstrumentContext) branch =
       if branch.Included && state.MethodWorker.IsNotNull
       then
-        let point = (branch.Uid ||| Base.Counter.branchFlag)
+        let point = (branch.Uid ||| Counter.branchFlag)
 
         let instrument instruction =
           if branch.Representative <> Reporting.None then

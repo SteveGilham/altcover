@@ -5,8 +5,8 @@ namespace AltCover
 // ## module Api
 // ```
 module Api = begin
-  val Prepare : args:FSApi.PrepareOptions -> log:FSApi.LoggingOptions -> int
-  val Collect : args:FSApi.CollectOptions -> log:FSApi.LoggingOptions -> int
+  val Prepare : args:OptionApi.PrepareOptions -> log:OptionApi.LoggingOptions -> int
+  val Collect : args:OptionApi.CollectOptions -> log:OptionApi.LoggingOptions -> int
   val ImportModule : unit -> string
   val Version : unit -> System.Version
   val FormattedVersion : unit -> string

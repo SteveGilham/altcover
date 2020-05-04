@@ -58,12 +58,12 @@
     <Compile Include="Primitive.fs" />
     <Compile Include="TypeSafe.fsi" />
     <Compile Include="TypeSafe.fs" />
-    <Compile Include="Api.fsi" />
-    <Compile Include="Api.fs" />
+    <Compile Include="OptionApi.fsi" />
+    <Compile Include="OptionApi.fs" />
     <Compile Include="Args.fs" />
-    <Compile Include="TaskHelpers.fs" />
-    <Compile Include="ApiExtension.fsi" />
-    <Compile Include="ApiExtension.fs" />
+    <Compile Include="TaskIO.fs" />
+    <Compile Include="OptionApiExtension.fsi" />
+    <Compile Include="OptionApiExtension.fs" />
     <Compile Include="CoreApi.fsi" />
     <Compile Include="CoreApi.fs" />
     <Compile Include="Tasks.fsi" />

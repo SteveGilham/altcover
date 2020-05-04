@@ -1,23 +1,23 @@
 #if RUNNER
-// # namespace AltCover
+// # namespace `AltCover`
 // ```
 namespace AltCover
 // ```
 #else
-// # namespace AltCoverFake.DotNet.Testing
+// # namespace `AltCoverFake.DotNet.Testing`
 // ```
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
 // ```
-// ## module TypeSafe
+// ## module `TypeSafe`
 // This holds the strongly-typed equivalent of the command line options
 // ```
   [<RequireQualifiedAccess>]
   module TypeSafe = begin
 // ```
 // ### Individual files and directories
-// ```  
+// ```
     [<NoComparison>]
     type FilePath =
       | Tool of System.String (* a name *)
@@ -37,7 +37,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Test application command line
-// ```  
+// ```
     [<NoComparison>]
     type CommandArgument =
       | CommandArgument of System.String
@@ -53,7 +53,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Coverage thresholds
-// ```  
+// ```
     [<NoComparison>]
     type Thresholds =
       { Statements: uint8
@@ -72,7 +72,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Yes/No choices
-// ```  
+// ```
     [<NoComparison>]
     type Flag =
       | Flag of bool (* as the bool *)
@@ -83,7 +83,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Multiple files and directories
-// ```  
+// ```
     [<NoComparison>]
     type FilePaths =
       | FilePaths of seq<FilePath>
@@ -100,7 +100,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Selection filters
-// ```  
+// ```
     [<NoComparison>]
     type FilterItem =
       | FilterItem of System.Text.RegularExpressions.Regex
@@ -118,7 +118,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Call tracking
-// ```  
+// ```
     [<NoComparison>]
     type ContextItem =
       | CallItem of System.String
@@ -135,7 +135,7 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 // ### Display formats
-// ```  
+// ```
     [<NoComparison>]
     type SummaryFormat =
       | Default (* OpenCover style *)
@@ -162,8 +162,8 @@ namespace AltCoverFake.DotNet.Testing
         member AsString : unit -> string
       end
 // ```
-// ### type CollectOptions
-// ```  
+// ### type `CollectOptions`
+// ```
     [<NoComparison>]
     type CollectOptions =
       { RecorderDirectory: DirectoryPath
@@ -183,8 +183,8 @@ namespace AltCoverFake.DotNet.Testing
 // `Create()` returns an instance with all values unset/default except `ExposeReturnCode`, which is `Set.
 //
 // Fields that are not applicable to the use case or platform are silently ignored.
-// 
-// ### type PrepareOptions
+//
+// ### type `PrepareOptions`
 // ```
     [<NoComparison>]
     type PrepareOptions =
@@ -226,7 +226,7 @@ namespace AltCoverFake.DotNet.Testing
 // `Create()` returns an instance that has all fields unset/default except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `Set`
 //
 // Fields that are not applicable to the use case or platform are silently ignored.
-// 
+//
 // ```
   end
  // ```

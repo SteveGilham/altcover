@@ -13,7 +13,6 @@ open System.Linq
 open System.Text.RegularExpressions
 
 open AltCover.Augment
-open AltCover.Base
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -244,7 +243,7 @@ module internal CoverageParameters =
   let mutable internal single = false // more complicated
 
   let internal sampling() =
-    (if single then Base.Sampling.Single else Base.Sampling.All)
+    (if single then Sampling.Single else Sampling.All)
     |> int
 
   let internal sourcelink = ref false // ddFlag
@@ -486,7 +485,7 @@ module internal Visitor =
 
              let included =
                inspection ||| if inspection = Inspections.Instrument
-                                 && CoverageParameters.reportFormat() = Base.ReportFormat.OpenCoverWithTracking then
+                                 && CoverageParameters.reportFormat() = ReportFormat.OpenCoverWithTracking then
                                 Inspections.Track
                               else
                                 Inspections.Ignore
@@ -1037,7 +1036,7 @@ module internal Visitor =
                   |> Some, i + point, wanted interesting s, vc))
 
       let includeBranches() =
-        instructions.Any() && CoverageParameters.reportKind() = Base.ReportFormat.OpenCover
+        instructions.Any() && CoverageParameters.reportKind() = ReportFormat.OpenCover
         && (CoverageParameters.coverstyle <> CoverStyle.LineOnly)
         && (!CoverageParameters.methodPoint |> not)
 
