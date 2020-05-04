@@ -26,7 +26,7 @@ module Collect =
   Justification="Two different extension mechanisms need placating")>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Api' is OK")>]
-module OptionApiExtension =
+module OptionApi =
   type AltCover.OptionApi.CollectOptions with
     member self.WhatIf afterPreparation : AltCover.OptionApi.ValidatedCommandLine =
       Collect.WhatIf self afterPreparation

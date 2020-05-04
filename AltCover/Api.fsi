@@ -2,7 +2,7 @@
 // ```
 namespace AltCover
 // ```
-// ## module Api
+// ## module `Api`
 // ```
 module Api = begin
   val Prepare : args:OptionApi.PrepareOptions -> log:OptionApi.LoggingOptions -> int

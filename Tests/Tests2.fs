@@ -407,27 +407,27 @@ module AltCoverTests2 =
       let save3 = CoverageParameters.theInterval
       CoverageParameters.trackingNames.Clear()
       try
-        CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.OpenCover
         CoverageParameters.theInterval <- Some 1234567890
         Assert.That
           (CoverageParameters.reportFormat(),
-           Is.EqualTo AltCover.Base.ReportFormat.OpenCoverWithTracking)
+           Is.EqualTo AltCover.ReportFormat.OpenCoverWithTracking)
         CoverageParameters.theInterval <- None
         CoverageParameters.trackingNames.Add("dummy")
         Assert.That
           (CoverageParameters.reportFormat(),
-           Is.EqualTo AltCover.Base.ReportFormat.OpenCoverWithTracking)
+           Is.EqualTo AltCover.ReportFormat.OpenCoverWithTracking)
         CoverageParameters.trackingNames.Clear()
         Assert.That
-          (CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
-        CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.NCover
+          (CoverageParameters.reportFormat(), Is.EqualTo AltCover.ReportFormat.OpenCover)
+        CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.NCover
         CoverageParameters.theInterval <- Some 1234567890
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.ReportFormat.NCover)
         CoverageParameters.theInterval <- None
         CoverageParameters.trackingNames.Add("dummy")
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.ReportFormat.NCover)
         CoverageParameters.trackingNames.Clear()
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo AltCover.ReportFormat.NCover)
       finally
         CoverageParameters.theReportFormat <- save2
         CoverageParameters.theInterval <- save3
@@ -479,10 +479,10 @@ module AltCoverTests2 =
         let save3 = CoverageParameters.theInterval
         try
           CoverageParameters.theReportPath <- Some unique
-          CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.OpenCover
+          CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.OpenCover
           CoverageParameters.theInterval <- Some 1234567890
           CoverageParameters.single <- true
-          Assert.That(CoverageParameters.sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
+          Assert.That(CoverageParameters.sampling(), Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.I.prepareAssembly path
           let traces = System.Collections.Generic.List<string>()
           Instrument.I.writeAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
@@ -524,11 +524,11 @@ module AltCoverTests2 =
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
             let report2 = proxyObject.InvokeMethod("get_CoverageFormat",[||]) :?> System.Int32
-            Assert.That (report2, AltCover.Base.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo)
+            Assert.That (report2, AltCover.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo)
             let report3 = proxyObject.InvokeMethod("get_Timer",[||]) :?> System.Int64
             Assert.That (report3, 1234567890L |> Is.EqualTo)
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
-            Assert.That (report4, AltCover.Base.Sampling.Single |> int |> Is.EqualTo)
+            Assert.That (report4, AltCover.Sampling.Single |> int |> Is.EqualTo)
           finally
 #if NETCOREAPP2_0
             alc.Unload()
@@ -553,7 +553,7 @@ module AltCoverTests2 =
                                 | :? System.UnauthorizedAccessException
                                 | :? IOException -> ())
 
-          Assert.That(CoverageParameters.sampling(), Base.Sampling.All |> int |> Is.EqualTo)
+          Assert.That(CoverageParameters.sampling(), Sampling.All |> int |> Is.EqualTo)
       finally
         CoverageParameters.keys.Clear()
 
@@ -1100,7 +1100,7 @@ module AltCoverTests2 =
         |> Seq.find (fun m -> m.Name = "as_bar")
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
@@ -1139,9 +1139,9 @@ module AltCoverTests2 =
         Assert.That(switches.[1], Is.EqualTo inject.[0])
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 1)
+          ((inject.[2].Operand :?> int) &&& Counter.branchMask, Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 0)
+          ((inject.[6].Operand :?> int) &&& Counter.branchMask, Is.EqualTo 0)
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
@@ -1159,7 +1159,7 @@ module AltCoverTests2 =
         |> Seq.find (fun m -> m.Name = "Bar")
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
@@ -1199,7 +1199,7 @@ module AltCoverTests2 =
         Assert.That(jump, Is.EqualTo inject.[1])
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[4].Next)
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo branches.[1].Uid)
+          ((inject.[2].Operand :?> int) &&& Counter.branchMask, Is.EqualTo branches.[1].Uid)
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
@@ -1217,7 +1217,7 @@ module AltCoverTests2 =
         |> Seq.find (fun m -> m.Name = "Main")
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
@@ -1250,9 +1250,9 @@ module AltCoverTests2 =
         Assert.That(inject.Length, Is.EqualTo 8)
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 1)
+          ((inject.[2].Operand :?> int) &&& Counter.branchMask, Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.branchMask, Is.EqualTo 0)
+          ((inject.[6].Operand :?> int) &&& Counter.branchMask, Is.EqualTo 0)
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
@@ -1582,7 +1582,7 @@ module AltCoverTests2 =
     [<Test>]
     let ExcludedModuleJustRecordsMVid() =
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
@@ -1599,7 +1599,7 @@ module AltCoverTests2 =
     [<Test>]
     let IncludedModuleEnsuresRecorder() =
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
@@ -1709,7 +1709,7 @@ module AltCoverTests2 =
     [<Test>]
     let IncludedModuleDoesNotChangeRecorderJustTheReference() =
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")

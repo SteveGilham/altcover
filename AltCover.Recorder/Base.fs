@@ -1,5 +1,5 @@
 #if RUNNER
-namespace AltCover.Base
+namespace AltCover
 #else
 namespace AltCover.Recorder
 #endif

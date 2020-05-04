@@ -122,14 +122,14 @@ module AltCoverTests3 =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<FSApi.PrepareOptions>.GetProperties()
+      let fsapiNames = typeof<OptionApi.PrepareOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<FSApi.PrepareOptions>
+      let fsapiCases = (typeof<OptionApi.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareOptions.Create() |> FSApi.PrepareOptions.Primitive
+      let args = Primitive.PrepareOptions.Create() |> OptionApi.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
@@ -1496,7 +1496,7 @@ module AltCoverTests3 =
           Assert.That(x, Is.Empty)
         match CoverageParameters.theReportFormat with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.NCover)
       finally
         CoverageParameters.theReportFormat <- None
 
@@ -1515,7 +1515,7 @@ module AltCoverTests3 =
           Assert.That(x, Is.Empty)
         match CoverageParameters.theReportFormat with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
 
@@ -1697,7 +1697,7 @@ module AltCoverTests3 =
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.LineOnly)
         match CoverageParameters.theReportFormat with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
         CoverageParameters.coverstyle <- CoverStyle.All
@@ -1719,7 +1719,7 @@ module AltCoverTests3 =
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.LineOnly)
         match CoverageParameters.theReportFormat with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
         CoverageParameters.coverstyle <- CoverStyle.All
@@ -1799,7 +1799,7 @@ module AltCoverTests3 =
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
         match CoverageParameters.theReportFormat with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
         CoverageParameters.coverstyle <- CoverStyle.All
@@ -1821,7 +1821,7 @@ module AltCoverTests3 =
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
         match CoverageParameters.theReportFormat with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.coverstyle <- CoverStyle.All
         CoverageParameters.theReportFormat <- None
@@ -2343,9 +2343,9 @@ module AltCoverTests3 =
     [<Test>]
     let StoresAsExpected() =
       Main.init()
-      ApiStore.store <- String.Empty
-      ApiStore.logToStore.Info "23"
-      Assert.That(ApiStore.store, Is.EqualTo "23")
+      TaskIO.store <- String.Empty
+      TaskIO.logToStore.Info "23"
+      Assert.That(TaskIO.store, Is.EqualTo "23")
 
     [<Test>]
     let ImportModuleIsAsExpected() =
@@ -2675,17 +2675,17 @@ or
     [<Test>]
     let LoggingCanBeExercised() =
       Main.init()
-      Assert.That(FSApi.LoggingOptions.ActionAdapter null, Is.Not.Null)
-      (FSApi.LoggingOptions.ActionAdapter null) "23"
-      Assert.That(FSApi.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(OptionApi.LoggingOptions.ActionAdapter null, Is.Not.Null)
+      (OptionApi.LoggingOptions.ActionAdapter null) "23"
+      Assert.That(OptionApi.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (FSApi.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
+      (OptionApi.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      FSApi.LoggingOptions.Create().Info "32"
-      FSApi.LoggingOptions.Create().Warn "32"
-      FSApi.LoggingOptions.Create().Error "32"
-      FSApi.LoggingOptions.Create().Echo "32"
+      OptionApi.LoggingOptions.Create().Info "32"
+      OptionApi.LoggingOptions.Create().Warn "32"
+      OptionApi.LoggingOptions.Create().Error "32"
+      OptionApi.LoggingOptions.Create().Echo "32"
 
     [<Test>]
     let EmptyInstrumentIsJustTheDefaults() =
@@ -2701,7 +2701,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| FSApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2723,7 +2723,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| FSApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
@@ -2784,7 +2784,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| FSApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2830,11 +2830,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> FSApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, FSApi.LoggingOptions.Create())
+      io.SetValue(subject, OptionApi.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2859,11 +2859,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> FSApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, FSApi.LoggingOptions.Create())
+      io.SetValue(subject, OptionApi.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a

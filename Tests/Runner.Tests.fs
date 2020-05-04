@@ -14,7 +14,6 @@ open System.Xml.Schema
 
 open AltCover
 open AltCover.Augment
-open AltCover.Base
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Swensen.Unquote
@@ -33,31 +32,31 @@ type TestAttribute = NUnit.Framework.TestAttribute
 #endif
 
 module AltCoverRunnerTests =
-    // Base.fs
+    // fs
 
     [<Test>]
     let MaxTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.maxTime now ago) = now @>
+      test <@ (Counter.I.maxTime now ago) = now @>
 
     [<Test>]
     let MaxTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.maxTime ago now) = now @>
+      test <@ (Counter.I.maxTime ago now) = now @>
 
     [<Test>]
     let MinTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.minTime ago now) = ago @>
+      test <@ (Counter.I.minTime ago now) = ago @>
 
     [<Test>]
     let MinTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.minTime now ago) = ago @>
+      test <@ (Counter.I.minTime now ago) = ago @>
 
     [<Test>]
     let JunkUspidGivesNegativeIndex() =
@@ -222,7 +221,7 @@ module AltCoverRunnerTests =
                             FileOptions.SequentialScan)
 
           Counter.doFlushStream ignore (fun _ _ -> ()) true visits
-            AltCover.Base.ReportFormat.NCover coverageFile None |> ignore
+            AltCover.ReportFormat.NCover coverageFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -272,7 +271,7 @@ module AltCoverRunnerTests =
                       FileOptions.SequentialScan)
 
         Counter.doFlushStream ignore (fun _ _ -> ()) true visits
-          AltCover.Base.ReportFormat.NCover coverageFile (Some outputFile) |> ignore
+          AltCover.ReportFormat.NCover coverageFile (Some outputFile) |> ignore
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -432,14 +431,14 @@ module AltCoverRunnerTests =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<FSApi.CollectOptions>.GetProperties()
+      let fsapiNames = typeof<OptionApi.CollectOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<FSApi.CollectOptions>
+      let fsapiCases = (typeof<OptionApi.CollectOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.CollectOptions.Create() |> FSApi.CollectOptions.Primitive
+      let args = Primitive.CollectOptions.Create() |> OptionApi.CollectOptions.Primitive
       let commandFragments = Args.buildCollect args
 
       // adds Runner and the trailing command line arguments
@@ -1930,20 +1929,20 @@ or
         do use worker = new FileStream(reportFile, FileMode.CreateNew)
            worker.Write(buffer, 0, size)
            ()
-        let hits = List<string * int * Base.Track>()
+        let hits = List<string * int * Track>()
         [ 0..9 ]
         |> Seq.iter (fun i ->
              for j = 1 to i + 1 do
-               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
+               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
                ignore j)
 
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         hits
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
-             AltCover.Base.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+             AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
-        Runner.J.doReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+        Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -1981,20 +1980,20 @@ or
         let doc = XDocument.Load stream
         Zip.save doc reportFile true
 
-        let hits = List<string * int * Base.Track>()
+        let hits = List<string * int * Track>()
         [ 0..9 ]
         |> Seq.iter (fun i ->
              for j = 1 to i + 1 do
-               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
+               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
                ignore j)
 
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         hits
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
-             AltCover.Base.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+             AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
-        Runner.J.doReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+        Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None |> ignore
         let (container, worker) = Zip.openUpdate reportFile
         use worker' = worker
         use container' = container
@@ -2115,7 +2114,7 @@ or
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           l
           |> List.mapi (fun i x ->
-               formatter.Serialize(sink, (x, i, Base.Null, DateTime.UtcNow))
+               formatter.Serialize(sink, (x, i, Null, DateTime.UtcNow))
                x)
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
@@ -2130,12 +2129,12 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
       let payloads0 =
-        [ Base.Null
-          Base.Call 17
-          Base.Time 23L
-          Base.Both { Time = 5L; Call = 42 }
-          Base.Time 42L
-          Base.Call 5 ]
+        [ Null
+          Call 17
+          Time 23L
+          Both { Time = 5L; Call = 42 }
+          Time 42L
+          Call 5 ]
 
       let pv = Init 42L (payloads0 |> List.tail)
       let table = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -2156,19 +2155,19 @@ or
                formatter.Write x
                formatter.Write i
                match y with
-               | Null -> formatter.Write(Base.Tag.Null |> byte)
+               | Null -> formatter.Write(Tag.Null |> byte)
                | Time t ->
-                 formatter.Write(Base.Tag.Time |> byte)
+                 formatter.Write(Tag.Time |> byte)
                  formatter.Write(t)
                | Call t ->
-                 formatter.Write(Base.Tag.Call |> byte)
+                 formatter.Write(Tag.Call |> byte)
                  formatter.Write(t)
                | Both b ->
-                 formatter.Write(Base.Tag.Both |> byte)
+                 formatter.Write(Tag.Both |> byte)
                  formatter.Write(b.Time)
                  formatter.Write(b.Call)
                | Table t ->
-                 formatter.Write(Base.Tag.Table |> byte)
+                 formatter.Write(Tag.Table |> byte)
                  t.Keys
                  |> Seq.iter (fun m -> formatter.Write m
                                        formatter.Write t.[m].Keys.Count
@@ -2179,33 +2178,33 @@ or
                                                              v.Tracks
                                                              |> Seq.iter (fun tx -> match tx with
                                                                                     | Time t ->
-                                                                                      formatter.Write(Base.Tag.Time |> byte)
+                                                                                      formatter.Write(Tag.Time |> byte)
                                                                                       formatter.Write(t)
                                                                                     | Call t ->
-                                                                                      formatter.Write(Base.Tag.Call |> byte)
+                                                                                      formatter.Write(Tag.Call |> byte)
                                                                                       formatter.Write(t)
                                                                                     | Both b ->
-                                                                                      formatter.Write(Base.Tag.Both |> byte)
+                                                                                      formatter.Write(Tag.Both |> byte)
                                                                                       formatter.Write(b.Time)
                                                                                       formatter.Write(b.Call)
                                                                                     | _ -> tx |> (sprintf "%A") |> Assert.Fail)
-                                                             formatter.Write(Base.Tag.Null |> byte)))
+                                                             formatter.Write(Tag.Null |> byte)))
                  formatter.Write String.Empty
                x)
           |> List.length) inputs
 
-      let expected = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
-      let a = Dictionary<int, int64 * Base.Track list>()
+      let expected = Dictionary<string, Dictionary<int, int64 * Track list>>()
+      let a = Dictionary<int, int64 * Track list>()
       a.Add(1, (1L, []))
-      let b = Dictionary<int, int64 * Base.Track list>()
+      let b = Dictionary<int, int64 * Track list>()
       b.Add(2, (0L, [Call 17]))
-      let c = Dictionary<int, int64 * Base.Track list>()
+      let c = Dictionary<int, int64 * Track list>()
       c.Add(3, (0L, [Time 23L]))
-      let d = Dictionary<int, int64 * Base.Track list>()
+      let d = Dictionary<int, int64 * Track list>()
       d.Add(4, (0L, [Both { Time = 5L; Call = 42 } ]))
-      let e = Dictionary<int, int64 * Base.Track list>()
+      let e = Dictionary<int, int64 * Track list>()
       e.Add(6, (0L, [Call 5]))
-      let f = Dictionary<int, int64 * Base.Track list>()
+      let f = Dictionary<int, int64 * Track list>()
       f.Add(3, (42L, payloads0 |> List.tail))
 
       expected.Add ("a", a)
@@ -2218,9 +2217,9 @@ or
       Assert.That(r, Is.EqualTo 7)
       Assert.That(File.Exists(unique + ".acv"))
 
-      let result = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
+      let result = Dictionary<string, Dictionary<int, int64 * Track list>>()
       counts.Keys
-      |> Seq.iter (fun k -> let inner = Dictionary<int, int64 * Base.Track list>()
+      |> Seq.iter (fun k -> let inner = Dictionary<int, int64 * Track list>()
                             result.Add(k, inner)
                             counts.[k].Keys
                             |> Seq.iter (fun k2 ->
@@ -2238,12 +2237,12 @@ or
       let root = x.DocumentElement
 
       let hits =
-        [ Base.Null
-          Base.Call 17
-          Base.Time 23L
-          Base.Both { Time = 5L;  Call = 42 }
-          Base.Time 42L
-          Base.Time 5L ]
+        [ Null
+          Call 17
+          Time 23L
+          Both { Time = 5L;  Call = 42 }
+          Time 42L
+          Time 5L ]
       Runner.J.pointProcess root hits
       Assert.That
         (x.DocumentElement.OuterXml,
@@ -2279,7 +2278,7 @@ or
       |> Seq.cast<XmlElement>
       |> Seq.iter (fun el -> el.SetAttribute("bev", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
@@ -2323,7 +2322,7 @@ or
       visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
       visit.Add(100663297, Init 1L []) // should fill in the expected non-zero value
       visit.Add(100663298, Init 23L []) // should be ignored
-      Runner.J.postProcess visits Base.ReportFormat.OpenCover after
+      Runner.J.postProcess visits ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
@@ -2393,7 +2392,7 @@ or
               |> not
            then el.SetAttribute("crapScore", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
     [<Test>]
@@ -2459,7 +2458,7 @@ or
               |> not
            then el.SetAttribute("crapScore", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
     [<Test>]
@@ -2483,7 +2482,7 @@ or
           Runner.summaryFormat <- Default
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
+          let r = Runner.I.standardSummary report ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
           Assert.That
@@ -2506,7 +2505,7 @@ or
           Runner.summaryFormat <- B
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
+          let r = Runner.I.standardSummary report ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2531,7 +2530,7 @@ or
           Runner.summaryFormat <- BPlus
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
+          let r = Runner.I.standardSummary report ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2564,7 +2563,7 @@ or
                                          Branches = 0uy
                                          Methods = 0uy
                                          Crap = 0uy }
-              Runner.I.standardSummary baseline Base.ReportFormat.NCover 42
+              Runner.I.standardSummary baseline ReportFormat.NCover 42
             finally
               Runner.threshold <- None
           // 80% coverage > threshold so expect return code coming in
@@ -2589,7 +2588,7 @@ or
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Default
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2612,7 +2611,7 @@ or
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- B
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2639,7 +2638,7 @@ or
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- RPlus
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2693,7 +2692,7 @@ or
             let r =
               try
                 Runner.threshold <- Some threshold
-                Runner.I.standardSummary baseline Base.ReportFormat.OpenCover 23
+                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
               finally
                 Runner.threshold <- None
             // 70% coverage < threshold so expect shortfall
@@ -2732,7 +2731,7 @@ or
       try
         Runner.I.addLCovSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline Base.ReportFormat.OpenCover 0
+        let r = summarize baseline ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -2764,7 +2763,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline Base.ReportFormat.NCover 0
+        let r = LCov.summary baseline ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -2801,7 +2800,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline Base.ReportFormat.NCover 0
+        let r = LCov.summary baseline ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -2906,7 +2905,7 @@ or
       try
         Runner.I.addCoberturaSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline Base.ReportFormat.NCover 0
+        let r = summarize baseline ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -2949,7 +2948,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline Base.ReportFormat.NCover 0
+        let r = Cobertura.summary baseline ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -2989,7 +2988,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline Base.ReportFormat.OpenCover 0
+        let r = Cobertura.summary baseline ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace
@@ -3024,7 +3023,7 @@ or
                                 (fun _ _ _ -> (23, 42uy, "Statements"))
                                 (fun _ _ a  -> (a, 0uy, String.Empty))]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let delta = Runner.J.doSummaries (XDocument()) Base.ReportFormat.NCover 0
+        let delta = Runner.J.doSummaries (XDocument()) ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),

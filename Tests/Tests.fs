@@ -964,7 +964,7 @@ module AltCoverTests =
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
@@ -1015,7 +1015,7 @@ module AltCoverTests =
       Visitor.visit [] [] // cheat reset
       try
         CoverageParameters.coalesceBranches := true
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Automatic) |> Seq.toList
@@ -1456,7 +1456,7 @@ module AltCoverTests =
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1499,7 +1499,7 @@ module AltCoverTests =
       Visitor.visit [] [] // cheat reset
       try
         CoverageParameters.coalesceBranches := true
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Declared)
@@ -1559,7 +1559,7 @@ module AltCoverTests =
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.coalesceBranches := true
         let deeper =
@@ -1603,7 +1603,7 @@ module AltCoverTests =
          |> Seq.head)
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Main"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1638,7 +1638,7 @@ module AltCoverTests =
       let module' = def.MainModule
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1671,7 +1671,7 @@ module AltCoverTests =
         let where = Assembly.GetExecutingAssembly().Location
         let path = sample1path
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
 
         ProgramDatabase.readSymbols def
         Visitor.visit [] [] // cheat reset
@@ -1694,7 +1694,7 @@ module AltCoverTests =
     let AssembliesAreDeeperThanPaths() =
       try
         CoverageParameters.staticFilter <- Some StaticFilter.AsCovered
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         let where = Assembly.GetExecutingAssembly().Location
         let path = sample1path
         let deeper = Visitor.I.deeper <| Node.Start [ path, [] ] |> Seq.toList
@@ -1723,9 +1723,9 @@ module AltCoverTests =
     let FilteredAssembliesDoNotHaveSequencePoints() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       try
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.NCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.NCover)
         "Sample"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2294,7 +2294,7 @@ module AltCoverTests =
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       try
         "Sample"
         |> (Regex
@@ -2410,7 +2410,7 @@ module AltCoverTests =
         |> Seq.find (fun m -> m.Name = "as_bar")
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2509,7 +2509,7 @@ module AltCoverTests =
       let here = SolutionDir()
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.NCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         CoverageParameters.sourcelink := true
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         Assert.That(Visitor.sourceLinkDocuments |> Option.isSome, "Documents should be present")
@@ -2551,7 +2551,7 @@ module AltCoverTests =
       let path = sample1path
       try
         CoverageParameters.nameFilters.Clear()
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2575,7 +2575,7 @@ module AltCoverTests =
       let X name = XName.Get(name)
       try
         CoverageParameters.nameFilters.Clear()
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.coverstyle <- CoverStyle.LineOnly
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
         let resource =
@@ -2612,7 +2612,7 @@ module AltCoverTests =
       let X name = XName.Get(name)
       try
         CoverageParameters.nameFilters.Clear()
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.coverstyle <- CoverStyle.BranchOnly
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
@@ -2664,7 +2664,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let baseline = AddTrackingForMain "Sample1WithOpenCover.xml"
         let result = document.Elements()
@@ -2716,7 +2716,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Sample"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2749,12 +2749,12 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.OpenCover)
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2777,7 +2777,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2785,7 +2785,7 @@ module AltCoverTests =
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
         Assert.That
-          (CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
+          (CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.OpenCoverWithTracking)
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2865,7 +2865,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2873,7 +2873,7 @@ module AltCoverTests =
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
         Assert.That
-          (CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
+          (CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.OpenCoverWithTracking)
         "Main"
         |> (Regex
             >> FilterRegex.Exclude

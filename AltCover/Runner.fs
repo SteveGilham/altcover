@@ -15,7 +15,7 @@ open Mono.Options
 open Augment
 
 [<ExcludeFromCodeCoverage; NoComparison>]
-type TeamCityFormat =
+type internal TeamCityFormat =
   | Default
   | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
     Justification="TeamCity notation")>]

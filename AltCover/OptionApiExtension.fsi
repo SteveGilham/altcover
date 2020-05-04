@@ -22,9 +22,9 @@ end
 //
 // `WhatIf` compiles the effective command-line and the result of `Validate`
 //
-// ## module FSApiExtension
+// ## module `OptionApi`
 // ```
-module OptionApiExtension = begin
+module OptionApi = begin
   type AltCover.OptionApi.CollectOptions with
     member WhatIf : afterPreparation:bool -> AltCover.OptionApi.ValidatedCommandLine
   type AltCover.OptionApi.PrepareOptions with

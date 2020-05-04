@@ -30,16 +30,17 @@ module internal Args =
     else
       [ a + ":" + x ]
 
-  let private itemList a x =
+  let private flag a x =
+    if x then [ a ] else []
+
+  // directly unit tested for empty case
+  let internal itemList a x =
     if x |> isNull then
       []
     else
       x
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
-
-  let private flag a x =
-    if x then [ a ] else []
 
   let internal listItems(args : PrepareParams) =
     [ ("-i", args.InputDirectories)
