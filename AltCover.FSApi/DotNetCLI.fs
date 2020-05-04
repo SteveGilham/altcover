@@ -2,7 +2,7 @@
 namespace AltCover.FSApi
 open AltCover.FSApi.CLIInternals
 #else
-namespace AltCover.Fake.DotNet.Testing
+namespace AltCoverFake.DotNet.Testing
 open AltCoverFake.DotNet.Testing.CLIInternals
 #endif
 
@@ -18,8 +18,8 @@ module internal DotNetCLI =
   let ToTestArgumentList (prepare : AltCover.OptionApi.PrepareOptions)
       (collect : AltCover.OptionApi.CollectOptions) (options : DotNet.CLIOptions) =
 #else
-  let toTestArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
-      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
+  let toTestArgumentList (prepare : AltCover.PrepareOptions)
+      (collect : AltCover.CollectOptions)
       (options : DotNet.CLIOptions) =
 #endif
     [
@@ -55,8 +55,8 @@ module internal DotNetCLI =
       (collect : AltCover.OptionApi.CollectOptions) (options : DotNet.CLIOptions) =
     ToTestArgumentList prepare collect options |> join
 #else
-  let toTestArguments (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
-      (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
+  let toTestArguments (prepare : AltCover.PrepareOptions)
+      (collect : AltCover.CollectOptions)
       (options : DotNet.CLIOptions) =
     toTestArgumentList prepare collect options |> join
 #endif

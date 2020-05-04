@@ -35,8 +35,8 @@
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
     <Compile Include="..\AltCover\TypeSafe.fsi" Link="TypeSafe.fsi" />
     <Compile Include="..\AltCover\TypeSafe.fs" Link="TypeSafe.fs" />
-    <Compile Include="..\AltCover\Api.fsi" Link="Api.fsi" />
-    <Compile Include="..\AltCover\Api.fs" Link="Api.fs" />
+    <Compile Include="..\AltCover\OptionApi.fsi" Link="OptionApi.fsi" />
+    <Compile Include="..\AltCover\OptionApi.fs" Link="OptionApi.fs" />
     <Compile Include="..\AltCover\Args.fs" Link="Args.fs" />
     <Compile Include="ApiExtension.fsi" />
     <Compile Include="ApiExtension.fs" />
