@@ -3269,7 +3269,7 @@ _Target "DoIt"
     AltCover.OptionApi.PrepareOptions.Primitive
       { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
   let ForceTrue = AltCover.FSApi.DotNet.CLIOptions.Force true
-  printfn "Test arguments : '%s'" (AltCover.FSApi.DotNetCLI.ToTestArguments prepare collect ForceTrue)
+  printfn "Test arguments : '%s'" (AltCover.FSApi.DotNet.ToTestArguments prepare collect ForceTrue)
 
   let t = DotNet.TestOptions.Create().WithAltCoverOptions prepare collect ForceTrue
   printfn "WithAltCoverOptions returned '%A'" t.Common.CustomParams
