@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using AltCover.ApiExtension;
+using AltCover.Extension;
+using AltCover.FSApi;
 
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
   MessageId = "Api", Justification = "It's the API for the system")]
@@ -87,7 +88,7 @@ namespace AltCover
       /// Returns the F#-defined equivalent type
       /// </summary>
       /// <returns>An immutable representation of the same structure</returns>
-      FSApi.CollectOptions ToOptions();
+      OptionApi.CollectOptions ToOptions();
 
       /// <summary>
       /// Check whether the parameters are sensible
@@ -103,12 +104,13 @@ namespace AltCover
       ///  {
       ///    public IEnumerable&lt;string&gt; Command { get; } // Command line elements
       ///    public IEnumerable&lt;string&gt; Errors { get; } // Validation errors
+      ///    public override string ToString(); // nicely formatted
       ///  }
       /// </code>
       /// </summary>
       /// <param name="afterPreparation">Whether the prepare phase has been run and a `AltCover.Recorder.g.dll` should exist.</param>
       /// <returns>The state of the command line</returns>
-      FSApi.ValidatedCommandLine WhatIf(bool afterPreparation);
+      OptionApi.ValidatedCommandLine WhatIf(bool afterPreparation);
     }
 
     /// <summary>
@@ -284,7 +286,7 @@ namespace AltCover
       /// Returns the F#-defined equivalent type
       /// </summary>
       /// <returns>An immutable representation of the same structure</returns>
-      FSApi.PrepareOptions ToOptions();
+      OptionApi.PrepareOptions ToOptions();
 
       /// <summary>
       /// Check whether the parameters are sensible
@@ -299,11 +301,12 @@ namespace AltCover
       ///  {
       ///    public IEnumerable&lt;string&gt; Command { get; } // Command line elements
       ///    public IEnumerable&lt;string&gt; Errors { get; } // Validation errors
+      ///    public override string ToString(); // nicely formatted
       ///  }
       /// </code>
       /// </summary>
       /// <returns>The state of the command line</returns>
-      FSApi.ValidatedCommandLine WhatIf();
+      OptionApi.ValidatedCommandLine WhatIf();
     }
 
     /// <summary>
@@ -340,7 +343,7 @@ namespace AltCover
       /// Returns the F#-defined equivalent type
       /// </summary>
       /// <returns>An immutable representation of the same structure</returns>
-      FSApi.LoggingOptions ToOptions();
+      OptionApi.LoggingOptions ToOptions();
     }
 
     /// <summary>
@@ -464,7 +467,7 @@ namespace AltCover
         /// Returns the F#-defined equivalent type
         /// </summary>
         /// <returns>An immutable representation of the same structure</returns>
-        public FSApi.CollectOptions ToOptions()
+        public OptionApi.CollectOptions ToOptions()
         {
           var primitive = new AltCover.Primitive.CollectOptions(
               RecorderDirectory,
@@ -478,7 +481,7 @@ namespace AltCover
               ExposeReturnCode,
               SummaryFormat
                                                               );
-          return FSApi.CollectOptions.NewPrimitive(primitive);
+          return OptionApi.CollectOptions.NewPrimitive(primitive);
         }
 
         /// <summary>
@@ -519,12 +522,13 @@ namespace AltCover
         ///  {
         ///    public IEnumerable&lt;string&gt; Command { get; } // Command line elements
         ///    public IEnumerable&lt;string&gt; Errors { get; } // Validation errors
+        ///    public override string ToString(); // nicely formatted
         ///  }
         /// </code>
         /// </summary>
         /// <param name="afterPreparation">Whether the prepare phase has been run and a `AltCover.Recorder.g.dll` should exist.</param>
         /// <returns>The state of the command line</returns>
-        public FSApi.ValidatedCommandLine WhatIf(bool afterPreparation)
+        public OptionApi.ValidatedCommandLine WhatIf(bool afterPreparation)
         {
           return ToOptions().WhatIf(afterPreparation);
         }
@@ -722,7 +726,7 @@ namespace AltCover
         /// Returns the F#-defined equivalent type
         /// </summary>
         /// <returns>An immutable representation of the same structure</returns>
-        public FSApi.PrepareOptions ToOptions()
+        public OptionApi.PrepareOptions ToOptions()
         {
           var primitive = new AltCover.Primitive.PrepareOptions(
                           InputDirectories,
@@ -758,7 +762,7 @@ namespace AltCover
                           ShowStatic,
                           ShowGenerated
                                                               );
-          return FSApi.PrepareOptions.NewPrimitive(primitive);
+          return OptionApi.PrepareOptions.NewPrimitive(primitive);
         }
 
         /// <summary>
@@ -815,11 +819,12 @@ namespace AltCover
         ///  {
         ///    public IEnumerable&lt;string&gt; Command { get; } // Command line elements
         ///    public IEnumerable&lt;string&gt; Errors { get; } // Validation errors
+        ///    public override string ToString(); // nicely formatted
         ///  }
         /// </code>
         /// </summary>
         /// <returns>The state of the command line</returns>
-        public FSApi.ValidatedCommandLine WhatIf()
+        public OptionApi.ValidatedCommandLine WhatIf()
         {
           return ToOptions().WhatIf();
         }
@@ -863,14 +868,14 @@ namespace AltCover
         /// Returns the F#-defined equivalent type
         /// </summary>
         /// <returns>An immutable representation of the same structure</returns>
-        public FSApi.LoggingOptions ToOptions()
+        public OptionApi.LoggingOptions ToOptions()
         {
           var primitive = new AltCover.Primitive.LoggingOptions(
-              FSApi.LoggingOptions.ActionAdapter(Info),
-              FSApi.LoggingOptions.ActionAdapter(Warn),
-              FSApi.LoggingOptions.ActionAdapter(StandardError),
-              FSApi.LoggingOptions.ActionAdapter(Echo));
-          return FSApi.LoggingOptions.NewPrimitive(primitive);
+              OptionApi.LoggingOptions.ActionAdapter(Info),
+              OptionApi.LoggingOptions.ActionAdapter(Warn),
+              OptionApi.LoggingOptions.ActionAdapter(StandardError),
+              OptionApi.LoggingOptions.ActionAdapter(Echo));
+          return OptionApi.LoggingOptions.NewPrimitive(primitive);
         }
 
         /// <summary>

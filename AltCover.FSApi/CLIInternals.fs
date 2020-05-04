@@ -1,5 +1,5 @@
 ﻿#if RUNNER
-namespace AltCover
+namespace AltCover.FSApi
 #else
 namespace AltCoverFake.DotNet.Testing
 #endif
@@ -8,7 +8,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
 
-module internal Internals =
+module internal CLIInternals =
   let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
   let private listArg name (s : String seq) =
     (sprintf """/p:AltCover%s="%s" """ name <| String.Join("|", s)).Trim()
@@ -25,7 +25,7 @@ module internal Internals =
   [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
                      Justification="Compiler Generated")>]
 #if RUNNER
-  let internal toPrepareListArgumentList (prepare : AltCover.FSApi.PrepareOptions) =
+  let internal toPrepareListArgumentList (prepare : AltCover.OptionApi.PrepareOptions) =
 #else
   let internal toPrepareListArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions) =
 #endif
@@ -44,7 +44,7 @@ module internal Internals =
     ]
 
 #if RUNNER
-  let internal toPrepareFromArgArgumentList (prepare : AltCover.FSApi.PrepareOptions) =
+  let internal toPrepareFromArgArgumentList (prepare : AltCover.OptionApi.PrepareOptions) =
 #else
   let internal toPrepareFromArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions) =
 #endif
@@ -56,7 +56,7 @@ module internal Internals =
     ]
 
 #if RUNNER
-  let internal toPrepareArgArgumentList (prepare : AltCover.FSApi.PrepareOptions) =
+  let internal toPrepareArgArgumentList (prepare : AltCover.OptionApi.PrepareOptions) =
 #else
   let internal toPrepareArgArgumentList (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions) =
 #endif
@@ -73,7 +73,7 @@ module internal Internals =
     ]
 
 #if RUNNER
-  let internal toCollectFromArgArgumentList (collect : AltCover.FSApi.CollectOptions) =
+  let internal toCollectFromArgArgumentList (collect : AltCover.OptionApi.CollectOptions) =
 #else
   let internal toCollectFromArgArgumentList (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions) =
 #endif

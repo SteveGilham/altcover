@@ -1,4 +1,4 @@
-namespace AltCover
+namespace AltCover.FSApi
 
 open System.Diagnostics.CodeAnalysis
 open System.Linq
@@ -15,11 +15,11 @@ module Xhtml =
   let ConvertToBarChart(document : XDocument) =
     let format =
       if document.Descendants(XName.Get "CoverageSession").Any()
-      then AltCover.Base.ReportFormat.OpenCover
-      else AltCover.Base.ReportFormat.NCover
+      then AltCover.ReportFormat.OpenCover
+      else AltCover.ReportFormat.NCover
 
     let intermediate =
-      if format = AltCover.Base.ReportFormat.NCover then
+      if format = AltCover.ReportFormat.NCover then
         document
       else
         let modify = XmlUtilities.loadTransform "OpenCoverToNCoverEx"

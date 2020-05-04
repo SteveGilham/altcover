@@ -9,6 +9,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 
 open AltCover
+open AltCover.FSApi
 open Microsoft.FSharp.Reflection
 open Swensen.Unquote
 
@@ -34,7 +35,7 @@ module FSApiTests =
             (fun n -> n.EndsWith("OpenCoverForPester.coverlet.xml", StringComparison.Ordinal))
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
     let baseline = XDocument.Load(stream)
-    let transformed = AltCover.OpenCover.FormatFromCoverlet baseline [| probe |]
+    let transformed = OpenCover.FormatFromCoverlet baseline [| probe |]
     test <@ transformed |> isNull |> not @>
 
     let schemata = XmlSchemaSet()
@@ -57,7 +58,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
     let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
-    AltCover.CoverageFormats.ConvertToLcov doc stream2
+    CoverageFormats.ConvertToLcov doc stream2
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
@@ -75,7 +76,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
-    let rewrite = AltCover.Xhtml.ConvertToBarChart doc
+    let rewrite = Xhtml.ConvertToBarChart doc
     rewrite.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
     use rdr = new StreamReader(mstream2)
@@ -95,7 +96,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
-    let rewrite = AltCover.CoverageFormats.ConvertToNCover doc
+    let rewrite = CoverageFormats.ConvertToNCover doc
     rewrite.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
     use rdr = new StreamReader(mstream2)
@@ -117,7 +118,7 @@ module FSApiTests =
     let visitors = [ reporter ]
     Visitor.visit visitors [(sample, [])]
     use mstream = new MemoryStream()
-    let rewrite = AltCover.CoverageFormats.ConvertFromNCover doc [ sample ]
+    let rewrite = CoverageFormats.ConvertFromNCover doc [ sample ]
     test <@ rewrite |> isNull |> not @>
 
   [<Test>]
@@ -128,7 +129,7 @@ module FSApiTests =
     let expected = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
     rdr.BaseStream.Position <- 0L
     let doc = XDocument.Load rdr
-    let converted = AltCover.Xml.ToXmlDocument doc
+    let converted = Xml.ToXmlDocument doc
     use mstream = new MemoryStream()
     converted.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
@@ -146,7 +147,7 @@ module FSApiTests =
     rdr.BaseStream.Position <- 0L
     let doc = XmlDocument()
     doc.Load rdr
-    let converted = AltCover.Xml.ToXDocument doc
+    let converted = Xml.ToXDocument doc
     use mstream = new MemoryStream()
     converted.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
@@ -160,9 +161,9 @@ module FSApiTests =
     let documentText = """<?xml-stylesheet href="mystyle.xslt" type="text/xsl"?><document />"""
     use rdr = new StringReader(documentText)
     let doc = XDocument.Load rdr
-    let converted = AltCover.Xml.ToXmlDocument doc
+    let converted = Xml.ToXmlDocument doc
     test <@ converted.OuterXml.Replace(Environment.NewLine, String.Empty) =  documentText @>
-    let reverted = AltCover.Xml.ToXDocument converted
+    let reverted = Xml.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
     test <@ reverted.ToString().Replace(Environment.NewLine, String.Empty) =  documentText @>
 
@@ -176,7 +177,7 @@ module FSApiTests =
     |> Seq.filter (fun a -> a |> isNull |> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
-    let cob = AltCover.CoverageFormats.ConvertToCobertura doc
+    let cob = CoverageFormats.ConvertToCobertura doc
     use stream2 = new MemoryStream()
     cob.Save stream2
     use stream2a = new MemoryStream(stream2.GetBuffer())
@@ -202,7 +203,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
-    let rewrite = AltCover.Xhtml.ConvertToBarChart doc
+    let rewrite = Xhtml.ConvertToBarChart doc
     rewrite.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
     use rdr = new StreamReader(mstream2)
@@ -227,7 +228,7 @@ module FSApiTests =
      ("CompressBoth", true, true)]
     |> List.iter (fun (test, inSeq, sameSpan) ->
         use mstream = new MemoryStream()
-        let rewrite = AltCover.OpenCover.CompressBranching doc inSeq sameSpan
+        let rewrite = OpenCover.CompressBranching doc inSeq sameSpan
         rewrite.Save mstream
         use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
         use rdr = new StreamReader(mstream2)
@@ -249,10 +250,10 @@ module FSApiTests =
     let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
 
     let pprep = Primitive.PrepareOptions.Create()
-    let prep = AltCover.FSApi.PrepareOptions.Primitive pprep
+    let prep = OptionApi.PrepareOptions.Primitive pprep
 
     let pcoll = Primitive.CollectOptions.Create()
-    let coll = AltCover.FSApi.CollectOptions.Primitive pcoll
+    let coll = OptionApi.CollectOptions.Primitive pcoll
 
     let targets =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -269,9 +270,9 @@ module FSApiTests =
                        |> Seq.sort
                        |> Seq.toList
 
-    let prepareFragments = [Internals.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            Internals.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
-                            Internals.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
+    let prepareFragments = [CLIInternals.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            CLIInternals.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            CLIInternals.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
                             |> List.collect (fun f -> f prep)
                             |> List.sort
 
@@ -291,9 +292,9 @@ module FSApiTests =
                        |> Seq.sort
                        |> Seq.toList
 
-    let collectFragments = [//Internals.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            Internals.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
-                            //Internals.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
+    let collectFragments = [//CLIInternals.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            CLIInternals.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            //CLIInternals.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]
                             |> List.collect (fun f -> f coll)
                             |> List.sort
@@ -314,9 +315,9 @@ module FSApiTests =
                       |> FSharpType.GetUnionCases).Length
 
     let opt = DotNet.CLIOptions.FailFast true
-    let optionsFragments = [//Internals.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            Internals.toCLIOptionsFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
-                            Internals.toCLIOptionsArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
+    let optionsFragments = [//CLIInternals.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            CLIInternals.toCLIOptionsFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            CLIInternals.toCLIOptionsArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]
                             |> List.collect (fun f -> f opt)
                             |> List.sort
@@ -343,10 +344,10 @@ module FSApiTests =
     test <@ (DotNet.CLIOptions.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
 
     let pprep = Primitive.PrepareOptions.Create()
-    let prep = AltCover.FSApi.PrepareOptions.Primitive pprep
+    let prep = AltCover.OptionApi.PrepareOptions.Primitive pprep
 
     let pcoll = Primitive.CollectOptions.Create()
-    let coll = AltCover.FSApi.CollectOptions.Primitive pcoll
+    let coll = AltCover.OptionApi.CollectOptions.Primitive pcoll
 
     test <@ DotNetCLI.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>

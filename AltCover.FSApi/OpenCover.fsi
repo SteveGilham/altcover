@@ -1,6 +1,6 @@
-﻿// # namespace `AltCover`
+﻿// # namespace `AltCover.FSApi`
 // ```
-namespace AltCover
+namespace AltCover.FSApi
 // ```
 // ## module `OpenCover`
 // ```
@@ -16,7 +16,7 @@ namespace AltCover
     /// <param name="document">The input report</param>
     /// <param name="ordinal">How branches are indexed.  If offset values are available, those are preferred.</param>
     val PostProcess :
-      document:System.Xml.Linq.XDocument -> ordinal:Ordinal -> unit
+      document:System.Xml.Linq.XDocument -> ordinal:BranchOrdinal -> unit
 // ```
 // Updates summary and related coverage-derived data based on visit counts.  Argument `ordinal` indicates which XML attribute should be used to associate branches with sequence points.
 // ```

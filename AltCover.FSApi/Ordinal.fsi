@@ -1,14 +1,14 @@
-﻿// # namespace `AltCover`
+﻿// # namespace `AltCover.FSApi`
 // ```
-namespace AltCover
+namespace AltCover.FSApi
 // ```
-// ## type `Ordinal`
+// ## type `BranchOrdinal`
 // ```
 
 /// <summary>
 /// <para type="description">Attribute used to associate branches with sequence points for branch visit computation.</para>
 /// </summary>
-type Ordinal =
+type BranchOrdinal =
   | Offset = 0
   | SL = 1
 // ```

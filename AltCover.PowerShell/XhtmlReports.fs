@@ -51,7 +51,7 @@ type ConvertToBarChartCommand(outputFile : String) =
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
-      let rewrite = AltCover.Xhtml.ConvertToBarChart self.XDocument
+      let rewrite = AltCover.FSApi.Xhtml.ConvertToBarChart self.XDocument
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not

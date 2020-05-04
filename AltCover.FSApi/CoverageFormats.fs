@@ -1,4 +1,4 @@
-namespace AltCover
+namespace AltCover.FSApi
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -9,7 +9,7 @@ open System.Linq
 open System.Xml.Linq
 open System.Xml.XPath
 
-open AltCover.XmlExtensions
+open AltCover.FSApi.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module CoverageFormats =
@@ -55,7 +55,7 @@ module CoverageFormats =
     // ensure default state
     AltCover.Main.init()
     // this switches branch recording off
-    AltCover.CoverageParameters.theReportFormat <- Some AltCover.Base.ReportFormat.NCover
+    AltCover.CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.NCover
     AltCover.Visitor.visit visitors usefulAssemblies
 
     let parse s =
@@ -107,7 +107,7 @@ module CoverageFormats =
     dec.Encoding <- "utf-8"
     dec.Standalone <- null
 
-    OpenCover.PostProcess rewrite Ordinal.Offset
+    OpenCover.PostProcess rewrite BranchOrdinal.Offset
     rewrite
 
   [<SuppressMessage(

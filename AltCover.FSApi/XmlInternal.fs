@@ -1,4 +1,4 @@
-﻿namespace AltCover
+﻿namespace AltCover.FSApi
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -10,7 +10,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-open Augment
+open AltCover.Augment
 
 module internal XmlExtensions =
   type System.Xml.Linq.XElement with
@@ -25,12 +25,12 @@ module internal XmlExtensions =
 /// </summary>
 [<RequireQualifiedAccess>]
 module internal XmlUtilities =
-  let internal loadSchema(format : AltCover.Base.ReportFormat) =
+  let internal loadSchema(format : AltCover.ReportFormat) =
     let schemas = new XmlSchemaSet()
 
     let resource =
       match format with
-      | AltCover.Base.ReportFormat.NCover -> "AltCover.FSApi.xsd.NCover.xsd"
+      | AltCover.ReportFormat.NCover -> "AltCover.FSApi.xsd.NCover.xsd"
       | _ -> "AltCover.FSApi.xsd.OpenCover.xsd"
 
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
@@ -52,8 +52,8 @@ module internal XmlUtilities =
   let internal discoverFormat(xmlDocument : XDocument) =
     let format =
       if xmlDocument.Descendants(XName.Get "CoverageSession").Any()
-      then AltCover.Base.ReportFormat.OpenCover
-      else AltCover.Base.ReportFormat.NCover
+      then AltCover.ReportFormat.OpenCover
+      else AltCover.ReportFormat.NCover
 
     let schema = loadSchema format
     xmlDocument.Validate(schema, null) |> ignore

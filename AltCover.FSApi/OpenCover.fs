@@ -1,4 +1,4 @@
-namespace AltCover
+namespace AltCover.FSApi
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -11,7 +11,7 @@ open System.Xml.Schema
 open System.Xml.XPath
 
 open Mono.Cecil
-open AltCover.XmlExtensions
+open AltCover.FSApi.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module OpenCover =
@@ -139,7 +139,7 @@ module OpenCover =
       Justification="No Turkish I's involved here, just specific XML tags")>]
   [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let PostProcess(document : XDocument) (ordinal: AltCover.Ordinal) =
+  let PostProcess(document : XDocument) (ordinal: BranchOrdinal) =
     let orderAttr = ordinal.ToString().ToLowerInvariant()
     let scoreToString raw =
       (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
@@ -322,7 +322,7 @@ module OpenCover =
     // npath complexity
     let np = brapts
              |> List.groupBy (fun bp -> bp.Attribute(XName.Get "sl").Value)
-             |> Seq.fold (fun np0 (_, b) -> OpenCover.safeMultiply (Seq.length b) np0) 1
+             |> Seq.fold (fun np0 (_, b) -> AltCover.OpenCover.safeMultiply (Seq.length b) np0) 1
     m.SetAttributeValue(XName.Get "nPathComplexity", np)
 
     let declaringTypeName = (m.AncestorsAndSelf(XName.Get "Class") |> Seq.head).Descendants(XName.Get "FullName")
@@ -464,20 +464,20 @@ module OpenCover =
     // TODO list
     // Fix offset, sc, ec in <SequencePoint vc="1" uspid="1" ordinal="0" offset="0" sl="47" sc="21" el="47" ec="26" bec="0" bev="0" fileid="1" />
 
-    PostProcess rewrite Ordinal.SL
+    PostProcess rewrite BranchOrdinal.SL
 
     rewrite
 
   let CompressBranching (document : XDocument) withinSequencePoint sameSpan =
     // Validate
     let xmlDocument = new XDocument(document)
-    let schemas = XmlUtilities.loadSchema AltCover.Base.ReportFormat.OpenCover
+    let schemas = XmlUtilities.loadSchema AltCover.ReportFormat.OpenCover
     xmlDocument.Validate(schemas, null)
     // Get all the methods
     xmlDocument.Descendants(XName.Get "Method")
     |> Seq.iter (compressMethod withinSequencePoint sameSpan)
     // tidy up here
-    PostProcess xmlDocument Ordinal.Offset
+    PostProcess xmlDocument BranchOrdinal.Offset
     xmlDocument
 
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",

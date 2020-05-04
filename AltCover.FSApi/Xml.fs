@@ -1,4 +1,4 @@
-namespace AltCover
+namespace AltCover.FSApi
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -10,7 +10,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-open Augment
+open AltCover.Augment
 
 module Xml =
   [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",

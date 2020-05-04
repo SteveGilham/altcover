@@ -30,7 +30,7 @@ type ConvertToXmlDocumentCommand() =
 
   override self.ProcessRecord() =
     self.XDocument
-    |> AltCover.Xml.ToXmlDocument
+    |> AltCover.FSApi.Xml.ToXmlDocument
     |> self.WriteObject
 
 /// <summary>
@@ -56,7 +56,7 @@ type ConvertToXDocumentCommand() =
 
   override self.ProcessRecord() =
     self.XmlDocument
-    |> AltCover.Xml.ToXDocument
+    |> AltCover.FSApi.Xml.ToXDocument
     |> self.WriteObject
 
 /// <summary>
@@ -104,7 +104,7 @@ type ConvertToLcovCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
       use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
-      AltCover.CoverageFormats.ConvertToLcov self.XDocument stream
+      AltCover.FSApi.CoverageFormats.ConvertToLcov self.XDocument stream
     finally
       Directory.SetCurrentDirectory here
 
@@ -154,7 +154,7 @@ type ConvertToCoberturaCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.ConvertToCobertura self.XDocument
+      let rewrite = AltCover.FSApi.CoverageFormats.ConvertToCobertura self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -209,7 +209,7 @@ type ConvertToNCoverCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.ConvertToNCover self.XDocument
+      let rewrite = AltCover.FSApi.CoverageFormats.ConvertToNCover self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -280,7 +280,7 @@ type ConvertFromNCoverCommand() =
         self.XDocument <- XDocument.Load self.InputFile
 
       let converted =
-        AltCover.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
+        AltCover.FSApi.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -349,7 +349,7 @@ type FormatFromCoverletOpenCoverCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
+      let rewrite = AltCover.FSApi.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace

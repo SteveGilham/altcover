@@ -1,6 +1,6 @@
-﻿// # namespace `AltCover`
+﻿// # namespace `AltCover.FSApi`
 // ```
-namespace AltCover
+namespace AltCover.FSApi
 // ```
 // ## module `CoverageFormats`
 // ```

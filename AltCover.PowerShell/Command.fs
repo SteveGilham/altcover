@@ -5,7 +5,7 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Management.Automation
 open AltCover
-open AltCover.ApiExtension.FSApiExtension
+open AltCover.Extension.OptionApi
 
 /// <summary>
 /// <para type="description">Values for the Invoke-AltCover -Summary option</para>
@@ -458,7 +458,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Collect() =
     let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
-    FSApi.CollectOptions.Primitive
+    OptionApi.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
         Executable = self.Executable
@@ -472,7 +472,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
-    FSApi.PrepareOptions.Primitive
+    OptionApi.PrepareOptions.Primitive
       { InputDirectories = self.InputDirectory
         OutputDirectories = self.OutputDirectory
         SymbolDirectories = self.SymbolDirectory
@@ -506,7 +506,7 @@ type InvokeAltCoverCommand() =
         ShowGenerated = self.ShowGenerated.IsPresent }
 
   member private self.Log() =
-    FSApi.LoggingOptions.Primitive
+    OptionApi.LoggingOptions.Primitive
       { Primitive.LoggingOptions.Create() with
           Error = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))
