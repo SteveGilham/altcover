@@ -12,7 +12,7 @@ open System.Xml.Xsl
 
 open AltCover.Augment
 
-module Xml =
+module XmlTypes =
   [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",
     Justification="Null means absent, completely void, in this case")>]
   let private nullIfEmpty s =

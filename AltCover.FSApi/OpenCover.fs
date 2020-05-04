@@ -480,12 +480,7 @@ module OpenCover =
     PostProcess xmlDocument BranchOrdinal.Offset
     xmlDocument
 
-[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  MessageId="Api", Justification="It's an API, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline",
   Scope="member", Target="<StartupCode$AltCover-FSApi>.$OpenCover.#.cctor()",
-  Justification="Compiler Generated")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields",
-  Scope="member", Target="AltCover.OpenCoverUtilities+setSummary@159D.#scoreToString",
   Justification="Compiler Generated")>]
 ()

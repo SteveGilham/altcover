@@ -129,7 +129,7 @@ module FSApiTests =
     let expected = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
     rdr.BaseStream.Position <- 0L
     let doc = XDocument.Load rdr
-    let converted = Xml.ToXmlDocument doc
+    let converted = XmlTypes.ToXmlDocument doc
     use mstream = new MemoryStream()
     converted.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
@@ -147,7 +147,7 @@ module FSApiTests =
     rdr.BaseStream.Position <- 0L
     let doc = XmlDocument()
     doc.Load rdr
-    let converted = Xml.ToXDocument doc
+    let converted = XmlTypes.ToXDocument doc
     use mstream = new MemoryStream()
     converted.Save mstream
     use mstream2 = new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
@@ -161,9 +161,9 @@ module FSApiTests =
     let documentText = """<?xml-stylesheet href="mystyle.xslt" type="text/xsl"?><document />"""
     use rdr = new StringReader(documentText)
     let doc = XDocument.Load rdr
-    let converted = Xml.ToXmlDocument doc
+    let converted = XmlTypes.ToXmlDocument doc
     test <@ converted.OuterXml.Replace(Environment.NewLine, String.Empty) =  documentText @>
-    let reverted = Xml.ToXDocument converted
+    let reverted = XmlTypes.ToXDocument converted
     //NUnit.Framework.Assert.That(reverted.ToString(), NUnit.Framework.Is.EqualTo documentText)
     test <@ reverted.ToString().Replace(Environment.NewLine, String.Empty) =  documentText @>
 

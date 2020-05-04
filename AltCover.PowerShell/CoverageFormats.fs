@@ -30,7 +30,7 @@ type ConvertToXmlDocumentCommand() =
 
   override self.ProcessRecord() =
     self.XDocument
-    |> AltCover.FSApi.Xml.ToXmlDocument
+    |> AltCover.FSApi.XmlTypes.ToXmlDocument
     |> self.WriteObject
 
 /// <summary>
@@ -56,7 +56,7 @@ type ConvertToXDocumentCommand() =
 
   override self.ProcessRecord() =
     self.XmlDocument
-    |> AltCover.FSApi.Xml.ToXDocument
+    |> AltCover.FSApi.XmlTypes.ToXDocument
     |> self.WriteObject
 
 /// <summary>

@@ -2,14 +2,14 @@
 // ```
 namespace AltCover.FSApi
 // ```
-// ## module `Xml`
+// ## module `XmlTypes`
 // ```
 
 /// <summary>
 /// <para type="description">Methods for inter-converting XML types</para>
 /// </summary>
 [<RequireQualifiedAccess>]
-  module Xml = begin
+  module XmlTypes = begin
     /// <summary>
     /// <para type="description">Takes an `XDocument` in and returns an equivalent `XmlDocument`.</para>
     /// </summary>

@@ -3248,8 +3248,8 @@ open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
-open AltCover
-open AltCover.Fake.DotNet
+
+open AltCover.Fake.DotNet // extension methods
 
 let _Target s f =
   Target.description s
@@ -3263,25 +3263,25 @@ _Target "DoIt"
   AltCover.CSApi.Version() |> printfn " - Returned %A"
 
   let collect =
-    FSApi.CollectOptions.Primitive
+    AltCover.OptionApi.CollectOptions.Primitive
       { AltCover.Primitive.CollectOptions.Create() with LcovReport = "x" }
   let prepare =
-    FSApi.PrepareOptions.Primitive
+    AltCover.OptionApi.PrepareOptions.Primitive
       { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
-  let ForceTrue = DotNet.CLIOptions.Force true
-  printfn "Test arguments : '%s'" (DotNetCLI.ToTestArguments prepare collect ForceTrue)
+  let ForceTrue = AltCover.FSApi.DotNet.CLIOptions.Force true
+  printfn "Test arguments : '%s'" (AltCover.FSApi.DotNetCLI.ToTestArguments prepare collect ForceTrue)
 
   let t = DotNet.TestOptions.Create().WithAltCoverOptions prepare collect ForceTrue
   printfn "WithAltCoverOptions returned '%A'" t.Common.CustomParams
 
   let p2 =
-    { Primitive.PrepareOptions.Create() with
+    { AltCover.Primitive.PrepareOptions.Create() with
         CallContext = [| "[Fact]"; "0" |]
         AssemblyFilter = [| "xunit" |] }
 
-  let pp2 = FSApi.PrepareOptions.Primitive p2
-  let c2 = Primitive.CollectOptions.Create()
-  let cc2 = FSApi.CollectOptions.Primitive c2
+  let pp2 = AltCover.OptionApi.PrepareOptions.Primitive p2
+  let c2 = AltCover.Primitive.CollectOptions.Create()
+  let cc2 = AltCover.OptionApi.CollectOptions.Primitive c2
 
   let setBaseOptions (o: DotNet.Options) =
     { o with
