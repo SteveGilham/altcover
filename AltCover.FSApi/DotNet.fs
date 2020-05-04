@@ -11,9 +11,6 @@ open System.Linq
 #if RUNNER
 type PrepareParams = AltCover.OptionApi.PrepareOptions
 type CollectParams = AltCover.OptionApi.CollectOptions
-#else
-type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions
-type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
 #endif
 
 [<RequireQualifiedAccess>]
