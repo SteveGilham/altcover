@@ -1,38 +1,39 @@
-﻿namespace AltCover.Extension
+﻿namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 open System.Runtime.CompilerServices
 
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-   Scope="namespace", Target="AltCover.ApiExtension", MessageId="Api",
+   Scope="namespace", Target="ApiExtension", MessageId="Api",
     Justification="'Api' is OK")>]
 ()
 
 [<Extension>]
-module Prepare =
+module PrepareExtension =
   [<Extension>]
-  let WhatIf (prepare : AltCover.OptionApi.PrepareOptions) : AltCover.OptionApi.ValidatedCommandLine=
-      { Command = AltCover.Args.prepare prepare
+  let WhatIf (prepare : OptionApi.PrepareOptions) : OptionApi.ValidatedCommandLine=
+      { Command = Args.prepare prepare
         Errors = prepare.Validate() }
 
 [<Extension>]
-module Collect =
+module CollectExtension =
   [<Extension>]
-  let WhatIf (collect : AltCover.OptionApi.CollectOptions) afterPreparation : AltCover.OptionApi.ValidatedCommandLine=
-      { Command = AltCover.Args.collect collect
+  let WhatIf (collect : OptionApi.CollectOptions) afterPreparation : OptionApi.ValidatedCommandLine=
+      { Command = Args.collect collect
         Errors = collect.Validate(afterPreparation) }
 
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification="Two different extension mechanisms need placating")>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Api' is OK")>]
-module OptionApi =
-  type AltCover.OptionApi.CollectOptions with
-    member self.WhatIf afterPreparation : AltCover.OptionApi.ValidatedCommandLine =
-      Collect.WhatIf self afterPreparation
+[<AutoOpen>]
+module OptionApiExtension =
+  type OptionApi.CollectOptions with
+    member self.WhatIf afterPreparation : OptionApi.ValidatedCommandLine =
+      CollectExtension.WhatIf self afterPreparation
 
-  type AltCover.OptionApi.PrepareOptions with
+  type OptionApi.PrepareOptions with
     [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification="Compiler generated name for self parameter")>]
     member self.WhatIf() =
-      Prepare.WhatIf self
+      PrepareExtension.WhatIf self

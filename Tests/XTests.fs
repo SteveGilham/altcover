@@ -10,7 +10,6 @@ open System.Xml.Linq
 
 open AltCover
 open AltCover.Augment
-open AltCover.Extension.OptionApi
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Swensen.Unquote

@@ -5,7 +5,6 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Management.Automation
 open AltCover
-open AltCover.Extension.OptionApi
 
 /// <summary>
 /// <para type="description">Values for the Invoke-AltCover -Summary option</para>

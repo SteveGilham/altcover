@@ -1,34 +1,37 @@
-﻿// # namespace `AltCover.Extension`
+﻿// # namespace `AltCover`
 // ```
-namespace AltCover.Extension
+namespace AltCover
 
 open System.Runtime.CompilerServices
 
 // ```
-// ## module `Prepare` and module `Collect`
+// ## module `PrepareExtension` and module `CollectExtension`
 // ```
-module Prepare = begin
+[<Extension>]
+module PrepareExtension = begin
   [<Extension>]
-  val WhatIf : prepare:AltCover.OptionApi.PrepareOptions -> AltCover.OptionApi.ValidatedCommandLine
+  val WhatIf : prepare:OptionApi.PrepareOptions -> OptionApi.ValidatedCommandLine
 end
-module Collect = begin
+[<Extension>]
+module CollectExtension = begin
   [<Extension>]
   val WhatIf :
-    collect:AltCover.OptionApi.CollectOptions ->
-      afterPreparation:bool -> AltCover.OptionApi.ValidatedCommandLine
+    collect:OptionApi.CollectOptions ->
+      afterPreparation:bool -> OptionApi.ValidatedCommandLine
 end
 // ```
 // These provide C#-compatible extension methods to perform a `WhatIf` style command like validation
 //
 // `WhatIf` compiles the effective command-line and the result of `Validate`
 //
-// ## module `OptionApi`
+// ## module `OptionApiExtension`
 // ```
-module OptionApi = begin
-  type AltCover.OptionApi.CollectOptions with
+[<AutoOpen>]
+module OptionApiExtension = begin
+  type OptionApi.CollectOptions with
     member WhatIf : afterPreparation:bool -> AltCover.OptionApi.ValidatedCommandLine
-  type AltCover.OptionApi.PrepareOptions with
+  type OptionApi.PrepareOptions with
     member WhatIf : unit -> AltCover.OptionApi.ValidatedCommandLine
 end
 //```
-// F# style extensions
+// provides seamless F# style extensions
