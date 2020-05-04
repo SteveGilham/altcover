@@ -12,24 +12,24 @@ open Fake.DotNet
 module AltCoverCommand =
   [<NoComparison; AutoSerializable(false)>]
   type ArgumentType =
-    | Collect of AltCover.CollectOptions
-    | Prepare of AltCover.PrepareOptions
+    | Collect of OptionApi.CollectOptions
+    | Prepare of OptionApi.PrepareOptions
     | ImportModule
     | GetVersion
 
   let internal setExecutable tool collect =
       match collect with
-      | AltCoverFake.DotNet.Testing.AltCover.Primitive p ->
-          AltCoverFake.DotNet.Testing.AltCover.Primitive { p with Executable = tool }
-      | AltCoverFake.DotNet.Testing.AltCover.TypeSafe t ->
-          AltCoverFake.DotNet.Testing.AltCover.TypeSafe { t with Executable = TypeSafe.Tool tool }
+      | AltCoverFake.DotNet.Testing.OptionApi.Primitive p ->
+          AltCoverFake.DotNet.Testing.OptionApi.Primitive { p with Executable = tool }
+      | AltCoverFake.DotNet.Testing.OptionApi.TypeSafe t ->
+          AltCoverFake.DotNet.Testing.OptionApi.TypeSafe { t with Executable = TypeSafe.Tool tool }
 
   let internal setCollectCommandLine (args : string seq) collect =
       match collect with
-      | AltCoverFake.DotNet.Testing.AltCover.Primitive p ->
-          AltCoverFake.DotNet.Testing.AltCover.Primitive { p with CommandLine = args }
-      | AltCoverFake.DotNet.Testing.AltCover.TypeSafe t ->
-          AltCoverFake.DotNet.Testing.AltCover.TypeSafe
+      | AltCoverFake.DotNet.Testing.OptionApi.Primitive p ->
+          AltCoverFake.DotNet.Testing.OptionApi.Primitive { p with CommandLine = args }
+      | AltCoverFake.DotNet.Testing.OptionApi.TypeSafe t ->
+          AltCoverFake.DotNet.Testing.OptionApi.TypeSafe
             { t with
                 CommandLine =
                   let newargs =
@@ -40,12 +40,12 @@ module AltCoverCommand =
                   | [] -> TypeSafe.NoCommand
                   | _ -> TypeSafe.Command newargs }
 
-  let internal setPrepareCommandLine (args : string seq) (prepare:PrepareParams) =
+  let internal setPrepareCommandLine (args : string seq) (prepare:OptionApi.PrepareOptions) =
       match prepare with
-      | PrepareParams.Primitive p ->
-          PrepareParams.Primitive { p with CommandLine = args }
-      | PrepareParams.TypeSafe t ->
-          PrepareParams.TypeSafe
+      | OptionApi.PrepareOptions.Primitive p ->
+          OptionApi.PrepareOptions.Primitive { p with CommandLine = args }
+      | OptionApi.PrepareOptions.TypeSafe t ->
+          OptionApi.PrepareOptions.TypeSafe
             { t with
                 CommandLine =
                   let newargs =

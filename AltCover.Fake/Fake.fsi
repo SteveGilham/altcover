@@ -50,8 +50,8 @@ module DotNet =
     member WithAltCoverOptions: AltCover.OptionApi.PrepareOptions -> AltCover.OptionApi.CollectOptions ->
                                     AltCover.FSApi.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
 #else
-    member WithAltCoverOptions: AltCoverFake.DotNet.Testing.AltCover.PrepareOptions ->
-                                   AltCoverFake.DotNet.Testing.AltCover.CollectOptions ->
+    member WithAltCoverOptions: AltCoverFake.DotNet.Testing.OptionApi.PrepareOptions ->
+                                   AltCoverFake.DotNet.Testing.OptionApi.CollectOptions ->
                                    AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
                                    Fake.DotNet.DotNet.TestOptions
 #endif

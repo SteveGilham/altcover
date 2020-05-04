@@ -42,8 +42,6 @@
     <Compile Include="ApiExtension.fs" />
     <Compile Include="..\AltCover.FSApi\DotNet.fsi" Link="DotNet.fsi" />
     <Compile Include="..\AltCover.FSApi\DotNet.fs" Link="DotNet.fs" />
-    <Compile Include="..\AltCover.FSApi\CLIInternals.fs" Link="CLIInternals.fs" />
-    <Compile Include="..\AltCover.FSApi\DotNetCLI.fs" Link="DotNetCLI.fs" />
     <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>

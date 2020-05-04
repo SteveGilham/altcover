@@ -35,9 +35,6 @@
     <Compile Include="Ordinal.fs" />
     <Compile Include="DotNet.fsi" />
     <Compile Include="DotNet.fs" />
-    <Compile Include="CLIInternals.fs" />
-    <Compile Include="DotNetCLI.fsi" />
-    <Compile Include="DotNetCLI.fs" />
     <Compile Include="XmlInternal.fs" />
     <Compile Include="Xml.fsi" />
     <Compile Include="Xml.fs" />

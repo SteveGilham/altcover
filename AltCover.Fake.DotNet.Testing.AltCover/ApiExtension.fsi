@@ -11,8 +11,8 @@ namespace AltCoverFake.DotNet.Testing
 // ```
     [<NoComparison>]
     type ArgumentType =
-      | Collect of AltCover.CollectOptions
-      | Prepare of AltCover.PrepareOptions
+      | Collect of OptionApi.CollectOptions
+      | Prepare of OptionApi.PrepareOptions
       | ImportModule
       | GetVersion
 // ```
