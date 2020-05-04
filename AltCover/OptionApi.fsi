@@ -1,15 +1,15 @@
 ﻿#if RUNNER
-// # namespace AltCover
+// # namespace `AltCover`
 // ```
 namespace AltCover
 // ```
-// ## module FSApi
+// ## module `OptionApi`
 // ```
   [<RequireQualifiedAccess>]
-  module FSApi = begin
+  module OptionApi = begin
 // ```
-// ### type ValidatedCommandLine
-// ```  
+// ### type `ValidatedCommandLine`
+// ```
     [<NoComparison>]
     type ValidatedCommandLine =
       { Command: string list
@@ -19,23 +19,23 @@ namespace AltCover
       end
 // ```
 // Holds the composed command line in `Command`, and any validations errors in `Errors`.
-// 
+//
 // The `ToString()` override formats the ourcome for pretty-printing
 #else
-// # namespace AltCoverFake.DotNet.Testing
+// # namespace `AltCoverFake.DotNet.Testing`
 // ```
 namespace AltCoverFake.DotNet.Testing
 // ```
-// ## module AltCover
+// ## module `AltCover`
 // ```
   [<RequireQualifiedAccess>]
   module AltCover = begin
 // ```
 #endif
-// ### type CollectOptions
+// ### type `CollectOptions`
 //
-// 
-// ```  
+//
+// ```
     [<NoComparison>]
     type CollectOptions =
       | Primitive of Primitive.CollectOptions
@@ -64,14 +64,14 @@ namespace AltCoverFake.DotNet.Testing
       end
 // ```
 #endif
-// 
+//
 // The property members corresponding to the command line options read the values from the contained instance; null strings will be retrurned as null, but null sequences will be returned as empty ones.
 //
 //  Values that are not applicable to the use case or platform are silently ignored.
-// ### type PrepareOptions
+// ### type `PrepareOptions`
 //
-// 
-// ```  
+//
+// ```
     [<NoComparison>]
     type PrepareOptions =
       | Primitive of Primitive.PrepareOptions
@@ -116,20 +116,20 @@ namespace AltCoverFake.DotNet.Testing
 // ```
 // `Validate` does simple checking of the arguments without causing any changes to the system; returns all the problems that the application command-line could report, so empty is success.
 //
-#else      
+#else
 // ```
       end
 // ```
 #endif
-// 
+//
 // The property members corresponding to the command line options read the values from the contained instance; null strings will be retrurned as null, but null sequences will be returned as empty ones.
 //
 //  Values that are not applicable to the use case or platform are silently ignored.
 #if RUNNER
-// ### type LoggingOptions
+// ### type `LoggingOptions`
 //
-// 
-// ```  
+//
+// ```
     type LoggingOptions =
       | Primitive of Primitive.LoggingOptions
       with
@@ -143,7 +143,7 @@ namespace AltCoverFake.DotNet.Testing
         static member Create : unit -> LoggingOptions
       end
 // ```
-// `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.      
+// `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.
 #endif
 // ```
   end

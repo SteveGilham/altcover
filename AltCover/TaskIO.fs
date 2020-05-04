@@ -2,8 +2,8 @@
 
 open System
 
-module internal ApiStore =
-  type AltCover.FSApi.LoggingOptions with
+module internal TaskIO =
+  type AltCover.OptionApi.LoggingOptions with
     member internal self.Apply() =
       Output.error <- self.Error
       Output.warn <- self.Warn
@@ -13,7 +13,7 @@ module internal ApiStore =
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
   let internal logToStore =
-    FSApi.LoggingOptions.Primitive { Primitive.LoggingOptions.Create() with Info = writeToStore }
+    OptionApi.LoggingOptions.Primitive { Primitive.LoggingOptions.Create() with Info = writeToStore }
 
   let internal getStringValue s =
     writeToStore String.Empty
@@ -22,3 +22,7 @@ module internal ApiStore =
     |> Main.effectiveMain
     |> ignore
     store
+
+  let internal colourize name =
+    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
+    if ok then Console.ForegroundColor <- colour

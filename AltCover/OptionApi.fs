@@ -21,7 +21,7 @@ open Fake.DotNet
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Api' is OK")>]
 [<RequireQualifiedAccess>]
-module FSApi =
+module OptionApi =
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type ValidatedCommandLine =
     { Command : string list

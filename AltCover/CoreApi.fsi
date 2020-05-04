@@ -1,4 +1,4 @@
-﻿// # namespace AltCover
+﻿// # namespace `AltCover`
 // ```
 namespace AltCover
 // ```
