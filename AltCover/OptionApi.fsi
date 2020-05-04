@@ -26,10 +26,10 @@ namespace AltCover
 // ```
 namespace AltCoverFake.DotNet.Testing
 // ```
-// ## module `OptionApi`
+// ## module `AltCover`
 // ```
   [<RequireQualifiedAccess>]
-  module OptionApi = begin
+  module AltCover = begin
 // ```
 #endif
 // ### type `CollectOptions`

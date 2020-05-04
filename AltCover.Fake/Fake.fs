@@ -131,8 +131,8 @@ module DotNet =
            (collect : OptionApi.CollectOptions) (force : FSApi.DotNet.CLIOptions) =
       FSApi.DotNet.ToTestArguments
 #else
-    member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.OptionApi.PrepareOptions)
-           (collect : AltCoverFake.DotNet.Testing.OptionApi.CollectOptions)
+    member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
+           (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
            (force : AltCoverFake.DotNet.Testing.DotNet.CLIOptions) =
       AltCoverFake.DotNet.Testing.DotNet.toTestArguments
 #endif

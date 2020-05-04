@@ -8,6 +8,14 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
 
+#if RUNNER
+type PrepareParams = AltCover.OptionApi.PrepareOptions
+type CollectParams = AltCover.OptionApi.CollectOptions
+#else
+type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions
+type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
+#endif
+
 [<RequireQualifiedAccess>]
 module DotNet =
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
@@ -65,11 +73,7 @@ module DotNet =
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
                        Justification="Compiler Generated")>]
-  #if RUNNER
-    let internal toPrepareListArgumentList (prepare : AltCover.OptionApi.PrepareOptions) =
-  #else
-    let internal toPrepareListArgumentList (prepare : OptionApi.PrepareOptions) =
-  #endif
+    let internal toPrepareListArgumentList (prepare : PrepareParams) =
       [
         fromList, "SymbolDirectories", prepare.SymbolDirectories
         fromList, "DependencyList", prepare.Dependencies
@@ -84,11 +88,7 @@ module DotNet =
         fromList, "CallContext", prepare.CallContext
       ]
 
-  #if RUNNER
-    let internal toPrepareFromArgArgumentList (prepare : AltCover.OptionApi.PrepareOptions) =
-  #else
-    let internal toPrepareFromArgArgumentList (prepare : OptionApi.PrepareOptions) =
-  #endif
+    let internal toPrepareFromArgArgumentList (prepare : PrepareParams) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey
         fromArg, "XmlReport", prepare.XmlReport
@@ -96,11 +96,7 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic
       ]
 
-  #if RUNNER
-    let internal toPrepareArgArgumentList (prepare : AltCover.OptionApi.PrepareOptions) =
-  #else
-    let internal toPrepareArgArgumentList (prepare : OptionApi.PrepareOptions) =
-  #endif
+    let internal toPrepareArgArgumentList (prepare : PrepareParams) =
       [
         (arg, "ZipFile", "false", prepare.ZipFile)
         (arg, "MethodPoint", "false", prepare.MethodPoint)
@@ -113,11 +109,7 @@ module DotNet =
         (arg, "ShowGenerated", "true", prepare.ShowGenerated)
       ]
 
-  #if RUNNER
-    let internal toCollectFromArgArgumentList (collect : AltCover.OptionApi.CollectOptions) =
-  #else
-    let internal toCollectFromArgArgumentList (collect : OptionApi.CollectOptions) =
-  #endif
+    let internal toCollectFromArgArgumentList (collect : CollectParams) =
       [
         fromArg, "LcovReport", collect.LcovReport
         fromArg, "Cobertura", collect.Cobertura
@@ -144,8 +136,8 @@ module DotNet =
   let ToTestArgumentList (prepare : AltCover.OptionApi.PrepareOptions)
       (collect : AltCover.OptionApi.CollectOptions) (options : CLIOptions) =
 #else
-  let internal toTestArgumentList (prepare : OptionApi.PrepareOptions)
-      (collect : OptionApi.CollectOptions)
+  let internal toTestArgumentList (prepare : PrepareParams)
+      (collect : CollectParams)
       (options : CLIOptions) =
 #endif
     [
@@ -181,8 +173,8 @@ module DotNet =
       (collect : AltCover.OptionApi.CollectOptions) (options : CLIOptions) =
     ToTestArgumentList prepare collect options |> I.join
 #else
-  let internal toTestArguments (prepare : OptionApi.PrepareOptions)
-      (collect : OptionApi.CollectOptions)
+  let internal toTestArguments (prepare : PrepareParams)
+      (collect : CollectParams)
       (options : CLIOptions) =
     toTestArgumentList prepare collect options |> I.join
 #endif

@@ -11,6 +11,13 @@ open AltCover
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
+#if TRACE
+#if RUNNER
+// Defined elsewhere in the fake testing assembly
+type PrepareParams = AltCover.OptionApi.PrepareOptions
+type CollectParams = AltCover.OptionApi.CollectOptions
+#endif
+#endif
 // ## module `DotNet`
 // ```
 /// <summary>
@@ -62,17 +69,17 @@ module DotNet = begin
       val fromArg : name:string -> s:string -> string * bool
       val join : l:seq<string> -> string
       val toPrepareListArgumentList :
-        prepare:OptionApi.PrepareOptions ->
+        prepare:PrepareParams ->
           ((string -> #seq<System.String> -> string * bool) * string *
            System.String list) list
       val toPrepareFromArgArgumentList :
-        prepare:OptionApi.PrepareOptions ->
+        prepare:PrepareParams ->
           ((string -> string -> string * bool) * string * System.String) list
       val toPrepareArgArgumentList :
-        prepare:OptionApi.PrepareOptions ->
+        prepare:PrepareParams ->
           ((string -> string -> string) * string * string * bool) list
       val toCollectFromArgArgumentList :
-        collect:OptionApi.CollectOptions ->
+        collect:CollectParams ->
           ((string -> string -> string * bool) * string * System.String) list
       val toCLIOptionsFromArgArgumentList :
         options:CLIOptions ->
@@ -111,11 +118,11 @@ module DotNet = begin
 #else
 #if TRACE  // cheat mode here
     val internal toTestArgumentList :
-      prepare:OptionApi.PrepareOptions ->
-        collect:OptionApi.CollectOptions -> options:CLIOptions -> string list
+      prepare:PrepareParams ->
+        collect:CollectParams -> options:CLIOptions -> string list
     val internal toTestArguments :
-      prepare:OptionApi.PrepareOptions ->
-        collect:OptionApi.CollectOptions -> options:CLIOptions -> string
+      prepare:PrepareParams ->
+        collect:CollectParams -> options:CLIOptions -> string
   end
 #endif
 #endif
