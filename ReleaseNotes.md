@@ -2,8 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.0.xxx (Genbu series release 1)
+# 7.0.766-pre (Genbu series release pre-1)
 
+* There should not be any functional changes before a full 7.0 release; the pre-release is just to ensure I'm happy with the API before freezing it for 7.x
 * [BREAKING] Replace the `--opencover` command line argument and its equivalents with `--reportFormat=...` defaulting to `OpenCover` and currently also accepting `NCover`
 * [BREAKING; dotnet tool] Remove the deprecated `altcover.dotnet` package with the old-style `DotNetCliToolReference` Tool
 * [BREAKING; API] Rename the `AltCover_Fake` namespace to `AltCoverFake`, because it's simpler that way
@@ -16,7 +17,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 *  `--zipfile` command line option (and equivalents) to put the coverage report into a `.zip` archive
 * `--methodpoint` command line option (and equivalents) to restrict visit reporting to just the method level
 * extend `--threshold` to allow minimum branch or method coverage, and maximum CRAP score
-* `TargetsPath` command line option for the global `altcover` tool to report where the associated `.targets` file is located (as it can't be `dotnet add`ed to a project)
+* [Global tool] `TargetsPath` command line option for the global `altcover` tool to report where the associated `.targets` file is located (as it can't be `dotnet add`ed to a project)
 
 # 6.8.761  (Fukurou series release 13)
 * Final 6.x release, barring serious bug-fixes
