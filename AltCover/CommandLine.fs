@@ -13,7 +13,6 @@ open System.Security.Cryptography
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
-open Augment
 open BlackFox.CommandLine
 open Mono.Options
 open System.Diagnostics.CodeAnalysis

@@ -9,7 +9,6 @@ open System.Diagnostics.CodeAnalysis
 open System.Linq
 #if RUNNER
 open AltCover
-open AltCover.Augment
 #else
 open System.Reflection
 open AltCoverFake.DotNet.Testing

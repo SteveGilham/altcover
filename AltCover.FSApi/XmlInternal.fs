@@ -10,8 +10,6 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-open AltCover.Augment
-
 module internal XmlExtensions =
   type System.Xml.Linq.XElement with
     member self.SetAttribute(name: string, value : string) =

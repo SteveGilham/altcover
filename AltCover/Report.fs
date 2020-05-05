@@ -4,8 +4,6 @@ open System
 open System.Xml.Linq
 open Mono.Cecil
 
-open Augment
-
 module internal Report =
 
   let internal reportGenerator() =

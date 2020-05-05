@@ -11,7 +11,6 @@ open System.IO
 open System.Reflection
 open System.Resources
 
-open Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks

@@ -8,7 +8,6 @@ open System.Security
 open System.Security.Cryptography
 
 open AltCover
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks

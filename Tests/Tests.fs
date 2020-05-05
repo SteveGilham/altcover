@@ -9,7 +9,6 @@ open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks

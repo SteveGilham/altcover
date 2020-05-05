@@ -5,8 +5,6 @@ open System.Globalization
 open System.IO
 open System.Xml.Linq
 
-open AltCover.Augment
-
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
   "AvoidSpeculativeGeneralityRule",
   Justification="Delegation = first class functions")>]

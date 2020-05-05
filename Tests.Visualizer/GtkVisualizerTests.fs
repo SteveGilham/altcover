@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Reflection
 
-open AltCover.Augment
+open AltCover
 open NUnit.Framework
 open Swensen.Unquote
 

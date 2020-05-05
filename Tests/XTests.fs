@@ -9,7 +9,6 @@ open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
-open AltCover.Augment
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Swensen.Unquote

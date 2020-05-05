@@ -2,7 +2,6 @@ namespace AltCover
 
 open System
 
-open Augment
 open Mono.Cecil
 
 [<RequireQualifiedAccess>]

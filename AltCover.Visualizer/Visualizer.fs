@@ -13,7 +13,6 @@ open System.Xml.Schema
 open System.Xml.XPath
 
 open AltCover
-open AltCover.Augment
 open AltCover.Visualizer.GuiCommon
 
 open Gdk

@@ -3,7 +3,6 @@ namespace AltCover
 open System
 open System.IO
 open System.Xml.Linq
-open Augment
 open System.Globalization
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml

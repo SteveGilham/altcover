@@ -1,7 +1,7 @@
 namespace AltCover.Expecto.Tests
 
 #if NETCOREAPP3_0
-open AltCover.Augment
+open AltCover
 open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil

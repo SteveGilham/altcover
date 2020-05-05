@@ -9,8 +9,6 @@ open System.Xml.Linq
 
 open Mono.Cecil
 
-open AltCover.Augment
-
 [<ExcludeFromCodeCoverage>]
 type internal Exclusion =
   | Nothing

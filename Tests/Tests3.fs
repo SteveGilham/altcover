@@ -7,7 +7,6 @@ open System.Reflection
 open System.Xml.Linq
 
 open AltCover
-open AltCover.Augment
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Mono.Cecil.Cil

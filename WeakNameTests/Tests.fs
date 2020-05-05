@@ -5,7 +5,6 @@ open System.IO
 open System.Reflection
 
 open AltCover
-open AltCover.Augment
 open Mono.Cecil
 open NUnit.Framework
 open Swensen.Unquote

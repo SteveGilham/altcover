@@ -4,7 +4,6 @@ open System
 open System.Collections.Generic
 open System.IO
 
-open Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Mdb

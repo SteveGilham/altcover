@@ -12,7 +12,6 @@ open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open TaskIO
-open Augment
 
 [<SuppressMessage(
   "Gendarme.Rules.Smells",

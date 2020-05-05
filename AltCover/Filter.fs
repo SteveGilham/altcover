@@ -9,7 +9,6 @@ open System.Text.RegularExpressions
 
 open Mono.Cecil
 open Mono.Cecil.Cil
-open AltCover.Augment
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterSense =

@@ -12,7 +12,6 @@ open System.IO
 open System.Linq
 open System.Text.RegularExpressions
 
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks

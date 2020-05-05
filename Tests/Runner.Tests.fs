@@ -13,7 +13,6 @@ open System.Xml.Linq
 open System.Xml.Schema
 
 open AltCover
-open AltCover.Augment
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Swensen.Unquote

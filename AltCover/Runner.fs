@@ -12,7 +12,6 @@ open System.Xml.Linq
 
 open Mono.Cecil
 open Mono.Options
-open Augment
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal TeamCityFormat =

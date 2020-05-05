@@ -10,7 +10,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-open AltCover.Augment
+open AltCover
 
 module XmlTypes =
   [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",
