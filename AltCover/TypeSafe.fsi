@@ -9,7 +9,6 @@ namespace AltCover
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
-// ```
 // ## module `TypeSafe`
 // This holds the strongly-typed equivalent of the command line options
 // ```

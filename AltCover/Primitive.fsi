@@ -9,7 +9,6 @@ namespace AltCover
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
-// ```
 // ## module `Primitive`
 // This holds the weakly ("stringly") typed equivalent of the command line options
 // ```
@@ -82,7 +81,6 @@ namespace AltCoverFake.DotNet.Testing
 // Fields that are not applicable to the use case or platform are silently ignored.
 //
 #if RUNNER
-// ```
 // ### type `LoggingOptions`
 // ```
     [<NoComparison; NoEquality>]

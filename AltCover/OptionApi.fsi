@@ -20,7 +20,7 @@ namespace AltCover
 // ```
 // Holds the composed command line in `Command`, and any validations errors in `Errors`.
 //
-// The `ToString()` override formats the ourcome for pretty-printing
+// The `ToString()` override formats the outcome for pretty-printing
 #else
 // # namespace `AltCoverFake.DotNet.Testing`
 // ```
