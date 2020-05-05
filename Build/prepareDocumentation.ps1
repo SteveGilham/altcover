@@ -8,7 +8,7 @@ $mdfiles | % {
   $fromFile = $_.FullName
   Write-Host "Processing $fromFile"
 
-  $toFile = $fromFile.Replace(".md", "-apidoc.md").Replace("`\_Documentation",".wiki")
+  $toFile = $fromFile.Replace(".md", "-apidoc.md").Replace("`\_Documentation",".\docs")
   Write-Host "`tto $toFile"
 
   $wikidir = Split-Path $toFile
@@ -21,7 +21,7 @@ $mdfiles | % {
 $m = Get-Module -Name "AltCover.PowerShell"
 
 $preamble = @"
-This is the PowerShell Help/scripting use version of the ``AltCover.PowerShell.dll`` API; the .net programmable API documentation is [here](AltCover.PowerShell/AltCover.PowerShell-apidoc).  This functionality is present in all NuGet packages except the ``altcover.visualizer`` global tool package.
+This is the PowerShell Help/scripting use version of the ``AltCover.PowerShell.dll`` API; the .net programmable API documentation is [here](https://stevegilham.github.io/altcover/AltCover.PowerShell/AltCover.PowerShell-apidoc).  This functionality is present in all NuGet packages except the ``altcover.visualizer`` global tool package.
 
 Use ``Import-Module`` either by specific path using the command given by ``AltCover.exe ImportModule`` (or ``dotnet AltCover.dll ImportModule`` or ``altcover ImportModule``), or add the appropriate directory to your ``PSModulePath`` and do a simple import.
 
@@ -35,7 +35,7 @@ which unpeels the wrapper around the file path.  Just substitute in the appropri
 ## Cmdlets
 "@
 
-$mdfile = "../altcover.wiki/PowerShell-integration.md"
+$mdfile = "../altcover.wiki/PowerShell-integration.md" ## yes wiki
 
 $preamble | Out-File -Encoding UTF8 $mdfile
 
@@ -151,7 +151,7 @@ dir -recurse *.fsproj | % {
   if ($signatures) {  
     $name = $x.project.propertygroup.assemblyname | Select-Object -First 1
     mkdir -Force "./_Documentation/$name" | Out-Null 
-    mkdir -Force "../altcover.wiki/$name" | Out-Null 
+    mkdir -Force "./docs/$name" | Out-Null 
     }
 
   $globals = $x.project.propertygroup.GlobalDefineConstants.'#text'
@@ -177,7 +177,7 @@ dir -recurse *.fsproj | % {
     Write-Host $command
     Invoke-Expression $command
     $lines = Get-Content $ifile | ?  { -not $_.Contains("///") } # skip XML doc comments
-    $docfile = (Resolve-Path $iFile).Path.Replace(".i", "-apidoc.md").Replace("`\_Documentation",".wiki")
+    $docfile = (Resolve-Path $iFile).Path.Replace(".i", "-apidoc.md").Replace("`\_Documentation","\docs")
     $lines | % { $_.Replace("// ", "").Replace("//", "")} | Set-Content $docFile
   }
 }
@@ -187,7 +187,7 @@ dir -recurse *.fsproj | % {
 $header = @"
 Available from release 3.0.488, this parallels the facility in [coverlet](https://github.com/tonerdo/coverlet); it is equivalent to doing ``AltCover --inplace --save`` in the project output directory before the tests are run, then ``AltCover Runner --collect`` after, then deleting the instrumented files and moving the saved originals back in place.
 
-[There is an API available](AltCover.FSApi/DotNet-apidoc) for use with build scripting that composes the appropriate command line.
+[There is an API available](https://stevegilham.github.io/altcover/AltCover.FSApi/DotNet-apidoc) for use with build scripting that composes the appropriate command line.
 
 _Note: With ``AltCover``, there is no requirement that the assembly from which coverage is gathered be distinct from the assembly that contains the tests._  Use ``/p:AltCoverAssemblyExcludeFilter`` if you want to exclude the unit tests from coverage.
 
@@ -224,7 +224,7 @@ dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAs
 Chooses a different report name, and excludes the ``NUnit3.TestAdapter`` assembly that comes with its pdb files, and gets instrumented by default.
 "@
 
-$mdfile = "../altcover.wiki/``dotnet-test``-integration.md"
+$mdfile = "../altcover.wiki/``dotnet-test``-integration.md" ## yes wiki
 
 $header | Out-File -Encoding UTF8 $mdfile
 
