@@ -72,62 +72,65 @@ module DotNet =
                        Justification="Compiler Generated")>]
     let internal toPrepareListArgumentList (prepare : PrepareParams) =
       [
-        fromList, "SymbolDirectories", prepare.SymbolDirectories
-        fromList, "DependencyList", prepare.Dependencies
-        fromList, "Keys", prepare.Keys
-        fromList, "FileFilter", prepare.FileFilter
-        fromList, "AssemblyFilter", prepare.AssemblyFilter
-        fromList, "AssemblyExcludeFilter", prepare.AssemblyExcludeFilter
-        fromList, "TypeFilter", prepare.TypeFilter
-        fromList, "MethodFilter", prepare.MethodFilter
-        fromList, "AttributeFilter", prepare.AttributeFilter
-        fromList, "PathFilter", prepare.PathFilter
-        fromList, "CallContext", prepare.CallContext
+        fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe '|' separated list of paths"
+        fromList, "DependencyList", prepare.Dependencies //=`"pipe '|' separated list of paths"
+        fromList, "Keys", prepare.Keys //=`"pipe '|' separated list of paths to strong-name keys for re-signing assemblies"
+        fromList, "FileFilter", prepare.FileFilter //=`"pipe '|' separated list of file name regexes"
+        fromList, "AssemblyFilter", prepare.AssemblyFilter //=`"pipe '|' separated list of names"
+        fromList, "AssemblyExcludeFilter", prepare.AssemblyExcludeFilter //=`"pipe '|' separated list of names"
+        fromList, "TypeFilter", prepare.TypeFilter //=`"pipe '|' separated list of names"
+        fromList, "MethodFilter", prepare.MethodFilter //=`"pipe '|' separated list of names"
+        fromList, "AttributeFilter", prepare.AttributeFilter //=`"pipe '|' separated list of names"
+        fromList, "PathFilter", prepare.PathFilter //=`"pipe '|' separated list of file path regexes"
+        fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
       ]
 
     let internal toPrepareFromArgArgumentList (prepare : PrepareParams) =
       [
-        fromArg, "StrongNameKey", prepare.StrongNameKey
-        fromArg, "XmlReport", prepare.XmlReport
-        fromArg, "ReportFormat", prepare.ReportFormat
-        fromArg, "ShowStatic", prepare.ShowStatic
+        fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
+        fromArg, "XmlReport", prepare.XmlReport //=`"path to the xml report" default: `coverage.xml` in the project directory)
+        fromArg, "ReportFormat", prepare.ReportFormat //=`"NCover" or default "OpenCover"
+        fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
     let internal toPrepareArgArgumentList (prepare : PrepareParams) =
       [
-        (arg, "ZipFile", "false", prepare.ZipFile)
-        (arg, "MethodPoint", "false", prepare.MethodPoint)
-        (arg, "Single", "false", prepare.Single)
-        (arg, "LineCover", "true", prepare.LineCover)
-        (arg, "BranchCover", "true", prepare.BranchCover)
-        (arg, "SourceLink", "false", prepare.SourceLink)
-        (arg, "LocalSource", "true", prepare.LocalSource)
-        (arg, "VisibleBranches", "true", prepare.VisibleBranches)
-        (arg, "ShowGenerated", "true", prepare.ShowGenerated)
+        (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
+        (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
+        (arg, "Single", "false", prepare.Single) //="true|false"` - set "true" to record only the first visit to each point
+        (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
+        (arg, "BranchCover", "true", prepare.BranchCover)  //="true|false"` - set "true" to record only branch coverage in OpenCover format
+        (arg, "SourceLink", "false", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
+        (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
+        (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
+        (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
       ]
 
     let internal toCollectFromArgArgumentList (collect : CollectParams) =
       [
-        fromArg, "LcovReport", collect.LcovReport
-        fromArg, "Cobertura", collect.Cobertura
-        fromArg, "Threshold", collect.Threshold
-        fromArg, "SummaryFormat", collect.SummaryFormat
+        fromArg, "LcovReport", collect.LcovReport //=`"path to lcov format result"
+        fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
+        fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
+        fromArg, "SummaryFormat", collect.SummaryFormat //=[+][B|R]` to opt for a TeamCity summary with either `B` or `R` for branch coverage accordingly, with the OpenCover format summary also present if `+` is given
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
     let internal toCLIOptionsFromArgArgumentList (options : CLIOptions) =
       [
-        fromArg, "ShowSummary", options.Summary
+        fromArg, "ShowSummary", options.Summary //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
     let internal toCLIOptionsArgArgumentList (options : CLIOptions) =
       [
-        arg, "Force", "true", options.ForceDelete
-        arg, "FailFast", "true", options.Fast
+        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Saved` folders from previous runs
+        arg, "FailFast", "true", options.Fast //=true|false` to skip coverage collection if the unit tests fail
       ]
+
+// "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
+// "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
   let ToTestArgumentList (prepare : AltCover.OptionApi.PrepareOptions)

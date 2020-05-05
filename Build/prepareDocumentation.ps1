@@ -181,3 +181,68 @@ dir -recurse *.fsproj | % {
     $lines | % { $_.Replace("// ", "").Replace("//", "")} | Set-Content $docFile
   }
 }
+
+# dotnet test integration
+
+$header = @"
+Available from release 3.0.488, this parallels the facility in [coverlet](https://github.com/tonerdo/coverlet); it is equivalent to doing ``AltCover --inplace --save`` in the project output directory before the tests are run, then ``AltCover Runner --collect`` after, then deleting the instrumented files and moving the saved originals back in place.
+
+[There is an API available](AltCover.FSApi/DotNet-apidoc) for use with build scripting that composes the appropriate command line.
+
+_Note: With ``AltCover``, there is no requirement that the assembly from which coverage is gathered be distinct from the assembly that contains the tests._  Use ``/p:AltCoverAssemblyExcludeFilter`` if you want to exclude the unit tests from coverage.
+
+
+## To Use this option
+Install into your test project 
+``````
+dotnet add package AltCover
+``````
+(or ``package altcover.api`` from release 4.0.600 or ``package altcover.dotnet`` from release 3.5.550 to 6.8.761) and switch on to run
+``````
+dotnet test /p:AltCover=true
+``````
+
+In the default operation it will produce OpenCover format output in a file ``coverage.xml`` (or in the case of multiple target frameworks, and from release 4.0.600, files of the form ``coverage.`$(TargetFramework).xml`` for each such target) in your project directory.
+And if you want more control over what happens to the files, then is is still possible to use ``AltCover`` in its original, explicit, mode -- just don't use the ``/p:AltCover=true`` switch.
+
+## Other parameters
+
+"@
+
+$footer = @"
+
+**Note**: The pipe character ``|`` is used as a separator because the previous choice of ``;`` didn't play nice with MSBuild. In v6.0.700 or later, to introduce a ``|`` into a regex, escape it in by doubling (``||``); if a triplet ``|||`` or longer is present, doubling gets grouped from the left.  Sample use : ``/p:AltCoverAssemblyExcludeFilter='^(?!(NameA||NameB)).*`$'`` to include only ``NameA`` or ``NameB``.
+
+**Note**: As MSBuild informational output is suppressed by default with ``dotnet test``, and log verbosity has no fine-grained control, the ``-v m`` (``--verbosity minimal``) option is needed to show the progress and summary information for the instrumentation and collection process if this is desired.
+
+**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in ``/p:AltCoverXmlReport`` just as for the default ``coverage.xml`` name.
+
+## Example
+``````
+dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAssemblyFilter=NUnit
+``````
+Chooses a different report name, and excludes the ``NUnit3.TestAdapter`` assembly that comes with its pdb files, and gets instrumented by default.
+"@
+
+$mdfile = "../altcover.wiki/``dotnet-test``-integration.md"
+
+$header | Out-File -Encoding UTF8 $mdfile
+
+$lines = (Get-Content  ".\AltCover.FSApi\DotNet.fs") | ? { $_.Contains("//=") }
+$lines | % {
+  $line = $_
+  if ($line.StartsWith("//")) { $line = $line.Substring(2) }
+  $parts = $line.Split("//")
+  $parts2 = $parts[0].Split("`"")
+  
+  $comment = $parts | Select-Object -Last 1
+  
+  $compose = "* ``/p:AltCover" + $parts2[1] + $comment ##$parts[1]
+  $compose | Out-File -Encoding UTF8 -Append $mdfile
+}
+
+$footer | Out-File -Encoding UTF8 -Append $mdfile
+
+
+
+
