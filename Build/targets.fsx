@@ -3897,6 +3897,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     |> List.iter (AltCoverCommand.Options.Create
                   >> AltCoverCommand.run)
 
+    Actions.Run("altcover", ".", ["TargetsPath"]) "altcover target"
     let prep =
       AltCover.PrepareOptions.Primitive
         ({ Primitive.PrepareOptions.Create() with
