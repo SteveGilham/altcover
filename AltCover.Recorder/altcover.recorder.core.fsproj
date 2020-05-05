@@ -10,9 +10,8 @@
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone</OtherFlags>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone $(StaticLink) --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
-    <FscToolPath  Condition="'$(TargetFramework)' == 'net20'">$(ProjectDir)..\packages\fsharp.compiler.tools\10.2.3\tools</FscToolPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -38,11 +37,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ICSharpCode.SharpZipLib.Patched" Version="0.86.5.3" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0"  Condition="'$(TargetFramework)' != 'netstandard2.0'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" Condition="'$(TargetFramework)' != 'netstandard2.0'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -2,6 +2,6 @@
 
   <PropertyGroup>
     <AltCover Condition="'$(AltCover)' == ''">false</AltCover>
-    <AltCoverOpenCover Condition="'$(AltCoverOpenCover)' == ''">true</AltCoverOpenCover>
+    <AltCoverReportFormat Condition="'$(AltCoverReportFormat)' == ''">OpenCover</AltCoverReportFormat>
   </PropertyGroup>
 </Project>

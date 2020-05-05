@@ -1,4 +1,4 @@
-namespace AltCover
+namespace AltCover.FSApi
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -10,26 +10,34 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-open Augment
+open AltCover
 
-module XmlExtensions =
-  type System.Xml.Linq.XElement with
-    member self.SetAttribute(name: string, value : string) =
-      let attr = self.Attribute(XName.Get name)
-      if attr |> isNull
-      then self.Add(XAttribute(XName.Get name, value))
-      else attr.Value <- value
+module XmlTypes =
+  [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",
+    Justification="Null means absent, completely void, in this case")>]
+  let private nullIfEmpty s =
+    if String.IsNullOrEmpty s
+    then null
+    else s
 
-[<RequireQualifiedAccess>]
-module XmlUtilities =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  let ToXmlDocument(xDocument : XDocument) =
+  let ToXmlDocument(document : XDocument) =
     let xmlDocument = XmlDocument()
-    use xmlReader = xDocument.CreateReader()
+    use xmlReader = document.CreateReader()
     xmlDocument.Load(xmlReader)
 
-    let xDeclaration = xDocument.Declaration
+    let cn = xmlDocument.ChildNodes
+    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
+    | None -> ()
+    | Some doctype -> let xDoctype = document.DocumentType
+                      let newDoctype = xmlDocument.CreateDocumentType(nullIfEmpty xDoctype.Name,
+                                                                      nullIfEmpty xDoctype.PublicId,
+                                                                      nullIfEmpty xDoctype.SystemId,
+                                                                      nullIfEmpty xDoctype.InternalSubset)
+                      xmlDocument.ReplaceChild(newDoctype, doctype) |> ignore
+
+    let xDeclaration = document.Declaration
     if xDeclaration.IsNotNull
     then
       let xmlDeclaration =
@@ -41,7 +49,7 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let ToXDocument(xmlDocument : XmlDocument) =
@@ -49,6 +57,13 @@ module XmlUtilities =
     nodeReader.MoveToContent() |> ignore // skips leading comments
     let xdoc = XDocument.Load(nodeReader)
     let cn = xmlDocument.ChildNodes
+    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
+    | None -> ()
+    | Some doctype -> xdoc.AddFirst(XDocumentType(nullIfEmpty doctype.Name,
+                                                  nullIfEmpty doctype.PublicId,
+                                                  nullIfEmpty doctype.SystemId,
+                                                  nullIfEmpty doctype.InternalSubset))
+
     let decl' = cn.OfType<XmlDeclaration>() |> Seq.tryHead
     match decl' with
     | None -> ()
@@ -59,59 +74,3 @@ module XmlUtilities =
     |> Seq.iter
          (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
     xdoc
-
-  // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-  // Also, this rule is deprecated
-  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
-  let internal LoadSchema(format : AltCover.Base.ReportFormat) =
-    let schemas = new XmlSchemaSet()
-
-    let resource =
-      match format with
-      | AltCover.Base.ReportFormat.NCover -> "AltCover.FSApi.xsd.NCover.xsd"
-      | _ -> "AltCover.FSApi.xsd.OpenCover.xsd"
-
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
-    use reader = new StreamReader(stream)
-    use xreader = XmlReader.Create(reader)
-    schemas.Add(String.Empty, xreader) |> ignore
-    schemas
-
-  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
-  let internal LoadTransform(name : string) =
-    let transform = new XslCompiledTransform()
-    use stream =
-      Assembly.GetExecutingAssembly()
-              .GetManifestResourceStream("AltCover.FSApi.xsl." + name + ".xsl")
-    use reader = new StreamReader(stream)
-    use xreader = XmlReader.Create(reader)
-    transform.Load(xreader, XsltSettings.TrustedXslt, XmlUrlResolver())
-    transform
-
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
-  let internal DiscoverFormat(xmlDocument : XmlDocument) =
-    let format =
-      if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any()
-      then AltCover.Base.ReportFormat.OpenCover
-      else AltCover.Base.ReportFormat.NCover
-
-    let schema = LoadSchema format
-    xmlDocument.Schemas <- schema
-    xmlDocument.Validate(null)
-    format
-
-  let internal AssemblyNameWithFallback path fallback =
-    try
-      AssemblyName.GetAssemblyName(path).FullName
-    with
-    | :? ArgumentException
-    | :? FileNotFoundException
-    | :? System.Security.SecurityException
-    | :? BadImageFormatException
-    | :? FileLoadException -> fallback
-
-  [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
-  let internal PrependDeclaration(x : XmlDocument) =
-    let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
-    x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore

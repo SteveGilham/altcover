@@ -3,57 +3,87 @@ using Cake.Core;
 using Cake.Core.Annotations;
 using LogLevel = Cake.Core.Diagnostics.LogLevel;
 using Verbosity = Cake.Core.Diagnostics.Verbosity;
-using AltCover.Parameters;
-using AltCover.Parameters.Primitive;
 
 namespace AltCover.Cake
 {
+  /// <summary>
+  /// A C#-friendly expression of the core API to drive the instrumentation and collection process.
+  /// </summary>
+  [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification = "It's the API for the system")]
   public static class Api
   {
-    private static ILogArgs MakeLog(ICakeContext context, ILogArgs log)
+    private static CSApi.ILoggingOptions MakeLog(ICakeContext context, CSApi.ILoggingOptions log)
     {
       if (log != null)
         return log;
 
-      if (context != null)
-        return new LogArgs()
-        {
-          Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x),
-          Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x),
-          Echo = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x),
-          Error = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x),
-        };
+      var result = CSApi.Primitive.LoggingOptions.Create();
 
-      return new LogArgs()
+      if (context != null)
       {
-        Info = x => { },
-        Warn = x => { },
-        Echo = x => { },
-        Error = x => { }
-      };
+        result.Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x);
+        result.Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x);
+        result.StandardError = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
+        result.Echo = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x);
+      }
+
+      return result;
     }
 
+    /// <summary>
+    /// <para>Performs the instrumentation phase of the coverage operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
+    /// </summary>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <param name="prepareArgs">C# definition of the instrumentation (and optional execution) process.</param>
+    /// <param name="log">[Optional]C# definition of the process logging; if no logging support is supplied, then Cake logging at an appropriate severity is used.</param>
+    /// <returns>The integer return code for the instrumentation process.</returns>
     [CakeMethodAlias]
-    public static int Prepare(this ICakeContext context, IPrepareArgs prepareArgs, ILogArgs log = null)
+    [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
+                     Justification = "WTF is this rule saying?")]
+    public static int Prepare(this ICakeContext context, CSApi.IPrepareOptions prepareArgs, CSApi.ILoggingOptions log = null)
     {
       return CSApi.Prepare(prepareArgs, MakeLog(context, log));
     }
 
+    /// <summary>
+    /// <para>Performs the collection phase of the coverage operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
+    /// </summary>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <param name="collectArgs">C# definition of the collection (and optional execution) process.</param>
+    /// <param name="log">[Optional]C# efinition of the process logging; if no logging support is supplied, then Cake logging at an appropriate severity is used.</param>
+    /// <returns>The integer return code for the collection process.</returns>
     [CakeMethodAlias]
-    public static int Collect(this ICakeContext context, ICollectArgs collectArgs, ILogArgs log = null)
+    [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
+                     Justification = "WTF is this rule saying?")]
+    public static int Collect(this ICakeContext context, CSApi.ICollectOptions collectArgs, CSApi.ILoggingOptions log = null)
     {
       return CSApi.Collect(collectArgs, MakeLog(context, log));
     }
 
+    /// <summary>
+    /// <para>Performs the `AltCover ImportModule` operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
+    /// </summary>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <returns>The PowerShell Import-Module command to access the AltCover cmdlets</returns>
     [CakeMethodAlias]
-    public static string Ipmo(this ICakeContext context)
+    public static string ImportModule(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSApi.Ipmo();
+      return CSApi.ImportModule();
     }
 
+    /// <summary>
+    /// <para>Performs the `AltCover Version` operation.</para>
+    /// <para>This method is a `[CakeMethodAlias]` extension method on the Cake build script context.</para>
+    /// </summary>
+    /// <param name="context">The Cake build script context; a `this` parameter</param>
+    /// <returns>The AltCover built version</returns>
     [CakeMethodAlias]
-    public static string Version(this ICakeContext context)
+    public static System.Version Version(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
       return CSApi.Version();

@@ -13,14 +13,14 @@ do ()
 module M =
   type Thing =
     { Thing : string }
-    member this.bytes() = System.Text.Encoding.UTF8.GetBytes(this.Thing)
+    member this.Bytes() = System.Text.Encoding.UTF8.GetBytes(this.Thing)
 
   let makeThing s = { Thing = s }
 
   [<Fact>]
   let testMakeThing() =
     test <@ (makeThing "s").Thing = "s" @>
-    test <@ (makeThing "aeiou").bytes().Length = 5 @>
+    test <@ (makeThing "aeiou").Bytes().Length = 5 @>
 
 module DU =
   type MyUnion =
@@ -29,7 +29,7 @@ module DU =
     | Baz of double
     | Bop of DateTime
 
-    member this.as_bar() =
+    member this.AsBar() =
       try
         match this with
         | Foo n -> Bar(string n)
@@ -39,7 +39,7 @@ module DU =
         | _ -> this
       with _ -> Bar "none"
 
-    member this.MyBar = this.as_bar
+    member this.MyBar = this.AsBar
 
   type MyClass() =
     member val Property = 0 with get, set
@@ -51,7 +51,7 @@ module DU =
   let testMakeUnion() =
     test <@ returnFoo 10 = Foo 10 @>
     test <@ returnBar "s" = Bar "s" @>
-    test <@ (Foo 10).as_bar() = Bar "10" @>
+    test <@ (Foo 10).AsBar() = Bar "10" @>
 
   let LineSpanning1 a =
     if a > 0

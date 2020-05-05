@@ -4,24 +4,40 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Management.Automation
-open System.Xml
+open System.Xml.Linq
 open System.Xml.XPath
 
+/// <summary>
+/// <para type="synopsis">Generates a simple HTML report from coverage data.</para>
+/// <para type="description">The report produced is based on the old NCover 1.5.8 XSLT, for both NCover and OpenCover coverage format data.  The input is as a file name or an `XDocument` from the pipeline, the output is to the pipeline as an `XDocument`, and, optionally, to a file. </para>
+/// <example>
+///   <code>    $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"</code>
+/// </example>
+/// </summary>
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
-[<OutputType(typeof<XmlDocument>)>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToBarChartCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = ConvertToBarChartCommand(String.Empty)
 
+  /// <summary>
+  /// <para type="description">Input as `XDocument` value</para>
+  /// </summary>
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument : IXPathNavigable = null with get, set
+  member val XDocument : XDocument = null with get, set
 
+  /// <summary>
+  /// <para type="description">Input as file path</para>
+  /// </summary>
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val InputFile : string = null with get, set
 
+  /// <summary>
+  /// <para type="description">Output as file path</para>
+  /// </summary>
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
@@ -34,8 +50,8 @@ type ConvertToBarChartCommand(outputFile : String) =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XPathDocument self.InputFile
-      let rewrite = AltCover.Xhtml.ConvertToBarChart self.XmlDocument
+        self.XDocument <- XDocument.Load self.InputFile
+      let rewrite = AltCover.FSApi.Xhtml.ConvertToBarChart self.XDocument
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not

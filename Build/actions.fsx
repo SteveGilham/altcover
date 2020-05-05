@@ -14,7 +14,7 @@ open HeyRed.MarkdownSharp
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
-open AltCover_Fake.DotNet.Testing
+open AltCoverFake.DotNet.Testing
 
 module Actions =
   let Clean() =
@@ -70,17 +70,18 @@ open System.Runtime.CompilerServices
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 #if NETSTANDARD2_0
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests")>]
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
-[<assembly: InternalsVisibleTo("AltCover.XTests")>]
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer")>]
 #else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
-[<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests2, PublicKey={1}")>]
@@ -288,8 +289,11 @@ do ()"""
   let RunDotnet (o : DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args |> (HandleResults msg)
 
-  let SimpleInstrumentingRun (samplePath : string) (binaryPath : string)
-      (reportSigil : string) =
+  let SimpleInstrumentingRun
+      (samplePath : string)
+      (binaryPath : string)
+      (reportSigil : string)
+    =
     printfn "Instrument and run a simple executable"
     Directory.ensure "./_Reports"
     let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
@@ -299,22 +303,23 @@ do ()"""
     let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
-      AltCover.PrepareParams.Primitive
-        { Primitive.PrepareParams.Create() with
+      AltCover.PrepareOptions.Primitive
+        { Primitive.PrepareOptions.Create() with
             TypeFilter = [ """System\.""" ]
             XmlReport = simpleReport
             OutputDirectories = [| "./" + instrumented |]
-            OpenCover = false
+            ReportFormat = "NCover"
             InPlace = false
             Save = false }
-      |> AltCover.Prepare
+      |> AltCoverCommand.Prepare
 
     let parameters =
-      { AltCover.Params.Create prep with
+      { AltCoverCommand.Options.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
-          WorkingDirectory = sampleRoot }.WithToolType framework
+          ToolType = framework
+          WorkingDirectory = sampleRoot }
 
-    AltCover.run parameters
+    AltCoverCommand.run parameters
     System.Threading.Thread.Sleep(1000)
 
     Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
@@ -323,8 +328,12 @@ do ()"""
 
     ValidateSample1 simpleReport reportSigil
 
-  let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)
-      (reportSigil' : string) (monoOnWindows : string option) =
+  let SimpleInstrumentingRunUnderMono
+      (samplePath : string)
+      (binaryPath : string)
+      (reportSigil' : string)
+      (monoOnWindows : string option)
+    =
     printfn "Instrument and run a simple executable under mono"
     match monoOnWindows with
     | None -> Assert.Fail "Mono executable expected"
@@ -338,22 +347,23 @@ do ()"""
         let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
         let prep =
-          AltCover.PrepareParams.Primitive
-            { Primitive.PrepareParams.Create() with
+          AltCover.PrepareOptions.Primitive
+            { Primitive.PrepareOptions.Create() with
                 TypeFilter = [ """System\.""" ]
                 XmlReport = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
-                OpenCover = false
+                ReportFormat = "NCover"
                 InPlace = false
                 Save = false }
-          |> AltCover.Prepare
+          |> AltCoverCommand.Prepare
 
         let parameters =
-          { AltCover.Params.Create prep with
+          { AltCoverCommand.Options.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
-              WorkingDirectory = sampleRoot }.WithToolType framework
+              ToolType = framework
+              WorkingDirectory = sampleRoot }
 
-        AltCover.runWithMono monoOnWindows parameters
+        AltCoverCommand.runWithMono monoOnWindows parameters
 
         Run
           (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])

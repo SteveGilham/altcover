@@ -11,32 +11,38 @@
     <GlobalDefineConstants></GlobalDefineConstants>
     <AssemblySearchPaths Condition="'$(OS)' == 'Windows_NT'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+ --keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <Tailcalls>true</Tailcalls>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\AltCover.FSApi\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover\Primitive.fsi" Link="Primitive.fsi" />
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
+    <Compile Include="..\AltCover\TypeSafe.fsi" Link="TypeSafe.fsi" />
     <Compile Include="..\AltCover\TypeSafe.fs" Link="TypeSafe.fs" />
-    <Compile Include="..\AltCover\Api.fs" Link="Api.fs" />
-    <Compile Include="..\AltCover.FSApi\Definitions.fs" Link="Definitions.fs" />
+    <Compile Include="..\AltCover\OptionApi.fsi" Link="OptionApi.fsi" />
+    <Compile Include="..\AltCover\OptionApi.fs" Link="OptionApi.fs" />
+    <Compile Include="..\AltCover\Args.fs" Link="Args.fs" />
+    <Compile Include="AltCoverCommand.fsi" />
+    <Compile Include="AltCoverCommand.fs" />
+    <Compile Include="..\AltCover.FSApi\DotNet.fsi" Link="DotNet.fsi" />
+    <Compile Include="..\AltCover.FSApi\DotNet.fs" Link="DotNet.fs" />
+    <Compile Include="..\AltCover.Fake\Fake.fsi" Link="Fake.fsi" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>
 
@@ -49,11 +55,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Collections.Immutable" Version="1.6.0"  Condition="'$(TargetFramework)' == 'net462'"/>
+    <PackageReference Include="System.Collections.Immutable" Version="1.6.0" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net462'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.0" Condition="'$(TargetFramework)' == 'net462'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

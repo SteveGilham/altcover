@@ -27,7 +27,7 @@
     },
     "conventions": {
         "recursiveAsyncFunction": { "enabled": false },
-        "redundantNewKeyword": { "enabled": false },
+        "redundantNewKeyword": { "enabled": true },
         "nestedStatements": {
             "enabled": false,
             "config": {
@@ -183,7 +183,7 @@
                 }
             },
             "memberNames": { 
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "naming": "PascalCase",
                     "underscores": "AllowPrefix"
@@ -216,7 +216,7 @@
                 }
             },
             "nonPublicValuesNames": { 
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "naming": "CamelCase",
                     "underscores": "AllowPrefix"
