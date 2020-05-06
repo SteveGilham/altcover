@@ -18,7 +18,7 @@ For Mono, .net framework and .net core, except as noted
 * A coverage visualizer tool 
   * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
   * For .net core : needs GTK+3 installed separately and on the `PATH` -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
-    Also, GTK+ needs the GSETTINGS_SCHEMA_DIR environment variable set to pick up standard assets.
+    Also, GTK+ needs the `GSETTINGS_SCHEMA_DIR` environment variable set to pick up standard assets.
     If that variable isn't set by your install, then you can make it a part of the process-level environment, by command-line argument `--schemadir=path-of-schema-directory` -- that value will be saved into the application configuration for later uses. For GTK+ installed as above on a vanilla 64-bit system, the appropriate path is `C:\msys64\mingw64\share\glib-2.0\schemas`
   ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
     
