@@ -937,7 +937,7 @@ namespace AltCover
     {
       if (prepareArgs == null) throw new ArgumentNullException(nameof(prepareArgs));
       if (log == null) throw new ArgumentNullException(nameof(log));
-      return Api.Prepare(prepareArgs.ToOptions(), log.ToOptions());
+      return Command.Prepare(prepareArgs.ToOptions(), log.ToOptions());
     }
 
     /// <summary>
@@ -950,7 +950,7 @@ namespace AltCover
     {
       if (collectArgs == null) throw new ArgumentNullException(nameof(collectArgs));
       if (log == null) throw new ArgumentNullException(nameof(log));
-      return Api.Collect(collectArgs.ToOptions(), log.ToOptions());
+      return Command.Collect(collectArgs.ToOptions(), log.ToOptions());
     }
 
     /// <summary>
@@ -959,7 +959,7 @@ namespace AltCover
     /// <returns>The PowerShell command</returns>
     public static string ImportModule()
     {
-      return Api.ImportModule();
+      return Command.ImportModule();
     }
 
     /// <summary>
@@ -968,7 +968,7 @@ namespace AltCover
     /// <returns>The version object</returns>
     public static Version Version()
     {
-      return Api.Version();
+      return Command.Version();
     }
 
     private static DotNet.CLIOptions ToCLIOptions(ICLIOptions args)

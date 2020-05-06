@@ -1675,7 +1675,7 @@ module AltCoverRunnerTests =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<TeamCityFormat>.Assembly.GetType("AltCover.AltCover")
+          typeof<TeamCityFormat>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)

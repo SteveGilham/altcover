@@ -518,7 +518,7 @@ type InvokeAltCoverCommand() =
     (match (self.Version.IsPresent, self.Runner.IsPresent) with
      | (true, _) ->
          (fun _ ->
-           Api.FormattedVersion() |> log.Info
+           Command.FormattedVersion() |> log.Info
            0)
      | (_, true) ->
          let task = self.Collect()
@@ -529,12 +529,12 @@ type InvokeAltCoverCommand() =
            || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
               |> File.Exists
          if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
-         then Api.Collect task
+         then Command.Collect task
          else zero
      | _ ->
          let task = self.Prepare()
          if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
-         then Api.Prepare task
+         then Command.Prepare task
          else zero) log
 
   override self.ProcessRecord() =

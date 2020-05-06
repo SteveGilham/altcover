@@ -19,10 +19,10 @@ type Implementation =
 // ```
 // to indicate which command-line executable from the current NuGet package to return
 //
-// ## type `Api`
+// ## type `Command`
 // ```
 [<Sealed; AbstractClass>]
-type Api =
+type Command =
   static member Collect : args:AltCover.AltCover.CollectOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member ImportModule : unit -> string
   static member Prepare : args:AltCover.AltCover.PrepareOptions * ?log:AltCover.AltCover.LoggingOptions -> int

@@ -8,7 +8,11 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
 #if RUNNER
-open AltCover
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces",
+  Scope="type", Target="AltCover.AltCover", Justification="Design decision")>]
+()
+
 #else
 open System.Reflection
 open AltCoverFake.DotNet.Testing

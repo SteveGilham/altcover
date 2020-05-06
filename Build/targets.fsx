@@ -3257,9 +3257,9 @@ let _Target s f =
 
 _Target "DoIt"
   (fun _ ->
-  AltCover.Api.Version() |> printfn "AltCover.Api.Version - Returned %A"
-  AltCover.Api.FormattedVersion() |> printfn "AltCover.Api.FormattedVersion - Returned '%s'"
-  AltCover.Fake.Api.Version().ToString() |> Trace.trace
+  AltCover.Command.Version() |> printfn "AltCover.Command.Version - Returned %A"
+  AltCover.Command.FormattedVersion() |> printfn "AltCover.Command.FormattedVersion - Returned '%s'"
+  AltCover.Fake.Command.Version().ToString() |> Trace.trace
   AltCover.CSApi.Version() |> printfn " - Returned %A"
 
   let collect =
@@ -3299,16 +3299,16 @@ _Target "DoIt"
     { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 ForceTrue with
         MSBuildParams = cliArguments }) "dotnettest.fsproj"
   let ImportModule =
-    (AltCover.Api.ImportModule().Trim().Split()
+    (AltCover.Command.ImportModule().Trim().Split()
      |> Seq.take 2
      |> Seq.skip 1
      |> Seq.head).Trim([| '"' |])
 
   let command = "$ImportModule = '" + ImportModule + "'; Import-Module $ImportModule; ConvertTo-BarChart -?"
 
-  let corePath = AltCover.Fake.Api.ToolPath AltCover.Fake.Implementation.DotNetCore
+  let corePath = AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.DotNetCore
   printfn "corePath = %A" corePath
-  let frameworkPath = AltCover.Fake.Api.ToolPath AltCover.Fake.Implementation.Framework
+  let frameworkPath = AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
   if frameworkPath |> String.IsNullOrEmpty |> not

@@ -2385,7 +2385,7 @@ module AltCoverTests3 =
         Assert.That
           (result.Replace("\r\n", "\n"),
                          (AltCover.CommandLine.Format.Local("AltCover.Version",
-                                                            [| Api.Version() :> obj |]) +
+                                                            [| Command.Version() :> obj |]) +
                           "\n") |> Is.EqualTo)
       finally
         Console.SetOut saved
@@ -2521,7 +2521,7 @@ or
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<Node>.Assembly.GetType("AltCover.AltCover")
+          typeof<Node>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)

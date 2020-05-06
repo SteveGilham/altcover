@@ -7,7 +7,7 @@ open TaskIO
 [<RequireQualifiedAccess>]
 [<SuppressMessage("Microsoft.Naming", "CA1704",
   Justification="'Api' works")>]
-module Api =
+module Command =
   let Prepare (args : AltCover.PrepareOptions) (log : AltCover.LoggingOptions) =
     log.Apply()
     args

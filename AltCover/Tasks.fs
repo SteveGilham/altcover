@@ -143,7 +143,7 @@ type Prepare() =
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated }
 
-    Api.Prepare task log = 0
+    Command.Prepare task log = 0
 
 [<AutoSerializable(false)>]
 type Collect() =
@@ -208,7 +208,7 @@ type Collect() =
           ExposeReturnCode = self.ExposeReturnCode
           SummaryFormat = self.SummaryFormat }
 
-    Api.Collect task log = 0
+    Command.Collect task log = 0
 
 [<AutoSerializable(false)>]
 type PowerShell() =
@@ -223,7 +223,7 @@ type PowerShell() =
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.ImportModule()
+    let r = Command.ImportModule()
     self.IO.Apply()
     r |> Output.warn
     true
@@ -241,7 +241,7 @@ type GetVersion() =
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.FormattedVersion()
+    let r = Command.FormattedVersion()
     self.IO.Apply()
     r |> Output.warn
     true

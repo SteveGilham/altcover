@@ -34,13 +34,13 @@ type Implementation =
 [<SuppressMessage("Microsoft.Naming", "CA1704",
   Justification="'Api' works")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
-type Api private () =
+type Command private () =
   static member Prepare(args : AltCover.PrepareOptions, ?log : AltCover.LoggingOptions) =
-    AltCover.Api.Prepare args (Trace.doDefault log)
+    AltCover.Command.Prepare args (Trace.doDefault log)
   static member Collect(args : AltCover.CollectOptions, ?log : AltCover.LoggingOptions) =
-    AltCover.Api.Collect args (Trace.doDefault log)
-  static member ImportModule() = AltCover.Api.ImportModule()
-  static member Version() = AltCover.Api.Version()
+    AltCover.Command.Collect args (Trace.doDefault log)
+  static member ImportModule() = AltCover.Command.ImportModule()
+  static member Version() = AltCover.Command.Version()
   // Finds the tool from within the .nuget package
   [<SuppressMessage("Microsoft.Design", "CA1062",
                     Justification = "Idiomatic F#")>]

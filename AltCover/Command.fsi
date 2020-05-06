@@ -2,9 +2,9 @@
 // ```
 namespace AltCover
 // ```
-// ## module `Api`
+// ## module `Command`
 // ```
-module Api = begin
+module Command = begin
   val Prepare : args:AltCover.PrepareOptions -> log:AltCover.LoggingOptions -> int
   val Collect : args:AltCover.CollectOptions -> log:AltCover.LoggingOptions -> int
   val ImportModule : unit -> string
