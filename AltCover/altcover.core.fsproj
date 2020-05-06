@@ -53,7 +53,7 @@
     <Compile Include="LCov.fs" />
     <Compile Include="Cobertura.fs" />
     <Compile Include="Runner.fs" />
-    <Compile Include="AltCover.fs" />
+    <Compile Include="Main.fs" />
     <Compile Include="Primitive.fsi" />
     <Compile Include="Primitive.fs" />
     <Compile Include="TypeSafe.fsi" />
@@ -62,8 +62,8 @@
     <Compile Include="OptionApi.fs" />
     <Compile Include="Args.fs" />
     <Compile Include="TaskIO.fs" />
-    <Compile Include="OptionApiExtension.fsi" />
-    <Compile Include="OptionApiExtension.fs" />
+    <Compile Include="WhatIfExtension.fsi" />
+    <Compile Include="WhatIfExtension.fs" />
     <Compile Include="Api.fsi" />
     <Compile Include="Api.fs" />
     <Compile Include="Tasks.fsi" />

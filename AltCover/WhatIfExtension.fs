@@ -27,7 +27,7 @@ module CollectExtension =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Api' is OK")>]
 [<AutoOpen>]
-module AltCoverExtension =
+module WhatIfExtension =
   type AltCover.CollectOptions with
     member self.WhatIf afterPreparation : AltCover.ValidatedCommandLine =
       CollectExtension.WhatIf self afterPreparation

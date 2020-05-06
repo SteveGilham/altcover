@@ -16,8 +16,6 @@ open Fake.Core
 open Fake.DotNet
 #endif
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
-    Justification="'Api' is OK")>]
 [<RequireQualifiedAccess>]
 module AltCover =
 #if RUNNER

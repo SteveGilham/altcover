@@ -27,7 +27,7 @@ end
 // ## module `AltCoverExtension`
 // ```
 [<AutoOpen>]
-module AltCoverExtension = begin
+module WhatIfExtension = begin
   type AltCover.CollectOptions with
     member WhatIf : afterPreparation:bool -> AltCover.AltCover.ValidatedCommandLine
   type AltCover.PrepareOptions with
