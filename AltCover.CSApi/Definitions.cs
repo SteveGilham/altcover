@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using AltCover;
 using AltCover.FSApi;
+using PrimitiveCollect = AltCover.Primitive.CollectOptions;
+using PrimitivePrepare = AltCover.Primitive.PrepareOptions;
+using PrimitiveLogging = AltCover.Primitive.LoggingOptions;
 
 [assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
   MessageId = "Api", Justification = "It's the API for the system")]
@@ -88,7 +90,7 @@ namespace AltCover
       /// Returns the F#-defined equivalent type
       /// </summary>
       /// <returns>An immutable representation of the same structure</returns>
-      OptionApi.CollectOptions ToOptions();
+      AltCover.CollectOptions ToOptions();
 
       /// <summary>
       /// Check whether the parameters are sensible
@@ -110,7 +112,7 @@ namespace AltCover
       /// </summary>
       /// <param name="afterPreparation">Whether the prepare phase has been run and a `AltCover.Recorder.g.dll` should exist.</param>
       /// <returns>The state of the command line</returns>
-      OptionApi.ValidatedCommandLine WhatIf(bool afterPreparation);
+      AltCover.ValidatedCommandLine WhatIf(bool afterPreparation);
     }
 
     /// <summary>
@@ -286,7 +288,7 @@ namespace AltCover
       /// Returns the F#-defined equivalent type
       /// </summary>
       /// <returns>An immutable representation of the same structure</returns>
-      OptionApi.PrepareOptions ToOptions();
+      AltCover.PrepareOptions ToOptions();
 
       /// <summary>
       /// Check whether the parameters are sensible
@@ -306,7 +308,7 @@ namespace AltCover
       /// </code>
       /// </summary>
       /// <returns>The state of the command line</returns>
-      OptionApi.ValidatedCommandLine WhatIf();
+      AltCover.ValidatedCommandLine WhatIf();
     }
 
     /// <summary>
@@ -343,7 +345,7 @@ namespace AltCover
       /// Returns the F#-defined equivalent type
       /// </summary>
       /// <returns>An immutable representation of the same structure</returns>
-      OptionApi.LoggingOptions ToOptions();
+      AltCover.LoggingOptions ToOptions();
     }
 
     /// <summary>
@@ -467,9 +469,9 @@ namespace AltCover
         /// Returns the F#-defined equivalent type
         /// </summary>
         /// <returns>An immutable representation of the same structure</returns>
-        public OptionApi.CollectOptions ToOptions()
+        public AltCover.CollectOptions ToOptions()
         {
-          var primitive = new AltCover.Primitive.CollectOptions(
+          var primitive = new PrimitiveCollect(
               RecorderDirectory,
               WorkingDirectory,
               Executable,
@@ -481,7 +483,7 @@ namespace AltCover
               ExposeReturnCode,
               SummaryFormat
                                                               );
-          return OptionApi.CollectOptions.NewPrimitive(primitive);
+          return AltCover.CollectOptions.NewPrimitive(primitive);
         }
 
         /// <summary>
@@ -528,7 +530,7 @@ namespace AltCover
         /// </summary>
         /// <param name="afterPreparation">Whether the prepare phase has been run and a `AltCover.Recorder.g.dll` should exist.</param>
         /// <returns>The state of the command line</returns>
-        public OptionApi.ValidatedCommandLine WhatIf(bool afterPreparation)
+        public AltCover.ValidatedCommandLine WhatIf(bool afterPreparation)
         {
           return ToOptions().WhatIf(afterPreparation);
         }
@@ -726,9 +728,9 @@ namespace AltCover
         /// Returns the F#-defined equivalent type
         /// </summary>
         /// <returns>An immutable representation of the same structure</returns>
-        public OptionApi.PrepareOptions ToOptions()
+        public AltCover.PrepareOptions ToOptions()
         {
-          var primitive = new AltCover.Primitive.PrepareOptions(
+          var primitive = new PrimitivePrepare(
                           InputDirectories,
                           OutputDirectories,
                           SymbolDirectories,
@@ -762,7 +764,7 @@ namespace AltCover
                           ShowStatic,
                           ShowGenerated
                                                               );
-          return OptionApi.PrepareOptions.NewPrimitive(primitive);
+          return AltCover.PrepareOptions.NewPrimitive(primitive);
         }
 
         /// <summary>
@@ -824,7 +826,7 @@ namespace AltCover
         /// </code>
         /// </summary>
         /// <returns>The state of the command line</returns>
-        public OptionApi.ValidatedCommandLine WhatIf()
+        public AltCover.ValidatedCommandLine WhatIf()
         {
           return ToOptions().WhatIf();
         }
@@ -868,14 +870,14 @@ namespace AltCover
         /// Returns the F#-defined equivalent type
         /// </summary>
         /// <returns>An immutable representation of the same structure</returns>
-        public OptionApi.LoggingOptions ToOptions()
+        public AltCover.LoggingOptions ToOptions()
         {
-          var primitive = new AltCover.Primitive.LoggingOptions(
-              OptionApi.LoggingOptions.ActionAdapter(Info),
-              OptionApi.LoggingOptions.ActionAdapter(Warn),
-              OptionApi.LoggingOptions.ActionAdapter(StandardError),
-              OptionApi.LoggingOptions.ActionAdapter(Echo));
-          return OptionApi.LoggingOptions.NewPrimitive(primitive);
+          var primitive = new PrimitiveLogging(
+              AltCover.LoggingOptions.ActionAdapter(Info),
+              AltCover.LoggingOptions.ActionAdapter(Warn),
+              AltCover.LoggingOptions.ActionAdapter(StandardError),
+              AltCover.LoggingOptions.ActionAdapter(Echo));
+          return AltCover.LoggingOptions.NewPrimitive(primitive);
         }
 
         /// <summary>

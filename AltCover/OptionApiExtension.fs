@@ -11,14 +11,14 @@ open System.Runtime.CompilerServices
 [<Extension>]
 module PrepareExtension =
   [<Extension>]
-  let WhatIf (prepare : OptionApi.PrepareOptions) : OptionApi.ValidatedCommandLine=
+  let WhatIf (prepare : AltCover.PrepareOptions) : AltCover.ValidatedCommandLine=
       { Command = Args.prepare prepare
         Errors = prepare.Validate() }
 
 [<Extension>]
 module CollectExtension =
   [<Extension>]
-  let WhatIf (collect : OptionApi.CollectOptions) afterPreparation : OptionApi.ValidatedCommandLine=
+  let WhatIf (collect : AltCover.CollectOptions) afterPreparation : AltCover.ValidatedCommandLine=
       { Command = Args.collect collect
         Errors = collect.Validate(afterPreparation) }
 
@@ -27,12 +27,12 @@ module CollectExtension =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Api' is OK")>]
 [<AutoOpen>]
-module OptionApiExtension =
-  type OptionApi.CollectOptions with
-    member self.WhatIf afterPreparation : OptionApi.ValidatedCommandLine =
+module AltCoverExtension =
+  type AltCover.CollectOptions with
+    member self.WhatIf afterPreparation : AltCover.ValidatedCommandLine =
       CollectExtension.WhatIf self afterPreparation
 
-  type OptionApi.PrepareOptions with
+  type AltCover.PrepareOptions with
     [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification="Compiler generated name for self parameter")>]
     member self.WhatIf() =

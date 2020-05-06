@@ -8,14 +8,14 @@ open TaskIO
 [<SuppressMessage("Microsoft.Naming", "CA1704",
   Justification="'Api' works")>]
 module Api =
-  let Prepare (args : OptionApi.PrepareOptions) (log : OptionApi.LoggingOptions) =
+  let Prepare (args : AltCover.PrepareOptions) (log : AltCover.LoggingOptions) =
     log.Apply()
     args
     |> Args.prepare
     |> List.toArray
     |> Main.effectiveMain
 
-  let Collect (args : OptionApi.CollectOptions) (log : OptionApi.LoggingOptions) =
+  let Collect (args : AltCover.CollectOptions) (log : AltCover.LoggingOptions) =
     log.Apply()
     Args.collect args
     |> List.toArray

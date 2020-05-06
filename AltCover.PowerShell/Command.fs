@@ -457,7 +457,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Collect() =
     let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
-    OptionApi.CollectOptions.Primitive
+    AltCover.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
         Executable = self.Executable
@@ -471,7 +471,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
-    OptionApi.PrepareOptions.Primitive
+    AltCover.PrepareOptions.Primitive
       { InputDirectories = self.InputDirectory
         OutputDirectories = self.OutputDirectory
         SymbolDirectories = self.SymbolDirectory
@@ -505,7 +505,7 @@ type InvokeAltCoverCommand() =
         ShowGenerated = self.ShowGenerated.IsPresent }
 
   member private self.Log() =
-    OptionApi.LoggingOptions.Primitive
+    AltCover.LoggingOptions.Primitive
       { Primitive.LoggingOptions.Create() with
           Error = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))

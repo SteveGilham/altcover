@@ -3263,10 +3263,10 @@ _Target "DoIt"
   AltCover.CSApi.Version() |> printfn " - Returned %A"
 
   let collect =
-    AltCover.OptionApi.CollectOptions.Primitive
+    AltCover.AltCover.CollectOptions.Primitive
       { AltCover.Primitive.CollectOptions.Create() with LcovReport = "x" }
   let prepare =
-    AltCover.OptionApi.PrepareOptions.Primitive
+    AltCover.AltCover.PrepareOptions.Primitive
       { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
   let ForceTrue = AltCover.FSApi.DotNet.CLIOptions.Force true
   printfn "Test arguments : '%s'" (AltCover.FSApi.DotNet.ToTestArguments prepare collect ForceTrue)
@@ -3279,9 +3279,9 @@ _Target "DoIt"
         CallContext = [| "[Fact]"; "0" |]
         AssemblyFilter = [| "xunit" |] }
 
-  let pp2 = AltCover.OptionApi.PrepareOptions.Primitive p2
+  let pp2 = AltCover.AltCover.PrepareOptions.Primitive p2
   let c2 = AltCover.Primitive.CollectOptions.Create()
-  let cc2 = AltCover.OptionApi.CollectOptions.Primitive c2
+  let cc2 = AltCover.AltCover.CollectOptions.Primitive c2
 
   let setBaseOptions (o: DotNet.Options) =
     { o with

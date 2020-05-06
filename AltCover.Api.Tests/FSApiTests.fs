@@ -250,10 +250,10 @@ module FSApiTests =
     let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
 
     let pprep = Primitive.PrepareOptions.Create()
-    let prep = OptionApi.PrepareOptions.Primitive pprep
+    let prep = AltCover.PrepareOptions.Primitive pprep
 
     let pcoll = Primitive.CollectOptions.Create()
-    let coll = OptionApi.CollectOptions.Primitive pcoll
+    let coll = AltCover.CollectOptions.Primitive pcoll
 
     let targets =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -344,10 +344,10 @@ module FSApiTests =
     test <@ (DotNet.CLIOptions.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
 
     let pprep = Primitive.PrepareOptions.Create()
-    let prep = AltCover.OptionApi.PrepareOptions.Primitive pprep
+    let prep = AltCover.AltCover.PrepareOptions.Primitive pprep
 
     let pcoll = Primitive.CollectOptions.Create()
-    let coll = AltCover.OptionApi.CollectOptions.Primitive pcoll
+    let coll = AltCover.AltCover.CollectOptions.Primitive pcoll
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>

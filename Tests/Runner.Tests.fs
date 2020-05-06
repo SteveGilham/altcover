@@ -351,7 +351,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -430,14 +430,14 @@ module AltCoverRunnerTests =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<OptionApi.CollectOptions>.GetProperties()
+      let fsapiNames = typeof<AltCover.CollectOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<OptionApi.CollectOptions>
+      let fsapiCases = (typeof<AltCover.CollectOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.CollectOptions.Create() |> OptionApi.CollectOptions.Primitive
+      let args = Primitive.CollectOptions.Create() |> AltCover.CollectOptions.Primitive
       let commandFragments = Args.buildCollect args
 
       // adds Runner and the trailing command line arguments
@@ -1616,7 +1616,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1860,7 +1860,7 @@ or
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding

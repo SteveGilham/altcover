@@ -44,7 +44,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -121,14 +121,14 @@ module AltCoverTests3 =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<OptionApi.PrepareOptions>.GetProperties()
+      let fsapiNames = typeof<AltCover.PrepareOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<OptionApi.PrepareOptions>
+      let fsapiCases = (typeof<AltCover.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareOptions.Create() |> OptionApi.PrepareOptions.Primitive
+      let args = Primitive.PrepareOptions.Create() |> AltCover.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
@@ -2029,7 +2029,7 @@ module AltCoverTests3 =
       Main.init()
       let options = Main.I.declareOptions()
       let saved = (Console.Out, Console.Error)
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       CommandLine.error <- []
       try
         use stdout = new StringWriter()
@@ -2067,7 +2067,7 @@ module AltCoverTests3 =
     let OutputToReallyNewPlaceIsOK() =
       Main.init()
       let options = Main.I.declareOptions()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
       try
@@ -2300,7 +2300,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2349,7 +2349,7 @@ module AltCoverTests3 =
     [<Test>]
     let ImportModuleIsAsExpected() =
       Main.init()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
@@ -2370,7 +2370,7 @@ module AltCoverTests3 =
     [<Test>]
     let VersionIsAsExpected() =
       Main.init()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
@@ -2674,17 +2674,17 @@ or
     [<Test>]
     let LoggingCanBeExercised() =
       Main.init()
-      Assert.That(OptionApi.LoggingOptions.ActionAdapter null, Is.Not.Null)
-      (OptionApi.LoggingOptions.ActionAdapter null) "23"
-      Assert.That(OptionApi.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
+      (AltCover.LoggingOptions.ActionAdapter null) "23"
+      Assert.That(AltCover.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (OptionApi.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
+      (AltCover.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      OptionApi.LoggingOptions.Create().Info "32"
-      OptionApi.LoggingOptions.Create().Warn "32"
-      OptionApi.LoggingOptions.Create().Error "32"
-      OptionApi.LoggingOptions.Create().Echo "32"
+      AltCover.LoggingOptions.Create().Info "32"
+      AltCover.LoggingOptions.Create().Warn "32"
+      AltCover.LoggingOptions.Create().Error "32"
+      AltCover.LoggingOptions.Create().Echo "32"
 
     [<Test>]
     let EmptyInstrumentIsJustTheDefaults() =
@@ -2700,7 +2700,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2722,7 +2722,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
@@ -2783,7 +2783,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2829,11 +2829,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> AltCover.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, OptionApi.LoggingOptions.Create())
+      io.SetValue(subject, AltCover.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2858,11 +2858,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> AltCover.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, OptionApi.LoggingOptions.Create())
+      io.SetValue(subject, AltCover.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a

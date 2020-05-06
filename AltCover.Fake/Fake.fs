@@ -11,14 +11,14 @@ module Trace =
   open Fake.Core
 
   let Create() =
-    OptionApi.LoggingOptions.Primitive
+    AltCover.LoggingOptions.Primitive
       { Primitive.LoggingOptions.Create() with
           Info = Trace.trace
           Warn = Trace.traceImportant
           Error = Trace.traceError
           Echo = Trace.traceVerbose }
 
-  let internal doDefault(log : OptionApi.LoggingOptions option) =
+  let internal doDefault(log : AltCover.LoggingOptions option) =
     match log with
     | Some logging -> logging
     | None -> Create()
@@ -35,9 +35,9 @@ type Implementation =
   Justification="'Api' works")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Api private () =
-  static member Prepare(args : OptionApi.PrepareOptions, ?log : OptionApi.LoggingOptions) =
+  static member Prepare(args : AltCover.PrepareOptions, ?log : AltCover.LoggingOptions) =
     AltCover.Api.Prepare args (Trace.doDefault log)
-  static member Collect(args : OptionApi.CollectOptions, ?log : OptionApi.LoggingOptions) =
+  static member Collect(args : AltCover.CollectOptions, ?log : AltCover.LoggingOptions) =
     AltCover.Api.Collect args (Trace.doDefault log)
   static member ImportModule() = AltCover.Api.ImportModule()
   static member Version() = AltCover.Api.Version()
@@ -127,8 +127,8 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithAltCoverOptions (prepare : OptionApi.PrepareOptions)
-           (collect : OptionApi.CollectOptions) (force : FSApi.DotNet.CLIOptions) =
+    member self.WithAltCoverOptions (prepare : AltCover.PrepareOptions)
+           (collect : AltCover.CollectOptions) (force : FSApi.DotNet.CLIOptions) =
       FSApi.DotNet.ToTestArguments
 #else
     member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)

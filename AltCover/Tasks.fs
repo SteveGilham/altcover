@@ -23,7 +23,7 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : OptionApi.LoggingOptions option = None with get, set
+  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
@@ -103,14 +103,14 @@ type Prepare() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (OptionApi.LoggingOptions.Primitive
+        (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
               Error = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      OptionApi.PrepareOptions.Primitive
+      AltCover.PrepareOptions.Primitive
         { InputDirectories = self.InputDirectories
           OutputDirectories = self.OutputDirectories
           SymbolDirectories = self.SymbolDirectories
@@ -152,7 +152,7 @@ type Collect() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : OptionApi.LoggingOptions option = None with get, set
+  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -189,14 +189,14 @@ type Collect() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (OptionApi.LoggingOptions.Primitive
+        (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
               Error = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      OptionApi.CollectOptions.Primitive
+      AltCover.CollectOptions.Primitive
         { RecorderDirectory = self.RecorderDirectory
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
@@ -217,7 +217,7 @@ type PowerShell() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = OptionApi.LoggingOptions.Primitive
+  member val internal IO = AltCover.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
                                  Error = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
@@ -235,7 +235,7 @@ type GetVersion() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = OptionApi.LoggingOptions.Primitive
+  member val internal IO = AltCover.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
                                  Error = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set

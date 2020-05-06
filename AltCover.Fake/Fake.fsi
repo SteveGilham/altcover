@@ -6,7 +6,7 @@ namespace AltCover.Fake
 // ## module `Trace`
 // ```
 module Trace =
-  val Create: unit -> AltCover.OptionApi.LoggingOptions
+  val Create: unit -> AltCover.AltCover.LoggingOptions
 // ```
 // Returns an instance of the core API Logging type that hooks into the `Fake.Core.Trace` facilities
 //
@@ -23,9 +23,9 @@ type Implementation =
 // ```
 [<Sealed; AbstractClass>]
 type Api =
-  static member Collect : args:AltCover.OptionApi.CollectOptions * ?log:AltCover.OptionApi.LoggingOptions -> int
+  static member Collect : args:AltCover.AltCover.CollectOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member ImportModule : unit -> string
-  static member Prepare : args:AltCover.OptionApi.PrepareOptions * ?log:AltCover.OptionApi.LoggingOptions -> int
+  static member Prepare : args:AltCover.AltCover.PrepareOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member Version : unit -> System.Version
   static member ToolPath : Implementation -> string
 // ```
@@ -47,7 +47,7 @@ module DotNet =
 // ```
 #if RUNNER
 // ```
-    member WithAltCoverOptions: AltCover.OptionApi.PrepareOptions -> AltCover.OptionApi.CollectOptions ->
+    member WithAltCoverOptions: AltCover.AltCover.PrepareOptions -> AltCover.AltCover.CollectOptions ->
                                     AltCover.FSApi.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
 // ```
 #else

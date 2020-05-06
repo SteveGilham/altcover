@@ -16,11 +16,11 @@ open Fake.Core
 open Fake.DotNet
 #endif
 
-#if RUNNER
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Api' is OK")>]
 [<RequireQualifiedAccess>]
-module OptionApi =
+module AltCover =
+#if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type ValidatedCommandLine =
     { Command : string list
@@ -37,9 +37,6 @@ module OptionApi =
          Seq.concat
            [ [| cl |] |> Array.toSeq
              self.Errors ])
-#else
-[<RequireQualifiedAccess>]
-module AltCover =
 #endif
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);

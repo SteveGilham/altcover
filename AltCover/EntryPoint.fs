@@ -1,6 +1,6 @@
 namespace AltCover
 
-module internal AltCover =
+module internal EntryPoint =
   let internal toConsole() =
     Output.error <- CommandLine.writeErr
     Output.usage <- CommandLine.usageBase

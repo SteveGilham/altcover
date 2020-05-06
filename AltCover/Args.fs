@@ -7,14 +7,6 @@ namespace AltCoverFake.DotNet.Testing
 open System
 open System.Diagnostics.CodeAnalysis
 
-#if RUNNER
-type PrepareParams = AltCover.OptionApi.PrepareOptions
-type CollectParams = AltCover.OptionApi.CollectOptions
-#else
-type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions
-type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
-#endif
-
 [<SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
@@ -42,7 +34,7 @@ module internal Args =
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
 
-  let internal listItems(args : PrepareParams) =
+  let internal listItems(args : AltCover.PrepareOptions) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -57,30 +49,30 @@ module internal Args =
       ("-p", args.PathFilter)
       ("-c", args.CallContext) ]
 
-  let internal itemLists(args : PrepareParams) =
+  let internal itemLists(args : AltCover.PrepareOptions) =
     args
     |> listItems
     |> List.collect (fun (a, b) -> itemList a b)
 
-  let internal plainItems(args : PrepareParams) =
+  let internal plainItems(args : AltCover.PrepareOptions) =
     [ ("--sn", args.StrongNameKey)
       ("--reportFormat", args.ReportFormat)
       ("-x", args.XmlReport) ]
 
-  let internal items(args : PrepareParams) =
+  let internal items(args : AltCover.PrepareOptions) =
     args
     |> plainItems
     |> List.collect (fun (a, b) -> item a b)
 
-  let internal options(args : PrepareParams) =
+  let internal options(args : AltCover.PrepareOptions) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
 
-  let internal optItems(args : PrepareParams) =
+  let internal optItems(args : AltCover.PrepareOptions) =
     args
     |> options
     |> List.collect (fun (a, b, c) -> optionalItem a b c)
 
-  let internal flagItems(args : PrepareParams) =
+  let internal flagItems(args : AltCover.PrepareOptions) =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--zipfile", args.ZipFile)
@@ -95,12 +87,12 @@ module internal Args =
       ("--visibleBranches", args.VisibleBranches)
       ("--showGenerated", args.ShowGenerated) ]
 
-  let internal flags(args : PrepareParams) =
+  let internal flags(args : AltCover.PrepareOptions) =
     args
     |> flagItems
     |> List.collect (fun (a, b) -> flag a b)
 
-  let prepare(args : PrepareParams) =
+  let prepare(args : AltCover.PrepareOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -111,7 +103,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let internal buildCollect(args : CollectParams) =
+  let internal buildCollect(args : AltCover.CollectOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -132,7 +124,7 @@ module internal Args =
       optionalItem "--teamcity" args.SummaryFormat []
       trailing ]
 
-  let collect(args : CollectParams) =
+  let collect(args : AltCover.CollectOptions) =
     args
     |> buildCollect
     |> List.concat

@@ -3,11 +3,20 @@
 // ```
 namespace AltCover
 // ```
-// ## module `OptionApi`
+#else
+// # namespace `AltCoverFake.DotNet.Testing`
+// ```
+namespace AltCoverFake.DotNet.Testing
+// ```
+#endif
+
+// ```
+// ## module `AltCover`
 // ```
   [<RequireQualifiedAccess>]
-  module OptionApi = begin
+  module AltCover = begin
 // ```
+#if RUNNER
 // ### type `ValidatedCommandLine`
 // ```
     [<NoComparison>]
@@ -21,16 +30,6 @@ namespace AltCover
 // Holds the composed command line in `Command`, and any validations errors in `Errors`.
 //
 // The `ToString()` override formats the outcome for pretty-printing
-#else
-// # namespace `AltCoverFake.DotNet.Testing`
-// ```
-namespace AltCoverFake.DotNet.Testing
-// ```
-// ## module `AltCover`
-// ```
-  [<RequireQualifiedAccess>]
-  module AltCover = begin
-// ```
 #endif
 // ### type `CollectOptions`
 //

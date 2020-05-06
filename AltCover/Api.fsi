@@ -5,8 +5,8 @@ namespace AltCover
 // ## module `Api`
 // ```
 module Api = begin
-  val Prepare : args:OptionApi.PrepareOptions -> log:OptionApi.LoggingOptions -> int
-  val Collect : args:OptionApi.CollectOptions -> log:OptionApi.LoggingOptions -> int
+  val Prepare : args:AltCover.PrepareOptions -> log:AltCover.LoggingOptions -> int
+  val Collect : args:AltCover.CollectOptions -> log:AltCover.LoggingOptions -> int
   val ImportModule : unit -> string
   val Version : unit -> System.Version
   val FormattedVersion : unit -> string

@@ -1,5 +1,7 @@
 ﻿#if RUNNER
 namespace AltCover.FSApi
+
+open AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
 #endif
@@ -7,11 +9,6 @@ namespace AltCoverFake.DotNet.Testing
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
-
-#if RUNNER
-type PrepareParams = AltCover.OptionApi.PrepareOptions
-type CollectParams = AltCover.OptionApi.CollectOptions
-#endif
 
 [<RequireQualifiedAccess>]
 module DotNet =
@@ -70,7 +67,7 @@ module DotNet =
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
                        Justification="Compiler Generated")>]
-    let internal toPrepareListArgumentList (prepare : PrepareParams) =
+    let internal toPrepareListArgumentList (prepare : AltCover.PrepareOptions) =
       [
         fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe '|' separated list of paths"
         fromList, "DependencyList", prepare.Dependencies //=`"pipe '|' separated list of paths"
@@ -85,7 +82,7 @@ module DotNet =
         fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
       ]
 
-    let internal toPrepareFromArgArgumentList (prepare : PrepareParams) =
+    let internal toPrepareFromArgArgumentList (prepare : AltCover.PrepareOptions) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
         fromArg, "XmlReport", prepare.XmlReport //=`"path to the xml report" default: `coverage.xml` in the project directory)
@@ -93,7 +90,7 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
-    let internal toPrepareArgArgumentList (prepare : PrepareParams) =
+    let internal toPrepareArgArgumentList (prepare : AltCover.PrepareOptions) =
       [
         (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
         (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
@@ -106,7 +103,7 @@ module DotNet =
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
       ]
 
-    let internal toCollectFromArgArgumentList (collect : CollectParams) =
+    let internal toCollectFromArgArgumentList (collect : AltCover.CollectOptions) =
       [
         fromArg, "LcovReport", collect.LcovReport //=`"path to lcov format result"
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
@@ -133,11 +130,11 @@ module DotNet =
 // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
-  let ToTestArgumentList (prepare : AltCover.OptionApi.PrepareOptions)
-      (collect : AltCover.OptionApi.CollectOptions) (options : CLIOptions) =
+  let ToTestArgumentList (prepare : AltCover.PrepareOptions)
+      (collect : AltCover.CollectOptions) (options : CLIOptions) =
 #else
-  let internal toTestArgumentList (prepare : PrepareParams)
-      (collect : CollectParams)
+  let internal toTestArgumentList (prepare : AltCover.PrepareOptions)
+      (collect : AltCover.CollectOptions)
       (options : CLIOptions) =
 #endif
     [
@@ -169,12 +166,12 @@ module DotNet =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare : AltCover.OptionApi.PrepareOptions)
-      (collect : AltCover.OptionApi.CollectOptions) (options : CLIOptions) =
+  let ToTestArguments (prepare : AltCover.PrepareOptions)
+      (collect : AltCover.CollectOptions) (options : CLIOptions) =
     ToTestArgumentList prepare collect options |> I.join
 #else
-  let internal toTestArguments (prepare : PrepareParams)
-      (collect : CollectParams)
+  let internal toTestArguments (prepare : AltCover.PrepareOptions)
+      (collect : AltCover.CollectOptions)
       (options : CLIOptions) =
     toTestArgumentList prepare collect options |> I.join
 #endif
