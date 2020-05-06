@@ -1,7 +1,5 @@
 ﻿#if RUNNER
-namespace AltCover.FSApi
-
-open AltCover
+namespace AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
 #endif

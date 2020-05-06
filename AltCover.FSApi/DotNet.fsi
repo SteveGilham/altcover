@@ -1,9 +1,7 @@
 ﻿#if RUNNER
-// # namespace `AltCover.FSApi`
+// # namespace `AltCover`
 // ```
-namespace AltCover.FSApi
-
-open AltCover
+namespace AltCover
 // ```
 #else
 // # namespace `AltCoverFake.DotNet.Testing`

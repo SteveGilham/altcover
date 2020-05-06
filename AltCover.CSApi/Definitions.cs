@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using AltCover.FSApi;
 using PrimitiveCollect = AltCover.Primitive.CollectOptions;
 using PrimitivePrepare = AltCover.Primitive.PrepareOptions;
 using PrimitiveLogging = AltCover.Primitive.LoggingOptions;

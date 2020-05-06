@@ -3,11 +3,6 @@
 open System.Diagnostics.CodeAnalysis
 open System.Runtime.CompilerServices
 
-[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-   Scope="namespace", Target="ApiExtension", MessageId="Api",
-    Justification="'Api' is OK")>]
-()
-
 [<Extension>]
 module PrepareExtension =
   [<Extension>]
@@ -24,8 +19,6 @@ module CollectExtension =
 
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification="Two different extension mechanisms need placating")>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
-    Justification="'Api' is OK")>]
 [<AutoOpen>]
 module WhatIfExtension =
   type AltCover.CollectOptions with

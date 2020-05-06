@@ -4,7 +4,6 @@ open System
 open System.IO
 open System.Management.Automation
 open System.Xml.Linq
-open System.Xml.XPath
 
 /// <summary>
 /// <para type="synopsis">Removes compiler-generated hidden branches from OpenCover.</para>
@@ -82,7 +81,7 @@ type CompressBranchingCommand(outputFile : String) =
         self.XDocument <- XDocument.Load self.InputFile
 
       let xmlDocument =
-        AltCover.FSApi.OpenCover.CompressBranching self.XDocument
+        AltCover.OpenCover.CompressBranching self.XDocument
           self.WithinSequencePoint.IsPresent self.SameSpan.IsPresent
 
       if self.OutputFile

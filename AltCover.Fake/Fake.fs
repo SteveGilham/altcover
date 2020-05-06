@@ -31,8 +31,6 @@ type Implementation =
 [<SuppressMessage("Gendarme.Rules.Performance",
                   "AvoidUncalledPrivateCodeRule",
                   Justification = "Can't stop the instance constructor happening")>]
-[<SuppressMessage("Microsoft.Naming", "CA1704",
-  Justification="'Api' works")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Command private () =
   static member Prepare(args : AltCover.PrepareOptions, ?log : AltCover.LoggingOptions) =
@@ -128,8 +126,8 @@ module DotNet =
 
 #if RUNNER
     member self.WithAltCoverOptions (prepare : AltCover.PrepareOptions)
-           (collect : AltCover.CollectOptions) (force : FSApi.DotNet.CLIOptions) =
-      FSApi.DotNet.ToTestArguments
+           (collect : AltCover.CollectOptions) (force : DotNet.CLIOptions) =
+      DotNet.ToTestArguments
 #else
     member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
            (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)

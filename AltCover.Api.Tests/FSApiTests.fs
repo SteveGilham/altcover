@@ -9,7 +9,6 @@ open System.Xml.Linq
 open System.Xml.Schema
 
 open AltCover
-open AltCover.FSApi
 open Microsoft.FSharp.Reflection
 open Swensen.Unquote
 

@@ -1,7 +1,6 @@
-﻿namespace AltCover.FSApi
+﻿namespace AltCover
 
 open System
-open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
 open System.Reflection

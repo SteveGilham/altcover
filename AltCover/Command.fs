@@ -5,8 +5,6 @@ open System.Diagnostics.CodeAnalysis
 open TaskIO
 
 [<RequireQualifiedAccess>]
-[<SuppressMessage("Microsoft.Naming", "CA1704",
-  Justification="'Api' works")>]
 module Command =
   let Prepare (args : AltCover.PrepareOptions) (log : AltCover.LoggingOptions) =
     log.Apply()

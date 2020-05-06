@@ -1,17 +1,15 @@
-namespace AltCover.FSApi
+namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Linq
-open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
-open System.Xml.XPath
 
 open Mono.Cecil
-open AltCover.FSApi.XmlExtensions
+open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module OpenCover =

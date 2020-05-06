@@ -48,7 +48,7 @@ module DotNet =
 #if RUNNER
 // ```
     member WithAltCoverOptions: AltCover.AltCover.PrepareOptions -> AltCover.AltCover.CollectOptions ->
-                                    AltCover.FSApi.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
+                                    AltCover.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
 // ```
 #else
 // ```

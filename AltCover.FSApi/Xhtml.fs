@@ -1,4 +1,4 @@
-namespace AltCover.FSApi
+namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 open System.Linq
