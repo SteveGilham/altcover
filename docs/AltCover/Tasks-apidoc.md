@@ -111,7 +111,7 @@ type Echo =
   end
 ```
 
-## Task `AltCover.RunSettings`
+## Task `RunSettings`
 Used by the .net core implementation to inject an altcover datacollector, by creating a temporary tun settings file that includes AltCover as well as any user-defined settings.
 
 Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.

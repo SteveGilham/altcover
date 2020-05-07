@@ -6,10 +6,19 @@
 
 
 
+
+
 # namespace `AltCoverFake.DotNet.Testing`
 ```
 namespace AltCoverFake.DotNet.Testing
 ```
+
+
+
+
+
+
+
 
 ## module `DotNet`
 ```
