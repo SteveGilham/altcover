@@ -9,9 +9,6 @@ using FSharpCLIOptions = AltCover.DotNet.CLIOptions;
 using FSharpDotnet = AltCover.DotNet;
 using FSharpCommand = AltCover.Command;
 
-[assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  MessageId = "Api", Justification = "The assembly represents an API")]
-
 namespace AltCover.CSharp
 {
   /// <summary>

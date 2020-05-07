@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>AltCover.CSApi</RootNamespace>
-    <AssemblyName>AltCover.CSApi</AssemblyName>
+    <RootNamespace>AltCover.CSharp</RootNamespace>
+    <AssemblyName>AltCover.CSharp</AssemblyName>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>

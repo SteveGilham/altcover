@@ -483,7 +483,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.CSApi.dll" ]) ]
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.CSharp.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -609,7 +609,7 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.CSApi/Debug+AnyCPU/net45/AltCover.CSApi.dll"
+    ([ "_Binaries/AltCover.CSharp/Debug+AnyCPU/net45/AltCover.CSharp.dll"
        ],
      [],
      defaultCSharpRules)
@@ -2054,7 +2054,7 @@ _Target "Packaging" (fun _ ->
   if (poshHelp |> File.Exists |> not) && (Environment.isWindows |> not)
   then File.WriteAllText(poshHelp, "DUMMY TEXT")
   let csapi =
-    Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/net45/AltCover.CSApi.dll"
+    Path.getFullName "_Binaries/AltCover.CSharp/Release+AnyCPU/net45/AltCover.CSharp.dll"
   let fsapi =
     Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/net45/AltCover.FSApi.dll"
   let cake =

@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.CSApi\altcover.csapi.core.csproj" />
+    <ProjectReference Include="..\AltCover.CSharp\altcover.csharp.core.csproj" />
     <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
   </ItemGroup>
 
