@@ -27,6 +27,6 @@ module WhatIfExtension =
 
   type AltCover.PrepareOptions with
     [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-      Justification="Compiler generated name for self parameter")>]
+      Justification="Compiler generated name for unit parameter")>]
     member self.WhatIf() =
       PrepareExtension.WhatIf self
