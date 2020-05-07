@@ -13,19 +13,19 @@ This method is a `[CakeMethodAlias]` extension method on `ICakeContext`, and `[C
 
 ```csharp
 public static void DotNetCoreTest(this ICakeContext context, FilePath project, 
-    DotNetCoreTestSettings settings, AltCoverSettings altcover)
+    DotNetCoreTestSettings testSettings, CoverageSettings coverageSettings)
 ```
 
 | parameter | description |
 | --- | --- |
 | context | The Cake build script `ICakeContext`; a `this` parameter |
 | project | The project to test as a `FilePath` |
-| settings | The `DotNetCoreTestSettings` for the test |
-| altcover | The `AltCoverSettings` for the test instrumentation |
+| testSettings | The `DotNetCoreTestSettings` for the test |
+| coverageSettings | The `CoverageSettings` for the test instrumentation |
 
 ## See Also
 
-* class [AltCoverSettings](../AltCoverSettings-apidoc)
+* class [CoverageSettings](../CoverageSettings-apidoc)
 * class [DotNet](../DotNet-apidoc)
 * namespace [AltCover.Cake](../../AltCover.Cake-apidoc)
 

@@ -2,6 +2,8 @@
 
 Construction of `dotnet test` command line options.
 
+While it is possible to use this type directly from C#/VB code, it is simpler to use the equivalent type in the [explcitly C#-friendly API in `AltCover.CSApi.dll`](../../AltCover.CSApi-apidoc).
+
 ```csharp
 public static class DotNet
 ```
