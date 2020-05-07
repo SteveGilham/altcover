@@ -13,6 +13,9 @@ namespace AltCoverFake.DotNet.Testing
 // ```
 /// <summary>
 /// <para type="description">Construction of `dotnet test` command line options.</para>
+/// <para type="description">While it is possible to use this type directly from C#/VB code,
+/// it is simpler to use the equivalent type in the
+/// [explcitly C#-friendly API in `AltCover.CSApi.dll`](../../AltCover.CSApi-apidoc).</para>
 /// </summary>
 [<RequireQualifiedAccess>]
 module DotNet = begin

@@ -9,16 +9,14 @@ namespace AltCover.Cake
   /// <summary>
   /// A C#-friendly expression of the core API to drive the instrumentation and collection process.
   /// </summary>
-  [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                    Justification = "It's the API for the system")]
-  public static class Api
+  public static class Command
   {
-    private static CSApi.ILoggingOptions MakeLog(ICakeContext context, CSApi.ILoggingOptions log)
+    private static CSharp.ILoggingOptions MakeLog(ICakeContext context, CSharp.ILoggingOptions log)
     {
       if (log != null)
         return log;
 
-      var result = CSApi.Primitive.LoggingOptions.Create();
+      var result = CSharp.Primitive.LoggingOptions.Create();
 
       if (context != null)
       {
@@ -42,9 +40,9 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Prepare(this ICakeContext context, CSApi.IPrepareOptions prepareArgs, CSApi.ILoggingOptions log = null)
+    public static int Prepare(this ICakeContext context, CSharp.IPrepareOptions prepareArgs, CSharp.ILoggingOptions log = null)
     {
-      return CSApi.Prepare(prepareArgs, MakeLog(context, log));
+      return CSharp.Command.Prepare(prepareArgs, MakeLog(context, log));
     }
 
     /// <summary>
@@ -58,9 +56,9 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Collect(this ICakeContext context, CSApi.ICollectOptions collectArgs, CSApi.ILoggingOptions log = null)
+    public static int Collect(this ICakeContext context, CSharp.ICollectOptions collectArgs, CSharp.ILoggingOptions log = null)
     {
-      return CSApi.Collect(collectArgs, MakeLog(context, log));
+      return CSharp.Command.Collect(collectArgs, MakeLog(context, log));
     }
 
     /// <summary>
@@ -73,7 +71,7 @@ namespace AltCover.Cake
     public static string ImportModule(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSApi.ImportModule();
+      return CSharp.Command.ImportModule();
     }
 
     /// <summary>
@@ -86,7 +84,7 @@ namespace AltCover.Cake
     public static System.Version Version(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSApi.Version();
+      return CSharp.Command.Version();
     }
   }
 }

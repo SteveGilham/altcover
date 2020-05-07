@@ -3257,10 +3257,25 @@ let _Target s f =
 
 _Target "DoIt"
   (fun _ ->
-  AltCover.Command.Version() |> printfn "AltCover.Command.Version - Returned %A"
-  AltCover.Command.FormattedVersion() |> printfn "AltCover.Command.FormattedVersion - Returned '%s'"
-  AltCover.Fake.Command.Version().ToString() |> Trace.trace
-  AltCover.CSApi.Version() |> printfn " - Returned %A"
+  let acv = AltCover.Command.Version()
+  acv |> printfn "AltCover.Command.Version - Returned %A"
+  if acv.ToString() <> {0}
+  then failwith "AltCover.Command.Version mismatch"
+
+  let acfv = AltCover.Command.FormattedVersion()
+  acfv |> printfn "AltCover.Command.FormattedVersion - Returned '%s'"
+  if acfv <> (sprintf "AltCover version %s" {0})
+  then failwith "AltCover.Command.FormattedVersionn mismatch"
+
+  let afcv = AltCover.Fake.Command.Version().ToString()
+  afcv |> Trace.trace
+  if afcv.ToString() <> {0}
+  then failwith "AltCover.Fake.Command.Version mismatch"
+
+  let accv = AltCover.CSharp.Command.Version()
+  accv|> printfn " - Returned %A"
+  if afcv.ToString() <> {0}
+  then failwith "AltCover.CSharp.Command.Version mismatch"
 
   let collect =
     AltCover.AltCover.CollectOptions.Primitive
@@ -3345,7 +3360,7 @@ _Target "DoIt"
   if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
 """
-    File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + !Version + "\""))
 
     let dependencies = """version 5.241.2
 // [ FAKE GROUP ]

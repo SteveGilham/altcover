@@ -7,5 +7,5 @@ open System.Diagnostics.CodeAnalysis
 
 // Assembly name
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-   MessageId="Api", Justification="It's an API, damn it!")>]
+   MessageId="Api", Justification = "The assembly represents an API")>]
 do ()
