@@ -360,6 +360,8 @@ namespace AltCover.CSharp
   /// <summary>
   /// This class is the API for driving `AltCover` as an in-process operation
   /// </summary>
+  [SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
+    Justification="This assembles the significant public surface for the assembly")]
   public static class Command
   {
     /// <summary>
@@ -395,6 +397,15 @@ namespace AltCover.CSharp
     public static string ImportModule()
     {
       return FSharpCommand.ImportModule();
+    }
+
+    /// <summary>
+    /// Get the last computed coverage summary, if any
+    /// </summary>
+    /// <returns>The summary string</returns>
+    public static string Summary()
+    {
+      return FSharpCommand.Summary();
     }
 
     /// <summary>
