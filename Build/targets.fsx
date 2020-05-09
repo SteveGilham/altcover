@@ -1055,7 +1055,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                 XmlReport = altReport
                 OutputDirectories = [| outputDirectory |]
                 StrongNameKey = signingKey
-                Single = true
+                SingleVisit = true
                 InPlace = false
                 Save = false }
             |> filter)
@@ -1263,7 +1263,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                 OutputDirectories = [| output |]
                 VisibleBranches = true
                 StrongNameKey = keyfile
-                Single = true
+                SingleVisit = true
                 InPlace = false
                 Save = false }
             |> AltCoverFilter)

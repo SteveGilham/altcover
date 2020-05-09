@@ -11,18 +11,18 @@ namespace AltCover.Cake
   /// </summary>
   public static class Command
   {
-    private static CSharp.ILoggingOptions MakeLog(ICakeContext context, CSharp.ILoggingOptions log)
+    private static Abstract.ILoggingOptions MakeLog(ICakeContext context, Abstract.ILoggingOptions log)
     {
       if (log != null)
         return log;
 
-      var result = CSharp.Primitive.LoggingOptions.Create();
+      var result = new Options.LoggingOptions();
 
       if (context != null)
       {
         result.Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x);
         result.Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x);
-        result.StandardError = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
+        result.Failure = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
         result.Echo = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x);
       }
 
@@ -40,7 +40,7 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Prepare(this ICakeContext context, CSharp.IPrepareOptions prepareArgs, CSharp.ILoggingOptions log = null)
+    public static int Prepare(this ICakeContext context, Abstract.IPrepareOptions prepareArgs, Abstract.ILoggingOptions log = null)
     {
       return CSharp.Command.Prepare(prepareArgs, MakeLog(context, log));
     }
@@ -56,7 +56,7 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Collect(this ICakeContext context, CSharp.ICollectOptions collectArgs, CSharp.ILoggingOptions log = null)
+    public static int Collect(this ICakeContext context, Abstract.ICollectOptions collectArgs, Abstract.ILoggingOptions log = null)
     {
       return CSharp.Command.Collect(collectArgs, MakeLog(context, log));
     }

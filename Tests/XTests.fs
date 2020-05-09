@@ -385,7 +385,7 @@ module AltCoverXTests =
       { Primitive.PrepareOptions.Create() with
                                               BranchCover = true
                                               LineCover = true
-                                              Single = true
+                                              SingleVisit = true
                                               CallContext = [| "0" |] }
 
     let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
@@ -397,7 +397,7 @@ module AltCoverXTests =
       { TypeSafe.PrepareOptions.Create() with
                                              BranchCover = TypeSafe.Flag true
                                              LineCover = TypeSafe.Flag true
-                                             Single = TypeSafe.Flag true
+                                             SingleVisit = TypeSafe.Flag true
                                              CallContext =
                                                TypeSafe.Context
                                                  [| TypeSafe.TimeItem 0uy |] }

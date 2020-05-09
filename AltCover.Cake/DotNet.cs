@@ -17,12 +17,12 @@ namespace AltCover.Cake
     /// <summary>
     /// Gets or sets the parameters for the preparation phase
     /// </summary>
-    public CSharp.IPrepareOptions PreparationPhase { get; set; }
+    public Abstract.IPrepareOptions PreparationPhase { get; set; }
 
     /// <summary>
     /// Gets or sets the parameters for the collection phase
     /// </summary>
-    public CSharp.ICollectOptions CollectionPhase { get; set; }
+    public Abstract.ICollectOptions CollectionPhase { get; set; }
 
     /// <summary>
     ///  Gets or sets the other command line options for the operation

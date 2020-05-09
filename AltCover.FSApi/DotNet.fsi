@@ -63,17 +63,17 @@ module DotNet = begin
       val fromArg : name:string -> s:string -> string * bool
       val join : l:seq<string> -> string
       val toPrepareListArgumentList :
-        prepare:AltCover.PrepareOptions ->
+        prepare:Abstract.IPrepareOptions ->
           ((string -> #seq<System.String> -> string * bool) * string *
-           System.String list) list
+           System.String seq) list
       val toPrepareFromArgArgumentList :
-        prepare:AltCover.PrepareOptions ->
+        prepare:Abstract.IPrepareOptions ->
           ((string -> string -> string * bool) * string * System.String) list
       val toPrepareArgArgumentList :
-        prepare:AltCover.PrepareOptions ->
+        prepare:Abstract.IPrepareOptions ->
           ((string -> string -> string) * string * string * bool) list
       val toCollectFromArgArgumentList :
-        collect:AltCover.CollectOptions ->
+        collect:Abstract.ICollectOptions ->
           ((string -> string -> string * bool) * string * System.String) list
       val toCLIOptionsFromArgArgumentList :
         options:CLIOptions ->
@@ -93,8 +93,8 @@ module DotNet = begin
     /// <param name="options">All other `altcover` related command line arguments</param>
     /// <returns>The command line as a sequence of individual items</returns>
     val ToTestArgumentList :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string list
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
 
     /// <summary>
     /// Converts the input into the command line for `dotnet test`
@@ -104,19 +104,19 @@ module DotNet = begin
     /// <param name="options">All other `altcover` related command line arguments</param>
     /// <returns>The composed command line</returns>
     val ToTestArguments :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
   end
 // ```
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
 #else
 #if TRACE  // cheat mode here
     val internal toTestArgumentList :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string list
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
     val internal toTestArguments :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
   end
 #endif
 #endif

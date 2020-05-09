@@ -31,6 +31,10 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.FSApi\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover\Abstract.fsi" Link="Abstract.fsi" />
+    <Compile Include="..\AltCover\Abstract.fs" Link="Abstract.fs" />
+    <Compile Include="..\AltCover.FSApi\Options.fsi" Link="Options.fsi" />
+    <Compile Include="..\AltCover.FSApi\Options.fs" Link="Options.fs" />
     <Compile Include="..\AltCover\Primitive.fsi" Link="Primitive.fsi" />
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
     <Compile Include="..\AltCover\TypeSafe.fsi" Link="TypeSafe.fsi" />

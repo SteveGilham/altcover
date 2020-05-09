@@ -54,6 +54,8 @@
     <Compile Include="Cobertura.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="Main.fs" />
+    <Compile Include="Abstract.fsi" />
+    <Compile Include="Abstract.fs" />
     <Compile Include="Primitive.fsi" />
     <Compile Include="Primitive.fs" />
     <Compile Include="TypeSafe.fsi" />
@@ -121,4 +123,14 @@
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AbstractFsi Include="$(ProjectDir)Abstract.fsi" />
+    <AbstractFs Include="$(ProjectDir)Abstract.fs" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Copy SourceFiles="@(AbstractFsi)"
+	        DestinationFiles="@(AbstractFs)"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>

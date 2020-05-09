@@ -65,7 +65,7 @@ module DotNet =
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
                        Justification="Compiler Generated")>]
-    let internal toPrepareListArgumentList (prepare : AltCover.PrepareOptions) =
+    let internal toPrepareListArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe '|' separated list of paths"
         fromList, "DependencyList", prepare.Dependencies //=`"pipe '|' separated list of paths"
@@ -80,7 +80,7 @@ module DotNet =
         fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
       ]
 
-    let internal toPrepareFromArgArgumentList (prepare : AltCover.PrepareOptions) =
+    let internal toPrepareFromArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
         fromArg, "XmlReport", prepare.XmlReport //=`"path to the xml report" default: `coverage.xml` in the project directory)
@@ -88,11 +88,11 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
-    let internal toPrepareArgArgumentList (prepare : AltCover.PrepareOptions) =
+    let internal toPrepareArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
         (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
-        (arg, "Single", "false", prepare.Single) //="true|false"` - set "true" to record only the first visit to each point
+        (arg, "SingleVisit", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
         (arg, "BranchCover", "true", prepare.BranchCover)  //="true|false"` - set "true" to record only branch coverage in OpenCover format
         (arg, "SourceLink", "false", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
@@ -101,7 +101,7 @@ module DotNet =
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
       ]
 
-    let internal toCollectFromArgArgumentList (collect : AltCover.CollectOptions) =
+    let internal toCollectFromArgArgumentList (collect : Abstract.ICollectOptions) =
       [
         fromArg, "LcovReport", collect.LcovReport //=`"path to lcov format result"
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
@@ -128,13 +128,13 @@ module DotNet =
 // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
-  let ToTestArgumentList (prepare : AltCover.PrepareOptions)
-      (collect : AltCover.CollectOptions) (options : CLIOptions) =
+  let ToTestArgumentList
 #else
-  let internal toTestArgumentList (prepare : AltCover.PrepareOptions)
-      (collect : AltCover.CollectOptions)
-      (options : CLIOptions) =
+  let internal toTestArgumentList
 #endif
+      (prepare : Abstract.IPrepareOptions)
+      (collect : Abstract.ICollectOptions)
+      (options : CLIOptions) =
     [
       [ I.fromArg String.Empty "true" ]
       prepare
@@ -164,12 +164,16 @@ module DotNet =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare : AltCover.PrepareOptions)
-      (collect : AltCover.CollectOptions) (options : CLIOptions) =
-    ToTestArgumentList prepare collect options |> I.join
+  let ToTestArguments
 #else
-  let internal toTestArguments (prepare : AltCover.PrepareOptions)
-      (collect : AltCover.CollectOptions)
-      (options : CLIOptions) =
-    toTestArgumentList prepare collect options |> I.join
+  let internal toTestArguments
 #endif
+      (prepare : Abstract.IPrepareOptions)
+      (collect : Abstract.ICollectOptions)
+      (options : CLIOptions) =
+#if RUNNER
+    ToTestArgumentList
+#else
+    toTestArgumentList
+#endif
+      prepare collect options |> I.join

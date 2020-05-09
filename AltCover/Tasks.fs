@@ -85,7 +85,7 @@ type Prepare() =
   member val Save = true with get, set
   member val ZipFile = false with get, set // work around Gendarme insistence on non-default values only
   member val MethodPoint = false with get, set // work around Gendarme insistence on non-default values only
-  member val Single = false with get, set // work around Gendarme insistence on non-default values only
+  member val SingleVisit = false with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
   [<SuppressMessage(
@@ -105,7 +105,7 @@ type Prepare() =
       Option.getOrElse
         (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
-              Error = base.Log.LogError
+              Failure = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
@@ -131,7 +131,7 @@ type Prepare() =
           Save = self.Save
           ZipFile = self.ZipFile
           MethodPoint = self.MethodPoint
-          Single = self.Single
+          SingleVisit = self.SingleVisit
           LineCover = self.LineCover
           BranchCover = self.BranchCover
           CommandLine = self.CommandLine
@@ -191,7 +191,7 @@ type Collect() =
       Option.getOrElse
         (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
-              Error = base.Log.LogError
+              Failure = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
@@ -219,7 +219,7 @@ type PowerShell() =
       Justification = "Unit test accessor")>]
   member val internal IO = AltCover.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
-                                 Error = base.Log.LogError
+                                 Failure = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
@@ -237,7 +237,7 @@ type GetVersion() =
       Justification = "Unit test accessor")>]
   member val internal IO = AltCover.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
-                                 Error = base.Log.LogError
+                                 Failure = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =

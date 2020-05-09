@@ -372,7 +372,7 @@ type InvokeAltCoverCommand() =
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Single : SwitchParameter = SwitchParameter(false) with get, set
+  member val SingleVisit : SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
   /// <para type="description">Do not record branch coverage.  Implies, and is compatible with, the -ReportFormat "opencover" option. Incompatible with `-BranchCover`.</para>
@@ -492,7 +492,7 @@ type InvokeAltCoverCommand() =
         Save = self.Save.IsPresent
         ZipFile = self.ZipFile.IsPresent
         MethodPoint = self.MethodPoint.IsPresent
-        Single = self.Single.IsPresent
+        SingleVisit = self.SingleVisit.IsPresent
         LineCover = self.LineCover.IsPresent
         BranchCover = self.BranchCover.IsPresent
         CommandLine = self.CommandLine
@@ -507,7 +507,7 @@ type InvokeAltCoverCommand() =
   member private self.Log() =
     AltCover.LoggingOptions.Primitive
       { Primitive.LoggingOptions.Create() with
-          Error = (fun s -> self.Fail <- s :: self.Fail)
+          Failure = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))
           Warn = (fun s -> self.WriteWarning s) }
 

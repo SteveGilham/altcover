@@ -39,7 +39,9 @@ namespace AltCoverFake.DotNet.Testing
     type CollectOptions =
       | Primitive of Primitive.CollectOptions
       | TypeSafe of TypeSafe.CollectOptions
+      | Abstract of Abstract.ICollectOptions
       with
+        interface Abstract.ICollectOptions
         member Cobertura : System.String
         member CommandLine : seq<string>
         member Executable : System.String
@@ -75,7 +77,9 @@ namespace AltCoverFake.DotNet.Testing
     type PrepareOptions =
       | Primitive of Primitive.PrepareOptions
       | TypeSafe of TypeSafe.PrepareOptions
+      | Abstract of Abstract.IPrepareOptions
       with
+        interface Abstract.IPrepareOptions
         member AssemblyExcludeFilter : System.String list
         member AssemblyFilter : System.String list
         member AttributeFilter : System.String list
@@ -99,7 +103,7 @@ namespace AltCoverFake.DotNet.Testing
         member Save : bool
         member ShowGenerated : bool
         member ShowStatic : string
-        member Single : bool
+        member SingleVisit : bool
         member SourceLink : bool
         member StrongNameKey : System.String
         member SymbolDirectories : System.String list
@@ -131,6 +135,7 @@ namespace AltCoverFake.DotNet.Testing
 // ```
     type LoggingOptions =
       | Primitive of Primitive.LoggingOptions
+      | Abstract of Abstract.ILoggingOptions
       with
         member Echo : (System.String -> unit)
         member Error : (System.String -> unit)
