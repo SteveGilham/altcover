@@ -10,6 +10,13 @@ open System.Linq
 
 [<RequireQualifiedAccess>]
 module DotNet =
+  type ICLIOptions =
+    interface
+    abstract member Force : bool with get
+    abstract member FailFast : bool with get
+    abstract member ShowSummary : String with get
+    end
+
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
                                   Justification = "Idiomatic F#");
                   SuppressMessage("Gendarme.Rules.Smells",
@@ -21,6 +28,7 @@ module DotNet =
     | FailFast of bool
     | ShowSummary of String
     | Many of CLIOptions seq
+    | Abstract of ICLIOptions
 
     member self.ForceDelete =
       match self with
@@ -28,6 +36,7 @@ module DotNet =
       | ShowSummary _
       | FailFast _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
+      | Abstract a -> a.Force
 
     member self.Fast =
       match self with
@@ -35,12 +44,14 @@ module DotNet =
       | ShowSummary _
       | Force _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.Fast)
+      | Abstract a -> a.FailFast
 
     member self.Summary =
       match self with
       | ShowSummary b -> b
       | FailFast _
       | Force _ -> String.Empty
+      | Abstract a -> a.ShowSummary
       | Many s ->
           match s
                 |> Seq.map (fun f -> f.Summary)
@@ -48,6 +59,21 @@ module DotNet =
                 |> Seq.tryHead with
           | Some x -> x
           | _ -> String.Empty
+
+    static member Translate (input:ICLIOptions) =
+      let fail = FailFast input.FailFast
+      let force = Force input.Force
+      let summary = ShowSummary input.ShowSummary
+      Many [fail; force; summary]
+
+  type BasicCLIOptions() =
+    member val Force = false with get, set
+    member val FailFast = false with get, set
+    member val ShowSummary = String.Empty with get, set
+    interface ICLIOptions with
+      member self.Force = self.Force
+      member self.FailFast = self.FailFast
+      member self.ShowSummary = self.ShowSummary
 
   module internal I =
     let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()

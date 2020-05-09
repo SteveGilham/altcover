@@ -3,6 +3,8 @@ using Cake.Core;
 using Cake.Core.Annotations;
 using LogLevel = Cake.Core.Diagnostics.LogLevel;
 using Verbosity = Cake.Core.Diagnostics.Verbosity;
+using FSCommand = AltCover.Command;
+using FSOptions = AltCover.AltCover.LoggingOptions;
 
 namespace AltCover.Cake
 {
@@ -11,10 +13,10 @@ namespace AltCover.Cake
   /// </summary>
   public static class Command
   {
-    private static Abstract.ILoggingOptions MakeLog(ICakeContext context, Abstract.ILoggingOptions log)
+    private static FSOptions MakeLog(ICakeContext context, Abstract.ILoggingOptions log)
     {
       if (log != null)
-        return log;
+        return FSOptions.Translate(log);
 
       var result = new Options.LoggingOptions();
 
@@ -26,7 +28,7 @@ namespace AltCover.Cake
         result.Echo = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x);
       }
 
-      return result;
+      return FSOptions.Translate(result);
     }
 
     /// <summary>
@@ -42,7 +44,7 @@ namespace AltCover.Cake
                      Justification = "WTF is this rule saying?")]
     public static int Prepare(this ICakeContext context, Abstract.IPrepareOptions prepareArgs, Abstract.ILoggingOptions log = null)
     {
-      return CSharp.Command.Prepare(prepareArgs, MakeLog(context, log));
+      return FSCommand.Prepare(prepareArgs, MakeLog(context, log));
     }
 
     /// <summary>
@@ -58,7 +60,7 @@ namespace AltCover.Cake
                      Justification = "WTF is this rule saying?")]
     public static int Collect(this ICakeContext context, Abstract.ICollectOptions collectArgs, Abstract.ILoggingOptions log = null)
     {
-      return CSharp.Command.Collect(collectArgs, MakeLog(context, log));
+      return FSCommand.Collect(collectArgs, MakeLog(context, log));
     }
 
     /// <summary>
@@ -71,7 +73,7 @@ namespace AltCover.Cake
     public static string ImportModule(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSharp.Command.ImportModule();
+      return FSCommand.ImportModule();
     }
 
     /// <summary>
@@ -84,7 +86,7 @@ namespace AltCover.Cake
     public static System.Version Version(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSharp.Command.Version();
+      return FSCommand.Version();
     }
   }
 }

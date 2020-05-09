@@ -482,8 +482,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.CSharp.dll" ]) ]
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -609,10 +608,6 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.CSharp/Debug+AnyCPU/net45/AltCover.CSharp.dll"
-       ],
-     [],
-     defaultCSharpRules)
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ],
      [],
       defaultRules)
@@ -2053,8 +2048,6 @@ _Target "Packaging" (fun _ ->
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll-Help.xml"
   if (poshHelp |> File.Exists |> not) && (Environment.isWindows |> not)
   then File.WriteAllText(poshHelp, "DUMMY TEXT")
-  let csapi =
-    Path.getFullName "_Binaries/AltCover.CSharp/Release+AnyCPU/net45/AltCover.CSharp.dll"
   let fsapi =
     Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/net45/AltCover.FSApi.dll"
   let cake =
@@ -2104,7 +2097,6 @@ _Target "Packaging" (fun _ ->
       (posh, Some "lib/net45", None)
       (poshHelp, Some "lib/net45", None)
       (fsapi, Some "lib/net45", None)
-      (csapi, Some "lib/net45", None)
       (cake, Some "lib/net45", None)
       (fake, Some "lib/net45", None)
       (fscore, Some "lib/net45", None)
@@ -3271,11 +3263,6 @@ _Target "DoIt"
   afcv |> Trace.trace
   if afcv.ToString() <> {0}
   then failwith "AltCover.Fake.Command.Version mismatch"
-
-  let accv = AltCover.CSharp.Command.Version()
-  accv|> printfn " - Returned %A"
-  if afcv.ToString() <> {0}
-  then failwith "AltCover.CSharp.Command.Version mismatch"
 
   let collect =
     AltCover.AltCover.CollectOptions.Primitive

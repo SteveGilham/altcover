@@ -145,6 +145,7 @@ namespace AltCoverFake.DotNet.Testing
           ActionAdapter : action:System.Action<System.String> ->
                             (System.String -> unit)
         static member Create : unit -> LoggingOptions
+        static member Translate : Abstract.ILoggingOptions -> LoggingOptions
       end
 // ```
 // `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.
