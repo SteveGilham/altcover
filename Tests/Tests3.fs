@@ -2671,6 +2671,18 @@ or
         Console.SetError saved
 
     // Tasks.fs
+    type Logging() =
+      member val Info : Action<String> = null with get, set
+      member val Warn : Action<String> = null with get, set
+      member val Failure : Action<String> = null with get, set
+      member val Echo : Action<String> = null with get, set
+
+      interface Abstract.ILoggingOptions with
+        member self.Info = self.Info
+        member self.Warn = self.Warn
+        member self.Failure = self.Failure
+        member self.Echo = self.Echo
+
     [<Test>]
     let LoggingCanBeExercised() =
       Main.init()
@@ -2685,6 +2697,15 @@ or
       AltCover.LoggingOptions.Create().Warn "32"
       AltCover.LoggingOptions.Create().Error "32"
       AltCover.LoggingOptions.Create().Echo "32"
+
+      let o = Logging()
+      let p = AltCover.LoggingOptions.Translate o
+      Assert.That(p.Warn, Is.Not.Null)
+      let p2 = AltCover.LoggingOptions.Abstract o
+      p2.Info "32"
+      p2.Warn "32"
+      p2.Error "32"
+      p2.Echo "32"
 
     [<Test>]
     let EmptyInstrumentIsJustTheDefaults() =

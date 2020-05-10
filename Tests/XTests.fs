@@ -161,7 +161,14 @@ module AltCoverXTests =
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    test <@ (AltCover.CollectOptions.Primitive subject)
+    test <@ instance
+            |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+    // hack
+    let rerun = AltCover.CollectOptions.Abstract instance
+    let scan = rerun.Validate(false)
+    test <@ scan.Length = 0 @>
+    test <@ (rerun.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
+    test <@ rerun
             |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
@@ -223,7 +230,13 @@ module AltCoverXTests =
       { Primitive.CollectOptions.Create() with
                                               RecorderDirectory =
                                                 Guid.NewGuid().ToString() }
-    let scan = (AltCover.CollectOptions.Primitive test).Validate(true)
+    let instance = AltCover.CollectOptions.Primitive test
+    let scan = instance.Validate(true)
+    test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
+
+    // hack
+    let rerun = AltCover.CollectOptions.Abstract instance
+    let scan = rerun.Validate(true)
     test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
 
   [<Test>]
@@ -254,8 +267,18 @@ module AltCoverXTests =
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    let rendered = (AltCover.PrepareOptions.Primitive subject) |> Args.prepare
+    let rendered = instance |> Args.prepare
     let location = Assembly.GetExecutingAssembly().Location
+    test
+      <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
+                      "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace"; "--save" ] @>
+
+    // hack
+    let rerun = AltCover.PrepareOptions.Abstract instance
+    let scan = rerun.Validate()
+    test <@ scan.Length = 0 @>
+    test <@ (rerun.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
+    let rendered = rerun |> Args.prepare
     test
       <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
                       "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace"; "--save" ] @>
