@@ -48,6 +48,7 @@ module AltCover =
   type CollectOptions =
     | Primitive of Primitive.CollectOptions
     | TypeSafe of TypeSafe.CollectOptions
+    | Abstract of Abstract.ICollectOptions
 
     static member private ToSeq(s : String seq) =
       match s with
@@ -57,16 +58,19 @@ module AltCover =
     member self.RecorderDirectory =
       match self with
       | Primitive p -> p.RecorderDirectory
+      | Abstract a -> a.RecorderDirectory
       | TypeSafe t -> t.RecorderDirectory.AsString()
 
     member self.WorkingDirectory =
       match self with
       | Primitive p -> p.WorkingDirectory
+      | Abstract a -> a.WorkingDirectory
       | TypeSafe t -> t.WorkingDirectory.AsString()
 
     member self.Executable =
       match self with
       | Primitive p -> p.Executable
+      | Abstract a -> a.Executable
       | TypeSafe t -> t.Executable.AsString()
 
     [<SuppressMessage("Microsoft.Naming", "CA1704",
@@ -74,11 +78,13 @@ module AltCover =
     member self.LcovReport =
       match self with
       | Primitive p -> p.LcovReport
+      | Abstract a -> a.LcovReport
       | TypeSafe t -> t.LcovReport.AsString()
 
     member self.Threshold =
       match self with
       | Primitive p -> p.Threshold
+      | Abstract a -> a.Threshold
       | TypeSafe t -> t.Threshold.AsString()
 
     [<SuppressMessage("Microsoft.Naming", "CA1704",
@@ -86,27 +92,44 @@ module AltCover =
     member self.Cobertura =
       match self with
       | Primitive p -> p.Cobertura
+      | Abstract a -> a.Cobertura
       | TypeSafe t -> t.Cobertura.AsString()
 
     member self.OutputFile =
       match self with
       | Primitive p -> p.OutputFile
+      | Abstract a -> a.OutputFile
       | TypeSafe t -> t.OutputFile.AsString()
 
     member self.CommandLine =
       match self with
       | Primitive p -> p.CommandLine |> CollectOptions.ToSeq
+      | Abstract a -> a.CommandLine |> CollectOptions.ToSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
     member self.ExposeReturnCode =
       match self with
       | Primitive p -> p.ExposeReturnCode
+      | Abstract a -> a.ExposeReturnCode
       | TypeSafe t -> t.ExposeReturnCode.AsBool()
 
     member self.SummaryFormat =
       match self with
       | Primitive p -> p.SummaryFormat
+      | Abstract a -> a.SummaryFormat
       | TypeSafe t -> t.SummaryFormat.AsString()
+
+    interface Abstract.ICollectOptions with
+      member self.RecorderDirectory = self.RecorderDirectory
+      member self.WorkingDirectory = self.WorkingDirectory
+      member self.Executable = self.Executable
+      member self.LcovReport = self.LcovReport
+      member self.Threshold = self.Threshold
+      member self.Cobertura = self.Cobertura
+      member self.OutputFile = self.OutputFile
+      member self.CommandLine = self.CommandLine
+      member self.ExposeReturnCode = self.ExposeReturnCode
+      member self.SummaryFormat = self.SummaryFormat
 
 #if RUNNER
     member self.Validate afterPreparation =
@@ -147,6 +170,7 @@ module AltCover =
   type PrepareOptions =
     | Primitive of Primitive.PrepareOptions
     | TypeSafe of TypeSafe.PrepareOptions
+    | Abstract of Abstract.IPrepareOptions
 
     static member private ToSeq(s : 'a seq) =
       match s with
@@ -161,82 +185,98 @@ module AltCover =
     member self.InputDirectories =
       match self with
       | Primitive p -> p.InputDirectories |> PrepareOptions.ToList
+      | Abstract a -> a.InputDirectories |> PrepareOptions.ToList
       | TypeSafe t -> t.InputDirectories.AsStrings()
 
     member self.OutputDirectories =
       match self with
       | Primitive p -> p.OutputDirectories |> PrepareOptions.ToList
+      | Abstract a -> a.OutputDirectories |> PrepareOptions.ToList
       | TypeSafe t -> t.OutputDirectories.AsStrings()
 
     member self.SymbolDirectories =
       match self with
       | Primitive p -> p.SymbolDirectories |> PrepareOptions.ToList
+      | Abstract a -> a.SymbolDirectories |> PrepareOptions.ToList
       | TypeSafe t -> t.SymbolDirectories.AsStrings()
 
     member self.Dependencies =
       match self with
       | Primitive p -> p.Dependencies |> PrepareOptions.ToList
+      | Abstract a -> a.Dependencies |> PrepareOptions.ToList
       | TypeSafe t -> t.Dependencies.AsStrings()
 
     member self.Keys =
       match self with
       | Primitive p -> p.Keys |> PrepareOptions.ToList
+      | Abstract a -> a.Keys |> PrepareOptions.ToList
       | TypeSafe t -> t.Keys.AsStrings()
 
     member self.StrongNameKey =
       match self with
       | Primitive p -> p.StrongNameKey
+      | Abstract a -> a.StrongNameKey
       | TypeSafe t -> t.StrongNameKey.AsString()
 
     member self.XmlReport =
       match self with
       | Primitive p -> p.XmlReport
+      | Abstract a -> a.XmlReport
       | TypeSafe t -> t.XmlReport.AsString()
 
     member self.FileFilter =
       match self with
       | Primitive p -> p.FileFilter |> PrepareOptions.ToList
+      | Abstract a -> a.FileFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.FileFilter.AsStrings()
 
     member self.AssemblyFilter =
       match self with
       | Primitive p -> p.AssemblyFilter |> PrepareOptions.ToList
+      | Abstract a -> a.AssemblyFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.AssemblyFilter.AsStrings()
 
     member self.AssemblyExcludeFilter =
       match self with
       | Primitive p -> p.AssemblyExcludeFilter |> PrepareOptions.ToList
+      | Abstract a -> a.AssemblyExcludeFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.AssemblyExcludeFilter.AsStrings()
 
     member self.TypeFilter =
       match self with
       | Primitive p -> p.TypeFilter |> PrepareOptions.ToList
+      | Abstract a -> a.TypeFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.TypeFilter.AsStrings()
 
     member self.MethodFilter =
       match self with
       | Primitive p -> p.MethodFilter |> PrepareOptions.ToList
+      | Abstract a -> a.MethodFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.MethodFilter.AsStrings()
 
     member self.AttributeFilter =
       match self with
       | Primitive p -> p.AttributeFilter |> PrepareOptions.ToList
+      | Abstract a -> a.AttributeFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.AttributeFilter.AsStrings()
 
     member self.PathFilter =
       match self with
       | Primitive p -> p.PathFilter |> PrepareOptions.ToList
+      | Abstract a -> a.PathFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.PathFilter.AsStrings()
 
     member self.CallContext =
       match self with
       | Primitive p -> p.CallContext |> PrepareOptions.ToList
+      | Abstract a -> a.CallContext |> PrepareOptions.ToList
       | TypeSafe t -> t.CallContext.AsStrings()
 
     member self.ReportFormat =
       let simple =
         match self with
         | Primitive p -> p.ReportFormat
+        | Abstract a -> a.ReportFormat
         | TypeSafe t -> t.ReportFormat.AsString()
       if String.IsNullOrWhiteSpace simple
       then "OpenCover"
@@ -245,77 +285,125 @@ module AltCover =
     member self.InPlace =
       match self with
       | Primitive p -> p.InPlace
+      | Abstract a -> a.InPlace
       | TypeSafe t -> t.InPlace.AsBool()
 
     member self.Save =
       match self with
       | Primitive p -> p.Save
+      | Abstract a -> a.Save
       | TypeSafe t -> t.Save.AsBool()
 
     member self.ZipFile =
       match self with
       | Primitive p -> p.ZipFile
+      | Abstract a -> a.ZipFile
       | TypeSafe t -> t.ZipFile.AsBool()
 
     member self.MethodPoint =
       match self with
       | Primitive p -> p.MethodPoint
+      | Abstract a -> a.MethodPoint
       | TypeSafe t -> t.MethodPoint.AsBool()
 
-    member self.Single =
+    member self.SingleVisit =
       match self with
-      | Primitive p -> p.Single
-      | TypeSafe t -> t.Single.AsBool()
+      | Primitive p -> p.SingleVisit
+      | Abstract a -> a.SingleVisit
+      | TypeSafe t -> t.SingleVisit.AsBool()
 
     member self.LineCover =
       match self with
       | Primitive p -> p.LineCover
+      | Abstract a -> a.LineCover
       | TypeSafe t -> t.LineCover.AsBool()
 
     member self.BranchCover =
       match self with
       | Primitive p -> p.BranchCover
+      | Abstract a -> a.BranchCover
       | TypeSafe t -> t.BranchCover.AsBool()
 
     member self.CommandLine =
       match self with
       | Primitive p -> p.CommandLine |> PrepareOptions.ToSeq
+      | Abstract a -> a.CommandLine |> PrepareOptions.ToSeq
       | TypeSafe t -> t.CommandLine.AsStrings()
 
     member self.ExposeReturnCode =
       match self with
       | Primitive p -> p.ExposeReturnCode
+      | Abstract a -> a.ExposeReturnCode
       | TypeSafe t -> t.ExposeReturnCode.AsBool()
 
     member self.SourceLink =
       match self with
       | Primitive p -> p.SourceLink
+      | Abstract a -> a.SourceLink
       | TypeSafe t -> t.SourceLink.AsBool()
 
     member self.Defer =
       match self with
       | Primitive p -> p.Defer
+      | Abstract a -> a.Defer
       | TypeSafe t -> t.Defer.AsBool()
 
     member self.LocalSource =
       match self with
       | Primitive p -> p.LocalSource
+      | Abstract a -> a.LocalSource
       | TypeSafe t -> t.LocalSource.AsBool()
 
     member self.VisibleBranches =
       match self with
       | Primitive p -> p.VisibleBranches
+      | Abstract a -> a.VisibleBranches
       | TypeSafe t -> t.VisibleBranches.AsBool()
 
     member self.ShowStatic =
       match self with
       | Primitive p -> p.ShowStatic
+      | Abstract a -> a.ShowStatic
       | TypeSafe t -> t.ShowStatic.AsString()
 
     member self.ShowGenerated =
       match self with
       | Primitive p -> p.ShowGenerated
+      | Abstract a -> a.ShowGenerated
       | TypeSafe t -> t.ShowGenerated.AsBool()
+
+    interface Abstract.IPrepareOptions with
+      member self.InputDirectories = self.InputDirectories |> PrepareOptions.ToSeq
+      member self.OutputDirectories = self.OutputDirectories |> PrepareOptions.ToSeq
+      member self.SymbolDirectories = self.SymbolDirectories |> PrepareOptions.ToSeq
+      member self.Dependencies = self.Dependencies |> PrepareOptions.ToSeq
+      member self.Keys = self.Keys |> PrepareOptions.ToSeq
+      member self.StrongNameKey = self.StrongNameKey
+      member self.XmlReport = self.XmlReport
+      member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
+      member self.AssemblyFilter = self.AssemblyFilter |> PrepareOptions.ToSeq
+      member self.AssemblyExcludeFilter = self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
+      member self.TypeFilter = self.TypeFilter |> PrepareOptions.ToSeq
+      member self.MethodFilter = self.MethodFilter |> PrepareOptions.ToSeq
+      member self.AttributeFilter = self.AttributeFilter |> PrepareOptions.ToSeq
+      member self.PathFilter = self.PathFilter |> PrepareOptions.ToSeq
+      member self.CallContext = self.CallContext |> PrepareOptions.ToSeq
+      member self.ReportFormat = self.ReportFormat
+      member self.InPlace = self.InPlace
+      member self.Save = self.Save
+      member self.ZipFile = self.ZipFile
+      member self.MethodPoint = self.MethodPoint
+      member self.SingleVisit = self.SingleVisit
+      member self.LineCover = self.LineCover
+      member self.BranchCover = self.BranchCover
+      member self.CommandLine = self.CommandLine |> PrepareOptions.ToSeq
+      member self.ExposeReturnCode = self.ExposeReturnCode
+      member self.SourceLink = self.SourceLink
+      member self.Defer = self.Defer
+      member self.LocalSource = self.LocalSource
+      member self.VisibleBranches = self.VisibleBranches
+      member self.ShowStatic = self.ShowStatic
+      member self.ShowGenerated = self.ShowGenerated
 
 #if RUNNER
     static member private ValidateArray a f key =
@@ -330,7 +418,7 @@ module AltCover =
       then f key x |> ignore
 
     member private self.Consistent() =
-      if self.Single && self.CallContext.Any() then
+      if self.SingleVisit && self.CallContext.Any() then
         CommandLine.error <-
           String.Format
             (System.Globalization.CultureInfo.CurrentCulture,
@@ -397,8 +485,15 @@ module AltCover =
                                     Justification = "Idiomatic F#")>]
   type LoggingOptions =
     | Primitive of Primitive.LoggingOptions
+    | Abstract of Abstract.ILoggingOptions
 
     static member Create() = Primitive.LoggingOptions.Create() |> Primitive
+    static member Translate (input : Abstract.ILoggingOptions) =
+      { Primitive.LoggingOptions.Create() with
+          Failure = input.Failure |> LoggingOptions.ActionAdapter
+          Warn = input.Warn |> LoggingOptions.ActionAdapter
+          Echo = input.Echo |> LoggingOptions.ActionAdapter
+          Info = input.Info |> LoggingOptions.ActionAdapter } |> Primitive
 
     static member ActionAdapter(action : Action<String>) =
       match action with
@@ -407,17 +502,21 @@ module AltCover =
 
     member self.Error =
       match self with
-      | Primitive p -> p.Error
+      | Primitive p -> p.Failure
+      | Abstract a -> a.Failure |> LoggingOptions.ActionAdapter
 
     member self.Warn =
       match self with
       | Primitive p -> p.Warn
+      | Abstract a -> a.Warn |> LoggingOptions.ActionAdapter
 
     member self.Echo =
       match self with
       | Primitive p -> p.Echo
+      | Abstract a -> a.Echo |> LoggingOptions.ActionAdapter
 
     member self.Info =
       match self with
       | Primitive p -> p.Info
+      | Abstract a -> a.Info |> LoggingOptions.ActionAdapter
 #endif

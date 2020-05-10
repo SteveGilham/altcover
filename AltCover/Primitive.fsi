@@ -61,7 +61,7 @@ namespace AltCoverFake.DotNet.Testing
         Save: bool
         ZipFile: bool
         MethodPoint: bool
-        Single: bool
+        SingleVisit: bool
         LineCover: bool
         BranchCover: bool
         CommandLine: seq<System.String>
@@ -87,7 +87,7 @@ namespace AltCoverFake.DotNet.Testing
     type LoggingOptions =
       { Info : System.String -> unit
         Warn : System.String -> unit
-        Error : System.String -> unit
+        Failure : System.String -> unit
         Echo : System.String -> unit }
       with
         static member Create : unit -> LoggingOptions

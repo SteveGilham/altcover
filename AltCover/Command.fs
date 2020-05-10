@@ -8,14 +8,14 @@ open TaskIO
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification="This assembles the significant public surface for the assembly")>]
 module Command =
-  let Prepare (args : AltCover.PrepareOptions) (log : AltCover.LoggingOptions) =
+  let Prepare (args : Abstract.IPrepareOptions) (log : AltCover.LoggingOptions) =
     log.Apply()
     args
     |> Args.prepare
     |> List.toArray
     |> Main.effectiveMain
 
-  let Collect (args : AltCover.CollectOptions) (log : AltCover.LoggingOptions) =
+  let Collect (args : Abstract.ICollectOptions) (log : AltCover.LoggingOptions) =
     log.Apply()
     Args.collect args
     |> List.toArray

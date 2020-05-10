@@ -7,6 +7,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+using FSDotNet = AltCover.DotNet;
+
 namespace AltCover.Cake
 {
   /// <summary>
@@ -17,17 +19,17 @@ namespace AltCover.Cake
     /// <summary>
     /// Gets or sets the parameters for the preparation phase
     /// </summary>
-    public CSharp.IPrepareOptions PreparationPhase { get; set; }
+    public Abstract.IPrepareOptions PreparationPhase { get; set; }
 
     /// <summary>
     /// Gets or sets the parameters for the collection phase
     /// </summary>
-    public CSharp.ICollectOptions CollectionPhase { get; set; }
+    public Abstract.ICollectOptions CollectionPhase { get; set; }
 
     /// <summary>
     ///  Gets or sets the other command line options for the operation
     /// </summary>
-    public CSharp.ICLIOptions Options { get; set; }
+    public FSDotNet.ICLIOptions Options { get; set; }
 
     /// <summary>
     /// <para>For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings</para>
@@ -42,10 +44,10 @@ namespace AltCover.Cake
         {
           pabIn.CopyTo(pabOut);
         }
-        var args = CSharp.DotNet.ToTestArgumentList(
+        var args = FSDotNet.ToTestArgumentList(
                     this.PreparationPhase,
                     this.CollectionPhase,
-                    this.Options).ToArray();
+                    FSDotNet.CLIOptions.Translate(this.Options)).ToArray();
         Array.Reverse(args);
         Array.ForEach(
             args,

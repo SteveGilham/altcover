@@ -23,9 +23,9 @@ type Implementation =
 // ```
 [<Sealed; AbstractClass>]
 type Command =
-  static member Collect : args:AltCover.AltCover.CollectOptions * ?log:AltCover.AltCover.LoggingOptions -> int
+  static member Collect : args:AltCover.Abstract.ICollectOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member ImportModule : unit -> string
-  static member Prepare : args:AltCover.AltCover.PrepareOptions * ?log:AltCover.AltCover.LoggingOptions -> int
+  static member Prepare : args:AltCover.Abstract.IPrepareOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member Version : unit -> System.Version
   static member ToolPath : Implementation -> string
 // ```
@@ -47,15 +47,15 @@ module DotNet =
 // ```
 #if RUNNER
 // ```
-    member WithAltCoverOptions: AltCover.AltCover.PrepareOptions -> AltCover.AltCover.CollectOptions ->
+    member WithAltCoverOptions: AltCover.Abstract.IPrepareOptions -> AltCover.Abstract.ICollectOptions ->
                                     AltCover.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
 // ```
 #else
 // ```
-    member WithAltCoverOptions: AltCoverFake.DotNet.Testing.AltCover.PrepareOptions ->
-                                   AltCoverFake.DotNet.Testing.AltCover.CollectOptions ->
-                                   AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
-                                   Fake.DotNet.DotNet.TestOptions
+    member WithAltCoverOptions: Testing.Abstract.IPrepareOptions ->
+                                Testing.Abstract.ICollectOptions ->
+                                AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
+                                Fake.DotNet.DotNet.TestOptions
 // ```
 #endif
 // Adds the result of `DotNet.ToTestArguments` to the `CustomParams` member of the `Common` member

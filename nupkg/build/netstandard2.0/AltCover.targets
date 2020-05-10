@@ -57,7 +57,7 @@
       CallContext="$(AltCoverCallContext.Split('|'))"
       ZipFile="$(AltCoverZipFile)"
       MethodPoint="$(AltCoverMethodPoint)"
-      Single="$(AltCoverSingle)"
+      SingleVisit="$(AltCoverSingleVisit)"
       LineCover="$(AltCoverLineCover)"
       BranchCover="$(AltCoverBranchCover)"
       SourceLink="$(AltCoverSourceLink)"

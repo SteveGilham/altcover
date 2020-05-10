@@ -48,12 +48,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.CSharp\altcover.csharp.core.csproj" />
     <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AltCoverExe Include="$(OutputPath)AltCover.exe" />
+    <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
   <Target Name="PostBuild"  AfterTargets="PostBuildEvent" 
          Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net46|AnyCPU'">
+    <Copy SourceFiles="@(AltCoverExe)"
+	        DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
   </Target>
 </Project>

@@ -34,7 +34,7 @@ module internal Args =
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
 
-  let internal listItems(args : AltCover.PrepareOptions) =
+  let internal listItems(args : Abstract.IPrepareOptions) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -49,35 +49,35 @@ module internal Args =
       ("-p", args.PathFilter)
       ("-c", args.CallContext) ]
 
-  let internal itemLists(args : AltCover.PrepareOptions) =
+  let internal itemLists(args : Abstract.IPrepareOptions) =
     args
     |> listItems
     |> List.collect (fun (a, b) -> itemList a b)
 
-  let internal plainItems(args : AltCover.PrepareOptions) =
+  let internal plainItems(args : Abstract.IPrepareOptions) =
     [ ("--sn", args.StrongNameKey)
       ("--reportFormat", args.ReportFormat)
       ("-x", args.XmlReport) ]
 
-  let internal items(args : AltCover.PrepareOptions) =
+  let internal items(args : Abstract.IPrepareOptions) =
     args
     |> plainItems
     |> List.collect (fun (a, b) -> item a b)
 
-  let internal options(args : AltCover.PrepareOptions) =
+  let internal options(args : Abstract.IPrepareOptions) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
 
-  let internal optItems(args : AltCover.PrepareOptions) =
+  let internal optItems(args : Abstract.IPrepareOptions) =
     args
     |> options
     |> List.collect (fun (a, b, c) -> optionalItem a b c)
 
-  let internal flagItems(args : AltCover.PrepareOptions) =
+  let internal flagItems(args : Abstract.IPrepareOptions) =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--zipfile", args.ZipFile)
       ("--methodpoint", args.MethodPoint)
-      ("--single", args.Single)
+      ("--single", args.SingleVisit)
       ("--linecover", args.LineCover)
       ("--branchcover", args.BranchCover)
       ("--dropReturnCode", (args.ExposeReturnCode |> not))
@@ -87,12 +87,12 @@ module internal Args =
       ("--visibleBranches", args.VisibleBranches)
       ("--showGenerated", args.ShowGenerated) ]
 
-  let internal flags(args : AltCover.PrepareOptions) =
+  let internal flags(args : Abstract.IPrepareOptions) =
     args
     |> flagItems
     |> List.collect (fun (a, b) -> flag a b)
 
-  let prepare(args : AltCover.PrepareOptions) =
+  let prepare(args : Abstract.IPrepareOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -103,7 +103,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let internal buildCollect(args : AltCover.CollectOptions) =
+  let internal buildCollect(args : Abstract.ICollectOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -124,7 +124,7 @@ module internal Args =
       optionalItem "--teamcity" args.SummaryFormat []
       trailing ]
 
-  let collect(args : AltCover.CollectOptions) =
+  let collect(args : Abstract.ICollectOptions) =
     args
     |> buildCollect
     |> List.concat

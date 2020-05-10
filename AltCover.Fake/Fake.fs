@@ -15,7 +15,7 @@ module Trace =
       { Primitive.LoggingOptions.Create() with
           Info = Trace.trace
           Warn = Trace.traceImportant
-          Error = Trace.traceError
+          Failure = Trace.traceError
           Echo = Trace.traceVerbose }
 
   let internal doDefault(log : AltCover.LoggingOptions option) =
@@ -33,9 +33,9 @@ type Implementation =
                   Justification = "Can't stop the instance constructor happening")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
 type Command private () =
-  static member Prepare(args : AltCover.PrepareOptions, ?log : AltCover.LoggingOptions) =
+  static member Prepare(args : Abstract.IPrepareOptions, ?log : AltCover.LoggingOptions) =
     AltCover.Command.Prepare args (Trace.doDefault log)
-  static member Collect(args : AltCover.CollectOptions, ?log : AltCover.LoggingOptions) =
+  static member Collect(args : Abstract.ICollectOptions, ?log : AltCover.LoggingOptions) =
     AltCover.Command.Collect args (Trace.doDefault log)
   static member ImportModule() = AltCover.Command.ImportModule()
   static member Version() = AltCover.Command.Version()
@@ -125,12 +125,12 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithAltCoverOptions (prepare : AltCover.PrepareOptions)
-           (collect : AltCover.CollectOptions) (force : DotNet.CLIOptions) =
+    member self.WithAltCoverOptions (prepare : Abstract.IPrepareOptions)
+           (collect : Abstract.ICollectOptions) (force : DotNet.CLIOptions) =
       DotNet.ToTestArguments
 #else
-    member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
-           (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
+    member self.WithAltCoverOptions (prepare : Testing.Abstract.IPrepareOptions)
+           (collect : Testing.Abstract.ICollectOptions)
            (force : AltCoverFake.DotNet.Testing.DotNet.CLIOptions) =
       AltCoverFake.DotNet.Testing.DotNet.toTestArguments
 #endif

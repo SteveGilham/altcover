@@ -13,12 +13,28 @@ namespace AltCoverFake.DotNet.Testing
 // ```
 /// <summary>
 /// <para type="description">Construction of `dotnet test` command line options.</para>
-/// <para type="description">While it is possible to use this type directly from C#/VB code,
-/// it is simpler to use the equivalent type in the
-/// [explcitly C#-friendly API in `AltCover.CSApi.dll`](../../AltCover.CSApi-apidoc).</para>
 /// </summary>
 [<RequireQualifiedAccess>]
 module DotNet = begin
+  /// <summary>
+  /// <para type="description">Interface defining general command line arguments for `dotnet test` use..</para>
+  /// </summary>
+  type ICLIOptions =
+    interface
+    /// <summary>
+    /// <para type="description">The `/AltCoverFailFast` value this represents</para>
+    /// </summary>
+    abstract member Force : bool with get
+    /// <summary>
+    /// <para type="description">The `/AltCoverForce` value this represents</para>
+    /// </summary>
+    abstract member FailFast : bool with get
+    /// <summary>
+    /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
+    /// </summary>
+    abstract member ShowSummary : System.String with get
+    end
+
   /// <summary>
   /// <para type="description">Union type defining general command line arguments for `dotnet test` use.</para>
   /// <para type="description">The F# code is [documented here](../DotNet-apidoc)</para>
@@ -30,6 +46,7 @@ module DotNet = begin
     | FailFast of bool
     | ShowSummary of System.String
     | Many of seq<CLIOptions>
+    | Abstract of ICLIOptions
     with
       /// <summary>
       /// <para type="description">The `/AltCoverFailFast` value this represents</para>
@@ -43,7 +60,23 @@ module DotNet = begin
       /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
       /// </summary>
       member Summary : System.String
+      /// <summary>
+      /// <para type="description">Map the C#-friendly interface to the F# type</para>
+      /// <param name="input">The abstract object to translate</param>
+      /// <returns>An equivalent F# value</returns>
+      /// </summary>
+      static member Translate : ICLIOptions -> CLIOptions
     end
+
+  type BasicCLIOptions =
+    class
+      interface ICLIOptions
+      new : unit -> BasicCLIOptions
+      member Force : bool with get, set
+      member FailFast : bool with get, set
+      member ShowSummary : System.String with get, set
+    end
+
 // ```
 // Union type defining general command line arguments for `dotnet test` use.
 // case `Force` indicates a `/AltCoverForce` value
@@ -63,17 +96,17 @@ module DotNet = begin
       val fromArg : name:string -> s:string -> string * bool
       val join : l:seq<string> -> string
       val toPrepareListArgumentList :
-        prepare:AltCover.PrepareOptions ->
+        prepare:Abstract.IPrepareOptions ->
           ((string -> #seq<System.String> -> string * bool) * string *
-           System.String list) list
+           System.String seq) list
       val toPrepareFromArgArgumentList :
-        prepare:AltCover.PrepareOptions ->
+        prepare:Abstract.IPrepareOptions ->
           ((string -> string -> string * bool) * string * System.String) list
       val toPrepareArgArgumentList :
-        prepare:AltCover.PrepareOptions ->
+        prepare:Abstract.IPrepareOptions ->
           ((string -> string -> string) * string * string * bool) list
       val toCollectFromArgArgumentList :
-        collect:AltCover.CollectOptions ->
+        collect:Abstract.ICollectOptions ->
           ((string -> string -> string * bool) * string * System.String) list
       val toCLIOptionsFromArgArgumentList :
         options:CLIOptions ->
@@ -93,8 +126,8 @@ module DotNet = begin
     /// <param name="options">All other `altcover` related command line arguments</param>
     /// <returns>The command line as a sequence of individual items</returns>
     val ToTestArgumentList :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string list
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
 
     /// <summary>
     /// Converts the input into the command line for `dotnet test`
@@ -104,19 +137,19 @@ module DotNet = begin
     /// <param name="options">All other `altcover` related command line arguments</param>
     /// <returns>The composed command line</returns>
     val ToTestArguments :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
   end
 // ```
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
 #else
 #if TRACE  // cheat mode here
     val internal toTestArgumentList :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string list
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
     val internal toTestArguments :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
   end
 #endif
 #endif
