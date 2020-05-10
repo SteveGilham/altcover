@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Cake.Core;
 using Cake.Core.Annotations;
 using LogLevel = Cake.Core.Diagnostics.LogLevel;
@@ -13,12 +14,20 @@ namespace AltCover.Cake
   /// </summary>
   public static class Command
   {
+    private sealed class LoggingOptions : Abstract.ILoggingOptions
+    {
+      public Action<string> Info { get; set; }
+      public Action<string> Warn { get; set; }
+      public Action<string> Failure { get; set; }
+      public Action<string> Echo { get; set; }
+    }
+
     private static FSOptions MakeLog(ICakeContext context, Abstract.ILoggingOptions log)
     {
       if (log != null)
         return FSOptions.Translate(log);
 
-      var result = new Options.LoggingOptions();
+      var result = new LoggingOptions();
 
       if (context != null)
       {

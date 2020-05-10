@@ -61,19 +61,7 @@ module DotNet =
           | _ -> String.Empty
 
     static member Translate (input:ICLIOptions) =
-      let fail = FailFast input.FailFast
-      let force = Force input.Force
-      let summary = ShowSummary input.ShowSummary
-      Many [fail; force; summary]
-
-  type BasicCLIOptions() =
-    member val Force = false with get, set
-    member val FailFast = false with get, set
-    member val ShowSummary = String.Empty with get, set
-    interface ICLIOptions with
-      member self.Force = self.Force
-      member self.FailFast = self.FailFast
-      member self.ShowSummary = self.ShowSummary
+      Abstract input
 
   module internal I =
     let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()

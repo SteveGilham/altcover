@@ -31,18 +31,36 @@ module AltCoverCommand =
       | AltCover.TypeSafe t ->
           AltCover.TypeSafe { t with Executable = TypeSafe.Tool tool }
       | AltCover.Abstract a ->
-          let copy = Options.CollectOptions.Copy a
-          copy.Executable <- tool
-          AltCover.Abstract copy
+        let temp = Primitive.CollectOptions.Create()
+        let copy = { temp with RecorderDirectory = a.RecorderDirectory
+                               WorkingDirectory = a.WorkingDirectory
+                               Executable = tool
+                               LcovReport = a.LcovReport
+                               Threshold = a.Threshold
+                               Cobertura = a.Cobertura
+                               OutputFile = a.OutputFile
+                               CommandLine = a.CommandLine
+                               ExposeReturnCode = a.ExposeReturnCode
+                               SummaryFormat = a.SummaryFormat }
+        AltCover.Primitive copy
 
   let internal setCollectCommandLine (args : string seq) collect =
       match collect with
       | AltCover.Primitive p ->
           AltCover.Primitive { p with CommandLine = args }
       | AltCover.Abstract a ->
-          let copy = Options.CollectOptions.Copy a
-          copy.CommandLine <- args |> toSeq
-          AltCover.Abstract copy
+        let temp = Primitive.CollectOptions.Create()
+        let copy = { temp with RecorderDirectory = a.RecorderDirectory
+                               WorkingDirectory = a.WorkingDirectory
+                               Executable = a.Executable
+                               LcovReport = a.LcovReport
+                               Threshold = a.Threshold
+                               Cobertura = a.Cobertura
+                               OutputFile = a.OutputFile
+                               CommandLine = args |> toSeq
+                               ExposeReturnCode = a.ExposeReturnCode
+                               SummaryFormat = a.SummaryFormat }
+        AltCover.Primitive copy
       | AltCover.TypeSafe t ->
           AltCover.TypeSafe
             { t with
@@ -60,9 +78,39 @@ module AltCoverCommand =
       | AltCover.PrepareOptions.Primitive p ->
           AltCover.PrepareOptions.Primitive { p with CommandLine = args }
       | AltCover.PrepareOptions.Abstract a ->
-          let copy = Options.PrepareOptions.Copy a
-          copy.CommandLine <- args |> toSeq
-          AltCover.PrepareOptions.Abstract copy
+        let temp = Primitive.PrepareOptions.Create()
+        let copy = { temp with InputDirectories = a.InputDirectories
+                               OutputDirectories = a.OutputDirectories;
+                               SymbolDirectories = a.SymbolDirectories;
+                               Dependencies = a.Dependencies;
+                               Keys = a.Keys;
+                               StrongNameKey = a.StrongNameKey;
+                               XmlReport = a.XmlReport;
+                               FileFilter = a.FileFilter;
+                               AssemblyFilter = a.AssemblyFilter;
+                               AssemblyExcludeFilter = a.AssemblyExcludeFilter;
+                               TypeFilter = a.TypeFilter;
+                               MethodFilter = a.MethodFilter;
+                               AttributeFilter = a.AttributeFilter;
+                               PathFilter = a.PathFilter;
+                               CallContext = a.CallContext;
+                               ReportFormat = a.ReportFormat;
+                               InPlace = a.InPlace;
+                               Save = a.Save;
+                               ZipFile = a.ZipFile;
+                               MethodPoint = a.MethodPoint;
+                               SingleVisit = a.SingleVisit;
+                               LineCover = a.LineCover;
+                               BranchCover = a.BranchCover;
+                               CommandLine = args |> toSeq
+                               ExposeReturnCode = a.ExposeReturnCode;
+                               SourceLink = a.SourceLink;
+                               Defer = a.Defer;
+                               LocalSource = a.LocalSource;
+                               VisibleBranches = a.VisibleBranches;
+                               ShowStatic = a.ShowStatic;
+                               ShowGenerated = a.ShowGenerated }
+        AltCover.PrepareOptions.Primitive copy
       | AltCover.PrepareOptions.TypeSafe t ->
           AltCover.PrepareOptions.TypeSafe
             { t with
@@ -218,6 +266,6 @@ module AltCoverCommand =
 
     runCore options withMono
 
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@201T.#monoPath", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@201T.#options", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@161T.#options", Justification="Generated code")>]()
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@249T.#monoPath", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@249T.#options", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@209T.#options", Justification="Generated code")>]()

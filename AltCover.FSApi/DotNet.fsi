@@ -68,15 +68,6 @@ module DotNet = begin
       static member Translate : ICLIOptions -> CLIOptions
     end
 
-  type BasicCLIOptions =
-    class
-      interface ICLIOptions
-      new : unit -> BasicCLIOptions
-      member Force : bool with get, set
-      member FailFast : bool with get, set
-      member ShowSummary : System.String with get, set
-    end
-
 // ```
 // Union type defining general command line arguments for `dotnet test` use.
 // case `Force` indicates a `/AltCoverForce` value
