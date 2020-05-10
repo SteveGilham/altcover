@@ -8,6 +8,7 @@
 | static class [CoverageFormats](AltCover/CoverageFormats-apidoc) | Conversions of NCover and OpenCover format data to other report formats. |
 | static class [DotNet](AltCover/DotNet-apidoc) | Construction of `dotnet test` command line options. |
 | static class [OpenCover](AltCover/OpenCover-apidoc) | Functions manipulating OpenCover format reports from various generators |
+| static class [Options](AltCover/Options-apidoc) |  |
 | static class [Xhtml](AltCover/Xhtml-apidoc) | Functions for building HTML-based reports |
 | static class [XmlTypes](AltCover/XmlTypes-apidoc) | Methods for inter-converting XML types |
 

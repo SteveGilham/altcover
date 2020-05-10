@@ -7,8 +7,8 @@ namespace AltCover
 ## module `Command`
 ```
 module Command = begin
-  val Prepare : args:AltCover.PrepareOptions -> log:AltCover.LoggingOptions -> int
-  val Collect : args:AltCover.CollectOptions -> log:AltCover.LoggingOptions -> int
+  val Prepare : args:Abstract.IPrepareOptions -> log:AltCover.LoggingOptions -> int
+  val Collect : args:Abstract.ICollectOptions -> log:AltCover.LoggingOptions -> int
   val ImportModule : unit -> string
   val Version : unit -> System.Version
   val FormattedVersion : unit -> string

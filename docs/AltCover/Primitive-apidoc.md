@@ -63,7 +63,7 @@ Fields that are not applicable to the use case or platform are silently ignored.
         Save: bool
         ZipFile: bool
         MethodPoint: bool
-        Single: bool
+        SingleVisit: bool
         LineCover: bool
         BranchCover: bool
         CommandLine: seq<System.String>
@@ -89,7 +89,7 @@ Fields that are not applicable to the use case or platform are silently ignored.
     type LoggingOptions =
       { Info : System.String -> unit
         Warn : System.String -> unit
-        Error : System.String -> unit
+        Failure : System.String -> unit
         Echo : System.String -> unit }
       with
         static member Create : unit -> LoggingOptions

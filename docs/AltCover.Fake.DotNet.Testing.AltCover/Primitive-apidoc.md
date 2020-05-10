@@ -63,7 +63,7 @@ Fields that are not applicable to the use case or platform are silently ignored.
         Save: bool
         ZipFile: bool
         MethodPoint: bool
-        Single: bool
+        SingleVisit: bool
         LineCover: bool
         BranchCover: bool
         CommandLine: seq<System.String>

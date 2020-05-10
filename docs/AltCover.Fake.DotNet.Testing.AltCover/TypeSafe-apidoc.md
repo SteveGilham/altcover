@@ -209,7 +209,7 @@ Fields that are not applicable to the use case or platform are silently ignored.
         Save: Flag
         ZipFile: Flag
         MethodPoint: Flag
-        Single: Flag
+        SingleVisit: Flag
         LineCover: Flag
         BranchCover: Flag
         CommandLine: Command

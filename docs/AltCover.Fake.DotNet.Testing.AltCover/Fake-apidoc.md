@@ -54,10 +54,10 @@ module DotNet =
 
 
 ```
-    member WithAltCoverOptions: AltCoverFake.DotNet.Testing.AltCover.PrepareOptions ->
-                                   AltCoverFake.DotNet.Testing.AltCover.CollectOptions ->
-                                   AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
-                                   Fake.DotNet.DotNet.TestOptions
+    member WithAltCoverOptions: Testing.Abstract.IPrepareOptions ->
+                                Testing.Abstract.ICollectOptions ->
+                                AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
+                                Fake.DotNet.DotNet.TestOptions
 ```
 
 Adds the result of `DotNet.ToTestArguments` to the `CustomParams` member of the `Common` member

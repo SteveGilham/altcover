@@ -3,7 +3,7 @@
 Converts the input into the command line for `dotnet test`
 
 ```csharp
-public static string ToTestArguments(PrepareOptions prepare, CollectOptions collect, 
+public static string ToTestArguments(IPrepareOptions prepare, ICollectOptions collect, 
     CLIOptions options)
 ```
 

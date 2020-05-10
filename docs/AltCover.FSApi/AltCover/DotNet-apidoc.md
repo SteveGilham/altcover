@@ -2,8 +2,6 @@
 
 Construction of `dotnet test` command line options.
 
-While it is possible to use this type directly from C#/VB code, it is simpler to use the equivalent type in the [explcitly C#-friendly API in `AltCover.CSApi.dll`](../../AltCover.CSApi-apidoc).
-
 ```csharp
 public static class DotNet
 ```
@@ -14,7 +12,9 @@ public static class DotNet
 | --- | --- |
 | static [ToTestArgumentList](DotNet/ToTestArgumentList-apidoc)(…) | Converts the input into the command line for `dotnet test` |
 | static [ToTestArguments](DotNet/ToTestArguments-apidoc)(…) | Converts the input into the command line for `dotnet test` |
+| class [BasicCLIOptions](DotNet.BasicCLIOptions-apidoc) |  |
 | abstract class [CLIOptions](DotNet.CLIOptions-apidoc) | Union type defining general command line arguments for `dotnet test` use. |
+| interface [ICLIOptions](DotNet.ICLIOptions-apidoc) | Interface defining general command line arguments for `dotnet test` use.. |
 
 ## See Also
 

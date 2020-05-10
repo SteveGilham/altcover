@@ -41,7 +41,9 @@ namespace AltCoverFake.DotNet.Testing
     type CollectOptions =
       | Primitive of Primitive.CollectOptions
       | TypeSafe of TypeSafe.CollectOptions
+      | Abstract of Abstract.ICollectOptions
       with
+        interface Abstract.ICollectOptions
         member Cobertura : System.String
         member CommandLine : seq<string>
         member Executable : System.String
@@ -77,7 +79,9 @@ The property members corresponding to the command line options read the values f
     type PrepareOptions =
       | Primitive of Primitive.PrepareOptions
       | TypeSafe of TypeSafe.PrepareOptions
+      | Abstract of Abstract.IPrepareOptions
       with
+        interface Abstract.IPrepareOptions
         member AssemblyExcludeFilter : System.String list
         member AssemblyFilter : System.String list
         member AttributeFilter : System.String list
@@ -101,7 +105,7 @@ The property members corresponding to the command line options read the values f
         member Save : bool
         member ShowGenerated : bool
         member ShowStatic : string
-        member Single : bool
+        member SingleVisit : bool
         member SourceLink : bool
         member StrongNameKey : System.String
         member SymbolDirectories : System.String list
@@ -126,6 +130,8 @@ The property members corresponding to the command line options read the values f
 The property members corresponding to the command line options read the values from the contained instance; null strings will be retrurned as null, but null sequences will be returned as empty ones.
 
  Values that are not applicable to the use case or platform are silently ignored.
+
+
 
 
 

@@ -14,12 +14,15 @@ public abstract class CLIOptions : IEquatable<CLIOptions>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
+| static [NewAbstract](DotNet.CLIOptions/NewAbstract-apidoc)(…) |  |
 | static [NewFailFast](DotNet.CLIOptions/NewFailFast-apidoc)(…) |  |
 | static [NewForce](DotNet.CLIOptions/NewForce-apidoc)(…) |  |
 | static [NewMany](DotNet.CLIOptions/NewMany-apidoc)(…) |  |
 | static [NewShowSummary](DotNet.CLIOptions/NewShowSummary-apidoc)(…) |  |
+| static [Translate](DotNet.CLIOptions/Translate-apidoc)(…) | Map the C#-friendly interface to the F# type |
 | [Fast](DotNet.CLIOptions/Fast-apidoc) { get; } | The `/AltCoverFailFast` value this represents |
 | [ForceDelete](DotNet.CLIOptions/ForceDelete-apidoc) { get; } | The `/AltCoverForce` value this represents |
+| [IsAbstract](DotNet.CLIOptions/IsAbstract-apidoc) { get; } |  |
 | [IsFailFast](DotNet.CLIOptions/IsFailFast-apidoc) { get; } |  |
 | [IsForce](DotNet.CLIOptions/IsForce-apidoc) { get; } |  |
 | [IsMany](DotNet.CLIOptions/IsMany-apidoc) { get; } |  |
@@ -29,12 +32,14 @@ public abstract class CLIOptions : IEquatable<CLIOptions>, IStructuralEquatable
 | [Equals](DotNet.CLIOptions/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](DotNet.CLIOptions/GetHashCode-apidoc)() |  |
 | [GetHashCode](DotNet.CLIOptions/GetHashCode-apidoc)(…) |  |
+| [get_IsAbstract](DotNet.CLIOptions/get_IsAbstract-apidoc)() |  |
 | [get_IsFailFast](DotNet.CLIOptions/get_IsFailFast-apidoc)() |  |
 | [get_IsForce](DotNet.CLIOptions/get_IsForce-apidoc)() |  |
 | [get_IsMany](DotNet.CLIOptions/get_IsMany-apidoc)() |  |
 | [get_IsShowSummary](DotNet.CLIOptions/get_IsShowSummary-apidoc)() |  |
 | [get_Tag](DotNet.CLIOptions/get_Tag-apidoc)() |  |
 | override [ToString](DotNet.CLIOptions/ToString-apidoc)() |  |
+| class [Abstract](DotNet.CLIOptions.Abstract-apidoc) |  |
 | class [FailFast](DotNet.CLIOptions.FailFast-apidoc) |  |
 | class [Force](DotNet.CLIOptions.Force-apidoc) |  |
 | class [Many](DotNet.CLIOptions.Many-apidoc) |  |

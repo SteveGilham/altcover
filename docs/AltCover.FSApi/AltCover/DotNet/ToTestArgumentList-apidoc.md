@@ -3,8 +3,8 @@
 Converts the input into the command line for `dotnet test`
 
 ```csharp
-public static FSharpList<string> ToTestArgumentList(PrepareOptions prepare, CollectOptions collect, 
-    CLIOptions options)
+public static FSharpList<string> ToTestArgumentList(IPrepareOptions prepare, 
+    ICollectOptions collect, CLIOptions options)
 ```
 
 | parameter | description |

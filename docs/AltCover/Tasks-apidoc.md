@@ -43,7 +43,7 @@ type Prepare =
     member Save : bool with get, set
     member ShowGenerated : bool with get, set
     member ShowStatic : string with get, set
-    member Single : bool with get, set
+    member SingleVisit : bool with get, set
     member SourceLink : bool with get, set
     member StrongNameKey : string with get, set
     member SymbolDirectories : string array with get, set

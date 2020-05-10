@@ -15,17 +15,36 @@ namespace AltCoverFake.DotNet.Testing
 ```
 [<RequireQualifiedAccess>]
 module DotNet = begin
+  type ICLIOptions =
+    interface
+    abstract member Force : bool with get
+    abstract member FailFast : bool with get
+    abstract member ShowSummary : System.String with get
+    end
+
   [<NoComparison>]
   type CLIOptions =
     | Force of bool
     | FailFast of bool
     | ShowSummary of System.String
     | Many of seq<CLIOptions>
+    | Abstract of ICLIOptions
     with
       member Fast : bool
       member ForceDelete : bool
       member Summary : System.String
+      static member Translate : ICLIOptions -> CLIOptions
     end
+
+  type BasicCLIOptions =
+    class
+      interface ICLIOptions
+      new : unit -> BasicCLIOptions
+      member Force : bool with get, set
+      member FailFast : bool with get, set
+      member ShowSummary : System.String with get, set
+    end
+
 ```
 Union type defining general command line arguments for `dotnet test` use.
 case `Force` indicates a `/AltCoverForce` value

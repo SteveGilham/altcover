@@ -15,17 +15,36 @@ namespace AltCover
 ```
 [<RequireQualifiedAccess>]
 module DotNet = begin
+  type ICLIOptions =
+    interface
+    abstract member Force : bool with get
+    abstract member FailFast : bool with get
+    abstract member ShowSummary : System.String with get
+    end
+
   [<NoComparison>]
   type CLIOptions =
     | Force of bool
     | FailFast of bool
     | ShowSummary of System.String
     | Many of seq<CLIOptions>
+    | Abstract of ICLIOptions
     with
       member Fast : bool
       member ForceDelete : bool
       member Summary : System.String
+      static member Translate : ICLIOptions -> CLIOptions
     end
+
+  type BasicCLIOptions =
+    class
+      interface ICLIOptions
+      new : unit -> BasicCLIOptions
+      member Force : bool with get, set
+      member FailFast : bool with get, set
+      member ShowSummary : System.String with get, set
+    end
+
 ```
 Union type defining general command line arguments for `dotnet test` use.
 case `Force` indicates a `/AltCoverForce` value
@@ -68,12 +87,12 @@ case `Many` indicates a collection of cases
 
 ```
     val ToTestArgumentList :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string list
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
 
     val ToTestArguments :
-      prepare:AltCover.PrepareOptions ->
-        collect:AltCover.CollectOptions -> options:CLIOptions -> string
+      prepare:Abstract.IPrepareOptions ->
+        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
   end
 ```
 The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
