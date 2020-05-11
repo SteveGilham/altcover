@@ -3958,7 +3958,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
 _Target "MakeDocumentation" (fun _ ->
   let branch = Information.getBranchName(".") 
-  Assert.That(branch, Is.EqualTo("master").Or.StartWith("/develop/docs/"), branch)
+  Assert.That(branch, Is.EqualTo("master").Or.StartWith("develop/docs/"), branch)
   CreateProcess.fromRawCommand "powershell.exe"
     [ "-NoProfile"; "./Build/prepareDocumentation.ps1" ]
   |> CreateProcess.withWorkingDirectory "."
