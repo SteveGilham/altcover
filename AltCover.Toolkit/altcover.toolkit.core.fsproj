@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
-    <RootNamespace>AltCover.FSApi</RootNamespace>
-    <AssemblyName>AltCover.FSApi</AssemblyName>
+    <RootNamespace>AltCover.Toolkit</RootNamespace>
+    <AssemblyName>AltCover.Toolkit</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
@@ -33,10 +33,6 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Ordinal.fsi" />
     <Compile Include="Ordinal.fs" />
-    <Compile Include="DotNet.fsi" />
-    <Compile Include="DotNet.fs" />
-    <Compile Include="Options.fsi" />
-    <Compile Include="Options.fs" />
     <Compile Include="XmlInternal.fs" />
     <Compile Include="Xml.fsi" />
     <Compile Include="Xml.fs" />

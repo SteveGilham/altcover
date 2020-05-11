@@ -331,57 +331,28 @@ module FSApiTests =
 
   [<Test>]
   let ArgumentsBuilt() =
-    let log = Options.LoggingOptions()
-    test <@ isNull log.Info @>
-    test <@ isNull log.Warn @>
-    test <@ isNull log.Echo @>
-    test <@ isNull log.Failure @>
-
-    log.Info <- Action<String>(ignore)
-
-    // gratuitous coverlet
-    log.Warn <- null
-    log.Failure <- null
-    log.Echo <- null
-
-    let l2 = log :> Abstract.ILoggingOptions
-    test <@ l2.Info |> isNull |> not @>
-    test <@ isNull l2.Warn @>
-    test <@ isNull l2.Echo @>
-    test <@ isNull l2.Failure @>
-
     let force = DotNet.CLIOptions.Force true
     let fail = DotNet.CLIOptions.FailFast true
     let summary = DotNet.CLIOptions.ShowSummary "R"
-    let raw = DotNet.BasicCLIOptions()
+    let a = { new DotNet.ICLIOptions with
+                        member self.Force = false
+                        member self.FailFast = false
+                        member self.ShowSummary = String.Empty } |> DotNet.CLIOptions.Translate
 
-    // gratuitous coverlet
-    raw.Force <- false
-    raw.FailFast <- false
-    raw.ShowSummary <- String.Empty
+    let combined = DotNet.CLIOptions.Many [ a; force; fail; summary ]
 
-    let basic = (raw :> DotNet.ICLIOptions) |> DotNet.CLIOptions.Abstract
-    let alt = (DotNet.BasicCLIOptions() :> DotNet.ICLIOptions)
-              |> DotNet.CLIOptions.Translate
-    let combined = DotNet.CLIOptions.Many [ basic; alt; force; fail; summary ]
     test <@ fail.ForceDelete |> not @>
     test <@ force.Fast |> not @>
     test <@ combined.ForceDelete @>
     test <@ combined.Fast @>
     test <@ combined.Summary = "R" @>
-    test <@ (DotNet.CLIOptions.Many [ basic; alt; force; fail ]).Summary |> String.IsNullOrEmpty @>
+    test <@ (DotNet.CLIOptions.Many [ a; force; fail ]).Summary |> String.IsNullOrEmpty @>
 
-    let pprep = Options.PrepareOptions() |> Options.PrepareOptions.Copy
-    pprep.InputDirectories <- null
-    let alt = pprep :> Abstract.IPrepareOptions
-    test <@ pprep.InputDirectories |> isNull @>
-    test <@ alt.InputDirectories |> isNull |> not @>
-    test <@ alt.InputDirectories |> Seq.isEmpty @>
+    let pprep = Primitive.PrepareOptions.Create()
+    let prep = AltCover.AltCover.PrepareOptions.Primitive pprep
 
-    let prep = AltCover.AltCover.PrepareOptions.Abstract pprep
-
-    let pcoll = Options.CollectOptions() |> Options.CollectOptions.Copy
-    let coll = AltCover.AltCover.CollectOptions.Abstract pcoll
+    let pcoll = Primitive.CollectOptions.Create()
+    let coll = AltCover.AltCover.CollectOptions.Primitive pcoll
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>

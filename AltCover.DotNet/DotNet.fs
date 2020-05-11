@@ -61,19 +61,7 @@ module DotNet =
           | _ -> String.Empty
 
     static member Translate (input:ICLIOptions) =
-      let fail = FailFast input.FailFast
-      let force = Force input.Force
-      let summary = ShowSummary input.ShowSummary
-      Many [fail; force; summary]
-
-  type BasicCLIOptions() =
-    member val Force = false with get, set
-    member val FailFast = false with get, set
-    member val ShowSummary = String.Empty with get, set
-    interface ICLIOptions with
-      member self.Force = self.Force
-      member self.FailFast = self.FailFast
-      member self.ShowSummary = self.ShowSummary
+      Abstract input
 
   module internal I =
     let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
@@ -118,7 +106,7 @@ module DotNet =
       [
         (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
         (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
-        (arg, "SingleVisit", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
+        (arg, "Single", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
         (arg, "BranchCover", "true", prepare.BranchCover)  //="true|false"` - set "true" to record only branch coverage in OpenCover format
         (arg, "SourceLink", "false", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files

@@ -43,7 +43,7 @@ let AltCoverFilter(p : Primitive.PrepareOptions) =
 let AltCoverApiFilter(p : Primitive.PrepareOptions) =
   { p with
       AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-      AssemblyFilter = [ "?AltCover\.FSApi" ] @ (p.AssemblyFilter |> Seq.toList)
+      AssemblyFilter = [ "?AltCover\.Toolkit" ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
         [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode" ] @ (p.TypeFilter |> Seq.toList) }
@@ -475,7 +475,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/AltCover.Shadow.dll"
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
        "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
-       "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.FSApi.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
+       "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
     ("./Build/csharp-rules.xml",
@@ -603,7 +604,8 @@ _Target "FxCop" (fun _ ->
         defaultCSharpRules
         cantStrongName // can't strongname this as Cake isn't strongnamed
       ])
-    ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ],
+    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net45/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/net45/AltCover.DotNet.dll"],
      [],
      defaultRules)
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ],
@@ -798,7 +800,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt*  +[AltCover.FSApi]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt*  +[AltCover.Toolkit]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -1669,7 +1671,7 @@ _Target "SelfTest" (fun _ ->
          ToolPath = String.Empty
          WorkingDirectory = "." }
      |> AltCoverCommand.composeCommandLine).CommandLine
-     
+
   let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.* -[*]ICSharpCode.*"
 
   OpenCover.run (fun p ->
@@ -2048,8 +2050,10 @@ _Target "Packaging" (fun _ ->
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll-Help.xml"
   if (poshHelp |> File.Exists |> not) && (Environment.isWindows |> not)
   then File.WriteAllText(poshHelp, "DUMMY TEXT")
-  let fsapi =
-    Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/net45/AltCover.FSApi.dll"
+  let toolkit =
+    Path.getFullName "_Binaries/AltCover.Toolkit/Release+AnyCPU/net45/AltCover.Toolkit.dll"
+  let dotnet =
+    Path.getFullName "_Binaries/AltCover.DotNet/Release+AnyCPU/net45/AltCover.DotNet.dll"
   let cake =
     Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/net46/AltCover.Cake.dll"
   let fake =
@@ -2083,7 +2087,7 @@ _Target "Packaging" (fun _ ->
       (recorder, Some "tools/net45", None)
       (posh, Some "tools/net45", None)
       (poshHelp, Some "tools/net45", None)
-      (fsapi, Some "tools/net45", None)
+      (toolkit, Some "tools/net45", None)
       (vis, Some "tools/net45", None)
       (fscore, Some "tools/net45", None)
       (fox, Some "tools/net45", None)
@@ -2096,7 +2100,8 @@ _Target "Packaging" (fun _ ->
       (recorder, Some "lib/net45", None)
       (posh, Some "lib/net45", None)
       (poshHelp, Some "lib/net45", None)
-      (fsapi, Some "lib/net45", None)
+      (toolkit, Some "lib/net45", None)
+      (dotnet, Some "lib/net45", None)
       (cake, Some "lib/net45", None)
       (fake, Some "lib/net45", None)
       (fscore, Some "lib/net45", None)
@@ -2151,7 +2156,7 @@ _Target "Packaging" (fun _ ->
 
   let poshFiles where =
     [ (!!"./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
-      (!!"./_Binaries/AltCover.FSApi/Release+AnyCPU/netstandard2.0/*.FSApi.*") ]
+      (!!"./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
     |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
@@ -2172,7 +2177,9 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let fakeFiles where =
-    (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+    [ (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+      (!!"./_Binaries/AltCover.DotNet/Release+AnyCPU/netstandard2.0/AltCover.Dot*.*") ]
+    |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
