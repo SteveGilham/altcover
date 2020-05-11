@@ -3256,20 +3256,21 @@ let _Target s f =
 
 _Target "DoIt"
   (fun _ ->
+  let expected = {0}
   let acv = AltCover.Command.Version()
-  acv |> printfn "AltCover.Command.Version - Returned %A expected {0}"
-  if acv.ToString() <> {0}
+  printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
+  if acv.ToString() <> expected
   then failwith "AltCover.Command.Version mismatch"
 
   let acfv = AltCover.Command.FormattedVersion()
-  acfv |> printfn "AltCover.Command.FormattedVersion - Returned '%s' expected {0}"
-  if acfv <> (sprintf "AltCover version %s" {0})
+  printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
+  if acfv <> (sprintf "AltCover version %s" expected)
   then failwith "AltCover.Command.FormattedVersionn mismatch"
 
   let afcv = AltCover.Fake.Command.Version().ToString()
   afcv |> Trace.trace
-  printfn "expected {0}"
-  if afcv.ToString() <> {0}
+  printfn "expected %A" expected
+  if afcv.ToString() <> expected
   then failwith "AltCover.Fake.Command.Version mismatch"
 
   let collect =
