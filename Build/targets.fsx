@@ -3265,7 +3265,7 @@ _Target "DoIt"
   let acfv = AltCover.Command.FormattedVersion()
   printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
   if acfv <> (sprintf "AltCover version %s" expected)
-  then failwith "AltCover.Command.FormattedVersionn mismatch"
+  then failwith "AltCover.Command.FormattedVersion mismatch"
 
   let afcv = AltCover.Fake.Command.Version().ToString()
   afcv |> Trace.trace
@@ -3356,7 +3356,10 @@ _Target "DoIt"
   if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
 """
-    File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + !Version + "\""))
+    let vv = !Version + "-"
+    let ver = vv.Split([|'-'|]) |> Seq.head
+
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + ver + "\""))
 
     let dependencies = """version 5.241.2
 // [ FAKE GROUP ]
