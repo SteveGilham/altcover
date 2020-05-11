@@ -24,13 +24,15 @@ module internal XmlExtensions =
 module internal XmlUtilities =
   let internal loadSchema(format : AltCover.ReportFormat) =
     let schemas = new XmlSchemaSet()
+    let here = Assembly.GetExecutingAssembly()
 
     let resource =
+      here.GetName().Name +
       match format with
-      | AltCover.ReportFormat.NCover -> "AltCover.FSApi.xsd.NCover.xsd"
-      | _ -> "AltCover.FSApi.xsd.OpenCover.xsd"
+      | AltCover.ReportFormat.NCover -> ".xsd.NCover.xsd"
+      | _ -> ".xsd.OpenCover.xsd"
 
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+    use stream = here.GetManifestResourceStream(resource)
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     schemas.Add(String.Empty, xreader) |> ignore
@@ -38,9 +40,9 @@ module internal XmlUtilities =
 
   let internal loadTransform(name : string) =
     let transform = new XslCompiledTransform()
-    use stream =
-      Assembly.GetExecutingAssembly()
-              .GetManifestResourceStream("AltCover.FSApi.xsl." + name + ".xsl")
+    let here = Assembly.GetExecutingAssembly()
+    let prefix = here.GetName().Name
+    use stream = here.GetManifestResourceStream(prefix + ".xsl." + name + ".xsl")
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     transform.Load(xreader, XsltSettings.TrustedXslt, XmlUrlResolver())

@@ -479,6 +479,6 @@ module OpenCover =
     xmlDocument
 
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline",
-  Scope="member", Target="<StartupCode$AltCover-FSApi>.$OpenCover.#.cctor()",
+  Scope="member", Target="<StartupCode$AltCover-Toolkit>.$OpenCover.#.cctor()",
   Justification="Compiler Generated")>]
 ()
