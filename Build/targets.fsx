@@ -3256,19 +3256,21 @@ let _Target s f =
 
 _Target "DoIt"
   (fun _ ->
+  let expected = {0}
   let acv = AltCover.Command.Version()
-  acv |> printfn "AltCover.Command.Version - Returned %A"
-  if acv.ToString() <> {0}
+  printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
+  if acv.ToString() <> expected
   then failwith "AltCover.Command.Version mismatch"
 
   let acfv = AltCover.Command.FormattedVersion()
-  acfv |> printfn "AltCover.Command.FormattedVersion - Returned '%s'"
-  if acfv <> (sprintf "AltCover version %s" {0})
-  then failwith "AltCover.Command.FormattedVersionn mismatch"
+  printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
+  if acfv <> (sprintf "AltCover version %s" expected)
+  then failwith "AltCover.Command.FormattedVersion mismatch"
 
   let afcv = AltCover.Fake.Command.Version().ToString()
   afcv |> Trace.trace
-  if afcv.ToString() <> {0}
+  printfn "expected %A" expected
+  if afcv.ToString() <> expected
   then failwith "AltCover.Fake.Command.Version mismatch"
 
   let collect =
@@ -3354,7 +3356,10 @@ _Target "DoIt"
   if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
 """
-    File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + !Version + "\""))
+    let vv = !Version + "-"
+    let ver = vv.Split([|'-'|]) |> Seq.head
+
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + ver + "\""))
 
     let dependencies = """version 5.241.2
 // [ FAKE GROUP ]
@@ -3952,6 +3957,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 // AOB
 
 _Target "MakeDocumentation" (fun _ ->
+  let branch = Information.getBranchName(".") 
+  Assert.That(branch, Is.EqualTo("master").Or.StartWith("/develop/docs/"), branch)
   CreateProcess.fromRawCommand "powershell.exe"
     [ "-NoProfile"; "./Build/prepareDocumentation.ps1" ]
   |> CreateProcess.withWorkingDirectory "."
