@@ -134,37 +134,13 @@
           SkipUnchangedFiles="true" />
   </Target>
 
-  <!-- ItemGroup>
-    <FrameworkForDoc Include="$(FrameworkDir)/$(FrameworkVersion)/Microsoft.Build.Utilities.v4.0.dll" />
-    <FrameworkForDoc Include="$(FrameworkDir)/$(FrameworkVersion)/Microsoft.Build.Framework.dll" />
-  </ItemGroup>
-
-  Doesn't work because xmldocmd NRE's on the parameter to an F#-style extension method
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" 
-    Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU' AND 
-                Exists('$(FrameworkDir)/$(FrameworkVersion)/Microsoft.Build.Utilities.v4.0.dll')">
+  <!-- Has to be Debug because of the staticlink in Release -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent"
+    Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net45|AnyCPU' AND
+                Exists('$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Utilities.v4.0.dll')">
     <Copy
-            SourceFiles="@(FrameworkForDoc)"
-            DestinationFolder="$(TargetDir)"
-        />                
+            SourceFiles="$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Utilities.v4.0.dll;$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Framework.dll"
+            DestinationFolder="$(TargetDir)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
-  </Target -->
-
-  <!-- Target Name="PostBuild" AfterTargets="PostBuildEvent" 
-    Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU' AND 
-                Exists('$(FrameworkDir)/$(FrameworkVersion)/Microsoft.Build.Utilities.v4.0.dll')">     
-
-  Doesn't work because loxsmoke.mddox can't handle FSharp.Core even when pointed at it
-              
-    <Exec Command="dotnet mddox $(TargetPath) -f github -o $(SolutionDir)_Documentation/$(AssemblyName)/$(AssemblyName).md -r $(TargetDir)/FSharp.Core.dll" />
-  </Target -->
-
-<Target Name="PostBuild" AfterTargets="PostBuildEvent" 
-    Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU' AND 
-                '$(OS)' == 'Windows_NT'">
-    <MakeDir Directories="$(SolutionDir)_Documentation/$(AssemblyName)" />
-    <Exec Command="$(SolutionDir)packages\pxtlca.xmlcommentmarkdowngenerator\0.2.6270.2853\tools\PxtlCa.XmlCommentMarkDownGenerator.exe -i $(DocumentationFile) -o $(SolutionDir)_Documentation/$(AssemblyName)/$(AssemblyName).md" />
-</Target>
-
+  </Target>
 </Project>
