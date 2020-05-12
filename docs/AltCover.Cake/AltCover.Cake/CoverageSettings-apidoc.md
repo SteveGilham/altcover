@@ -16,6 +16,7 @@ public class CoverageSettings
 | [PreparationPhase](CoverageSettings/PreparationPhase-apidoc) { get; set; } | Gets or sets the parameters for the preparation phase |
 | [Concatenate](CoverageSettings/Concatenate-apidoc)(…) | For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings, combined with the input value |
 | [Customize](CoverageSettings/Customize-apidoc)() | For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings |
+| [WhatIf](CoverageSettings/WhatIf-apidoc)() | Provides simple validation support for the options; of necessity, it runs in the "before preparation" state. |
 
 ## See Also
 
