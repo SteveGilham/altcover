@@ -3,6 +3,7 @@ using Cake.Common.Tools.DotNetCore.Test;
 using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.IO;
+using Microsoft.FSharp.Collections;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -30,6 +31,25 @@ namespace AltCover.Cake
     ///  Gets or sets the other command line options for the operation
     /// </summary>
     public FSDotNet.ICLIOptions Options { get; set; }
+
+    /// <summary>
+    /// Provides simple validation support for the options; of necessity, it runs in the "before preparation" state.
+    /// </summary>
+    /// <returns>A validated command line containing any errors, or an empty one if all is ok</returns>
+    public AltCover.ValidatedCommandLine WhatIf()
+    {
+      var prep = PreparationPhase.WhatIf();
+      if (prep.Errors.Any())
+        return prep;
+      else
+      {
+        var collect = CollectionPhase.WhatIf(false);
+        if (collect.Errors.Any())
+          return collect;
+      }
+
+      return new AltCover.ValidatedCommandLine(FSharpList<string>.Empty, Enumerable.Empty<string>());
+    }
 
     /// <summary>
     /// <para>For applying these settings in a pipeline; returns a delegate to transform a `ProcessArgumentBuilder` based on the current settings</para>

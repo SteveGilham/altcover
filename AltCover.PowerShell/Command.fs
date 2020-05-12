@@ -528,12 +528,12 @@ type InvokeAltCoverCommand() =
            |> String.IsNullOrWhiteSpace
            || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
               |> File.Exists
-         if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
+         if (self.ShouldProcess("Command Line : " + (CollectExtension.WhatIf task recording).ToString()))
          then Command.Collect task
          else zero
      | _ ->
          let task = self.Prepare()
-         if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
+         if (self.ShouldProcess("Command Line : " + (PrepareExtension.WhatIf task).ToString()))
          then Command.Prepare task
          else zero) log
 

@@ -214,7 +214,7 @@ module internal KeyStore =
     Justification="Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
 [<SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="Anonymous parameter")>]
-type Fix<'T> = delegate of 'T -> Fix<'T>
+type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =

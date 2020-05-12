@@ -6,27 +6,13 @@ open System.Runtime.CompilerServices
 [<Extension>]
 module PrepareExtension =
   [<Extension>]
-  let WhatIf (prepare : AltCover.PrepareOptions) : AltCover.ValidatedCommandLine=
+  let WhatIf (prepare : Abstract.IPrepareOptions) : AltCover.ValidatedCommandLine=
       { Command = Args.prepare prepare
-        Errors = prepare.Validate() }
+        Errors = (AltCover.PrepareOptions.Abstract prepare).Validate() }
 
 [<Extension>]
 module CollectExtension =
   [<Extension>]
-  let WhatIf (collect : AltCover.CollectOptions) afterPreparation : AltCover.ValidatedCommandLine=
+  let WhatIf (collect : Abstract.ICollectOptions) afterPreparation : AltCover.ValidatedCommandLine=
       { Command = Args.collect collect
-        Errors = collect.Validate(afterPreparation) }
-
-[<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
-  Justification="Two different extension mechanisms need placating")>]
-[<AutoOpen>]
-module WhatIfExtension =
-  type AltCover.CollectOptions with
-    member self.WhatIf afterPreparation : AltCover.ValidatedCommandLine =
-      CollectExtension.WhatIf self afterPreparation
-
-  type AltCover.PrepareOptions with
-    [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-      Justification="Compiler generated name for unit parameter")>]
-    member self.WhatIf() =
-      PrepareExtension.WhatIf self
+        Errors = (AltCover.CollectOptions.Abstract collect).Validate(afterPreparation) }
