@@ -39,13 +39,13 @@ $mdfile = "../altcover.wiki/PowerShell-integration.md" ## yes wiki
 
 $preamble | Out-File -Encoding UTF8 $mdfile
 
-$m.ExportedCmdlets.Keys | % {
+$m.ExportedCmdlets.Keys | Sort-Object | % {
     "* [$_](#$_)" | Out-File -Encoding UTF8 -Append $mdfile
 }
 
 " " | Out-File -Encoding UTF8 -Append $mdfile
 
-$m.ExportedCmdlets.Keys | % { 
+$m.ExportedCmdlets.Keys | Sort-Object | % { 
   $cmdletname = $_
   Write-Host "processing $_"
   $cmdlet = "./_Documentation/$($_).txt"
