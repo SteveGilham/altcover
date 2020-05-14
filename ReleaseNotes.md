@@ -2,6 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.0.xxx (Genbu series release 1)
+* [BREAKING; PowerShell] rename and generalise `Format-FromCoverletOpenCover` as `Write-OpenCoverDerivedState`
+* [BREAKING; API] Rationalise and rename across most parts of the API; remove `CSApi` as a separate assembly, with the main `AltCover` assembly publishing that part of the C# callable API, and split `FSApi` into `Toolkit` for PowerShell support and `DotNet` for `dotnet test` support.
+
 # 7.0.766-pre (Genbu series release pre-1)
 
 * There should not be any functional changes before a full 7.0 release; the pre-release is just to ensure I'm happy with the API before freezing it for 7.x

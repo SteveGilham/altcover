@@ -301,9 +301,9 @@ type ConvertFromNCoverCommand() =
 ///   <code>    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"</code>
 /// </example>
 /// </summary>
-[<Cmdlet(VerbsCommunications.Write, "OpenCoverComputedValues")>]
+[<Cmdlet(VerbsCommunications.Write, "OpenCoverDerivedState")>]
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
-type WriteOpenCoverComputedValuesCommand() =
+type WriteOpenCoverDerivedStateCommand() =
   inherit PSCmdlet()
 
   /// <summary>
