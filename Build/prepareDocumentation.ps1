@@ -1,5 +1,8 @@
 Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll"
 
+## clear first
+dir -recurse "./docs/*apidoc.md" | del -force
+
 ## Documentation
 
 $mdfiles = dir -Recurse "./_Documentation/AltCov*/*.md"
