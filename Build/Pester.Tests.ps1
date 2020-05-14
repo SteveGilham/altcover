@@ -625,7 +625,7 @@ Describe "Compress-Branching" {
   }
 }
 
-Describe "Write-OpenCoverComputedValues" {
+Describe "Write-OpenCoverDerivedState" {
   It "Outputs a document from a file" {
     $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
     $assemblies = @()
@@ -639,7 +639,7 @@ Describe "Write-OpenCoverComputedValues" {
     $sha1.Dispose()
     $hexpected = [System.BitConverter]::ToString($bytes)
     
-    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType [xdoc]
 
     $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
@@ -668,7 +668,7 @@ Describe "Write-OpenCoverComputedValues" {
     
     $xmlIn = [xdoc]::Load("./Tests/BasicCSharp.xml")
 
-    $xml = $xmlIn | Write-OpenCoverComputedValues -BranchOrdinal SL
+    $xml = $xmlIn | Write-OpenCoverDerivedState -BranchOrdinal SL
     $xml | Should -BeOfType [xdoc]
 
     $xml.Save("./_Packaging/BasicCSharp.xml")
