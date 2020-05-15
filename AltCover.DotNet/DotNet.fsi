@@ -24,7 +24,7 @@ module DotNet = begin
     /// <summary>
     /// <para type="description">The `/AltCoverFailFast` value this represents</para>
     /// </summary>
-    abstract member Force : bool with get
+    abstract member ForceDelete : bool with get
     /// <summary>
     /// <para type="description">The `/AltCoverForce` value this represents</para>
     /// </summary>
@@ -43,15 +43,16 @@ module DotNet = begin
   [<NoComparison>]
   type CLIOptions =
     | Force of bool
-    | FailFast of bool
-    | ShowSummary of System.String
+    | Fail of bool
+    | Summary of System.String
     | Many of seq<CLIOptions>
     | Abstract of ICLIOptions
     with
+      interface ICLIOptions
       /// <summary>
       /// <para type="description">The `/AltCoverFailFast` value this represents</para>
       /// </summary>
-      member Fast : bool
+      member FailFast : bool
       /// <summary>
       /// <para type="description">The `/AltCoverForce` value this represents</para>
       /// </summary>
@@ -59,20 +60,14 @@ module DotNet = begin
       /// <summary>
       /// <para type="description">The `/AltCoverShowSummary` value this represents</para>
       /// </summary>
-      member Summary : System.String
-      /// <summary>
-      /// <para type="description">Map the C#-friendly interface to the F# type</para>
-      /// <param name="input">The abstract object to translate</param>
-      /// <returns>An equivalent F# value</returns>
-      /// </summary>
-      static member Translate : ICLIOptions -> CLIOptions
+      member ShowSummary : System.String
     end
 
 // ```
 // Union type defining general command line arguments for `dotnet test` use.
 // case `Force` indicates a `/AltCoverForce` value
-// case `FailFast` inicates a `/AltCoverForce` value
-// case `ShowSummary` indicates a `/AltCoverShowSummary` value
+// case `Fail` inicates a `/AltCoverFailFast` value
+// case `Summary` indicates a `/AltCoverShowSummary` value
 // case `Many` indicates a collection of cases
 //
 // * value `Fast` gives the `/AltCoverFailFast` value this represents
@@ -100,10 +95,10 @@ module DotNet = begin
         collect:Abstract.ICollectOptions ->
           ((string -> string -> string * bool) * string * System.String) list
       val toCLIOptionsFromArgArgumentList :
-        options:CLIOptions ->
+        options:ICLIOptions ->
           ((string -> string -> string * bool) * string * System.String) list
       val toCLIOptionsArgArgumentList :
-        options:CLIOptions ->
+        options:ICLIOptions ->
           ((string -> string -> string) * string * string * bool) list
     end
 #endif
@@ -118,7 +113,7 @@ module DotNet = begin
     /// <returns>The command line as a sequence of individual items</returns>
     val ToTestArgumentList :
       prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string list
 
     /// <summary>
     /// Converts the input into the command line for `dotnet test`
@@ -129,7 +124,7 @@ module DotNet = begin
     /// <returns>The composed command line</returns>
     val ToTestArguments :
       prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
   end
 // ```
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
@@ -137,10 +132,10 @@ module DotNet = begin
 #if TRACE  // cheat mode here
     val internal toTestArgumentList :
       prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string list
     val internal toTestArguments :
       prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
   end
 #endif
 #endif
