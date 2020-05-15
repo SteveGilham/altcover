@@ -1,4 +1,4 @@
-﻿// Both the .net framework/mono and .net core releases publish MSBuld tasks from the main assembly (AltCover.exe or AltCover.dll, respectively) that wrap the command-line functionality (as documented here under [Usage](https://github.com/SteveGilham/altcover/wiki/Usage)).
+﻿// Both the .net framework/mono and .net core releases publish MSBuild tasks from the main assembly (AltCover.exe or AltCover.dll, respectively) that wrap the command-line functionality (as documented here under [Usage](https://github.com/SteveGilham/altcover/wiki/Usage)).
 //
 // # namespace `AltCover`
 //
