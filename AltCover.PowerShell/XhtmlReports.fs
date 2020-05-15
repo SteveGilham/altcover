@@ -44,6 +44,9 @@ type ConvertToBarChartCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = outputFile with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try

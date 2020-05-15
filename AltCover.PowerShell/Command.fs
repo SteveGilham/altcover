@@ -537,6 +537,9 @@ type InvokeAltCoverCommand() =
          then Command.Prepare task
          else zero) log
 
+  /// <summary>
+  /// <para type="description">Perform the `AltCover` operation</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
