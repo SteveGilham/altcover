@@ -78,6 +78,10 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
+  member val TopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
   member val ReportFormat = "OpenCover" with get, set
@@ -125,6 +129,7 @@ type Prepare() =
           MethodFilter = self.MethodFilter
           AttributeFilter = self.AttributeFilter
           PathFilter = self.PathFilter
+          TopLevel = self.TopLevel
           CallContext = self.CallContext
           ReportFormat = self.ReportFormat
           InPlace = self.InPlace

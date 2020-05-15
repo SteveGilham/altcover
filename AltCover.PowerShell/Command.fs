@@ -317,6 +317,18 @@ type InvokeAltCoverCommand() =
   member val AttributeFilter : string array = [||] with get, set
 
   /// <summary>
+  /// <para type="description">Attributes to mark a type or function as "top level"</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val TopLevel : string array = [||] with get, set
+
+  /// <summary>
   /// <para type="description">Tracking either times of visits in ticks or designated method calls leading to the visits.</para>
   /// <para type="description">A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow</para>
   /// <para type="description">A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.</para>
@@ -486,6 +498,7 @@ type InvokeAltCoverCommand() =
         MethodFilter = self.MethodFilter
         AttributeFilter = self.AttributeFilter
         PathFilter = self.PathFilter
+        TopLevel = self.TopLevel
         CallContext = self.CallContext
         ReportFormat = self.ReportFormat.ToString()
         InPlace = self.InPlace.IsPresent

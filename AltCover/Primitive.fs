@@ -64,6 +64,7 @@ module Primitive =
       MethodFilter : String seq
       AttributeFilter : String seq
       PathFilter : String seq
+      TopLevel: String seq
       CallContext : String seq
       ReportFormat : String
       InPlace : bool
@@ -96,6 +97,7 @@ module Primitive =
         MethodFilter = Seq.empty
         AttributeFilter = Seq.empty
         PathFilter = Seq.empty
+        TopLevel = Seq.empty
         CallContext = Seq.empty
         ReportFormat = String.Empty
         InPlace = true

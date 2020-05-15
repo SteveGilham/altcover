@@ -53,6 +53,7 @@
       MethodFilter="$(AltCoverMethodFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AttributeFilter="$(AltCoverAttributeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       PathFilter="$(AltCoverPathFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      TopLevel="$(AltCoverTopLevel.Replace('\',%00).Replace('||',%01).Split('|'))"
       ReportFormat="$(AltCoverReportFormat)"
       CallContext="$(AltCoverCallContext.Split('|'))"
       ZipFile="$(AltCoverZipFile)"
