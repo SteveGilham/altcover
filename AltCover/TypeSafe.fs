@@ -249,6 +249,7 @@ module TypeSafe =
       MethodFilter : Filters
       AttributeFilter : Filters
       PathFilter : Filters
+      TopLevel: Filters
       CallContext : Context
       ReportFormat : ReportFormat
       InPlace : Flag
@@ -281,6 +282,7 @@ module TypeSafe =
         MethodFilter = Unfiltered
         AttributeFilter = Unfiltered
         PathFilter = Unfiltered
+        TopLevel = Unfiltered
         CallContext = NoContext
         ReportFormat = ReportFormat.OpenCover
         InPlace = Set

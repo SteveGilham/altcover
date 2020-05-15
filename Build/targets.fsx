@@ -175,9 +175,9 @@ let NuGetAltCover =
   |> Seq.tryHead
 
 let ForceTrueOnly = DotNet.CLIOptions.Force true
-let FailTrue = DotNet.CLIOptions.FailFast true
+let FailTrue = DotNet.CLIOptions.Fail true
 
-let GreenSummary = DotNet.CLIOptions.ShowSummary "Green"
+let GreenSummary = DotNet.CLIOptions.Summary "Green"
 let ForceTrue = DotNet.CLIOptions.Many [ ForceTrueOnly; GreenSummary ]
 let ForceTrueFast = DotNet.CLIOptions.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
 

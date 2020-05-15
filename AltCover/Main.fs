@@ -52,6 +52,7 @@ module internal Main =
     CoverageParameters.nameFilters.Clear()
     CoverageParameters.theInterval <- None
     CoverageParameters.trackingNames.Clear()
+    CoverageParameters.topLevel.Clear()
     CoverageParameters.theReportFormat <- None
     CoverageParameters.inplace := false // ddFlag
     CoverageParameters.collect := false // ddFlag
@@ -93,10 +94,16 @@ module internal Main =
       (false, Left None)
 
   module internal I =
+    [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+      Justification="It's perfectly maintainable.")>]
     let internal declareOptions() =
-      let makeFilter filterscope (x : String) =
+      let makeRegex (x : String) =
         x.Replace(char 0, '\\').Replace(char 1, '|')
         |> CommandLine.validateRegexes
+
+      let makeFilter filterscope (x : String) =
+        x
+        |> makeRegex
         |> Seq.iter (FilterClass.Build filterscope >> CoverageParameters.nameFilters.Add)
 
       [ ("i|inputDirectory=",
@@ -172,6 +179,7 @@ module internal Main =
         ("t|typeFilter=", makeFilter FilterScope.Type)
         ("m|methodFilter=", makeFilter FilterScope.Method)
         ("a|attributeFilter=", makeFilter FilterScope.Attribute)
+        ("toplevel=", makeRegex >> CoverageParameters.topLevel.AddRange)
         (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
         ("c|callContext=",
          (fun x ->

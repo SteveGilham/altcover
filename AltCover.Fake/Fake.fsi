@@ -48,13 +48,13 @@ module DotNet =
 #if RUNNER
 // ```
     member WithAltCoverOptions: AltCover.Abstract.IPrepareOptions -> AltCover.Abstract.ICollectOptions ->
-                                    AltCover.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
+                                    AltCover.DotNet.ICLIOptions -> Fake.DotNet.DotNet.TestOptions
 // ```
 #else
 // ```
     member WithAltCoverOptions: Testing.Abstract.IPrepareOptions ->
                                 Testing.Abstract.ICollectOptions ->
-                                AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
+                                AltCoverFake.DotNet.Testing.DotNet.ICLIOptions ->
                                 Fake.DotNet.DotNet.TestOptions
 // ```
 #endif

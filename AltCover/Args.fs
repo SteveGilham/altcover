@@ -47,6 +47,7 @@ module internal Args =
       ("-m", args.MethodFilter)
       ("-a", args.AttributeFilter)
       ("-p", args.PathFilter)
+      ("--toplevel", args.TopLevel)
       ("-c", args.CallContext) ]
 
   let internal itemLists(args : Abstract.IPrepareOptions) =

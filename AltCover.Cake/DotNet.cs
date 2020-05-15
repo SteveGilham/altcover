@@ -67,7 +67,7 @@ namespace AltCover.Cake
         var args = FSDotNet.ToTestArgumentList(
                     this.PreparationPhase,
                     this.CollectionPhase,
-                    FSDotNet.CLIOptions.Translate(this.Options)).ToArray();
+                    this.Options).ToArray();
         Array.Reverse(args);
         Array.ForEach(
             args,

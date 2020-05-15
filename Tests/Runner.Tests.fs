@@ -1721,6 +1721,11 @@ module AltCoverRunnerTests =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --toplevel=VALUE       Optional, multiple: Functions or types marked with
+                               an attribute of a type that matches the regex
+                               are considered top-level, and are not excluded
+                               from coverage on the basis of any function or
+                               method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of

@@ -27,6 +27,9 @@ type ConvertToXmlDocumentCommand() =
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XDocument : XDocument = null with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     self.XDocument
     |> AltCover.XmlTypes.ToXmlDocument
@@ -53,6 +56,9 @@ type ConvertToXDocumentCommand() =
     Justification = "AvoidSpeculativeGenerality too")>]
   member val XmlDocument : XmlDocument = null with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     self.XmlDocument
     |> AltCover.XmlTypes.ToXDocument
@@ -95,6 +101,9 @@ type ConvertToLcovCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -145,6 +154,9 @@ type ConvertToCoberturaCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -200,6 +212,9 @@ type ConvertToNCoverCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -270,6 +285,9 @@ type ConvertFromNCoverCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -369,6 +387,9 @@ type WriteOpenCoverDerivedStateCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try

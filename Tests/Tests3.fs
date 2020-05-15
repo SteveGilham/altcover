@@ -85,7 +85,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      let optionCount = 30
+      let optionCount = 31
 
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
@@ -302,6 +302,29 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         CoverageParameters.nameFilters.Clear()
+
+    [<Test>]
+    let ParsingTopLevelGivesTopLevel() =
+      Main.init()
+      try
+        CoverageParameters.topLevel.Clear()
+        let options = Main.I.declareOptions()
+        let input = [| "--toplevel"; "1;a"; "/toplevel"; "2"; "--toplevel"; "3"; "--toplevel=4"; "--toplevel=5"; "/toplevel=6" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
+        Assert.That
+          (CoverageParameters.topLevel
+           |> Seq.map (fun x ->
+                x.Regex.ToString()), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+        Assert.That
+          (CoverageParameters.topLevel |> Seq.forall (fun x -> x.Sense = Exclude))
+      finally
+        CoverageParameters.topLevel.Clear()
 
     [<Test>]
     let ParsingMethodsGivesMethods() =
@@ -2441,6 +2464,11 @@ module AltCoverTests3 =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --toplevel=VALUE       Optional, multiple: Functions or types marked with
+                               an attribute of a type that matches the regex
+                               are considered top-level, and are not excluded
+                               from coverage on the basis of any function or
+                               method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
@@ -2567,6 +2595,11 @@ or
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --toplevel=VALUE       Optional, multiple: Functions or types marked with
+                               an attribute of a type that matches the regex
+                               are considered top-level, and are not excluded
+                               from coverage on the basis of any function or
+                               method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of

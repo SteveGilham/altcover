@@ -222,6 +222,7 @@ module internal CoverageParameters =
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
+  let internal topLevel = new List<FilterRegex>()
   let internal nameFilters = new List<FilterClass>()
 
   let mutable internal staticFilter : StaticFilter option = None

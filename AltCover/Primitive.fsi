@@ -55,6 +55,7 @@ namespace AltCoverFake.DotNet.Testing
         MethodFilter: seq<System.String>
         AttributeFilter: seq<System.String>
         PathFilter: seq<System.String>
+        TopLevel: seq<System.String>
         CallContext: seq<System.String>
         ReportFormat: System.String
         InPlace: bool

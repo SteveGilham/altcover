@@ -12,7 +12,7 @@ open System.Linq
 module DotNet =
   type ICLIOptions =
     interface
-    abstract member Force : bool with get
+    abstract member ForceDelete : bool with get
     abstract member FailFast : bool with get
     abstract member ShowSummary : String with get
     end
@@ -25,43 +25,45 @@ module DotNet =
     AutoSerializable(false)>]
   type CLIOptions =
     | Force of bool
-    | FailFast of bool
-    | ShowSummary of String
+    | Fail of bool
+    | Summary of String
     | Many of CLIOptions seq
     | Abstract of ICLIOptions
 
     member self.ForceDelete =
       match self with
       | Force b -> b
-      | ShowSummary _
-      | FailFast _ -> false
+      | Summary _
+      | Fail _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
-      | Abstract a -> a.Force
+      | Abstract a -> a.ForceDelete
 
-    member self.Fast =
+    member self.FailFast =
       match self with
-      | FailFast b -> b
-      | ShowSummary _
+      | Fail b -> b
+      | Summary _
       | Force _ -> false
-      | Many s -> s |> Seq.exists (fun f -> f.Fast)
+      | Many s -> s |> Seq.exists (fun f -> f.FailFast)
       | Abstract a -> a.FailFast
 
-    member self.Summary =
+    member self.ShowSummary =
       match self with
-      | ShowSummary b -> b
-      | FailFast _
+      | Summary b -> b
+      | Fail _
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
       | Many s ->
           match s
-                |> Seq.map (fun f -> f.Summary)
+                |> Seq.map (fun f -> f.ShowSummary)
                 |> Seq.filter (String.IsNullOrWhiteSpace >> not)
                 |> Seq.tryHead with
           | Some x -> x
           | _ -> String.Empty
 
-    static member Translate (input:ICLIOptions) =
-      Abstract input
+    interface ICLIOptions with
+      member self.FailFast = self.FailFast
+      member self.ForceDelete = self.ForceDelete
+      member self.ShowSummary = self.ShowSummary
 
   module internal I =
     let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
@@ -91,6 +93,7 @@ module DotNet =
         fromList, "MethodFilter", prepare.MethodFilter //=`"pipe '|' separated list of names"
         fromList, "AttributeFilter", prepare.AttributeFilter //=`"pipe '|' separated list of names"
         fromList, "PathFilter", prepare.PathFilter //=`"pipe '|' separated list of file path regexes"
+        fromList, "TopLevel", prepare.TopLevel //=`"pipe '|' separated list of attribute regexs"
         fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
       ]
 
@@ -125,17 +128,17 @@ module DotNet =
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
-    let internal toCLIOptionsFromArgArgumentList (options : CLIOptions) =
+    let internal toCLIOptionsFromArgArgumentList (options : ICLIOptions) =
       [
-        fromArg, "ShowSummary", options.Summary //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
+        fromArg, "ShowSummary", options.ShowSummary //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
-    let internal toCLIOptionsArgArgumentList (options : CLIOptions) =
+    let internal toCLIOptionsArgArgumentList (options : ICLIOptions) =
       [
         arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Saved` folders from previous runs
-        arg, "FailFast", "true", options.Fast //=true|false` to skip coverage collection if the unit tests fail
+        arg, "FailFast", "true", options.FailFast //=true|false` to skip coverage collection if the unit tests fail
       ]
 
 // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
@@ -148,7 +151,7 @@ module DotNet =
 #endif
       (prepare : Abstract.IPrepareOptions)
       (collect : Abstract.ICollectOptions)
-      (options : CLIOptions) =
+      (options : ICLIOptions) =
     [
       [ I.fromArg String.Empty "true" ]
       prepare
@@ -184,7 +187,7 @@ module DotNet =
 #endif
       (prepare : Abstract.IPrepareOptions)
       (collect : Abstract.ICollectOptions)
-      (options : CLIOptions) =
+      (options : ICLIOptions) =
 #if RUNNER
     ToTestArgumentList
 #else

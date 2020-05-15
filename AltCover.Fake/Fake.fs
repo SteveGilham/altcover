@@ -126,12 +126,12 @@ module DotNet =
 
 #if RUNNER
     member self.WithAltCoverOptions (prepare : Abstract.IPrepareOptions)
-           (collect : Abstract.ICollectOptions) (force : DotNet.CLIOptions) =
+           (collect : Abstract.ICollectOptions) (force : DotNet.ICLIOptions) =
       DotNet.ToTestArguments
 #else
     member self.WithAltCoverOptions (prepare : Testing.Abstract.IPrepareOptions)
            (collect : Testing.Abstract.ICollectOptions)
-           (force : AltCoverFake.DotNet.Testing.DotNet.CLIOptions) =
+           (force : AltCoverFake.DotNet.Testing.DotNet.ICLIOptions) =
       AltCoverFake.DotNet.Testing.DotNet.toTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
