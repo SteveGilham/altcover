@@ -1,7 +1,7 @@
-# DotNet.CLIOptions.NewShowSummary method
+# DotNet.CLIOptions.NewFail method
 
 ```csharp
-public static CLIOptions NewShowSummary(string item)
+public static CLIOptions NewFail(bool item)
 ```
 
 ## See Also

@@ -1,5 +1,7 @@
 # GetAcceleratorCommand.EndProcessing method
 
+List current accelerator to type mappings
+
 ```csharp
 public override void EndProcessing()
 ```

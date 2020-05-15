@@ -60,13 +60,14 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [SummaryFormat](InvokeAltCoverCommand/SummaryFormat-apidoc) { get; set; } | Selects summary format |
 | [SymbolDirectory](InvokeAltCoverCommand/SymbolDirectory-apidoc) { get; set; } | Additional folder or folders to search for matching symbols for the assemblies in the input directory |
 | [Threshold](InvokeAltCoverCommand/Threshold-apidoc) { get; set; } | One or more of minimum acceptable statement (S), branch (B) or method (M) coverage percentage (integer, 1 to 100) or maximum acceptable CRAP score (C followed by integer, 1 to 255) e.g. M80C40B50. If the value starts with a number, a leading S is assumed. If any threshold is specified more than once, the last instance is assumed -- so 25S50 counts as S50. Zero/absent values are ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the process is the largest abs(threshold - actual) rounded up to the nearest integer. |
+| [TopLevel](InvokeAltCoverCommand/TopLevel-apidoc) { get; set; } | Attributes to mark a type or function as "top level" |
 | [TypeFilter](InvokeAltCoverCommand/TypeFilter-apidoc) { get; set; } | Type names to exclude from instrumentation |
 | [Version](InvokeAltCoverCommand/Version-apidoc) { get; set; } | Selects `Version` mode |
 | [VisibleBranches](InvokeAltCoverCommand/VisibleBranches-apidoc) { get; set; } | Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies. |
 | [WorkingDirectory](InvokeAltCoverCommand/WorkingDirectory-apidoc) { get; set; } | The working directory for the application launch |
 | [XmlReport](InvokeAltCoverCommand/XmlReport-apidoc) { get; set; } | The output report template file (default: coverage.xml in the current directory) |
 | [ZipFile](InvokeAltCoverCommand/ZipFile-apidoc) { get; set; } | Emit the XML report inside a zip archive. |
-| override [ProcessRecord](InvokeAltCoverCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](InvokeAltCoverCommand/ProcessRecord-apidoc)() | Perform the `AltCover` operation |
 
 ## See Also
 

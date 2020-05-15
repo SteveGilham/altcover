@@ -17,7 +17,7 @@ public class GetAcceleratorCommand : PSCmdlet
 | name | description |
 | --- | --- |
 | [GetAcceleratorCommand](GetAcceleratorCommand/GetAcceleratorCommand-apidoc)() | The default constructor. |
-| override [EndProcessing](GetAcceleratorCommand/EndProcessing-apidoc)() |  |
+| override [EndProcessing](GetAcceleratorCommand/EndProcessing-apidoc)() | List current accelerator to type mappings |
 
 ## See Also
 

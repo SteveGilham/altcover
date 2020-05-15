@@ -9,10 +9,10 @@ public static class Tags
 | name | description |
 | --- | --- |
 | const [Abstract](DotNet.CLIOptions.Tags/Abstract-apidoc) |  |
-| const [FailFast](DotNet.CLIOptions.Tags/FailFast-apidoc) |  |
+| const [Fail](DotNet.CLIOptions.Tags/Fail-apidoc) |  |
 | const [Force](DotNet.CLIOptions.Tags/Force-apidoc) |  |
 | const [Many](DotNet.CLIOptions.Tags/Many-apidoc) |  |
-| const [ShowSummary](DotNet.CLIOptions.Tags/ShowSummary-apidoc) |  |
+| const [Summary](DotNet.CLIOptions.Tags/Summary-apidoc) |  |
 
 ## See Also
 

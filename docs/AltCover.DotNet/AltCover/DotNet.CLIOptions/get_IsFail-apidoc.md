@@ -1,9 +1,7 @@
-# DotNet.CLIOptions.Summary property
-
-The `/AltCoverShowSummary` value this represents
+# DotNet.CLIOptions.get_IsFail method
 
 ```csharp
-public string Summary { get; }
+public bool get_IsFail()
 ```
 
 ## See Also

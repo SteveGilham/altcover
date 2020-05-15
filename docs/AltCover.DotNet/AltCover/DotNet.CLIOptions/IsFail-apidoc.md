@@ -1,7 +1,7 @@
-# DotNet.CLIOptions.IsFailFast property
+# DotNet.CLIOptions.IsFail property
 
 ```csharp
-public bool IsFailFast { get; }
+public bool IsFail { get; }
 ```
 
 ## See Also

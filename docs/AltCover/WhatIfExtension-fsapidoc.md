@@ -22,6 +22,6 @@ module CollectExtension = begin
       afterPreparation:bool -> AltCover.ValidatedCommandLine
 end
 ```
-These provide C#-compatible extension methods to perform a `WhatIf` style command like validation
+These provide C#-compatible extension methods to perform a `WhatIf` style command line validation
 
 `WhatIf` compiles the effective command-line and the result of `Validate`

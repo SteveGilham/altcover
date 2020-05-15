@@ -17,7 +17,7 @@ namespace AltCover
 module DotNet = begin
   type ICLIOptions =
     interface
-    abstract member Force : bool with get
+    abstract member ForceDelete : bool with get
     abstract member FailFast : bool with get
     abstract member ShowSummary : System.String with get
     end
@@ -25,22 +25,22 @@ module DotNet = begin
   [<NoComparison>]
   type CLIOptions =
     | Force of bool
-    | FailFast of bool
-    | ShowSummary of System.String
+    | Fail of bool
+    | Summary of System.String
     | Many of seq<CLIOptions>
     | Abstract of ICLIOptions
     with
-      member Fast : bool
+      interface ICLIOptions
+      member FailFast : bool
       member ForceDelete : bool
-      member Summary : System.String
-      static member Translate : ICLIOptions -> CLIOptions
+      member ShowSummary : System.String
     end
 
 ```
 Union type defining general command line arguments for `dotnet test` use.
 case `Force` indicates a `/AltCoverForce` value
-case `FailFast` inicates a `/AltCoverForce` value
-case `ShowSummary` indicates a `/AltCoverShowSummary` value
+case `Fail` inicates a `/AltCoverFailFast` value
+case `Summary` indicates a `/AltCoverShowSummary` value
 case `Many` indicates a collection of cases
 
 * value `Fast` gives the `/AltCoverFailFast` value this represents
@@ -79,11 +79,11 @@ case `Many` indicates a collection of cases
 ```
     val ToTestArgumentList :
       prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:CLIOptions -> string list
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string list
 
     val ToTestArguments :
       prepare:Abstract.IPrepareOptions ->
-        collect:Abstract.ICollectOptions -> options:CLIOptions -> string
+        collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
   end
 ```
 The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.

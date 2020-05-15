@@ -50,7 +50,7 @@ module DotNet =
 
 ```
     member WithAltCoverOptions: AltCover.Abstract.IPrepareOptions -> AltCover.Abstract.ICollectOptions ->
-                                    AltCover.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
+                                    AltCover.DotNet.ICLIOptions -> Fake.DotNet.DotNet.TestOptions
 ```
 
 

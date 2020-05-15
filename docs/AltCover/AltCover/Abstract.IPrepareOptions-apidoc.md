@@ -35,6 +35,7 @@ public interface IPrepareOptions
 | [SourceLink](Abstract.IPrepareOptions/SourceLink-apidoc) { get; } |  |
 | [StrongNameKey](Abstract.IPrepareOptions/StrongNameKey-apidoc) { get; } |  |
 | [SymbolDirectories](Abstract.IPrepareOptions/SymbolDirectories-apidoc) { get; } |  |
+| [TopLevel](Abstract.IPrepareOptions/TopLevel-apidoc) { get; } |  |
 | [TypeFilter](Abstract.IPrepareOptions/TypeFilter-apidoc) { get; } |  |
 | [VisibleBranches](Abstract.IPrepareOptions/VisibleBranches-apidoc) { get; } |  |
 | [XmlReport](Abstract.IPrepareOptions/XmlReport-apidoc) { get; } |  |

@@ -1,9 +1,9 @@
-# InvokeAltCoverCommand.ProcessRecord method
+# InvokeAltCoverCommand.TopLevel property
 
-Perform the `AltCover` operation
+Attributes to mark a type or function as "top level"
 
 ```csharp
-public override void ProcessRecord()
+public string[] TopLevel { get; set; }
 ```
 
 ## See Also

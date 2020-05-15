@@ -5,10 +5,11 @@ public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDire
     DirectoryPaths symbolDirectories, FilePaths dependencies, FilePaths keys, 
     FilePath strongNameKey, FilePath xmlReport, Filters fileFilter, Filters assemblyFilter, 
     Filters assemblyExcludeFilter, Filters typeFilter, Filters methodFilter, 
-    Filters attributeFilter, Filters pathFilter, Context callContext, ReportFormat reportFormat, 
-    Flag inPlace, Flag save, Flag zipFile, Flag methodPoint, Flag singleVisit, Flag lineCover, 
-    Flag branchCover, Command commandLine, Flag exposeReturnCode, Flag sourceLink, Flag defer, 
-    Flag localSource, Flag visibleBranches, StaticFormat showStatic, Flag showGenerated)
+    Filters attributeFilter, Filters pathFilter, Filters topLevel, Context callContext, 
+    ReportFormat reportFormat, Flag inPlace, Flag save, Flag zipFile, Flag methodPoint, 
+    Flag singleVisit, Flag lineCover, Flag branchCover, Command commandLine, Flag exposeReturnCode, 
+    Flag sourceLink, Flag defer, Flag localSource, Flag visibleBranches, StaticFormat showStatic, 
+    Flag showGenerated)
 ```
 
 ## See Also

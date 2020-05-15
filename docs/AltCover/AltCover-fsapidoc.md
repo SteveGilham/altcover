@@ -101,6 +101,7 @@ The property members corresponding to the command line options read the values f
         member MethodPoint : bool
         member OutputDirectories : System.String list
         member PathFilter : System.String list
+        member TopLevel : System.String list
         member ReportFormat : string
         member Save : bool
         member ShowGenerated : bool

@@ -1,7 +1,9 @@
-# DotNet.CLIOptions.NewFailFast method
+# DotNet.CLIOptions.ShowSummary property
+
+The `/AltCoverShowSummary` value this represents
 
 ```csharp
-public static CLIOptions NewFailFast(bool item)
+public string ShowSummary { get; }
 ```
 
 ## See Also

@@ -37,6 +37,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [SourceLink](TypeSafe.PrepareOptions/SourceLink-apidoc) { get; } |  |
 | [StrongNameKey](TypeSafe.PrepareOptions/StrongNameKey-apidoc) { get; } |  |
 | [SymbolDirectories](TypeSafe.PrepareOptions/SymbolDirectories-apidoc) { get; } |  |
+| [TopLevel](TypeSafe.PrepareOptions/TopLevel-apidoc) { get; } |  |
 | [TypeFilter](TypeSafe.PrepareOptions/TypeFilter-apidoc) { get; } |  |
 | [VisibleBranches](TypeSafe.PrepareOptions/VisibleBranches-apidoc) { get; } |  |
 | [XmlReport](TypeSafe.PrepareOptions/XmlReport-apidoc) { get; } |  |

@@ -56,7 +56,7 @@ module DotNet =
 ```
     member WithAltCoverOptions: Testing.Abstract.IPrepareOptions ->
                                 Testing.Abstract.ICollectOptions ->
-                                AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
+                                AltCoverFake.DotNet.Testing.DotNet.ICLIOptions ->
                                 Fake.DotNet.DotNet.TestOptions
 ```
 

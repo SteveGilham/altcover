@@ -18,7 +18,7 @@ public class ConvertToXDocumentCommand : PSCmdlet
 | --- | --- |
 | [ConvertToXDocumentCommand](ConvertToXDocumentCommand/ConvertToXDocumentCommand-apidoc)() | The default constructor. |
 | [XmlDocument](ConvertToXDocumentCommand/XmlDocument-apidoc) { get; set; } | Input as `[xml]` value |
-| override [ProcessRecord](ConvertToXDocumentCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](ConvertToXDocumentCommand/ProcessRecord-apidoc)() | Create transformed document |
 
 ## See Also
 

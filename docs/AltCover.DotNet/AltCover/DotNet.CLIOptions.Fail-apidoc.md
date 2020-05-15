@@ -1,15 +1,15 @@
-# DotNet.CLIOptions.ShowSummary class
+# DotNet.CLIOptions.Fail class
 
 ```csharp
-public class ShowSummary : CLIOptions
+public class Fail : CLIOptions
 ```
 
 ## Public Members
 
 | name | description |
 | --- | --- |
-| [Item](DotNet.CLIOptions.ShowSummary/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.ShowSummary/get_Item-apidoc)() |  |
+| [Item](DotNet.CLIOptions.Fail/Item-apidoc) { get; } |  |
+| [get_Item](DotNet.CLIOptions.Fail/get_Item-apidoc)() |  |
 
 ## See Also
 

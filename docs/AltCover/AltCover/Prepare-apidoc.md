@@ -36,6 +36,7 @@ public class Prepare : Task
 | [SourceLink](Prepare/SourceLink-apidoc) { get; set; } |  |
 | [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } |  |
 | [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } |  |
+| [TopLevel](Prepare/TopLevel-apidoc) { get; set; } |  |
 | [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } |  |
 | [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } |  |
 | [XmlReport](Prepare/XmlReport-apidoc) { get; set; } |  |

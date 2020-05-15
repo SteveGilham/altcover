@@ -4,7 +4,7 @@ Converts the input into the command line for `dotnet test`
 
 ```csharp
 public static string ToTestArguments(IPrepareOptions prepare, ICollectOptions collect, 
-    CLIOptions options)
+    ICLIOptions options)
 ```
 
 | parameter | description |
@@ -19,7 +19,7 @@ The composed command line
 
 ## See Also
 
-* class [CLIOptions](../DotNet.CLIOptions-apidoc)
+* interface [ICLIOptions](../DotNet.ICLIOptions-apidoc)
 * class [DotNet](../DotNet-apidoc)
 * namespace [AltCover](../../AltCover.DotNet-apidoc)
 

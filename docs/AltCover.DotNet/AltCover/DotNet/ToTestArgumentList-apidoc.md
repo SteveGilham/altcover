@@ -4,7 +4,7 @@ Converts the input into the command line for `dotnet test`
 
 ```csharp
 public static FSharpList<string> ToTestArgumentList(IPrepareOptions prepare, 
-    ICollectOptions collect, CLIOptions options)
+    ICollectOptions collect, ICLIOptions options)
 ```
 
 | parameter | description |
@@ -19,7 +19,7 @@ The command line as a sequence of individual items
 
 ## See Also
 
-* class [CLIOptions](../DotNet.CLIOptions-apidoc)
+* interface [ICLIOptions](../DotNet.ICLIOptions-apidoc)
 * class [DotNet](../DotNet-apidoc)
 * namespace [AltCover](../../AltCover.DotNet-apidoc)
 

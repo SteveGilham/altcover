@@ -7,10 +7,11 @@ public PrepareOptions(IEnumerable<string> inputDirectories, IEnumerable<string> 
     IEnumerable<string> fileFilter, IEnumerable<string> assemblyFilter, 
     IEnumerable<string> assemblyExcludeFilter, IEnumerable<string> typeFilter, 
     IEnumerable<string> methodFilter, IEnumerable<string> attributeFilter, 
-    IEnumerable<string> pathFilter, IEnumerable<string> callContext, string reportFormat, 
-    bool inPlace, bool save, bool zipFile, bool methodPoint, bool singleVisit, bool lineCover, 
-    bool branchCover, IEnumerable<string> commandLine, bool exposeReturnCode, bool sourceLink, 
-    bool defer, bool localSource, bool visibleBranches, string showStatic, bool showGenerated)
+    IEnumerable<string> pathFilter, IEnumerable<string> topLevel, IEnumerable<string> callContext, 
+    string reportFormat, bool inPlace, bool save, bool zipFile, bool methodPoint, bool singleVisit, 
+    bool lineCover, bool branchCover, IEnumerable<string> commandLine, bool exposeReturnCode, 
+    bool sourceLink, bool defer, bool localSource, bool visibleBranches, string showStatic, 
+    bool showGenerated)
 ```
 
 ## See Also

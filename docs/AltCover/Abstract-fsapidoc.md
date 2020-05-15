@@ -11,13 +11,13 @@ namespace AltCover
 
 
 
-
+```
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
-
-## module `Primitive`
-This holds the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
+```
+## module `Abstract`
+This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
 as interfaces with the values expressed as read-only properties
 
 Refer to the types in C# either as
@@ -76,6 +76,7 @@ module Abstract =
     abstract member MethodFilter : IEnumerable<String> with get
     abstract member AttributeFilter : IEnumerable<String> with get
     abstract member PathFilter : IEnumerable<String> with get
+    abstract member TopLevel : IEnumerable<String> with get
     abstract member CallContext : IEnumerable<String> with get
     abstract member ReportFormat : String with get
     abstract member InPlace : bool with get

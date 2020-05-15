@@ -42,6 +42,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } |  |
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } |  |
 | [Tag](AltCover.PrepareOptions/Tag-apidoc) { get; } |  |
+| [TopLevel](AltCover.PrepareOptions/TopLevel-apidoc) { get; } |  |
 | [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } |  |
 | [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } |  |
 | [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } |  |

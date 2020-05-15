@@ -1,7 +1,7 @@
-# DotNet.CLIOptions.get_IsFailFast method
+# DotNet.CLIOptions.get_IsSummary method
 
 ```csharp
-public bool get_IsFailFast()
+public bool get_IsSummary()
 ```
 
 ## See Also

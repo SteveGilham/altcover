@@ -1,15 +1,15 @@
-# DotNet.CLIOptions.FailFast class
+# DotNet.CLIOptions.Summary class
 
 ```csharp
-public class FailFast : CLIOptions
+public class Summary : CLIOptions
 ```
 
 ## Public Members
 
 | name | description |
 | --- | --- |
-| [Item](DotNet.CLIOptions.FailFast/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.FailFast/get_Item-apidoc)() |  |
+| [Item](DotNet.CLIOptions.Summary/Item-apidoc) { get; } |  |
+| [get_Item](DotNet.CLIOptions.Summary/get_Item-apidoc)() |  |
 
 ## See Also
 

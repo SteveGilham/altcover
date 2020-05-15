@@ -29,7 +29,7 @@ public class WriteOpenCoverDerivedStateCommand : PSCmdlet
 | [InputFile](WriteOpenCoverDerivedStateCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](WriteOpenCoverDerivedStateCommand/OutputFile-apidoc) { get; set; } | Output as file path |
 | [XDocument](WriteOpenCoverDerivedStateCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |
-| override [ProcessRecord](WriteOpenCoverDerivedStateCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](WriteOpenCoverDerivedStateCommand/ProcessRecord-apidoc)() | Create transformed document |
 
 ## See Also
 

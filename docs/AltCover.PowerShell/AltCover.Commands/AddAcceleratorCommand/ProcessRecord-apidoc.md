@@ -1,5 +1,7 @@
 # AddAcceleratorCommand.ProcessRecord method
 
+Accumulate new accelerator to type mappings
+
 ```csharp
 public override void ProcessRecord()
 ```

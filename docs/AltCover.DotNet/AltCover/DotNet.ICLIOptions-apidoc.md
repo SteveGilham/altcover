@@ -11,7 +11,7 @@ public interface ICLIOptions
 | name | description |
 | --- | --- |
 | [FailFast](DotNet.ICLIOptions/FailFast-apidoc) { get; } | The `/AltCoverForce` value this represents |
-| [Force](DotNet.ICLIOptions/Force-apidoc) { get; } | The `/AltCoverFailFast` value this represents |
+| [ForceDelete](DotNet.ICLIOptions/ForceDelete-apidoc) { get; } | The `/AltCoverFailFast` value this represents |
 | [ShowSummary](DotNet.ICLIOptions/ShowSummary-apidoc) { get; } | The `/AltCoverShowSummary` value this represents |
 
 ## See Also
