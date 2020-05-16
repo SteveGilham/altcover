@@ -746,11 +746,7 @@ module internal Visitor =
                                  Seq.unfold (fun (state : MethodDefinition option) ->
                                    match state with
                                    | None -> None
-                                   | Some x ->
-                                       if CoverageParameters.topLevel
-                                          |> Seq.exists(fun l -> Filter.matchAttribute l.Regex l.Apply x)
-                                       then Some(x, None)
-                                       else Some(x, containingMethod x)) (Some m)
+                                   | Some x -> Some(x, containingMethod x)) (Some m)
                                  |> Seq.toList
                                 (m, k, methods))
       // Skip nested methods when in method-point mode
