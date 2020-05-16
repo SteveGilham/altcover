@@ -222,7 +222,7 @@ module internal CoverageParameters =
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
-  let internal topLevel = new List<FilterRegex>()
+  let internal topLevel = new List<FilterClass>()
   let internal nameFilters = new List<FilterClass>()
 
   let mutable internal staticFilter : StaticFilter option = None
@@ -534,7 +534,12 @@ module internal Visitor =
              let types =
                Seq.unfold
                  (fun (state : TypeDefinition) ->
-                   if isNull state then None else Some(state, state.DeclaringType)) t
+                   if isNull state then None
+                   else
+                    if CoverageParameters.topLevel
+                       |> Seq.exists(fun l -> Filter.matchAttribute l.Regex l.Apply t)
+                    then Some(state, null)
+                    else Some(state, state.DeclaringType)) t
                |> Seq.toList
 
              let inclusion = Seq.fold updateInspection included types
@@ -741,7 +746,11 @@ module internal Visitor =
                                  Seq.unfold (fun (state : MethodDefinition option) ->
                                    match state with
                                    | None -> None
-                                   | Some x -> Some(x, containingMethod x)) (Some m)
+                                   | Some x ->
+                                       if CoverageParameters.topLevel
+                                          |> Seq.exists(fun l -> Filter.matchAttribute l.Regex l.Apply x)
+                                       then Some(x, None)
+                                       else Some(x, containingMethod x)) (Some m)
                                  |> Seq.toList
                                 (m, k, methods))
       // Skip nested methods when in method-point mode

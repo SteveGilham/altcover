@@ -93,6 +93,8 @@ module internal Main =
             "--callContext", x) :: CommandLine.error
       (false, Left None)
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+    Justification="It's perfectly maintainable.")>]
   module internal I =
     [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
       Justification="It's perfectly maintainable.")>]
@@ -179,7 +181,9 @@ module internal Main =
         ("t|typeFilter=", makeFilter FilterScope.Type)
         ("m|methodFilter=", makeFilter FilterScope.Method)
         ("a|attributeFilter=", makeFilter FilterScope.Attribute)
-        ("toplevel=", makeRegex >> CoverageParameters.topLevel.AddRange)
+        ("toplevel=", makeRegex >>
+                       (Seq.map (FilterClass.Build FilterScope.Attribute)) >>
+                       CoverageParameters.topLevel.AddRange)
         (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
         ("c|callContext=",
          (fun x ->

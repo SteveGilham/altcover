@@ -58,31 +58,31 @@ type internal FilterClass =
 [<RequireQualifiedAccess>]
 module internal Filter =
 
+  let rec internal matchAttribute (name : Regex) f (nameProvider : Object) =
+    (match nameProvider with
+      | :? MethodDefinition as m ->
+          if m.IsGetter || m.IsSetter then
+            let owner =
+              m.DeclaringType.Properties
+              |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
+              |> Seq.head
+            matchAttribute name f owner
+          else
+            false
+      | _ -> false)
+    || (match nameProvider with
+        | :? ICustomAttributeProvider as attributeProvider ->
+            attributeProvider.HasCustomAttributes && attributeProvider.CustomAttributes
+                                                      |> Seq.cast<CustomAttribute>
+                                                      |> Seq.exists
+                                                          (fun attr ->
+                                                            name.IsMatch
+                                                              attr.AttributeType.FullName)
+                                                      |> f
+        | _ -> false)
+
   // Implementation details
   module private I =
-
-    let rec internal matchAttribute (name : Regex) f (nameProvider : Object) =
-      (match nameProvider with
-       | :? MethodDefinition as m ->
-           if m.IsGetter || m.IsSetter then
-             let owner =
-               m.DeclaringType.Properties
-               |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
-               |> Seq.head
-             matchAttribute name f owner
-           else
-             false
-       | _ -> false)
-      || (match nameProvider with
-          | :? ICustomAttributeProvider as attributeProvider ->
-              attributeProvider.HasCustomAttributes && attributeProvider.CustomAttributes
-                                                       |> Seq.cast<CustomAttribute>
-                                                       |> Seq.exists
-                                                            (fun attr ->
-                                                              name.IsMatch
-                                                                attr.AttributeType.FullName)
-                                                       |> f
-          | _ -> false)
 
     let internal matchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
       match nameProvider with
@@ -204,7 +204,7 @@ module internal Filter =
     | Method ->
         I.matchItem<MethodDefinition> filter.Regex f nameProvider
           (fun methodDef -> methodDef.Name)
-    | Attribute -> I.matchAttribute filter.Regex f nameProvider
+    | Attribute -> matchAttribute filter.Regex f nameProvider
     | Path -> I.matchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
   let internal isFSharpInternal(m : MethodDefinition) =
