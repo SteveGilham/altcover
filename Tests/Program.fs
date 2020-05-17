@@ -212,6 +212,7 @@ module TestMain =
           Tests.AltCoverTests.FullMethodNamesAreExtracted, "Tests.FullMethodNamesAreExtracted"
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNet, "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly, "Tests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly"
+          Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel, "Tests.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel"
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly, "Tests.ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly"
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithSourceLink, "Tests.ShouldGenerateExpectedXmlReportWithSourceLink"
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter, "Tests.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter"
