@@ -419,7 +419,7 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     <value>Method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
   </data>
   <data name="toplevel=" xml:space="preserve">
-    <value>Optional, multiple: Functions or types marked with an attribute of a type that matches the regex are considered top-level, and are not excluded from coverage on the basis of any function or method which textually encloses them.
+    <value>Optional, multiple: Types marked with an attribute of a type that matches the regex are considered top-level, and are not excluded from coverage on the basis of any type which textually encloses them.
 </value>
   </data>
 </root>

@@ -2159,8 +2159,6 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly() =
       let visitor, document = Report.reportGenerator()
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
       let path = sample4path
       try
         CoverageParameters.methodPoint := true
@@ -2170,6 +2168,91 @@ module AltCoverTests =
                               test <@ sx |> Seq.length = 1 @>)
       finally
         CoverageParameters.methodPoint := false
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportForNCoverWithTopLevel() =
+      let path = sample4path
+      try
+        Main.init()
+        let visitor1, document1 = Report.reportGenerator()
+        Visitor.visit [ visitor1 ] (Visitor.I.toSeq (path, []))
+        let names1 = document1.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ List.isEmpty names1 @>
+
+        {
+          Scope = Attribute
+          Regex = Regex "NoComparison"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+        let visitor2, document2 = Report.reportGenerator()
+        Visitor.visit [ visitor2 ] (Visitor.I.toSeq (path, []))
+        let names2 = document2.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ names2 = ["bytes"; "makeThing"; "testMakeThing"] @>
+
+        {
+          Scope = Attribute
+          Regex = Regex "AutoSerializable"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+        let visitor3, document3 = Report.reportGenerator()
+        Visitor.visit [ visitor3 ] (Visitor.I.toSeq (path, []))
+        let names3 = document3.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ names3 = ["makeThing"; "testMakeThing"] @>
+
+        CoverageParameters.nameFilters.Clear()
+        let visitor4, document4 = Report.reportGenerator()
+        Visitor.visit [ visitor4 ] (Visitor.I.toSeq (path, []))
+        let names4 = document4.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ List.isEmpty names4 @>
+
+      finally
+        Main.init()
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly() =
