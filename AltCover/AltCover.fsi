@@ -99,7 +99,9 @@ namespace AltCoverFake.DotNet.Testing
         member MethodPoint : bool
         member OutputDirectories : System.String list
         member PathFilter : System.String list
-        member TopLevel : System.String list
+        member AttributeTopLevel : System.String list
+        member TypeTopLevel : System.String list
+        member MethodTopLevel : System.String list
         member ReportFormat : string
         member Save : bool
         member ShowGenerated : bool

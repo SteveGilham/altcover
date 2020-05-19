@@ -74,7 +74,9 @@ module Abstract =
     abstract member MethodFilter : IEnumerable<String> with get
     abstract member AttributeFilter : IEnumerable<String> with get
     abstract member PathFilter : IEnumerable<String> with get
-    abstract member TopLevel : IEnumerable<String> with get
+    abstract member AttributeTopLevel : IEnumerable<String> with get
+    abstract member TypeTopLevel : IEnumerable<String> with get
+    abstract member MethodTopLevel : IEnumerable<String> with get
     abstract member CallContext : IEnumerable<String> with get
     abstract member ReportFormat : String with get
     abstract member InPlace : bool with get

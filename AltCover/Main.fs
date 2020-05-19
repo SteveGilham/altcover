@@ -103,10 +103,15 @@ module internal Main =
         x.Replace(char 0, '\\').Replace(char 1, '|')
         |> CommandLine.validateRegexes
 
-      let makeFilter filterscope (x : String) =
-        x
-        |> makeRegex
-        |> Seq.iter (FilterClass.Build filterscope >> CoverageParameters.nameFilters.Add)
+      let makeFilter filterscope =
+        makeRegex >>
+        Seq.map (FilterClass.Build filterscope) >>
+        CoverageParameters.nameFilters.AddRange
+
+      let makeTopLevel filterscope =
+         makeRegex >>
+         (Seq.map (FilterClass.Build filterscope)) >>
+         CoverageParameters.topLevel.AddRange
 
       [ ("i|inputDirectory=",
          (fun x ->
@@ -181,9 +186,9 @@ module internal Main =
         ("t|typeFilter=", makeFilter FilterScope.Type)
         ("m|methodFilter=", makeFilter FilterScope.Method)
         ("a|attributeFilter=", makeFilter FilterScope.Attribute)
-        ("toplevel=", makeRegex >>
-                       (Seq.map (FilterClass.Build FilterScope.Attribute)) >>
-                       CoverageParameters.topLevel.AddRange)
+        ("attributetoplevel=", makeTopLevel FilterScope.Attribute)
+        ("typetoplevel=", makeTopLevel FilterScope.Type)
+        ("methodtoplevel=", makeTopLevel FilterScope.Method)
         (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
         ("c|callContext=",
          (fun x ->

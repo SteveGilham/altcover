@@ -2172,8 +2172,11 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportForNCoverWithTopLevel() =
       let path = sample4path
+      let path5 = sample4path.Replace("4", "5").Replace("57", "461").Replace("netcoreapp2.1", "netstandard2.0")
+      let path6 = sample4path.Replace("4", "6").Replace("67", "461").Replace("2.1", "2.0")
       try
         Main.init()
+
         let visitor1, document1 = Report.reportGenerator()
         Visitor.visit [ visitor1 ] (Visitor.I.toSeq (path, []))
         let names1 = document1.Descendants(XName.Get "method")
@@ -2233,6 +2236,143 @@ module AltCoverTests =
                                               0))
                      |> Seq.toList
         test <@ names3 = ["makeThing"; "testMakeThing"] @>
+
+        CoverageParameters.topLevel.Clear()
+        {
+          Scope = Type
+          Regex = Regex "Thing"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+        let visitor5, document5 = Report.reportGenerator()
+        Visitor.visit [ visitor5 ] (Visitor.I.toSeq (path, []))
+        let names5 = document5.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ names5 = ["makeThing"; "testMakeThing"] @>
+
+        CoverageParameters.topLevel.Clear()
+        CoverageParameters.nameFilters.Clear()
+        {
+          Scope = Method
+          Regex = Regex "F1"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+        {
+          Scope = Method
+          Regex = Regex "F2"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+
+        let visitor6, document6 = Report.reportGenerator()
+        Visitor.visit [ visitor6 ] (Visitor.I.toSeq (path6, []))
+        let names6 = document6.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
+                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                                            mx.Attribute(XName.Get "class").Value))
+                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                                                    n.ToCharArray()
+                                                    |> Seq.take 4
+                                                    |> Seq.rev
+                                                    |> Seq.map byte
+                                                    |> Seq.toArray,
+                                                    0))
+                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                     |> Seq.toList
+        test <@ names6 |> List.isEmpty @>
+
+        {
+          Scope = Method
+          Regex = Regex "aux"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+        {
+          Scope = Method
+          Regex = Regex "fetchUrlAsync"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+
+        let visitor7, document7 = Report.reportGenerator()
+        Visitor.visit [ visitor7 ] (Visitor.I.toSeq (path6, []))
+        let names7 = document7.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                                            mx.Attribute(XName.Get "class").Value))
+                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                                                    n.ToCharArray()
+                                                    |> Seq.take 4
+                                                    |> Seq.rev
+                                                    |> Seq.map byte
+                                                    |> Seq.toArray,
+                                                    0))
+                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                     |> Seq.toList
+        test <@ names7 = ["Sample6.Module.F1"; "Sample6.Module.F2";
+         "Sample6.Module+FII@12T.Invoke"; "Sample6.Module+FI@11T.Invoke";
+         "Sample6.Module+F1@17.Invoke" ] @>
+
+        CoverageParameters.topLevel.Clear()
+        CoverageParameters.nameFilters.Clear()
+        {
+          Scope = Attribute
+          Regex = Regex "Exclude"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+
+        let visitor8, document8 = Report.reportGenerator()
+        Visitor.visit [ visitor8 ] (Visitor.I.toSeq (path5, []))
+        let names8 = document8.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
+                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                                            mx.Attribute(XName.Get "class").Value))
+                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                                                    n.ToCharArray()
+                                                    |> Seq.take 4
+                                                    |> Seq.rev
+                                                    |> Seq.map byte
+                                                    |> Seq.toArray,
+                                                    0))
+                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                     |> Seq.toList
+        test <@ names8|> List.isEmpty @>
+
+        CoverageParameters.topLevel.Clear()
+        {
+          Scope = Method
+          Regex = Regex "Interior"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+
+        let visitor9, document9 = Report.reportGenerator()
+        Visitor.visit [ visitor9 ] (Visitor.I.toSeq (path5, []))
+        let names9 = document9.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value + "    ")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.map (fun n -> n.Trim())
+                     |> Seq.toList
+        test <@ names9 = ["<F1>g__Interior|0_1"] @>
 
         CoverageParameters.nameFilters.Clear()
         let visitor4, document4 = Report.reportGenerator()

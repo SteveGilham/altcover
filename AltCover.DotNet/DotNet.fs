@@ -93,7 +93,9 @@ module DotNet =
         fromList, "MethodFilter", prepare.MethodFilter //=`"pipe '|' separated list of names"
         fromList, "AttributeFilter", prepare.AttributeFilter //=`"pipe '|' separated list of names"
         fromList, "PathFilter", prepare.PathFilter //=`"pipe '|' separated list of file path regexes"
-        fromList, "TopLevel", prepare.TopLevel //=`"pipe '|' separated list of attribute regexs"
+        fromList, "AttributeTopLevel", prepare.AttributeTopLevel //=`"pipe '|' separated list of attribute regexs"
+        fromList, "TypeTopLevel", prepare.TypeTopLevel //=`"pipe '|' separated list of typename regexs"
+        fromList, "MethodTopLevel", prepare.MethodTopLevel //=`"pipe '|' separated list of method name regexs"
         fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
       ]
 
