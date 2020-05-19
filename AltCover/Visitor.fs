@@ -454,7 +454,7 @@ module internal Visitor =
         (fun m ->
           let t = m.DeclaringType
           m.IsConstructor
-          && (t.IsNested
+          && ((t.IsNested
               && t.CustomAttributes
                  |> Seq.exists
                       (fun a ->
@@ -464,7 +464,7 @@ module internal Visitor =
              |> Seq.exists
                   (fun a ->
                     a.AttributeType.FullName =
-                      "System.Runtime.CompilerServices.CompilerGeneratedAttribute")) ]
+                      "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
       |> Seq.exists (fun f -> f m)
       |> not
 
@@ -536,10 +536,10 @@ module internal Visitor =
                  (fun (state : TypeDefinition) ->
                    if isNull state then None
                    else
-                    if CoverageParameters.topLevel
-                       |> Seq.exists(fun l -> Filter.matchAttribute l.Regex l.Apply t)
-                    then Some(state, null)
-                    else Some(state, state.DeclaringType)) t
+                    Some(state, if CoverageParameters.topLevel
+                                   |> Seq.exists (Filter.``match`` state)
+                                then null
+                                else state.DeclaringType)) t
                |> Seq.toList
 
              let inclusion = Seq.fold updateInspection included types
@@ -746,7 +746,10 @@ module internal Visitor =
                                  Seq.unfold (fun (state : MethodDefinition option) ->
                                    match state with
                                    | None -> None
-                                   | Some x -> Some(x, containingMethod x)) (Some m)
+                                   | Some x -> Some(x, if CoverageParameters.topLevel
+                                                          |> Seq.exists (Filter.``match`` x)
+                                                       then None
+                                                       else containingMethod x)) (Some m)
                                  |> Seq.toList
                                 (m, k, methods))
       // Skip nested methods when in method-point mode
