@@ -85,7 +85,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      let optionCount = 31
+      let optionCount = 33
 
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
@@ -305,26 +305,39 @@ module AltCoverTests3 =
 
     [<Test>]
     let ParsingTopLevelGivesTopLevel() =
-      Main.init()
-      try
-        CoverageParameters.topLevel.Clear()
-        let options = Main.I.declareOptions()
-        let input = [| "--toplevel"; "1;a"; "/toplevel"; "2"; "--toplevel"; "3"; "--toplevel=4"; "--toplevel=5"; "/toplevel=6" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left _ -> Assert.Fail()
-        | Right(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty)
-        Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
-        Assert.That
-          (CoverageParameters.topLevel
-           |> Seq.map (fun x ->
-                x.Regex.ToString()), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
-        Assert.That
-          (CoverageParameters.topLevel |> Seq.forall (fun x -> x.Sense = Exclude))
-      finally
-        CoverageParameters.topLevel.Clear()
+      [
+        "attributetoplevel", FilterScope.Attribute
+        "methodtoplevel", FilterScope.Method
+        "typetoplevel", FilterScope.Type
+      ]
+      |> List.iter (fun (key, value) ->
+        Main.init()
+        try
+          CoverageParameters.topLevel.Clear()
+          let options = Main.I.declareOptions()
+          let input = [| "--" + key ; "1;a";
+                         "/" + key; "2";
+                         "--" + key; "3";
+                         "--" + key + "=4";
+                         "--" + key + "=5";
+                         "/" + key + "=6" |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left _ -> Assert.Fail(key)
+          | Right(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.Empty)
+          Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
+          Assert.That
+            (CoverageParameters.topLevel
+             |> Seq.map (fun x ->
+                  match x.Scope with
+                  | scope when scope = value -> x.Regex.ToString()
+                  | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+          Assert.That
+            (CoverageParameters.topLevel |> Seq.forall (fun x -> x.Sense = Exclude))
+        finally
+          CoverageParameters.topLevel.Clear())
 
     [<Test>]
     let ParsingMethodsGivesMethods() =
@@ -2464,11 +2477,20 @@ module AltCoverTests3 =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
-      --toplevel=VALUE       Optional, multiple: Types marked with an attribute
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
                                of a type that matches the regex are considered
                                top-level, and are not excluded from coverage on
                                the basis of any type which textually encloses
                                them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
@@ -2595,11 +2617,20 @@ or
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
-      --toplevel=VALUE       Optional, multiple: Types marked with an attribute
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
                                of a type that matches the regex are considered
                                top-level, and are not excluded from coverage on
                                the basis of any type which textually encloses
                                them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of

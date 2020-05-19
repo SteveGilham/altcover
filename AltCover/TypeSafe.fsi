@@ -201,7 +201,9 @@ namespace AltCoverFake.DotNet.Testing
         MethodFilter: Filters
         AttributeFilter: Filters
         PathFilter: Filters
-        TopLevel: Filters
+        AttributeTopLevel: Filters
+        TypeTopLevel: Filters
+        MethodTopLevel: Filters
         CallContext: Context
         ReportFormat: ReportFormat
         InPlace: Flag

@@ -5,7 +5,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 # 7.0.xxx (Genbu series release 1)
 * [BREAKING; PowerShell] rename and generalise `Format-FromCoverletOpenCover` as `Write-OpenCoverDerivedState`
 * [BREAKING; API] Rationalise and rename across most parts of the API, above and beyond the pre-release; remove `CSApi` as a separate assembly, with the main `AltCover` assembly publishing that part of the C# callable API, and split `FSApi` into `Toolkit` for PowerShell support and `DotNet` for `dotnet test` support.
-* Add `--toplevel` to allow inner classes to be included in coverage by attribute rather than standing or falling with their containing class.  Alas, inner methods can't be so labelled, so still stand or fall by their containing method.
+* Add `--attributetoplevel`, `--typetoplevel`  and `--methodtoplevel`  to allow inner classes or functions to be included in coverage independently their containing class or function.
 
 # 7.0.766-pre (Genbu series release pre-1)
 

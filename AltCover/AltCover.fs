@@ -266,11 +266,23 @@ module AltCover =
       | Abstract a -> a.PathFilter |> PrepareOptions.ToList
       | TypeSafe t -> t.PathFilter.AsStrings()
 
-    member self.TopLevel =
+    member self.AttributeTopLevel =
       match self with
-      | Primitive p -> p.TopLevel |> PrepareOptions.ToList
-      | Abstract a -> a.TopLevel |> PrepareOptions.ToList
-      | TypeSafe t -> t.TopLevel.AsStrings()
+      | Primitive p -> p.AttributeTopLevel |> PrepareOptions.ToList
+      | Abstract a -> a.AttributeTopLevel |> PrepareOptions.ToList
+      | TypeSafe t -> t.AttributeTopLevel.AsStrings()
+
+    member self.TypeTopLevel =
+      match self with
+      | Primitive p -> p.TypeTopLevel |> PrepareOptions.ToList
+      | Abstract a -> a.TypeTopLevel |> PrepareOptions.ToList
+      | TypeSafe t -> t.TypeTopLevel.AsStrings()
+
+    member self.MethodTopLevel =
+      match self with
+      | Primitive p -> p.MethodTopLevel |> PrepareOptions.ToList
+      | Abstract a -> a.MethodTopLevel |> PrepareOptions.ToList
+      | TypeSafe t -> t.MethodTopLevel.AsStrings()
 
     member self.CallContext =
       match self with
@@ -393,7 +405,9 @@ module AltCover =
       member self.MethodFilter = self.MethodFilter |> PrepareOptions.ToSeq
       member self.AttributeFilter = self.AttributeFilter |> PrepareOptions.ToSeq
       member self.PathFilter = self.PathFilter |> PrepareOptions.ToSeq
-      member self.TopLevel = self.TopLevel |> PrepareOptions.ToSeq
+      member self.AttributeTopLevel = self.AttributeTopLevel |> PrepareOptions.ToSeq
+      member self.TypeTopLevel = self.TypeTopLevel |> PrepareOptions.ToSeq
+      member self.MethodTopLevel = self.MethodTopLevel |> PrepareOptions.ToSeq
       member self.CallContext = self.CallContext |> PrepareOptions.ToSeq
       member self.ReportFormat = self.ReportFormat
       member self.InPlace = self.InPlace

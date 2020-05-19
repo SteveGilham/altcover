@@ -37,7 +37,9 @@ type Prepare =
     member MethodPoint : bool with get, set
     member OutputDirectories : string array with get, set
     member PathFilter : string array with get, set
-    member TopLevel : string array with get, set
+    member AttributeTopLevel : string array with get, set
+    member TypeTopLevel : string array with get, set
+    member MethodTopLevel : string array with get, set
     member ReportFormat : string with get, set
     member Save : bool with get, set
     member ShowGenerated : bool with get, set

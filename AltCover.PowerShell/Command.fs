@@ -317,7 +317,7 @@ type InvokeAltCoverCommand() =
   member val AttributeFilter : string array = [||] with get, set
 
   /// <summary>
-  /// <para type="description">Attributes to mark a type or function as "top level"</para>
+  /// <para type="description">Attributes to mark a type as "top level"</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -326,7 +326,31 @@ type InvokeAltCoverCommand() =
       Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   [<SuppressMessage("Microsoft.Performance", "CA1819",
                     Justification = "ditto, ditto")>]
-  member val TopLevel : string array = [||] with get, set
+  member val AttributeTopLevel : string array = [||] with get, set
+
+    /// <summary>
+  /// <para type="description">Names to mark a type as "top level"</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val TypeTopLevel : string array = [||] with get, set
+
+  /// <summary>
+  /// <para type="description">Names to mark a function as "top level"</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val MethodTopLevel : string array = [||] with get, set
 
   /// <summary>
   /// <para type="description">Tracking either times of visits in ticks or designated method calls leading to the visits.</para>
@@ -498,7 +522,9 @@ type InvokeAltCoverCommand() =
         MethodFilter = self.MethodFilter
         AttributeFilter = self.AttributeFilter
         PathFilter = self.PathFilter
-        TopLevel = self.TopLevel
+        AttributeTopLevel = self.AttributeTopLevel
+        TypeTopLevel = self.TypeTopLevel
+        MethodTopLevel = self.MethodTopLevel
         CallContext = self.CallContext
         ReportFormat = self.ReportFormat.ToString()
         InPlace = self.InPlace.IsPresent
