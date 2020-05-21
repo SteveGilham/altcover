@@ -54,7 +54,7 @@
     <Compile Include="Runner.fs" />
     <Compile Include="Main.fs" />
     <Compile Include="Abstract.fsi" />
-    <Compile Include="..\_Generated\Abstract.fs" Link="Abstract.fs" />
+    <Compile Include="Abstract.fs" />
     <Compile Include="Primitive.fsi" />
     <Compile Include="Primitive.fs" />
     <Compile Include="TypeSafe.fsi" />

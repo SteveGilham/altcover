@@ -316,7 +316,7 @@ _Target "SetVersion" (fun _ ->
   Copyright := "Copyright " + copy
 
   Directory.ensure "./_Generated"
-  Shell.copyFile "./_Generated/Abstract.fs" "./AltCover/Abstract.fsi"
+  Shell.copyFile "./AltCover/Abstract.fs" "./AltCover/Abstract.fsi"
   Actions.InternalsVisibleTo(!Version)
   let v' = !Version
 

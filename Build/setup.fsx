@@ -24,8 +24,7 @@ open Fake.IO.FileSystemOperators
 
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
-Directory.ensure "./_Generated"
-Shell.copyFile "./_Generated/Abstract.fs" "./AltCover/Abstract.fsi"
+Shell.copyFile "./AltCover/Abstract.fs" "./AltCover/Abstract.fsi"
 
 // Really bootstrap
 let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
