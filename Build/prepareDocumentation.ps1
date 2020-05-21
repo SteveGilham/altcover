@@ -163,7 +163,7 @@ dir -recurse *.fsproj | % {
   if ($globals) {
     $globals = [string]::join(";", $globals).Split(";") | Select-Object -Unique | ? { $_ }
     $globals = $globals | % { "/D " + $_ + "=1" }
-    $globals = [string]::join(" ", $globals)
+    $globals = [string]::join(" ", $globals) + " /DDOCUMENTATION=1"
   }
   else {
     $globals = ""
