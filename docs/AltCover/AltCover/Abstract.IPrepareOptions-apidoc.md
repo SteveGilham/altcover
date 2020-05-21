@@ -1,6 +1,20 @@
 # Abstract.IPrepareOptions interface
 
-Command line options for `AltCover Runner`
+Command line options for `AltCover`
+
+Usage
+
+```csharp
+ using Altcover;
+ Abstract.IPrepareOptions prepare = ...
+```
+
+or
+
+```csharp
+ using static Altcover.Abstract;
+ IPrepareOptions prepare = ...
+```
 
 ```csharp
 public interface IPrepareOptions

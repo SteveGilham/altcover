@@ -11,32 +11,21 @@
 namespace AltCoverFake.DotNet.Testing
 ```
 
-```
-open System
-open System.Collections.Generic
-open System.Diagnostics.CodeAnalysis
-```
 ## module `Abstract`
-This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
-as interfaces with the values expressed as read-only properties
-
-Refer to the types in C# either as
-
-```
-using Altcover;
-Abstract.IPrepareOptions prep = ...  or whichever
-```
-or
-```
-using static Altcover.Abstract;
-IPrepareOptions prep = ... or whichever
-```
-
 
 ```
 module Abstract =
 ```
+
+This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
+as interfaces with the values expressed as read-only properties.
+
 ## interface `ICollectOptions`
+
+
+The members correspond to the like-named command line options for `AltCover Runner`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
 
 ```
   type ICollectOptions =
@@ -44,12 +33,8 @@ module Abstract =
     abstract member RecorderDirectory : String with get
     abstract member WorkingDirectory : String with get
     abstract member Executable : String with get
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Lcov is a name")>]
     abstract member LcovReport : String with get
     abstract member Threshold : String with get
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Cobertura is a name")>]
     abstract member Cobertura : String with get
     abstract member OutputFile : String with get
     abstract member CommandLine : IEnumerable<String> with get
@@ -58,6 +43,11 @@ module Abstract =
   end
 ```
 ## interface `IPrepareOptions`
+
+The members correspond to the like-named command line options for `AltCover`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
+* `SingleVisit` being the name for `--single`
 
 ```
   type IPrepareOptions =
@@ -98,6 +88,9 @@ module Abstract =
     abstract member ShowGenerated : bool with get
   end
 ```
+
+
+
 
 
 

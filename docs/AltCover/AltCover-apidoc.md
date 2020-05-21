@@ -4,7 +4,7 @@
 
 | public type | description |
 | --- | --- |
-| static class [Abstract](AltCover/Abstract-apidoc) |  |
+| static class [Abstract](AltCover/Abstract-apidoc) | This represents the weakly ("stringly") typed equivalent of the command line options as interfaces with the values expressed as read-only properties. |
 | static class [AltCover](AltCover/AltCover-apidoc) |  |
 | class [Collect](AltCover/Collect-apidoc) |  |
 | static class [CollectExtension](AltCover/CollectExtension-apidoc) |  |

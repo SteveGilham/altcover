@@ -12,8 +12,8 @@ public interface ILoggingOptions
 | --- | --- |
 | [Echo](Abstract.ILoggingOptions/Echo-apidoc) { get; } | Sink for command line/usage messages |
 | [Failure](Abstract.ILoggingOptions/Failure-apidoc) { get; } | Sink for error messages |
-| [Info](Abstract.ILoggingOptions/Info-apidoc) { get; } | Sink for warning messages |
-| [Warn](Abstract.ILoggingOptions/Warn-apidoc) { get; } | Sink for informational messages |
+| [Info](Abstract.ILoggingOptions/Info-apidoc) { get; } | Sink for informational messages |
+| [Warn](Abstract.ILoggingOptions/Warn-apidoc) { get; } | Sink for warning messages |
 
 ## See Also
 

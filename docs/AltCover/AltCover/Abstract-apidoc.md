@@ -1,5 +1,7 @@
 # Abstract class
 
+This represents the weakly ("stringly") typed equivalent of the command line options as interfaces with the values expressed as read-only properties.
+
 ```csharp
 public static class Abstract
 ```
@@ -10,7 +12,7 @@ public static class Abstract
 | --- | --- |
 | interface [ICollectOptions](Abstract.ICollectOptions-apidoc) | Command line options for `AltCover Runner` |
 | interface [ILoggingOptions](Abstract.ILoggingOptions-apidoc) | Destinations for user level output |
-| interface [IPrepareOptions](Abstract.IPrepareOptions-apidoc) | Command line options for `AltCover Runner` |
+| interface [IPrepareOptions](Abstract.IPrepareOptions-apidoc) | Command line options for `AltCover` |
 
 ## See Also
 
