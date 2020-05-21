@@ -9,36 +9,44 @@ namespace AltCover
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
-// ```
-open System
-open System.Collections.Generic
-open System.Diagnostics.CodeAnalysis
-// ```
+open System //// no doc
+open System.Collections.Generic //// no doc
+open System.Diagnostics.CodeAnalysis //// no doc
 // ## module `Abstract`
-// This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
-// as interfaces with the values expressed as read-only properties
-//
-// Refer to the types in C# either as
 //
 // ```
-// using Altcover;
-// Abstract.IPrepareOptions prep = ...  // or whichever
-// ```
-// or
-// ```
-// using static Altcover.Abstract;
-// IPrepareOptions prep = ... // or whichever
-// ```
-//
-//
-// ```
+///<summary>
+/// This represents the weakly ("stringly") typed equivalent of the command line options
+/// as interfaces with the values expressed as read-only properties.
+///</summary>
 module Abstract =
 // ```
+//
+// This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
+// as interfaces with the values expressed as read-only properties.
+//
 // ## interface `ICollectOptions`
+//
+//
+//The members correspond to the like-named command line options for `AltCover Runner`, except
+//* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+//* `CommandLine` being the material after a `-- `
 //
 // ```
   ///<summary>
-  /// Command line options for `AltCover Runner`
+  /// <para>Command line options for `AltCover Runner`</para>
+  /// <para>Usage</para>
+  /// <example>
+  /// <code>
+  /// using Altcover;
+  /// Abstract.ICollectOptions collect = ...
+  /// </code>
+  /// or
+  /// <code>
+  /// using static Altcover.Abstract;
+  /// ICollectOptions collect = ...
+  /// </code>
+  /// </example>
   ///</summary>
   type ICollectOptions =
     interface
@@ -57,8 +65,8 @@ module Abstract =
     ///<summary>
     /// Corresponds to command line option `-l, --lcovReport=VALUE`
     ///</summary>
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Lcov is a name")>]
+      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", //// no doc
+                        Justification="Lcov is a name")>] //// no doc
     abstract member LcovReport : String with get
     ///<summary>
     /// Corresponds to command line option `-t, --threshold=VALUE`
@@ -67,15 +75,15 @@ module Abstract =
     ///<summary>
     /// Corresponds to command line option `-c, --cobertura=VALUE`
     ///</summary>
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Cobertura is a name")>]
+      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", //// no doc
+                        Justification="Cobertura is a name")>] //// no doc
     abstract member Cobertura : String with get
     ///<summary>
     /// Corresponds to command line option `-o, --outputFile=VALUE`
     ///</summary>
     abstract member OutputFile : String with get
     ///<summary>
-    /// Corresponds to the command line arhuments for the executable, given after a `-- ``
+    /// Corresponds to the command line arguments for the executable, given after a `-- ``
     ///</summary>
     abstract member CommandLine : IEnumerable<String> with get
     ///<summary>
@@ -90,9 +98,26 @@ module Abstract =
 // ```
 // ## interface `IPrepareOptions`
 //
+//The members correspond to the like-named command line options for `AltCover`, except
+//* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+//* `CommandLine` being the material after a `-- `
+//* `SingleVisit` being the name for `--single`
+//
 // ```
   ///<summary>
-  /// Command line options for `AltCover Runner`
+  /// <para>Command line options for `AltCover`</para>
+  /// <para>Usage</para>
+  /// <example>
+  /// <code>
+  /// using Altcover;
+  /// Abstract.IPrepareOptions prepare = ...
+  /// </code>
+  /// or
+  /// <code>
+  /// using static Altcover.Abstract;
+  /// IPrepareOptions prepare = ...
+  /// </code>
+  /// </example>
   ///</summary>
   type IPrepareOptions =
     interface
@@ -237,6 +262,9 @@ module Abstract =
 #if RUNNER
 // ### interface `ILoggingOptions`
 //
+// Destinations for user level output at various levels of success.  `Echo` is for the
+// command line and usage warninings only.
+//
 // ```
   ///<summary>
   /// Destinations for user level output
@@ -244,11 +272,11 @@ module Abstract =
   type ILoggingOptions =
     interface
     ///<summary>
-    /// Sink for warning messages
+    /// Sink for informational messages
     ///</summary>
     abstract member Info : Action<String> with get
     ///<summary>
-    /// Sink for informational messages
+    /// Sink for warning messages
     ///</summary>
     abstract member Warn : Action<String> with get
     ///<summary>
