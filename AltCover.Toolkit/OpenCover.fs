@@ -1,17 +1,15 @@
-namespace AltCover.FSApi
+namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Linq
-open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
-open System.Xml.XPath
 
 open Mono.Cecil
-open AltCover.FSApi.XmlExtensions
+open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module OpenCover =
@@ -481,6 +479,6 @@ module OpenCover =
     xmlDocument
 
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline",
-  Scope="member", Target="<StartupCode$AltCover-FSApi>.$OpenCover.#.cctor()",
+  Scope="member", Target="<StartupCode$AltCover-Toolkit>.$OpenCover.#.cctor()",
   Justification="Compiler Generated")>]
 ()

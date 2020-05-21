@@ -64,8 +64,6 @@
     <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
     <PackageReference Include="Expecto" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
@@ -104,7 +102,7 @@
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
     <ProjectReference Include="..\Sample12\sample12.core.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>

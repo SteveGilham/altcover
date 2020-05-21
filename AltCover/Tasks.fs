@@ -23,7 +23,7 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : OptionApi.LoggingOptions option = None with get, set
+  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
@@ -78,6 +78,18 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
+  member val AttributeTopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val TypeTopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val MethodTopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
   member val ReportFormat = "OpenCover" with get, set
@@ -85,7 +97,7 @@ type Prepare() =
   member val Save = true with get, set
   member val ZipFile = false with get, set // work around Gendarme insistence on non-default values only
   member val MethodPoint = false with get, set // work around Gendarme insistence on non-default values only
-  member val Single = false with get, set // work around Gendarme insistence on non-default values only
+  member val SingleVisit = false with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
   [<SuppressMessage(
@@ -103,14 +115,14 @@ type Prepare() =
   override self.Execute() =
     let log =
       Option.getOrElse
-        (OptionApi.LoggingOptions.Primitive
+        (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
-              Error = base.Log.LogError
+              Failure = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      OptionApi.PrepareOptions.Primitive
+      AltCover.PrepareOptions.Primitive
         { InputDirectories = self.InputDirectories
           OutputDirectories = self.OutputDirectories
           SymbolDirectories = self.SymbolDirectories
@@ -125,13 +137,16 @@ type Prepare() =
           MethodFilter = self.MethodFilter
           AttributeFilter = self.AttributeFilter
           PathFilter = self.PathFilter
+          AttributeTopLevel = self.AttributeTopLevel
+          TypeTopLevel = self.TypeTopLevel
+          MethodTopLevel = self.MethodTopLevel
           CallContext = self.CallContext
           ReportFormat = self.ReportFormat
           InPlace = self.InPlace
           Save = self.Save
           ZipFile = self.ZipFile
           MethodPoint = self.MethodPoint
-          Single = self.Single
+          SingleVisit = self.SingleVisit
           LineCover = self.LineCover
           BranchCover = self.BranchCover
           CommandLine = self.CommandLine
@@ -143,7 +158,7 @@ type Prepare() =
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated }
 
-    Api.Prepare task log = 0
+    Command.Prepare task log = 0
 
 [<AutoSerializable(false)>]
 type Collect() =
@@ -152,7 +167,7 @@ type Collect() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : OptionApi.LoggingOptions option = None with get, set
+  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -183,20 +198,20 @@ type Collect() =
                                                       "MethodCanBeMadeStaticRule",
                                                       Justification =
                                                        "Instance property needed")>]
-  member self.Summary = Runner.summary.ToString()
+  member self.Summary = Command.Summary()
 
   member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse
-        (OptionApi.LoggingOptions.Primitive
+        (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
-              Error = base.Log.LogError
+              Failure = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      OptionApi.CollectOptions.Primitive
+      AltCover.CollectOptions.Primitive
         { RecorderDirectory = self.RecorderDirectory
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
@@ -208,7 +223,7 @@ type Collect() =
           ExposeReturnCode = self.ExposeReturnCode
           SummaryFormat = self.SummaryFormat }
 
-    Api.Collect task log = 0
+    Command.Collect task log = 0
 
 [<AutoSerializable(false)>]
 type PowerShell() =
@@ -217,13 +232,13 @@ type PowerShell() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = OptionApi.LoggingOptions.Primitive
+  member val internal IO = AltCover.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
-                                 Error = base.Log.LogError
+                                 Failure = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.ImportModule()
+    let r = Command.ImportModule()
     self.IO.Apply()
     r |> Output.warn
     true
@@ -235,13 +250,13 @@ type GetVersion() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = OptionApi.LoggingOptions.Primitive
+  member val internal IO = AltCover.LoggingOptions.Primitive
                              { Primitive.LoggingOptions.Create() with
-                                 Error = base.Log.LogError
+                                 Failure = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.FormattedVersion()
+    let r = Command.FormattedVersion()
     self.IO.Apply()
     r |> Output.warn
     true

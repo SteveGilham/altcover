@@ -3,11 +3,20 @@
 // ```
 namespace AltCover
 // ```
-// ## module `OptionApi`
+#else
+// # namespace `AltCoverFake.DotNet.Testing`
+// ```
+namespace AltCoverFake.DotNet.Testing
+// ```
+#endif
+
+// ```
+// ## module `AltCover`
 // ```
   [<RequireQualifiedAccess>]
-  module OptionApi = begin
+  module AltCover = begin
 // ```
+#if RUNNER
 // ### type `ValidatedCommandLine`
 // ```
     [<NoComparison>]
@@ -21,16 +30,6 @@ namespace AltCover
 // Holds the composed command line in `Command`, and any validations errors in `Errors`.
 //
 // The `ToString()` override formats the outcome for pretty-printing
-#else
-// # namespace `AltCoverFake.DotNet.Testing`
-// ```
-namespace AltCoverFake.DotNet.Testing
-// ```
-// ## module `AltCover`
-// ```
-  [<RequireQualifiedAccess>]
-  module AltCover = begin
-// ```
 #endif
 // ### type `CollectOptions`
 //
@@ -40,7 +39,9 @@ namespace AltCoverFake.DotNet.Testing
     type CollectOptions =
       | Primitive of Primitive.CollectOptions
       | TypeSafe of TypeSafe.CollectOptions
+      | Abstract of Abstract.ICollectOptions
       with
+        interface Abstract.ICollectOptions
         member Cobertura : System.String
         member CommandLine : seq<string>
         member Executable : System.String
@@ -76,7 +77,9 @@ namespace AltCoverFake.DotNet.Testing
     type PrepareOptions =
       | Primitive of Primitive.PrepareOptions
       | TypeSafe of TypeSafe.PrepareOptions
+      | Abstract of Abstract.IPrepareOptions
       with
+        interface Abstract.IPrepareOptions
         member AssemblyExcludeFilter : System.String list
         member AssemblyFilter : System.String list
         member AttributeFilter : System.String list
@@ -96,11 +99,14 @@ namespace AltCoverFake.DotNet.Testing
         member MethodPoint : bool
         member OutputDirectories : System.String list
         member PathFilter : System.String list
+        member AttributeTopLevel : System.String list
+        member TypeTopLevel : System.String list
+        member MethodTopLevel : System.String list
         member ReportFormat : string
         member Save : bool
         member ShowGenerated : bool
         member ShowStatic : string
-        member Single : bool
+        member SingleVisit : bool
         member SourceLink : bool
         member StrongNameKey : System.String
         member SymbolDirectories : System.String list
@@ -132,6 +138,7 @@ namespace AltCoverFake.DotNet.Testing
 // ```
     type LoggingOptions =
       | Primitive of Primitive.LoggingOptions
+      | Abstract of Abstract.ILoggingOptions
       with
         member Echo : (System.String -> unit)
         member Error : (System.String -> unit)
@@ -141,6 +148,7 @@ namespace AltCoverFake.DotNet.Testing
           ActionAdapter : action:System.Action<System.String> ->
                             (System.String -> unit)
         static member Create : unit -> LoggingOptions
+        static member Translate : Abstract.ILoggingOptions -> LoggingOptions
       end
 // ```
 // `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.

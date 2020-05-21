@@ -1,16 +1,10 @@
-namespace AltCover.FSApi
+namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
-open System.IO
 open System.Linq
-open System.Reflection
 open System.Xml
 open System.Xml.Linq
-open System.Xml.Schema
-open System.Xml.Xsl
-
-open AltCover
 
 module XmlTypes =
   [<SuppressMessage("Gendarme.Rules.BadPractice","PreferEmptyInstanceOverNullRule",

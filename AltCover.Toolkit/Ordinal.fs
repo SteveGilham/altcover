@@ -1,4 +1,4 @@
-﻿namespace AltCover.FSApi
+﻿namespace AltCover
 
 type BranchOrdinal =
 | Offset = 0

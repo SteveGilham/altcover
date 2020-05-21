@@ -201,13 +201,16 @@ namespace AltCoverFake.DotNet.Testing
         MethodFilter: Filters
         AttributeFilter: Filters
         PathFilter: Filters
+        AttributeTopLevel: Filters
+        TypeTopLevel: Filters
+        MethodTopLevel: Filters
         CallContext: Context
         ReportFormat: ReportFormat
         InPlace: Flag
         Save: Flag
         ZipFile: Flag
         MethodPoint: Flag
-        Single: Flag
+        SingleVisit: Flag
         LineCover: Flag
         BranchCover: Flag
         CommandLine: Command

@@ -31,8 +31,6 @@ let Copyright = ref String.Empty
 let Version = ref String.Empty
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
-let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
-
 let AltCoverFilter(p : Primitive.PrepareOptions) =
   { p with
       MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
@@ -40,15 +38,15 @@ let AltCoverFilter(p : Primitive.PrepareOptions) =
       AssemblyFilter = [ @"\.DataCollector"; "Sample" ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
+        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverApiFilter(p : Primitive.PrepareOptions) =
   { p with
       AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-      AssemblyFilter = [ "?AltCover\.FSApi" ] @ (p.AssemblyFilter |> Seq.toList)
+      AssemblyFilter = [ "?AltCover\.Toolkit" ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
+        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterX(p : Primitive.PrepareOptions) =
   { p with
@@ -57,7 +55,7 @@ let AltCoverFilterX(p : Primitive.PrepareOptions) =
       AssemblyFilter = [ @"\.DataCollector"; "Sample" ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Tests"; "Microsoft" ]
+        [ @"System\."; @"Sample3\.Class2"; "Tests"; "Microsoft"; "ICSharpCode" ]
         @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterG(p : Primitive.PrepareOptions) =
@@ -177,9 +175,9 @@ let NuGetAltCover =
   |> Seq.tryHead
 
 let ForceTrueOnly = DotNet.CLIOptions.Force true
-let FailTrue = DotNet.CLIOptions.FailFast true
+let FailTrue = DotNet.CLIOptions.Fail true
 
-let GreenSummary = DotNet.CLIOptions.ShowSummary "Green"
+let GreenSummary = DotNet.CLIOptions.Summary "Green"
 let ForceTrue = DotNet.CLIOptions.Many [ ForceTrueOnly; GreenSummary ]
 let ForceTrueFast = DotNet.CLIOptions.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
 
@@ -318,6 +316,7 @@ _Target "SetVersion" (fun _ ->
   Copyright := "Copyright " + copy
 
   Directory.ensure "./_Generated"
+  Shell.copyFile "./AltCover/Abstract.fs" "./AltCover/Abstract.fsi"
   Actions.InternalsVisibleTo(!Version)
   let v' = !Version
 
@@ -477,13 +476,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/AltCover.Shadow.dll"
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
        "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
-       "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.FSApi.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
+       "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.CSApi.dll" ]) ]
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -606,13 +605,10 @@ _Target "FxCop" (fun _ ->
         defaultCSharpRules
         cantStrongName // can't strongname this as Cake isn't strongnamed
       ])
-    ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ],
+    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net45/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/net45/AltCover.DotNet.dll"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.CSApi/Debug+AnyCPU/net45/AltCover.CSApi.dll"
-       ],
-     [],
-     defaultCSharpRules)
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ],
      [],
       defaultRules)
@@ -805,7 +801,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt*  +[AltCover.FSApi]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt*  +[AltCover.Toolkit]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -821,7 +817,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -837,7 +833,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -1055,7 +1051,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                 XmlReport = altReport
                 OutputDirectories = [| outputDirectory |]
                 StrongNameKey = signingKey
-                Single = true
+                SingleVisit = true
                 InPlace = false
                 Save = false }
             |> filter)
@@ -1263,7 +1259,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                 OutputDirectories = [| output |]
                 VisibleBranches = true
                 StrongNameKey = keyfile
-                Single = true
+                SingleVisit = true
                 InPlace = false
                 Save = false }
             |> AltCoverFilter)
@@ -1677,6 +1673,8 @@ _Target "SelfTest" (fun _ ->
          WorkingDirectory = "." }
      |> AltCoverCommand.composeCommandLine).CommandLine
 
+  let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.* -[*]ICSharpCode.*"
+
   OpenCover.run (fun p ->
     { p with
         WorkingDir = targetDir
@@ -2053,10 +2051,10 @@ _Target "Packaging" (fun _ ->
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll-Help.xml"
   if (poshHelp |> File.Exists |> not) && (Environment.isWindows |> not)
   then File.WriteAllText(poshHelp, "DUMMY TEXT")
-  let csapi =
-    Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/net45/AltCover.CSApi.dll"
-  let fsapi =
-    Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/net45/AltCover.FSApi.dll"
+  let toolkit =
+    Path.getFullName "_Binaries/AltCover.Toolkit/Release+AnyCPU/net45/AltCover.Toolkit.dll"
+  let dotnet =
+    Path.getFullName "_Binaries/AltCover.DotNet/Release+AnyCPU/net45/AltCover.DotNet.dll"
   let cake =
     Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/net46/AltCover.Cake.dll"
   let fake =
@@ -2090,7 +2088,7 @@ _Target "Packaging" (fun _ ->
       (recorder, Some "tools/net45", None)
       (posh, Some "tools/net45", None)
       (poshHelp, Some "tools/net45", None)
-      (fsapi, Some "tools/net45", None)
+      (toolkit, Some "tools/net45", None)
       (vis, Some "tools/net45", None)
       (fscore, Some "tools/net45", None)
       (fox, Some "tools/net45", None)
@@ -2103,8 +2101,8 @@ _Target "Packaging" (fun _ ->
       (recorder, Some "lib/net45", None)
       (posh, Some "lib/net45", None)
       (poshHelp, Some "lib/net45", None)
-      (fsapi, Some "lib/net45", None)
-      (csapi, Some "lib/net45", None)
+      (toolkit, Some "lib/net45", None)
+      (dotnet, Some "lib/net45", None)
       (cake, Some "lib/net45", None)
       (fake, Some "lib/net45", None)
       (fscore, Some "lib/net45", None)
@@ -2159,7 +2157,7 @@ _Target "Packaging" (fun _ ->
 
   let poshFiles where =
     [ (!!"./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
-      (!!"./_Binaries/AltCover.FSApi/Release+AnyCPU/netstandard2.0/*.FSApi.*") ]
+      (!!"./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
     |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
@@ -2180,7 +2178,9 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let fakeFiles where =
-    (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+    [ (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+      (!!"./_Binaries/AltCover.DotNet/Release+AnyCPU/netstandard2.0/AltCover.Dot*.*") ]
+    |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2209,10 +2209,7 @@ _Target "Packaging" (fun _ ->
     (!!"./_Publish.api/**/*.*")
     |> Seq.filter (fun f ->
          let n = f |> Path.GetFileName
-         n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase)
-         || n.StartsWith("Mono.", StringComparison.Ordinal)
-         || n.StartsWith("BlackFox.", StringComparison.Ordinal)
-         || n.StartsWith("FSharp.Core.", StringComparison.Ordinal))
+         n.StartsWith("System.", StringComparison.OrdinalIgnoreCase) |> not)
     |> Seq.map (fun x ->
          (x,
           Some(where + Path.GetDirectoryName(x).Substring(publishapi).Replace("\\", "/")),
@@ -3257,19 +3254,31 @@ let _Target s f =
 
 _Target "DoIt"
   (fun _ ->
-  AltCover.Api.Version() |> printfn "AltCover.Api.Version - Returned %A"
-  AltCover.Api.FormattedVersion() |> printfn "AltCover.Api.FormattedVersion - Returned '%s'"
-  AltCover.Fake.Api.Version().ToString() |> Trace.trace
-  AltCover.CSApi.Version() |> printfn " - Returned %A"
+  let expected = {0}
+  let acv = AltCover.Command.Version()
+  printfn "AltCover.Command.Version - Returned %A expected %A" acv expected
+  if acv.ToString() <> expected
+  then failwith "AltCover.Command.Version mismatch"
+
+  let acfv = AltCover.Command.FormattedVersion()
+  printfn "AltCover.Command.FormattedVersion - Returned '%s' expected %A" acfv expected
+  if acfv <> (sprintf "AltCover version %s" expected)
+  then failwith "AltCover.Command.FormattedVersion mismatch"
+
+  let afcv = AltCover.Fake.Command.Version().ToString()
+  afcv |> Trace.trace
+  printfn "expected %A" expected
+  if afcv.ToString() <> expected
+  then failwith "AltCover.Fake.Command.Version mismatch"
 
   let collect =
-    AltCover.OptionApi.CollectOptions.Primitive
+    AltCover.AltCover.CollectOptions.Primitive
       { AltCover.Primitive.CollectOptions.Create() with LcovReport = "x" }
   let prepare =
-    AltCover.OptionApi.PrepareOptions.Primitive
+    AltCover.AltCover.PrepareOptions.Primitive
       { AltCover.Primitive.PrepareOptions.Create() with TypeFilter = [| "a"; "b" |] }
-  let ForceTrue = AltCover.FSApi.DotNet.CLIOptions.Force true
-  printfn "Test arguments : '%s'" (AltCover.FSApi.DotNet.ToTestArguments prepare collect ForceTrue)
+  let ForceTrue = AltCover.DotNet.CLIOptions.Force true
+  printfn "Test arguments : '%s'" (AltCover.DotNet.ToTestArguments prepare collect ForceTrue)
 
   let t = DotNet.TestOptions.Create().WithAltCoverOptions prepare collect ForceTrue
   printfn "WithAltCoverOptions returned '%A'" t.Common.CustomParams
@@ -3279,9 +3288,9 @@ _Target "DoIt"
         CallContext = [| "[Fact]"; "0" |]
         AssemblyFilter = [| "xunit" |] }
 
-  let pp2 = AltCover.OptionApi.PrepareOptions.Primitive p2
+  let pp2 = AltCover.AltCover.PrepareOptions.Primitive p2
   let c2 = AltCover.Primitive.CollectOptions.Create()
-  let cc2 = AltCover.OptionApi.CollectOptions.Primitive c2
+  let cc2 = AltCover.AltCover.CollectOptions.Primitive c2
 
   let setBaseOptions (o: DotNet.Options) =
     { o with
@@ -3299,16 +3308,16 @@ _Target "DoIt"
     { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 ForceTrue with
         MSBuildParams = cliArguments }) "dotnettest.fsproj"
   let ImportModule =
-    (AltCover.Api.ImportModule().Trim().Split()
+    (AltCover.Command.ImportModule().Trim().Split()
      |> Seq.take 2
      |> Seq.skip 1
      |> Seq.head).Trim([| '"' |])
 
   let command = "$ImportModule = '" + ImportModule + "'; Import-Module $ImportModule; ConvertTo-BarChart -?"
 
-  let corePath = AltCover.Fake.Api.ToolPath AltCover.Fake.Implementation.DotNetCore
+  let corePath = AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.DotNetCore
   printfn "corePath = %A" corePath
-  let frameworkPath = AltCover.Fake.Api.ToolPath AltCover.Fake.Implementation.Framework
+  let frameworkPath = AltCover.Fake.Command.ToolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
   if frameworkPath |> String.IsNullOrEmpty |> not
@@ -3345,7 +3354,10 @@ _Target "DoIt"
   if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
 """
-    File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
+    let vv = !Version + "-"
+    let ver = vv.Split([|'-'|]) |> Seq.head
+
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + ver + "\""))
 
     let dependencies = """version 5.241.2
 // [ FAKE GROUP ]
@@ -3943,6 +3955,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 // AOB
 
 _Target "MakeDocumentation" (fun _ ->
+  let branch = Information.getBranchName(".")
+  Assert.That(branch, Is.EqualTo("master").Or.StartWith("/develop/docs/"), branch)
   CreateProcess.fromRawCommand "powershell.exe"
     [ "-NoProfile"; "./Build/prepareDocumentation.ps1" ]
   |> CreateProcess.withWorkingDirectory "."

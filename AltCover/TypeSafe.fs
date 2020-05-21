@@ -249,13 +249,16 @@ module TypeSafe =
       MethodFilter : Filters
       AttributeFilter : Filters
       PathFilter : Filters
+      AttributeTopLevel: Filters
+      TypeTopLevel: Filters
+      MethodTopLevel: Filters
       CallContext : Context
       ReportFormat : ReportFormat
       InPlace : Flag
       Save : Flag
       ZipFile : Flag
       MethodPoint : Flag
-      Single : Flag
+      SingleVisit : Flag
       LineCover : Flag
       BranchCover : Flag
       CommandLine : Command
@@ -281,13 +284,16 @@ module TypeSafe =
         MethodFilter = Unfiltered
         AttributeFilter = Unfiltered
         PathFilter = Unfiltered
+        AttributeTopLevel = Unfiltered
+        TypeTopLevel = Unfiltered
+        MethodTopLevel = Unfiltered
         CallContext = NoContext
         ReportFormat = ReportFormat.OpenCover
         InPlace = Set
         Save = Set
         ZipFile = Clear
         MethodPoint = Clear
-        Single = Clear
+        SingleVisit = Clear
         LineCover = Clear
         BranchCover = Clear
         CommandLine = NoCommand

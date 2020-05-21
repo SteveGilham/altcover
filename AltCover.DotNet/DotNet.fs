@@ -1,5 +1,5 @@
 ﻿#if RUNNER
-namespace AltCover.FSApi
+namespace AltCover
 #else
 namespace AltCoverFake.DotNet.Testing
 #endif
@@ -8,13 +8,15 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
 
-#if RUNNER
-type PrepareParams = AltCover.OptionApi.PrepareOptions
-type CollectParams = AltCover.OptionApi.CollectOptions
-#endif
-
 [<RequireQualifiedAccess>]
 module DotNet =
+  type ICLIOptions =
+    interface
+    abstract member ForceDelete : bool with get
+    abstract member FailFast : bool with get
+    abstract member ShowSummary : String with get
+    end
+
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
                                   Justification = "Idiomatic F#");
                   SuppressMessage("Gendarme.Rules.Smells",
@@ -23,36 +25,45 @@ module DotNet =
     AutoSerializable(false)>]
   type CLIOptions =
     | Force of bool
-    | FailFast of bool
-    | ShowSummary of String
+    | Fail of bool
+    | Summary of String
     | Many of CLIOptions seq
+    | Abstract of ICLIOptions
 
     member self.ForceDelete =
       match self with
       | Force b -> b
-      | ShowSummary _
-      | FailFast _ -> false
+      | Summary _
+      | Fail _ -> false
       | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
+      | Abstract a -> a.ForceDelete
 
-    member self.Fast =
+    member self.FailFast =
       match self with
-      | FailFast b -> b
-      | ShowSummary _
+      | Fail b -> b
+      | Summary _
       | Force _ -> false
-      | Many s -> s |> Seq.exists (fun f -> f.Fast)
+      | Many s -> s |> Seq.exists (fun f -> f.FailFast)
+      | Abstract a -> a.FailFast
 
-    member self.Summary =
+    member self.ShowSummary =
       match self with
-      | ShowSummary b -> b
-      | FailFast _
+      | Summary b -> b
+      | Fail _
       | Force _ -> String.Empty
+      | Abstract a -> a.ShowSummary
       | Many s ->
           match s
-                |> Seq.map (fun f -> f.Summary)
+                |> Seq.map (fun f -> f.ShowSummary)
                 |> Seq.filter (String.IsNullOrWhiteSpace >> not)
                 |> Seq.tryHead with
           | Some x -> x
           | _ -> String.Empty
+
+    interface ICLIOptions with
+      member self.FailFast = self.FailFast
+      member self.ForceDelete = self.ForceDelete
+      member self.ShowSummary = self.ShowSummary
 
   module internal I =
     let private arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
@@ -70,7 +81,7 @@ module DotNet =
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
                        Justification="Compiler Generated")>]
-    let internal toPrepareListArgumentList (prepare : PrepareParams) =
+    let internal toPrepareListArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe '|' separated list of paths"
         fromList, "DependencyList", prepare.Dependencies //=`"pipe '|' separated list of paths"
@@ -82,10 +93,13 @@ module DotNet =
         fromList, "MethodFilter", prepare.MethodFilter //=`"pipe '|' separated list of names"
         fromList, "AttributeFilter", prepare.AttributeFilter //=`"pipe '|' separated list of names"
         fromList, "PathFilter", prepare.PathFilter //=`"pipe '|' separated list of file path regexes"
+        fromList, "AttributeTopLevel", prepare.AttributeTopLevel //=`"pipe '|' separated list of attribute regexs"
+        fromList, "TypeTopLevel", prepare.TypeTopLevel //=`"pipe '|' separated list of typename regexs"
+        fromList, "MethodTopLevel", prepare.MethodTopLevel //=`"pipe '|' separated list of method name regexs"
         fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
       ]
 
-    let internal toPrepareFromArgArgumentList (prepare : PrepareParams) =
+    let internal toPrepareFromArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
         fromArg, "XmlReport", prepare.XmlReport //=`"path to the xml report" default: `coverage.xml` in the project directory)
@@ -93,11 +107,11 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
-    let internal toPrepareArgArgumentList (prepare : PrepareParams) =
+    let internal toPrepareArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
         (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
-        (arg, "Single", "false", prepare.Single) //="true|false"` - set "true" to record only the first visit to each point
+        (arg, "Single", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
         (arg, "BranchCover", "true", prepare.BranchCover)  //="true|false"` - set "true" to record only branch coverage in OpenCover format
         (arg, "SourceLink", "false", prepare.SourceLink) //=true|false` to opt for SourceLink document URLs for tracked files
@@ -106,7 +120,7 @@ module DotNet =
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
       ]
 
-    let internal toCollectFromArgArgumentList (collect : CollectParams) =
+    let internal toCollectFromArgArgumentList (collect : Abstract.ICollectOptions) =
       [
         fromArg, "LcovReport", collect.LcovReport //=`"path to lcov format result"
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
@@ -116,30 +130,30 @@ module DotNet =
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
-    let internal toCLIOptionsFromArgArgumentList (options : CLIOptions) =
+    let internal toCLIOptionsFromArgArgumentList (options : ICLIOptions) =
       [
-        fromArg, "ShowSummary", options.Summary //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
+        fromArg, "ShowSummary", options.ShowSummary //=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
-    let internal toCLIOptionsArgArgumentList (options : CLIOptions) =
+    let internal toCLIOptionsArgArgumentList (options : ICLIOptions) =
       [
         arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Saved` folders from previous runs
-        arg, "FailFast", "true", options.Fast //=true|false` to skip coverage collection if the unit tests fail
+        arg, "FailFast", "true", options.FailFast //=true|false` to skip coverage collection if the unit tests fail
       ]
 
 // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
 // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
-  let ToTestArgumentList (prepare : AltCover.OptionApi.PrepareOptions)
-      (collect : AltCover.OptionApi.CollectOptions) (options : CLIOptions) =
+  let ToTestArgumentList
 #else
-  let internal toTestArgumentList (prepare : PrepareParams)
-      (collect : CollectParams)
-      (options : CLIOptions) =
+  let internal toTestArgumentList
 #endif
+      (prepare : Abstract.IPrepareOptions)
+      (collect : Abstract.ICollectOptions)
+      (options : ICLIOptions) =
     [
       [ I.fromArg String.Empty "true" ]
       prepare
@@ -169,12 +183,16 @@ module DotNet =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare : AltCover.OptionApi.PrepareOptions)
-      (collect : AltCover.OptionApi.CollectOptions) (options : CLIOptions) =
-    ToTestArgumentList prepare collect options |> I.join
+  let ToTestArguments
 #else
-  let internal toTestArguments (prepare : PrepareParams)
-      (collect : CollectParams)
-      (options : CLIOptions) =
-    toTestArgumentList prepare collect options |> I.join
+  let internal toTestArguments
 #endif
+      (prepare : Abstract.IPrepareOptions)
+      (collect : Abstract.ICollectOptions)
+      (options : ICLIOptions) =
+#if RUNNER
+    ToTestArgumentList
+#else
+    toTestArgumentList
+#endif
+      prepare collect options |> I.join

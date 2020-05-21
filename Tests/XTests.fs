@@ -157,11 +157,18 @@ module AltCoverXTests =
                                               Threshold = "23"
                                               CommandLine = null }
 
-    let instance = OptionApi.CollectOptions.Primitive subject
+    let instance = AltCover.CollectOptions.Primitive subject
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    test <@ (OptionApi.CollectOptions.Primitive subject)
+    test <@ instance
+            |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
+    // hack
+    let rerun = AltCover.CollectOptions.Abstract instance
+    let scan = rerun.Validate(false)
+    test <@ scan.Length = 0 @>
+    test <@ (rerun.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
+    test <@ rerun
             |> Args.collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
@@ -183,7 +190,7 @@ module AltCoverXTests =
                                              SummaryFormat = TypeSafe.BPlus
                                              Executable = TypeSafe.Tool "dotnet" }
 
-    let instance = OptionApi.CollectOptions.TypeSafe subject
+    let instance = AltCover.CollectOptions.TypeSafe subject
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
 
     let scan = instance.Validate(false)
@@ -191,7 +198,7 @@ module AltCoverXTests =
     test
       <@ instance
          |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
-    let validate = instance.WhatIf(false)
+    let validate = (CollectExtension.WhatIf instance false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --teamcity:+B" @>
 
@@ -208,13 +215,13 @@ module AltCoverXTests =
   [<Test>]
   let CollectOptionsCanBeValidatedWithErrors() =
     let subject = Primitive.CollectOptions.Create()
-    let scan = (OptionApi.CollectOptions.Primitive subject).Validate(true)
+    let scan = (AltCover.CollectOptions.Primitive subject).Validate(true)
     test <@ scan.Length = 1 @>
 
   [<Test>]
   let TypeSafeCollectOptionsCanBeValidatedWithErrors() =
     let subject = TypeSafe.CollectOptions.Create()
-    let scan = (OptionApi.CollectOptions.TypeSafe subject).Validate(true)
+    let scan = (AltCover.CollectOptions.TypeSafe subject).Validate(true)
     test <@ scan.Length = 1 @>
 
   [<Test>]
@@ -223,7 +230,13 @@ module AltCoverXTests =
       { Primitive.CollectOptions.Create() with
                                               RecorderDirectory =
                                                 Guid.NewGuid().ToString() }
-    let scan = (OptionApi.CollectOptions.Primitive test).Validate(true)
+    let instance = AltCover.CollectOptions.Primitive test
+    let scan = instance.Validate(true)
+    test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
+
+    // hack
+    let rerun = AltCover.CollectOptions.Abstract instance
+    let scan = rerun.Validate(true)
     test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
 
   [<Test>]
@@ -233,7 +246,7 @@ module AltCoverXTests =
                                              RecorderDirectory =
                                                TypeSafe.DInfo
                                                <| DirectoryInfo(Guid.NewGuid().ToString()) }
-    let scan = (OptionApi.CollectOptions.TypeSafe test).Validate(true)
+    let scan = (AltCover.CollectOptions.TypeSafe test).Validate(true)
     test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
 
   [<Test>]
@@ -250,12 +263,22 @@ module AltCoverXTests =
                                               CallContext = [| "[Fact]" |]
                                               PathFilter = [| "ok" |] }
 
-    let instance = OptionApi.PrepareOptions.Primitive subject
+    let instance = AltCover.PrepareOptions.Primitive subject
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    let rendered = (OptionApi.PrepareOptions.Primitive subject) |> Args.prepare
+    let rendered = instance |> Args.prepare
     let location = Assembly.GetExecutingAssembly().Location
+    test
+      <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
+                      "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace"; "--save" ] @>
+
+    // hack
+    let rerun = AltCover.PrepareOptions.Abstract instance
+    let scan = rerun.Validate()
+    test <@ scan.Length = 0 @>
+    test <@ (rerun.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
+    let rendered = rerun |> Args.prepare
     test
       <@ rendered = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location; "-p"; "ok"; "-c";
                       "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace"; "--save" ] @>
@@ -290,7 +313,7 @@ module AltCoverXTests =
                                              PathFilter =
                                                TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
 
-    let instance = OptionApi.PrepareOptions.TypeSafe subject
+    let instance = AltCover.PrepareOptions.TypeSafe subject
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
 
     let scan = instance.Validate()
@@ -301,7 +324,7 @@ module AltCoverXTests =
          |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace";
                                    "--save"; "--methodpoint" ] @>
-    let validate = (OptionApi.PrepareOptions.TypeSafe subject).WhatIf().ToString()
+    let validate = (subject |> AltCover.PrepareOptions.TypeSafe |> PrepareExtension.WhatIf).ToString()
     test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --reportFormat OpenCover --inplace --save --methodpoint" @>
 
   [<Test>]
@@ -329,11 +352,11 @@ module AltCoverXTests =
                                                TypeSafe.Filters
                                                  [| TypeSafe.FilterItem <| Regex "ok" |] }
 
-    let scan = (OptionApi.PrepareOptions.TypeSafe subject).Validate()
+    let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
     test <@ scan.Length = 0 @>
     let location = Assembly.GetExecutingAssembly().Location
     test
-      <@ (OptionApi.PrepareOptions.TypeSafe subject)
+      <@ (AltCover.PrepareOptions.TypeSafe subject)
          |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "--reportFormat"; "NCover"; "--inplace"; "--save"; "--";
                                    "[Fact]" ] @>
@@ -347,7 +370,7 @@ module AltCoverXTests =
                                               StrongNameKey = input
                                               Keys = [| input |] }
 
-    let scan = (OptionApi.PrepareOptions.Primitive subject).Validate()
+    let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
 #if NETCOREAPP2_1
     ()
 #else
@@ -366,7 +389,7 @@ module AltCoverXTests =
                                                TypeSafe.FilePaths
                                                  [| TypeSafe.FilePath input |] }
 
-    let scan = (OptionApi.PrepareOptions.TypeSafe subject).Validate()
+    let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
 #if NETCOREAPP2_1
     ()
 #else
@@ -376,7 +399,7 @@ module AltCoverXTests =
   [<Test>]
   let PrepareOptionsCanBeValidatedWithNulls() =
     let subject = { Primitive.PrepareOptions.Create() with CallContext = null }
-    let scan = (OptionApi.PrepareOptions.Primitive subject).Validate()
+    let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
     test <@ scan.Length = 0 @>
 
   [<Test>]
@@ -385,10 +408,10 @@ module AltCoverXTests =
       { Primitive.PrepareOptions.Create() with
                                               BranchCover = true
                                               LineCover = true
-                                              Single = true
+                                              SingleVisit = true
                                               CallContext = [| "0" |] }
 
-    let scan = (OptionApi.PrepareOptions.Primitive subject).Validate()
+    let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
     test <@ scan.Length = 2 @>
 
   [<Test>]
@@ -397,11 +420,11 @@ module AltCoverXTests =
       { TypeSafe.PrepareOptions.Create() with
                                              BranchCover = TypeSafe.Flag true
                                              LineCover = TypeSafe.Flag true
-                                             Single = TypeSafe.Flag true
+                                             SingleVisit = TypeSafe.Flag true
                                              CallContext =
                                                TypeSafe.Context
                                                  [| TypeSafe.TimeItem 0uy |] }
-      |> OptionApi.PrepareOptions.TypeSafe
+      |> AltCover.PrepareOptions.TypeSafe
 
     let scan = subject.Validate()
     test <@ scan.Length = 2 @>
@@ -429,7 +452,7 @@ module AltCoverXTests =
                                                 String(Path.GetInvalidPathChars())
                                               CallContext = [| "0"; "1" |] }
 
-    let scan = (OptionApi.PrepareOptions.Primitive subject).Validate()
+    let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
     test <@ scan.Length = 2 @>
 
   [<Test>]

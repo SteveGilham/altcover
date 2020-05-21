@@ -44,6 +44,9 @@ type ConvertToBarChartCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = outputFile with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -51,7 +54,7 @@ type ConvertToBarChartCommand(outputFile : String) =
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
-      let rewrite = AltCover.FSApi.Xhtml.ConvertToBarChart self.XDocument
+      let rewrite = AltCover.Xhtml.ConvertToBarChart self.XDocument
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not

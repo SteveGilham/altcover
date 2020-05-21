@@ -351,7 +351,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -430,14 +430,14 @@ module AltCoverRunnerTests =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<OptionApi.CollectOptions>.GetProperties()
+      let fsapiNames = typeof<AltCover.CollectOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<OptionApi.CollectOptions>
+      let fsapiCases = (typeof<AltCover.CollectOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.CollectOptions.Create() |> OptionApi.CollectOptions.Primitive
+      let args = Primitive.CollectOptions.Create() |> AltCover.CollectOptions.Primitive
       let commandFragments = Args.buildCollect args
 
       // adds Runner and the trailing command line arguments
@@ -1616,7 +1616,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1675,7 +1675,7 @@ module AltCoverRunnerTests =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<TeamCityFormat>.Assembly.GetType("AltCover.AltCover")
+          typeof<TeamCityFormat>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
@@ -1721,6 +1721,20 @@ module AltCoverRunnerTests =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
+                               of a type that matches the regex are considered
+                               top-level, and are not excluded from coverage on
+                               the basis of any type which textually encloses
+                               them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
@@ -1860,7 +1874,7 @@ or
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding

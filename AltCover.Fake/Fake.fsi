@@ -6,7 +6,7 @@ namespace AltCover.Fake
 // ## module `Trace`
 // ```
 module Trace =
-  val Create: unit -> AltCover.OptionApi.LoggingOptions
+  val Create: unit -> AltCover.AltCover.LoggingOptions
 // ```
 // Returns an instance of the core API Logging type that hooks into the `Fake.Core.Trace` facilities
 //
@@ -19,13 +19,13 @@ type Implementation =
 // ```
 // to indicate which command-line executable from the current NuGet package to return
 //
-// ## type `Api`
+// ## type `Command`
 // ```
 [<Sealed; AbstractClass>]
-type Api =
-  static member Collect : args:AltCover.OptionApi.CollectOptions * ?log:AltCover.OptionApi.LoggingOptions -> int
+type Command =
+  static member Collect : args:AltCover.Abstract.ICollectOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member ImportModule : unit -> string
-  static member Prepare : args:AltCover.OptionApi.PrepareOptions * ?log:AltCover.OptionApi.LoggingOptions -> int
+  static member Prepare : args:AltCover.Abstract.IPrepareOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member Version : unit -> System.Version
   static member ToolPath : Implementation -> string
 // ```
@@ -47,15 +47,15 @@ module DotNet =
 // ```
 #if RUNNER
 // ```
-    member WithAltCoverOptions: AltCover.OptionApi.PrepareOptions -> AltCover.OptionApi.CollectOptions ->
-                                    AltCover.FSApi.DotNet.CLIOptions -> Fake.DotNet.DotNet.TestOptions
+    member WithAltCoverOptions: AltCover.Abstract.IPrepareOptions -> AltCover.Abstract.ICollectOptions ->
+                                    AltCover.DotNet.ICLIOptions -> Fake.DotNet.DotNet.TestOptions
 // ```
 #else
 // ```
-    member WithAltCoverOptions: AltCoverFake.DotNet.Testing.AltCover.PrepareOptions ->
-                                   AltCoverFake.DotNet.Testing.AltCover.CollectOptions ->
-                                   AltCoverFake.DotNet.Testing.DotNet.CLIOptions ->
-                                   Fake.DotNet.DotNet.TestOptions
+    member WithAltCoverOptions: Testing.Abstract.IPrepareOptions ->
+                                Testing.Abstract.ICollectOptions ->
+                                AltCoverFake.DotNet.Testing.DotNet.ICLIOptions ->
+                                Fake.DotNet.DotNet.TestOptions
 // ```
 #endif
 // Adds the result of `DotNet.ToTestArguments` to the `CustomParams` member of the `Common` member

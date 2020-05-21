@@ -1,4 +1,4 @@
-namespace AltCover.FSApi
+namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -9,7 +9,7 @@ open System.Linq
 open System.Xml.Linq
 open System.Xml.XPath
 
-open AltCover.FSApi.XmlExtensions
+open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
 module CoverageFormats =

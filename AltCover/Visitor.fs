@@ -214,7 +214,7 @@ module internal KeyStore =
     Justification="Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
 [<SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="Anonymous parameter")>]
-type Fix<'T> = delegate of 'T -> Fix<'T>
+type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =
@@ -222,6 +222,7 @@ module internal CoverageParameters =
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
+  let internal topLevel = new List<FilterClass>()
   let internal nameFilters = new List<FilterClass>()
 
   let mutable internal staticFilter : StaticFilter option = None
@@ -453,7 +454,7 @@ module internal Visitor =
         (fun m ->
           let t = m.DeclaringType
           m.IsConstructor
-          && (t.IsNested
+          && ((t.IsNested
               && t.CustomAttributes
                  |> Seq.exists
                       (fun a ->
@@ -463,7 +464,7 @@ module internal Visitor =
              |> Seq.exists
                   (fun a ->
                     a.AttributeType.FullName =
-                      "System.Runtime.CompilerServices.CompilerGeneratedAttribute")) ]
+                      "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
       |> Seq.exists (fun f -> f m)
       |> not
 
@@ -533,7 +534,12 @@ module internal Visitor =
              let types =
                Seq.unfold
                  (fun (state : TypeDefinition) ->
-                   if isNull state then None else Some(state, state.DeclaringType)) t
+                   if isNull state then None
+                   else
+                    Some(state, if CoverageParameters.topLevel
+                                   |> Seq.exists (Filter.``match`` state)
+                                then null
+                                else state.DeclaringType)) t
                |> Seq.toList
 
              let inclusion = Seq.fold updateInspection included types
@@ -740,7 +746,10 @@ module internal Visitor =
                                  Seq.unfold (fun (state : MethodDefinition option) ->
                                    match state with
                                    | None -> None
-                                   | Some x -> Some(x, containingMethod x)) (Some m)
+                                   | Some x -> Some(x, if CoverageParameters.topLevel
+                                                          |> Seq.exists (Filter.``match`` x)
+                                                       then None
+                                                       else containingMethod x)) (Some m)
                                  |> Seq.toList
                                 (m, k, methods))
       // Skip nested methods when in method-point mode

@@ -1,4 +1,4 @@
-﻿// Both the .net framework/mono and .net core releases publish MSBuld tasks from the main assembly (AltCover.exe or AltCover.dll, respectively) that wrap the command-line functionality (as documented here under [Usage](https://github.com/SteveGilham/altcover/wiki/Usage)).
+﻿// Both the .net framework/mono and .net core releases publish MSBuild tasks from the main assembly (AltCover.exe or AltCover.dll, respectively) that wrap the command-line functionality (as documented here under [Usage](https://github.com/SteveGilham/altcover/wiki/Usage)).
 //
 // # namespace `AltCover`
 //
@@ -37,11 +37,14 @@ type Prepare =
     member MethodPoint : bool with get, set
     member OutputDirectories : string array with get, set
     member PathFilter : string array with get, set
+    member AttributeTopLevel : string array with get, set
+    member TypeTopLevel : string array with get, set
+    member MethodTopLevel : string array with get, set
     member ReportFormat : string with get, set
     member Save : bool with get, set
     member ShowGenerated : bool with get, set
     member ShowStatic : string with get, set
-    member Single : bool with get, set
+    member SingleVisit : bool with get, set
     member SourceLink : bool with get, set
     member StrongNameKey : string with get, set
     member SymbolDirectories : string array with get, set
@@ -109,7 +112,7 @@ type Echo =
   end
 // ```
 #if NETCOREAPP2_0
-// ## Task `RunSettings`
+// ## Task `AltCover.RunSettings`
 // Used by the .net core implementation to inject an altcover datacollector, by creating a temporary tun settings file that includes AltCover as well as any user-defined settings.
 //
 // Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.

@@ -52,8 +52,14 @@ type AddAcceleratorCommand() =
 
   member val private TypeMap = new Dictionary<string, Type>()
 
+  /// <summary>
+  /// <para type="description">Initialise the map of accelerator to type</para>
+  /// </summary>
   override self.BeginProcessing() = self.TypeMap.Clear()
 
+  /// <summary>
+  /// <para type="description">Accumulate new accelerator to type mappings</para>
+  /// </summary>
   override self.ProcessRecord() =
     self.Mapping
     |> Seq.cast<DictionaryEntry>
@@ -63,6 +69,9 @@ type AddAcceleratorCommand() =
     |> Seq.distinctBy snd
     |> Seq.iter (fun (k,v) -> self.TypeMap.Add(k, v))
 
+  /// <summary>
+  /// <para type="description">Apply the new accelerator to type mappings</para>
+  /// </summary>
   override self.EndProcessing() =
     let env = System.AppDomain.CurrentDomain.GetAssemblies()
     let sma = env |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")
@@ -115,6 +124,9 @@ type AddAcceleratorCommand() =
   Justification="No valid input to accept")>]
 type GetAcceleratorCommand() =
   inherit PSCmdlet()
+  /// <summary>
+  /// <para type="description">List current accelerator to type mappings</para>
+  /// </summary>
   override self.EndProcessing() =
     let env = System.AppDomain.CurrentDomain.GetAssemblies()
     let sma = env |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")

@@ -44,7 +44,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -85,7 +85,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      let optionCount = 30
+      let optionCount = 33
 
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
@@ -121,14 +121,14 @@ module AltCoverTests3 =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<OptionApi.PrepareOptions>.GetProperties()
+      let fsapiNames = typeof<AltCover.PrepareOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<OptionApi.PrepareOptions>
+      let fsapiCases = (typeof<AltCover.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareOptions.Create() |> OptionApi.PrepareOptions.Primitive
+      let args = Primitive.PrepareOptions.Create() |> AltCover.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
@@ -302,6 +302,42 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         CoverageParameters.nameFilters.Clear()
+
+    [<Test>]
+    let ParsingTopLevelGivesTopLevel() =
+      [
+        "attributetoplevel", FilterScope.Attribute
+        "methodtoplevel", FilterScope.Method
+        "typetoplevel", FilterScope.Type
+      ]
+      |> List.iter (fun (key, value) ->
+        Main.init()
+        try
+          CoverageParameters.topLevel.Clear()
+          let options = Main.I.declareOptions()
+          let input = [| "--" + key ; "1;a";
+                         "/" + key; "2";
+                         "--" + key; "3";
+                         "--" + key + "=4";
+                         "--" + key + "=5";
+                         "/" + key + "=6" |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left _ -> Assert.Fail(key)
+          | Right(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.Empty)
+          Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
+          Assert.That
+            (CoverageParameters.topLevel
+             |> Seq.map (fun x ->
+                  match x.Scope with
+                  | scope when scope = value -> x.Regex.ToString()
+                  | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+          Assert.That
+            (CoverageParameters.topLevel |> Seq.forall (fun x -> x.Sense = Exclude))
+        finally
+          CoverageParameters.topLevel.Clear())
 
     [<Test>]
     let ParsingMethodsGivesMethods() =
@@ -2029,7 +2065,7 @@ module AltCoverTests3 =
       Main.init()
       let options = Main.I.declareOptions()
       let saved = (Console.Out, Console.Error)
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       CommandLine.error <- []
       try
         use stdout = new StringWriter()
@@ -2067,7 +2103,7 @@ module AltCoverTests3 =
     let OutputToReallyNewPlaceIsOK() =
       Main.init()
       let options = Main.I.declareOptions()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
       try
@@ -2300,7 +2336,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2349,7 +2385,7 @@ module AltCoverTests3 =
     [<Test>]
     let ImportModuleIsAsExpected() =
       Main.init()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
@@ -2370,7 +2406,7 @@ module AltCoverTests3 =
     [<Test>]
     let VersionIsAsExpected() =
       Main.init()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
@@ -2385,7 +2421,7 @@ module AltCoverTests3 =
         Assert.That
           (result.Replace("\r\n", "\n"),
                          (AltCover.CommandLine.Format.Local("AltCover.Version",
-                                                            [| Api.Version() :> obj |]) +
+                                                            [| Command.Version() :> obj |]) +
                           "\n") |> Is.EqualTo)
       finally
         Console.SetOut saved
@@ -2441,6 +2477,20 @@ module AltCoverTests3 =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
+                               of a type that matches the regex are considered
+                               top-level, and are not excluded from coverage on
+                               the basis of any type which textually encloses
+                               them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
@@ -2521,7 +2571,7 @@ or
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<Node>.Assembly.GetType("AltCover.AltCover")
+          typeof<Node>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
@@ -2567,6 +2617,20 @@ or
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
+                               of a type that matches the regex are considered
+                               top-level, and are not excluded from coverage on
+                               the basis of any type which textually encloses
+                               them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
@@ -2671,20 +2735,41 @@ or
         Console.SetError saved
 
     // Tasks.fs
+    type Logging() =
+      member val Info : Action<String> = null with get, set
+      member val Warn : Action<String> = null with get, set
+      member val Failure : Action<String> = null with get, set
+      member val Echo : Action<String> = null with get, set
+
+      interface Abstract.ILoggingOptions with
+        member self.Info = self.Info
+        member self.Warn = self.Warn
+        member self.Failure = self.Failure
+        member self.Echo = self.Echo
+
     [<Test>]
     let LoggingCanBeExercised() =
       Main.init()
-      Assert.That(OptionApi.LoggingOptions.ActionAdapter null, Is.Not.Null)
-      (OptionApi.LoggingOptions.ActionAdapter null) "23"
-      Assert.That(OptionApi.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
+      (AltCover.LoggingOptions.ActionAdapter null) "23"
+      Assert.That(AltCover.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (OptionApi.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
+      (AltCover.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      OptionApi.LoggingOptions.Create().Info "32"
-      OptionApi.LoggingOptions.Create().Warn "32"
-      OptionApi.LoggingOptions.Create().Error "32"
-      OptionApi.LoggingOptions.Create().Echo "32"
+      AltCover.LoggingOptions.Create().Info "32"
+      AltCover.LoggingOptions.Create().Warn "32"
+      AltCover.LoggingOptions.Create().Error "32"
+      AltCover.LoggingOptions.Create().Echo "32"
+
+      let o = Logging()
+      let p = AltCover.LoggingOptions.Translate o
+      Assert.That(p.Warn, Is.Not.Null)
+      let p2 = AltCover.LoggingOptions.Abstract o
+      p2.Info "32"
+      p2.Warn "32"
+      p2.Error "32"
+      p2.Echo "32"
 
     [<Test>]
     let EmptyInstrumentIsJustTheDefaults() =
@@ -2700,7 +2785,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2722,7 +2807,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
@@ -2783,7 +2868,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2829,11 +2914,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> AltCover.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, OptionApi.LoggingOptions.Create())
+      io.SetValue(subject, AltCover.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2858,11 +2943,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> AltCover.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, OptionApi.LoggingOptions.Create())
+      io.SetValue(subject, AltCover.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
