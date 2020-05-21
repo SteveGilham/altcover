@@ -24,6 +24,8 @@ open Fake.IO.FileSystemOperators
 
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
+Shell.copyFile "./AltCover/Abstract.fs" "./AltCover/Abstract.fsi"
+
 // Really bootstrap
 let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
 
@@ -98,7 +100,7 @@ nuget YamlDotNet >= 8.1.1 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
-#load "../AltCover/Abstract.fs"
+#load "../_Generated/Abstract.fs"
 #load "../AltCover/Primitive.fs"
 #load "../AltCover/TypeSafe.fs"
 #load "../AltCover/AltCover.fs"

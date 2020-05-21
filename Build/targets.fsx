@@ -316,6 +316,7 @@ _Target "SetVersion" (fun _ ->
   Copyright := "Copyright " + copy
 
   Directory.ensure "./_Generated"
+  Shell.copyFile "./AltCover/Abstract.fs" "./AltCover/Abstract.fsi"
   Actions.InternalsVisibleTo(!Version)
   let v' = !Version
 
@@ -2208,10 +2209,7 @@ _Target "Packaging" (fun _ ->
     (!!"./_Publish.api/**/*.*")
     |> Seq.filter (fun f ->
          let n = f |> Path.GetFileName
-         n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase)
-         || n.StartsWith("Mono.", StringComparison.Ordinal)
-         || n.StartsWith("BlackFox.", StringComparison.Ordinal)
-         || n.StartsWith("FSharp.Core.", StringComparison.Ordinal))
+         n.StartsWith("System.", StringComparison.OrdinalIgnoreCase) |> not)
     |> Seq.map (fun x ->
          (x,
           Some(where + Path.GetDirectoryName(x).Substring(publishapi).Replace("\\", "/")),

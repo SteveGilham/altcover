@@ -650,6 +650,7 @@ Describe "Write-OpenCoverDerivedState" {
     $expected.CoverageSession.Modules.Module.hash = $hactual
     $expected.CoverageSession.Modules.Module.ModulePath = $assembly
     $expected.CoverageSession.Modules.Module.ModuleTime = $doc.CoverageSession.Modules.Module.ModuleTime
+    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Sample18/Tests.fs").Path
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
