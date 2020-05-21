@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.InPlace property
 
+Corresponds to command line option `--inplace`
+
 ```csharp
 public bool InPlace { get; }
 ```

@@ -8,9 +8,9 @@ public static class Abstract
 
 | name | description |
 | --- | --- |
-| interface [ICollectOptions](Abstract.ICollectOptions-apidoc) |  |
-| interface [ILoggingOptions](Abstract.ILoggingOptions-apidoc) |  |
-| interface [IPrepareOptions](Abstract.IPrepareOptions-apidoc) |  |
+| interface [ICollectOptions](Abstract.ICollectOptions-apidoc) | Command line options for `AltCover Runner` |
+| interface [ILoggingOptions](Abstract.ILoggingOptions-apidoc) | Destinations for user level output |
+| interface [IPrepareOptions](Abstract.IPrepareOptions-apidoc) | Command line options for `AltCover Runner` |
 
 ## See Also
 

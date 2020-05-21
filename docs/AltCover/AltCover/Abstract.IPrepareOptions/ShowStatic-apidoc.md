@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.ShowStatic property
 
+Corresponds to command line option `--showstatic[=VALUE]`
+
 ```csharp
 public string ShowStatic { get; }
 ```

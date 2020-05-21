@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.Keys property
 
+Corresponds to command line option ` -k, --key=VALUE`
+
 ```csharp
 public IEnumerable<string> Keys { get; }
 ```

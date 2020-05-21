@@ -1,5 +1,7 @@
 # Abstract.ICollectOptions.LcovReport property
 
+Corresponds to command line option `-l, --lcovReport=VALUE`
+
 ```csharp
 public string LcovReport { get; }
 ```

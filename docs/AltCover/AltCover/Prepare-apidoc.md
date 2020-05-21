@@ -12,6 +12,7 @@ public class Prepare : Task
 | [AssemblyExcludeFilter](Prepare/AssemblyExcludeFilter-apidoc) { get; set; } |  |
 | [AssemblyFilter](Prepare/AssemblyFilter-apidoc) { get; set; } |  |
 | [AttributeFilter](Prepare/AttributeFilter-apidoc) { get; set; } |  |
+| [AttributeTopLevel](Prepare/AttributeTopLevel-apidoc) { get; set; } |  |
 | [BranchCover](Prepare/BranchCover-apidoc) { get; set; } |  |
 | [CallContext](Prepare/CallContext-apidoc) { get; set; } |  |
 | [CommandLine](Prepare/CommandLine-apidoc) { get; set; } |  |
@@ -26,6 +27,7 @@ public class Prepare : Task
 | [LocalSource](Prepare/LocalSource-apidoc) { get; set; } |  |
 | [MethodFilter](Prepare/MethodFilter-apidoc) { get; set; } |  |
 | [MethodPoint](Prepare/MethodPoint-apidoc) { get; set; } |  |
+| [MethodTopLevel](Prepare/MethodTopLevel-apidoc) { get; set; } |  |
 | [OutputDirectories](Prepare/OutputDirectories-apidoc) { get; set; } |  |
 | [PathFilter](Prepare/PathFilter-apidoc) { get; set; } |  |
 | [ReportFormat](Prepare/ReportFormat-apidoc) { get; set; } |  |
@@ -36,8 +38,8 @@ public class Prepare : Task
 | [SourceLink](Prepare/SourceLink-apidoc) { get; set; } |  |
 | [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } |  |
 | [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } |  |
-| [TopLevel](Prepare/TopLevel-apidoc) { get; set; } |  |
 | [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } |  |
+| [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } |  |
 | [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } |  |
 | [XmlReport](Prepare/XmlReport-apidoc) { get; set; } |  |
 | [ZipFile](Prepare/ZipFile-apidoc) { get; set; } |  |

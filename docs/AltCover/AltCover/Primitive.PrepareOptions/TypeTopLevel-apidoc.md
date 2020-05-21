@@ -1,7 +1,7 @@
-# Primitive.PrepareOptions.TopLevel property
+# Primitive.PrepareOptions.TypeTopLevel property
 
 ```csharp
-public IEnumerable<string> TopLevel { get; }
+public IEnumerable<string> TypeTopLevel { get; }
 ```
 
 ## See Also

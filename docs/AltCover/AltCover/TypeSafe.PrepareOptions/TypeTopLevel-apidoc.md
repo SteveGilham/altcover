@@ -1,7 +1,7 @@
-# TypeSafe.PrepareOptions.TopLevel property
+# TypeSafe.PrepareOptions.TypeTopLevel property
 
 ```csharp
-public Filters TopLevel { get; }
+public Filters TypeTopLevel { get; }
 ```
 
 ## See Also

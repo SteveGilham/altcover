@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.TypeFilter property
 
+Corresponds to command line option `-t, --typeFilter=VALUE`
+
 ```csharp
 public IEnumerable<string> TypeFilter { get; }
 ```

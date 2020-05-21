@@ -1,5 +1,7 @@
 # Abstract.ICollectOptions interface
 
+Command line options for `AltCover Runner`
+
 ```csharp
 public interface ICollectOptions
 ```
@@ -8,16 +10,16 @@ public interface ICollectOptions
 
 | name | description |
 | --- | --- |
-| [Cobertura](Abstract.ICollectOptions/Cobertura-apidoc) { get; } |  |
-| [CommandLine](Abstract.ICollectOptions/CommandLine-apidoc) { get; } |  |
-| [Executable](Abstract.ICollectOptions/Executable-apidoc) { get; } |  |
-| [ExposeReturnCode](Abstract.ICollectOptions/ExposeReturnCode-apidoc) { get; } |  |
-| [LcovReport](Abstract.ICollectOptions/LcovReport-apidoc) { get; } |  |
-| [OutputFile](Abstract.ICollectOptions/OutputFile-apidoc) { get; } |  |
-| [RecorderDirectory](Abstract.ICollectOptions/RecorderDirectory-apidoc) { get; } |  |
-| [SummaryFormat](Abstract.ICollectOptions/SummaryFormat-apidoc) { get; } |  |
-| [Threshold](Abstract.ICollectOptions/Threshold-apidoc) { get; } |  |
-| [WorkingDirectory](Abstract.ICollectOptions/WorkingDirectory-apidoc) { get; } |  |
+| [Cobertura](Abstract.ICollectOptions/Cobertura-apidoc) { get; } | Corresponds to command line option `-c, --cobertura=VALUE` |
+| [CommandLine](Abstract.ICollectOptions/CommandLine-apidoc) { get; } | Corresponds to the command line arhuments for the executable, given after a `-- `` |
+| [Executable](Abstract.ICollectOptions/Executable-apidoc) { get; } | Corresponds to command line option `-x, --executable=VALUE` |
+| [ExposeReturnCode](Abstract.ICollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [LcovReport](Abstract.ICollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
+| [OutputFile](Abstract.ICollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [RecorderDirectory](Abstract.ICollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
+| [SummaryFormat](Abstract.ICollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
+| [Threshold](Abstract.ICollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [WorkingDirectory](Abstract.ICollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 
 ## See Also
 

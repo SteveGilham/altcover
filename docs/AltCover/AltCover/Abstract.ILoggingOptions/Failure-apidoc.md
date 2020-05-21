@@ -1,5 +1,7 @@
 # Abstract.ILoggingOptions.Failure property
 
+Sink for error messages
+
 ```csharp
 public Action<string> Failure { get; }
 ```

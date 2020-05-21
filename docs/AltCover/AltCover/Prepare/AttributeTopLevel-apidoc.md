@@ -1,7 +1,7 @@
-# Prepare.TopLevel property
+# Prepare.AttributeTopLevel property
 
 ```csharp
-public string[] TopLevel { get; set; }
+public string[] AttributeTopLevel { get; set; }
 ```
 
 ## See Also

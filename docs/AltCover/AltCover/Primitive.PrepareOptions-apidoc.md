@@ -13,6 +13,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [AssemblyExcludeFilter](Primitive.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } |  |
 | [AssemblyFilter](Primitive.PrepareOptions/AssemblyFilter-apidoc) { get; } |  |
 | [AttributeFilter](Primitive.PrepareOptions/AttributeFilter-apidoc) { get; } |  |
+| [AttributeTopLevel](Primitive.PrepareOptions/AttributeTopLevel-apidoc) { get; } |  |
 | [BranchCover](Primitive.PrepareOptions/BranchCover-apidoc) { get; } |  |
 | [CallContext](Primitive.PrepareOptions/CallContext-apidoc) { get; } |  |
 | [CommandLine](Primitive.PrepareOptions/CommandLine-apidoc) { get; } |  |
@@ -27,6 +28,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [LocalSource](Primitive.PrepareOptions/LocalSource-apidoc) { get; } |  |
 | [MethodFilter](Primitive.PrepareOptions/MethodFilter-apidoc) { get; } |  |
 | [MethodPoint](Primitive.PrepareOptions/MethodPoint-apidoc) { get; } |  |
+| [MethodTopLevel](Primitive.PrepareOptions/MethodTopLevel-apidoc) { get; } |  |
 | [OutputDirectories](Primitive.PrepareOptions/OutputDirectories-apidoc) { get; } |  |
 | [PathFilter](Primitive.PrepareOptions/PathFilter-apidoc) { get; } |  |
 | [ReportFormat](Primitive.PrepareOptions/ReportFormat-apidoc) { get; } |  |
@@ -37,8 +39,8 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [SourceLink](Primitive.PrepareOptions/SourceLink-apidoc) { get; } |  |
 | [StrongNameKey](Primitive.PrepareOptions/StrongNameKey-apidoc) { get; } |  |
 | [SymbolDirectories](Primitive.PrepareOptions/SymbolDirectories-apidoc) { get; } |  |
-| [TopLevel](Primitive.PrepareOptions/TopLevel-apidoc) { get; } |  |
 | [TypeFilter](Primitive.PrepareOptions/TypeFilter-apidoc) { get; } |  |
+| [TypeTopLevel](Primitive.PrepareOptions/TypeTopLevel-apidoc) { get; } |  |
 | [VisibleBranches](Primitive.PrepareOptions/VisibleBranches-apidoc) { get; } |  |
 | [XmlReport](Primitive.PrepareOptions/XmlReport-apidoc) { get; } |  |
 | [ZipFile](Primitive.PrepareOptions/ZipFile-apidoc) { get; } |  |

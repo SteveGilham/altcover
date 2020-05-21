@@ -13,6 +13,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [AssemblyExcludeFilter](TypeSafe.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } |  |
 | [AssemblyFilter](TypeSafe.PrepareOptions/AssemblyFilter-apidoc) { get; } |  |
 | [AttributeFilter](TypeSafe.PrepareOptions/AttributeFilter-apidoc) { get; } |  |
+| [AttributeTopLevel](TypeSafe.PrepareOptions/AttributeTopLevel-apidoc) { get; } |  |
 | [BranchCover](TypeSafe.PrepareOptions/BranchCover-apidoc) { get; } |  |
 | [CallContext](TypeSafe.PrepareOptions/CallContext-apidoc) { get; } |  |
 | [CommandLine](TypeSafe.PrepareOptions/CommandLine-apidoc) { get; } |  |
@@ -27,6 +28,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [LocalSource](TypeSafe.PrepareOptions/LocalSource-apidoc) { get; } |  |
 | [MethodFilter](TypeSafe.PrepareOptions/MethodFilter-apidoc) { get; } |  |
 | [MethodPoint](TypeSafe.PrepareOptions/MethodPoint-apidoc) { get; } |  |
+| [MethodTopLevel](TypeSafe.PrepareOptions/MethodTopLevel-apidoc) { get; } |  |
 | [OutputDirectories](TypeSafe.PrepareOptions/OutputDirectories-apidoc) { get; } |  |
 | [PathFilter](TypeSafe.PrepareOptions/PathFilter-apidoc) { get; } |  |
 | [ReportFormat](TypeSafe.PrepareOptions/ReportFormat-apidoc) { get; } |  |
@@ -37,8 +39,8 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [SourceLink](TypeSafe.PrepareOptions/SourceLink-apidoc) { get; } |  |
 | [StrongNameKey](TypeSafe.PrepareOptions/StrongNameKey-apidoc) { get; } |  |
 | [SymbolDirectories](TypeSafe.PrepareOptions/SymbolDirectories-apidoc) { get; } |  |
-| [TopLevel](TypeSafe.PrepareOptions/TopLevel-apidoc) { get; } |  |
 | [TypeFilter](TypeSafe.PrepareOptions/TypeFilter-apidoc) { get; } |  |
+| [TypeTopLevel](TypeSafe.PrepareOptions/TypeTopLevel-apidoc) { get; } |  |
 | [VisibleBranches](TypeSafe.PrepareOptions/VisibleBranches-apidoc) { get; } |  |
 | [XmlReport](TypeSafe.PrepareOptions/XmlReport-apidoc) { get; } |  |
 | [ZipFile](TypeSafe.PrepareOptions/ZipFile-apidoc) { get; } |  |

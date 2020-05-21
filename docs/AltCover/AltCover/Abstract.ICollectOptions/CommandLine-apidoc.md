@@ -1,5 +1,7 @@
 # Abstract.ICollectOptions.CommandLine property
 
+Corresponds to the command line arhuments for the executable, given after a `-- ``
+
 ```csharp
 public IEnumerable<string> CommandLine { get; }
 ```

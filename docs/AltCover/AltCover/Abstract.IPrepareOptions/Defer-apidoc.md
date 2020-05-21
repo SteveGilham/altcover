@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.Defer property
 
+Corresponds to command line option `--defer[=VALUE]`
+
 ```csharp
 public bool Defer { get; }
 ```

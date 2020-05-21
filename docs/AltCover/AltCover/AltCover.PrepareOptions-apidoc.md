@@ -14,6 +14,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [AssemblyExcludeFilter](AltCover.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } |  |
 | [AssemblyFilter](AltCover.PrepareOptions/AssemblyFilter-apidoc) { get; } |  |
 | [AttributeFilter](AltCover.PrepareOptions/AttributeFilter-apidoc) { get; } |  |
+| [AttributeTopLevel](AltCover.PrepareOptions/AttributeTopLevel-apidoc) { get; } |  |
 | [BranchCover](AltCover.PrepareOptions/BranchCover-apidoc) { get; } |  |
 | [CallContext](AltCover.PrepareOptions/CallContext-apidoc) { get; } |  |
 | [CommandLine](AltCover.PrepareOptions/CommandLine-apidoc) { get; } |  |
@@ -31,6 +32,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [LocalSource](AltCover.PrepareOptions/LocalSource-apidoc) { get; } |  |
 | [MethodFilter](AltCover.PrepareOptions/MethodFilter-apidoc) { get; } |  |
 | [MethodPoint](AltCover.PrepareOptions/MethodPoint-apidoc) { get; } |  |
+| [MethodTopLevel](AltCover.PrepareOptions/MethodTopLevel-apidoc) { get; } |  |
 | [OutputDirectories](AltCover.PrepareOptions/OutputDirectories-apidoc) { get; } |  |
 | [PathFilter](AltCover.PrepareOptions/PathFilter-apidoc) { get; } |  |
 | [ReportFormat](AltCover.PrepareOptions/ReportFormat-apidoc) { get; } |  |
@@ -42,8 +44,8 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } |  |
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } |  |
 | [Tag](AltCover.PrepareOptions/Tag-apidoc) { get; } |  |
-| [TopLevel](AltCover.PrepareOptions/TopLevel-apidoc) { get; } |  |
 | [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } |  |
+| [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } |  |
 | [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } |  |
 | [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } |  |
 | [ZipFile](AltCover.PrepareOptions/ZipFile-apidoc) { get; } |  |

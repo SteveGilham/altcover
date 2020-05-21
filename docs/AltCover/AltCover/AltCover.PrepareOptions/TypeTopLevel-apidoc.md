@@ -1,7 +1,7 @@
-# AltCover.PrepareOptions.TopLevel property
+# AltCover.PrepareOptions.TypeTopLevel property
 
 ```csharp
-public FSharpList<string> TopLevel { get; }
+public FSharpList<string> TypeTopLevel { get; }
 ```
 
 ## See Also

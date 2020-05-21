@@ -203,7 +203,9 @@ Fields that are not applicable to the use case or platform are silently ignored.
         MethodFilter: Filters
         AttributeFilter: Filters
         PathFilter: Filters
-        TopLevel: Filters
+        AttributeTopLevel: Filters
+        TypeTopLevel: Filters
+        MethodTopLevel: Filters
         CallContext: Context
         ReportFormat: ReportFormat
         InPlace: Flag

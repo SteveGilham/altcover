@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.BranchCover property
 
+Corresponds to command line option `--branchcover=VALUE`
+
 ```csharp
 public bool BranchCover { get; }
 ```

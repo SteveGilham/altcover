@@ -1,5 +1,7 @@
 # Abstract.ILoggingOptions.Echo property
 
+Sink for command line/usage messages
+
 ```csharp
 public Action<string> Echo { get; }
 ```

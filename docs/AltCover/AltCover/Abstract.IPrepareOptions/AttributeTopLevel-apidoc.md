@@ -1,7 +1,9 @@
-# Abstract.IPrepareOptions.TopLevel property
+# Abstract.IPrepareOptions.AttributeTopLevel property
+
+Corresponds to command line option --attributetoplevel=VALUE`
 
 ```csharp
-public IEnumerable<string> TopLevel { get; }
+public IEnumerable<string> AttributeTopLevel { get; }
 ```
 
 ## See Also

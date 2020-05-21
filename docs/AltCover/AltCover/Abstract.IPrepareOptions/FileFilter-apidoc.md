@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.FileFilter property
 
+Corresponds to command line option `-f, --fileFilter=VALUE`
+
 ```csharp
 public IEnumerable<string> FileFilter { get; }
 ```

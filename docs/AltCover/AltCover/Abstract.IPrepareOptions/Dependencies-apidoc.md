@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.Dependencies property
 
+Corresponds to command line option `-d, --dependency=VALUE`
+
 ```csharp
 public IEnumerable<string> Dependencies { get; }
 ```

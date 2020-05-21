@@ -1,5 +1,7 @@
 # Abstract.ILoggingOptions interface
 
+Destinations for user level output
+
 ```csharp
 public interface ILoggingOptions
 ```
@@ -8,10 +10,10 @@ public interface ILoggingOptions
 
 | name | description |
 | --- | --- |
-| [Echo](Abstract.ILoggingOptions/Echo-apidoc) { get; } |  |
-| [Failure](Abstract.ILoggingOptions/Failure-apidoc) { get; } |  |
-| [Info](Abstract.ILoggingOptions/Info-apidoc) { get; } |  |
-| [Warn](Abstract.ILoggingOptions/Warn-apidoc) { get; } |  |
+| [Echo](Abstract.ILoggingOptions/Echo-apidoc) { get; } | Sink for command line/usage messages |
+| [Failure](Abstract.ILoggingOptions/Failure-apidoc) { get; } | Sink for error messages |
+| [Info](Abstract.ILoggingOptions/Info-apidoc) { get; } | Sink for warning messages |
+| [Warn](Abstract.ILoggingOptions/Warn-apidoc) { get; } | Sink for informational messages |
 
 ## See Also
 

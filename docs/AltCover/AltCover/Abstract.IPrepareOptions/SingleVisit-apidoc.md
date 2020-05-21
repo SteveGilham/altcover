@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.SingleVisit property
 
+Corresponds to command line option `--single`
+
 ```csharp
 public bool SingleVisit { get; }
 ```

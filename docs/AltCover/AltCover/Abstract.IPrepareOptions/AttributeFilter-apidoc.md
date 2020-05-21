@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.AttributeFilter property
 
+Corresponds to command line option `-a, --attributeFilter=VALUE`
+
 ```csharp
 public IEnumerable<string> AttributeFilter { get; }
 ```

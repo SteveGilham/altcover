@@ -1,9 +1,9 @@
-# InvokeAltCoverCommand.TopLevel property
+# InvokeAltCoverCommand.AttributeTopLevel property
 
-Attributes to mark a type or function as "top level"
+Attributes to mark a type as "top level"
 
 ```csharp
-public string[] TopLevel { get; set; }
+public string[] AttributeTopLevel { get; set; }
 ```
 
 ## See Also

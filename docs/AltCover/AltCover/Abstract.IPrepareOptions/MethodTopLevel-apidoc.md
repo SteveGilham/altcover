@@ -1,9 +1,9 @@
-# Abstract.IPrepareOptions.CallContext property
+# Abstract.IPrepareOptions.MethodTopLevel property
 
-Corresponds to command line option `-c, --callContext=VALUE`
+Corresponds to command line option `--methodtoplevel=VALUE`
 
 ```csharp
-public IEnumerable<string> CallContext { get; }
+public IEnumerable<string> MethodTopLevel { get; }
 ```
 
 ## See Also

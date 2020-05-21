@@ -1,5 +1,7 @@
 # Abstract.ILoggingOptions.Info property
 
+Sink for warning messages
+
 ```csharp
 public Action<string> Info { get; }
 ```

@@ -1,5 +1,7 @@
 # Abstract.ICollectOptions.Cobertura property
 
+Corresponds to command line option `-c, --cobertura=VALUE`
+
 ```csharp
 public string Cobertura { get; }
 ```

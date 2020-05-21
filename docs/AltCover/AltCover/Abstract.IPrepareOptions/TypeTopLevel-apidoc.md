@@ -1,9 +1,9 @@
-# Abstract.IPrepareOptions.CallContext property
+# Abstract.IPrepareOptions.TypeTopLevel property
 
-Corresponds to command line option `-c, --callContext=VALUE`
+Corresponds to command line option `--typetoplevel=VALUE`
 
 ```csharp
-public IEnumerable<string> CallContext { get; }
+public IEnumerable<string> TypeTopLevel { get; }
 ```
 
 ## See Also

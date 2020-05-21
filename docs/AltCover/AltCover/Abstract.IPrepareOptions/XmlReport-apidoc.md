@@ -1,5 +1,7 @@
 # Abstract.IPrepareOptions.XmlReport property
 
+Corresponds to command line option `-x, --xmlReport=VALUE`
+
 ```csharp
 public string XmlReport { get; }
 ```
