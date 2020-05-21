@@ -31,7 +31,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --staticlink:Newtonsoft.Json</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
