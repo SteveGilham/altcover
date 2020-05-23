@@ -64,7 +64,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         OutputFile: System.String
         ///<summary>
-        /// Corresponds to the command line arguments for the executable, given after a `-- ``
+        /// Corresponds to the command line arguments for the executable, given after a `-- `
         ///</summary>
         CommandLine: seq<System.String>
         ///<summary>
@@ -205,7 +205,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         BranchCover: bool
         ///<summary>
-        /// Corresponds to the command line to run, given after a `-- ``
+        /// Corresponds to the command line to run, given after a `-- `
         ///</summary>
         CommandLine: seq<System.String>
         ///<summary>

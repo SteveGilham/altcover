@@ -82,7 +82,7 @@ module Abstract =
     ///</summary>
     abstract member OutputFile : String with get
     ///<summary>
-    /// Corresponds to the command line arguments for the executable, given after a `-- ``
+    /// Corresponds to the command line arguments for the executable, given after a `-- `
     ///</summary>
     abstract member CommandLine : IEnumerable<String> with get
     ///<summary>
@@ -225,7 +225,7 @@ module Abstract =
     ///</summary>
     abstract member BranchCover : bool with get
     ///<summary>
-    /// Corresponds to the command line to run, given after a `-- ``
+    /// Corresponds to the command line to run, given after a `-- `
     ///</summary>
     abstract member CommandLine : IEnumerable<String> with get
     ///<summary>

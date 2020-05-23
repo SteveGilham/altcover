@@ -436,7 +436,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         OutputFile: FilePath
         ///<summary>
-        /// Corresponds to the command line arguments for the executable, given after a `-- ``
+        /// Corresponds to the command line arguments for the executable, given after a `-- `
         ///</summary>
         CommandLine: Command
         ///<summary>
@@ -577,7 +577,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         BranchCover: Flag
         ///<summary>
-        /// Corresponds to the command line to run, given after a `-- ``
+        /// Corresponds to the command line to run, given after a `-- `
         ///</summary>
         CommandLine: Command
         ///<summary>

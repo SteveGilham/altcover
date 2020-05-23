@@ -111,7 +111,7 @@ type Prepare() =
   member val ShowGenerated = false with get, set
   member val ExposeReturnCode = true with get, set
 
-  member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse
@@ -200,7 +200,7 @@ type Collect() =
                                                        "Instance property needed")>]
   member self.Summary = Command.Summary()
 
-  member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse

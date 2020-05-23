@@ -103,7 +103,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member OutputFile : System.String
         ///<summary>
-        /// Corresponds to the command line arguments for the executable, given after a `-- ``
+        /// Corresponds to the command line arguments for the executable, given after a `-- `
         ///</summary>
         member CommandLine : seq<string>
         ///<summary>
@@ -119,10 +119,10 @@ namespace AltCoverFake.DotNet.Testing
 // ```
         ///<summary>
         /// Does simple checking of the arguments without causing any changes to the system
-        /// <param name="?"></param>`true` if the Prepare step has already run and there should be instrumented code the `RecorderDirectory`</param>
-        /// <returns>All the problems that the application command-line could report, so empty is success.</reurns>
+        /// <param name="afterPreparation">`true` if the Prepare step has already run and there should be instrumented code the `RecorderDirectory`</param>
+        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
         ///</summary>
-        member Validate : bool -> string []
+        member Validate : afterPreparation:bool -> string []
       end
 // ```
 // `Validate` does simple checking of the arguments without causing any changes to the system; set the input argument `true` if the Prepare step has already run (and there should be instrumented code the `RecorderDirectory`; returns all the problems that the application command-line could report, so empty is success.
@@ -268,7 +268,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member BranchCover : bool
         ///<summary>
-        /// Corresponds to the command line to run, given after a `-- ``
+        /// Corresponds to the command line to run, given after a `-- `
         ///</summary>
         member CommandLine : seq<System.String>
         ///<summary>
@@ -304,7 +304,7 @@ namespace AltCoverFake.DotNet.Testing
 // ```
         ///<summary>
         /// Does simple checking of the arguments without causing any changes to the system
-        /// <returns>All the problems that the application command-line could report, so empty is success.</reurns>
+        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
         ///</summary>
         member Validate : unit -> string []
       end
@@ -359,8 +359,8 @@ namespace AltCoverFake.DotNet.Testing
         static member
         ///<summary>
         /// A helper for C# use
-        /// <param name="?"></param>A C# `Action` value e.g. from the `ILoggingOptions` interface</param>
-        /// <returns>All the problems that the application command-line could report, so empty is success.</reurns>
+        /// <param name="action">A C# `Action` value e.g. from the `ILoggingOptions` interface</param>
+        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
         ///</summary>
           ActionAdapter : action:System.Action<System.String> ->
                             (System.String -> unit)
@@ -370,10 +370,10 @@ namespace AltCoverFake.DotNet.Testing
         static member Create : unit -> LoggingOptions
         ///<summary>
         /// Translates a C# style interface to the corresponding F# type
-        /// <param name="?"></param>A C# `Action` based logging description</param>
-        /// <returns>The F# function equivalent.</reurns>
+        /// <param name="options">A C# `Action` based logging description</param>
+        /// <returns>The F# function equivalent.</returns>
         ///</summary>
-        static member Translate : Abstract.ILoggingOptions -> LoggingOptions
+        static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions
       end
 // ```
 // `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.

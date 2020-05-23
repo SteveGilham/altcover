@@ -2845,7 +2845,10 @@ or
           (args,
            Is.EquivalentTo
              [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
-        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+
+        let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)
+        Assert.That(x.InnerException, Is.Not.Null.And.InstanceOf<InvalidOperationException>())
         Assert.Throws<InvalidOperationException>(fun () -> Output.info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.error "x") |> ignore
@@ -2896,7 +2899,9 @@ or
         let result = subject.Execute()
         Assert.That(result, Is.True)
         Assert.That(args, Is.EquivalentTo [ "Runner"; "-x"; "dotnet"; "--"; "test" ])
-        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)
+        Assert.That(x.InnerException, Is.Not.Null.And.InstanceOf<InvalidOperationException>())
         Assert.Throws<InvalidOperationException>(fun () -> Output.info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.error "x") |> ignore
