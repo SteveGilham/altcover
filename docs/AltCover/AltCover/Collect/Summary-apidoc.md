@@ -1,5 +1,7 @@
 # Collect.Summary property
 
+Task output calue, the summary of coverage.
+
 ```csharp
 public string Summary { get; }
 ```

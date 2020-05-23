@@ -1,5 +1,7 @@
 # TypeSafe.DirectoryPaths class
 
+Corresponds to a collection of directories
+
 ```csharp
 public abstract class DirectoryPaths : IEquatable<DirectoryPaths>, IStructuralEquatable
 ```
@@ -14,7 +16,7 @@ public abstract class DirectoryPaths : IEquatable<DirectoryPaths>, IStructuralEq
 | [IsDirectoryPaths](TypeSafe.DirectoryPaths/IsDirectoryPaths-apidoc) { get; } |  |
 | [IsNoDirectories](TypeSafe.DirectoryPaths/IsNoDirectories-apidoc) { get; } |  |
 | [Tag](TypeSafe.DirectoryPaths/Tag-apidoc) { get; } |  |
-| [AsStrings](TypeSafe.DirectoryPaths/AsStrings-apidoc)() |  |
+| [AsStrings](TypeSafe.DirectoryPaths/AsStrings-apidoc)() | Returns the strings to use in the command line |
 | [Equals](TypeSafe.DirectoryPaths/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.DirectoryPaths/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.DirectoryPaths/GetHashCode-apidoc)(…) |  |
@@ -22,7 +24,7 @@ public abstract class DirectoryPaths : IEquatable<DirectoryPaths>, IStructuralEq
 | [get_IsNoDirectories](TypeSafe.DirectoryPaths/get_IsNoDirectories-apidoc)() |  |
 | [get_Tag](TypeSafe.DirectoryPaths/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.DirectoryPaths/ToString-apidoc)() |  |
-| class [DirectoryPaths](TypeSafe.DirectoryPaths.DirectoryPaths-apidoc) |  |
+| class [DirectoryPaths](TypeSafe.DirectoryPaths.DirectoryPaths-apidoc) | A type-safe collection |
 | static class [Tags](TypeSafe.DirectoryPaths.Tags-apidoc) |  |
 
 ## See Also

@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.LocalSource property
 
+Corresponds to command line option `-l, --localSource`
+
 ```csharp
 public Flag LocalSource { get; }
 ```

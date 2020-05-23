@@ -1,5 +1,9 @@
 # GetVersion.Execute method
 
+Perform the operation
+
+The success of the outcome.
+
 ```csharp
 public override bool Execute()
 ```

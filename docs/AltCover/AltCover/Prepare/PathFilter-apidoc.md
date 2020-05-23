@@ -1,5 +1,7 @@
 # Prepare.PathFilter property
 
+Corresponds to command line option `-p, --pathFilter=VALUE`
+
 ```csharp
 public string[] PathFilter { get; set; }
 ```

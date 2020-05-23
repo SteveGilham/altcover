@@ -1,5 +1,7 @@
 # Collect class
 
+Description of the `AltCover Runner` command
+
 ```csharp
 public class Collect : Task
 ```
@@ -8,20 +10,19 @@ public class Collect : Task
 
 | name | description |
 | --- | --- |
-| [Collect](Collect/Collect-apidoc)() | The default constructor. |
-| [Cobertura](Collect/Cobertura-apidoc) { get; set; } |  |
-| [CommandLine](Collect/CommandLine-apidoc) { get; set; } |  |
-| [Executable](Collect/Executable-apidoc) { get; set; } |  |
-| [ExposeReturnCode](Collect/ExposeReturnCode-apidoc) { get; set; } |  |
-| [LcovReport](Collect/LcovReport-apidoc) { get; set; } |  |
-| [OutputFile](Collect/OutputFile-apidoc) { get; set; } |  |
-| [RecorderDirectory](Collect/RecorderDirectory-apidoc) { get; set; } |  |
-| [Summary](Collect/Summary-apidoc) { get; } |  |
-| [SummaryFormat](Collect/SummaryFormat-apidoc) { get; set; } |  |
-| [Threshold](Collect/Threshold-apidoc) { get; set; } |  |
-| [WorkingDirectory](Collect/WorkingDirectory-apidoc) { get; set; } |  |
-| override [Execute](Collect/Execute-apidoc)() |  |
-| [Message](Collect/Message-apidoc)(…) |  |
+| [Collect](Collect/Collect-apidoc)() | The default constructor |
+| [Cobertura](Collect/Cobertura-apidoc) { get; set; } | Corresponds to command line option `-c, --cobertura=VALUE` |
+| [CommandLine](Collect/CommandLine-apidoc) { get; set; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
+| [Executable](Collect/Executable-apidoc) { get; set; } | Corresponds to command line option `-x, --executable=VALUE` |
+| [ExposeReturnCode](Collect/ExposeReturnCode-apidoc) { get; set; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [LcovReport](Collect/LcovReport-apidoc) { get; set; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
+| [OutputFile](Collect/OutputFile-apidoc) { get; set; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [RecorderDirectory](Collect/RecorderDirectory-apidoc) { get; set; } | Corresponds to command line option `-r, --recorderDirectory=VALUE`; a required parameter |
+| [Summary](Collect/Summary-apidoc) { get; } | Task output calue, the summary of coverage. |
+| [SummaryFormat](Collect/SummaryFormat-apidoc) { get; set; } | Corresponds to command line option `--teamcity[=VALUE]` |
+| [Threshold](Collect/Threshold-apidoc) { get; set; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [WorkingDirectory](Collect/WorkingDirectory-apidoc) { get; set; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
+| override [Execute](Collect/Execute-apidoc)() | Perform the operation |
 
 ## See Also
 

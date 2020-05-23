@@ -1,5 +1,7 @@
 # Prepare.BranchCover property
 
+Corresponds to command line option `--branchcover`
+
 ```csharp
 public bool BranchCover { get; set; }
 ```

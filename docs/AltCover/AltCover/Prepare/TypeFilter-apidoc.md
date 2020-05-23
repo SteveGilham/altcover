@@ -1,5 +1,7 @@
 # Prepare.TypeFilter property
 
+Corresponds to command line option `-t, --typeFilter=VALUE`
+
 ```csharp
 public string[] TypeFilter { get; set; }
 ```

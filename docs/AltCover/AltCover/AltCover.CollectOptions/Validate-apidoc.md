@@ -1,5 +1,7 @@
 # AltCover.CollectOptions.Validate method
 
+Does simple checking of the arguments without causing any changes to the system `true` if the Prepare step has already run and there should be instrumented code the `RecorderDirectory`All the problems that the application command-line could report, so empty is success.
+
 ```csharp
 public string[] Validate(bool afterPreparation)
 ```

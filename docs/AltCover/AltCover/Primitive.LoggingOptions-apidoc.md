@@ -1,5 +1,7 @@
 # Primitive.LoggingOptions class
 
+Destinations for user level output
+
 ```csharp
 public sealed class LoggingOptions
 ```
@@ -9,11 +11,11 @@ public sealed class LoggingOptions
 | name | description |
 | --- | --- |
 | [LoggingOptions](Primitive.LoggingOptions/LoggingOptions-apidoc)(…) |  |
-| static [Create](Primitive.LoggingOptions/Create-apidoc)() |  |
-| [Echo](Primitive.LoggingOptions/Echo-apidoc) { get; } |  |
-| [Failure](Primitive.LoggingOptions/Failure-apidoc) { get; } |  |
-| [Info](Primitive.LoggingOptions/Info-apidoc) { get; } |  |
-| [Warn](Primitive.LoggingOptions/Warn-apidoc) { get; } |  |
+| static [Create](Primitive.LoggingOptions/Create-apidoc)() | Returns an instance that just discards all strings input. |
+| [Echo](Primitive.LoggingOptions/Echo-apidoc) { get; } | Sink for command line/usage messages |
+| [Failure](Primitive.LoggingOptions/Failure-apidoc) { get; } | Sink for error messages |
+| [Info](Primitive.LoggingOptions/Info-apidoc) { get; } | Sink for informational messages |
+| [Warn](Primitive.LoggingOptions/Warn-apidoc) { get; } | Sink for warning messages |
 | override [ToString](Primitive.LoggingOptions/ToString-apidoc)() |  |
 
 ## See Also

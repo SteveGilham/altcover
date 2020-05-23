@@ -1,5 +1,7 @@
 # TypeSafe.Thresholds class
 
+Corresponds to the set of options available for coverage thresholds; zero values are ignored
+
 ```csharp
 public sealed class Thresholds : IEquatable<Thresholds>, IStructuralEquatable
 ```
@@ -9,11 +11,11 @@ public sealed class Thresholds : IEquatable<Thresholds>, IStructuralEquatable
 | name | description |
 | --- | --- |
 | [Thresholds](TypeSafe.Thresholds/Thresholds-apidoc)(…) |  |
-| static [Create](TypeSafe.Thresholds/Create-apidoc)() |  |
-| [Branches](TypeSafe.Thresholds/Branches-apidoc) { get; } |  |
-| [MaxCrap](TypeSafe.Thresholds/MaxCrap-apidoc) { get; } |  |
-| [Methods](TypeSafe.Thresholds/Methods-apidoc) { get; } |  |
-| [Statements](TypeSafe.Thresholds/Statements-apidoc) { get; } |  |
+| static [Create](TypeSafe.Thresholds/Create-apidoc)() | Returns an all-zero value |
+| [Branches](TypeSafe.Thresholds/Branches-apidoc) { get; } | Minimum branch coverage %age |
+| [MaxCrap](TypeSafe.Thresholds/MaxCrap-apidoc) { get; } | Maximum acceptable CRAP score |
+| [Methods](TypeSafe.Thresholds/Methods-apidoc) { get; } | Minimum method coverage %age |
+| [Statements](TypeSafe.Thresholds/Statements-apidoc) { get; } | Minimum statement (sequence point) coverage %age |
 | [Equals](TypeSafe.Thresholds/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.Thresholds/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.Thresholds/GetHashCode-apidoc)(…) |  |

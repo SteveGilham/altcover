@@ -1,5 +1,7 @@
 # TypeSafe.Context.Context class
 
+A type-safe collection
+
 ```csharp
 public class Context : Context
 ```

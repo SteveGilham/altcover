@@ -1,5 +1,7 @@
 # TypeSafe.CollectOptions.SummaryFormat property
 
+Corresponds to command line option `--teamcity[=VALUE]`
+
 ```csharp
 public SummaryFormat SummaryFormat { get; }
 ```

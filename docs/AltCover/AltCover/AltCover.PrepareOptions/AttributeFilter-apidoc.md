@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.AttributeFilter property
 
+Corresponds to command line option `-a, --attributeFilter=VALUE`
+
 ```csharp
 public FSharpList<string> AttributeFilter { get; }
 ```

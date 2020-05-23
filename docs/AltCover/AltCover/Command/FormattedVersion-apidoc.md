@@ -1,5 +1,7 @@
 # Command.FormattedVersion method
 
+Indicate the current version The version as a string.
+
 ```csharp
 public static string FormattedVersion()
 ```

@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.CallContext property
 
+Corresponds to command line option `-c, --callContext=VALUE`
+
 ```csharp
 public FSharpList<string> CallContext { get; }
 ```

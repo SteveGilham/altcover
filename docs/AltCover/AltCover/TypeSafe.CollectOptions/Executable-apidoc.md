@@ -1,5 +1,7 @@
 # TypeSafe.CollectOptions.Executable property
 
+Corresponds to command line option `-x, --executable=VALUE`
+
 ```csharp
 public FilePath Executable { get; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.FilePath class
 
+Corresponds to a file or executable tool
+
 ```csharp
 public class FilePath : IEquatable<FilePath>, IStructuralEquatable
 ```
@@ -18,7 +20,7 @@ public class FilePath : IEquatable<FilePath>, IStructuralEquatable
 | [IsNoFile](TypeSafe.FilePath/IsNoFile-apidoc) { get; } |  |
 | [IsTool](TypeSafe.FilePath/IsTool-apidoc) { get; } |  |
 | [Tag](TypeSafe.FilePath/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.FilePath/AsString-apidoc)() |  |
+| [AsString](TypeSafe.FilePath/AsString-apidoc)() | Returns the string to be used in the effective command line |
 | [Equals](TypeSafe.FilePath/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.FilePath/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.FilePath/GetHashCode-apidoc)(…) |  |
@@ -28,10 +30,10 @@ public class FilePath : IEquatable<FilePath>, IStructuralEquatable
 | [get_IsTool](TypeSafe.FilePath/get_IsTool-apidoc)() |  |
 | [get_Tag](TypeSafe.FilePath/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.FilePath/ToString-apidoc)() |  |
-| class [FilePath](TypeSafe.FilePath.FilePath-apidoc) |  |
-| class [FInfo](TypeSafe.FilePath.FInfo-apidoc) |  |
+| class [FilePath](TypeSafe.FilePath.FilePath-apidoc) | A file path, expanded to an absolute path is supplied as a relative one |
+| class [FInfo](TypeSafe.FilePath.FInfo-apidoc) | A strongly typed file |
 | static class [Tags](TypeSafe.FilePath.Tags-apidoc) |  |
-| class [Tool](TypeSafe.FilePath.Tool-apidoc) |  |
+| class [Tool](TypeSafe.FilePath.Tool-apidoc) | A named `dotnet` tool, carried unaltered |
 
 ## See Also
 

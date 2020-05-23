@@ -1,5 +1,7 @@
 # PowerShell class
 
+Description of the `AltCover ImportModule` command
+
 ```csharp
 public class PowerShell : Task
 ```
@@ -8,8 +10,8 @@ public class PowerShell : Task
 
 | name | description |
 | --- | --- |
-| [PowerShell](PowerShell/PowerShell-apidoc)() | The default constructor. |
-| override [Execute](PowerShell/Execute-apidoc)() |  |
+| [PowerShell](PowerShell/PowerShell-apidoc)() | The default constructor |
+| override [Execute](PowerShell/Execute-apidoc)() | Perform the operation |
 
 ## See Also
 

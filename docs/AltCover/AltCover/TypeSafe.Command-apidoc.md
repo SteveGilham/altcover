@@ -1,5 +1,7 @@
 # TypeSafe.Command class
 
+Corresponds to the values after `-- ` on the command line
+
 ```csharp
 public abstract class Command : IEquatable<Command>, IStructuralEquatable
 ```
@@ -14,7 +16,7 @@ public abstract class Command : IEquatable<Command>, IStructuralEquatable
 | [IsCommand](TypeSafe.Command/IsCommand-apidoc) { get; } |  |
 | [IsNoCommand](TypeSafe.Command/IsNoCommand-apidoc) { get; } |  |
 | [Tag](TypeSafe.Command/Tag-apidoc) { get; } |  |
-| [AsStrings](TypeSafe.Command/AsStrings-apidoc)() |  |
+| [AsStrings](TypeSafe.Command/AsStrings-apidoc)() | Returns the strings to be used in the effective command line |
 | [Equals](TypeSafe.Command/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.Command/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.Command/GetHashCode-apidoc)(…) |  |
@@ -22,7 +24,7 @@ public abstract class Command : IEquatable<Command>, IStructuralEquatable
 | [get_IsNoCommand](TypeSafe.Command/get_IsNoCommand-apidoc)() |  |
 | [get_Tag](TypeSafe.Command/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.Command/ToString-apidoc)() |  |
-| class [Command](TypeSafe.Command.Command-apidoc) |  |
+| class [Command](TypeSafe.Command.Command-apidoc) | Strongly typed string collection |
 | static class [Tags](TypeSafe.Command.Tags-apidoc) |  |
 
 ## See Also

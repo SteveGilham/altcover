@@ -1,5 +1,7 @@
 # TypeSafe.CollectOptions.LcovReport property
 
+Corresponds to command line option `-l, --lcovReport=VALUE`
+
 ```csharp
 public FilePath LcovReport { get; }
 ```

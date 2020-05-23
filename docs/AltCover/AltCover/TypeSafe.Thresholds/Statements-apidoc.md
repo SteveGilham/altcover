@@ -1,5 +1,7 @@
 # TypeSafe.Thresholds.Statements property
 
+Minimum statement (sequence point) coverage %age
+
 ```csharp
 public byte Statements { get; }
 ```

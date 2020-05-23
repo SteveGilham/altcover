@@ -1,5 +1,7 @@
 # TypeSafe.CollectOptions.WorkingDirectory property
 
+Corresponds to command line option `-w, --workingDirectory=VALUE`
+
 ```csharp
 public DirectoryPath WorkingDirectory { get; }
 ```

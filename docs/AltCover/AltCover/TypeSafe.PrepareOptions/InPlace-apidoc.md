@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.InPlace property
 
+Corresponds to command line option `--inplace`
+
 ```csharp
 public Flag InPlace { get; }
 ```

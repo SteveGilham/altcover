@@ -1,5 +1,7 @@
 # TypeSafe.Thresholds.Branches property
 
+Minimum branch coverage %age
+
 ```csharp
 public byte Branches { get; }
 ```

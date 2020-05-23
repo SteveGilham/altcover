@@ -8,7 +8,10 @@ public static class Tags
 
 | name | description |
 | --- | --- |
-| const [CallItem](TypeSafe.ContextItem.Tags/CallItem-apidoc) |  |
+| const [AttributeKind](TypeSafe.ContextItem.Tags/AttributeKind-apidoc) |  |
+| const [AttributeName](TypeSafe.ContextItem.Tags/AttributeName-apidoc) |  |
+| const [Caller](TypeSafe.ContextItem.Tags/Caller-apidoc) |  |
+| const [CallerName](TypeSafe.ContextItem.Tags/CallerName-apidoc) |  |
 | const [TimeItem](TypeSafe.ContextItem.Tags/TimeItem-apidoc) |  |
 
 ## See Also

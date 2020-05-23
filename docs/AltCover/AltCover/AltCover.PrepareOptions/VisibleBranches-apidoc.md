@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.VisibleBranches property
 
+Corresponds to command line option ` -v, --visibleBranches`
+
 ```csharp
 public bool VisibleBranches { get; }
 ```

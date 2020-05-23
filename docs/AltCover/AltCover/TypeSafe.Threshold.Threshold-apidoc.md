@@ -1,5 +1,7 @@
 # TypeSafe.Threshold.Threshold class
 
+Corresponds to an explicit value
+
 ```csharp
 public class Threshold : Threshold
 ```

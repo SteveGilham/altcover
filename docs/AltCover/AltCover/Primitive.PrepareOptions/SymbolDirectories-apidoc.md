@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.SymbolDirectories property
 
+Corresponds to command line option `-y, --symbolDirectory=VALUE`
+
 ```csharp
 public IEnumerable<string> SymbolDirectories { get; }
 ```

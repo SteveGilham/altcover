@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.MethodTopLevel property
 
+Corresponds to command line option `--methodtoplevel=VALUE`
+
 ```csharp
 public IEnumerable<string> MethodTopLevel { get; }
 ```

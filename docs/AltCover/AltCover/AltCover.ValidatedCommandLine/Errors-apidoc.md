@@ -1,5 +1,7 @@
 # AltCover.ValidatedCommandLine.Errors property
 
+Any validations errors in `Errors`.
+
 ```csharp
 public IEnumerable<string> Errors { get; }
 ```

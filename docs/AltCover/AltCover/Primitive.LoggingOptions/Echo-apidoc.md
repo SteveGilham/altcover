@@ -1,5 +1,7 @@
 # Primitive.LoggingOptions.Echo property
 
+Sink for command line/usage messages
+
 ```csharp
 public FSharpFunc<string, Unit> Echo { get; }
 ```

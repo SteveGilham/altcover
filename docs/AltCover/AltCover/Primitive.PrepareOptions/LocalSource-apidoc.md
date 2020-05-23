@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.LocalSource property
 
+Corresponds to command line option `-l, --localSource`
+
 ```csharp
 public bool LocalSource { get; }
 ```

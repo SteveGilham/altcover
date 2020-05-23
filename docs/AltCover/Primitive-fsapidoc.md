@@ -12,16 +12,25 @@ namespace AltCover
 
 
 ## module `Primitive`
-This holds the weakly ("stringly") typed equivalent of the command line options
+
 ```
   [<RequireQualifiedAccess>]
   module Primitive = begin
 ```
+
+This holds the weakly ("stringly") typed equivalent of the command line options
+
 ### type `CollectOptions`
+
+The members correspond to the like-named command line options for `AltCover Runner`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
+
 ```
     [<NoComparison>]
     type CollectOptions =
-      { RecorderDirectory: System.String
+      {
+        RecorderDirectory: System.String
         WorkingDirectory: System.String
         Executable: System.String
         LcovReport: System.String
@@ -40,10 +49,17 @@ This holds the weakly ("stringly") typed equivalent of the command line options
 Fields that are not applicable to the use case or platform are silently ignored.
 
 ### type `PrepareOptions`
+
+The members correspond to the like-named command line options for `AltCover`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
+* `SingleVisit` being the name for `--single`
+
 ```
     [<NoComparison>]
     type PrepareOptions =
-      { InputDirectories: seq<System.String>
+      {
+        InputDirectories: seq<System.String>
         OutputDirectories: seq<System.String>
         SymbolDirectories: seq<System.String>
         Dependencies: seq<System.String>
@@ -87,10 +103,15 @@ Fields that are not applicable to the use case or platform are silently ignored.
 
 
 ### type `LoggingOptions`
+
+Destinations for user level output at various levels of success.  `Echo` is for the
+command line and usage warninings only.
+
 ```
     [<NoComparison; NoEquality>]
     type LoggingOptions =
-      { Info : System.String -> unit
+      {
+        Info : System.String -> unit
         Warn : System.String -> unit
         Failure : System.String -> unit
         Echo : System.String -> unit }
@@ -100,6 +121,3 @@ Fields that are not applicable to the use case or platform are silently ignored.
 ```
 `Create()` returns an instance that just discards all strings input.  For your particular use, direct message severities appropriately.  `Echo` is used to echo the synthetic command line in case of inconsistent inputs.
 
-```
-  end
-```

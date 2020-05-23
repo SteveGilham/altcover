@@ -1,5 +1,7 @@
 # Echo.Colour property
 
+The name of the output colour, defaulting to current
+
 ```csharp
 public string Colour { get; set; }
 ```

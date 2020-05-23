@@ -1,5 +1,7 @@
 # AltCover.LoggingOptions.Primitive class
 
+Options expressed as an F# "stringly" typed record
+
 ```csharp
 public class Primitive : LoggingOptions
 ```

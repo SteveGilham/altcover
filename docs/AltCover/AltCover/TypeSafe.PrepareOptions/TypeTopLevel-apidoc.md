@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.TypeTopLevel property
 
+Corresponds to command line option `--typetoplevel=VALUE`
+
 ```csharp
 public Filters TypeTopLevel { get; }
 ```

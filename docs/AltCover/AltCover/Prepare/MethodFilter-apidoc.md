@@ -1,5 +1,7 @@
 # Prepare.MethodFilter property
 
+Corresponds to command line option ` -m, --methodFilter=VALUE`
+
 ```csharp
 public string[] MethodFilter { get; set; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.ContextItem.TimeItem class
 
+A call time granularity
+
 ```csharp
 public class TimeItem : ContextItem
 ```

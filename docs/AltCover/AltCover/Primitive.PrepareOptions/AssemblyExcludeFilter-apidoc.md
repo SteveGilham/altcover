@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.AssemblyExcludeFilter property
 
+Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE`
+
 ```csharp
 public IEnumerable<string> AssemblyExcludeFilter { get; }
 ```

@@ -1,5 +1,7 @@
 # AltCover.LoggingOptions.Create method
 
+Returns a pure sink (all input ignored) instance
+
 ```csharp
 public static LoggingOptions Create()
 ```

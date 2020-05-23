@@ -1,6 +1,6 @@
 # Echo constructor
 
-The default constructor.
+The default constructor
 
 ```csharp
 public Echo()

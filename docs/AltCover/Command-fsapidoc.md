@@ -5,6 +5,7 @@
 namespace AltCover
 ```
 ## module `Command`
+
 ```
 module Command = begin
   val Prepare : args:Abstract.IPrepareOptions -> log:AltCover.LoggingOptions -> int

@@ -1,6 +1,6 @@
 # Collect constructor
 
-The default constructor.
+The default constructor
 
 ```csharp
 public Collect()

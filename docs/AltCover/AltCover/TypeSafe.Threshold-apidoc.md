@@ -1,5 +1,7 @@
 # TypeSafe.Threshold class
 
+Corresponds desired coverage threshold
+
 ```csharp
 public abstract class Threshold : IEquatable<Threshold>, IStructuralEquatable
 ```
@@ -14,7 +16,7 @@ public abstract class Threshold : IEquatable<Threshold>, IStructuralEquatable
 | [IsNoThreshold](TypeSafe.Threshold/IsNoThreshold-apidoc) { get; } |  |
 | [IsThreshold](TypeSafe.Threshold/IsThreshold-apidoc) { get; } |  |
 | [Tag](TypeSafe.Threshold/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.Threshold/AsString-apidoc)() |  |
+| [AsString](TypeSafe.Threshold/AsString-apidoc)() | Returns the string to be used in the effective command line |
 | [Equals](TypeSafe.Threshold/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.Threshold/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.Threshold/GetHashCode-apidoc)(…) |  |
@@ -23,7 +25,7 @@ public abstract class Threshold : IEquatable<Threshold>, IStructuralEquatable
 | [get_Tag](TypeSafe.Threshold/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.Threshold/ToString-apidoc)() |  |
 | static class [Tags](TypeSafe.Threshold.Tags-apidoc) |  |
-| class [Threshold](TypeSafe.Threshold.Threshold-apidoc) |  |
+| class [Threshold](TypeSafe.Threshold.Threshold-apidoc) | Corresponds to an explicit value |
 
 ## See Also
 

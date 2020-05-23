@@ -1,5 +1,7 @@
 # Prepare.CommandLine property
 
+Corresponds to the command line to run, given after a `-- `
+
 ```csharp
 public string[] CommandLine { get; set; }
 ```

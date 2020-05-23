@@ -1,5 +1,7 @@
 # TypeSafe.CommandArgument class
 
+Corresponds to a value after `-- ` on the command line
+
 ```csharp
 public sealed class CommandArgument : IEquatable<CommandArgument>, IStructuralEquatable
 ```
@@ -11,7 +13,7 @@ public sealed class CommandArgument : IEquatable<CommandArgument>, IStructuralEq
 | static [NewCommandArgument](TypeSafe.CommandArgument/NewCommandArgument-apidoc)(…) |  |
 | [Item](TypeSafe.CommandArgument/Item-apidoc) { get; } |  |
 | [Tag](TypeSafe.CommandArgument/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.CommandArgument/AsString-apidoc)() |  |
+| [AsString](TypeSafe.CommandArgument/AsString-apidoc)() | Returns the string to be used in the effective command line |
 | [Equals](TypeSafe.CommandArgument/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.CommandArgument/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.CommandArgument/GetHashCode-apidoc)(…) |  |

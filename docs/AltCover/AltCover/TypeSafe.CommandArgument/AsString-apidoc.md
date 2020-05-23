@@ -1,5 +1,7 @@
 # TypeSafe.CommandArgument.AsString method
 
+Returns the string to be used in the effective command line
+
 ```csharp
 public string AsString()
 ```

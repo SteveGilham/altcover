@@ -1,5 +1,7 @@
 # TypeSafe.DirectoryPath.DInfo class
 
+A strongly typed directory
+
 ```csharp
 public class DInfo : DirectoryPath
 ```

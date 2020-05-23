@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.SingleVisit property
 
+Corresponds to command line option `--single`
+
 ```csharp
 public Flag SingleVisit { get; }
 ```

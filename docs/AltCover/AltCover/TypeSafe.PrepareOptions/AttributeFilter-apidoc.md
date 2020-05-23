@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.AttributeFilter property
 
+Corresponds to command line option `-a, --attributeFilter=VALUE`
+
 ```csharp
 public Filters AttributeFilter { get; }
 ```

@@ -1,5 +1,7 @@
 # Collect.RecorderDirectory property
 
+Corresponds to command line option `-r, --recorderDirectory=VALUE`; a required parameter
+
 ```csharp
 public string RecorderDirectory { get; set; }
 ```

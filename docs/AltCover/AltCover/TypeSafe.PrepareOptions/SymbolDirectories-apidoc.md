@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.SymbolDirectories property
 
+Corresponds to command line option `-y, --symbolDirectory=VALUE`
+
 ```csharp
 public DirectoryPaths SymbolDirectories { get; }
 ```

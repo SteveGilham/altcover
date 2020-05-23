@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.PathFilter property
 
+Corresponds to command line option `-p, --pathFilter=VALUE`
+
 ```csharp
 public IEnumerable<string> PathFilter { get; }
 ```

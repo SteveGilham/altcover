@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.AssemblyFilter property
 
+Corresponds to command line option `-s, --assemblyFilter=VALUE`
+
 ```csharp
 public Filters AssemblyFilter { get; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.FilePath.FilePath class
 
+A file path, expanded to an absolute path is supplied as a relative one
+
 ```csharp
 public class FilePath : FilePath
 ```

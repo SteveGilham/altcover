@@ -1,5 +1,7 @@
 # TypeSafe.CollectOptions.CommandLine property
 
+Corresponds to the command line arguments for the executable, given after a `-- `
+
 ```csharp
 public Command CommandLine { get; }
 ```

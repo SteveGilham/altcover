@@ -1,5 +1,7 @@
 # Primitive.LoggingOptions.Info property
 
+Sink for informational messages
+
 ```csharp
 public FSharpFunc<string, Unit> Info { get; }
 ```

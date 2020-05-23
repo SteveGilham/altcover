@@ -1,5 +1,7 @@
 # TypeSafe.SummaryFormat class
 
+Corresponds to a summary format choice
+
 ```csharp
 public sealed class SummaryFormat : IEquatable<SummaryFormat>, IStructuralEquatable
 ```
@@ -24,7 +26,7 @@ public sealed class SummaryFormat : IEquatable<SummaryFormat>, IStructuralEquata
 | [IsR](TypeSafe.SummaryFormat/IsR-apidoc) { get; } |  |
 | [IsRPlus](TypeSafe.SummaryFormat/IsRPlus-apidoc) { get; } |  |
 | [Tag](TypeSafe.SummaryFormat/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.SummaryFormat/AsString-apidoc)() |  |
+| [AsString](TypeSafe.SummaryFormat/AsString-apidoc)() | Returns the string to use in the command line |
 | [Equals](TypeSafe.SummaryFormat/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.SummaryFormat/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.SummaryFormat/GetHashCode-apidoc)(…) |  |

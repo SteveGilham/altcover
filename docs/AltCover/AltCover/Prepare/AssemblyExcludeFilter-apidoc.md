@@ -1,5 +1,7 @@
 # Prepare.AssemblyExcludeFilter property
 
+Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE`
+
 ```csharp
 public string[] AssemblyExcludeFilter { get; set; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.Save property
 
+Corresponds to command line option `--save`
+
 ```csharp
 public Flag Save { get; }
 ```

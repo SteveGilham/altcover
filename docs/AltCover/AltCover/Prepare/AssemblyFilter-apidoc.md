@@ -1,5 +1,7 @@
 # Prepare.AssemblyFilter property
 
+Corresponds to command line option `-s, --assemblyFilter=VALUE`
+
 ```csharp
 public string[] AssemblyFilter { get; set; }
 ```

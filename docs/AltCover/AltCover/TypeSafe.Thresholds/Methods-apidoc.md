@@ -1,5 +1,7 @@
 # TypeSafe.Thresholds.Methods property
 
+Minimum method coverage %age
+
 ```csharp
 public byte Methods { get; }
 ```

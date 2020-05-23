@@ -1,5 +1,7 @@
 # TypeSafe.StaticFormat class
 
+Corresponds to a an option for treating trivial methods
+
 ```csharp
 public sealed class StaticFormat : IEquatable<StaticFormat>, IStructuralEquatable
 ```
@@ -18,7 +20,7 @@ public sealed class StaticFormat : IEquatable<StaticFormat>, IStructuralEquatabl
 | [IsShow](TypeSafe.StaticFormat/IsShow-apidoc) { get; } |  |
 | [IsShowZero](TypeSafe.StaticFormat/IsShowZero-apidoc) { get; } |  |
 | [Tag](TypeSafe.StaticFormat/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.StaticFormat/AsString-apidoc)() |  |
+| [AsString](TypeSafe.StaticFormat/AsString-apidoc)() | Returns the string to use in the command line |
 | [Equals](TypeSafe.StaticFormat/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.StaticFormat/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.StaticFormat/GetHashCode-apidoc)(…) |  |

@@ -1,5 +1,7 @@
 # TypeSafe.Thresholds.MaxCrap property
 
+Maximum acceptable CRAP score
+
 ```csharp
 public byte MaxCrap { get; }
 ```

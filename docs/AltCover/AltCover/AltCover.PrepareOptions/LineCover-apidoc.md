@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.LineCover property
 
+Corresponds to command line option `--linecover`
+
 ```csharp
 public bool LineCover { get; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.FilterItem.Raw class
 
+A string as would be used on the command line (regex with optional leading `'?`)
+
 ```csharp
 public class Raw : FilterItem
 ```

@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.MethodTopLevel property
 
+Corresponds to command line option `--methodtoplevel=VALUE`
+
 ```csharp
 public FSharpList<string> MethodTopLevel { get; }
 ```

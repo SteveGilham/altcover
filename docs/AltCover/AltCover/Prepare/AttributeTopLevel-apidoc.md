@@ -1,5 +1,7 @@
 # Prepare.AttributeTopLevel property
 
+Corresponds to command line option --attributetoplevel=VALUE`
+
 ```csharp
 public string[] AttributeTopLevel { get; set; }
 ```

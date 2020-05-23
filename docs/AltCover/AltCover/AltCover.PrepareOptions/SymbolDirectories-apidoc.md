@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.SymbolDirectories property
 
+Corresponds to command line option `-y, --symbolDirectory=VALUE`
+
 ```csharp
 public FSharpList<string> SymbolDirectories { get; }
 ```

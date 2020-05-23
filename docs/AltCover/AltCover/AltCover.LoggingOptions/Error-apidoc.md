@@ -1,5 +1,7 @@
 # AltCover.LoggingOptions.Error property
 
+Sink for error messages
+
 ```csharp
 public FSharpFunc<string, Unit> Error { get; }
 ```

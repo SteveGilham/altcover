@@ -1,5 +1,7 @@
 # Prepare.Defer property
 
+Corresponds to command line option `--defer`
+
 ```csharp
 public bool Defer { get; set; }
 ```

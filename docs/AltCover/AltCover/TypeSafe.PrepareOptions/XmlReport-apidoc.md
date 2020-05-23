@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.XmlReport property
 
+Corresponds to command line option `-x, --xmlReport=VALUE`
+
 ```csharp
 public FilePath XmlReport { get; }
 ```

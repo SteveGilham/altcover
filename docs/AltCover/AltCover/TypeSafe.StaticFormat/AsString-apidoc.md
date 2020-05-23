@@ -1,5 +1,7 @@
 # TypeSafe.StaticFormat.AsString method
 
+Returns the string to use in the command line
+
 ```csharp
 public string AsString()
 ```

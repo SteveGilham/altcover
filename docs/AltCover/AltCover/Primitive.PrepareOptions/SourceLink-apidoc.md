@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.SourceLink property
 
+Corresponds to command line option `--sourcelink`
+
 ```csharp
 public bool SourceLink { get; }
 ```

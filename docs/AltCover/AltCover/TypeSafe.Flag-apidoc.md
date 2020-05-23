@@ -1,5 +1,7 @@
 # TypeSafe.Flag class
 
+Corresponds to a yes/no choice
+
 ```csharp
 public abstract class Flag : IEquatable<Flag>, IStructuralEquatable
 ```
@@ -17,7 +19,7 @@ public abstract class Flag : IEquatable<Flag>, IStructuralEquatable
 | [IsFlag](TypeSafe.Flag/IsFlag-apidoc) { get; } |  |
 | [IsSet](TypeSafe.Flag/IsSet-apidoc) { get; } |  |
 | [Tag](TypeSafe.Flag/Tag-apidoc) { get; } |  |
-| [AsBool](TypeSafe.Flag/AsBool-apidoc)() |  |
+| [AsBool](TypeSafe.Flag/AsBool-apidoc)() | Returns the effective boolean value |
 | [Equals](TypeSafe.Flag/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.Flag/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.Flag/GetHashCode-apidoc)(…) |  |
@@ -26,7 +28,7 @@ public abstract class Flag : IEquatable<Flag>, IStructuralEquatable
 | [get_IsSet](TypeSafe.Flag/get_IsSet-apidoc)() |  |
 | [get_Tag](TypeSafe.Flag/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.Flag/ToString-apidoc)() |  |
-| class [Flag](TypeSafe.Flag.Flag-apidoc) |  |
+| class [Flag](TypeSafe.Flag.Flag-apidoc) | A type-safe boolean |
 | static class [Tags](TypeSafe.Flag.Tags-apidoc) |  |
 
 ## See Also

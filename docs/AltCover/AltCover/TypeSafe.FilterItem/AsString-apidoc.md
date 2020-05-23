@@ -1,5 +1,7 @@
 # TypeSafe.FilterItem.AsString method
 
+Returns the string as would be used on the command line (regex with optional leading `'?`)
+
 ```csharp
 public string AsString()
 ```

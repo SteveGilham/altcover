@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.Create method
 
+returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set`
+
 ```csharp
 public static PrepareOptions Create()
 ```

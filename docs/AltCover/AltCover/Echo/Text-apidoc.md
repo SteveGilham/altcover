@@ -1,5 +1,7 @@
 # Echo.Text property
 
+The text to write, a required parameter
+
 ```csharp
 public string Text { get; set; }
 ```

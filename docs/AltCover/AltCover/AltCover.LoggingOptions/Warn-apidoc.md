@@ -1,5 +1,7 @@
 # AltCover.LoggingOptions.Warn property
 
+Sink for warning messages
+
 ```csharp
 public FSharpFunc<string, Unit> Warn { get; }
 ```

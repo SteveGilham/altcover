@@ -1,5 +1,7 @@
 # TypeSafe.FilterItem class
 
+Corresponds to a filter entry
+
 ```csharp
 public abstract class FilterItem : IEquatable<FilterItem>, IStructuralEquatable
 ```
@@ -8,25 +10,25 @@ public abstract class FilterItem : IEquatable<FilterItem>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [NewFilterItem](TypeSafe.FilterItem/NewFilterItem-apidoc)(…) |  |
-| static [NewIncludeItem](TypeSafe.FilterItem/NewIncludeItem-apidoc)(…) |  |
+| static [NewMatchItem](TypeSafe.FilterItem/NewMatchItem-apidoc)(…) |  |
+| static [NewNegateMatchItem](TypeSafe.FilterItem/NewNegateMatchItem-apidoc)(…) |  |
 | static [NewRaw](TypeSafe.FilterItem/NewRaw-apidoc)(…) |  |
-| [IsFilterItem](TypeSafe.FilterItem/IsFilterItem-apidoc) { get; } |  |
-| [IsIncludeItem](TypeSafe.FilterItem/IsIncludeItem-apidoc) { get; } |  |
+| [IsMatchItem](TypeSafe.FilterItem/IsMatchItem-apidoc) { get; } |  |
+| [IsNegateMatchItem](TypeSafe.FilterItem/IsNegateMatchItem-apidoc) { get; } |  |
 | [IsRaw](TypeSafe.FilterItem/IsRaw-apidoc) { get; } |  |
 | [Tag](TypeSafe.FilterItem/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.FilterItem/AsString-apidoc)() |  |
+| [AsString](TypeSafe.FilterItem/AsString-apidoc)() | Returns the string as would be used on the command line (regex with optional leading `'?`) |
 | [Equals](TypeSafe.FilterItem/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.FilterItem/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.FilterItem/GetHashCode-apidoc)(…) |  |
-| [get_IsFilterItem](TypeSafe.FilterItem/get_IsFilterItem-apidoc)() |  |
-| [get_IsIncludeItem](TypeSafe.FilterItem/get_IsIncludeItem-apidoc)() |  |
+| [get_IsMatchItem](TypeSafe.FilterItem/get_IsMatchItem-apidoc)() |  |
+| [get_IsNegateMatchItem](TypeSafe.FilterItem/get_IsNegateMatchItem-apidoc)() |  |
 | [get_IsRaw](TypeSafe.FilterItem/get_IsRaw-apidoc)() |  |
 | [get_Tag](TypeSafe.FilterItem/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.FilterItem/ToString-apidoc)() |  |
-| class [FilterItem](TypeSafe.FilterItem.FilterItem-apidoc) |  |
-| class [IncludeItem](TypeSafe.FilterItem.IncludeItem-apidoc) |  |
-| class [Raw](TypeSafe.FilterItem.Raw-apidoc) |  |
+| class [MatchItem](TypeSafe.FilterItem.MatchItem-apidoc) | Apply to items that match the regex |
+| class [NegateMatchItem](TypeSafe.FilterItem.NegateMatchItem-apidoc) | Apply to items that don't match the regex |
+| class [Raw](TypeSafe.FilterItem.Raw-apidoc) | A string as would be used on the command line (regex with optional leading `'?`) |
 | static class [Tags](TypeSafe.FilterItem.Tags-apidoc) |  |
 
 ## See Also

@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.TypeTopLevel property
 
+Corresponds to command line option `--typetoplevel=VALUE`
+
 ```csharp
 public FSharpList<string> TypeTopLevel { get; }
 ```

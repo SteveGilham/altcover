@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.Validate method
 
+Does simple checking of the arguments without causing any changes to the system All the problems that the application command-line could report, so empty is success.
+
 ```csharp
 public string[] Validate()
 ```

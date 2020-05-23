@@ -1,5 +1,7 @@
 # TypeSafe.DirectoryPath class
 
+Corresponds to a directory
+
 ```csharp
 public abstract class DirectoryPath : IEquatable<DirectoryPath>, IStructuralEquatable
 ```
@@ -16,7 +18,7 @@ public abstract class DirectoryPath : IEquatable<DirectoryPath>, IStructuralEqua
 | [IsDirectoryPath](TypeSafe.DirectoryPath/IsDirectoryPath-apidoc) { get; } |  |
 | [IsNoDirectory](TypeSafe.DirectoryPath/IsNoDirectory-apidoc) { get; } |  |
 | [Tag](TypeSafe.DirectoryPath/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.DirectoryPath/AsString-apidoc)() |  |
+| [AsString](TypeSafe.DirectoryPath/AsString-apidoc)() | Returns the string to be used in the effective command line |
 | [Equals](TypeSafe.DirectoryPath/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.DirectoryPath/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.DirectoryPath/GetHashCode-apidoc)(…) |  |
@@ -25,8 +27,8 @@ public abstract class DirectoryPath : IEquatable<DirectoryPath>, IStructuralEqua
 | [get_IsNoDirectory](TypeSafe.DirectoryPath/get_IsNoDirectory-apidoc)() |  |
 | [get_Tag](TypeSafe.DirectoryPath/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.DirectoryPath/ToString-apidoc)() |  |
-| class [DInfo](TypeSafe.DirectoryPath.DInfo-apidoc) |  |
-| class [DirectoryPath](TypeSafe.DirectoryPath.DirectoryPath-apidoc) |  |
+| class [DInfo](TypeSafe.DirectoryPath.DInfo-apidoc) | A strongly typed directory |
+| class [DirectoryPath](TypeSafe.DirectoryPath.DirectoryPath-apidoc) | A directory path, expanded to an absolute path is supplied as a relative one |
 | static class [Tags](TypeSafe.DirectoryPath.Tags-apidoc) |  |
 
 ## See Also

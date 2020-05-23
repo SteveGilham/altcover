@@ -1,5 +1,7 @@
 # AltCover.CollectOptions.TypeSafe class
 
+Options expressed as an F# strongly-typed record
+
 ```csharp
 public class TypeSafe : CollectOptions
 ```

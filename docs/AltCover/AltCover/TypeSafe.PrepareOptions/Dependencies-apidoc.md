@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.Dependencies property
 
+Corresponds to command line option `-d, --dependency=VALUE`
+
 ```csharp
 public FilePaths Dependencies { get; }
 ```

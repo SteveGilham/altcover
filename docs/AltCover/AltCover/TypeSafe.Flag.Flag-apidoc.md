@@ -1,5 +1,7 @@
 # TypeSafe.Flag.Flag class
 
+A type-safe boolean
+
 ```csharp
 public class Flag : Flag
 ```

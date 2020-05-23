@@ -1,5 +1,7 @@
 # Command.ImportModule method
 
+Indicate how to consume for PowerShell The `Import-Module` command required.
+
 ```csharp
 public static string ImportModule()
 ```

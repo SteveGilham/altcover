@@ -8,8 +8,8 @@ public static class Tags
 
 | name | description |
 | --- | --- |
-| const [FilterItem](TypeSafe.FilterItem.Tags/FilterItem-apidoc) |  |
-| const [IncludeItem](TypeSafe.FilterItem.Tags/IncludeItem-apidoc) |  |
+| const [MatchItem](TypeSafe.FilterItem.Tags/MatchItem-apidoc) |  |
+| const [NegateMatchItem](TypeSafe.FilterItem.Tags/NegateMatchItem-apidoc) |  |
 | const [Raw](TypeSafe.FilterItem.Tags/Raw-apidoc) |  |
 
 ## See Also

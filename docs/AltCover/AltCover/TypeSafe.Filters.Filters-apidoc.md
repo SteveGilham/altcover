@@ -1,5 +1,7 @@
 # TypeSafe.Filters.Filters class
 
+A type-safe collection
+
 ```csharp
 public class Filters : Filters
 ```

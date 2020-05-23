@@ -1,5 +1,7 @@
 # Prepare.FileFilter property
 
+Corresponds to command line option `-f, --fileFilter=VALUE`
+
 ```csharp
 public string[] FileFilter { get; set; }
 ```

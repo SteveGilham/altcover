@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.Defer property
 
+Corresponds to command line option `--defer`
+
 ```csharp
 public Flag Defer { get; }
 ```

@@ -1,5 +1,7 @@
 # Prepare.InputDirectories property
 
+Corresponds to command line option ` -i, --inputDirectory=VALUE`
+
 ```csharp
 public string[] InputDirectories { get; set; }
 ```

@@ -1,5 +1,7 @@
 # PrepareExtension class
 
+`Abstract.IPrepareOptions` extension methods
+
 ```csharp
 public static class PrepareExtension
 ```
@@ -8,7 +10,7 @@ public static class PrepareExtension
 
 | name | description |
 | --- | --- |
-| static [WhatIf](PrepareExtension/WhatIf-apidoc)(…) |  |
+| static [WhatIf](PrepareExtension/WhatIf-apidoc)(…) | Validates the supplied options The optionsThe validation outcome. |
 
 ## See Also
 

@@ -1,5 +1,7 @@
 # Prepare.SymbolDirectories property
 
+Corresponds to command line option `-y, --symbolDirectory=VALUE`
+
 ```csharp
 public string[] SymbolDirectories { get; set; }
 ```

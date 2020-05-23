@@ -28,10 +28,10 @@ public interface IPrepareOptions
 | [AssemblyFilter](Abstract.IPrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](Abstract.IPrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
 | [AttributeTopLevel](Abstract.IPrepareOptions/AttributeTopLevel-apidoc) { get; } | Corresponds to command line option --attributetoplevel=VALUE` |
-| [BranchCover](Abstract.IPrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover=VALUE` |
+| [BranchCover](Abstract.IPrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
 | [CallContext](Abstract.IPrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
-| [CommandLine](Abstract.IPrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- `` |
-| [Defer](Abstract.IPrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer[=VALUE]` |
+| [CommandLine](Abstract.IPrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
+| [Defer](Abstract.IPrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
 | [Dependencies](Abstract.IPrepareOptions/Dependencies-apidoc) { get; } | Corresponds to command line option `-d, --dependency=VALUE` |
 | [ExposeReturnCode](Abstract.IPrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](Abstract.IPrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |

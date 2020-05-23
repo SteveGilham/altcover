@@ -1,5 +1,7 @@
 # TypeSafe.ContextItem class
 
+Corresponds to a context value
+
 ```csharp
 public abstract class ContextItem : IEquatable<ContextItem>, IStructuralEquatable
 ```
@@ -8,22 +10,34 @@ public abstract class ContextItem : IEquatable<ContextItem>, IStructuralEquatabl
 
 | name | description |
 | --- | --- |
-| static [NewCallItem](TypeSafe.ContextItem/NewCallItem-apidoc)(…) |  |
+| static [NewAttributeKind](TypeSafe.ContextItem/NewAttributeKind-apidoc)(…) |  |
+| static [NewAttributeName](TypeSafe.ContextItem/NewAttributeName-apidoc)(…) |  |
+| static [NewCaller](TypeSafe.ContextItem/NewCaller-apidoc)(…) |  |
+| static [NewCallerName](TypeSafe.ContextItem/NewCallerName-apidoc)(…) |  |
 | static [NewTimeItem](TypeSafe.ContextItem/NewTimeItem-apidoc)(…) |  |
-| [IsCallItem](TypeSafe.ContextItem/IsCallItem-apidoc) { get; } |  |
+| [IsAttributeKind](TypeSafe.ContextItem/IsAttributeKind-apidoc) { get; } |  |
+| [IsAttributeName](TypeSafe.ContextItem/IsAttributeName-apidoc) { get; } |  |
+| [IsCaller](TypeSafe.ContextItem/IsCaller-apidoc) { get; } |  |
+| [IsCallerName](TypeSafe.ContextItem/IsCallerName-apidoc) { get; } |  |
 | [IsTimeItem](TypeSafe.ContextItem/IsTimeItem-apidoc) { get; } |  |
 | [Tag](TypeSafe.ContextItem/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.ContextItem/AsString-apidoc)() |  |
+| [AsString](TypeSafe.ContextItem/AsString-apidoc)() | Returns the string to use in the command line |
 | [Equals](TypeSafe.ContextItem/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.ContextItem/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.ContextItem/GetHashCode-apidoc)(…) |  |
-| [get_IsCallItem](TypeSafe.ContextItem/get_IsCallItem-apidoc)() |  |
+| [get_IsAttributeKind](TypeSafe.ContextItem/get_IsAttributeKind-apidoc)() |  |
+| [get_IsAttributeName](TypeSafe.ContextItem/get_IsAttributeName-apidoc)() |  |
+| [get_IsCaller](TypeSafe.ContextItem/get_IsCaller-apidoc)() |  |
+| [get_IsCallerName](TypeSafe.ContextItem/get_IsCallerName-apidoc)() |  |
 | [get_IsTimeItem](TypeSafe.ContextItem/get_IsTimeItem-apidoc)() |  |
 | [get_Tag](TypeSafe.ContextItem/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.ContextItem/ToString-apidoc)() |  |
-| class [CallItem](TypeSafe.ContextItem.CallItem-apidoc) |  |
+| class [AttributeKind](TypeSafe.ContextItem.AttributeKind-apidoc) | A method-level attribute type |
+| class [AttributeName](TypeSafe.ContextItem.AttributeName-apidoc) | A method-level attribute name |
+| class [Caller](TypeSafe.ContextItem.Caller-apidoc) | A method |
+| class [CallerName](TypeSafe.ContextItem.CallerName-apidoc) | A method name |
 | static class [Tags](TypeSafe.ContextItem.Tags-apidoc) |  |
-| class [TimeItem](TypeSafe.ContextItem.TimeItem-apidoc) |  |
+| class [TimeItem](TypeSafe.ContextItem.TimeItem-apidoc) | A call time granularity |
 
 ## See Also
 

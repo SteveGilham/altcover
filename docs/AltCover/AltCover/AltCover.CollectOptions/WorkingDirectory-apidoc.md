@@ -1,5 +1,7 @@
 # AltCover.CollectOptions.WorkingDirectory property
 
+Corresponds to command line option `-w, --workingDirectory=VALUE`
+
 ```csharp
 public string WorkingDirectory { get; }
 ```

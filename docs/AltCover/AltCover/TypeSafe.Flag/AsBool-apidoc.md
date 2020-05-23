@@ -1,5 +1,7 @@
 # TypeSafe.Flag.AsBool method
 
+Returns the effective boolean value
+
 ```csharp
 public bool AsBool()
 ```

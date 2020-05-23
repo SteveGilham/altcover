@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.InputDirectories property
 
+Corresponds to command line option ` -i, --inputDirectory=VALUE`
+
 ```csharp
 public IEnumerable<string> InputDirectories { get; }
 ```

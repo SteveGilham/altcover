@@ -1,5 +1,7 @@
 # Command.Version method
 
+Indicate the current version The strongly-typed version.
+
 ```csharp
 public static Version Version()
 ```

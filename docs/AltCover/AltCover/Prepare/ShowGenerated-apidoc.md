@@ -1,5 +1,7 @@
 # Prepare.ShowGenerated property
 
+Corresponds to command line option ` --showGenerated`
+
 ```csharp
 public bool ShowGenerated { get; set; }
 ```

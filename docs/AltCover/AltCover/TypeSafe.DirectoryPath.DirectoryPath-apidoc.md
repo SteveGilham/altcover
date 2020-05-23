@@ -1,5 +1,7 @@
 # TypeSafe.DirectoryPath.DirectoryPath class
 
+A directory path, expanded to an absolute path is supplied as a relative one
+
 ```csharp
 public class DirectoryPath : DirectoryPath
 ```

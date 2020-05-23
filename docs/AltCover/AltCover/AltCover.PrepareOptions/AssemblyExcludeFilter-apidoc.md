@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.AssemblyExcludeFilter property
 
+Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE`
+
 ```csharp
 public FSharpList<string> AssemblyExcludeFilter { get; }
 ```

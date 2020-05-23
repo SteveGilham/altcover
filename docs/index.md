@@ -1,4 +1,4 @@
-The AltCover API
+# The AltCover API
 
 An index of which nuget packages contain which assemblies, and which have APIs
 

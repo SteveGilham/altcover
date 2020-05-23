@@ -1,5 +1,7 @@
 # Primitive.CollectOptions.Threshold property
 
+Corresponds to command line option `-t, --threshold=VALUE`
+
 ```csharp
 public string Threshold { get; }
 ```

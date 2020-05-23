@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions class
 
+Command line options for `AltCover`
+
 ```csharp
 public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEquatable
 ```
@@ -11,44 +13,44 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | static [NewAbstract](AltCover.PrepareOptions/NewAbstract-apidoc)(…) |  |
 | static [NewPrimitive](AltCover.PrepareOptions/NewPrimitive-apidoc)(…) |  |
 | static [NewTypeSafe](AltCover.PrepareOptions/NewTypeSafe-apidoc)(…) |  |
-| [AssemblyExcludeFilter](AltCover.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } |  |
-| [AssemblyFilter](AltCover.PrepareOptions/AssemblyFilter-apidoc) { get; } |  |
-| [AttributeFilter](AltCover.PrepareOptions/AttributeFilter-apidoc) { get; } |  |
-| [AttributeTopLevel](AltCover.PrepareOptions/AttributeTopLevel-apidoc) { get; } |  |
-| [BranchCover](AltCover.PrepareOptions/BranchCover-apidoc) { get; } |  |
-| [CallContext](AltCover.PrepareOptions/CallContext-apidoc) { get; } |  |
-| [CommandLine](AltCover.PrepareOptions/CommandLine-apidoc) { get; } |  |
-| [Defer](AltCover.PrepareOptions/Defer-apidoc) { get; } |  |
-| [Dependencies](AltCover.PrepareOptions/Dependencies-apidoc) { get; } |  |
-| [ExposeReturnCode](AltCover.PrepareOptions/ExposeReturnCode-apidoc) { get; } |  |
-| [FileFilter](AltCover.PrepareOptions/FileFilter-apidoc) { get; } |  |
-| [InPlace](AltCover.PrepareOptions/InPlace-apidoc) { get; } |  |
-| [InputDirectories](AltCover.PrepareOptions/InputDirectories-apidoc) { get; } |  |
+| [AssemblyExcludeFilter](AltCover.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
+| [AssemblyFilter](AltCover.PrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
+| [AttributeFilter](AltCover.PrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
+| [AttributeTopLevel](AltCover.PrepareOptions/AttributeTopLevel-apidoc) { get; } | Corresponds to command line option --attributetoplevel=VALUE` |
+| [BranchCover](AltCover.PrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
+| [CallContext](AltCover.PrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
+| [CommandLine](AltCover.PrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
+| [Defer](AltCover.PrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
+| [Dependencies](AltCover.PrepareOptions/Dependencies-apidoc) { get; } | Corresponds to command line option `-d, --dependency=VALUE` |
+| [ExposeReturnCode](AltCover.PrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [FileFilter](AltCover.PrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
+| [InPlace](AltCover.PrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
+| [InputDirectories](AltCover.PrepareOptions/InputDirectories-apidoc) { get; } | Corresponds to command line option ` -i, --inputDirectory=VALUE` |
 | [IsAbstract](AltCover.PrepareOptions/IsAbstract-apidoc) { get; } |  |
 | [IsPrimitive](AltCover.PrepareOptions/IsPrimitive-apidoc) { get; } |  |
 | [IsTypeSafe](AltCover.PrepareOptions/IsTypeSafe-apidoc) { get; } |  |
-| [Keys](AltCover.PrepareOptions/Keys-apidoc) { get; } |  |
-| [LineCover](AltCover.PrepareOptions/LineCover-apidoc) { get; } |  |
-| [LocalSource](AltCover.PrepareOptions/LocalSource-apidoc) { get; } |  |
-| [MethodFilter](AltCover.PrepareOptions/MethodFilter-apidoc) { get; } |  |
-| [MethodPoint](AltCover.PrepareOptions/MethodPoint-apidoc) { get; } |  |
-| [MethodTopLevel](AltCover.PrepareOptions/MethodTopLevel-apidoc) { get; } |  |
-| [OutputDirectories](AltCover.PrepareOptions/OutputDirectories-apidoc) { get; } |  |
-| [PathFilter](AltCover.PrepareOptions/PathFilter-apidoc) { get; } |  |
-| [ReportFormat](AltCover.PrepareOptions/ReportFormat-apidoc) { get; } |  |
-| [Save](AltCover.PrepareOptions/Save-apidoc) { get; } |  |
-| [ShowGenerated](AltCover.PrepareOptions/ShowGenerated-apidoc) { get; } |  |
-| [ShowStatic](AltCover.PrepareOptions/ShowStatic-apidoc) { get; } |  |
-| [SingleVisit](AltCover.PrepareOptions/SingleVisit-apidoc) { get; } |  |
-| [SourceLink](AltCover.PrepareOptions/SourceLink-apidoc) { get; } |  |
-| [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } |  |
-| [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } |  |
+| [Keys](AltCover.PrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option ` -k, --key=VALUE` |
+| [LineCover](AltCover.PrepareOptions/LineCover-apidoc) { get; } | Corresponds to command line option `--linecover` |
+| [LocalSource](AltCover.PrepareOptions/LocalSource-apidoc) { get; } | Corresponds to command line option `-l, --localSource` |
+| [MethodFilter](AltCover.PrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
+| [MethodPoint](AltCover.PrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
+| [MethodTopLevel](AltCover.PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
+| [OutputDirectories](AltCover.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
+| [PathFilter](AltCover.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [ReportFormat](AltCover.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
+| [Save](AltCover.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
+| [ShowGenerated](AltCover.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
+| [ShowStatic](AltCover.PrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
+| [SingleVisit](AltCover.PrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
+| [SourceLink](AltCover.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
+| [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
+| [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [Tag](AltCover.PrepareOptions/Tag-apidoc) { get; } |  |
-| [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } |  |
-| [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } |  |
-| [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } |  |
-| [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } |  |
-| [ZipFile](AltCover.PrepareOptions/ZipFile-apidoc) { get; } |  |
+| [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
+| [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
+| [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
+| [ZipFile](AltCover.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
 | [Equals](AltCover.PrepareOptions/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](AltCover.PrepareOptions/GetHashCode-apidoc)() |  |
 | [GetHashCode](AltCover.PrepareOptions/GetHashCode-apidoc)(…) |  |
@@ -57,11 +59,11 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [get_IsTypeSafe](AltCover.PrepareOptions/get_IsTypeSafe-apidoc)() |  |
 | [get_Tag](AltCover.PrepareOptions/get_Tag-apidoc)() |  |
 | override [ToString](AltCover.PrepareOptions/ToString-apidoc)() |  |
-| [Validate](AltCover.PrepareOptions/Validate-apidoc)() |  |
-| class [Abstract](AltCover.PrepareOptions.Abstract-apidoc) |  |
-| class [Primitive](AltCover.PrepareOptions.Primitive-apidoc) |  |
+| [Validate](AltCover.PrepareOptions/Validate-apidoc)() | Does simple checking of the arguments without causing any changes to the system All the problems that the application command-line could report, so empty is success. |
+| class [Abstract](AltCover.PrepareOptions.Abstract-apidoc) | Options expressed as an interface |
+| class [Primitive](AltCover.PrepareOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |
 | static class [Tags](AltCover.PrepareOptions.Tags-apidoc) |  |
-| class [TypeSafe](AltCover.PrepareOptions.TypeSafe-apidoc) |  |
+| class [TypeSafe](AltCover.PrepareOptions.TypeSafe-apidoc) | Options expressed as an F# strongly-typed record |
 
 ## See Also
 

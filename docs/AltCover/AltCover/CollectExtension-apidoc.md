@@ -1,5 +1,7 @@
 # CollectExtension class
 
+`Abstract.ICollectOptions` extension methods
+
 ```csharp
 public static class CollectExtension
 ```

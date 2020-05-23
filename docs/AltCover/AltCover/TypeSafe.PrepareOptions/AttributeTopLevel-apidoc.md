@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.AttributeTopLevel property
 
+Corresponds to command line option --attributetoplevel=VALUE`
+
 ```csharp
 public Filters AttributeTopLevel { get; }
 ```

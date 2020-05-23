@@ -1,5 +1,7 @@
 # Prepare.AttributeFilter property
 
+Corresponds to command line option `-a, --attributeFilter=VALUE`
+
 ```csharp
 public string[] AttributeFilter { get; set; }
 ```

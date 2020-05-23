@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.MethodPoint property
 
+Corresponds to command line option `--methodpoint`
+
 ```csharp
 public bool MethodPoint { get; }
 ```

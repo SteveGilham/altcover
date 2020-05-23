@@ -1,5 +1,7 @@
 # Primitive.LoggingOptions.Failure property
 
+Sink for error messages
+
 ```csharp
 public FSharpFunc<string, Unit> Failure { get; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.PathFilter property
 
+Corresponds to command line option `-p, --pathFilter=VALUE`
+
 ```csharp
 public Filters PathFilter { get; }
 ```

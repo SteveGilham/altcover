@@ -1,5 +1,7 @@
 # Prepare.TypeTopLevel property
 
+Corresponds to command line option `--typetoplevel=VALUE`
+
 ```csharp
 public string[] TypeTopLevel { get; set; }
 ```

@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.AssemblyFilter property
 
+Corresponds to command line option `-s, --assemblyFilter=VALUE`
+
 ```csharp
 public IEnumerable<string> AssemblyFilter { get; }
 ```

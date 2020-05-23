@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.TypeTopLevel property
 
+Corresponds to command line option `--typetoplevel=VALUE`
+
 ```csharp
 public IEnumerable<string> TypeTopLevel { get; }
 ```

@@ -1,5 +1,7 @@
 # Primitive.CollectOptions class
 
+Command line options for `AltCover Runner`
+
 ```csharp
 public sealed class CollectOptions : IEquatable<CollectOptions>, IStructuralEquatable
 ```
@@ -9,17 +11,17 @@ public sealed class CollectOptions : IEquatable<CollectOptions>, IStructuralEqua
 | name | description |
 | --- | --- |
 | [CollectOptions](Primitive.CollectOptions/CollectOptions-apidoc)(…) |  |
-| static [Create](Primitive.CollectOptions/Create-apidoc)() |  |
-| [Cobertura](Primitive.CollectOptions/Cobertura-apidoc) { get; } |  |
-| [CommandLine](Primitive.CollectOptions/CommandLine-apidoc) { get; } |  |
-| [Executable](Primitive.CollectOptions/Executable-apidoc) { get; } |  |
-| [ExposeReturnCode](Primitive.CollectOptions/ExposeReturnCode-apidoc) { get; } |  |
-| [LcovReport](Primitive.CollectOptions/LcovReport-apidoc) { get; } |  |
-| [OutputFile](Primitive.CollectOptions/OutputFile-apidoc) { get; } |  |
-| [RecorderDirectory](Primitive.CollectOptions/RecorderDirectory-apidoc) { get; } |  |
-| [SummaryFormat](Primitive.CollectOptions/SummaryFormat-apidoc) { get; } |  |
-| [Threshold](Primitive.CollectOptions/Threshold-apidoc) { get; } |  |
-| [WorkingDirectory](Primitive.CollectOptions/WorkingDirectory-apidoc) { get; } |  |
+| static [Create](Primitive.CollectOptions/Create-apidoc)() | Returns an instance with all fields empty save `ExposeReturnCode` being `true` |
+| [Cobertura](Primitive.CollectOptions/Cobertura-apidoc) { get; } | Corresponds to command line option `-c, --cobertura=VALUE` |
+| [CommandLine](Primitive.CollectOptions/CommandLine-apidoc) { get; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
+| [Executable](Primitive.CollectOptions/Executable-apidoc) { get; } | Corresponds to command line option `-x, --executable=VALUE` |
+| [ExposeReturnCode](Primitive.CollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [LcovReport](Primitive.CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
+| [OutputFile](Primitive.CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [RecorderDirectory](Primitive.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
+| [SummaryFormat](Primitive.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
+| [Threshold](Primitive.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [WorkingDirectory](Primitive.CollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 | [Equals](Primitive.CollectOptions/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](Primitive.CollectOptions/GetHashCode-apidoc)() |  |
 | [GetHashCode](Primitive.CollectOptions/GetHashCode-apidoc)(…) |  |

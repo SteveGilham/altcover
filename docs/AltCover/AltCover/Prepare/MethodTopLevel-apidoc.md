@@ -1,5 +1,7 @@
 # Prepare.MethodTopLevel property
 
+Corresponds to command line option `--methodtoplevel=VALUE`
+
 ```csharp
 public string[] MethodTopLevel { get; set; }
 ```

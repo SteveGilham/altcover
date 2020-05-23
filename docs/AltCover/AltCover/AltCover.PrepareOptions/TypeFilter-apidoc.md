@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.TypeFilter property
 
+Corresponds to command line option `-t, --typeFilter=VALUE`
+
 ```csharp
 public FSharpList<string> TypeFilter { get; }
 ```

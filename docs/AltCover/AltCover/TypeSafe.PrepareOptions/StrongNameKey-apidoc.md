@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.StrongNameKey property
 
+Corresponds to command line option `--sn, --strongNameKey=VALUE`
+
 ```csharp
 public FilePath StrongNameKey { get; }
 ```

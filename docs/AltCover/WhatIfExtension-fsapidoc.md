@@ -4,7 +4,6 @@
 ```
 namespace AltCover
 
-open System.Runtime.CompilerServices
 
 ```
 ## module `PrepareExtension` and module `CollectExtension`

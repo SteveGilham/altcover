@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.BranchCover property
 
+Corresponds to command line option `--branchcover`
+
 ```csharp
 public Flag BranchCover { get; }
 ```

@@ -1779,7 +1779,7 @@ module AltCoverRunnerTests =
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+      --defer                Optional, defers writing runner-mode coverage data
                                until process exit.
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just

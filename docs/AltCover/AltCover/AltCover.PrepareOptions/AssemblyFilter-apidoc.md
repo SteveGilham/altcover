@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.AssemblyFilter property
 
+Corresponds to command line option `-s, --assemblyFilter=VALUE`
+
 ```csharp
 public FSharpList<string> AssemblyFilter { get; }
 ```

@@ -1,5 +1,7 @@
 # AltCover.CollectOptions class
 
+Command line options for `AltCover Runner`
+
 ```csharp
 public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEquatable
 ```
@@ -11,20 +13,20 @@ public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEq
 | static [NewAbstract](AltCover.CollectOptions/NewAbstract-apidoc)(…) |  |
 | static [NewPrimitive](AltCover.CollectOptions/NewPrimitive-apidoc)(…) |  |
 | static [NewTypeSafe](AltCover.CollectOptions/NewTypeSafe-apidoc)(…) |  |
-| [Cobertura](AltCover.CollectOptions/Cobertura-apidoc) { get; } |  |
-| [CommandLine](AltCover.CollectOptions/CommandLine-apidoc) { get; } |  |
-| [Executable](AltCover.CollectOptions/Executable-apidoc) { get; } |  |
-| [ExposeReturnCode](AltCover.CollectOptions/ExposeReturnCode-apidoc) { get; } |  |
+| [Cobertura](AltCover.CollectOptions/Cobertura-apidoc) { get; } | Corresponds to command line option `-c, --cobertura=VALUE` |
+| [CommandLine](AltCover.CollectOptions/CommandLine-apidoc) { get; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
+| [Executable](AltCover.CollectOptions/Executable-apidoc) { get; } | Corresponds to command line option `-x, --executable=VALUE` |
+| [ExposeReturnCode](AltCover.CollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [IsAbstract](AltCover.CollectOptions/IsAbstract-apidoc) { get; } |  |
 | [IsPrimitive](AltCover.CollectOptions/IsPrimitive-apidoc) { get; } |  |
 | [IsTypeSafe](AltCover.CollectOptions/IsTypeSafe-apidoc) { get; } |  |
-| [LcovReport](AltCover.CollectOptions/LcovReport-apidoc) { get; } |  |
-| [OutputFile](AltCover.CollectOptions/OutputFile-apidoc) { get; } |  |
-| [RecorderDirectory](AltCover.CollectOptions/RecorderDirectory-apidoc) { get; } |  |
-| [SummaryFormat](AltCover.CollectOptions/SummaryFormat-apidoc) { get; } |  |
+| [LcovReport](AltCover.CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
+| [OutputFile](AltCover.CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
+| [RecorderDirectory](AltCover.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
+| [SummaryFormat](AltCover.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Tag](AltCover.CollectOptions/Tag-apidoc) { get; } |  |
-| [Threshold](AltCover.CollectOptions/Threshold-apidoc) { get; } |  |
-| [WorkingDirectory](AltCover.CollectOptions/WorkingDirectory-apidoc) { get; } |  |
+| [Threshold](AltCover.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [WorkingDirectory](AltCover.CollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 | [Equals](AltCover.CollectOptions/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](AltCover.CollectOptions/GetHashCode-apidoc)() |  |
 | [GetHashCode](AltCover.CollectOptions/GetHashCode-apidoc)(…) |  |
@@ -33,11 +35,11 @@ public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEq
 | [get_IsTypeSafe](AltCover.CollectOptions/get_IsTypeSafe-apidoc)() |  |
 | [get_Tag](AltCover.CollectOptions/get_Tag-apidoc)() |  |
 | override [ToString](AltCover.CollectOptions/ToString-apidoc)() |  |
-| [Validate](AltCover.CollectOptions/Validate-apidoc)(…) |  |
-| class [Abstract](AltCover.CollectOptions.Abstract-apidoc) |  |
-| class [Primitive](AltCover.CollectOptions.Primitive-apidoc) |  |
+| [Validate](AltCover.CollectOptions/Validate-apidoc)(…) | Does simple checking of the arguments without causing any changes to the system `true` if the Prepare step has already run and there should be instrumented code the `RecorderDirectory`All the problems that the application command-line could report, so empty is success. |
+| class [Abstract](AltCover.CollectOptions.Abstract-apidoc) | Options expressed as an interface |
+| class [Primitive](AltCover.CollectOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |
 | static class [Tags](AltCover.CollectOptions.Tags-apidoc) |  |
-| class [TypeSafe](AltCover.CollectOptions.TypeSafe-apidoc) |  |
+| class [TypeSafe](AltCover.CollectOptions.TypeSafe-apidoc) | Options expressed as an F# strongly-typed record |
 
 ## See Also
 

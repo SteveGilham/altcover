@@ -1,5 +1,7 @@
 # AltCover class
 
+This represents the command line options
+
 ```csharp
 public static class AltCover
 ```
@@ -8,10 +10,10 @@ public static class AltCover
 
 | name | description |
 | --- | --- |
-| abstract class [CollectOptions](AltCover.CollectOptions-apidoc) |  |
-| abstract class [LoggingOptions](AltCover.LoggingOptions-apidoc) |  |
-| abstract class [PrepareOptions](AltCover.PrepareOptions-apidoc) |  |
-| class [ValidatedCommandLine](AltCover.ValidatedCommandLine-apidoc) |  |
+| abstract class [CollectOptions](AltCover.CollectOptions-apidoc) | Command line options for `AltCover Runner` |
+| abstract class [LoggingOptions](AltCover.LoggingOptions-apidoc) | Destinations for user level output |
+| abstract class [PrepareOptions](AltCover.PrepareOptions-apidoc) | Command line options for `AltCover` |
+| class [ValidatedCommandLine](AltCover.ValidatedCommandLine-apidoc) | Holds the composed command line and any validation errors. |
 
 ## See Also
 

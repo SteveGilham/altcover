@@ -1,5 +1,7 @@
 # AltCover.CollectOptions.ExposeReturnCode property
 
+Corresponds to the converse of command line option `--dropReturnCode `
+
 ```csharp
 public bool ExposeReturnCode { get; }
 ```

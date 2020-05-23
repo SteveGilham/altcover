@@ -1,5 +1,7 @@
 # Prepare.CallContext property
 
+Corresponds to command line option `-c, --callContext=VALUE`
+
 ```csharp
 public string[] CallContext { get; set; }
 ```

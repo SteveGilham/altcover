@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.OutputDirectories property
 
+Corresponds to command line option `-o, --outputDirectory=VALUE`
+
 ```csharp
 public FSharpList<string> OutputDirectories { get; }
 ```

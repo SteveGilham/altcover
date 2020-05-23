@@ -1,5 +1,7 @@
 # Primitive class
 
+This represents the weakly ("stringly") typed equivalent of the command line options. It is primarily for F# use. Undocumented methods are compiler generated.
+
 ```csharp
 public static class Primitive
 ```
@@ -8,9 +10,9 @@ public static class Primitive
 
 | name | description |
 | --- | --- |
-| class [CollectOptions](Primitive.CollectOptions-apidoc) |  |
-| class [LoggingOptions](Primitive.LoggingOptions-apidoc) |  |
-| class [PrepareOptions](Primitive.PrepareOptions-apidoc) |  |
+| class [CollectOptions](Primitive.CollectOptions-apidoc) | Command line options for `AltCover Runner` |
+| class [LoggingOptions](Primitive.LoggingOptions-apidoc) | Destinations for user level output |
+| class [PrepareOptions](Primitive.PrepareOptions-apidoc) | Command line options for `AltCover` |
 
 ## See Also
 

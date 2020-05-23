@@ -1,5 +1,7 @@
 # TypeSafe.ReportFormat class
 
+Corresponds to the desired format of the XML report
+
 ```csharp
 public sealed class ReportFormat : IEquatable<ReportFormat>, IStructuralEquatable
 ```
@@ -15,7 +17,7 @@ public sealed class ReportFormat : IEquatable<ReportFormat>, IStructuralEquatabl
 | [IsNCover](TypeSafe.ReportFormat/IsNCover-apidoc) { get; } |  |
 | [IsOpenCover](TypeSafe.ReportFormat/IsOpenCover-apidoc) { get; } |  |
 | [Tag](TypeSafe.ReportFormat/Tag-apidoc) { get; } |  |
-| [AsString](TypeSafe.ReportFormat/AsString-apidoc)() |  |
+| [AsString](TypeSafe.ReportFormat/AsString-apidoc)() | Returns the string to use in the command line |
 | [Equals](TypeSafe.ReportFormat/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.ReportFormat/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.ReportFormat/GetHashCode-apidoc)(…) |  |

@@ -1,6 +1,6 @@
 # GetVersion constructor
 
-The default constructor.
+The default constructor
 
 ```csharp
 public GetVersion()

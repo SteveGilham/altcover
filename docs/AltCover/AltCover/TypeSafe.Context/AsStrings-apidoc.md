@@ -1,5 +1,7 @@
 # TypeSafe.Context.AsStrings method
 
+Returns the strings to use in the command line
+
 ```csharp
 public FSharpList<string> AsStrings()
 ```

@@ -1,5 +1,7 @@
 # Primitive.CollectOptions.Create method
 
+Returns an instance with all fields empty save `ExposeReturnCode` being `true`
+
 ```csharp
 public static CollectOptions Create()
 ```

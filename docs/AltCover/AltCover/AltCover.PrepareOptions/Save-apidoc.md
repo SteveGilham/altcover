@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.Save property
 
+Corresponds to command line option `--save`
+
 ```csharp
 public bool Save { get; }
 ```

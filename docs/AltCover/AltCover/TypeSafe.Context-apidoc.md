@@ -1,5 +1,7 @@
 # TypeSafe.Context class
 
+Corresponds to a collection of context entries
+
 ```csharp
 public abstract class Context : IEquatable<Context>, IStructuralEquatable
 ```
@@ -14,7 +16,7 @@ public abstract class Context : IEquatable<Context>, IStructuralEquatable
 | [IsContext](TypeSafe.Context/IsContext-apidoc) { get; } |  |
 | [IsNoContext](TypeSafe.Context/IsNoContext-apidoc) { get; } |  |
 | [Tag](TypeSafe.Context/Tag-apidoc) { get; } |  |
-| [AsStrings](TypeSafe.Context/AsStrings-apidoc)() |  |
+| [AsStrings](TypeSafe.Context/AsStrings-apidoc)() | Returns the strings to use in the command line |
 | [Equals](TypeSafe.Context/Equals-apidoc)(…) |  (3 methods) |
 | [GetHashCode](TypeSafe.Context/GetHashCode-apidoc)() |  |
 | [GetHashCode](TypeSafe.Context/GetHashCode-apidoc)(…) |  |
@@ -22,7 +24,7 @@ public abstract class Context : IEquatable<Context>, IStructuralEquatable
 | [get_IsNoContext](TypeSafe.Context/get_IsNoContext-apidoc)() |  |
 | [get_Tag](TypeSafe.Context/get_Tag-apidoc)() |  |
 | override [ToString](TypeSafe.Context/ToString-apidoc)() |  |
-| class [Context](TypeSafe.Context.Context-apidoc) |  |
+| class [Context](TypeSafe.Context.Context-apidoc) | A type-safe collection |
 | static class [Tags](TypeSafe.Context.Tags-apidoc) |  |
 
 ## See Also

@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.ReportFormat property
 
+Corresponds to command line option `--reportFormat=VALUE`
+
 ```csharp
 public ReportFormat ReportFormat { get; }
 ```

@@ -1,5 +1,7 @@
 # PrepareExtension.WhatIf method
 
+Validates the supplied options The optionsThe validation outcome.
+
 ```csharp
 public static ValidatedCommandLine WhatIf(this IPrepareOptions prepare)
 ```

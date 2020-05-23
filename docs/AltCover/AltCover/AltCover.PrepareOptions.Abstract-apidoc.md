@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.Abstract class
 
+Options expressed as an interface
+
 ```csharp
 public class Abstract : PrepareOptions
 ```

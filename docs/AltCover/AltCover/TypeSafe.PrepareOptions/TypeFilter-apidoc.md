@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.TypeFilter property
 
+Corresponds to command line option `-t, --typeFilter=VALUE`
+
 ```csharp
 public Filters TypeFilter { get; }
 ```

@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.InputDirectories property
 
+Corresponds to command line option ` -i, --inputDirectory=VALUE`
+
 ```csharp
 public DirectoryPaths InputDirectories { get; }
 ```

@@ -1,5 +1,7 @@
 # Collect.OutputFile property
 
+Corresponds to command line option `-o, --outputFile=VALUE`
+
 ```csharp
 public string OutputFile { get; set; }
 ```

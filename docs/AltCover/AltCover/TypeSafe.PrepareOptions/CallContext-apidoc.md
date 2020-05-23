@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.CallContext property
 
+Corresponds to command line option `-c, --callContext=VALUE`
+
 ```csharp
 public Context CallContext { get; }
 ```

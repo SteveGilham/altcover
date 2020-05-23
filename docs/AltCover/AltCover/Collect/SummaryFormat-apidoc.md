@@ -1,5 +1,7 @@
 # Collect.SummaryFormat property
 
+Corresponds to command line option `--teamcity[=VALUE]`
+
 ```csharp
 public string SummaryFormat { get; set; }
 ```

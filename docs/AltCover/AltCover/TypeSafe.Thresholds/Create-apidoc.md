@@ -1,5 +1,7 @@
 # TypeSafe.Thresholds.Create method
 
+Returns an all-zero value
+
 ```csharp
 public static Thresholds Create()
 ```

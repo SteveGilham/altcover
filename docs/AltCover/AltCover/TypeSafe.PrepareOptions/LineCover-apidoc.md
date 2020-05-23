@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.LineCover property
 
+Corresponds to command line option `--linecover`
+
 ```csharp
 public Flag LineCover { get; }
 ```

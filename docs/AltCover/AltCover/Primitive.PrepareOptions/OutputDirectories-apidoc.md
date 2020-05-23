@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.OutputDirectories property
 
+Corresponds to command line option `-o, --outputDirectory=VALUE`
+
 ```csharp
 public IEnumerable<string> OutputDirectories { get; }
 ```

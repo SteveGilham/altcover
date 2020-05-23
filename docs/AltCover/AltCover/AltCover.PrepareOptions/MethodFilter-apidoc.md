@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.MethodFilter property
 
+Corresponds to command line option ` -m, --methodFilter=VALUE`
+
 ```csharp
 public FSharpList<string> MethodFilter { get; }
 ```

@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.ZipFile property
 
+Corresponds to command line option `--zipfile`
+
 ```csharp
 public bool ZipFile { get; }
 ```

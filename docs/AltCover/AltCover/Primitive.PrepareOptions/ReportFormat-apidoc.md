@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.ReportFormat property
 
+Corresponds to command line option `--reportFormat=VALUE`
+
 ```csharp
 public string ReportFormat { get; }
 ```

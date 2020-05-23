@@ -1,5 +1,7 @@
 # AltCover.LoggingOptions class
 
+Destinations for user level output
+
 ```csharp
 public abstract class LoggingOptions
 ```
@@ -8,24 +10,24 @@ public abstract class LoggingOptions
 
 | name | description |
 | --- | --- |
-| static [Create](AltCover.LoggingOptions/Create-apidoc)() |  |
+| static [Create](AltCover.LoggingOptions/Create-apidoc)() | Returns a pure sink (all input ignored) instance |
 | static [NewAbstract](AltCover.LoggingOptions/NewAbstract-apidoc)(…) |  |
 | static [NewPrimitive](AltCover.LoggingOptions/NewPrimitive-apidoc)(…) |  |
-| static [Translate](AltCover.LoggingOptions/Translate-apidoc)(…) |  |
-| [Echo](AltCover.LoggingOptions/Echo-apidoc) { get; } |  |
-| [Error](AltCover.LoggingOptions/Error-apidoc) { get; } |  |
-| [Info](AltCover.LoggingOptions/Info-apidoc) { get; } |  |
+| static [Translate](AltCover.LoggingOptions/Translate-apidoc)(…) | Translates a C# style interface to the corresponding F# type A C# `Action` based logging descriptionThe F# function equivalent. |
+| [Echo](AltCover.LoggingOptions/Echo-apidoc) { get; } | Sink for command line/usage messages |
+| [Error](AltCover.LoggingOptions/Error-apidoc) { get; } | Sink for error messages |
+| [Info](AltCover.LoggingOptions/Info-apidoc) { get; } | Sink for informational messages |
 | [IsAbstract](AltCover.LoggingOptions/IsAbstract-apidoc) { get; } |  |
 | [IsPrimitive](AltCover.LoggingOptions/IsPrimitive-apidoc) { get; } |  |
 | [Tag](AltCover.LoggingOptions/Tag-apidoc) { get; } |  |
-| [Warn](AltCover.LoggingOptions/Warn-apidoc) { get; } |  |
+| [Warn](AltCover.LoggingOptions/Warn-apidoc) { get; } | Sink for warning messages |
 | [get_IsAbstract](AltCover.LoggingOptions/get_IsAbstract-apidoc)() |  |
 | [get_IsPrimitive](AltCover.LoggingOptions/get_IsPrimitive-apidoc)() |  |
 | [get_Tag](AltCover.LoggingOptions/get_Tag-apidoc)() |  |
 | override [ToString](AltCover.LoggingOptions/ToString-apidoc)() |  |
 | static [ActionAdapter](AltCover.LoggingOptions/ActionAdapter-apidoc)(…) |  |
-| class [Abstract](AltCover.LoggingOptions.Abstract-apidoc) |  |
-| class [Primitive](AltCover.LoggingOptions.Primitive-apidoc) |  |
+| class [Abstract](AltCover.LoggingOptions.Abstract-apidoc) | Options expressed as an interface |
+| class [Primitive](AltCover.LoggingOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |
 | static class [Tags](AltCover.LoggingOptions.Tags-apidoc) |  |
 
 ## See Also

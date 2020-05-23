@@ -11,9 +11,9 @@
 namespace AltCoverFake.DotNet.Testing
 ```
 
-
 ```
 ## module `AltCover`
+
 ```
   [<RequireQualifiedAccess>]
   module AltCover = begin
@@ -33,8 +33,24 @@ namespace AltCoverFake.DotNet.Testing
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### type `CollectOptions`
 
+The members correspond to the like-named command line options for `AltCover Runner`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
 
 ```
     [<NoComparison>]
@@ -44,17 +60,23 @@ namespace AltCoverFake.DotNet.Testing
       | Abstract of Abstract.ICollectOptions
       with
         interface Abstract.ICollectOptions
-        member Cobertura : System.String
-        member CommandLine : seq<string>
-        member Executable : System.String
-        member ExposeReturnCode : bool
-        member LcovReport : System.String
-        member OutputFile : System.String
         member RecorderDirectory : System.String
-        member SummaryFormat : System.String
-        member Threshold : System.String
+
         member WorkingDirectory : System.String
+        member Executable : System.String
+        member LcovReport : System.String
+        member Threshold : System.String
+        member Cobertura : System.String
+        member OutputFile : System.String
+        member CommandLine : seq<string>
+        member ExposeReturnCode : bool
+        member SummaryFormat : System.String
 ```
+
+
+
+
+
 
 
 
@@ -73,6 +95,10 @@ The property members corresponding to the command line options read the values f
  Values that are not applicable to the use case or platform are silently ignored.
 ### type `PrepareOptions`
 
+The members correspond to the like-named command line options for `AltCover`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
+* `SingleVisit` being the name for `--single`
 
 ```
     [<NoComparison>]
@@ -82,41 +108,45 @@ The property members corresponding to the command line options read the values f
       | Abstract of Abstract.IPrepareOptions
       with
         interface Abstract.IPrepareOptions
-        member AssemblyExcludeFilter : System.String list
-        member AssemblyFilter : System.String list
-        member AttributeFilter : System.String list
-        member BranchCover : bool
-        member CallContext : System.String list
-        member CommandLine : seq<System.String>
-        member Defer : bool
-        member Dependencies : System.String list
-        member ExposeReturnCode : bool
-        member FileFilter : System.String list
-        member InPlace : bool
         member InputDirectories : System.String list
-        member Keys : System.String list
-        member LineCover : bool
-        member LocalSource : bool
-        member MethodFilter : System.String list
-        member MethodPoint : bool
         member OutputDirectories : System.String list
+        member SymbolDirectories : System.String list
+        member Dependencies : System.String list
+        member Keys : System.String list
+        member StrongNameKey : System.String
+        member XmlReport : System.String
+        member FileFilter : System.String list
+        member AssemblyFilter : System.String list
+        member AssemblyExcludeFilter : System.String list
+        member TypeFilter : System.String list
+        member MethodFilter : System.String list
+        member AttributeFilter : System.String list
         member PathFilter : System.String list
         member AttributeTopLevel : System.String list
         member TypeTopLevel : System.String list
         member MethodTopLevel : System.String list
+        member CallContext : System.String list
         member ReportFormat : string
+        member InPlace : bool
         member Save : bool
-        member ShowGenerated : bool
-        member ShowStatic : string
-        member SingleVisit : bool
-        member SourceLink : bool
-        member StrongNameKey : System.String
-        member SymbolDirectories : System.String list
-        member TypeFilter : System.String list
-        member VisibleBranches : bool
-        member XmlReport : System.String
         member ZipFile : bool
+        member MethodPoint : bool
+        member SingleVisit : bool
+        member LineCover : bool
+        member BranchCover : bool
+        member CommandLine : seq<System.String>
+        member ExposeReturnCode : bool
+        member SourceLink : bool
+        member Defer : bool
+        member LocalSource : bool
+        member VisibleBranches : bool
+        member ShowStatic : string
+        member ShowGenerated : bool
 ```
+
+
+
+
 
 
 
@@ -155,6 +185,39 @@ The property members corresponding to the command line options read the values f
 
 
 
-```
-  end
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

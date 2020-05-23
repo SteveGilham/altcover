@@ -1,5 +1,7 @@
 # TypeSafe.PrepareOptions.Keys property
 
+Corresponds to command line option ` -k, --key=VALUE`
+
 ```csharp
 public FilePaths Keys { get; }
 ```

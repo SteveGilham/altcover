@@ -1,5 +1,7 @@
 # GetVersion class
 
+Description of the `AltCover Version` command
+
 ```csharp
 public class GetVersion : Task
 ```
@@ -8,8 +10,8 @@ public class GetVersion : Task
 
 | name | description |
 | --- | --- |
-| [GetVersion](GetVersion/GetVersion-apidoc)() | The default constructor. |
-| override [Execute](GetVersion/Execute-apidoc)() |  |
+| [GetVersion](GetVersion/GetVersion-apidoc)() | The default constructor |
+| override [Execute](GetVersion/Execute-apidoc)() | Perform the operation |
 
 ## See Also
 

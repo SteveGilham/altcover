@@ -1,5 +1,7 @@
 # Primitive.LoggingOptions.Create method
 
+Returns an instance that just discards all strings input.
+
 ```csharp
 public static LoggingOptions Create()
 ```

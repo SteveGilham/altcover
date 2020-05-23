@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.Create method
 
+Returns an instance with all fields empty that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
+
 ```csharp
 public static PrepareOptions Create()
 ```

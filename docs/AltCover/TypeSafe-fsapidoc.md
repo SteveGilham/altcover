@@ -12,11 +12,12 @@ namespace AltCover
 
 
 ## module `TypeSafe`
-This holds the strongly-typed equivalent of the command line options
 ```
   [<RequireQualifiedAccess>]
   module TypeSafe = begin
 ```
+This holds the strongly-typed equivalent of the command line options
+
 ### Individual files and directories
 ```
     [<NoComparison>]
@@ -57,7 +58,8 @@ This holds the strongly-typed equivalent of the command line options
 ```
     [<NoComparison>]
     type Thresholds =
-      { Statements: uint8
+      {
+        Statements: uint8
         Branches: uint8
         Methods: uint8
         MaxCrap: uint8 }
@@ -69,7 +71,7 @@ This holds the strongly-typed equivalent of the command line options
       | Threshold of Thresholds
       | NoThreshold
       with
-        member AsString : unit -> string
+         member AsString : unit -> string
       end
 ```
 ### Yes/No choices
@@ -104,8 +106,8 @@ This holds the strongly-typed equivalent of the command line options
 ```
     [<NoComparison>]
     type FilterItem =
-      | FilterItem of System.Text.RegularExpressions.Regex
-      | IncludeItem of System.Text.RegularExpressions.Regex
+      | MatchItem of System.Text.RegularExpressions.Regex
+      | NegateMatchItem of System.Text.RegularExpressions.Regex
       | Raw of System.String
       with
         member AsString : unit -> string
@@ -122,7 +124,10 @@ This holds the strongly-typed equivalent of the command line options
 ```
     [<NoComparison>]
     type ContextItem =
-      | CallItem of System.String
+      | Caller of System.Reflection.MethodInfo
+      | CallerName of System.String
+      | AttributeName of System.String
+      | AttributeKind of System.Type
       | TimeItem of uint8
       with
         member AsString : unit -> System.String
@@ -164,10 +169,16 @@ This holds the strongly-typed equivalent of the command line options
       end
 ```
 ### type `CollectOptions`
+
+The members correspond to the like-named command line options for `AltCover Runner`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
+
 ```
     [<NoComparison>]
     type CollectOptions =
-      { RecorderDirectory: DirectoryPath
+      {
+        RecorderDirectory: DirectoryPath
         WorkingDirectory: DirectoryPath
         Executable: FilePath
         LcovReport: FilePath
@@ -186,10 +197,17 @@ This holds the strongly-typed equivalent of the command line options
 Fields that are not applicable to the use case or platform are silently ignored.
 
 ### type `PrepareOptions`
+
+The members correspond to the like-named command line options for `AltCover`, except
+* `ExposeReturnCode` being the converse of the `dropReturnCode` option
+* `CommandLine` being the material after a `-- `
+* `SingleVisit` being the name for `--single`
+
 ```
     [<NoComparison>]
     type PrepareOptions =
-      { InputDirectories: DirectoryPaths
+      {
+        InputDirectories: DirectoryPaths
         OutputDirectories: DirectoryPaths
         SymbolDirectories: DirectoryPaths
         Dependencies: FilePaths
@@ -227,10 +245,6 @@ Fields that are not applicable to the use case or platform are silently ignored.
         static member Create : unit -> PrepareOptions
       end
 ```
-`Create()` returns an instance that has all fields unset/default except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `Set`
+`Create()` returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set`
 
 Fields that are not applicable to the use case or platform are silently ignored.
-
-```
-  end
- ```

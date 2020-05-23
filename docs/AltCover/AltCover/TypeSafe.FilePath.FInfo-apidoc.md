@@ -1,5 +1,7 @@
 # TypeSafe.FilePath.FInfo class
 
+A strongly typed file
+
 ```csharp
 public class FInfo : FilePath
 ```

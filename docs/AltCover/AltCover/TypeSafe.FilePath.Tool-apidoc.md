@@ -1,5 +1,7 @@
 # TypeSafe.FilePath.Tool class
 
+A named `dotnet` tool, carried unaltered
+
 ```csharp
 public class Tool : FilePath
 ```

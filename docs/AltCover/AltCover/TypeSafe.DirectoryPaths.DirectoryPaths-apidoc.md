@@ -1,5 +1,7 @@
 # TypeSafe.DirectoryPaths.DirectoryPaths class
 
+A type-safe collection
+
 ```csharp
 public class DirectoryPaths : DirectoryPaths
 ```

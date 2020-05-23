@@ -1,5 +1,7 @@
 # Primitive.PrepareOptions.CallContext property
 
+Corresponds to command line option `-c, --callContext=VALUE`
+
 ```csharp
 public IEnumerable<string> CallContext { get; }
 ```

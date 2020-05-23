@@ -1,5 +1,7 @@
 # AltCover.CollectOptions.RecorderDirectory property
 
+Corresponds to command line option `-r, --recorderDirectory=VALUE`
+
 ```csharp
 public string RecorderDirectory { get; }
 ```

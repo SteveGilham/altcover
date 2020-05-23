@@ -1,5 +1,7 @@
 # TypeSafe.Command.Command class
 
+Strongly typed string collection
+
 ```csharp
 public class Command : Command
 ```

@@ -1,5 +1,7 @@
 # AltCover.ValidatedCommandLine.Command property
 
+The composed command line in `Command`
+
 ```csharp
 public FSharpList<string> Command { get; }
 ```

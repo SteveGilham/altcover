@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.CommandLine property
 
+Corresponds to the command line to run, given after a `-- `
+
 ```csharp
 public IEnumerable<string> CommandLine { get; }
 ```

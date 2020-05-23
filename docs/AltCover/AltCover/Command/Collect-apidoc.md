@@ -1,5 +1,7 @@
 # Command.Collect method
 
+Process coverage The command lineHow to report feedbackoperation return code.
+
 ```csharp
 public static int Collect(ICollectOptions args, LoggingOptions log)
 ```

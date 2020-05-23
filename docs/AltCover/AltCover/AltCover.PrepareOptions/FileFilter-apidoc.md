@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.FileFilter property
 
+Corresponds to command line option `-f, --fileFilter=VALUE`
+
 ```csharp
 public FSharpList<string> FileFilter { get; }
 ```

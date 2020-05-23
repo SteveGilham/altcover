@@ -1,5 +1,7 @@
 # AltCover.ValidatedCommandLine.ToString method
 
+Returns a nicely formatted representation
+
 ```csharp
 public override string ToString()
 ```

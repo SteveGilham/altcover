@@ -1,5 +1,7 @@
 # Prepare class
 
+Description of the `AltCover` command
+
 ```csharp
 public class Prepare : Task
 ```
@@ -8,43 +10,42 @@ public class Prepare : Task
 
 | name | description |
 | --- | --- |
-| [Prepare](Prepare/Prepare-apidoc)() | The default constructor. |
-| [AssemblyExcludeFilter](Prepare/AssemblyExcludeFilter-apidoc) { get; set; } |  |
-| [AssemblyFilter](Prepare/AssemblyFilter-apidoc) { get; set; } |  |
-| [AttributeFilter](Prepare/AttributeFilter-apidoc) { get; set; } |  |
-| [AttributeTopLevel](Prepare/AttributeTopLevel-apidoc) { get; set; } |  |
-| [BranchCover](Prepare/BranchCover-apidoc) { get; set; } |  |
-| [CallContext](Prepare/CallContext-apidoc) { get; set; } |  |
-| [CommandLine](Prepare/CommandLine-apidoc) { get; set; } |  |
-| [Defer](Prepare/Defer-apidoc) { get; set; } |  |
-| [Dependencies](Prepare/Dependencies-apidoc) { get; set; } |  |
-| [ExposeReturnCode](Prepare/ExposeReturnCode-apidoc) { get; set; } |  |
-| [FileFilter](Prepare/FileFilter-apidoc) { get; set; } |  |
-| [InPlace](Prepare/InPlace-apidoc) { get; set; } |  |
-| [InputDirectories](Prepare/InputDirectories-apidoc) { get; set; } |  |
-| [Keys](Prepare/Keys-apidoc) { get; set; } |  |
-| [LineCover](Prepare/LineCover-apidoc) { get; set; } |  |
-| [LocalSource](Prepare/LocalSource-apidoc) { get; set; } |  |
-| [MethodFilter](Prepare/MethodFilter-apidoc) { get; set; } |  |
-| [MethodPoint](Prepare/MethodPoint-apidoc) { get; set; } |  |
-| [MethodTopLevel](Prepare/MethodTopLevel-apidoc) { get; set; } |  |
-| [OutputDirectories](Prepare/OutputDirectories-apidoc) { get; set; } |  |
-| [PathFilter](Prepare/PathFilter-apidoc) { get; set; } |  |
-| [ReportFormat](Prepare/ReportFormat-apidoc) { get; set; } |  |
-| [Save](Prepare/Save-apidoc) { get; set; } |  |
-| [ShowGenerated](Prepare/ShowGenerated-apidoc) { get; set; } |  |
-| [ShowStatic](Prepare/ShowStatic-apidoc) { get; set; } |  |
-| [SingleVisit](Prepare/SingleVisit-apidoc) { get; set; } |  |
-| [SourceLink](Prepare/SourceLink-apidoc) { get; set; } |  |
-| [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } |  |
-| [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } |  |
-| [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } |  |
-| [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } |  |
-| [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } |  |
-| [XmlReport](Prepare/XmlReport-apidoc) { get; set; } |  |
-| [ZipFile](Prepare/ZipFile-apidoc) { get; set; } |  |
-| override [Execute](Prepare/Execute-apidoc)() |  |
-| [Message](Prepare/Message-apidoc)(…) |  |
+| [Prepare](Prepare/Prepare-apidoc)() | The default constructor |
+| [AssemblyExcludeFilter](Prepare/AssemblyExcludeFilter-apidoc) { get; set; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
+| [AssemblyFilter](Prepare/AssemblyFilter-apidoc) { get; set; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
+| [AttributeFilter](Prepare/AttributeFilter-apidoc) { get; set; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
+| [AttributeTopLevel](Prepare/AttributeTopLevel-apidoc) { get; set; } | Corresponds to command line option --attributetoplevel=VALUE` |
+| [BranchCover](Prepare/BranchCover-apidoc) { get; set; } | Corresponds to command line option `--branchcover` |
+| [CallContext](Prepare/CallContext-apidoc) { get; set; } | Corresponds to command line option `-c, --callContext=VALUE` |
+| [CommandLine](Prepare/CommandLine-apidoc) { get; set; } | Corresponds to the command line to run, given after a `-- ` |
+| [Defer](Prepare/Defer-apidoc) { get; set; } | Corresponds to command line option `--defer` |
+| [Dependencies](Prepare/Dependencies-apidoc) { get; set; } | Corresponds to command line option `-d, --dependency=VALUE` |
+| [ExposeReturnCode](Prepare/ExposeReturnCode-apidoc) { get; set; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [FileFilter](Prepare/FileFilter-apidoc) { get; set; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
+| [InPlace](Prepare/InPlace-apidoc) { get; set; } | Corresponds to command line option `--inplace` |
+| [InputDirectories](Prepare/InputDirectories-apidoc) { get; set; } | Corresponds to command line option ` -i, --inputDirectory=VALUE` |
+| [Keys](Prepare/Keys-apidoc) { get; set; } | Corresponds to command line option ` -k, --key=VALUE` |
+| [LineCover](Prepare/LineCover-apidoc) { get; set; } | Corresponds to command line option `--linecover` |
+| [LocalSource](Prepare/LocalSource-apidoc) { get; set; } | Corresponds to command line option `-l, --localSource` |
+| [MethodFilter](Prepare/MethodFilter-apidoc) { get; set; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
+| [MethodPoint](Prepare/MethodPoint-apidoc) { get; set; } | Corresponds to command line option `--methodpoint` |
+| [MethodTopLevel](Prepare/MethodTopLevel-apidoc) { get; set; } | Corresponds to command line option `--methodtoplevel=VALUE` |
+| [OutputDirectories](Prepare/OutputDirectories-apidoc) { get; set; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
+| [PathFilter](Prepare/PathFilter-apidoc) { get; set; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [ReportFormat](Prepare/ReportFormat-apidoc) { get; set; } | Corresponds to command line option `--reportFormat=VALUE` |
+| [Save](Prepare/Save-apidoc) { get; set; } | Corresponds to command line option `--save` |
+| [ShowGenerated](Prepare/ShowGenerated-apidoc) { get; set; } | Corresponds to command line option ` --showGenerated` |
+| [ShowStatic](Prepare/ShowStatic-apidoc) { get; set; } | Corresponds to command line option `--showstatic[=VALUE]` |
+| [SingleVisit](Prepare/SingleVisit-apidoc) { get; set; } | Corresponds to command line option `--single` |
+| [SourceLink](Prepare/SourceLink-apidoc) { get; set; } | Corresponds to command line option `--sourcelink` |
+| [StrongNameKey](Prepare/StrongNameKey-apidoc) { get; set; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
+| [SymbolDirectories](Prepare/SymbolDirectories-apidoc) { get; set; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
+| [TypeFilter](Prepare/TypeFilter-apidoc) { get; set; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
+| [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } | Corresponds to command line option ` -v, --visibleBranches` |
+| [XmlReport](Prepare/XmlReport-apidoc) { get; set; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
+| [ZipFile](Prepare/ZipFile-apidoc) { get; set; } | Corresponds to command line option `--zipfile` |
+| override [Execute](Prepare/Execute-apidoc)() | Perform the operation |
 
 ## See Also
 

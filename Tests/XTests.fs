@@ -289,7 +289,7 @@ module AltCoverXTests =
 
     test <@ (TypeSafe.Tool ".").AsString() = "." @>
     test <@ (TypeSafe.FilePath ".").AsString() = ("." |> Path.GetFullPath) @>
-    test <@ ("fred" |> Regex |> TypeSafe.IncludeItem ).AsString() = "?fred" @>
+    test <@ ("fred" |> Regex |> TypeSafe.NegateMatchItem ).AsString() = "?fred" @>
 
     let subject =
       { TypeSafe.PrepareOptions.Create() with
@@ -308,7 +308,12 @@ module AltCoverXTests =
                                                     <| Assembly.GetExecutingAssembly().Location |]
                                              CallContext =
                                                TypeSafe.Context
-                                                 [| TypeSafe.CallItem "[Fact]" |]
+                                                 [| TypeSafe.AttributeName "Fact"
+                                                    TypeSafe.AttributeKind typeof<SerializableAttribute>
+                                                    TypeSafe.Caller (Assembly.GetExecutingAssembly().
+                                                                      GetType("Tests.AltCoverXTests").
+                                                                      GetMethod("TypeSafePrepareOptionsCanBeValidated"))
+                                                    TypeSafe.CallerName "Test" |]
                                              MethodPoint = TypeSafe.Set
                                              PathFilter =
                                                TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
@@ -322,10 +327,14 @@ module AltCoverXTests =
     test
       <@ instance
          |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
-                                   "-p"; "ok"; "-c"; "[Fact]"; "--reportFormat"; "OpenCover"; "--inplace";
+                                   "-p"; "ok"; "-c"; "[Fact]"; "-c"; "[System.SerializableAttribute]";
+                                   "-c"; "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated";
+                                   "-c"; "Test"; "--reportFormat"; "OpenCover"; "--inplace";
                                    "--save"; "--methodpoint" ] @>
     let validate = (subject |> AltCover.PrepareOptions.TypeSafe |> PrepareExtension.WhatIf).ToString()
-    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --reportFormat OpenCover --inplace --save --methodpoint" @>
+    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location +
+                 " -p ok -c [Fact] -c [System.SerializableAttribute] -c " +
+                 "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated -c Test --reportFormat OpenCover --inplace --save --methodpoint" @>
 
   [<Test>]
   let TypeSafePrepareOptionsCanBeValidatedAgain() =
@@ -350,7 +359,7 @@ module AltCoverXTests =
                                              ReportFormat = TypeSafe.ReportFormat.NCover
                                              PathFilter =
                                                TypeSafe.Filters
-                                                 [| TypeSafe.FilterItem <| Regex "ok" |] }
+                                                 [| TypeSafe.MatchItem <| Regex "ok" |] }
 
     let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
     test <@ scan.Length = 0 @>

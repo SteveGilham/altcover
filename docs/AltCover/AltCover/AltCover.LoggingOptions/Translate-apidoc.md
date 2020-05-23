@@ -1,7 +1,9 @@
 # AltCover.LoggingOptions.Translate method
 
+Translates a C# style interface to the corresponding F# type A C# `Action` based logging descriptionThe F# function equivalent.
+
 ```csharp
-public static LoggingOptions Translate(ILoggingOptions input)
+public static LoggingOptions Translate(ILoggingOptions options)
 ```
 
 ## See Also

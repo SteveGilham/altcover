@@ -1,5 +1,7 @@
 # AltCover.PrepareOptions.PathFilter property
 
+Corresponds to command line option `-p, --pathFilter=VALUE`
+
 ```csharp
 public FSharpList<string> PathFilter { get; }
 ```

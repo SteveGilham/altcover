@@ -1,5 +1,7 @@
 # Prepare.Dependencies property
 
+Corresponds to command line option `-d, --dependency=VALUE`
+
 ```csharp
 public string[] Dependencies { get; set; }
 ```
