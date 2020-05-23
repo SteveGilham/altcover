@@ -1932,7 +1932,6 @@ module AltCoverTests3 =
     let ParsingDeferWorks() =
       Main.init()
       try
-        CoverageParameters.defer := None
         let options = Main.I.declareOptions()
         let input = [| "--defer" |]
         let parse = CommandLine.parseCommandLine input options
@@ -1941,71 +1940,15 @@ module AltCoverTests3 =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Option.isSome !CoverageParameters.defer)
-        Assert.That(Option.get !CoverageParameters.defer)
+        Assert.That(!CoverageParameters.defer)
         Assert.That(CoverageParameters.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
       finally
-        CoverageParameters.defer := None
-
-    [<Test>]
-    let ParsingDeferPlusWorks() =
-      Main.init()
-      try
-        CoverageParameters.defer := None
-        let options = Main.I.declareOptions()
-        let input = [| "--defer:+" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left _ -> Assert.Fail()
-        | Right(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty)
-        Assert.That(Option.isSome !CoverageParameters.defer)
-        Assert.That(Option.get !CoverageParameters.defer)
-        Assert.That(CoverageParameters.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
-      finally
-        CoverageParameters.defer := None
-
-    [<Test>]
-    let ParsingDeferMinusWorks() =
-      Main.init()
-      try
-        CoverageParameters.defer := None
-        let options = Main.I.declareOptions()
-        let input = [| "--defer:-" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left _ -> Assert.Fail()
-        | Right(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty)
-        Assert.That(Option.isSome !CoverageParameters.defer)
-        Assert.That(Option.get !CoverageParameters.defer, Is.False)
-        Assert.That(CoverageParameters.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_0)
-      finally
-        CoverageParameters.defer := None
-
-    [<Test>]
-    let ParsingDeferJunkGivesFailure() =
-      Main.init()
-      try
-        CoverageParameters.defer := None
-        let options = Main.I.declareOptions()
-        let input = [| "--defer:junk" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Right _ -> Assert.Fail()
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        CoverageParameters.defer := None
+        CoverageParameters.defer := false
 
     [<Test>]
     let ParsingMultipleDeferGivesFailure() =
       Main.init()
       try
-        CoverageParameters.defer := None
         let options = Main.I.declareOptions()
         let input = [| "--defer"; "--defer" |]
         let parse = CommandLine.parseCommandLine input options
@@ -2017,7 +1960,7 @@ module AltCoverTests3 =
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--defer : specify this only once")
 
       finally
-        CoverageParameters.defer := None
+        CoverageParameters.defer := false
 
     [<Test>]
     let OutputLeftPassesThrough() =
@@ -2535,7 +2478,7 @@ module AltCoverTests3 =
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+      --defer                Optional, defers writing runner-mode coverage data
                                until process exit.
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
@@ -2675,7 +2618,7 @@ or
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+      --defer                Optional, defers writing runner-mode coverage data
                                until process exit.
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
@@ -2791,7 +2734,7 @@ or
         255)
         let result = subject.Execute()
         Assert.That(result, Is.False)
-        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save" ])
+        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2819,7 +2762,7 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2844,7 +2787,7 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
 
         let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
         let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)

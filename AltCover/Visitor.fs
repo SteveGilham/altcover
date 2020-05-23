@@ -247,10 +247,10 @@ module internal CoverageParameters =
     |> int
 
   let internal sourcelink = ref false // ddFlag
-  let internal defer = ref (Some false)
+  let internal defer = ref false
 
   let internal deferOpCode() =
-    if Option.getOrElse false !defer then OpCodes.Ldc_I4_1 else OpCodes.Ldc_I4_0
+    if !defer then OpCodes.Ldc_I4_1 else OpCodes.Ldc_I4_0
 
   let internal theInputDirectories = List<string>()
   let private defaultInputDirectory = "."

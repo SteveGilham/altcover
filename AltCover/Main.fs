@@ -30,7 +30,7 @@ module internal Main =
   let internal init() =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
-    CoverageParameters.defer := None
+    CoverageParameters.defer := false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
     ProgramDatabase.symbolFolders.Clear()
@@ -254,33 +254,7 @@ module internal Main =
            | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
         (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
         (CommandLine.ddFlag "sourcelink" CoverageParameters.sourcelink)
-        ("defer:",
-         (fun x ->
-           if !CoverageParameters.defer = None then
-             CoverageParameters.defer := if String.IsNullOrWhiteSpace x then
-                                           Some true
-                                         else
-                                           let (|Select|_|) (pattern : String) offered =
-                                             if offered
-                                                |> String.IsNullOrWhiteSpace
-                                                |> not
-                                                && pattern.Equals
-                                                     (offered, StringComparison.OrdinalIgnoreCase) then
-                                               Some offered
-                                             else
-                                               None
-                                           match x with
-                                           | Select "-" _ -> Some false
-                                           | Select "+" _ -> Some true
-                                           | _ -> None
-             if !CoverageParameters.defer = None then
-               CommandLine.error <-
-                 CommandLine.Format.Local("InvalidValue", "--defer", x)
-                 :: CommandLine.error
-           else
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--defer")
-               :: CommandLine.error))
+        (CommandLine.ddFlag "defer" CoverageParameters.defer)
         (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
         ("showstatic:",
          (fun x ->

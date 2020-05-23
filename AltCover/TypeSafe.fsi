@@ -597,7 +597,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         SourceLink: Flag
         ///<summary>
-        /// Corresponds to command line option `--defer[=VALUE]`
+        /// Corresponds to command line option `--defer`
         ///</summary>
         Defer: Flag
         ///<summary>

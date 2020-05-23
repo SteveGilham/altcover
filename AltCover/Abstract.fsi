@@ -237,7 +237,7 @@ module Abstract =
     ///</summary>
     abstract member SourceLink : bool with get
     ///<summary>
-    /// Corresponds to command line option `--defer[=VALUE]`
+    /// Corresponds to command line option `--defer`
     ///</summary>
     abstract member Defer : bool with get
     ///<summary>
