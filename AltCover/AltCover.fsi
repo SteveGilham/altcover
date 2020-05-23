@@ -9,16 +9,16 @@ namespace AltCover
 namespace AltCoverFake.DotNet.Testing
 // ```
 #endif
-// ```
 // ## module `AltCover`
 //
 // ```
 ///<summary>
-/// This represents the  command line options
+/// This represents the  command line options and its validation
 ///</summary>
   [<RequireQualifiedAccess>]
   module AltCover = begin
 // ```
+// This represents the  command line options and its validation
 #if RUNNER
 // ### type `ValidatedCommandLine`
 // ```
@@ -376,6 +376,7 @@ namespace AltCoverFake.DotNet.Testing
         static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions
       end
 // ```
-// `Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.
+//  Of the static methods, `Create()` returns a pure sink instance; while `ActionAdapter` and `Translate` are helpers for C# use.
+// The instance methods return the corresponding value from the underlying structure, translating `Failure` to `Error` (not a keyword in F#)
 #endif
   end //// no doc

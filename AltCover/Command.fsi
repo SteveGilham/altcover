@@ -9,6 +9,9 @@ namespace AltCover
 /// This represents the various operations available
 ///</summary>
 module Command = begin
+// ```
+// This represents the various operations available
+// ```
   ///<summary>
   /// Instrument assemblies
   /// <param name="args">The command line</param>
