@@ -25,8 +25,7 @@ module Abstract =
 // This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
 // as interfaces with the values expressed as read-only properties.
 //
-// ## interface `ICollectOptions`
-//
+// ### interface `ICollectOptions`
 //
 //The members correspond to the like-named command line options for `AltCover Runner`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
@@ -96,7 +95,7 @@ module Abstract =
     abstract member SummaryFormat : String with get
   end
 // ```
-// ## interface `IPrepareOptions`
+// ### interface `IPrepareOptions`
 //
 //The members correspond to the like-named command line options for `AltCover`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
