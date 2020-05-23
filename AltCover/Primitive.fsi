@@ -201,7 +201,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         LineCover: bool
         ///<summary>
-        /// Corresponds to command line option `--branchcover=VALUE`
+        /// Corresponds to command line option `--branchcover`
         ///</summary>
         BranchCover: bool
         ///<summary>

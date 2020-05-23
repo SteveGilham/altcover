@@ -221,7 +221,7 @@ module Abstract =
     ///</summary>
     abstract member LineCover : bool with get
     ///<summary>
-    /// Corresponds to command line option `--branchcover=VALUE`
+    /// Corresponds to command line option `--branchcover`
     ///</summary>
     abstract member BranchCover : bool with get
     ///<summary>

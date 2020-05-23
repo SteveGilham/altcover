@@ -124,13 +124,13 @@ module TypeSafe =
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type FilterItem =
-    | FilterItem of Regex
-    | IncludeItem of Regex
+    | MatchItem of Regex
+    | UnmatchItem of Regex
     | Raw of String
     member self.AsString() =
       match self with
-      | FilterItem r -> r.ToString()
-      | IncludeItem r -> "?" + r.ToString()
+      | MatchItem r -> r.ToString()
+      | UnmatchItem r -> "?" + r.ToString()
       | Raw r -> r
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -147,11 +147,13 @@ module TypeSafe =
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type ContextItem =
-    | CallItem of String
+    | CallerName of String
+    | CallerAttribute of String
     | TimeItem of uint8
     member self.AsString() =
       match self with
-      | CallItem c -> c
+      | CallerName c -> c
+      | CallerAttribute a -> "[" + a + "]"
       | TimeItem t -> t.ToString(CultureInfo.InvariantCulture)
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
