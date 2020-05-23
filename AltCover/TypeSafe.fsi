@@ -618,7 +618,4 @@ namespace AltCoverFake.DotNet.Testing
 // `Create()` returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set`
 //
 // Fields that are not applicable to the use case or platform are silently ignored.
-//
-// ```
-  end
- // ```
+  end //// no doc
