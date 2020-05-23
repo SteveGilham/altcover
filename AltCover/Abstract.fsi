@@ -25,8 +25,7 @@ module Abstract =
 // This represents the weakly ("stringly") typed equivalent of the command line options in a C# friendly manner
 // as interfaces with the values expressed as read-only properties.
 //
-// ## interface `ICollectOptions`
-//
+// ### interface `ICollectOptions`
 //
 //The members correspond to the like-named command line options for `AltCover Runner`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
@@ -83,7 +82,7 @@ module Abstract =
     ///</summary>
     abstract member OutputFile : String with get
     ///<summary>
-    /// Corresponds to the command line arguments for the executable, given after a `-- ``
+    /// Corresponds to the command line arguments for the executable, given after a `-- `
     ///</summary>
     abstract member CommandLine : IEnumerable<String> with get
     ///<summary>
@@ -96,7 +95,7 @@ module Abstract =
     abstract member SummaryFormat : String with get
   end
 // ```
-// ## interface `IPrepareOptions`
+// ### interface `IPrepareOptions`
 //
 //The members correspond to the like-named command line options for `AltCover`, except
 //* `ExposeReturnCode` being the converse of the `dropReturnCode` option
@@ -222,11 +221,11 @@ module Abstract =
     ///</summary>
     abstract member LineCover : bool with get
     ///<summary>
-    /// Corresponds to command line option `--branchcover=VALUE`
+    /// Corresponds to command line option `--branchcover`
     ///</summary>
     abstract member BranchCover : bool with get
     ///<summary>
-    /// Corresponds to the command line to run, given after a `-- ``
+    /// Corresponds to the command line to run, given after a `-- `
     ///</summary>
     abstract member CommandLine : IEnumerable<String> with get
     ///<summary>
@@ -238,7 +237,7 @@ module Abstract =
     ///</summary>
     abstract member SourceLink : bool with get
     ///<summary>
-    /// Corresponds to command line option `--defer[=VALUE]`
+    /// Corresponds to command line option `--defer`
     ///</summary>
     abstract member Defer : bool with get
     ///<summary>

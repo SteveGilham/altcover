@@ -3,7 +3,10 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.0.xxx (Genbu series release 1)
+* There are functional changes (fixes and enhancements from the previous pre-release)
 * [BUGFIX] Don't automatically exclude C# inner functions (and other `[CompilerGenerated]`) from coverage.
+* [BREAKING; Command Line] Option `--defer` now takes no arguments; there is no use-case for the `--defer:-` so that and the redundant `--defer:+` are gone
+* [BREAKING; MSBuild tasks] `AltCover.Prepare.Defer` defaults to `true`; in `dotnet test`, as the value is overridden (effectively forced true), this has no effect.
 * [BREAKING; PowerShell] rename and generalise `Format-FromCoverletOpenCover` as `Write-OpenCoverDerivedState`
 * [BREAKING; API] Rationalise and rename across most parts of the API, above and beyond the pre-release; remove `CSApi` as a separate assembly, with the main `AltCover` assembly publishing that part of the C# callable API, and split `FSApi` into `Toolkit` for PowerShell support and `DotNet` for `dotnet test` support.
 * Add `--attributetoplevel`, `--typetoplevel`  and `--methodtoplevel`  to allow inner classes or functions to be included in coverage independently their containing class or function.
