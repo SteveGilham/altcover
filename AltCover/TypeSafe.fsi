@@ -242,7 +242,7 @@ namespace AltCoverFake.DotNet.Testing
       ///<summary>
       /// Apply to items that don't match the regex
       ///</summary>
-      | UnmatchItem of System.Text.RegularExpressions.Regex
+      | NegateMatchItem of System.Text.RegularExpressions.Regex
       ///<summary>
       /// A string as would be used on the command line (regex with optional leading `'?`)
       ///</summary>
@@ -281,13 +281,21 @@ namespace AltCoverFake.DotNet.Testing
     [<NoComparison>]
     type ContextItem =
       ///<summary>
+      /// A method
+      ///</summary>
+      | Caller of System.Reflection.MethodInfo
+      ///<summary>
       /// A method name
       ///</summary>
       | CallerName of System.String
       ///<summary>
-      /// A method-level attribute
+      /// A method-level attribute name
       ///</summary>
-      | CallerAttribute of System.String
+      | AttributeName of System.String
+      ///<summary>
+      /// A method-level attribute type
+      ///</summary>
+      | AttributeKind of System.Type
       ///<summary>
       /// A call time granularity
       ///</summary>
