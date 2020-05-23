@@ -4,8 +4,10 @@ Both the .net framework/mono and .net core releases publish MSBuild tasks from t
 
 # namespace `AltCover`
 
-For the C# programmer, `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
+For the C# programmer,  attributes have the extran angle-brackets, while `member [Name] : [type] with get, set` is a `[type]` valued property called `[Name]`; and `string array` is just `string[]` spelled out longhand.
 
+
+For `AltCover.Prepare` and `AltCover.Collect`, the task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, `SingleVisit` represents the `--single` option, `ExposeReturnCode` is the converse of the command line option `dropReturnCode`, and `CommandLine` is everything after a `--` .  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
 ```
 namespace AltCover
 ```
@@ -111,7 +113,7 @@ type Echo =
 ```
 
 ## Task `AltCover.RunSettings`
-Used by the .net core implementation to inject an altcover datacollector, by creating a temporary tun settings file that includes AltCover as well as any user-defined settings.
+Used by the .net core implementation to inject an AltCover data collector, by creating a temporary run-settings file that includes AltCover as well as any user-defined settings.
 
 Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
 ```
@@ -126,5 +128,3 @@ type RunSettings =
   end
 
 ```
-## General
-The task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, and the deprecated `CommandLine` is everything after a `--` as one single string.  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.

@@ -11,13 +11,13 @@ namespace AltCover
 
 
 
-```
 ## module `AltCover`
 
 ```
   [<RequireQualifiedAccess>]
   module AltCover = begin
 ```
+This represents the  command line options and its validation
 
 ### type `ValidatedCommandLine`
 ```
@@ -164,5 +164,6 @@ command line and usage warninings only.
         static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions
       end
 ```
-`Create()` returns a pure sink instance; `ActionAdapter` is a helper for C# use, and the others just return from the underlying structure.
+ Of the static methods, `Create()` returns a pure sink instance; while `ActionAdapter` and `Translate` are helpers for C# use.
+The instance methods return the corresponding value from the underlying structure, translating `Failure` to `Error` (not a keyword in F#)
 
