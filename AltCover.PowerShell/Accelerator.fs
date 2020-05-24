@@ -10,7 +10,7 @@ open AltCover
 
 /// <summary>
 /// <para type="synopsis">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
-/// <para type="description">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.  Two common abbreviations are supplied as switch parameters, and then others can be added free-form.</para>
+/// <para type="description">Extends the built-in set of type abbreviations with user declared ones.  Two common abbreviations are supplied as switch parameters, and then others can be added free-form.</para>
 /// <example>
 ///   <code>Add-Accelerator -XDocument</code>
 ///   <para>Add `[xdoc]` the easy way</para>
@@ -113,7 +113,7 @@ type AddAcceleratorCommand() =
 
 /// <summary>
 /// <para type="synopsis">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
-/// <para type="description">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
+/// <para type="description">Reports all currently available type abbreviations, both system- and user- defined.</para>
 /// <example>
 ///   <code>$a = Get-Accelerator</code>
 /// </example>

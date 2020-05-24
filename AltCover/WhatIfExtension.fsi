@@ -15,9 +15,9 @@ module PrepareExtension = begin
   [<Extension>]
   ///<summary>
   /// Validates the supplied options
+  ///</summary>
   /// <param name="prepare">The options</param>
   /// <returns>The validation outcome.</returns>
-  ///</summary>
   val WhatIf : prepare:Abstract.IPrepareOptions -> AltCover.ValidatedCommandLine
 end
 [<Extension>]
@@ -29,10 +29,10 @@ module CollectExtension = begin
   val WhatIf :
   ///<summary>
   /// Validates the supplied options
+  ///</summary>
   /// <param name="collect">The options</param>
   /// <param name="afterPreparation">Values indicating whether the instrumentation has already taken place</param>
   /// <returns>The validation outcome.</returns>
-  ///</summary>
     collect:Abstract.ICollectOptions ->
       afterPreparation:bool -> AltCover.ValidatedCommandLine
 end

@@ -17,9 +17,8 @@ open System.Xml.XPath
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
-type ConvertToBarChartCommand(outputFile : String) =
+type ConvertToBarChartCommand() =
   inherit PSCmdlet()
-  new() = ConvertToBarChartCommand(String.Empty)
 
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
@@ -42,7 +41,7 @@ type ConvertToBarChartCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = outputFile with get, set
+  member val OutputFile : string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>

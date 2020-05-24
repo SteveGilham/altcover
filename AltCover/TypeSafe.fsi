@@ -537,7 +537,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         PathFilter: Filters
         ///<summary>
-        /// Corresponds to command line option --attributetoplevel=VALUE`
+        /// Corresponds to command line option -`-attributetoplevel=VALUE`
         ///</summary>
         AttributeTopLevel: Filters
         ///<summary>
