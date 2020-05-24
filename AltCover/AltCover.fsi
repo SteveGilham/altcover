@@ -119,9 +119,9 @@ namespace AltCoverFake.DotNet.Testing
 // ```
         ///<summary>
         /// Does simple checking of the arguments without causing any changes to the system
+        ///</summary>
         /// <param name="afterPreparation">`true` if the Prepare step has already run and there should be instrumented code the `RecorderDirectory`</param>
         /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
-        ///</summary>
         member Validate : afterPreparation:bool -> string []
       end
 // ```
@@ -304,8 +304,8 @@ namespace AltCoverFake.DotNet.Testing
 // ```
         ///<summary>
         /// Does simple checking of the arguments without causing any changes to the system
-        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
         ///</summary>
+        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
         member Validate : unit -> string []
       end
 // ```
@@ -359,9 +359,9 @@ namespace AltCoverFake.DotNet.Testing
         static member
         ///<summary>
         /// A helper for C# use
+        ///</summary>
         /// <param name="action">A C# `Action` value e.g. from the `ILoggingOptions` interface</param>
         /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
-        ///</summary>
           ActionAdapter : action:System.Action<System.String> ->
                             (System.String -> unit)
         ///<summary>
@@ -370,9 +370,9 @@ namespace AltCoverFake.DotNet.Testing
         static member Create : unit -> LoggingOptions
         ///<summary>
         /// Translates a C# style interface to the corresponding F# type
+        ///</summary>
         /// <param name="options">A C# `Action` based logging description</param>
         /// <returns>The F# function equivalent.</returns>
-        ///</summary>
         static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions
       end
 // ```

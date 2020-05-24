@@ -177,7 +177,7 @@ module Abstract =
     ///</summary>
     abstract member PathFilter : IEnumerable<String> with get
     ///<summary>
-    /// Corresponds to command line option --attributetoplevel=VALUE`
+    /// Corresponds to command line option `--attributetoplevel=VALUE`
     ///</summary>
     abstract member AttributeTopLevel : IEnumerable<String> with get
     ///<summary>

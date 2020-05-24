@@ -65,10 +65,13 @@ module DotNet = begin
 
 // ```
 // Union type defining general command line arguments for `dotnet test` use.
-// case `Force` indicates a `/AltCoverForce` value
-// case `Fail` inicates a `/AltCoverFailFast` value
-// case `Summary` indicates a `/AltCoverShowSummary` value
-// case `Many` indicates a collection of cases
+// * case `Force` indicates a `/AltCoverForce` value
+// * case `Fail` indicates a `/AltCoverFailFast` value
+// * case `Summary` indicates a `/AltCoverShowSummary` value
+// * case `Many` indicates a collection of cases
+// * case `Abstract` indicates a collection of cases expressed as an interface
+//
+// vs
 //
 // * value `Fast` gives the `/AltCoverFailFast` value this represents
 // * value `ForceDelete` gives the `/AltCoverForce` value this represents
@@ -103,6 +106,7 @@ module DotNet = begin
     end
 #endif
 #if RUNNER
+// ### Composing the whole command line
 // ```
     /// <summary>
     /// Converts the input into the command line for `dotnet test`
@@ -125,7 +129,7 @@ module DotNet = begin
     val ToTestArguments :
       prepare:Abstract.IPrepareOptions ->
         collect:Abstract.ICollectOptions -> options:ICLIOptions -> string
-  end
+  end //// no doc
 // ```
 // The former creates the `/p:AltCoverXXX="yyy"` elements for a `dotnet test` invocation as a list of strings, the latter concatenates them, with space separators, into a single command line string.
 #else

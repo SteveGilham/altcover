@@ -14,37 +14,37 @@ module Command = begin
 // ```
   ///<summary>
   /// Instrument assemblies
+  ///</summary>
   /// <param name="args">The command line</param>
   /// <param name="log">How to report feedback</param>
   /// <returns>operation return code.</returns>
-  ///</summary>
   val Prepare : args:Abstract.IPrepareOptions -> log:AltCover.LoggingOptions -> int
   ///<summary>
   /// Process coverage
+  ///</summary>
   /// <param name="args">The command line</param>
   /// <param name="log">How to report feedback</param>
   /// <returns>operation return code.</returns>
-  ///</summary>
   val Collect : args:Abstract.ICollectOptions -> log:AltCover.LoggingOptions -> int
   ///<summary>
   /// Indicate how to consume for PowerShell
-  /// <returns>The `Import-Module` command required.</returns>
   ///</summary>
+  /// <returns>The `Import-Module` command required.</returns>
   val ImportModule : unit -> string
   ///<summary>
   /// Indicate the current version
-  /// <returns>The strongly-typed version.</returns>
   ///</summary>
+  /// <returns>The strongly-typed version.</returns>
   val Version : unit -> System.Version
   ///<summary>
   /// Indicate the current version
-  /// <returns>The version as a string.</returns>
   ///</summary>
+  /// <returns>The version as a string.</returns>
   val FormattedVersion : unit -> string
   ///<summary>
   /// Return the last computed coverage summary
-  /// <returns>The last computed coverage summary.</returns>
   ///</summary>
+  /// <returns>The last computed coverage summary.</returns>
   val Summary : unit -> string
 end
 // ```

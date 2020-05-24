@@ -15,9 +15,8 @@ open System.Xml.Linq
 /// </summary>
 [<Cmdlet(VerbsData.Compress, "Branching")>]
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
-type CompressBranchingCommand(outputFile : String) =
+type CompressBranchingCommand() =
   inherit PSCmdlet()
-  new() = CompressBranchingCommand(String.Empty)
 
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
@@ -48,7 +47,7 @@ type CompressBranchingCommand(outputFile : String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFileB", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = outputFile with get, set
+  member val OutputFile : string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Merge branches when start and end at the same place</para>

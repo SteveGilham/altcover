@@ -157,7 +157,7 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         PathFilter: seq<System.String>
         ///<summary>
-        /// Corresponds to command line option --attributetoplevel=VALUE`
+        /// Corresponds to command line option `--attributetoplevel=VALUE`
         ///</summary>
         AttributeTopLevel: seq<System.String>
         ///<summary>
