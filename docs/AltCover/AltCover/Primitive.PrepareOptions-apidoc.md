@@ -15,7 +15,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [AssemblyExcludeFilter](Primitive.PrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
 | [AssemblyFilter](Primitive.PrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](Primitive.PrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
-| [AttributeTopLevel](Primitive.PrepareOptions/AttributeTopLevel-apidoc) { get; } | Corresponds to command line option --attributetoplevel=VALUE` |
+| [AttributeTopLevel](Primitive.PrepareOptions/AttributeTopLevel-apidoc) { get; } | Corresponds to command line option `--attributetoplevel=VALUE` |
 | [BranchCover](Primitive.PrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
 | [CallContext](Primitive.PrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](Primitive.PrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |

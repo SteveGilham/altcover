@@ -13,7 +13,7 @@ public abstract class LoggingOptions
 | static [Create](AltCover.LoggingOptions/Create-apidoc)() | Returns a pure sink (all input ignored) instance |
 | static [NewAbstract](AltCover.LoggingOptions/NewAbstract-apidoc)(…) |  |
 | static [NewPrimitive](AltCover.LoggingOptions/NewPrimitive-apidoc)(…) |  |
-| static [Translate](AltCover.LoggingOptions/Translate-apidoc)(…) | Translates a C# style interface to the corresponding F# type A C# `Action` based logging descriptionThe F# function equivalent. |
+| static [Translate](AltCover.LoggingOptions/Translate-apidoc)(…) | Translates a C# style interface to the corresponding F# type |
 | [Echo](AltCover.LoggingOptions/Echo-apidoc) { get; } | Sink for command line/usage messages |
 | [Error](AltCover.LoggingOptions/Error-apidoc) { get; } | Sink for error messages |
 | [Info](AltCover.LoggingOptions/Info-apidoc) { get; } | Sink for informational messages |

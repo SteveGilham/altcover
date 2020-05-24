@@ -26,6 +26,3 @@ The input is either in NCover for OpenCover format; Cobertura, being XML, is ret
       document:System.Xml.Linq.XDocument -> System.Xml.Linq.XDocument
 ```
 Interconvert OpenCover and NCover formats.  Converting from NCover also needs the assemblies used to generate the report in order to fill in information missing from the NCover format.  Conversion in the opposite direction is, of course, lossy.
-```
-  end
-```

@@ -1,22 +1,9 @@
-# CompressBranchingCommand constructor (1 of 2)
+# CompressBranchingCommand constructor
 
 The default constructor.
 
 ```csharp
 public CompressBranchingCommand()
-```
-
-## See Also
-
-* class [CompressBranchingCommand](../CompressBranchingCommand-apidoc)
-* namespace [AltCover.Commands](../../AltCover.PowerShell-apidoc)
-
----
-
-# CompressBranchingCommand constructor (2 of 2)
-
-```csharp
-public CompressBranchingCommand(string outputFile)
 ```
 
 ## See Also

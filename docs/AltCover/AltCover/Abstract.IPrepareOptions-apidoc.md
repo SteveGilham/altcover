@@ -27,7 +27,7 @@ public interface IPrepareOptions
 | [AssemblyExcludeFilter](Abstract.IPrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
 | [AssemblyFilter](Abstract.IPrepareOptions/AssemblyFilter-apidoc) { get; } | Corresponds to command line option `-s, --assemblyFilter=VALUE` |
 | [AttributeFilter](Abstract.IPrepareOptions/AttributeFilter-apidoc) { get; } | Corresponds to command line option `-a, --attributeFilter=VALUE` |
-| [AttributeTopLevel](Abstract.IPrepareOptions/AttributeTopLevel-apidoc) { get; } | Corresponds to command line option --attributetoplevel=VALUE` |
+| [AttributeTopLevel](Abstract.IPrepareOptions/AttributeTopLevel-apidoc) { get; } | Corresponds to command line option `--attributetoplevel=VALUE` |
 | [BranchCover](Abstract.IPrepareOptions/BranchCover-apidoc) { get; } | Corresponds to command line option `--branchcover` |
 | [CallContext](Abstract.IPrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](Abstract.IPrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |

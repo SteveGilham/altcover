@@ -14,7 +14,7 @@ public static XDocument CompressBranching(XDocument document, bool withinSequenc
 | parameter | description |
 | --- | --- |
 | document | The input report |
-| withinSequencePoint | Whether to hide branches that terminatwe inside the same sequence point as they begin |
+| withinSequencePoint | Whether to hide branches that terminate inside the same sequence point as they begin |
 | sameSpan | Whether to treat branches between the same points as being the same branch |
 
 ## Return Value

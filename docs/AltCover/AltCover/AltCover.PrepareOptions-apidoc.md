@@ -59,7 +59,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [get_IsTypeSafe](AltCover.PrepareOptions/get_IsTypeSafe-apidoc)() |  |
 | [get_Tag](AltCover.PrepareOptions/get_Tag-apidoc)() |  |
 | override [ToString](AltCover.PrepareOptions/ToString-apidoc)() |  |
-| [Validate](AltCover.PrepareOptions/Validate-apidoc)() | Does simple checking of the arguments without causing any changes to the system All the problems that the application command-line could report, so empty is success. |
+| [Validate](AltCover.PrepareOptions/Validate-apidoc)() | Does simple checking of the arguments without causing any changes to the system |
 | class [Abstract](AltCover.PrepareOptions.Abstract-apidoc) | Options expressed as an interface |
 | class [Primitive](AltCover.PrepareOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |
 | static class [Tags](AltCover.PrepareOptions.Tags-apidoc) |  |

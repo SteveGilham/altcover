@@ -5,7 +5,7 @@
 | public type | description |
 | --- | --- |
 | static class [Abstract](AltCover/Abstract-apidoc) | This represents the weakly ("stringly") typed equivalent of the command line options as interfaces with the values expressed as read-only properties. |
-| static class [AltCover](AltCover/AltCover-apidoc) | This represents the command line options |
+| static class [AltCover](AltCover/AltCover-apidoc) | This represents the command line options and its validation |
 | class [Collect](AltCover/Collect-apidoc) | Description of the `AltCover Runner` command |
 | static class [CollectExtension](AltCover/CollectExtension-apidoc) | `Abstract.ICollectOptions` extension methods |
 | static class [Command](AltCover/Command-apidoc) | This represents the various operations available |

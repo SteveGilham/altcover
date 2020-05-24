@@ -38,14 +38,18 @@ module DotNet = begin
 
 ```
 Union type defining general command line arguments for `dotnet test` use.
-case `Force` indicates a `/AltCoverForce` value
-case `Fail` inicates a `/AltCoverFailFast` value
-case `Summary` indicates a `/AltCoverShowSummary` value
-case `Many` indicates a collection of cases
+* case `Force` indicates a `/AltCoverForce` value
+* case `Fail` indicates a `/AltCoverFailFast` value
+* case `Summary` indicates a `/AltCoverShowSummary` value
+* case `Many` indicates a collection of cases
+* case `Abstract` indicates a collection of cases expressed as an interface
+
+vs
 
 * value `Fast` gives the `/AltCoverFailFast` value this represents
 * value `ForceDelete` gives the `/AltCoverForce` value this represents
 * value `Summary` gives the `/AltCoverShowSummary` value this represents
+
 
 
 

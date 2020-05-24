@@ -1,6 +1,6 @@
 # AltCover class
 
-This represents the command line options
+This represents the command line options and its validation
 
 ```csharp
 public static class AltCover

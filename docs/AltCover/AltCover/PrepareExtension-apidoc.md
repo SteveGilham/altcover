@@ -10,7 +10,7 @@ public static class PrepareExtension
 
 | name | description |
 | --- | --- |
-| static [WhatIf](PrepareExtension/WhatIf-apidoc)(…) | Validates the supplied options The optionsThe validation outcome. |
+| static [WhatIf](PrepareExtension/WhatIf-apidoc)(…) | Validates the supplied options |
 
 ## See Also
 

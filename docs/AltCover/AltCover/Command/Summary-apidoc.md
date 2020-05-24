@@ -1,10 +1,14 @@
 # Command.Summary method
 
-Return the last computed coverage summary The last computed coverage summary.
+Return the last computed coverage summary
 
 ```csharp
 public static string Summary()
 ```
+
+## Return Value
+
+The last computed coverage summary.
 
 ## See Also
 

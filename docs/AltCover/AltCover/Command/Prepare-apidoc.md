@@ -1,10 +1,19 @@
 # Command.Prepare method
 
-Instrument assemblies The command lineHow to report feedbackoperation return code.
+Instrument assemblies
 
 ```csharp
 public static int Prepare(IPrepareOptions args, LoggingOptions log)
 ```
+
+| parameter | description |
+| --- | --- |
+| args | The command line |
+| log | How to report feedback |
+
+## Return Value
+
+operation return code.
 
 ## See Also
 

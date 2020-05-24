@@ -26,14 +26,14 @@ to indicate which command-line executable from the current NuGet package to retu
 [<Sealed; AbstractClass>]
 type Command =
   static member Collect : args:AltCover.Abstract.ICollectOptions * ?log:AltCover.AltCover.LoggingOptions -> int
-  static member ImportModule : unit -> string
+  static member ImportModule : unit -> string (* returns the `Import-Module` command to use *)
   static member Prepare : args:AltCover.Abstract.IPrepareOptions * ?log:AltCover.AltCover.LoggingOptions -> int
   static member Version : unit -> System.Version
-  static member ToolPath : Implementation -> string
+  static member ToolPath : Implementation -> string (* returns the path to the indicated tool *)
 ```
-wraps the core API functions.  If the optional logging argument is not given, then `AltCover.Fake.Trace.Default` is assumed.
+wraps the core API functions.  If the optional logging argument is not given, then `AltCover.Fake.Trace.Create()` is assumed.
 
-The `int` results are 0 for success and otherwise for failure (this would be the return code of the operation if run as a command-line function); and string return is the location of the indicated command-line executable from the current NuGet package
+The `int` results are 0 for success and otherwise for failure -- this would be the return code of the operation if run as a command-line function
 
 ## Extension methods for type `Fake.DotNet.DotNet.TestOptions` (in module `AltCover.Fake.DotNet`)
 
@@ -60,7 +60,7 @@ module DotNet =
 
 
 
-Adds the result of `DotNet.ToTestArguments` to the `CustomParams` member of the `Common` member
+Adds the composed command line options to the `CustomParams` member of the `Common` member
 ```
     member WithAltCoverImportModule: unit -> Fake.DotNet.DotNet.TestOptions
 ```

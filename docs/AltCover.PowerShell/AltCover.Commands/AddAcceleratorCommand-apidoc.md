@@ -2,7 +2,7 @@
 
 Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.
 
-Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`. Two common abbreviations are supplied as switch parameters, and then others can be added free-form.
+Extends the built-in set of type abbreviations with user declared ones. Two common abbreviations are supplied as switch parameters, and then others can be added free-form.
 
 ```csharp
 Add-Accelerator -XDocument

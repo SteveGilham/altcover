@@ -1,6 +1,6 @@
 # Primitive.PrepareOptions.AttributeTopLevel property
 
-Corresponds to command line option --attributetoplevel=VALUE`
+Corresponds to command line option `--attributetoplevel=VALUE`
 
 ```csharp
 public IEnumerable<string> AttributeTopLevel { get; }

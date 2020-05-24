@@ -17,7 +17,6 @@ public class ConvertToBarChartCommand : PSCmdlet
 | name | description |
 | --- | --- |
 | [ConvertToBarChartCommand](ConvertToBarChartCommand/ConvertToBarChartCommand-apidoc)() | The default constructor. |
-| [ConvertToBarChartCommand](ConvertToBarChartCommand/ConvertToBarChartCommand-apidoc)(…) |  |
 | [InputFile](ConvertToBarChartCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](ConvertToBarChartCommand/OutputFile-apidoc) { get; set; } | Output as file path |
 | [XDocument](ConvertToBarChartCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |

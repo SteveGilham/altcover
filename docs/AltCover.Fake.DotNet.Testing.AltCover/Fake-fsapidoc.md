@@ -60,7 +60,7 @@ module DotNet =
                                 Fake.DotNet.DotNet.TestOptions
 ```
 
-Adds the result of `DotNet.ToTestArguments` to the `CustomParams` member of the `Common` member
+Adds the composed command line options to the `CustomParams` member of the `Common` member
 ```
     member WithAltCoverImportModule: unit -> Fake.DotNet.DotNet.TestOptions
 ```

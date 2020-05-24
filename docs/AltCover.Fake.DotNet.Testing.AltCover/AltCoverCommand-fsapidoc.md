@@ -21,12 +21,14 @@ namespace AltCoverFake.DotNet.Testing
 This type defines what operation to use AltCover for
 
 ## Related module level functions
+### Preparing command lines for other tools for AltCover consumption
 ```
     val splitCommandLine : line:string -> string list
 ```
 This module-level helper function decomposes a command line into its separate elements.
 
 Use to safely break up the argument list from e.g. `Fake.DotNet.Testing.NUnit3.buildArgs` for constructing a `CommandLine` ([see example here](https:github.com/SteveGilham/altcover/blob/bf291c9485a737ff4b1d7034f1bdf74374d1d3f9/Build/targets.fsx#L966-L985))
+#### Example
 ```
       let nunitcmd = NUnit3.buildArgs nunitparams nunitAssemblies
 
@@ -40,13 +42,15 @@ Use to safely break up the argument list from e.g. `Fake.DotNet.Testing.NUnit3.b
           |> AltCoverCommand.Collect
 ```
 or similarly for `Fake.DotNet.Testing.XUnit2.buildArgs`
+### Preparing command lines for `dotnet test` for AltCover consumption
 ```
     val buildDotNetTestCommandLine :
       options:(Fake.DotNet.DotNet.TestOptions -> Fake.DotNet.DotNet.TestOptions) ->
         project:string -> string * string list
 ```
-This module-level helper function composes a `dotnet test` command line from a `DotNet.TestOptions` transformer and aproject under test, and return the result as the `dotnet` executable followed by the separate arguments as a list.
-Intended for taking the arguments for `DotNet.test` and returning the `dotnet` path and the rest of the command line for again constructing a `CommandLine`; and `Executable` for `CollectOptions`.
+This module-level helper function composes a `dotnet test` command line from a `DotNet.TestOptions` transformer and a project under test, and returns the result as the `dotnet` executable followed by the separate arguments as a list.
+Intended for taking the arguments for `DotNet.test` and returning the `dotnet` path and the rest of the command line for again constructing a `CommandLine` and `Executable` for `CollectOptions`.
+#### Example
 ```
       let (dotnetexe, args) =  AltCoverCommand.buildDotNetTestCommandLine id "./Tests/altcover.tests.core.fsproj"
 
@@ -64,7 +68,7 @@ Intended for taking the arguments for `DotNet.test` and returning the `dotnet` p
       { ToolPath: string (* Path to the Altcover executable. *)
         ToolType: Fake.DotNet.ToolType (* Which style of tool *)
         WorkingDirectory: string (* Working directory for relative file paths.  Default is the current working directory *)
-        Args: ArgumentType} (* Command arguments *)
+        Args: ArgumentType } (* Command arguments *)
       with
         member
           WithCreateProcess : command:Fake.Core.CreateProcess<'a> -> Options
@@ -90,7 +94,4 @@ Run the specified AltCover operation
     val runWithMono :
       monoPath:Fake.Core.FilePath option -> options:Options -> unit
 ```
- Runs AltCover expressed as a `Fake.DotNet.ToolType.FullFramework` under the supplied mono path (defaulting to just `mono`) on Windows
-```
-  end
- ```
+ Runs AltCover expressed as a `Fake.DotNet.ToolType.FullFramework` tool under the supplied mono path (defaulting to just `mono`) on Windows

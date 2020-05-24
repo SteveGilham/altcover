@@ -10,12 +10,12 @@ public static class Command
 
 | name | description |
 | --- | --- |
-| static [Collect](Command/Collect-apidoc)(…) | Process coverage The command lineHow to report feedbackoperation return code. |
-| static [FormattedVersion](Command/FormattedVersion-apidoc)() | Indicate the current version The version as a string. |
-| static [ImportModule](Command/ImportModule-apidoc)() | Indicate how to consume for PowerShell The `Import-Module` command required. |
-| static [Prepare](Command/Prepare-apidoc)(…) | Instrument assemblies The command lineHow to report feedbackoperation return code. |
-| static [Summary](Command/Summary-apidoc)() | Return the last computed coverage summary The last computed coverage summary. |
-| static [Version](Command/Version-apidoc)() | Indicate the current version The strongly-typed version. |
+| static [Collect](Command/Collect-apidoc)(…) | Process coverage |
+| static [FormattedVersion](Command/FormattedVersion-apidoc)() | Indicate the current version |
+| static [ImportModule](Command/ImportModule-apidoc)() | Indicate how to consume for PowerShell |
+| static [Prepare](Command/Prepare-apidoc)(…) | Instrument assemblies |
+| static [Summary](Command/Summary-apidoc)() | Return the last computed coverage summary |
+| static [Version](Command/Version-apidoc)() | Indicate the current version |
 
 ## See Also
 

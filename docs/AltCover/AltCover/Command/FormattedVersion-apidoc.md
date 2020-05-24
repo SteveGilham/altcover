@@ -1,10 +1,14 @@
 # Command.FormattedVersion method
 
-Indicate the current version The version as a string.
+Indicate the current version
 
 ```csharp
 public static string FormattedVersion()
 ```
+
+## Return Value
+
+The version as a string.
 
 ## See Also
 

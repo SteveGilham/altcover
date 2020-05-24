@@ -35,7 +35,7 @@ public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEq
 | [get_IsTypeSafe](AltCover.CollectOptions/get_IsTypeSafe-apidoc)() |  |
 | [get_Tag](AltCover.CollectOptions/get_Tag-apidoc)() |  |
 | override [ToString](AltCover.CollectOptions/ToString-apidoc)() |  |
-| [Validate](AltCover.CollectOptions/Validate-apidoc)(…) | Does simple checking of the arguments without causing any changes to the system `true` if the Prepare step has already run and there should be instrumented code the `RecorderDirectory`All the problems that the application command-line could report, so empty is success. |
+| [Validate](AltCover.CollectOptions/Validate-apidoc)(…) | Does simple checking of the arguments without causing any changes to the system |
 | class [Abstract](AltCover.CollectOptions.Abstract-apidoc) | Options expressed as an interface |
 | class [Primitive](AltCover.CollectOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |
 | static class [Tags](AltCover.CollectOptions.Tags-apidoc) |  |
