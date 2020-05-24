@@ -39,7 +39,7 @@ type ConvertToXmlDocumentCommand() =
 /// <para type="synopsis">Converts `[xml]` to `XDocument`.</para>
 /// <para type="description">Takes an `[xml]` in and puts an `XDocument` to the object pipeline.</para>
 /// <example>
-///   <code>$xd = [xml]"<document/>" | ConvertTo-XDocument</code>
+///   <code>$xd = [xml]"&lt;Document /&gt;" | ConvertTo-XDocument</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsData.ConvertTo, "XDocument")>]
