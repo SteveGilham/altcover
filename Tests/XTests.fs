@@ -354,7 +354,7 @@ module AltCoverXTests =
                                                  [| TypeSafe.FilePath
                                                     <| Assembly.GetExecutingAssembly().Location |]
                                              CommandLine =
-                                               TypeSafe.Command
+                                               TypeSafe.CommandArguments
                                                  [| TypeSafe.CommandArgument "[Fact]" |]
                                              ReportFormat = TypeSafe.ReportFormat.NCover
                                              PathFilter =

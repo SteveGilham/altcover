@@ -71,7 +71,7 @@ module AltCoverCommand =
                     |> Seq.toList
                   match newargs with
                   | [] -> TypeSafe.NoCommand
-                  | _ -> TypeSafe.Command newargs }
+                  | _ -> TypeSafe.CommandArguments newargs }
 
   let internal setPrepareCommandLine (args : string seq) (prepare:AltCover.PrepareOptions) =
       match prepare with
@@ -121,7 +121,7 @@ module AltCoverCommand =
                     |> Seq.toList
                   match newargs with
                   | [] -> TypeSafe.NoCommand
-                  | _ -> TypeSafe.Command newargs }
+                  | _ -> TypeSafe.CommandArguments newargs }
 
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",

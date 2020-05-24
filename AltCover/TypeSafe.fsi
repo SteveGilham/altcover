@@ -95,11 +95,11 @@ namespace AltCoverFake.DotNet.Testing
     /// Corresponds to the values after `-- ` on the command line
     ///</summary>
     [<NoComparison>]
-    type Command =
+    type CommandLine =
       ///<summary>
       /// Strongly typed string collection
       ///</summary>
-      | Command of seq<CommandArgument>
+      | CommandArguments of seq<CommandArgument>
       ///<summary>
       /// Nothing
       ///</summary>
@@ -446,7 +446,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to the command line arguments for the executable, given after a `-- `
         ///</summary>
-        CommandLine: Command
+        CommandLine: CommandLine
         ///<summary>
         /// Corresponds to the converse of command line option `--dropReturnCode `
         ///</summary>
@@ -587,7 +587,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to the command line to run, given after a `-- `
         ///</summary>
-        CommandLine: Command
+        CommandLine: CommandLine
         ///<summary>
         /// Corresponds to the converse of command line option `--dropReturnCode `
         ///</summary>
