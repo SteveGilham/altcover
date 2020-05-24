@@ -5,7 +5,7 @@ Converts `[xml]` to `XDocument`.
 Takes an `[xml]` in and puts an `XDocument` to the object pipeline.
 
 ```csharp
-$xd = [xml]"" | ConvertTo-XDocument
+$xd = [xml]"<Document />" | ConvertTo-XDocument
 ```
 
 ```csharp
