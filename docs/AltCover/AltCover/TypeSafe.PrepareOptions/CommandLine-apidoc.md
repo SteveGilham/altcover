@@ -3,12 +3,12 @@
 Corresponds to the command line to run, given after a `-- `
 
 ```csharp
-public Command CommandLine { get; }
+public CommandLine CommandLine { get; }
 ```
 
 ## See Also
 
-* class [Command](../TypeSafe.Command-apidoc)
+* class [CommandLine](../TypeSafe.CommandLine-apidoc)
 * class [PrepareOptions](../TypeSafe.PrepareOptions-apidoc)
 * namespace [AltCover](../../AltCover-apidoc)
 

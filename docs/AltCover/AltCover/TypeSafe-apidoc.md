@@ -11,8 +11,8 @@ public static class TypeSafe
 | name | description |
 | --- | --- |
 | class [CollectOptions](TypeSafe.CollectOptions-apidoc) | Command line options for `AltCover Runner` |
-| abstract class [Command](TypeSafe.Command-apidoc) | Corresponds to the values after `-- ` on the command line |
 | class [CommandArgument](TypeSafe.CommandArgument-apidoc) | Corresponds to a value after `-- ` on the command line |
+| abstract class [CommandLine](TypeSafe.CommandLine-apidoc) | Corresponds to the values after `-- ` on the command line |
 | abstract class [Context](TypeSafe.Context-apidoc) | Corresponds to a collection of context entries |
 | abstract class [ContextItem](TypeSafe.ContextItem-apidoc) | Corresponds to a context value |
 | abstract class [DirectoryPath](TypeSafe.DirectoryPath-apidoc) | Corresponds to a directory |

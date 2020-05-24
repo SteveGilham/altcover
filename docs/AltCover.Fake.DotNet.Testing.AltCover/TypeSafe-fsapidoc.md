@@ -47,8 +47,8 @@ This holds the strongly-typed equivalent of the command line options
         member AsString : unit -> System.String
       end
     [<NoComparison>]
-    type Command =
-      | Command of seq<CommandArgument>
+    type CommandLine =
+      | CommandArguments of seq<CommandArgument>
       | NoCommand
       with
         member AsStrings : unit -> seq<System.String>
@@ -185,7 +185,7 @@ The members correspond to the like-named command line options for `AltCover Runn
         Threshold: Threshold
         Cobertura: FilePath
         OutputFile: FilePath
-        CommandLine: Command
+        CommandLine: CommandLine
         ExposeReturnCode: Flag
         SummaryFormat: SummaryFormat }
       with
@@ -233,7 +233,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         SingleVisit: Flag
         LineCover: Flag
         BranchCover: Flag
-        CommandLine: Command
+        CommandLine: CommandLine
         ExposeReturnCode: Flag
         SourceLink: Flag
         Defer: Flag

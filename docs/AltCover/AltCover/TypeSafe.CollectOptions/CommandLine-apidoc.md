@@ -3,12 +3,12 @@
 Corresponds to the command line arguments for the executable, given after a `-- `
 
 ```csharp
-public Command CommandLine { get; }
+public CommandLine CommandLine { get; }
 ```
 
 ## See Also
 
-* class [Command](../TypeSafe.Command-apidoc)
+* class [CommandLine](../TypeSafe.CommandLine-apidoc)
 * class [CollectOptions](../TypeSafe.CollectOptions-apidoc)
 * namespace [AltCover](../../AltCover-apidoc)
 

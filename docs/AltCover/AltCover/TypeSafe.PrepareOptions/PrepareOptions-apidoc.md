@@ -8,7 +8,7 @@ public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDire
     Filters attributeFilter, Filters pathFilter, Filters attributeTopLevel, Filters typeTopLevel, 
     Filters methodTopLevel, Context callContext, ReportFormat reportFormat, Flag inPlace, 
     Flag save, Flag zipFile, Flag methodPoint, Flag singleVisit, Flag lineCover, Flag branchCover, 
-    Command commandLine, Flag exposeReturnCode, Flag sourceLink, Flag defer, Flag localSource, 
+    CommandLine commandLine, Flag exposeReturnCode, Flag sourceLink, Flag defer, Flag localSource, 
     Flag visibleBranches, StaticFormat showStatic, Flag showGenerated)
 ```
 
@@ -21,7 +21,7 @@ public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDire
 * class [Context](../TypeSafe.Context-apidoc)
 * class [ReportFormat](../TypeSafe.ReportFormat-apidoc)
 * class [Flag](../TypeSafe.Flag-apidoc)
-* class [Command](../TypeSafe.Command-apidoc)
+* class [CommandLine](../TypeSafe.CommandLine-apidoc)
 * class [StaticFormat](../TypeSafe.StaticFormat-apidoc)
 * class [PrepareOptions](../TypeSafe.PrepareOptions-apidoc)
 * namespace [AltCover](../../AltCover-apidoc)
