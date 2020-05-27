@@ -1,8 +1,8 @@
 For use cases, see [Use Cases](https://github.com/SteveGilham/altcover/wiki/Use-Cases).  
 For modes of operation, see [Modes of Operation](https://github.com/SteveGilham/altcover/wiki/Modes-of-Operation).  
-For driving AltCover from `dotnet test`, see [`dotnet test` integration](https://github.com/SteveGilham/altcover/wiki/%60dotnet-test%60-integration).  
-For driving AltCover from MSBuild, see [MSBuild Tasks](https://github.com/SteveGilham/altcover/wiki/MSBuild-tasks).  
-For driving AltCover and associated tools with Windows PowerShell or PowerShell Core, see [PowerShell integration](https://github.com/SteveGilham/altcover/wiki/PowerShell-integration).  
+For driving AltCover from `dotnet test`, see [`dotnet test` integration](%60dotnet-test%60-integration).  
+For driving AltCover from MSBuild, see [MSBuild Tasks](MSBuild-tasks).  
+For driving AltCover and associated tools with Windows PowerShell or PowerShell Core, see [PowerShell integration](PowerShell-integration).  
 
 The full command line is 
 ```
@@ -12,7 +12,7 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|ex
 or
 AltCover ImportModule
 or
-AltCover version
+AltCover Version
 
 ```
 
