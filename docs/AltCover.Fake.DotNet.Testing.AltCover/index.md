@@ -1,6 +1,9 @@
-# AltCover.Fake.DotNet.Testing.dll
+# The AltCover.Fake package -- AltCover.Fake.DotNet.Testing.dll
 
-An API for driving coverage instrumentation and collection through the FAKE build system
+This provides helpers to drive command-line AltCover (or `dotnet test` with AltCover) from any of the other packages.  In these scenarios, AltCover operates outside the Fake build process.
+The slightly awkward `AltCoverFake` namespace was chosen to allow co-existence with the previous in-process API's `AltCover.Fake` names.
+
+Requires Fake 5.18 or later
 
 ## Composing the AltCover command line
 
@@ -26,3 +29,40 @@ Make one of these
 ### Use as a command
 
 * [`module AltCoverCommand`](AltCoverCommand-fsapidoc) -- This represents the various `AltCover` operations available, and their execution from a Fake script.
+
+### Example
+```
+open AltCover_Fake.DotNet.Testing
+...
+    let prep =
+      { AltCover.PrepareOptions.Create() with XmlReport = xaltReport
+                                              OutputDirectory = "./__UnitTestWithAltCover"
+                                              StrongNameKey = keyfile
+                                              OpenCover = false
+                                              InPlace = false
+                                              Save = false }
+      |> AltCoverCommand.Prepare
+    { AltCoverCommand.Options.Create prep with ToolPath = altcover
+                                               ToolType = AltCover.ToolType.Framework
+                                               WorkingDirectory = xtestDirectory }
+    |> AltCoverCommand.run
+```
+
+### Example
+```
+open AltCoverFake.DotNet.Testing
+...
+  let ForceTrue = DotNet.CLIOptions.Force true
+  let p = Primitive.PrepareOptions.Create()
+  let prep = AltCover.PrepareOptions.Primitive p
+  let c = Primitive.CollectOptions.Create()
+  let p1 = { p with CallContext = [ "[Fact]"; "0" ]
+                      AssemblyFilter = [| "xunit" |] }
+  let prep1 = AltCover.PrepareOptions.Primitive p1
+  let collect = AltCover.CollectOptions.Primitive c
+  DotNet.test
+      (fun to' ->
+      (to'.WithAltCoverOptions prep collect ForceTrue)
+      "dotnettest.fsproj"
+
+```
