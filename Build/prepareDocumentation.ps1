@@ -5,6 +5,8 @@ dir -recurse "./docs/*apidoc.md" | del -force
 
 ## Documentation
 
+### C# generated
+
 $mdfiles = dir -Recurse "./_Documentation/AltCov*/*.md"
 
 $mdfiles | % {
@@ -20,6 +22,8 @@ $mdfiles | % {
   $lines = Get-Content $fromFile
   $lines | % { $_.Replace(".md)", "-apidoc)") } | Set-Content $toFile
 }
+
+### Cmdlet help
 
 $m = Get-Module -Name "AltCover.PowerShell"
 
@@ -38,7 +42,7 @@ which unpeels the wrapper around the file path.  Just substitute in the appropri
 ## Cmdlets
 "@
 
-$mdfile = "../altcover.wiki/PowerShell-integration.md" ## yes wiki
+$mdfile = "./docs/PowerShell-integration.md"
 
 $preamble | Out-File -Encoding UTF8 $mdfile
 
@@ -145,6 +149,8 @@ $m.ExportedCmdlets.Keys | Sort-Object | % {
   }
 }
 
+### F# generated
+
 dir -recurse *.fsproj | % {
   $x = [xml](Get-Content $_.FullName) 
   $projectDir = Split-Path $_.FullName
@@ -187,12 +193,12 @@ dir -recurse *.fsproj | % {
   }
 }
 
-# dotnet test integration
+### dotnet test integration
 
 $header = @"
 Available from release 3.0.488, this parallels the facility in [coverlet](https://github.com/tonerdo/coverlet); it is equivalent to doing ``AltCover --inplace --save`` in the project output directory before the tests are run, then ``AltCover Runner --collect`` after, then deleting the instrumented files and moving the saved originals back in place.
 
-[There is an API available](https://stevegilham.github.io/altcover/AltCover.DotNet/DotNet-apidoc) for use with build scripting that composes the appropriate command line.
+[There is an API available](AltCover.DotNet/DotNet-apidoc) for use with build scripting that composes the appropriate command line.
 
 _Note: With ``AltCover``, there is no requirement that the assembly from which coverage is gathered be distinct from the assembly that contains the tests._  Use ``/p:AltCoverAssemblyExcludeFilter`` if you want to exclude the unit tests from coverage.
 
@@ -229,7 +235,7 @@ dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAs
 Chooses a different report name, and excludes the ``NUnit3.TestAdapter`` assembly that comes with its pdb files, and gets instrumented by default.
 "@
 
-$mdfile = "../altcover.wiki/``dotnet-test``-integration.md" ## yes wiki
+$mdfile = "./docs/``dotnet-test``-integration.md"
 
 $header | Out-File -Encoding UTF8 $mdfile
 
@@ -248,6 +254,13 @@ $lines | % {
 
 $footer | Out-File -Encoding UTF8 -Append $mdfile
 
+### TODO 
+# * [General usage/how-to](https://stevegilham.github.io/altcover/Usage)
+# * [MSBuild tasks](https://stevegilham.github.io/altcover/MSBuild-tasks)
+# * [The core in-process API](https://stevegilham.github.io/altcover/The-AltCover-API)
+# * [The utilities APIs](https://stevegilham.github.io/altcover/The-AltCover-Utilities-API) -- behind the PowerShell
+# * [Fake and Cake integration](https://stevegilham.github.io/altcover/Fake-and-Cake-integration)
+# * [The `AltCover.Fake` package](https://stevegilham.github.io/altcover/The-AltCover.Fake-package)
 
 
 
