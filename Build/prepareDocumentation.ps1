@@ -198,7 +198,7 @@ dir -recurse *.fsproj | % {
 $header = @"
 Available from release 3.0.488, this parallels the facility in [coverlet](https://github.com/tonerdo/coverlet); it is equivalent to doing ``AltCover --inplace --save`` in the project output directory before the tests are run, then ``AltCover Runner --collect`` after, then deleting the instrumented files and moving the saved originals back in place.
 
-[There is an API available](AltCover.DotNet/DotNet-apidoc) for use with build scripting that composes the appropriate command line.
+[There is an API available](AltCover.DotNet/) for use with build scripting that composes the appropriate command line.
 
 _Note: With ``AltCover``, there is no requirement that the assembly from which coverage is gathered be distinct from the assembly that contains the tests._  Use ``/p:AltCoverAssemblyExcludeFilter`` if you want to exclude the unit tests from coverage.
 

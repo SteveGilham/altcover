@@ -1,5 +1,7 @@
 # The AltCover API
 
+## By package/assembly
+
 An index of which nuget packages contain which assemblies, and which have APIs
 
 | | API? | AltCover.nupkg | AltCover.Api.nupkg | AltCover.Global.nupkg | AltCover.Visualizer.nupkg | AltCover.Fake.nupkg |
@@ -16,3 +18,15 @@ An index of which nuget packages contain which assemblies, and which have APIs
 | AltCover.Visualizer |  | ✔️ | | | ✔.net core  |   |
 
 Assembly names link to the related API documentation.
+
+## By topic
+
+* [`dotnet test` integration](%60dotnet-test%60-integration)
+* [General usage/how-to](Usage)
+* [MSBuild tasks](MSBuild-tasks)
+* [PowerShell tools for coverage reports](PowerShell-integration)
+* [The core in-process API](The-AltCover-API)
+* [The utilities APIs](The-AltCover-Utilities-API) -- behind the PowerShell
+* [Fake and Cake integration](Fake-and-Cake-integration)
+* [The `AltCover.Fake` package](AltCover.Fake.DotNet.Testing.AltCover/)
+

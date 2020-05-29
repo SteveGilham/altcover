@@ -7,7 +7,7 @@ APIs for use with build scripting tools are provided in the `AltCover.Cake.dll` 
 
 # Fake integration 
 Found in `AltCover.Fake.dll`  
-Detailed API documentation is [presented here](AltCover.Fake/Fake-apidoc).
+Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
 
 ### Example
 Driving `dotnet test` in a Fake script
