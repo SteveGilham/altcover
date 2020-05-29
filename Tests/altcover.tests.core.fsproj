@@ -25,6 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AltCover.Usage.txt" />
+    <EmbeddedResource Include="AltCover.Runner.Usage.txt" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />

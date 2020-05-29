@@ -207,10 +207,6 @@ Kovra Raporto: {0}
   <data name="Getting results..." xml:space="preserve">
     <value>Akiri rezultojn ...</value>
   </data>
-  <data name="binder" xml:space="preserve">
-    <value>aŭ
-  Runner</value>
-  </data>
   <data name="orbinder" xml:space="preserve">
     <value>aŭ</value>
   </data>
@@ -351,8 +347,8 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="AltCover.Version" xml:space="preserve">
     <value>AltCover version {0}</value>
   </data>
-  <data name="version" xml:space="preserve">
-    <value>  version                    Printas la AltCover-konstruan version</value>
+  <data name="Version" xml:space="preserve">
+    <value>  Version                    Printas la AltCover-konstruan version</value>
   </data>
   <data name="Incompatible" xml:space="preserve">
     <value>Komandlinioj opcioj {0} kaj {1} estas reciproke ekskluzivaj.</value>

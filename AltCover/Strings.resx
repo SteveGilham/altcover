@@ -211,10 +211,6 @@ Coverage Report: {0}
   <data name="Getting results..." xml:space="preserve">
     <value>Getting results...</value>
   </data>
-  <data name="binder" xml:space="preserve">
-    <value>or
-  Runner</value>
-  </data>
   <data name="orbinder" xml:space="preserve">
     <value>or</value>
   </data>
@@ -355,8 +351,8 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   <data name="AltCover.Version" xml:space="preserve">
     <value>AltCover version {0}</value>
   </data>
-  <data name="version" xml:space="preserve">
-    <value>  version                    Prints out the AltCover build version</value>
+  <data name="Version" xml:space="preserve">
+    <value>  Version                    Prints out the AltCover build version</value>
   </data>
   <data name="Incompatible" xml:space="preserve">
     <value>Command line options {0} and {1} are mutally exclusive.</value>

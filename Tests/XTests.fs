@@ -595,7 +595,6 @@ module AltCoverXTests =
 
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
     finally
-      Output.usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
       CoverageParameters.trackingNames.Clear()
       CoverageParameters.theReportFormat <- None
       CoverageParameters.theOutputDirectories.Clear()
