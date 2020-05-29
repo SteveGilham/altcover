@@ -23,10 +23,10 @@ Assembly names link to the related API documentation.
 
 * [`dotnet test` integration](%60dotnet-test%60-integration)
 * [General usage/how-to](Usage)
-* [MSBuild tasks](MSBuild-tasks)
+* [MSBuild tasks](AltCover/Tasks-fsapidoc)
 * [PowerShell tools for coverage reports](PowerShell-integration)
-* [The core in-process API](The-AltCover-API)
-* [The utilities APIs](The-AltCover-Utilities-API) -- behind the PowerShell
+* [The core in-process API](AltCover/)
+* [The utilities APIs](AltCover.Toolkit) -- behind the PowerShell
 * [Fake and Cake integration](Fake-and-Cake-integration)
 * [The `AltCover.Fake` package](AltCover.Fake.DotNet.Testing.AltCover/)
 

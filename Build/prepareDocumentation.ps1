@@ -256,11 +256,11 @@ $footer | Out-File -Encoding UTF8 -Append $mdfile
 
 ### TODO 
 # * [General usage/how-to](https://stevegilham.github.io/altcover/Usage)
-# * [MSBuild tasks](https://stevegilham.github.io/altcover/MSBuild-tasks)
-# * [The core in-process API](https://stevegilham.github.io/altcover/The-AltCover-API)
-# * [The utilities APIs](https://stevegilham.github.io/altcover/The-AltCover-Utilities-API) -- behind the PowerShell
-# * [Fake and Cake integration](https://stevegilham.github.io/altcover/Fake-and-Cake-integration)
-# * [The `AltCover.Fake` package](https://stevegilham.github.io/altcover/The-AltCover.Fake-package)
+# * ✗[MSBuild tasks](https://stevegilham.github.io/altcover/MSBuild-tasks)
+# * ✗[The core in-process API](https://stevegilham.github.io/altcover/The-AltCover-API)
+# * ✗[The utilities APIs](https://stevegilham.github.io/altcover/The-AltCover-Utilities-API) -- behind the PowerShell
+# * ✓[Fake and Cake integration](https://stevegilham.github.io/altcover/Fake-and-Cake-integration)
+# * ✗[The `AltCover.Fake` package](https://stevegilham.github.io/altcover/The-AltCover.Fake-package)
 
 
 
