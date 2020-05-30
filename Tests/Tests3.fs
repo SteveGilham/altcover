@@ -2444,7 +2444,7 @@ module AltCoverTests3 =
           if valued
           then "[/" + core + "VALUE]"
           else if optional
-               then ("[/" + core + "[VALUE]]").Replace(":[", ":[")
+               then ("[/" + core + "[VALUE]]").Replace(":[", "[:")
                 else "[--" + core + "]"
 
         let mainHelp = Main.I.declareOptions()
