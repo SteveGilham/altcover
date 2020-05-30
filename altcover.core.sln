@@ -54,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\powershell.ps1 = Build\powershell.ps1
+		Build\prepareDocumentation.ps1 = Build\prepareDocumentation.ps1
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md
 		Build\SelfTest.snk = Build\SelfTest.snk

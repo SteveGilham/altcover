@@ -422,4 +422,13 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="typetoplevel=" xml:space="preserve">
     <value>Laŭvola, multoblaj: Specoj kun nomo kiu kongruas kun la regekso estas konsiderataj supraj niveloj kaj ne estas ekskluditaj de priraportado surbaze de ia ajn tipo, kiu tekste fermas ilin.</value>
   </data>
+  <data name="orglobal" xml:space="preserve">
+    <value>aŭ, nur por la tutmonda ilo</value>
+  </data>
+  <data name="TargetsPath" xml:space="preserve">
+    <value>  TargetsPath                Presas la vojon al la dosiero 'altcover.global.targets'
+                                (ĉar la ilo ne povas esti inkluzivita en la projekto
+                                per 'dotnet add'). 
+                                La dosiero 'altcover.global.props' estas en la sama dosierujo</value>
+  </data>
 </root>

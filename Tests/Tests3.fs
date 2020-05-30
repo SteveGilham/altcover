@@ -2387,7 +2387,11 @@ module AltCoverTests3 =
                        "  ImportModule               Prints out the PowerShell script to import the\n" +
                        "                               associated PowerShell module\n" +
                        "or\n" +
-                       "  Version                    Prints out the AltCover build version\n"
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
           (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
       finally
@@ -2416,7 +2420,11 @@ module AltCoverTests3 =
                        "  ImportModule               Prints out the PowerShell script to import the\n" +
                        "                               associated PowerShell module\n" +
                        "or\n" +
-                       "  Version                    Prints out the AltCover build version\n"
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
           (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
 
@@ -2454,8 +2462,8 @@ module AltCoverTests3 =
                         " [-- ] [...]\nor\nAltCover Runner " +
                         String.Join(" ", runnerHelp) +
                         " [-- ] [...]\nor\nAltCover ImportModule\nor\nAltCover Version\n" +
-			"or, for the global tool only\nAltCover TargetsPath\n\n" +
-			"See https://stevegilham.github.io/altcover/Usage for full details.\n"
+                        "or, for the global tool only\nAltCover TargetsPath\n\n" +
+                        "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
         test <@ synthetic = helptext @>
       finally

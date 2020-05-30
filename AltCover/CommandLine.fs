@@ -424,7 +424,9 @@ module internal CommandLine =
       w.WriteLine(resources.GetString "orbinder")
       w.WriteLine(resources.GetString "ImportModule")
       w.WriteLine(resources.GetString "orbinder")
-      w.WriteLine(resources.GetString "Version"))
+      w.WriteLine(resources.GetString "Version")
+      w.WriteLine(resources.GetString "orglobal")
+      w.WriteLine(resources.GetString "TargetsPath"))
 
   let internal writeResource = resources.GetString >> Output.info
   let internal writeResourceWithFormatItems s x warn =

@@ -322,7 +322,11 @@ module AltCoverRunnerTests =
                        "  ImportModule               Prints out the PowerShell script to import the\n" +
                        "                               associated PowerShell module\n" +
                        "or\n" +
-                       "  Version                    Prints out the AltCover build version\n"
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
           (result, Is.EqualTo(expected.Replace("\r\n", "\n")), "*" + result + "*")
       finally
@@ -1677,7 +1681,11 @@ module AltCoverRunnerTests =
                        "  ImportModule               Prints out the PowerShell script to import the\n" +
                        "                               associated PowerShell module\n" +
                        "or\n" +
-                       "  Version                    Prints out the AltCover build version\n"
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
 
         Assert.That
           (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))

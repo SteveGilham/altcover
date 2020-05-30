@@ -178,17 +178,17 @@ or
 ```
 or
 ```
-ImportModule                 Prints out the PowerShell script to import the associated PowerShell module
+  ImportModule               Prints out the PowerShell script to import the associated PowerShell module
 ```
 or
 ```
-Version                      Prints out the AltCover build version
+  Version                    Prints out the AltCover build version
 ```
 or, for the global tool only
 ```
-TargetsPath                  Prints out the path to the 'altcover.global.targets' file
-                             (as the tool cannot be 'dotnet add'ed to the project).
-			     The 'altcover.global.props' file is present in the same directory
+  TargetsPath                Prints out the path to the 'altcover.global.targets' file
+                               (as the tool cannot be 'dotnet add'ed to the project).
+                               The 'altcover.global.props' file is present in the same directory
 ```
 
 ### Notes
