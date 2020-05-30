@@ -1,19 +1,22 @@
-For use cases, see [Use Cases](https://github.com/SteveGilham/altcover/wiki/Use-Cases).  
-For modes of operation, see [Modes of Operation](https://github.com/SteveGilham/altcover/wiki/Modes-of-Operation).  
-For driving AltCover from `dotnet test`, see [`dotnet test` integration](%60dotnet-test%60-integration).  
-For driving AltCover from MSBuild, see [MSBuild Tasks](MSBuild-tasks).  
-For driving AltCover and associated tools with Windows PowerShell or PowerShell Core, see [PowerShell integration](PowerShell-integration).  
+﻿This is the command-line usage
+
+* For use cases, see [Use Cases](https://github.com/SteveGilham/altcover/wiki/Use-Cases).  
+* For modes of operation, see [Modes of Operation](https://github.com/SteveGilham/altcover/wiki/Modes-of-Operation).  
+* For driving AltCover from dotnet test, see [dotnet test integration](%60dotnet-test%60-integration).  
+* For driving AltCover from MSBuild, see [MSBuild Tasks](MSBuild-tasks).  
+* For driving AltCover and associated tools with Windows PowerShell or PowerShell Core, see [PowerShell integration](PowerShell-integration).  
 
 The full command line is 
 ```
-AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALUE]] [--showGenerated] [/?|h[elp]] [-- ] [...]
+AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic:[VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/teamcity:[VALUE]] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
 AltCover Version
-
+or, for the global tool only
+AltCover TargetsPath
 ```
 
 In detail
@@ -57,6 +60,20 @@ In detail
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
+                               of a type that matches the regex are considered
+                               top-level, and are not excluded from coverage on
+                               the basis of any type which textually encloses
+                               them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
   -l, --localSource          Don't instrument code for which the source file is
                                not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
@@ -101,7 +118,7 @@ In detail
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+      --defer                Optional, defers writing runner-mode coverage data
                                until process exit.
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
@@ -117,10 +134,11 @@ In detail
       --showGenerated        Mark generated code with a visit count of -2 (
                                Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
-      -- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
+-- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
 ```
-or `Runner` plus
+or
 ```
+  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll
@@ -156,7 +174,7 @@ or `Runner` plus
       --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
                                as/instead of the OpenCover summary
   -?, --help, -h             Prints out the options.
-      -- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.
+-- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.
 ```
 or
 ```
@@ -195,7 +213,7 @@ TargetsPath                  Prints out the path to the 'altcover.global.targets
 
 * valid arguments for `--defer` are `+`, `-` or nothing at all (same as `+`).  `+` keeps coverage data in memory until process exit, `-` writes promptly to file in runner mode, i.e. acts as in previous releases since 1.6).
 
-* `ipmo` will print a string on Mono/non-Windows, but Windows PowerShell won't be there to make use of it.
+* `ImportModule` will print a string on Mono/non-Windows, but Windows PowerShell won't be there to make use of it.
 
 #### `-e` vs `-s` : what gives?
 
@@ -205,7 +223,7 @@ In the case where you have Unit Tests => Code Under Test => Libraries, and the c
 
 The distinction is that a single `-p` can exclude a folder `$(SolutionRoot)Generated` (though it has to be specified with manual expansion of the MSBuild variable) and everything in it, while a single `-f` can be used to exclude all `.g.cs` files wherever they are. 
 
-#### `runner` mode : what gives?
+#### `Runner` mode : what gives?
 
 There are three stages to the coverage operation -- instrumenting the code, exercising it, then presenting the results.  Classic `altcover` does the first, and as part of the process, injects the result presentation code into the system under test, to be run when the test process exits (as an exit handler).
 

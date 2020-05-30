@@ -162,6 +162,9 @@ or
 AltCover ImportModule
 or
 AltCover Version
+or, for the global tool only
+AltCover TargetsPath
+
 See https://stevegilham.github.io/altcover/Usage for full details.
 </value>
   </data>

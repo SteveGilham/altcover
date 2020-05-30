@@ -2453,7 +2453,9 @@ module AltCoverTests3 =
                         String.Join(" ", mainHelp) +
                         " [-- ] [...]\nor\nAltCover Runner " +
                         String.Join(" ", runnerHelp) +
-                        " [-- ] [...]\nor\nAltCover ImportModule\nor\nAltCover Version\nSee https://stevegilham.github.io/altcover/Usage for full details.\n"
+                        " [-- ] [...]\nor\nAltCover ImportModule\nor\nAltCover Version\n" +
+			"or, for the global tool only\nAltCover TargetsPath\n\n" +
+			"See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
         test <@ synthetic = helptext @>
       finally
