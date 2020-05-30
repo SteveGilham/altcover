@@ -10,6 +10,7 @@ open AltCover
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Mono.Cecil.Cil
+open Swensen.Unquote
 
 module AltCoverTests3 =
 #if NETCOREAPP2_0
@@ -2418,6 +2419,43 @@ module AltCoverTests3 =
                        "  Version                    Prints out the AltCover build version\n"
         Assert.That
           (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+
+        let helptext = CommandLine.resources.GetString("HelpText").Replace("\r\n", "\n")
+
+        let fixup (s:String) =
+          let valued = s.EndsWith("=", StringComparison.Ordinal)
+          let optional = s.EndsWith(":", StringComparison.Ordinal)
+          let abbrev = match s |> Seq.take 3 |> Seq.toList with
+                       | [ x; '|'; y ] when x = y -> true
+                       | _ -> false
+          let core = if abbrev
+                     then let h = s |> Seq.take 1 |> Seq.toArray |> String
+                          let t = s |> Seq.skip 3 |> Seq.toArray |> String
+                          (h + "[" + t + "]").Replace("=]", "]=")
+                     else s
+          if valued
+          then "[/" + core + "VALUE]"
+          else if optional
+               then ("[/" + core + "[VALUE]]").Replace(":[", ":[")
+                else "[--" + core + "]"
+
+        let mainHelp = Main.I.declareOptions()
+                       |> Seq.map (fun o -> o.Prototype)
+                       |> Seq.filter (fun s -> s.Length > 2)
+                       |> Seq.map fixup
+
+        let runnerHelp = Runner.declareOptions()
+                       |> Seq.map (fun o -> o.Prototype)
+                       |> Seq.filter (fun s -> s.Length > 2)
+                       |> Seq.map fixup
+
+        let synthetic = "AltCover " +
+                        String.Join(" ", mainHelp) +
+                        " [-- ] [...]\nor\nAltCover Runner " +
+                        String.Join(" ", runnerHelp) +
+                        " [-- ] [...]\nor\nAltCover ImportModule\nor\nAltCover Version\nSee https://stevegilham.github.io/altcover/Usage for full details.\n"
+
+        test <@ synthetic = helptext @>
       finally
         Console.SetError saved
 
