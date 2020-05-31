@@ -2484,18 +2484,18 @@ module AltCoverTests3 =
                             "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
                             "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
           test <@ syntheticeo = helptexteo @>
-        else
-          let eoxx =
-            System.Resources.ResourceManager("AltCover.Strings.eo",
-                             typeof<AltCover.Abstract.ICollectOptions>.Assembly)
-          let helptexteo = eoxx.GetString("HelpText").Replace("\r\n", "\n")
-          Assert.That(helptexteo, Is.EqualTo "spalt", helptexteo)
+        //else
+        //  let eoxx =
+        //    System.Resources.ResourceManager("AltCover.Strings.eo",
+        //                     typeof<AltCover.Abstract.ICollectOptions>.Assembly)
+        //  let helptexteo = eoxx.GetString("HelpText").Replace("\r\n", "\n")
+        //  Assert.That(helptexteo, Is.EqualTo "spalt", helptexteo)
 
-          let here = Path.GetDirectoryName ac
-          let files = Directory.GetFiles(here, "*cover*.dll", SearchOption.AllDirectories)
-          Assert.That(files |> Seq.exists (fun f -> f = "thing.exe"),
-            String.Join("; ", files))
-          ()
+        //  let here = Path.GetDirectoryName ac
+        //  let files = Directory.GetFiles(here, "*cover*.dll", SearchOption.AllDirectories)
+        //  Assert.That(files |> Seq.exists (fun f -> f = "thing.exe"),
+        //    String.Join("; ", files))
+        //  ()
 
       finally
         Console.SetError saved
