@@ -2467,21 +2467,30 @@ module AltCoverTests3 =
                         "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
         test <@ synthetic = helptext @>
-#if NETCOREAPP2_0
+
         let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
-        let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
-        let resources =
-          System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
-        let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
-        let syntheticeo = "AltCover " +
-                          String.Join(" ", mainHelp).Replace("VALUE", "VALO") +
-                          " [-- ] [...]\naŭ\nAltCover Runner " +
-                          String.Join(" ", runnerHelp).Replace("VALUE", "VALO") +
-                          " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n" +
-                          "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
-                          "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
-        test <@ syntheticeo = helptexteo @>
-#endif
+        if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+        then
+          let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
+          let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
+          let resources =
+            System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
+          let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
+          let syntheticeo = "AltCover " +
+                            String.Join(" ", mainHelp).Replace("VALUE", "VALO") +
+                            " [-- ] [...]\naŭ\nAltCover Runner " +
+                            String.Join(" ", runnerHelp).Replace("VALUE", "VALO") +
+                            " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n" +
+                            "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
+                            "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
+          test <@ syntheticeo = helptexteo @>
+        else
+          let here = Path.GetDirectoryName ac
+          let files = Directory.GetFiles(here, "*.dll", SearchOption.AllDirectories)
+          Assert.That(files |> Seq.exists (fun f -> f = "thing.exe"),
+            String.Join("; ", files))
+          ()
+
       finally
         Console.SetError saved
 
