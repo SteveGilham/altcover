@@ -2444,7 +2444,7 @@ module AltCoverTests3 =
           if valued
           then "[/" + core + "VALUE]"
           else if optional
-               then ("[/" + core + "[VALUE]]").Replace(":[", "[:")
+               then ("[/" + core + "[VALUE]]").Replace(":[", "[=")
                 else "[--" + core + "]"
 
         let mainHelp = Main.I.declareOptions()
@@ -2466,6 +2466,20 @@ module AltCoverTests3 =
                         "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
         test <@ synthetic = helptext @>
+
+        let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
+        let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
+        let resources =
+          System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
+        let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
+        let syntheticeo = "AltCover " +
+                          String.Join(" ", mainHelp).Replace("VALUE", "VALO") +
+                          " [-- ] [...]\naŭ\nAltCover Runner " +
+                          String.Join(" ", runnerHelp).Replace("VALUE", "VALO") +
+                          " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n" +
+                          "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
+                          "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
+        test <@ syntheticeo = helptexteo @>
       finally
         Console.SetError saved
 

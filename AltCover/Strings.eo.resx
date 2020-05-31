@@ -155,9 +155,9 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[:VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/teamcity[:VALO]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/teamcity[=VALO]] [--?|help|h] [-- ] [...]
 aŭ
 AltCover ImportModule
 aŭ
@@ -378,7 +378,7 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
     <value>Laŭvola: Montru sourcelink-URLojn prefere ol dosieraj vojoj se ĉeestas.</value>
   </data>
   <data name="teamcity:" xml:space="preserve">
-    <value>Laŭvola: Montri resumon en la formato TeamCity anstataŭ/same kiel la resumo de OpenCover</value>
+    <value>Laŭvola: Montri resumon en la formato TeamCity anstataŭ/same kiel la resumo de OpenCover. Defaŭlta valoro 'B' signifas TeamCity Block-formato, 'R' estas bRanch-formato; aldonu '+' por inkluzivi ankaŭ la resuman stilon de OpenCover.</value>
   </data>
   <data name="defer" xml:space="preserve">
     <value>Laŭvola, transdono de skriba kurant-reĝimaj priraportado ĝis elira procezo.</value>
