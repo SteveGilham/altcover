@@ -328,7 +328,8 @@ module AltCoverRunnerTests =
                        "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
                        "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
-          (result, Is.EqualTo(expected.Replace("\r\n", "\n")), "*" + result + "*")
+          (result.Replace("\u200b",String.Empty),
+           Is.EqualTo(expected.Replace("\r\n", "\n")), "*" + result + "*")
       finally
         Console.SetError saved
 
