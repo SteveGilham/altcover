@@ -2469,10 +2469,9 @@ module AltCoverTests3 =
         test <@ synthetic = helptext @>
 
         let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
-        if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+        let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
+        if File.Exists eo
         then
-          let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
-          let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
           let resources =
             System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
           let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
@@ -2484,19 +2483,6 @@ module AltCoverTests3 =
                             "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
                             "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
           test <@ syntheticeo = helptexteo @>
-        //else
-        //  let eoxx =
-        //    System.Resources.ResourceManager("AltCover.Strings.eo",
-        //                     typeof<AltCover.Abstract.ICollectOptions>.Assembly)
-        //  let helptexteo = eoxx.GetString("HelpText").Replace("\r\n", "\n")
-        //  Assert.That(helptexteo, Is.EqualTo "spalt", helptexteo)
-
-        //  let here = Path.GetDirectoryName ac
-        //  let files = Directory.GetFiles(here, "*cover*.dll", SearchOption.AllDirectories)
-        //  Assert.That(files |> Seq.exists (fun f -> f = "thing.exe"),
-        //    String.Join("; ", files))
-        //  ()
-
       finally
         Console.SetError saved
 
