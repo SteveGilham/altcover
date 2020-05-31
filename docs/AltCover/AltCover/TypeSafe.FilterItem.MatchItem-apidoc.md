@@ -6,13 +6,6 @@ Apply to items that match the regex
 public class MatchItem : FilterItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.FilterItem.MatchItem/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.FilterItem.MatchItem/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [FilterItem](TypeSafe.FilterItem-apidoc)

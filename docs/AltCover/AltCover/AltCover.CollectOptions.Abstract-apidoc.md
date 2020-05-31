@@ -6,13 +6,6 @@ Options expressed as an interface
 public class Abstract : CollectOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.CollectOptions.Abstract/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.CollectOptions.Abstract/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CollectOptions](AltCover.CollectOptions-apidoc)

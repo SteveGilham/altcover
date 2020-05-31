@@ -6,13 +6,6 @@ A method name
 public class CallerName : ContextItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.ContextItem.CallerName/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.ContextItem.CallerName/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [ContextItem](TypeSafe.ContextItem-apidoc)

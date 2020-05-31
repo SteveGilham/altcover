@@ -6,13 +6,6 @@ A string as would be used on the command line (regex with optional leading `'?`)
 public class Raw : FilterItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.FilterItem.Raw/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.FilterItem.Raw/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [FilterItem](TypeSafe.FilterItem-apidoc)

@@ -4,13 +4,6 @@
 public class Summary : CLIOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](DotNet.CLIOptions.Summary/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.Summary/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CLIOptions](DotNet.CLIOptions-apidoc)

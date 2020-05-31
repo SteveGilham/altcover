@@ -4,13 +4,6 @@
 public class Fail : CLIOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](DotNet.CLIOptions.Fail/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.Fail/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CLIOptions](DotNet.CLIOptions-apidoc)

@@ -6,13 +6,6 @@ Apply to items that don't match the regex
 public class NegateMatchItem : FilterItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.FilterItem.NegateMatchItem/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.FilterItem.NegateMatchItem/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [FilterItem](TypeSafe.FilterItem-apidoc)

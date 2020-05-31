@@ -4,13 +4,6 @@
 public class Abstract : CLIOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](DotNet.CLIOptions.Abstract/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.Abstract/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CLIOptions](DotNet.CLIOptions-apidoc)

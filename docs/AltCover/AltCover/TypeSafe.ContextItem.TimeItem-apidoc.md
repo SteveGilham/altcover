@@ -6,13 +6,6 @@ A call time granularity
 public class TimeItem : ContextItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.ContextItem.TimeItem/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.ContextItem.TimeItem/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [ContextItem](TypeSafe.ContextItem-apidoc)

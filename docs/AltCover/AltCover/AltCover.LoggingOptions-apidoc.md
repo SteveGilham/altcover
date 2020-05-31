@@ -17,14 +17,7 @@ public abstract class LoggingOptions
 | [Echo](AltCover.LoggingOptions/Echo-apidoc) { get; } | Sink for command line/usage messages |
 | [Error](AltCover.LoggingOptions/Error-apidoc) { get; } | Sink for error messages |
 | [Info](AltCover.LoggingOptions/Info-apidoc) { get; } | Sink for informational messages |
-| [IsAbstract](AltCover.LoggingOptions/IsAbstract-apidoc) { get; } |  |
-| [IsPrimitive](AltCover.LoggingOptions/IsPrimitive-apidoc) { get; } |  |
-| [Tag](AltCover.LoggingOptions/Tag-apidoc) { get; } |  |
 | [Warn](AltCover.LoggingOptions/Warn-apidoc) { get; } | Sink for warning messages |
-| [get_IsAbstract](AltCover.LoggingOptions/get_IsAbstract-apidoc)() |  |
-| [get_IsPrimitive](AltCover.LoggingOptions/get_IsPrimitive-apidoc)() |  |
-| [get_Tag](AltCover.LoggingOptions/get_Tag-apidoc)() |  |
-| override [ToString](AltCover.LoggingOptions/ToString-apidoc)() |  |
 | static [ActionAdapter](AltCover.LoggingOptions/ActionAdapter-apidoc)(…) |  |
 | class [Abstract](AltCover.LoggingOptions.Abstract-apidoc) | Options expressed as an interface |
 | class [Primitive](AltCover.LoggingOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |

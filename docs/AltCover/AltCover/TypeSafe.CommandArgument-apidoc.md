@@ -11,15 +11,7 @@ public sealed class CommandArgument : IEquatable<CommandArgument>, IStructuralEq
 | name | description |
 | --- | --- |
 | static [NewCommandArgument](TypeSafe.CommandArgument/NewCommandArgument-apidoc)(…) |  |
-| [Item](TypeSafe.CommandArgument/Item-apidoc) { get; } |  |
-| [Tag](TypeSafe.CommandArgument/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.CommandArgument/AsString-apidoc)() | Returns the string to be used in the effective command line |
-| [Equals](TypeSafe.CommandArgument/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.CommandArgument/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.CommandArgument/GetHashCode-apidoc)(…) |  |
-| [get_Item](TypeSafe.CommandArgument/get_Item-apidoc)() |  |
-| [get_Tag](TypeSafe.CommandArgument/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.CommandArgument/ToString-apidoc)() |  |
 
 ## See Also
 

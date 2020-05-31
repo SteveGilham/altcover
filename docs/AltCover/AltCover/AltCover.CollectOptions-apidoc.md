@@ -17,24 +17,12 @@ public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEq
 | [CommandLine](AltCover.CollectOptions/CommandLine-apidoc) { get; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
 | [Executable](AltCover.CollectOptions/Executable-apidoc) { get; } | Corresponds to command line option `-x, --executable=VALUE` |
 | [ExposeReturnCode](AltCover.CollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
-| [IsAbstract](AltCover.CollectOptions/IsAbstract-apidoc) { get; } |  |
-| [IsPrimitive](AltCover.CollectOptions/IsPrimitive-apidoc) { get; } |  |
-| [IsTypeSafe](AltCover.CollectOptions/IsTypeSafe-apidoc) { get; } |  |
 | [LcovReport](AltCover.CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](AltCover.CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
 | [RecorderDirectory](AltCover.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](AltCover.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
-| [Tag](AltCover.CollectOptions/Tag-apidoc) { get; } |  |
 | [Threshold](AltCover.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
 | [WorkingDirectory](AltCover.CollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
-| [Equals](AltCover.CollectOptions/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](AltCover.CollectOptions/GetHashCode-apidoc)() |  |
-| [GetHashCode](AltCover.CollectOptions/GetHashCode-apidoc)(…) |  |
-| [get_IsAbstract](AltCover.CollectOptions/get_IsAbstract-apidoc)() |  |
-| [get_IsPrimitive](AltCover.CollectOptions/get_IsPrimitive-apidoc)() |  |
-| [get_IsTypeSafe](AltCover.CollectOptions/get_IsTypeSafe-apidoc)() |  |
-| [get_Tag](AltCover.CollectOptions/get_Tag-apidoc)() |  |
-| override [ToString](AltCover.CollectOptions/ToString-apidoc)() |  |
 | [Validate](AltCover.CollectOptions/Validate-apidoc)(…) | Does simple checking of the arguments without causing any changes to the system |
 | class [Abstract](AltCover.CollectOptions.Abstract-apidoc) | Options expressed as an interface |
 | class [Primitive](AltCover.CollectOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |

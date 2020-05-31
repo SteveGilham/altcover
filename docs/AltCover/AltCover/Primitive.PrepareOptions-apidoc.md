@@ -46,10 +46,6 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [VisibleBranches](Primitive.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
 | [XmlReport](Primitive.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](Primitive.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
-| [Equals](Primitive.PrepareOptions/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](Primitive.PrepareOptions/GetHashCode-apidoc)() |  |
-| [GetHashCode](Primitive.PrepareOptions/GetHashCode-apidoc)(…) |  |
-| override [ToString](Primitive.PrepareOptions/ToString-apidoc)() |  |
 
 ## See Also
 

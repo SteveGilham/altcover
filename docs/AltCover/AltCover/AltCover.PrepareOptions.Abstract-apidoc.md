@@ -6,13 +6,6 @@ Options expressed as an interface
 public class Abstract : PrepareOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.PrepareOptions.Abstract/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.PrepareOptions.Abstract/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [PrepareOptions](AltCover.PrepareOptions-apidoc)

@@ -6,13 +6,6 @@ A strongly typed directory
 public class DInfo : DirectoryPath
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.DirectoryPath.DInfo/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.DirectoryPath.DInfo/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [DirectoryPath](TypeSafe.DirectoryPath-apidoc)

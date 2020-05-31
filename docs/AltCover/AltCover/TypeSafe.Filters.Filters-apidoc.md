@@ -6,13 +6,6 @@ A type-safe collection
 public class Filters : Filters
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.Filters.Filters/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.Filters.Filters/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [Filters](TypeSafe.Filters-apidoc)

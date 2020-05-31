@@ -10,24 +10,10 @@ public abstract class Flag : IEquatable<Flag>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [Clear](TypeSafe.Flag/Clear-apidoc) { get; } |  |
-| static [Set](TypeSafe.Flag/Set-apidoc) { get; } |  |
 | static [get_Clear](TypeSafe.Flag/get_Clear-apidoc)() |  |
 | static [get_Set](TypeSafe.Flag/get_Set-apidoc)() |  |
 | static [NewFlag](TypeSafe.Flag/NewFlag-apidoc)(…) |  |
-| [IsClear](TypeSafe.Flag/IsClear-apidoc) { get; } |  |
-| [IsFlag](TypeSafe.Flag/IsFlag-apidoc) { get; } |  |
-| [IsSet](TypeSafe.Flag/IsSet-apidoc) { get; } |  |
-| [Tag](TypeSafe.Flag/Tag-apidoc) { get; } |  |
 | [AsBool](TypeSafe.Flag/AsBool-apidoc)() | Returns the effective boolean value |
-| [Equals](TypeSafe.Flag/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.Flag/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.Flag/GetHashCode-apidoc)(…) |  |
-| [get_IsClear](TypeSafe.Flag/get_IsClear-apidoc)() |  |
-| [get_IsFlag](TypeSafe.Flag/get_IsFlag-apidoc)() |  |
-| [get_IsSet](TypeSafe.Flag/get_IsSet-apidoc)() |  |
-| [get_Tag](TypeSafe.Flag/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.Flag/ToString-apidoc)() |  |
 | class [Flag](TypeSafe.Flag.Flag-apidoc) | A type-safe boolean |
 | static class [Tags](TypeSafe.Flag.Tags-apidoc) |  |
 

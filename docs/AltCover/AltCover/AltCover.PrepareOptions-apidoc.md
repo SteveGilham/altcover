@@ -26,9 +26,6 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [FileFilter](AltCover.PrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
 | [InPlace](AltCover.PrepareOptions/InPlace-apidoc) { get; } | Corresponds to command line option `--inplace` |
 | [InputDirectories](AltCover.PrepareOptions/InputDirectories-apidoc) { get; } | Corresponds to command line option ` -i, --inputDirectory=VALUE` |
-| [IsAbstract](AltCover.PrepareOptions/IsAbstract-apidoc) { get; } |  |
-| [IsPrimitive](AltCover.PrepareOptions/IsPrimitive-apidoc) { get; } |  |
-| [IsTypeSafe](AltCover.PrepareOptions/IsTypeSafe-apidoc) { get; } |  |
 | [Keys](AltCover.PrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option ` -k, --key=VALUE` |
 | [LineCover](AltCover.PrepareOptions/LineCover-apidoc) { get; } | Corresponds to command line option `--linecover` |
 | [LocalSource](AltCover.PrepareOptions/LocalSource-apidoc) { get; } | Corresponds to command line option `-l, --localSource` |
@@ -45,20 +42,11 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [SourceLink](AltCover.PrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
 | [StrongNameKey](AltCover.PrepareOptions/StrongNameKey-apidoc) { get; } | Corresponds to command line option `--sn, --strongNameKey=VALUE` |
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
-| [Tag](AltCover.PrepareOptions/Tag-apidoc) { get; } |  |
 | [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
 | [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](AltCover.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
-| [Equals](AltCover.PrepareOptions/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](AltCover.PrepareOptions/GetHashCode-apidoc)() |  |
-| [GetHashCode](AltCover.PrepareOptions/GetHashCode-apidoc)(…) |  |
-| [get_IsAbstract](AltCover.PrepareOptions/get_IsAbstract-apidoc)() |  |
-| [get_IsPrimitive](AltCover.PrepareOptions/get_IsPrimitive-apidoc)() |  |
-| [get_IsTypeSafe](AltCover.PrepareOptions/get_IsTypeSafe-apidoc)() |  |
-| [get_Tag](AltCover.PrepareOptions/get_Tag-apidoc)() |  |
-| override [ToString](AltCover.PrepareOptions/ToString-apidoc)() |  |
 | [Validate](AltCover.PrepareOptions/Validate-apidoc)() | Does simple checking of the arguments without causing any changes to the system |
 | class [Abstract](AltCover.PrepareOptions.Abstract-apidoc) | Options expressed as an interface |
 | class [Primitive](AltCover.PrepareOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |

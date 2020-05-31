@@ -4,13 +4,6 @@
 public class Many : CLIOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](DotNet.CLIOptions.Many/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.Many/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CLIOptions](DotNet.CLIOptions-apidoc)

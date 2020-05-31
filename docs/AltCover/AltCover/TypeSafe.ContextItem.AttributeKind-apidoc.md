@@ -6,13 +6,6 @@ A method-level attribute type
 public class AttributeKind : ContextItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.ContextItem.AttributeKind/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.ContextItem.AttributeKind/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [ContextItem](TypeSafe.ContextItem-apidoc)

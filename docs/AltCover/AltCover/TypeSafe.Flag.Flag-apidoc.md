@@ -6,13 +6,6 @@ A type-safe boolean
 public class Flag : Flag
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.Flag.Flag/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.Flag.Flag/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [Flag](TypeSafe.Flag-apidoc)

@@ -6,13 +6,6 @@ Options expressed as an interface
 public class Abstract : LoggingOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.LoggingOptions.Abstract/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.LoggingOptions.Abstract/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [LoggingOptions](AltCover.LoggingOptions-apidoc)

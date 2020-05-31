@@ -15,23 +15,7 @@ public abstract class ContextItem : IEquatable<ContextItem>, IStructuralEquatabl
 | static [NewCaller](TypeSafe.ContextItem/NewCaller-apidoc)(…) |  |
 | static [NewCallerName](TypeSafe.ContextItem/NewCallerName-apidoc)(…) |  |
 | static [NewTimeItem](TypeSafe.ContextItem/NewTimeItem-apidoc)(…) |  |
-| [IsAttributeKind](TypeSafe.ContextItem/IsAttributeKind-apidoc) { get; } |  |
-| [IsAttributeName](TypeSafe.ContextItem/IsAttributeName-apidoc) { get; } |  |
-| [IsCaller](TypeSafe.ContextItem/IsCaller-apidoc) { get; } |  |
-| [IsCallerName](TypeSafe.ContextItem/IsCallerName-apidoc) { get; } |  |
-| [IsTimeItem](TypeSafe.ContextItem/IsTimeItem-apidoc) { get; } |  |
-| [Tag](TypeSafe.ContextItem/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.ContextItem/AsString-apidoc)() | Returns the string to use in the command line |
-| [Equals](TypeSafe.ContextItem/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.ContextItem/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.ContextItem/GetHashCode-apidoc)(…) |  |
-| [get_IsAttributeKind](TypeSafe.ContextItem/get_IsAttributeKind-apidoc)() |  |
-| [get_IsAttributeName](TypeSafe.ContextItem/get_IsAttributeName-apidoc)() |  |
-| [get_IsCaller](TypeSafe.ContextItem/get_IsCaller-apidoc)() |  |
-| [get_IsCallerName](TypeSafe.ContextItem/get_IsCallerName-apidoc)() |  |
-| [get_IsTimeItem](TypeSafe.ContextItem/get_IsTimeItem-apidoc)() |  |
-| [get_Tag](TypeSafe.ContextItem/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.ContextItem/ToString-apidoc)() |  |
 | class [AttributeKind](TypeSafe.ContextItem.AttributeKind-apidoc) | A method-level attribute type |
 | class [AttributeName](TypeSafe.ContextItem.AttributeName-apidoc) | A method-level attribute name |
 | class [Caller](TypeSafe.ContextItem.Caller-apidoc) | A method |

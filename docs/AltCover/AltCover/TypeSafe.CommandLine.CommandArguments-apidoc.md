@@ -6,13 +6,6 @@ Strongly typed string collection
 public class CommandArguments : CommandLine
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.CommandLine.CommandArguments/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.CommandLine.CommandArguments/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CommandLine](TypeSafe.CommandLine-apidoc)

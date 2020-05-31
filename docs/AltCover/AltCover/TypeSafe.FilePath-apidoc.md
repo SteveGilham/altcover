@@ -10,26 +10,11 @@ public class FilePath : IEquatable<FilePath>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [NoFile](TypeSafe.FilePath/NoFile-apidoc) { get; } |  |
 | static [get_NoFile](TypeSafe.FilePath/get_NoFile-apidoc)() |  |
 | static [NewFilePath](TypeSafe.FilePath/NewFilePath-apidoc)(…) |  |
 | static [NewFInfo](TypeSafe.FilePath/NewFInfo-apidoc)(…) |  |
 | static [NewTool](TypeSafe.FilePath/NewTool-apidoc)(…) |  |
-| [IsFilePath](TypeSafe.FilePath/IsFilePath-apidoc) { get; } |  |
-| [IsFInfo](TypeSafe.FilePath/IsFInfo-apidoc) { get; } |  |
-| [IsNoFile](TypeSafe.FilePath/IsNoFile-apidoc) { get; } |  |
-| [IsTool](TypeSafe.FilePath/IsTool-apidoc) { get; } |  |
-| [Tag](TypeSafe.FilePath/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.FilePath/AsString-apidoc)() | Returns the string to be used in the effective command line |
-| [Equals](TypeSafe.FilePath/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.FilePath/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.FilePath/GetHashCode-apidoc)(…) |  |
-| [get_IsFilePath](TypeSafe.FilePath/get_IsFilePath-apidoc)() |  |
-| [get_IsFInfo](TypeSafe.FilePath/get_IsFInfo-apidoc)() |  |
-| [get_IsNoFile](TypeSafe.FilePath/get_IsNoFile-apidoc)() |  |
-| [get_IsTool](TypeSafe.FilePath/get_IsTool-apidoc)() |  |
-| [get_Tag](TypeSafe.FilePath/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.FilePath/ToString-apidoc)() |  |
 | class [FilePath](TypeSafe.FilePath.FilePath-apidoc) | A file path, expanded to an absolute path is supplied as a relative one |
 | class [FInfo](TypeSafe.FilePath.FInfo-apidoc) | A strongly typed file |
 | static class [Tags](TypeSafe.FilePath.Tags-apidoc) |  |

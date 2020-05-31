@@ -10,20 +10,9 @@ public abstract class CommandLine : IEquatable<CommandLine>, IStructuralEquatabl
 
 | name | description |
 | --- | --- |
-| static [NoCommand](TypeSafe.CommandLine/NoCommand-apidoc) { get; } |  |
 | static [get_NoCommand](TypeSafe.CommandLine/get_NoCommand-apidoc)() |  |
 | static [NewCommandArguments](TypeSafe.CommandLine/NewCommandArguments-apidoc)(…) |  |
-| [IsCommandArguments](TypeSafe.CommandLine/IsCommandArguments-apidoc) { get; } |  |
-| [IsNoCommand](TypeSafe.CommandLine/IsNoCommand-apidoc) { get; } |  |
-| [Tag](TypeSafe.CommandLine/Tag-apidoc) { get; } |  |
 | [AsStrings](TypeSafe.CommandLine/AsStrings-apidoc)() | Returns the strings to be used in the effective command line |
-| [Equals](TypeSafe.CommandLine/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.CommandLine/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.CommandLine/GetHashCode-apidoc)(…) |  |
-| [get_IsCommandArguments](TypeSafe.CommandLine/get_IsCommandArguments-apidoc)() |  |
-| [get_IsNoCommand](TypeSafe.CommandLine/get_IsNoCommand-apidoc)() |  |
-| [get_Tag](TypeSafe.CommandLine/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.CommandLine/ToString-apidoc)() |  |
 | class [CommandArguments](TypeSafe.CommandLine.CommandArguments-apidoc) | Strongly typed string collection |
 | static class [Tags](TypeSafe.CommandLine.Tags-apidoc) |  |
 

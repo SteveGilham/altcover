@@ -13,9 +13,6 @@ public sealed class ValidatedCommandLine : IEquatable<ValidatedCommandLine>, ISt
 | [ValidatedCommandLine](AltCover.ValidatedCommandLine/ValidatedCommandLine-apidoc)(…) |  |
 | [Command](AltCover.ValidatedCommandLine/Command-apidoc) { get; } | The composed command line in `Command` |
 | [Errors](AltCover.ValidatedCommandLine/Errors-apidoc) { get; } | Any validations errors in `Errors`. |
-| [Equals](AltCover.ValidatedCommandLine/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](AltCover.ValidatedCommandLine/GetHashCode-apidoc)() |  |
-| [GetHashCode](AltCover.ValidatedCommandLine/GetHashCode-apidoc)(…) |  |
 | override [ToString](AltCover.ValidatedCommandLine/ToString-apidoc)() | Returns a nicely formatted representation |
 
 ## See Also

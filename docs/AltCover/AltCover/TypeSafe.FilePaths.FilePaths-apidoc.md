@@ -6,13 +6,6 @@ A type-safe collection
 public class FilePaths : FilePaths
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.FilePaths.FilePaths/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.FilePaths.FilePaths/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [FilePaths](TypeSafe.FilePaths-apidoc)

@@ -21,23 +21,7 @@ public abstract class CLIOptions : IEquatable<CLIOptions>, IStructuralEquatable
 | static [NewSummary](DotNet.CLIOptions/NewSummary-apidoc)(…) |  |
 | [FailFast](DotNet.CLIOptions/FailFast-apidoc) { get; } | The `/AltCoverFailFast` value this represents |
 | [ForceDelete](DotNet.CLIOptions/ForceDelete-apidoc) { get; } | The `/AltCoverForce` value this represents |
-| [IsAbstract](DotNet.CLIOptions/IsAbstract-apidoc) { get; } |  |
-| [IsFail](DotNet.CLIOptions/IsFail-apidoc) { get; } |  |
-| [IsForce](DotNet.CLIOptions/IsForce-apidoc) { get; } |  |
-| [IsMany](DotNet.CLIOptions/IsMany-apidoc) { get; } |  |
-| [IsSummary](DotNet.CLIOptions/IsSummary-apidoc) { get; } |  |
 | [ShowSummary](DotNet.CLIOptions/ShowSummary-apidoc) { get; } | The `/AltCoverShowSummary` value this represents |
-| [Tag](DotNet.CLIOptions/Tag-apidoc) { get; } |  |
-| [Equals](DotNet.CLIOptions/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](DotNet.CLIOptions/GetHashCode-apidoc)() |  |
-| [GetHashCode](DotNet.CLIOptions/GetHashCode-apidoc)(…) |  |
-| [get_IsAbstract](DotNet.CLIOptions/get_IsAbstract-apidoc)() |  |
-| [get_IsFail](DotNet.CLIOptions/get_IsFail-apidoc)() |  |
-| [get_IsForce](DotNet.CLIOptions/get_IsForce-apidoc)() |  |
-| [get_IsMany](DotNet.CLIOptions/get_IsMany-apidoc)() |  |
-| [get_IsSummary](DotNet.CLIOptions/get_IsSummary-apidoc)() |  |
-| [get_Tag](DotNet.CLIOptions/get_Tag-apidoc)() |  |
-| override [ToString](DotNet.CLIOptions/ToString-apidoc)() |  |
 | class [Abstract](DotNet.CLIOptions.Abstract-apidoc) |  |
 | class [Fail](DotNet.CLIOptions.Fail-apidoc) |  |
 | class [Force](DotNet.CLIOptions.Force-apidoc) |  |

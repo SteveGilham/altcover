@@ -4,13 +4,6 @@
 public class Force : CLIOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](DotNet.CLIOptions.Force/Item-apidoc) { get; } |  |
-| [get_Item](DotNet.CLIOptions.Force/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CLIOptions](DotNet.CLIOptions-apidoc)

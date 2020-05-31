@@ -16,7 +16,6 @@ public sealed class LoggingOptions
 | [Failure](Primitive.LoggingOptions/Failure-apidoc) { get; } | Sink for error messages |
 | [Info](Primitive.LoggingOptions/Info-apidoc) { get; } | Sink for informational messages |
 | [Warn](Primitive.LoggingOptions/Warn-apidoc) { get; } | Sink for warning messages |
-| override [ToString](Primitive.LoggingOptions/ToString-apidoc)() |  |
 
 ## See Also
 

@@ -6,13 +6,6 @@ A type-safe collection
 public class Context : Context
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.Context.Context/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.Context.Context/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [Context](TypeSafe.Context-apidoc)

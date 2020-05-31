@@ -22,10 +22,6 @@ public sealed class CollectOptions : IEquatable<CollectOptions>, IStructuralEqua
 | [SummaryFormat](TypeSafe.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](TypeSafe.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
 | [WorkingDirectory](TypeSafe.CollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
-| [Equals](TypeSafe.CollectOptions/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.CollectOptions/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.CollectOptions/GetHashCode-apidoc)(…) |  |
-| override [ToString](TypeSafe.CollectOptions/ToString-apidoc)() |  |
 
 ## See Also
 

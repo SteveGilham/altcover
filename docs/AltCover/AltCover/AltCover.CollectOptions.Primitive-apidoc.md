@@ -6,13 +6,6 @@ Options expressed as an F# "stringly" typed record
 public class Primitive : CollectOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.CollectOptions.Primitive/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.CollectOptions.Primitive/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CollectOptions](AltCover.CollectOptions-apidoc)

@@ -6,13 +6,6 @@ Options expressed as an F# "stringly" typed record
 public class Primitive : PrepareOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.PrepareOptions.Primitive/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.PrepareOptions.Primitive/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [PrepareOptions](AltCover.PrepareOptions-apidoc)

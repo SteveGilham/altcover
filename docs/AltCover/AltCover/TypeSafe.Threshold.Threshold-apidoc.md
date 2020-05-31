@@ -6,13 +6,6 @@ Corresponds to an explicit value
 public class Threshold : Threshold
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.Threshold.Threshold/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.Threshold.Threshold/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [Threshold](TypeSafe.Threshold-apidoc)

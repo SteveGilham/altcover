@@ -6,13 +6,6 @@ A directory path, expanded to an absolute path is supplied as a relative one
 public class DirectoryPath : DirectoryPath
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.DirectoryPath.DirectoryPath/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.DirectoryPath.DirectoryPath/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [DirectoryPath](TypeSafe.DirectoryPath-apidoc)

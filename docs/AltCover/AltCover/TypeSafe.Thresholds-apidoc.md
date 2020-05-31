@@ -16,10 +16,6 @@ public sealed class Thresholds : IEquatable<Thresholds>, IStructuralEquatable
 | [MaxCrap](TypeSafe.Thresholds/MaxCrap-apidoc) { get; } | Maximum acceptable CRAP score |
 | [Methods](TypeSafe.Thresholds/Methods-apidoc) { get; } | Minimum method coverage %age |
 | [Statements](TypeSafe.Thresholds/Statements-apidoc) { get; } | Minimum statement (sequence point) coverage %age |
-| [Equals](TypeSafe.Thresholds/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.Thresholds/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.Thresholds/GetHashCode-apidoc)(…) |  |
-| override [ToString](TypeSafe.Thresholds/ToString-apidoc)() |  |
 
 ## See Also
 

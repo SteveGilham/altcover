@@ -6,13 +6,6 @@ A named `dotnet` tool, carried unaltered
 public class Tool : FilePath
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.FilePath.Tool/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.FilePath.Tool/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [FilePath](TypeSafe.FilePath-apidoc)

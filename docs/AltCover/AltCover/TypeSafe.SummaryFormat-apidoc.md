@@ -10,33 +10,12 @@ public sealed class SummaryFormat : IEquatable<SummaryFormat>, IStructuralEquata
 
 | name | description |
 | --- | --- |
-| static [B](TypeSafe.SummaryFormat/B-apidoc) { get; } |  |
-| static [BPlus](TypeSafe.SummaryFormat/BPlus-apidoc) { get; } |  |
-| static [Default](TypeSafe.SummaryFormat/Default-apidoc) { get; } |  |
-| static [R](TypeSafe.SummaryFormat/R-apidoc) { get; } |  |
-| static [RPlus](TypeSafe.SummaryFormat/RPlus-apidoc) { get; } |  |
 | static [get_B](TypeSafe.SummaryFormat/get_B-apidoc)() |  |
 | static [get_BPlus](TypeSafe.SummaryFormat/get_BPlus-apidoc)() |  |
 | static [get_Default](TypeSafe.SummaryFormat/get_Default-apidoc)() |  |
 | static [get_R](TypeSafe.SummaryFormat/get_R-apidoc)() |  |
 | static [get_RPlus](TypeSafe.SummaryFormat/get_RPlus-apidoc)() |  |
-| [IsB](TypeSafe.SummaryFormat/IsB-apidoc) { get; } |  |
-| [IsBPlus](TypeSafe.SummaryFormat/IsBPlus-apidoc) { get; } |  |
-| [IsDefault](TypeSafe.SummaryFormat/IsDefault-apidoc) { get; } |  |
-| [IsR](TypeSafe.SummaryFormat/IsR-apidoc) { get; } |  |
-| [IsRPlus](TypeSafe.SummaryFormat/IsRPlus-apidoc) { get; } |  |
-| [Tag](TypeSafe.SummaryFormat/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.SummaryFormat/AsString-apidoc)() | Returns the string to use in the command line |
-| [Equals](TypeSafe.SummaryFormat/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.SummaryFormat/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.SummaryFormat/GetHashCode-apidoc)(…) |  |
-| [get_IsB](TypeSafe.SummaryFormat/get_IsB-apidoc)() |  |
-| [get_IsBPlus](TypeSafe.SummaryFormat/get_IsBPlus-apidoc)() |  |
-| [get_IsDefault](TypeSafe.SummaryFormat/get_IsDefault-apidoc)() |  |
-| [get_IsR](TypeSafe.SummaryFormat/get_IsR-apidoc)() |  |
-| [get_IsRPlus](TypeSafe.SummaryFormat/get_IsRPlus-apidoc)() |  |
-| [get_Tag](TypeSafe.SummaryFormat/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.SummaryFormat/ToString-apidoc)() |  |
 | static class [Tags](TypeSafe.SummaryFormat.Tags-apidoc) |  |
 
 ## See Also

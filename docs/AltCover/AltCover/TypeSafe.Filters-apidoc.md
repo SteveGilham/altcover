@@ -10,20 +10,9 @@ public abstract class Filters : IEquatable<Filters>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [Unfiltered](TypeSafe.Filters/Unfiltered-apidoc) { get; } |  |
 | static [get_Unfiltered](TypeSafe.Filters/get_Unfiltered-apidoc)() |  |
 | static [NewFilters](TypeSafe.Filters/NewFilters-apidoc)(…) |  |
-| [IsFilters](TypeSafe.Filters/IsFilters-apidoc) { get; } |  |
-| [IsUnfiltered](TypeSafe.Filters/IsUnfiltered-apidoc) { get; } |  |
-| [Tag](TypeSafe.Filters/Tag-apidoc) { get; } |  |
 | [AsStrings](TypeSafe.Filters/AsStrings-apidoc)() | Returns the strings to use in the command line |
-| [Equals](TypeSafe.Filters/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.Filters/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.Filters/GetHashCode-apidoc)(…) |  |
-| [get_IsFilters](TypeSafe.Filters/get_IsFilters-apidoc)() |  |
-| [get_IsUnfiltered](TypeSafe.Filters/get_IsUnfiltered-apidoc)() |  |
-| [get_Tag](TypeSafe.Filters/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.Filters/ToString-apidoc)() |  |
 | class [Filters](TypeSafe.Filters.Filters-apidoc) | A type-safe collection |
 | static class [Tags](TypeSafe.Filters.Tags-apidoc) |  |
 

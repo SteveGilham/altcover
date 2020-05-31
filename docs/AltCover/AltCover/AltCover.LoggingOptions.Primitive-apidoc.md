@@ -6,13 +6,6 @@ Options expressed as an F# "stringly" typed record
 public class Primitive : LoggingOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.LoggingOptions.Primitive/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.LoggingOptions.Primitive/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [LoggingOptions](AltCover.LoggingOptions-apidoc)

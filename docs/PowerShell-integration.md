@@ -117,7 +117,6 @@ Add-Accelerator -XDocument
 ```
 
 Add `[xdoc]` the easy way
-
 ----------  EXAMPLE 2  ----------
 
 
@@ -254,8 +253,9 @@ System.Xml.Linq.XDocument
 
 
 ```
-$xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+$xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile
 ```
+"./_Packaging/CompressInterior.xml"
 
 
 ###    ConvertFrom-NCover
@@ -361,8 +361,9 @@ System.Xml.Linq.XDocument
 
 
 ```
-$xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
+$xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies
 ```
+-OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
 
 
 ###    ConvertTo-BarChart
@@ -456,8 +457,9 @@ System.Xml.Linq.XDocument
 
 
 ```
-$xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
+$xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile
 ```
+"./_Packaging/HandRolledMonoCoverage.html"
 
 
 ###    ConvertTo-Cobertura
@@ -741,8 +743,9 @@ System.Xml.Linq.XDocument
 
 
 ```
-$xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
+$xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile
 ```
+"./_Packaging/HandRolledMonoNCover.xml"
 
 
 ###    ConvertTo-XDocument
@@ -868,9 +871,9 @@ System.Xml.XmlDocument
 ----------  EXAMPLE 1  ----------
 
 
+Add-Accelerator -XDocument; $xd = [xdoc]::Load("./Tests/Sample1WithNCover.xml");  $xml = $xd |
 ```
-Add-Accelerator -XDocument; $xd = [xdoc]::Load("./Tests/Sample1WithNCover.xml");  $xml = $xd | ConvertTo-XmlDocument
-
+ConvertTo-XmlDocument
 ```
 
 Adds `[xdoc]` the easy way first, then does the conversion
@@ -1510,8 +1513,9 @@ None
 
 
 ```
-Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
+Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat
 ```
+NCover -InformationAction Continue
 
 
 ###    Write-OpenCoverDerivedState
@@ -1648,14 +1652,13 @@ System.Xml.Linq.XDocument
 
 ----------  EXAMPLE 1  ----------
 
-```
-$xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
-```
+
+$xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml"
+-Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
 
 ----------  EXAMPLE 2  ----------
 
-```
+
 $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
-```
 
 

@@ -10,25 +10,10 @@ public sealed class StaticFormat : IEquatable<StaticFormat>, IStructuralEquatabl
 
 | name | description |
 | --- | --- |
-| static [Default](TypeSafe.StaticFormat/Default-apidoc) { get; } |  |
-| static [Show](TypeSafe.StaticFormat/Show-apidoc) { get; } |  |
-| static [ShowZero](TypeSafe.StaticFormat/ShowZero-apidoc) { get; } |  |
 | static [get_Default](TypeSafe.StaticFormat/get_Default-apidoc)() |  |
 | static [get_Show](TypeSafe.StaticFormat/get_Show-apidoc)() |  |
 | static [get_ShowZero](TypeSafe.StaticFormat/get_ShowZero-apidoc)() |  |
-| [IsDefault](TypeSafe.StaticFormat/IsDefault-apidoc) { get; } |  |
-| [IsShow](TypeSafe.StaticFormat/IsShow-apidoc) { get; } |  |
-| [IsShowZero](TypeSafe.StaticFormat/IsShowZero-apidoc) { get; } |  |
-| [Tag](TypeSafe.StaticFormat/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.StaticFormat/AsString-apidoc)() | Returns the string to use in the command line |
-| [Equals](TypeSafe.StaticFormat/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.StaticFormat/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.StaticFormat/GetHashCode-apidoc)(…) |  |
-| [get_IsDefault](TypeSafe.StaticFormat/get_IsDefault-apidoc)() |  |
-| [get_IsShow](TypeSafe.StaticFormat/get_IsShow-apidoc)() |  |
-| [get_IsShowZero](TypeSafe.StaticFormat/get_IsShowZero-apidoc)() |  |
-| [get_Tag](TypeSafe.StaticFormat/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.StaticFormat/ToString-apidoc)() |  |
 | static class [Tags](TypeSafe.StaticFormat.Tags-apidoc) |  |
 
 ## See Also

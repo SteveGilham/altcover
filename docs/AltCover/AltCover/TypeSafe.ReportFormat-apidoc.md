@@ -10,21 +10,9 @@ public sealed class ReportFormat : IEquatable<ReportFormat>, IStructuralEquatabl
 
 | name | description |
 | --- | --- |
-| static [NCover](TypeSafe.ReportFormat/NCover-apidoc) { get; } |  |
-| static [OpenCover](TypeSafe.ReportFormat/OpenCover-apidoc) { get; } |  |
 | static [get_NCover](TypeSafe.ReportFormat/get_NCover-apidoc)() |  |
 | static [get_OpenCover](TypeSafe.ReportFormat/get_OpenCover-apidoc)() |  |
-| [IsNCover](TypeSafe.ReportFormat/IsNCover-apidoc) { get; } |  |
-| [IsOpenCover](TypeSafe.ReportFormat/IsOpenCover-apidoc) { get; } |  |
-| [Tag](TypeSafe.ReportFormat/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.ReportFormat/AsString-apidoc)() | Returns the string to use in the command line |
-| [Equals](TypeSafe.ReportFormat/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.ReportFormat/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.ReportFormat/GetHashCode-apidoc)(…) |  |
-| [get_IsNCover](TypeSafe.ReportFormat/get_IsNCover-apidoc)() |  |
-| [get_IsOpenCover](TypeSafe.ReportFormat/get_IsOpenCover-apidoc)() |  |
-| [get_Tag](TypeSafe.ReportFormat/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.ReportFormat/ToString-apidoc)() |  |
 | static class [Tags](TypeSafe.ReportFormat.Tags-apidoc) |  |
 
 ## See Also

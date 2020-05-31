@@ -6,13 +6,6 @@ A type-safe collection
 public class DirectoryPaths : DirectoryPaths
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.DirectoryPaths.DirectoryPaths/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.DirectoryPaths.DirectoryPaths/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [DirectoryPaths](TypeSafe.DirectoryPaths-apidoc)

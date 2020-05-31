@@ -6,13 +6,6 @@ A strongly typed file
 public class FInfo : FilePath
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.FilePath.FInfo/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.FilePath.FInfo/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [FilePath](TypeSafe.FilePath-apidoc)

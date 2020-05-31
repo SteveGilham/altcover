@@ -10,20 +10,9 @@ public abstract class Context : IEquatable<Context>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [NoContext](TypeSafe.Context/NoContext-apidoc) { get; } |  |
 | static [get_NoContext](TypeSafe.Context/get_NoContext-apidoc)() |  |
 | static [NewContext](TypeSafe.Context/NewContext-apidoc)(…) |  |
-| [IsContext](TypeSafe.Context/IsContext-apidoc) { get; } |  |
-| [IsNoContext](TypeSafe.Context/IsNoContext-apidoc) { get; } |  |
-| [Tag](TypeSafe.Context/Tag-apidoc) { get; } |  |
 | [AsStrings](TypeSafe.Context/AsStrings-apidoc)() | Returns the strings to use in the command line |
-| [Equals](TypeSafe.Context/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.Context/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.Context/GetHashCode-apidoc)(…) |  |
-| [get_IsContext](TypeSafe.Context/get_IsContext-apidoc)() |  |
-| [get_IsNoContext](TypeSafe.Context/get_IsNoContext-apidoc)() |  |
-| [get_Tag](TypeSafe.Context/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.Context/ToString-apidoc)() |  |
 | class [Context](TypeSafe.Context.Context-apidoc) | A type-safe collection |
 | static class [Tags](TypeSafe.Context.Tags-apidoc) |  |
 

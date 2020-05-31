@@ -10,20 +10,9 @@ public abstract class FilePaths : IEquatable<FilePaths>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [NoPaths](TypeSafe.FilePaths/NoPaths-apidoc) { get; } |  |
 | static [get_NoPaths](TypeSafe.FilePaths/get_NoPaths-apidoc)() |  |
 | static [NewFilePaths](TypeSafe.FilePaths/NewFilePaths-apidoc)(…) |  |
-| [IsFilePaths](TypeSafe.FilePaths/IsFilePaths-apidoc) { get; } |  |
-| [IsNoPaths](TypeSafe.FilePaths/IsNoPaths-apidoc) { get; } |  |
-| [Tag](TypeSafe.FilePaths/Tag-apidoc) { get; } |  |
 | [AsStrings](TypeSafe.FilePaths/AsStrings-apidoc)() | Returns the strings to use in the command line |
-| [Equals](TypeSafe.FilePaths/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.FilePaths/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.FilePaths/GetHashCode-apidoc)(…) |  |
-| [get_IsFilePaths](TypeSafe.FilePaths/get_IsFilePaths-apidoc)() |  |
-| [get_IsNoPaths](TypeSafe.FilePaths/get_IsNoPaths-apidoc)() |  |
-| [get_Tag](TypeSafe.FilePaths/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.FilePaths/ToString-apidoc)() |  |
 | class [FilePaths](TypeSafe.FilePaths.FilePaths-apidoc) | A type-safe collection |
 | static class [Tags](TypeSafe.FilePaths.Tags-apidoc) |  |
 

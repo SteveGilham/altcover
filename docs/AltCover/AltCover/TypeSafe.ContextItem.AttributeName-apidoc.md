@@ -6,13 +6,6 @@ A method-level attribute name
 public class AttributeName : ContextItem
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](TypeSafe.ContextItem.AttributeName/Item-apidoc) { get; } |  |
-| [get_Item](TypeSafe.ContextItem.AttributeName/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [ContextItem](TypeSafe.ContextItem-apidoc)

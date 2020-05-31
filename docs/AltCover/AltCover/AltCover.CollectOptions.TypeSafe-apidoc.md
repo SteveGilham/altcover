@@ -6,13 +6,6 @@ Options expressed as an F# strongly-typed record
 public class TypeSafe : CollectOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.CollectOptions.TypeSafe/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.CollectOptions.TypeSafe/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [CollectOptions](AltCover.CollectOptions-apidoc)

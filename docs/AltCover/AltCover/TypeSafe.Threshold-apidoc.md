@@ -10,20 +10,9 @@ public abstract class Threshold : IEquatable<Threshold>, IStructuralEquatable
 
 | name | description |
 | --- | --- |
-| static [NoThreshold](TypeSafe.Threshold/NoThreshold-apidoc) { get; } |  |
 | static [get_NoThreshold](TypeSafe.Threshold/get_NoThreshold-apidoc)() |  |
 | static [NewThreshold](TypeSafe.Threshold/NewThreshold-apidoc)(…) |  |
-| [IsNoThreshold](TypeSafe.Threshold/IsNoThreshold-apidoc) { get; } |  |
-| [IsThreshold](TypeSafe.Threshold/IsThreshold-apidoc) { get; } |  |
-| [Tag](TypeSafe.Threshold/Tag-apidoc) { get; } |  |
 | [AsString](TypeSafe.Threshold/AsString-apidoc)() | Returns the string to be used in the effective command line |
-| [Equals](TypeSafe.Threshold/Equals-apidoc)(…) |  (3 methods) |
-| [GetHashCode](TypeSafe.Threshold/GetHashCode-apidoc)() |  |
-| [GetHashCode](TypeSafe.Threshold/GetHashCode-apidoc)(…) |  |
-| [get_IsNoThreshold](TypeSafe.Threshold/get_IsNoThreshold-apidoc)() |  |
-| [get_IsThreshold](TypeSafe.Threshold/get_IsThreshold-apidoc)() |  |
-| [get_Tag](TypeSafe.Threshold/get_Tag-apidoc)() |  |
-| override [ToString](TypeSafe.Threshold/ToString-apidoc)() |  |
 | static class [Tags](TypeSafe.Threshold.Tags-apidoc) |  |
 | class [Threshold](TypeSafe.Threshold.Threshold-apidoc) | Corresponds to an explicit value |
 

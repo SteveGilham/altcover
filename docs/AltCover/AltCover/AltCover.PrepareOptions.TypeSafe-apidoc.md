@@ -6,13 +6,6 @@ Options expressed as an F# strongly-typed record
 public class TypeSafe : PrepareOptions
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [Item](AltCover.PrepareOptions.TypeSafe/Item-apidoc) { get; } |  |
-| [get_Item](AltCover.PrepareOptions.TypeSafe/get_Item-apidoc)() |  |
-
 ## See Also
 
 * class [PrepareOptions](AltCover.PrepareOptions-apidoc)
