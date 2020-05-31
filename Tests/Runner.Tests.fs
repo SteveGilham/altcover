@@ -1688,7 +1688,8 @@ module AltCoverRunnerTests =
                        "                               The 'altcover.global.props' file is present in the same directory\n"
 
         Assert.That
-          (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+          (result.Replace("\r\n", "\n").Replace("\u200b",String.Empty),
+          Is.EqualTo(expected.Replace("\r\n", "\n")))
       finally
         Console.SetError saved
 

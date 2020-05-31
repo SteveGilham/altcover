@@ -382,7 +382,7 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     <value>Optional: Display sourcelink URLs rather than file paths if present.</value>
   </data>
   <data name="teamcity:" xml:space="preserve">
-    <value>Optional: Show summary in TeamCity format as well as/instead of the OpenCover summary.  Default value 'B' means TeamCity Block format, 'R' is bRanch format; add a '+' to include the OpenCover style summary as well.</value>
+    <value>Optional: Show summary in TeamCity format as well as/instead of the OpenCover summary.  No value, or the value 'B' means TeamCity Block format, 'R' is b&#x200B;Ranch format; add a '+' to include the OpenCover style summary as well.</value>
   </data>
   <data name="defer" xml:space="preserve">
     <value>Optional, defers writing runner-mode coverage data until process exit.</value>

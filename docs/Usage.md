@@ -172,9 +172,9 @@ or
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
       --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary.  Default
-                               value 'B' means TeamCity Block format, 'R' is
-                               bRanch format; add a '+' to include the
+                               as/instead of the OpenCover summary.  No value,
+                               or the value 'B' means TeamCity Block format, 'R'
+                                is bRanch format; add a '+' to include the
                                OpenCover style summary as well.
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.

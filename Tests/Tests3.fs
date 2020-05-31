@@ -2426,7 +2426,8 @@ module AltCoverTests3 =
                        "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
                        "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
-          (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+          (result.Replace("\r\n", "\n").Replace("\u200b",String.Empty),
+          Is.EqualTo(expected.Replace("\r\n", "\n")))
 
         let helptext = CommandLine.resources.GetString("HelpText").Replace("\r\n", "\n")
 
@@ -2466,7 +2467,7 @@ module AltCoverTests3 =
                         "See https://stevegilham.github.io/altcover/Usage for full details.\n"
 
         test <@ synthetic = helptext @>
-
+#if NETCOREAPP2_0
         let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
         let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
         let resources =
@@ -2480,6 +2481,7 @@ module AltCoverTests3 =
                           "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
                           "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
         test <@ syntheticeo = helptexteo @>
+#endif
       finally
         Console.SetError saved
 
