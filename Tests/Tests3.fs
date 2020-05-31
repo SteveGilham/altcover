@@ -2471,6 +2471,11 @@ module AltCoverTests3 =
         let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
         let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
         if File.Exists eo
+#if !NETCOREAPP2_0
+          && "Mono.Runtime"
+             |> Type.GetType
+             |> isNull
+#endif
         then
           let resources =
             System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
