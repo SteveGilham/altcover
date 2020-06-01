@@ -9,7 +9,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [BREAKING; MSBuild tasks] `AltCover.Prepare.Defer` defaults to `true`; in `dotnet test`, as the value is overridden (effectively forced true), this has no effect.
 * [BREAKING; PowerShell] rename and generalise `Format-FromCoverletOpenCover` as `Write-OpenCoverDerivedState`
 * [BREAKING; API] Rationalise and rename across most parts of the API, above and beyond the pre-release; remove `CSApi` as a separate assembly, with the main `AltCover` assembly publishing that part of the C# callable API, and split `FSApi` into `Toolkit` for PowerShell support and `DotNet` for `dotnet test` support.
-* Add `--attributetoplevel`, `--typetoplevel`  and `--methodtoplevel`  to allow inner classes or functions to be included in coverage independently their containing class or function.
+* Add `--attributetoplevel`, `--typetoplevel`  and `--methodtoplevel` command line options (and equivalents) to allow inner classes or functions to be included in coverage independently their containing class or function.
 * Revise/update/fix the Wiki API pages, help-text and the like
 * Autogenerate more of the documentation
 
@@ -22,12 +22,12 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [BREAKING; API] Remove obsolete APIs previously marked as `[Obsolete]`
 * [BREAKING; API] Rationalise and rename across most parts of the API
 * [BREAKING; API, PowerShell] PowerShell cmdlets and the supporting API are now all `XDocument` based
-* [BREAKING; PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take pnly the typesafe `enum`
+* [BREAKING; PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take only the typesafe `enum`
 * [Documentation] Completely revise the API documentation in [the wiki](https://github.com/SteveGilham/altcover/wiki)
 * [PowerShell]`Add-Accelerator` and `Get-Accelerator` cmdlets to write and read new type accelerators e.g. `[xdoc]` for `System.Xml.Linq.XDocument`
 *  `--zipfile` command line option (and equivalents) to put the coverage report into a `.zip` archive
 * `--methodpoint` command line option (and equivalents) to restrict visit reporting to just the method level
-* extend `--threshold` to allow minimum branch or method coverage, and maximum CRAP score
+* extend `--threshold` command line option (and equivalents) to allow minimum branch or method coverage, and maximum CRAP score
 * [Global tool] `TargetsPath` command line option for the global `altcover` tool to report where the associated `.targets` file is located (as it can't be `dotnet add`ed to a project)
 
 
