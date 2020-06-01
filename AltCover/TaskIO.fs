@@ -3,7 +3,7 @@
 open System
 
 module internal TaskIO =
-  type AltCover.OptionApi.LoggingOptions with
+  type AltCover.AltCover.LoggingOptions with
     member internal self.Apply() =
       Output.error <- self.Error
       Output.warn <- self.Warn
@@ -13,7 +13,7 @@ module internal TaskIO =
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
   let internal logToStore =
-    OptionApi.LoggingOptions.Primitive { Primitive.LoggingOptions.Create() with Info = writeToStore }
+    AltCover.LoggingOptions.Primitive { Primitive.LoggingOptions.Create() with Info = writeToStore }
 
   let internal getStringValue s =
     writeToStore String.Empty

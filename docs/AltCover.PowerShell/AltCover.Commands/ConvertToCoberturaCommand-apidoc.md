@@ -22,7 +22,7 @@ public class ConvertToCoberturaCommand : PSCmdlet
 | [InputFile](ConvertToCoberturaCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](ConvertToCoberturaCommand/OutputFile-apidoc) { get; set; } | Output as file path |
 | [XDocument](ConvertToCoberturaCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |
-| override [ProcessRecord](ConvertToCoberturaCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](ConvertToCoberturaCommand/ProcessRecord-apidoc)() | Create transformed document |
 
 ## See Also
 

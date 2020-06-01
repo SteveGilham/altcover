@@ -1,5 +1,7 @@
 # InvokeAltCoverCommand.ProcessRecord method
 
+Perform the `AltCover` operation
+
 ```csharp
 public override void ProcessRecord()
 ```

@@ -1,5 +1,7 @@
 # AddAcceleratorCommand.BeginProcessing method
 
+Initialise the map of accelerator to type
+
 ```csharp
 public override void BeginProcessing()
 ```

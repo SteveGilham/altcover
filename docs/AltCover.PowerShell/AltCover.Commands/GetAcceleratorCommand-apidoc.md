@@ -2,7 +2,7 @@
 
 List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.
 
-List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.
+Reports all currently available type abbreviations, both system- and user- defined.
 
 ```csharp
 $a = Get-Accelerator
@@ -17,7 +17,7 @@ public class GetAcceleratorCommand : PSCmdlet
 | name | description |
 | --- | --- |
 | [GetAcceleratorCommand](GetAcceleratorCommand/GetAcceleratorCommand-apidoc)() | The default constructor. |
-| override [EndProcessing](GetAcceleratorCommand/EndProcessing-apidoc)() |  |
+| override [EndProcessing](GetAcceleratorCommand/EndProcessing-apidoc)() | List current accelerator to type mappings |
 
 ## See Also
 

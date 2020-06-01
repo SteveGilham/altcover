@@ -19,13 +19,12 @@ public class CompressBranchingCommand : PSCmdlet
 | name | description |
 | --- | --- |
 | [CompressBranchingCommand](CompressBranchingCommand/CompressBranchingCommand-apidoc)() | The default constructor. |
-| [CompressBranchingCommand](CompressBranchingCommand/CompressBranchingCommand-apidoc)(…) |  |
 | [InputFile](CompressBranchingCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](CompressBranchingCommand/OutputFile-apidoc) { get; set; } | Output as file path |
 | [SameSpan](CompressBranchingCommand/SameSpan-apidoc) { get; set; } | Merge branches when start and end at the same place |
 | [WithinSequencePoint](CompressBranchingCommand/WithinSequencePoint-apidoc) { get; set; } | Discard branches within a sequence point |
 | [XDocument](CompressBranchingCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |
-| override [ProcessRecord](CompressBranchingCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](CompressBranchingCommand/ProcessRecord-apidoc)() | Create transformed document |
 
 ## See Also
 

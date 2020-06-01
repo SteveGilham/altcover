@@ -9,7 +9,6 @@ open System.Xml.Linq
 open System.Xml.Schema
 
 open AltCover
-open AltCover.FSApi
 open Microsoft.FSharp.Reflection
 open Swensen.Unquote
 
@@ -245,15 +244,15 @@ module FSApiTests =
   [<Test>]
   let ArgumentsConsistent() =
     let force = DotNet.CLIOptions.Force true
-    let fail = DotNet.CLIOptions.FailFast true
-    let summary = DotNet.CLIOptions.ShowSummary "R"
+    let fail = DotNet.CLIOptions.Fail true
+    let summary = DotNet.CLIOptions.Summary "R"
     let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
 
     let pprep = Primitive.PrepareOptions.Create()
-    let prep = OptionApi.PrepareOptions.Primitive pprep
+    let prep = AltCover.PrepareOptions.Primitive pprep
 
     let pcoll = Primitive.CollectOptions.Create()
-    let coll = OptionApi.CollectOptions.Primitive pcoll
+    let coll = AltCover.CollectOptions.Primitive pcoll
 
     let targets =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -314,7 +313,7 @@ module FSApiTests =
     let optionCases = (typeof<DotNet.CLIOptions>
                       |> FSharpType.GetUnionCases).Length
 
-    let opt = DotNet.CLIOptions.FailFast true
+    let opt = DotNet.CLIOptions.Fail true
     let optionsFragments = [//DotNet.I.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
                             DotNet.I.toCLIOptionsFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
                             DotNet.I.toCLIOptionsArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
@@ -333,21 +332,27 @@ module FSApiTests =
   [<Test>]
   let ArgumentsBuilt() =
     let force = DotNet.CLIOptions.Force true
-    let fail = DotNet.CLIOptions.FailFast true
-    let summary = DotNet.CLIOptions.ShowSummary "R"
-    let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
+    let fail = DotNet.CLIOptions.Fail true
+    let summary = DotNet.CLIOptions.Summary "R"
+    let a = { new DotNet.ICLIOptions with
+                        member self.ForceDelete = false
+                        member self.FailFast = false
+                        member self.ShowSummary = String.Empty } |> DotNet.CLIOptions.Abstract
+
+    let combined = DotNet.CLIOptions.Many [ a; force; fail; summary ]
+
     test <@ fail.ForceDelete |> not @>
-    test <@ force.Fast |> not @>
+    test <@ force.FailFast |> not @>
     test <@ combined.ForceDelete @>
-    test <@ combined.Fast @>
-    test <@ combined.Summary = "R" @>
-    test <@ (DotNet.CLIOptions.Many [ force; fail ]).Summary |> String.IsNullOrEmpty @>
+    test <@ combined.FailFast @>
+    test <@ combined.ShowSummary = "R" @>
+    test <@ (DotNet.CLIOptions.Many [ a; force; fail ]).ShowSummary |> String.IsNullOrEmpty @>
 
     let pprep = Primitive.PrepareOptions.Create()
-    let prep = AltCover.OptionApi.PrepareOptions.Primitive pprep
+    let prep = AltCover.AltCover.PrepareOptions.Primitive pprep
 
     let pcoll = Primitive.CollectOptions.Create()
-    let coll = AltCover.OptionApi.CollectOptions.Primitive pcoll
+    let coll = AltCover.AltCover.CollectOptions.Primitive pcoll
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>

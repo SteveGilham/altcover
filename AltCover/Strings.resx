@@ -155,14 +155,17 @@ See also '--inplace'</value>
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALUE]] [--showGenerated] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/teamcity[=VALUE]] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
-AltCover version
-See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
+AltCover Version
+or, for the global tool only
+AltCover TargetsPath
+
+See https://stevegilham.github.io/altcover/Usage for full details.
 </value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -210,10 +213,6 @@ Coverage Report: {0}
   </data>
   <data name="Getting results..." xml:space="preserve">
     <value>Getting results...</value>
-  </data>
-  <data name="binder" xml:space="preserve">
-    <value>or
-  Runner</value>
   </data>
   <data name="orbinder" xml:space="preserve">
     <value>or</value>
@@ -355,8 +354,8 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   <data name="AltCover.Version" xml:space="preserve">
     <value>AltCover version {0}</value>
   </data>
-  <data name="version" xml:space="preserve">
-    <value>  version                    Prints out the AltCover build version</value>
+  <data name="Version" xml:space="preserve">
+    <value>  Version                    Prints out the AltCover build version</value>
   </data>
   <data name="Incompatible" xml:space="preserve">
     <value>Command line options {0} and {1} are mutally exclusive.</value>
@@ -383,9 +382,9 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     <value>Optional: Display sourcelink URLs rather than file paths if present.</value>
   </data>
   <data name="teamcity:" xml:space="preserve">
-    <value>Optional: Show summary in TeamCity format as well as/instead of the OpenCover summary</value>
+    <value>Optional: Show summary in TeamCity format as well as/instead of the OpenCover summary.  No value, or the value 'B' means TeamCity Block format, 'R' is b&#x200B;Ranch format; add a '+' to include the OpenCover style summary as well.</value>
   </data>
-  <data name="defer:" xml:space="preserve">
+  <data name="defer" xml:space="preserve">
     <value>Optional, defers writing runner-mode coverage data until process exit.</value>
   </data>
   <data name="DuplicatesNotAllowed" xml:space="preserve">
@@ -417,5 +416,23 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   </data>
   <data name="Methods" xml:space="preserve">
     <value>Method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
+  <data name="attributetoplevel=" xml:space="preserve">
+    <value>Optional, multiple: Types marked with an attribute of a type that matches the regex are considered top-level, and are not excluded from coverage on the basis of any type which textually encloses them.
+</value>
+  </data>
+  <data name="methodtoplevel=" xml:space="preserve">
+    <value>Optional, multiple: Methods with a name that matches the regex are considered top-level, and are not excluded from coverage on the basis of any method which textually encloses them.</value>
+  </data>
+  <data name="typetoplevel=" xml:space="preserve">
+    <value>Optional, multiple: Types with a name that matches the regex are considered top-level, and are not excluded from coverage on the basis of any type which textually encloses them.</value>
+  </data>
+  <data name="orglobal" xml:space="preserve">
+    <value>or, for the global tool only</value>
+  </data>
+  <data name="TargetsPath" xml:space="preserve">
+    <value>  TargetsPath                Prints out the path to the 'altcover.global.targets' file
+                               (as the tool cannot be 'dotnet add'ed to the project).
+                               The 'altcover.global.props' file is present in the same directory</value>
   </data>
 </root>

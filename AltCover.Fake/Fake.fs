@@ -11,14 +11,14 @@ module Trace =
   open Fake.Core
 
   let Create() =
-    OptionApi.LoggingOptions.Primitive
+    AltCover.LoggingOptions.Primitive
       { Primitive.LoggingOptions.Create() with
           Info = Trace.trace
           Warn = Trace.traceImportant
-          Error = Trace.traceError
+          Failure = Trace.traceError
           Echo = Trace.traceVerbose }
 
-  let internal doDefault(log : OptionApi.LoggingOptions option) =
+  let internal doDefault(log : AltCover.LoggingOptions option) =
     match log with
     | Some logging -> logging
     | None -> Create()
@@ -31,16 +31,14 @@ type Implementation =
 [<SuppressMessage("Gendarme.Rules.Performance",
                   "AvoidUncalledPrivateCodeRule",
                   Justification = "Can't stop the instance constructor happening")>]
-[<SuppressMessage("Microsoft.Naming", "CA1704",
-  Justification="'Api' works")>]
 [<AbstractClass; Sealed>] // ~ Static class for methods with optional arguments
-type Api private () =
-  static member Prepare(args : OptionApi.PrepareOptions, ?log : OptionApi.LoggingOptions) =
-    AltCover.Api.Prepare args (Trace.doDefault log)
-  static member Collect(args : OptionApi.CollectOptions, ?log : OptionApi.LoggingOptions) =
-    AltCover.Api.Collect args (Trace.doDefault log)
-  static member ImportModule() = AltCover.Api.ImportModule()
-  static member Version() = AltCover.Api.Version()
+type Command private () =
+  static member Prepare(args : Abstract.IPrepareOptions, ?log : AltCover.LoggingOptions) =
+    AltCover.Command.Prepare args (Trace.doDefault log)
+  static member Collect(args : Abstract.ICollectOptions, ?log : AltCover.LoggingOptions) =
+    AltCover.Command.Collect args (Trace.doDefault log)
+  static member ImportModule() = AltCover.Command.ImportModule()
+  static member Version() = AltCover.Command.Version()
   // Finds the tool from within the .nuget package
   [<SuppressMessage("Microsoft.Design", "CA1062",
                     Justification = "Idiomatic F#")>]
@@ -127,13 +125,13 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithAltCoverOptions (prepare : OptionApi.PrepareOptions)
-           (collect : OptionApi.CollectOptions) (force : FSApi.DotNet.CLIOptions) =
-      FSApi.DotNet.ToTestArguments
+    member self.WithAltCoverOptions (prepare : Abstract.IPrepareOptions)
+           (collect : Abstract.ICollectOptions) (force : DotNet.ICLIOptions) =
+      DotNet.ToTestArguments
 #else
-    member self.WithAltCoverOptions (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareOptions)
-           (collect : AltCoverFake.DotNet.Testing.AltCover.CollectOptions)
-           (force : AltCoverFake.DotNet.Testing.DotNet.CLIOptions) =
+    member self.WithAltCoverOptions (prepare : Testing.Abstract.IPrepareOptions)
+           (collect : Testing.Abstract.ICollectOptions)
+           (force : AltCoverFake.DotNet.Testing.DotNet.ICLIOptions) =
       AltCoverFake.DotNet.Testing.DotNet.toTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams

@@ -20,7 +20,7 @@ public class ConvertToLcovCommand : PSCmdlet
 | [InputFile](ConvertToLcovCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](ConvertToLcovCommand/OutputFile-apidoc) { get; set; } | Output as file path |
 | [XDocument](ConvertToLcovCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |
-| override [ProcessRecord](ConvertToLcovCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](ConvertToLcovCommand/ProcessRecord-apidoc)() | Create transformed document |
 
 ## See Also
 

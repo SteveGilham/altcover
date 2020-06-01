@@ -25,6 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AltCover.Usage.txt" />
+    <EmbeddedResource Include="AltCover.Runner.Usage.txt" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
@@ -64,8 +66,6 @@
     <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
     <PackageReference Include="Expecto" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
@@ -73,7 +73,7 @@
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="coverlet.collector" Version="1.2.1">
+    <PackageReference Include="coverlet.collector" Version="1.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -104,7 +104,7 @@
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
     <ProjectReference Include="..\Sample12\sample12.core.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>

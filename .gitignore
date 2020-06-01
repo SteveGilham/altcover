@@ -67,3 +67,4 @@ Demo/MultiTest/**/coverage.xml
 *.xsc
 *.xss
 TestResults/
+AltCover/Abstract.fs

@@ -625,7 +625,7 @@ Describe "Compress-Branching" {
   }
 }
 
-Describe "Format-FromCoverletOpenCover" {
+Describe "Write-OpenCoverDerivedState" {
   It "Outputs a document from a file" {
     $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
     $assemblies = @()
@@ -639,7 +639,7 @@ Describe "Format-FromCoverletOpenCover" {
     $sha1.Dispose()
     $hexpected = [System.BitConverter]::ToString($bytes)
     
-    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType [xdoc]
 
     $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
@@ -649,6 +649,30 @@ Describe "Format-FromCoverletOpenCover" {
     $expected = [xml](Get-Content "./Tests/OpenCoverForPester.coverlet.xml")
     $expected.CoverageSession.Modules.Module.hash = $hactual
     $expected.CoverageSession.Modules.Module.ModulePath = $assembly
+    $expected.CoverageSession.Modules.Module.ModuleTime = $doc.CoverageSession.Modules.Module.ModuleTime
+    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Sample18/Tests.fs").Path
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $expected.WriteTo($xw)
+    $xw.Close()
+    $expect = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+
+    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
+    $written | Should -BeExactly $expect
+  }
+
+  It "Works the pipeline" {
+    
+    $xmlIn = [xdoc]::Load("./Tests/BasicCSharp.xml")
+
+    $xml = $xmlIn | Write-OpenCoverDerivedState -BranchOrdinal SL
+    $xml | Should -BeOfType [xdoc]
+
+    $xml.Save("./_Packaging/BasicCSharp.xml")
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -657,9 +681,9 @@ Describe "Format-FromCoverletOpenCover" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-
-    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-    $written | Should -BeExactly $result
+
+    $expected = [System.IO.File]::ReadAllText("./Tests/BasicCSharp.postprocessed.xml").Replace("`r", "")
+    $result | Should -BeExactly $expected
   }
 }
