@@ -28,6 +28,7 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [AssemblyExcludeFilter](InvokeAltCoverCommand/AssemblyExcludeFilter-apidoc) { get; set; } | Assembly names to exclude from instrumentation (linked to instrumented assemblies) |
 | [AssemblyFilter](InvokeAltCoverCommand/AssemblyFilter-apidoc) { get; set; } | Assembly names to exclude from instrumentation (linked by instrumented assemblies) |
 | [AttributeFilter](InvokeAltCoverCommand/AttributeFilter-apidoc) { get; set; } | Attribute names to exclude from instrumentation |
+| [AttributeTopLevel](InvokeAltCoverCommand/AttributeTopLevel-apidoc) { get; set; } | Attributes to mark a type as "top level" |
 | [BranchCover](InvokeAltCoverCommand/BranchCover-apidoc) { get; set; } | Do not record line coverage. Implies, and is compatible with, the -ReportFormat "opencover" option. Incompatible with `-LineCover`. |
 | [CallContext](InvokeAltCoverCommand/CallContext-apidoc) { get; set; } | Tracking either times of visits in ticks or designated method calls leading to the visits. |
 | [Cobertura](InvokeAltCoverCommand/Cobertura-apidoc) { get; set; } | File path for Cobertura format version of the collected data |
@@ -45,6 +46,7 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [LocalSource](InvokeAltCoverCommand/LocalSource-apidoc) { get; set; } | Don't instrument code for which the source file is not present. |
 | [MethodFilter](InvokeAltCoverCommand/MethodFilter-apidoc) { get; set; } | Method names to exclude from instrumentation |
 | [MethodPoint](InvokeAltCoverCommand/MethodPoint-apidoc) { get; set; } | Record only whether a method has been visited or not. Overrides the `-LineCover` and `-BranchCover` options. |
+| [MethodTopLevel](InvokeAltCoverCommand/MethodTopLevel-apidoc) { get; set; } | Names to mark a function as "top level" |
 | [OutputDirectory](InvokeAltCoverCommand/OutputDirectory-apidoc) { get; set; } | Folder or folders to receive the instrumented assemblies and their companions (default: sub-folder `__Instrumented` of the current directory; or `__Saved` if `-Inplace` is set). |
 | [OutputFile](InvokeAltCoverCommand/OutputFile-apidoc) { get; set; } | Write the recorded coverage to this file rather than overwriting the original report file. |
 | [PathFilter](InvokeAltCoverCommand/PathFilter-apidoc) { get; set; } | Source file paths to exclude from instrumentation |
@@ -61,12 +63,13 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [SymbolDirectory](InvokeAltCoverCommand/SymbolDirectory-apidoc) { get; set; } | Additional folder or folders to search for matching symbols for the assemblies in the input directory |
 | [Threshold](InvokeAltCoverCommand/Threshold-apidoc) { get; set; } | One or more of minimum acceptable statement (S), branch (B) or method (M) coverage percentage (integer, 1 to 100) or maximum acceptable CRAP score (C followed by integer, 1 to 255) e.g. M80C40B50. If the value starts with a number, a leading S is assumed. If any threshold is specified more than once, the last instance is assumed -- so 25S50 counts as S50. Zero/absent values are ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the process is the largest abs(threshold - actual) rounded up to the nearest integer. |
 | [TypeFilter](InvokeAltCoverCommand/TypeFilter-apidoc) { get; set; } | Type names to exclude from instrumentation |
+| [TypeTopLevel](InvokeAltCoverCommand/TypeTopLevel-apidoc) { get; set; } | Names to mark a type as "top level" |
 | [Version](InvokeAltCoverCommand/Version-apidoc) { get; set; } | Selects `Version` mode |
 | [VisibleBranches](InvokeAltCoverCommand/VisibleBranches-apidoc) { get; set; } | Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies. |
 | [WorkingDirectory](InvokeAltCoverCommand/WorkingDirectory-apidoc) { get; set; } | The working directory for the application launch |
 | [XmlReport](InvokeAltCoverCommand/XmlReport-apidoc) { get; set; } | The output report template file (default: coverage.xml in the current directory) |
 | [ZipFile](InvokeAltCoverCommand/ZipFile-apidoc) { get; set; } | Emit the XML report inside a zip archive. |
-| override [ProcessRecord](InvokeAltCoverCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](InvokeAltCoverCommand/ProcessRecord-apidoc)() | Perform the `AltCover` operation |
 
 ## See Also
 

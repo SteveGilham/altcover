@@ -1,22 +1,9 @@
-# ConvertToBarChartCommand constructor (1 of 2)
+# ConvertToBarChartCommand constructor
 
 The default constructor.
 
 ```csharp
 public ConvertToBarChartCommand()
-```
-
-## See Also
-
-* class [ConvertToBarChartCommand](../ConvertToBarChartCommand-apidoc)
-* namespace [AltCover.Commands](../../AltCover.PowerShell-apidoc)
-
----
-
-# ConvertToBarChartCommand constructor (2 of 2)
-
-```csharp
-public ConvertToBarChartCommand(string outputFile)
 ```
 
 ## See Also

@@ -1,5 +1,7 @@
 # ConvertToXDocumentCommand.ProcessRecord method
 
+Create transformed document
+
 ```csharp
 public override void ProcessRecord()
 ```

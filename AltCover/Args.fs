@@ -7,14 +7,6 @@ namespace AltCoverFake.DotNet.Testing
 open System
 open System.Diagnostics.CodeAnalysis
 
-#if RUNNER
-type PrepareParams = AltCover.OptionApi.PrepareOptions
-type CollectParams = AltCover.OptionApi.CollectOptions
-#else
-type PrepareParams = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions
-type CollectParams = AltCoverFake.DotNet.Testing.AltCover.CollectOptions
-#endif
-
 [<SuppressMessage("Gendarme.Rules.Smells",
                                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
@@ -42,7 +34,7 @@ module internal Args =
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
 
-  let internal listItems(args : PrepareParams) =
+  let internal listItems(args : Abstract.IPrepareOptions) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -55,37 +47,40 @@ module internal Args =
       ("-m", args.MethodFilter)
       ("-a", args.AttributeFilter)
       ("-p", args.PathFilter)
+      ("--attributetoplevel", args.AttributeTopLevel)
+      ("--typetoplevel", args.TypeTopLevel)
+      ("--methodtoplevel", args.MethodTopLevel)
       ("-c", args.CallContext) ]
 
-  let internal itemLists(args : PrepareParams) =
+  let internal itemLists(args : Abstract.IPrepareOptions) =
     args
     |> listItems
     |> List.collect (fun (a, b) -> itemList a b)
 
-  let internal plainItems(args : PrepareParams) =
+  let internal plainItems(args : Abstract.IPrepareOptions) =
     [ ("--sn", args.StrongNameKey)
       ("--reportFormat", args.ReportFormat)
       ("-x", args.XmlReport) ]
 
-  let internal items(args : PrepareParams) =
+  let internal items(args : Abstract.IPrepareOptions) =
     args
     |> plainItems
     |> List.collect (fun (a, b) -> item a b)
 
-  let internal options(args : PrepareParams) =
+  let internal options(args : Abstract.IPrepareOptions) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
 
-  let internal optItems(args : PrepareParams) =
+  let internal optItems(args : Abstract.IPrepareOptions) =
     args
     |> options
     |> List.collect (fun (a, b, c) -> optionalItem a b c)
 
-  let internal flagItems(args : PrepareParams) =
+  let internal flagItems(args : Abstract.IPrepareOptions) =
     [ ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--zipfile", args.ZipFile)
       ("--methodpoint", args.MethodPoint)
-      ("--single", args.Single)
+      ("--single", args.SingleVisit)
       ("--linecover", args.LineCover)
       ("--branchcover", args.BranchCover)
       ("--dropReturnCode", (args.ExposeReturnCode |> not))
@@ -95,12 +90,12 @@ module internal Args =
       ("--visibleBranches", args.VisibleBranches)
       ("--showGenerated", args.ShowGenerated) ]
 
-  let internal flags(args : PrepareParams) =
+  let internal flags(args : Abstract.IPrepareOptions) =
     args
     |> flagItems
     |> List.collect (fun (a, b) -> flag a b)
 
-  let prepare(args : PrepareParams) =
+  let prepare(args : Abstract.IPrepareOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -111,7 +106,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let internal buildCollect(args : CollectParams) =
+  let internal buildCollect(args : Abstract.ICollectOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -132,7 +127,7 @@ module internal Args =
       optionalItem "--teamcity" args.SummaryFormat []
       trailing ]
 
-  let collect(args : CollectParams) =
+  let collect(args : Abstract.ICollectOptions) =
     args
     |> buildCollect
     |> List.concat

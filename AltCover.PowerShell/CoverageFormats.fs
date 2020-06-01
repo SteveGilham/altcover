@@ -6,7 +6,6 @@ open System.IO
 open System.Management.Automation
 open System.Xml
 open System.Xml.Linq
-open System.Xml.XPath
 
 /// <summary>
 /// <para type="synopsis">Converts `XDocument` to `[xml]`.</para>
@@ -28,16 +27,19 @@ type ConvertToXmlDocumentCommand() =
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XDocument : XDocument = null with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     self.XDocument
-    |> AltCover.FSApi.XmlTypes.ToXmlDocument
+    |> AltCover.XmlTypes.ToXmlDocument
     |> self.WriteObject
 
 /// <summary>
 /// <para type="synopsis">Converts `[xml]` to `XDocument`.</para>
 /// <para type="description">Takes an `[xml]` in and puts an `XDocument` to the object pipeline.</para>
 /// <example>
-///   <code>$xd = [xml]"<document/>" | ConvertTo-XDocument</code>
+///   <code>$xd = [xml]"&lt;Document /&gt;" | ConvertTo-XDocument</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsData.ConvertTo, "XDocument")>]
@@ -54,9 +56,12 @@ type ConvertToXDocumentCommand() =
     Justification = "AvoidSpeculativeGenerality too")>]
   member val XmlDocument : XmlDocument = null with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     self.XmlDocument
-    |> AltCover.FSApi.XmlTypes.ToXDocument
+    |> AltCover.XmlTypes.ToXDocument
     |> self.WriteObject
 
 /// <summary>
@@ -96,6 +101,9 @@ type ConvertToLcovCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -104,7 +112,7 @@ type ConvertToLcovCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
       use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
-      AltCover.FSApi.CoverageFormats.ConvertToLcov self.XDocument stream
+      AltCover.CoverageFormats.ConvertToLcov self.XDocument stream
     finally
       Directory.SetCurrentDirectory here
 
@@ -146,6 +154,9 @@ type ConvertToCoberturaCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -154,7 +165,7 @@ type ConvertToCoberturaCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.FSApi.CoverageFormats.ConvertToCobertura self.XDocument
+      let rewrite = AltCover.CoverageFormats.ConvertToCobertura self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -201,6 +212,9 @@ type ConvertToNCoverCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -209,7 +223,7 @@ type ConvertToNCoverCommand() =
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.FSApi.CoverageFormats.ConvertToNCover self.XDocument
+      let rewrite = AltCover.CoverageFormats.ConvertToNCover self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -271,6 +285,9 @@ type ConvertFromNCoverCommand() =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -280,7 +297,7 @@ type ConvertFromNCoverCommand() =
         self.XDocument <- XDocument.Load self.InputFile
 
       let converted =
-        AltCover.FSApi.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
+        AltCover.CoverageFormats.ConvertFromNCover self.XDocument self.Assembly
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
@@ -292,20 +309,26 @@ type ConvertFromNCoverCommand() =
       Directory.SetCurrentDirectory here
 
 /// <summary>
-/// <para type="synopsis">Fills in gaps in `coverlet`'s OpenCover dialect.</para>
-/// <para type="description">Adds summary data and other items to report in `coverlet`'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
+/// <para type="synopsis">Fills other values based on recorded visit count numbers.</para>
+/// <para type="description">Adds or updates summary data and other computed items in the OpenCover format report.</para>
+/// <para type="description">In  `-Coverlet` mode, also fills in some of the gaps left by `coverlet`'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
 /// <example>
-///   <code>    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"</code>
+///   <code>    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"</code>
+/// </example>
+/// <example>
+///   <code>    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"</code>
 /// </example>
 /// </summary>
-[<Cmdlet(VerbsCommon.Format, "FromCoverletOpenCover")>]
+[<Cmdlet(VerbsCommunications.Write, "OpenCoverDerivedState")>]
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
-type FormatFromCoverletOpenCoverCommand() =
+type WriteOpenCoverDerivedStateCommand() =
   inherit PSCmdlet()
 
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
+  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XDocument : XDocument = null with get, set
@@ -313,16 +336,36 @@ type FormatFromCoverletOpenCoverCommand() =
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
+  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val InputFile : string = null with get, set
 
   /// <summary>
+  /// <para type="description">The data source was generated by `coverlet`, so needs more work doing.</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = true, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Coverlet : SwitchParameter = SwitchParameter(false) with get, set
+
+  /// <summary>
+  /// <para type="description">The data source was generated by `coverlet`, so needs more work doing.</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val BranchOrdinal : AltCover.BranchOrdinal = AltCover.BranchOrdinal.Offset with get, set
+
+  /// <summary>
   /// <para type="description">Assemblies to use for generating the output</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = true, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = true, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
@@ -334,22 +377,33 @@ type FormatFromCoverletOpenCoverCommand() =
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = false, Position = 4,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = false, Position = 4,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName.StartsWith("FromFile", StringComparison.Ordinal) then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.FSApi.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
+      let rewrite = if self.Coverlet.IsPresent
+                    then AltCover.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
+                    else let temp = XDocument(self.XDocument)
+                         AltCover.OpenCover.PostProcess temp self.BranchOrdinal
+                         temp
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace

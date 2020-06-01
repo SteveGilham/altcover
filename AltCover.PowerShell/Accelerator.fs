@@ -10,7 +10,7 @@ open AltCover
 
 /// <summary>
 /// <para type="synopsis">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
-/// <para type="description">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.  Two common abbreviations are supplied as switch parameters, and then others can be added free-form.</para>
+/// <para type="description">Extends the built-in set of type abbreviations with user declared ones.  Two common abbreviations are supplied as switch parameters, and then others can be added free-form.</para>
 /// <example>
 ///   <code>Add-Accelerator -XDocument</code>
 ///   <para>Add `[xdoc]` the easy way</para>
@@ -52,8 +52,14 @@ type AddAcceleratorCommand() =
 
   member val private TypeMap = new Dictionary<string, Type>()
 
+  /// <summary>
+  /// <para type="description">Initialise the map of accelerator to type</para>
+  /// </summary>
   override self.BeginProcessing() = self.TypeMap.Clear()
 
+  /// <summary>
+  /// <para type="description">Accumulate new accelerator to type mappings</para>
+  /// </summary>
   override self.ProcessRecord() =
     self.Mapping
     |> Seq.cast<DictionaryEntry>
@@ -63,6 +69,9 @@ type AddAcceleratorCommand() =
     |> Seq.distinctBy snd
     |> Seq.iter (fun (k,v) -> self.TypeMap.Add(k, v))
 
+  /// <summary>
+  /// <para type="description">Apply the new accelerator to type mappings</para>
+  /// </summary>
   override self.EndProcessing() =
     let env = System.AppDomain.CurrentDomain.GetAssemblies()
     let sma = env |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")
@@ -104,7 +113,7 @@ type AddAcceleratorCommand() =
 
 /// <summary>
 /// <para type="synopsis">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
-/// <para type="description">List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
+/// <para type="description">Reports all currently available type abbreviations, both system- and user- defined.</para>
 /// <example>
 ///   <code>$a = Get-Accelerator</code>
 /// </example>
@@ -115,6 +124,9 @@ type AddAcceleratorCommand() =
   Justification="No valid input to accept")>]
 type GetAcceleratorCommand() =
   inherit PSCmdlet()
+  /// <summary>
+  /// <para type="description">List current accelerator to type mappings</para>
+  /// </summary>
   override self.EndProcessing() =
     let env = System.AppDomain.CurrentDomain.GetAssemblies()
     let sma = env |> Seq.find (fun a -> a.GetName().Name = "System.Management.Automation")

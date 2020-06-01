@@ -317,6 +317,42 @@ type InvokeAltCoverCommand() =
   member val AttributeFilter : string array = [||] with get, set
 
   /// <summary>
+  /// <para type="description">Attributes to mark a type as "top level"</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val AttributeTopLevel : string array = [||] with get, set
+
+    /// <summary>
+  /// <para type="description">Names to mark a type as "top level"</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val TypeTopLevel : string array = [||] with get, set
+
+  /// <summary>
+  /// <para type="description">Names to mark a function as "top level"</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val MethodTopLevel : string array = [||] with get, set
+
+  /// <summary>
   /// <para type="description">Tracking either times of visits in ticks or designated method calls leading to the visits.</para>
   /// <para type="description">A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow</para>
   /// <para type="description">A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.</para>
@@ -457,7 +493,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Collect() =
     let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
-    OptionApi.CollectOptions.Primitive
+    AltCover.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
         Executable = self.Executable
@@ -471,7 +507,7 @@ type InvokeAltCoverCommand() =
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
-    OptionApi.PrepareOptions.Primitive
+    AltCover.PrepareOptions.Primitive
       { InputDirectories = self.InputDirectory
         OutputDirectories = self.OutputDirectory
         SymbolDirectories = self.SymbolDirectory
@@ -486,13 +522,16 @@ type InvokeAltCoverCommand() =
         MethodFilter = self.MethodFilter
         AttributeFilter = self.AttributeFilter
         PathFilter = self.PathFilter
+        AttributeTopLevel = self.AttributeTopLevel
+        TypeTopLevel = self.TypeTopLevel
+        MethodTopLevel = self.MethodTopLevel
         CallContext = self.CallContext
         ReportFormat = self.ReportFormat.ToString()
         InPlace = self.InPlace.IsPresent
         Save = self.Save.IsPresent
         ZipFile = self.ZipFile.IsPresent
         MethodPoint = self.MethodPoint.IsPresent
-        Single = self.Single.IsPresent
+        SingleVisit = self.Single.IsPresent
         LineCover = self.LineCover.IsPresent
         BranchCover = self.BranchCover.IsPresent
         CommandLine = self.CommandLine
@@ -505,9 +544,9 @@ type InvokeAltCoverCommand() =
         ShowGenerated = self.ShowGenerated.IsPresent }
 
   member private self.Log() =
-    OptionApi.LoggingOptions.Primitive
+    AltCover.LoggingOptions.Primitive
       { Primitive.LoggingOptions.Create() with
-          Error = (fun s -> self.Fail <- s :: self.Fail)
+          Failure = (fun s -> self.Fail <- s :: self.Fail)
           Info = (fun s -> self.WriteInformation(s, [||]))
           Warn = (fun s -> self.WriteWarning s) }
 
@@ -518,7 +557,7 @@ type InvokeAltCoverCommand() =
     (match (self.Version.IsPresent, self.Runner.IsPresent) with
      | (true, _) ->
          (fun _ ->
-           Api.FormattedVersion() |> log.Info
+           Command.FormattedVersion() |> log.Info
            0)
      | (_, true) ->
          let task = self.Collect()
@@ -529,14 +568,17 @@ type InvokeAltCoverCommand() =
            || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
               |> File.Exists
          if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
-         then Api.Collect task
+         then Command.Collect task
          else zero
      | _ ->
          let task = self.Prepare()
          if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
-         then Api.Prepare task
+         then Command.Prepare task
          else zero) log
 
+  /// <summary>
+  /// <para type="description">Perform the `AltCover` operation</para>
+  /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -548,7 +590,7 @@ type InvokeAltCoverCommand() =
 
       let status = self.Dispatch()
       if status <> 0 then status.ToString() |> self.Log().Error
-      else if self.Runner.IsPresent then AltCover.Runner.summary.ToString() |> self.WriteObject
+      else if self.Runner.IsPresent then AltCover.Command.Summary() |> self.WriteObject
 
       match self.Fail with
       | [] -> ()

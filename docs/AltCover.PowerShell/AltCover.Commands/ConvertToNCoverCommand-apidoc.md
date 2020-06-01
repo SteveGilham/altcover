@@ -22,7 +22,7 @@ public class ConvertToNCoverCommand : PSCmdlet
 | [InputFile](ConvertToNCoverCommand/InputFile-apidoc) { get; set; } | Input as file path |
 | [OutputFile](ConvertToNCoverCommand/OutputFile-apidoc) { get; set; } | Output as file path |
 | [XDocument](ConvertToNCoverCommand/XDocument-apidoc) { get; set; } | Input as `XDocument` value |
-| override [ProcessRecord](ConvertToNCoverCommand/ProcessRecord-apidoc)() |  |
+| override [ProcessRecord](ConvertToNCoverCommand/ProcessRecord-apidoc)() | Create transformed document |
 
 ## See Also
 

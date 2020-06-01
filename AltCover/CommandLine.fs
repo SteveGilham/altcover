@@ -414,18 +414,19 @@ module internal CommandLine =
   let internal writeOut line = I.write Console.Out Console.ForegroundColor line
   let internal usageBase u =
     I.writeColoured Console.Error ConsoleColor.Yellow (fun w ->
-      if u.Options.Any() || u.Options2.Any() then w.WriteLine(resources.GetString u.Intro)
-      if u.Options.Any() then u.Options.WriteOptionDescriptions(w)
+      w.WriteLine(resources.GetString u.Intro)
+      u.Options.WriteOptionDescriptions(w)
       if u.Options.Any() && u.Options2.Any() then
-        w.WriteLine(resources.GetString "binder")
+        w.WriteLine(resources.GetString "orbinder")
       if u.Options2.Any() then
+        w.WriteLine("  Runner")
         u.Options2.WriteOptionDescriptions(w)
-      else if u.Options.Any() then
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "ImportModule")
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "version")
-        )
+      w.WriteLine(resources.GetString "orbinder")
+      w.WriteLine(resources.GetString "ImportModule")
+      w.WriteLine(resources.GetString "orbinder")
+      w.WriteLine(resources.GetString "Version")
+      w.WriteLine(resources.GetString "orglobal")
+      w.WriteLine(resources.GetString "TargetsPath"))
 
   let internal writeResource = resources.GetString >> Output.info
   let internal writeResourceWithFormatItems s x warn =

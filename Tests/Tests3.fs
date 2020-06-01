@@ -10,6 +10,7 @@ open AltCover
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Mono.Cecil.Cil
+open Swensen.Unquote
 
 module AltCoverTests3 =
 #if NETCOREAPP2_0
@@ -44,7 +45,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -85,7 +86,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      let optionCount = 30
+      let optionCount = 33
 
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
@@ -121,14 +122,14 @@ module AltCoverTests3 =
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", typesafeNames))
 
-      let fsapiNames = typeof<OptionApi.PrepareOptions>.GetProperties()
+      let fsapiNames = typeof<AltCover.PrepareOptions>.GetProperties()
                        |> Seq.map (fun p -> p.Name.ToLowerInvariant())
                        |> Seq.sort
                        |> Seq.toList
-      let fsapiCases = (typeof<OptionApi.PrepareOptions>
+      let fsapiCases = (typeof<AltCover.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareOptions.Create() |> OptionApi.PrepareOptions.Primitive
+      let args = Primitive.PrepareOptions.Create() |> AltCover.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
@@ -302,6 +303,42 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         CoverageParameters.nameFilters.Clear()
+
+    [<Test>]
+    let ParsingTopLevelGivesTopLevel() =
+      [
+        "attributetoplevel", FilterScope.Attribute
+        "methodtoplevel", FilterScope.Method
+        "typetoplevel", FilterScope.Type
+      ]
+      |> List.iter (fun (key, value) ->
+        Main.init()
+        try
+          CoverageParameters.topLevel.Clear()
+          let options = Main.I.declareOptions()
+          let input = [| "--" + key ; "1;a";
+                         "/" + key; "2";
+                         "--" + key; "3";
+                         "--" + key + "=4";
+                         "--" + key + "=5";
+                         "/" + key + "=6" |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left _ -> Assert.Fail(key)
+          | Right(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.Empty)
+          Assert.That(CoverageParameters.topLevel.Count, Is.EqualTo 7)
+          Assert.That
+            (CoverageParameters.topLevel
+             |> Seq.map (fun x ->
+                  match x.Scope with
+                  | scope when scope = value -> x.Regex.ToString()
+                  | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+          Assert.That
+            (CoverageParameters.topLevel |> Seq.forall (fun x -> x.Sense = Exclude))
+        finally
+          CoverageParameters.topLevel.Clear())
 
     [<Test>]
     let ParsingMethodsGivesMethods() =
@@ -1896,7 +1933,6 @@ module AltCoverTests3 =
     let ParsingDeferWorks() =
       Main.init()
       try
-        CoverageParameters.defer := None
         let options = Main.I.declareOptions()
         let input = [| "--defer" |]
         let parse = CommandLine.parseCommandLine input options
@@ -1905,71 +1941,15 @@ module AltCoverTests3 =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Option.isSome !CoverageParameters.defer)
-        Assert.That(Option.get !CoverageParameters.defer)
+        Assert.That(!CoverageParameters.defer)
         Assert.That(CoverageParameters.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
       finally
-        CoverageParameters.defer := None
-
-    [<Test>]
-    let ParsingDeferPlusWorks() =
-      Main.init()
-      try
-        CoverageParameters.defer := None
-        let options = Main.I.declareOptions()
-        let input = [| "--defer:+" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left _ -> Assert.Fail()
-        | Right(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty)
-        Assert.That(Option.isSome !CoverageParameters.defer)
-        Assert.That(Option.get !CoverageParameters.defer)
-        Assert.That(CoverageParameters.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
-      finally
-        CoverageParameters.defer := None
-
-    [<Test>]
-    let ParsingDeferMinusWorks() =
-      Main.init()
-      try
-        CoverageParameters.defer := None
-        let options = Main.I.declareOptions()
-        let input = [| "--defer:-" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left _ -> Assert.Fail()
-        | Right(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.Empty)
-        Assert.That(Option.isSome !CoverageParameters.defer)
-        Assert.That(Option.get !CoverageParameters.defer, Is.False)
-        Assert.That(CoverageParameters.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_0)
-      finally
-        CoverageParameters.defer := None
-
-    [<Test>]
-    let ParsingDeferJunkGivesFailure() =
-      Main.init()
-      try
-        CoverageParameters.defer := None
-        let options = Main.I.declareOptions()
-        let input = [| "--defer:junk" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Right _ -> Assert.Fail()
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        CoverageParameters.defer := None
+        CoverageParameters.defer := false
 
     [<Test>]
     let ParsingMultipleDeferGivesFailure() =
       Main.init()
       try
-        CoverageParameters.defer := None
         let options = Main.I.declareOptions()
         let input = [| "--defer"; "--defer" |]
         let parse = CommandLine.parseCommandLine input options
@@ -1981,7 +1961,7 @@ module AltCoverTests3 =
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--defer : specify this only once")
 
       finally
-        CoverageParameters.defer := None
+        CoverageParameters.defer := false
 
     [<Test>]
     let OutputLeftPassesThrough() =
@@ -2029,7 +2009,7 @@ module AltCoverTests3 =
       Main.init()
       let options = Main.I.declareOptions()
       let saved = (Console.Out, Console.Error)
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       CommandLine.error <- []
       try
         use stdout = new StringWriter()
@@ -2067,7 +2047,7 @@ module AltCoverTests3 =
     let OutputToReallyNewPlaceIsOK() =
       Main.init()
       let options = Main.I.declareOptions()
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
       try
@@ -2300,7 +2280,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2349,11 +2329,11 @@ module AltCoverTests3 =
     [<Test>]
     let ImportModuleIsAsExpected() =
       Main.init()
-      AltCover.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
+        EntryPoint.toConsole()
         let rc = AltCover.Main.effectiveMain [| "i" |]
         Assert.That(rc, Is.EqualTo 0)
         let result = stdout.ToString().Replace("\r\n", "\n")
@@ -2370,11 +2350,11 @@ module AltCoverTests3 =
     [<Test>]
     let VersionIsAsExpected() =
       Main.init()
-      AltCover.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
+        EntryPoint.toConsole()
         let rc = AltCover.Main.effectiveMain [| "v" |]
         Assert.That(rc, Is.EqualTo 0)
         let result = stdout.ToString().Replace("\r\n", "\n")
@@ -2385,7 +2365,7 @@ module AltCoverTests3 =
         Assert.That
           (result.Replace("\r\n", "\n"),
                          (AltCover.CommandLine.Format.Local("AltCover.Version",
-                                                            [| Api.Version() :> obj |]) +
+                                                            [| Command.Version() :> obj |]) +
                           "\n") |> Is.EqualTo)
       finally
         Console.SetOut saved
@@ -2401,112 +2381,17 @@ module AltCoverTests3 =
         let empty = OptionSet()
         CommandLine.usageBase { Intro = "UsageError"; Options = options; Options2 = empty }
         let result = stderr.ToString().Replace("\r\n", "\n")
-        let expected = """Error - usage is:
-  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
-                               to instrument (default: current directory)
-  -o, --outputDirectory=VALUE
-                             Optional, multiple: A folder to receive the
-                               instrumented assemblies and their companions (
-                               default: sub-folder '__Instrumented' of the
-                               current directory; or '__Saved' if '--inplace'
-                               is set).
-                               See also '--inplace'
-  -y, --symbolDirectory=VALUE
-                             Optional, multiple: Additional directory to search
-                               for matching symbols for the assemblies in the
-                               input directory
-  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
-                               missing reference.
-  -k, --key=VALUE            Optional, multiple: any other strong-name key to
-                               use
-      --sn, --strongNameKey=VALUE
-                             Optional: The default strong naming key to apply
-                               to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
-                                coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
-                               from instrumentation
-  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
-                               from instrumentation
-  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
-                               instrumentation
-  -e, --assemblyExcludeFilter=VALUE
-                             Optional, multiple: assembly which links other
-                               instrumented assemblies but for which internal
-                               details may be excluded
-  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
-                               instrumentation
-  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
-                               instrumentation
-  -a, --attributeFilter=VALUE
-                             Optional, multiple: attribute name to exclude from
-                               instrumentation
-  -l, --localSource          Don't instrument code for which the source file is
-                               not present.
-  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
-                               visits in ticks or designated method calls
-                               leading to the visits.
-                                   A single digit 0-7 gives the number of
-                               decimal places of seconds to report; everything
-                               else is at the mercy of the system clock
-                               information available through DateTime.UtcNow
-                                   A string in brackets "[]" is interpreted as
-                               an attribute type name (the trailing "Attribute"
-                               is optional), so [Test] or [TestAttribute] will
-                               match; if the name contains one or more ".",
-                               then it will be matched against the full name of
-                               the attribute type.
-                                   Other strings are interpreted as method
-                               names (fully qualified if the string contains
-                               any "." characters).
-                                   Incompatible with --single
-      --reportFormat=VALUE   Optional: Generate the report in the specified
-                               format (NCover or the default OpenCover)
-      --inplace              Optional: Instrument the inputDirectory, rather
-                               than the outputDirectory (e.g. for dotnet test)
-      --save                 Optional: Write raw coverage data to file for
-                               later processing
-      --zipfile              Optional: Emit the XML report inside a zip archive.
-      --methodpoint          Optional: record only whether a method has been
-                               visited or not.  Overrides the --linecover and --
-                               branchcover options.
-      --single               Optional: only record the first hit at any
-                               location.
-                                   Incompatible with --callContext.
-      --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
-                                   Incompatible with --branchcover.
-      --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
-                                   Incompatible with --linecover.
-      --dropReturnCode       Optional: Do not report any non-zero return code
-                               from a launched process.
-      --sourcelink           Optional: Display sourcelink URLs rather than file
-                               paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
-                               until process exit.
-  -v, --visibleBranches      Hide complex internal IL branching implementation
-                               details in switch/match constructs, and just
-                               show what the source level logic implies.
-      --showstatic[=VALUE]   Optional: Instrument and show code that is by
-                               default skipped as trivial.  --showstatic:- is
-                               equivalent to omitting the parameter; --
-                               showstatic or --showstatic:+ sets the unvisited
-                               count to a negative value interpreted by the
-                               visualizer (but treated as zero by
-                               ReportGenerator) ; --showstatic:++ sets the
-                               unvisited count to zero.
-      --showGenerated        Mark generated code with a visit count of -2 (
-                               Automatic) for the Visualizer if unvisited
-  -?, --help, -h             Prints out the options.
-or
-  ImportModule               Prints out the PowerShell script to import the
-                               associated PowerShell module
-or
-  version                    Prints out the AltCover build version
-"""
+        let expected = "Error - usage is:\n" +
+                       AltCoverUsage.usageText +
+                       "\nor\n" +
+                       "  ImportModule               Prints out the PowerShell script to import the\n" +
+                       "                               associated PowerShell module\n" +
+                       "or\n" +
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
           (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
       finally
@@ -2521,170 +2406,127 @@ or
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<Node>.Assembly.GetType("AltCover.AltCover")
+          typeof<Node>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = "\"-i\" \"" + unique + "\"\n" + "--inputDirectory : Directory "
-                       + unique + " not found\n" + """Error - usage is:
-  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
-                               to instrument (default: current directory)
-  -o, --outputDirectory=VALUE
-                             Optional, multiple: A folder to receive the
-                               instrumented assemblies and their companions (
-                               default: sub-folder '__Instrumented' of the
-                               current directory; or '__Saved' if '--inplace'
-                               is set).
-                               See also '--inplace'
-  -y, --symbolDirectory=VALUE
-                             Optional, multiple: Additional directory to search
-                               for matching symbols for the assemblies in the
-                               input directory
-  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
-                               missing reference.
-  -k, --key=VALUE            Optional, multiple: any other strong-name key to
-                               use
-      --sn, --strongNameKey=VALUE
-                             Optional: The default strong naming key to apply
-                               to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
-                                coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
-                               from instrumentation
-  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
-                               from instrumentation
-  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
-                               instrumentation
-  -e, --assemblyExcludeFilter=VALUE
-                             Optional, multiple: assembly which links other
-                               instrumented assemblies but for which internal
-                               details may be excluded
-  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
-                               instrumentation
-  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
-                               instrumentation
-  -a, --attributeFilter=VALUE
-                             Optional, multiple: attribute name to exclude from
-                               instrumentation
-  -l, --localSource          Don't instrument code for which the source file is
-                               not present.
-  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
-                               visits in ticks or designated method calls
-                               leading to the visits.
-                                   A single digit 0-7 gives the number of
-                               decimal places of seconds to report; everything
-                               else is at the mercy of the system clock
-                               information available through DateTime.UtcNow
-                                   A string in brackets "[]" is interpreted as
-                               an attribute type name (the trailing "Attribute"
-                               is optional), so [Test] or [TestAttribute] will
-                               match; if the name contains one or more ".",
-                               then it will be matched against the full name of
-                               the attribute type.
-                                   Other strings are interpreted as method
-                               names (fully qualified if the string contains
-                               any "." characters).
-                                   Incompatible with --single
-      --reportFormat=VALUE   Optional: Generate the report in the specified
-                               format (NCover or the default OpenCover)
-      --inplace              Optional: Instrument the inputDirectory, rather
-                               than the outputDirectory (e.g. for dotnet test)
-      --save                 Optional: Write raw coverage data to file for
-                               later processing
-      --zipfile              Optional: Emit the XML report inside a zip archive.
-      --methodpoint          Optional: record only whether a method has been
-                               visited or not.  Overrides the --linecover and --
-                               branchcover options.
-      --single               Optional: only record the first hit at any
-                               location.
-                                   Incompatible with --callContext.
-      --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
-                                   Incompatible with --branchcover.
-      --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
-                                   Incompatible with --linecover.
-      --dropReturnCode       Optional: Do not report any non-zero return code
-                               from a launched process.
-      --sourcelink           Optional: Display sourcelink URLs rather than file
-                               paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
-                               until process exit.
-  -v, --visibleBranches      Hide complex internal IL branching implementation
-                               details in switch/match constructs, and just
-                               show what the source level logic implies.
-      --showstatic[=VALUE]   Optional: Instrument and show code that is by
-                               default skipped as trivial.  --showstatic:- is
-                               equivalent to omitting the parameter; --
-                               showstatic or --showstatic:+ sets the unvisited
-                               count to a negative value interpreted by the
-                               visualizer (but treated as zero by
-                               ReportGenerator) ; --showstatic:++ sets the
-                               unvisited count to zero.
-      --showGenerated        Mark generated code with a visit count of -2 (
-                               Automatic) for the Visualizer if unvisited
-  -?, --help, -h             Prints out the options.
-or
-  Runner
-  -r, --recorderDirectory=VALUE
-                             The folder containing the instrumented code to
-                               monitor (including the AltCover.Recorder.g.dll
-                               generated by previous a use of the .net core
-                               AltCover).
-  -w, --workingDirectory=VALUE
-                             Optional: The working directory for the
-                               application launch
-  -x, --executable=VALUE     The executable to run e.g. dotnet
-      --collect              Optional: Process previously saved raw coverage
-                               data, rather than launching a process.
-  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
-                               collected data
-  -t, --threshold=VALUE      Optional: one or more of minimum acceptable
-                               statement (S), branch (B) or method (M) coverage
-                               percentage (integer, 1 to 100) or maximum
-                               acceptable CRAP score (C followed by integer, 1
-                               to 255) e.g. M80C40B50. If the value starts with
-                               a number, a leading S is assumed. If any
-                               threshold is specified more than once, the last
-                               instance is assumed -- so 25S50 counts as S50.
-                               Zero/absent values are ignored. If a coverage
-                               result is below threshold, or the CRAP score is
-                               above threshold, the return code of the process
-                               is the largest abs(threshold - actual) rounded
-                               up to the nearest integer.
-  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
-                               collected data
-  -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
-                               rather than overwriting the original report file.
-      --dropReturnCode       Optional: Do not report any non-zero return code
-                               from a launched process.
-      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary
-  -?, --help, -h             Prints out the options.
-"""
+                       + unique + " not found\n" + "Error - usage is:\n" +
+                       AltCoverUsage.usageText +
+                       "\nor\n" +
+                       AltCoverUsage.runnerText +
+                       "\nor\n" +
+                       "  ImportModule               Prints out the PowerShell script to import the\n" +
+                       "                               associated PowerShell module\n" +
+                       "or\n" +
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
-          (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+          (result.Replace("\r\n", "\n").Replace("\u200b",String.Empty),
+          Is.EqualTo(expected.Replace("\r\n", "\n")))
+
+        let helptext = CommandLine.resources.GetString("HelpText").Replace("\r\n", "\n")
+
+        let fixup (s:String) =
+          let valued = s.EndsWith("=", StringComparison.Ordinal)
+          let optional = s.EndsWith(":", StringComparison.Ordinal)
+          let abbrev = match s |> Seq.take 3 |> Seq.toList with
+                       | [ x; '|'; y ] when x = y -> true
+                       | _ -> false
+          let core = if abbrev
+                     then let h = s |> Seq.take 1 |> Seq.toArray |> String
+                          let t = s |> Seq.skip 3 |> Seq.toArray |> String
+                          (h + "[" + t + "]").Replace("=]", "]=")
+                     else s
+          if valued
+          then "[/" + core + "VALUE]"
+          else if optional
+               then ("[/" + core + "[VALUE]]").Replace(":[", "[=")
+                else "[--" + core + "]"
+
+        let mainHelp = Main.I.declareOptions()
+                       |> Seq.map (fun o -> o.Prototype)
+                       |> Seq.filter (fun s -> s.Length > 2)
+                       |> Seq.map fixup
+
+        let runnerHelp = Runner.declareOptions()
+                       |> Seq.map (fun o -> o.Prototype)
+                       |> Seq.filter (fun s -> s.Length > 2)
+                       |> Seq.map fixup
+
+        let synthetic = "AltCover " +
+                        String.Join(" ", mainHelp) +
+                        " [-- ] [...]\nor\nAltCover Runner " +
+                        String.Join(" ", runnerHelp) +
+                        " [-- ] [...]\nor\nAltCover ImportModule\nor\nAltCover Version\n" +
+                        "or, for the global tool only\nAltCover TargetsPath\n\n" +
+                        "See https://stevegilham.github.io/altcover/Usage for full details.\n"
+
+        test <@ synthetic = helptext @>
+
+        let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
+        let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
+        if File.Exists eo
+#if !NETCOREAPP2_0
+          && "Mono.Runtime"
+             |> Type.GetType
+             |> isNull
+#endif
+        then
+          let resources =
+            System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
+          let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
+          let syntheticeo = "AltCover " +
+                            String.Join(" ", mainHelp).Replace("VALUE", "VALO") +
+                            " [-- ] [...]\naŭ\nAltCover Runner " +
+                            String.Join(" ", runnerHelp).Replace("VALUE", "VALO") +
+                            " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n" +
+                            "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
+                            "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
+          test <@ syntheticeo = helptexteo @>
       finally
         Console.SetError saved
 
     // Tasks.fs
+    type Logging() =
+      member val Info : Action<String> = null with get, set
+      member val Warn : Action<String> = null with get, set
+      member val Failure : Action<String> = null with get, set
+      member val Echo : Action<String> = null with get, set
+
+      interface Abstract.ILoggingOptions with
+        member self.Info = self.Info
+        member self.Warn = self.Warn
+        member self.Failure = self.Failure
+        member self.Echo = self.Echo
+
     [<Test>]
     let LoggingCanBeExercised() =
       Main.init()
-      Assert.That(OptionApi.LoggingOptions.ActionAdapter null, Is.Not.Null)
-      (OptionApi.LoggingOptions.ActionAdapter null) "23"
-      Assert.That(OptionApi.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
+      (AltCover.LoggingOptions.ActionAdapter null) "23"
+      Assert.That(AltCover.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (OptionApi.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
+      (AltCover.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      OptionApi.LoggingOptions.Create().Info "32"
-      OptionApi.LoggingOptions.Create().Warn "32"
-      OptionApi.LoggingOptions.Create().Error "32"
-      OptionApi.LoggingOptions.Create().Echo "32"
+      AltCover.LoggingOptions.Create().Info "32"
+      AltCover.LoggingOptions.Create().Warn "32"
+      AltCover.LoggingOptions.Create().Error "32"
+      AltCover.LoggingOptions.Create().Echo "32"
+
+      let o = Logging()
+      let p = AltCover.LoggingOptions.Translate o
+      Assert.That(p.Warn, Is.Not.Null)
+      let p2 = AltCover.LoggingOptions.Abstract o
+      p2.Info "32"
+      p2.Warn "32"
+      p2.Error "32"
+      p2.Echo "32"
 
     [<Test>]
     let EmptyInstrumentIsJustTheDefaults() =
@@ -2700,13 +2542,13 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
         let result = subject.Execute()
         Assert.That(result, Is.False)
-        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save" ])
+        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2722,7 +2564,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         0)
@@ -2734,7 +2576,7 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2759,8 +2601,11 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
-        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
+
+        let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)
+        Assert.That(x.InnerException, Is.Not.Null.And.InstanceOf<InvalidOperationException>())
         Assert.Throws<InvalidOperationException>(fun () -> Output.info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.error "x") |> ignore
@@ -2783,7 +2628,7 @@ or
       let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
       try
         // subject.ACLog <- Some <| FSApi.Logging.Create()
-        aclog.SetValue(subject, Some <| OptionApi.LoggingOptions.Create())
+        aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
         Main.effectiveMain <- (fun a ->
         args <- a
         255)
@@ -2811,7 +2656,9 @@ or
         let result = subject.Execute()
         Assert.That(result, Is.True)
         Assert.That(args, Is.EquivalentTo [ "Runner"; "-x"; "dotnet"; "--"; "test" ])
-        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)
+        Assert.That(x.InnerException, Is.Not.Null.And.InstanceOf<InvalidOperationException>())
         Assert.Throws<InvalidOperationException>(fun () -> Output.info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.error "x") |> ignore
@@ -2829,11 +2676,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> AltCover.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, OptionApi.LoggingOptions.Create())
+      io.SetValue(subject, AltCover.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a
@@ -2858,11 +2705,11 @@ or
       let saved = (Output.info, Output.error)
       let warned = Output.warn
       let io = subject.GetType().GetProperty("IO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      let defaultIO = io.GetValue(subject) :?> OptionApi.LoggingOptions
+      let defaultIO = io.GetValue(subject) :?> AltCover.LoggingOptions
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> defaultIO.Error "x") |> ignore
       // subject.IO <- FSApi.Logging.Create()
-      io.SetValue(subject, OptionApi.LoggingOptions.Create())
+      io.SetValue(subject, AltCover.LoggingOptions.Create())
       try
         Main.effectiveMain <- (fun a ->
         args <- a

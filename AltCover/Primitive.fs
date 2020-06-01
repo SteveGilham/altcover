@@ -15,6 +15,8 @@ open System.Diagnostics.CodeAnalysis
 module Primitive =
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+  [<SuppressMessage("Gendarme.Rules.Design", "ConsiderAddingInterfaceRule",
+    Justification="Not worth the added knock-on complexity in F#")>]
   type CollectOptions =
     { RecorderDirectory : String
       WorkingDirectory : String
@@ -45,6 +47,8 @@ module Primitive =
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",
                     Justification="Plenty of options to support")>]
+  [<SuppressMessage("Gendarme.Rules.Design", "ConsiderAddingInterfaceRule",
+    Justification="Not worth the added knock-on complexity in F#")>]
   type PrepareOptions =
     { InputDirectories : String seq
       OutputDirectories : String seq
@@ -60,13 +64,16 @@ module Primitive =
       MethodFilter : String seq
       AttributeFilter : String seq
       PathFilter : String seq
+      AttributeTopLevel: String seq
+      TypeTopLevel: String seq
+      MethodTopLevel: String seq
       CallContext : String seq
       ReportFormat : String
       InPlace : bool
       Save : bool
       ZipFile : bool
       MethodPoint : bool
-      Single : bool
+      SingleVisit : bool
       LineCover : bool
       BranchCover : bool
       CommandLine : String seq
@@ -92,13 +99,16 @@ module Primitive =
         MethodFilter = Seq.empty
         AttributeFilter = Seq.empty
         PathFilter = Seq.empty
+        AttributeTopLevel = Seq.empty
+        TypeTopLevel = Seq.empty
+        MethodTopLevel = Seq.empty
         CallContext = Seq.empty
         ReportFormat = String.Empty
         InPlace = true
         Save = true
         ZipFile = false
         MethodPoint = false
-        Single = false
+        SingleVisit = false
         LineCover = false
         BranchCover = false
         CommandLine = []
@@ -115,13 +125,13 @@ module Primitive =
   type LoggingOptions =
     { Info : String -> unit
       Warn : String -> unit
-      Error : String -> unit
+      Failure : String -> unit
       Echo : String -> unit }
 
     static member Create() : LoggingOptions =
       { Info = ignore
         Warn = ignore
-        Error = ignore
+        Failure = ignore
         Echo = ignore }
 #endif
 

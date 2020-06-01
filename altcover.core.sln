@@ -4,13 +4,11 @@ VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover\altcover.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.csapi.core", "AltCover.CSApi\altcover.csapi.core.csproj", "{1C898811-75C4-419C-BE29-A4DD2430FBB3}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.powershell.core", "AltCover.PowerShell\altcover.powershell.core.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover.core", "AltCover.GlobalTool\global-altcover.core.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fsapi.core", "AltCover.FSApi\altcover.fsapi.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.toolkit.core", "AltCover.Toolkit\altcover.toolkit.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.cake.core", "AltCover.Cake\altcover.cake.core.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
 EndProject
@@ -56,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\powershell.ps1 = Build\powershell.ps1
+		Build\prepareDocumentation.ps1 = Build\prepareDocumentation.ps1
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md
 		Build\SelfTest.snk = Build\SelfTest.snk
@@ -93,6 +92,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample18.core", "Sample18\s
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.api.tests.core", "AltCover.Api.Tests\altcover.api.tests.core.fsproj", "{40FF8254-82F7-4875-A731-EB746B12F83B}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.dotnet.core", "AltCover.DotNet\altcover.dotnet.core.fsproj", "{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,12 +108,6 @@ Global
 		{26C01B27-9A3E-4460-BB43-5383C8E818FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26C01B27-9A3E-4460-BB43-5383C8E818FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{26C01B27-9A3E-4460-BB43-5383C8E818FB}.Release|x86.ActiveCfg = Release|Any CPU
-		{1C898811-75C4-419C-BE29-A4DD2430FBB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C898811-75C4-419C-BE29-A4DD2430FBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C898811-75C4-419C-BE29-A4DD2430FBB3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1C898811-75C4-419C-BE29-A4DD2430FBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C898811-75C4-419C-BE29-A4DD2430FBB3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C898811-75C4-419C-BE29-A4DD2430FBB3}.Release|x86.ActiveCfg = Release|Any CPU
 		{208B8925-5626-4E5D-A00B-6A993D850524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{208B8925-5626-4E5D-A00B-6A993D850524}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{208B8925-5626-4E5D-A00B-6A993D850524}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -244,17 +239,19 @@ Global
 		{8F488261-3FF5-4983-AE1E-17B151507552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F488261-3FF5-4983-AE1E-17B151507552}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F488261-3FF5-4983-AE1E-17B151507552}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8F488261-3FF5-4983-AE1E-17B151507552}.Debug|x86.Build.0 = Debug|Any CPU
 		{8F488261-3FF5-4983-AE1E-17B151507552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F488261-3FF5-4983-AE1E-17B151507552}.Release|x86.ActiveCfg = Release|Any CPU
-		{8F488261-3FF5-4983-AE1E-17B151507552}.Release|x86.Build.0 = Release|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{40FF8254-82F7-4875-A731-EB746B12F83B}.Debug|x86.Build.0 = Debug|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|x86.ActiveCfg = Release|Any CPU
-		{40FF8254-82F7-4875-A731-EB746B12F83B}.Release|x86.Build.0 = Release|Any CPU
+		{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

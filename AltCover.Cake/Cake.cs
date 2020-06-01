@@ -1,34 +1,43 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Cake.Core;
 using Cake.Core.Annotations;
 using LogLevel = Cake.Core.Diagnostics.LogLevel;
 using Verbosity = Cake.Core.Diagnostics.Verbosity;
+using FSCommand = AltCover.Command;
+using FSOptions = AltCover.AltCover.LoggingOptions;
 
 namespace AltCover.Cake
 {
   /// <summary>
   /// A C#-friendly expression of the core API to drive the instrumentation and collection process.
   /// </summary>
-  [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                    Justification = "It's the API for the system")]
-  public static class Api
+  public static class Command
   {
-    private static CSApi.ILoggingOptions MakeLog(ICakeContext context, CSApi.ILoggingOptions log)
+    private sealed class LoggingOptions : Abstract.ILoggingOptions
+    {
+      public Action<string> Info { get; set; }
+      public Action<string> Warn { get; set; }
+      public Action<string> Failure { get; set; }
+      public Action<string> Echo { get; set; }
+    }
+
+    private static FSOptions MakeLog(ICakeContext context, Abstract.ILoggingOptions log)
     {
       if (log != null)
-        return log;
+        return FSOptions.Translate(log);
 
-      var result = CSApi.Primitive.LoggingOptions.Create();
+      var result = new LoggingOptions();
 
       if (context != null)
       {
         result.Info = x => context.Log.Write(Verbosity.Normal, LogLevel.Information, x);
         result.Warn = x => context.Log.Write(Verbosity.Normal, LogLevel.Warning, x);
-        result.StandardError = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
+        result.Failure = x => context.Log.Write(Verbosity.Normal, LogLevel.Error, x);
         result.Echo = x => context.Log.Write(Verbosity.Verbose, LogLevel.Information, x);
       }
 
-      return result;
+      return FSOptions.Translate(result);
     }
 
     /// <summary>
@@ -42,9 +51,9 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Prepare(this ICakeContext context, CSApi.IPrepareOptions prepareArgs, CSApi.ILoggingOptions log = null)
+    public static int Prepare(this ICakeContext context, Abstract.IPrepareOptions prepareArgs, Abstract.ILoggingOptions log = null)
     {
-      return CSApi.Prepare(prepareArgs, MakeLog(context, log));
+      return FSCommand.Prepare(prepareArgs, MakeLog(context, log));
     }
 
     /// <summary>
@@ -58,9 +67,9 @@ namespace AltCover.Cake
     [CakeMethodAlias]
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
-    public static int Collect(this ICakeContext context, CSApi.ICollectOptions collectArgs, CSApi.ILoggingOptions log = null)
+    public static int Collect(this ICakeContext context, Abstract.ICollectOptions collectArgs, Abstract.ILoggingOptions log = null)
     {
-      return CSApi.Collect(collectArgs, MakeLog(context, log));
+      return FSCommand.Collect(collectArgs, MakeLog(context, log));
     }
 
     /// <summary>
@@ -73,7 +82,7 @@ namespace AltCover.Cake
     public static string ImportModule(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSApi.ImportModule();
+      return FSCommand.ImportModule();
     }
 
     /// <summary>
@@ -86,7 +95,7 @@ namespace AltCover.Cake
     public static System.Version Version(this ICakeContext context)
     {
       if (context == null) throw new System.ArgumentNullException(nameof(context));
-      return CSApi.Version();
+      return FSCommand.Version();
     }
   }
 }

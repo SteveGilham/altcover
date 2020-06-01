@@ -2,7 +2,7 @@
 
 Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.
 
-Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`. Two common abbreviations are supplied as switch parameters, and then others can be added free-form.
+Extends the built-in set of type abbreviations with user declared ones. Two common abbreviations are supplied as switch parameters, and then others can be added free-form.
 
 ```csharp
 Add-Accelerator -XDocument
@@ -28,9 +28,9 @@ public class AddAcceleratorCommand : PSCmdlet
 | [Accelerator](AddAcceleratorCommand/Accelerator-apidoc) { get; set; } | Add [accelerators] for the accelerator type |
 | [Mapping](AddAcceleratorCommand/Mapping-apidoc) { get; set; } | Mapping of name to type |
 | [XDocument](AddAcceleratorCommand/XDocument-apidoc) { get; set; } | Add [xdoc] for the `System.Xml.Linq.XDocument` type |
-| override [BeginProcessing](AddAcceleratorCommand/BeginProcessing-apidoc)() |  |
-| override [EndProcessing](AddAcceleratorCommand/EndProcessing-apidoc)() |  |
-| override [ProcessRecord](AddAcceleratorCommand/ProcessRecord-apidoc)() |  |
+| override [BeginProcessing](AddAcceleratorCommand/BeginProcessing-apidoc)() | Initialise the map of accelerator to type |
+| override [EndProcessing](AddAcceleratorCommand/EndProcessing-apidoc)() | Apply the new accelerator to type mappings |
+| override [ProcessRecord](AddAcceleratorCommand/ProcessRecord-apidoc)() | Accumulate new accelerator to type mappings |
 
 ## See Also
 
