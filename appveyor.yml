@@ -40,7 +40,7 @@ test:
     - _Binaries\AltCover.Tests.Visualizer\Debug+AnyCPU\net471\AltCover.Tests.Visualizer.dll
     - _Binaries\AltCover.WeakName.Tests\Debug+AnyCPU\net47\AltCover.WeakName.Tests.dll
 artifacts:
-- path: _Packagin*\*.nupkg
+- path: _Packagin*\altcover.*l*.nupkg
   name: NuGet
 deploy:
 - provider: NuGet
