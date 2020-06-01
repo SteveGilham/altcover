@@ -83,20 +83,20 @@ module DotNet =
                        Justification="Compiler Generated")>]
     let internal toPrepareListArgumentList (prepare : Abstract.IPrepareOptions) =
       [
-        fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe '|' separated list of paths"
-        fromList, "DependencyList", prepare.Dependencies //=`"pipe '|' separated list of paths"
-        fromList, "Keys", prepare.Keys //=`"pipe '|' separated list of paths to strong-name keys for re-signing assemblies"
-        fromList, "FileFilter", prepare.FileFilter //=`"pipe '|' separated list of file name regexes"
-        fromList, "AssemblyFilter", prepare.AssemblyFilter //=`"pipe '|' separated list of names"
-        fromList, "AssemblyExcludeFilter", prepare.AssemblyExcludeFilter //=`"pipe '|' separated list of names"
-        fromList, "TypeFilter", prepare.TypeFilter //=`"pipe '|' separated list of names"
-        fromList, "MethodFilter", prepare.MethodFilter //=`"pipe '|' separated list of names"
-        fromList, "AttributeFilter", prepare.AttributeFilter //=`"pipe '|' separated list of names"
-        fromList, "PathFilter", prepare.PathFilter //=`"pipe '|' separated list of file path regexes"
-        fromList, "AttributeTopLevel", prepare.AttributeTopLevel //=`"pipe '|' separated list of attribute regexs"
-        fromList, "TypeTopLevel", prepare.TypeTopLevel //=`"pipe '|' separated list of typename regexs"
-        fromList, "MethodTopLevel", prepare.MethodTopLevel //=`"pipe '|' separated list of method name regexs"
-        fromList, "CallContext", prepare.CallContext //=`"pipe '|' separated list of names or numbers"
+        fromList, "SymbolDirectories", prepare.SymbolDirectories //=`"pipe `'|'` separated list of paths"
+        fromList, "DependencyList", prepare.Dependencies //=`"pipe `'|'` separated list of paths"
+        fromList, "Keys", prepare.Keys //=`"pipe `'|'` separated list of paths to strong-name keys for re-signing assemblies"
+        fromList, "FileFilter", prepare.FileFilter //=`"pipe `'|'` separated list of file name regexes"
+        fromList, "AssemblyFilter", prepare.AssemblyFilter //=`"pipe `'|'` separated list of names"
+        fromList, "AssemblyExcludeFilter", prepare.AssemblyExcludeFilter //=`"pipe `'|'` separated list of names"
+        fromList, "TypeFilter", prepare.TypeFilter //=`"pipe `'|'` separated list of names"
+        fromList, "MethodFilter", prepare.MethodFilter //=`"pipe `'|'` separated list of names"
+        fromList, "AttributeFilter", prepare.AttributeFilter //=`"pipe `'|'` separated list of names"
+        fromList, "PathFilter", prepare.PathFilter //=`"pipe `'|'` separated list of file path regexes"
+        fromList, "AttributeTopLevel", prepare.AttributeTopLevel //=`"pipe `'|'` separated list of attribute regexs"
+        fromList, "TypeTopLevel", prepare.TypeTopLevel //=`"pipe `'|'` separated list of typename regexs"
+        fromList, "MethodTopLevel", prepare.MethodTopLevel //=`"pipe `'|'` separated list of method name regexs"
+        fromList, "CallContext", prepare.CallContext //=`"pipe `'|'` separated list of names or numbers"
       ]
 
     let internal toPrepareFromArgArgumentList (prepare : Abstract.IPrepareOptions) =

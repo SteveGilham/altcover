@@ -45,7 +45,7 @@ end
 // ```
 [<AutoOpen>]
 ///<summary>
-/// F#-style I&lt;Whatever&gt;ptions extension methods
+/// F#-style I&lt;Whatever&gt;Options extension methods
 ///</summary>
 module WhatIfExtension = begin
   ///<summary>

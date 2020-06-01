@@ -1,6 +1,6 @@
 # WhatIfExtension class
 
-F#-style I<Whatever>Options extension methods
+F#-style I&lt;Whatever&gt;Options extension methods
 
 ```csharp
 public static class WhatIfExtension
