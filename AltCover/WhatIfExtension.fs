@@ -16,3 +16,17 @@ module CollectExtension =
   let WhatIf (collect : Abstract.ICollectOptions) afterPreparation : AltCover.ValidatedCommandLine=
       { Command = Args.collect collect
         Errors = (AltCover.CollectOptions.Abstract collect).Validate(afterPreparation) }
+
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
+  Justification="Two different extension mechanisms need placating")>]
+[<AutoOpen>]
+module WhatIfExtension =
+  type Abstract.ICollectOptions with
+    member self.WhatIf afterPreparation : AltCover.ValidatedCommandLine =
+      CollectExtension.WhatIf self afterPreparation
+
+  type Abstract.IPrepareOptions with
+    [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Compiler generated name for unit parameter")>]
+    member self.WhatIf() =
+      PrepareExtension.WhatIf self

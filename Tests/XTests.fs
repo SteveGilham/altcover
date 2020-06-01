@@ -198,7 +198,7 @@ module AltCoverXTests =
     test
       <@ instance
          |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
-    let validate = (CollectExtension.WhatIf instance false)
+    let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --teamcity:+B" @>
 
@@ -331,7 +331,7 @@ module AltCoverXTests =
                                    "-c"; "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated";
                                    "-c"; "Test"; "--reportFormat"; "OpenCover"; "--inplace";
                                    "--save"; "--methodpoint" ] @>
-    let validate = (subject |> AltCover.PrepareOptions.TypeSafe |> PrepareExtension.WhatIf).ToString()
+    let validate = (AltCover.PrepareOptions.TypeSafe subject).WhatIf().ToString()
     test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location +
                  " -p ok -c [Fact] -c [System.SerializableAttribute] -c " +
                  "Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidated -c Test --reportFormat OpenCover --inplace --save --methodpoint" @>

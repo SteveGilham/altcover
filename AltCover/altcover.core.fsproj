@@ -140,6 +140,6 @@
     <Copy
             SourceFiles="$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Utilities.v4.0.dll;$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Framework.dll"
             DestinationFolder="$(TargetDir)" />
-    <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName)" />
+    <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>
 </Project>

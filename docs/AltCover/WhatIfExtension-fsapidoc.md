@@ -24,3 +24,15 @@ end
 These provide C#-compatible extension methods to perform a `WhatIf` style command line validation
 
 `WhatIf` compiles the effective command-line and the result of `Validate`
+
+## module `WhatIfExtension`
+```
+[<AutoOpen>]
+module WhatIfExtension = begin
+  type Abstract.ICollectOptions with
+    member WhatIf : afterPreparation:bool -> AltCover.AltCover.ValidatedCommandLine
+  type Abstract.IPrepareOptions with
+    member WhatIf : unit -> AltCover.AltCover.ValidatedCommandLine
+end
+```
+provides seamless F# style extensions
