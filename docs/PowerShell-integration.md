@@ -10,18 +10,18 @@ Import-Module $ipmo
 which unpeels the wrapper around the file path.  Just substitute in the appropriate invocation for the `AltCover`.
 
 ## Cmdlets
-* [Add-Accelerator](#Add-Accelerator)
-* [Compress-Branching](#Compress-Branching)
-* [ConvertFrom-NCover](#ConvertFrom-NCover)
-* [ConvertTo-BarChart](#ConvertTo-BarChart)
-* [ConvertTo-Cobertura](#ConvertTo-Cobertura)
-* [ConvertTo-Lcov](#ConvertTo-Lcov)
-* [ConvertTo-NCover](#ConvertTo-NCover)
-* [ConvertTo-XDocument](#ConvertTo-XDocument)
-* [ConvertTo-XmlDocument](#ConvertTo-XmlDocument)
-* [Get-Accelerator](#Get-Accelerator)
-* [Invoke-AltCover](#Invoke-AltCover)
-* [Write-OpenCoverDerivedState](#Write-OpenCoverDerivedState)
+* [Add-Accelerator](#add-accelerator)
+* [Compress-Branching](#compress-branching)
+* [ConvertFrom-NCover](#convertfrom-ncover)
+* [ConvertTo-BarChart](#convertto-barchart)
+* [ConvertTo-Cobertura](#convertto-cobertura)
+* [ConvertTo-Lcov](#convertto-lcov)
+* [ConvertTo-NCover](#convertto-ncover)
+* [ConvertTo-XDocument](#convertto-xdocument)
+* [ConvertTo-XmlDocument](#convertto-xmldocument)
+* [Get-Accelerator](#get-accelerator)
+* [Invoke-AltCover](#invoke-altcover)
+* [Write-OpenCoverDerivedState](#write-opencoverderivedstate)
  
 ###    Add-Accelerator
 
