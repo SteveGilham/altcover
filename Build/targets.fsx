@@ -2332,7 +2332,13 @@ _Target "Packaging" (fun _ ->
                "A cross-platform pre-instrumenting code coverage tool set for .net/.net core and Mono"
              OutputPath = outputPath
              WorkingDir = workingDir
-             Files = files
+             Files = files |> List.distinctBy (fun (f1,f2,_) -> let name = Path.GetFileName f1
+                                                                let path = match f2 with
+                                                                           | Some s -> s.Replace("\\", "/")
+                                                                           | _ -> ""
+                                                                if path.EndsWith(name, StringComparison.Ordinal)
+                                                                then path
+                                                                else path + "/" + name)
              Dependencies = dependencies
              Version = !Version
              Copyright = (!Copyright).Replace("©", "(c)")
