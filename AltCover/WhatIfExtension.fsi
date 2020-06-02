@@ -26,13 +26,13 @@ end
 ///</summary>
 module CollectExtension = begin
   [<Extension>]
-  val WhatIf :
   ///<summary>
   /// Validates the supplied options
   ///</summary>
   /// <param name="collect">The options</param>
   /// <param name="afterPreparation">Values indicating whether the instrumentation has already taken place</param>
   /// <returns>The validation outcome.</returns>
+  val WhatIf :
     collect:Abstract.ICollectOptions ->
       afterPreparation:bool -> AltCover.ValidatedCommandLine
 end
