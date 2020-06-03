@@ -34,6 +34,7 @@
     <EmbeddedResource Include="..\Tests\SameSpan.xml" Link="SameSpan.xml" />
     <EmbeddedResource Include="..\Tests\Sample1WithNCover.xml" Link="Sample1WithNCover.xml" />
     <EmbeddedResource Include="..\Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
+    <EmbeddedResource Include="..\Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="FSApiTests.fs" />
