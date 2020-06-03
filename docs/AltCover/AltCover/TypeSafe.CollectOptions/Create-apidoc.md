@@ -6,6 +6,10 @@ Returns an instance with all fields empty save `ExposeReturnCode` being `Set`
 public static CollectOptions Create()
 ```
 
+## Return Value
+
+a default instance
+
 ## See Also
 
 * class [CollectOptions](../TypeSafe.CollectOptions-apidoc)

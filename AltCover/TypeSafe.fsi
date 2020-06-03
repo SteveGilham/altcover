@@ -48,6 +48,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to be used in the effective command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> string
       end
     ///<summary>
@@ -71,6 +72,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to be used in the effective command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> string
       end
 // ```
@@ -89,6 +91,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to be used in the effective command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> System.String
       end
     ///<summary>
@@ -108,6 +111,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the strings to be used in the effective command line
         ///</summary>
+        ///<returns>the strings to be used in the effective command line</returns>
         member AsStrings : unit -> seq<System.String>
       end
 // ```
@@ -158,6 +162,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to be used in the effective command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
          member AsString : unit -> string
       end
 // ```
@@ -184,6 +189,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the effective boolean value
         ///</summary>
+        ///<returns>the effective boolean value</returns>
         member AsBool : unit -> bool
       end
 // ```
@@ -206,6 +212,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the strings to use in the command line
         ///</summary>
+        ///<returns>the strings to be used in the effective command line</returns>
         member AsStrings : unit -> System.String list
       end
     ///<summary>
@@ -225,6 +232,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the strings to use in the command line
         ///</summary>
+        ///<returns>the strings to be used in the effective command line</returns>
         member AsStrings : unit -> System.String list
       end
 // ```
@@ -251,6 +259,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string as would be used on the command line (regex with optional leading `'?`)
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> string
       end
     ///<summary>
@@ -268,8 +277,15 @@ namespace AltCoverFake.DotNet.Testing
       | Unfiltered
       with
         ///<summary>
+        /// Joins a set of filter items to this filter
+        ///</summary>
+        ///<param name="filters">The filter items to concatenate with</param>
+        ///<returns>the combined filter</returns>
+        member Join : filters:FilterItem seq -> Filters
+        ///<summary>
         /// Returns the strings to use in the command line
         ///</summary>
+        ///<returns>the strings to be used in the effective command line</returns>
         member AsStrings : unit -> System.String list
       end
 // ```
@@ -304,6 +320,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to use in the command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> System.String
       end
     ///<summary>
@@ -323,6 +340,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the strings to use in the command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsStrings : unit -> System.String list
       end
 // ```
@@ -357,6 +375,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to use in the command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> string
       end
     ///<summary>
@@ -380,6 +399,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to use in the command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> string
       end
     ///<summary>
@@ -399,6 +419,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns the string to use in the command line
         ///</summary>
+        ///<returns>the string to be used in the effective command line</returns>
         member AsString : unit -> string
       end
 // ```
@@ -459,6 +480,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns an instance with all fields empty save `ExposeReturnCode` being `Set`
         ///</summary>
+        ///<returns>a default instance</returns>
         static member Create : unit -> CollectOptions
       end
 // ```
@@ -620,6 +642,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set`
         ///</summary>
+        ///<returns>a default instance</returns>
         static member Create : unit -> PrepareOptions
       end
 // ```

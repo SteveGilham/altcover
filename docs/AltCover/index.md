@@ -3,7 +3,7 @@
 A common API for in-process coverage instrumentation and collection
 
 * [C# style documentation](AltCover-apidoc)
-* F# style documentation
+* F# style documentation - this document
 
 ## Composing the AltCover command line
 

@@ -6,6 +6,10 @@ Returns the strings to use in the command line
 public FSharpList<string> AsStrings()
 ```
 
+## Return Value
+
+the string to be used in the effective command line
+
 ## See Also
 
 * class [Context](../TypeSafe.Context-apidoc)

@@ -79,6 +79,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns an instance with all fields empty save `ExposeReturnCode` being `true`
         ///</summary>
+        ///<returns>a default instance</returns>
         static member Create : unit -> CollectOptions
       end
 // ```
@@ -240,6 +241,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns an instance with all fields empty that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
         ///</summary>
+        ///<returns>a default instance</returns>
         static member Create : unit -> PrepareOptions
       end
 // ```
@@ -280,6 +282,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns an instance that just discards all strings input.
         ///</summary>
+        ///<returns>a default instance</returns>
         static member Create : unit -> LoggingOptions
       end
 // ```

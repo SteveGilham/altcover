@@ -1,5 +1,7 @@
 # CollectExtension.WhatIf method
 
+Validates the supplied options
+
 ```csharp
 public static ValidatedCommandLine WhatIf(this ICollectOptions collect, bool afterPreparation)
 ```
@@ -8,6 +10,10 @@ public static ValidatedCommandLine WhatIf(this ICollectOptions collect, bool aft
 | --- | --- |
 | collect | The options |
 | afterPreparation | Values indicating whether the instrumentation has already taken place |
+
+## Return Value
+
+The validation outcome.
 
 ## See Also
 

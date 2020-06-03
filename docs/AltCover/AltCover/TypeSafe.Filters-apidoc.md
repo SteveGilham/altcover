@@ -13,6 +13,7 @@ public abstract class Filters : IEquatable<Filters>, IStructuralEquatable
 | static [get_Unfiltered](TypeSafe.Filters/get_Unfiltered-apidoc)() |  |
 | static [NewFilters](TypeSafe.Filters/NewFilters-apidoc)(…) |  |
 | [AsStrings](TypeSafe.Filters/AsStrings-apidoc)() | Returns the strings to use in the command line |
+| [Join](TypeSafe.Filters/Join-apidoc)(…) | Joins a set of filter items to this filter |
 | class [Filters](TypeSafe.Filters.Filters-apidoc) | A type-safe collection |
 | static class [Tags](TypeSafe.Filters.Tags-apidoc) |  |
 

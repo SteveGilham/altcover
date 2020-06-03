@@ -6,6 +6,10 @@ Returns a pure sink (all input ignored) instance
 public static LoggingOptions Create()
 ```
 
+## Return Value
+
+a default instance
+
 ## See Also
 
 * class [LoggingOptions](../AltCover.LoggingOptions-apidoc)
