@@ -853,6 +853,10 @@ module internal Runner =
                  (0, nodes.[0])
             |> ignore
 
+          // https://blog.ndepend.com/crap-metric-thing-tells-risk-code/
+          // Let CC(m) = cyclomatic complexity of a method and
+          // U(m) = the percentage of a method not covered by unit tests.
+          // CRAP(m) = CC(m)^2 * U(m)^3 + CC(m).
           let crapScore (method : XmlElement) =
             let coverage =
               let cover = stringToScore method "sequenceCoverage"
@@ -861,8 +865,8 @@ module internal Runner =
             let complexity = stringToScore method "cyclomaticComplexity"
 
             let raw =
-              (Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
-               + complexity)
+              Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
+               + complexity
             let score = raw |> scoreToString
             method.SetAttribute("crapScore", score)
             raw
@@ -886,21 +890,23 @@ module internal Runner =
             let pointVisits = visitCount sp
             let b0 = visitCount bp
             let branchVisits = b0 + Math.Sign b0
-            if pointVisits > 0 || b0 > 0 then
-              let fillMethod() =
-                let cover = percentCover pointVisits count
-                let bcover = percentCover branchVisits numBranches
-                method.SetAttribute("visited", "true")
-                method.SetAttribute("sequenceCoverage", cover)
-                method.SetAttribute("branchCoverage", bcover)
-                let raw = crapScore method
-                setSummary method pointVisits branchVisits 1 None cover bcover raw raw
-                computeBranchExitCount method.OwnerDocument sp bp
-                (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br + numBranches,
-                 Math.Min(minc, raw), Math.Max(maxc, raw))
-              fillMethod()
-            else
-              (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
+
+            // zero visits still need to fill in CRAP score
+            let cover = percentCover pointVisits count
+            let bcover = percentCover branchVisits numBranches
+            let methodVisit = if pointVisits > 0 || b0 > 0
+                              then
+                                method.SetAttribute("visited", "true")
+                                1
+                              else 0
+            method.SetAttribute("sequenceCoverage", cover)
+            method.SetAttribute("branchCoverage", bcover)
+            let raw = crapScore method
+            setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
+            computeBranchExitCount method.OwnerDocument sp bp
+            (vb + branchVisits, vs + pointVisits, vm + methodVisit,
+              pt + count, br + numBranches,
+              Math.Min(minc, raw), Math.Max(maxc, raw))
 
           let updateClass (dict : Dictionary<int, PointVisit>)
               (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =

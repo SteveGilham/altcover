@@ -2210,9 +2210,10 @@ module AltCoverRunnerTests =
       |> Seq.iter (fun el ->
            el.SetAttribute("visitedSequencePoints", "0")
            el.SetAttribute("sequenceCoverage", "0")
+           if el.GetAttribute("maxCrapScore") = "2.11" then
+             el.SetAttribute("maxCrapScore", "2.15")
            if el.GetAttribute("minCrapScore") = "2.11" then
-             el.SetAttribute("minCrapScore", "2.15")
-             el.SetAttribute("maxCrapScore", "2.15"))
+             el.SetAttribute("minCrapScore", "2.15"))
       after.DocumentElement.SelectNodes("//Method")
       |> Seq.cast<XmlElement>
       |> Seq.iter
@@ -2280,6 +2281,7 @@ module AltCoverRunnerTests =
            el.SetAttribute("sequenceCoverage", "0")
            if el.GetAttribute("minCrapScore") = "2.11" then
              el.SetAttribute("minCrapScore", "2.15")
+           if el.GetAttribute("maxCrapScore") = "2.11" then
              el.SetAttribute("maxCrapScore", "2.15"))
       after.DocumentElement.SelectNodes("//Method")
       |> Seq.cast<XmlElement>
