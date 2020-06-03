@@ -40,6 +40,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns a nicely formatted representation
         ///</summary>
+        ///<returns>a nicely formatted representation</returns>
         override ToString : unit -> string
       end
 // ```
@@ -367,6 +368,7 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Returns a pure sink (all input ignored) instance
         ///</summary>
+        ///<returns>a default instance</returns>
         static member Create : unit -> LoggingOptions
         ///<summary>
         /// Translates a C# style interface to the corresponding F# type

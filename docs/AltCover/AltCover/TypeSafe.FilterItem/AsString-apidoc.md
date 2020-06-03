@@ -6,6 +6,10 @@ Returns the string as would be used on the command line (regex with optional lea
 public string AsString()
 ```
 
+## Return Value
+
+the string to be used in the effective command line
+
 ## See Also
 
 * class [FilterItem](../TypeSafe.FilterItem-apidoc)

@@ -316,7 +316,7 @@ module AltCoverXTests =
                                                     TypeSafe.CallerName "Test" |]
                                              MethodPoint = TypeSafe.Set
                                              PathFilter =
-                                               TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
+                                               TypeSafe.Unfiltered.Join [| TypeSafe.Raw "ok" |] }
 
     let instance = AltCover.PrepareOptions.TypeSafe subject
     test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
@@ -358,8 +358,8 @@ module AltCoverXTests =
                                                  [| TypeSafe.CommandArgument "[Fact]" |]
                                              ReportFormat = TypeSafe.ReportFormat.NCover
                                              PathFilter =
-                                               TypeSafe.Filters
-                                                 [| TypeSafe.MatchItem <| Regex "ok" |] }
+                                               (TypeSafe.Filters
+                                                 [| TypeSafe.MatchItem <| Regex "ok" |]).Join[] }
 
     let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
     test <@ scan.Length = 0 @>

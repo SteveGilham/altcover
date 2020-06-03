@@ -803,7 +803,9 @@ module internal Runner =
             |> Seq.tryHead
             |> Option.iter (fun s ->
                  let minc =
-                   (if minCrap = Double.MaxValue then 0.0 else minCrap)
+                   (if minCrap = Double.MaxValue
+                   then 0.0
+                   else minCrap)
                    |> scoreToString
 
                  let maxc =

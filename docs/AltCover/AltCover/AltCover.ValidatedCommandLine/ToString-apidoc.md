@@ -6,6 +6,10 @@ Returns a nicely formatted representation
 public override string ToString()
 ```
 
+## Return Value
+
+a nicely formatted representation
+
 ## See Also
 
 * class [ValidatedCommandLine](../AltCover.ValidatedCommandLine-apidoc)
