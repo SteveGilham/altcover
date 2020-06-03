@@ -6,6 +6,10 @@ returns an instance that has all fields unset/default except `ExposeReturnCode`,
 public static PrepareOptions Create()
 ```
 
+## Return Value
+
+a default instance
+
 ## See Also
 
 * class [PrepareOptions](../TypeSafe.PrepareOptions-apidoc)

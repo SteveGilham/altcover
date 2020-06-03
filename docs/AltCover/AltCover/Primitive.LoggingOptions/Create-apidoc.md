@@ -6,6 +6,10 @@ Returns an instance that just discards all strings input.
 public static LoggingOptions Create()
 ```
 
+## Return Value
+
+a default instance
+
 ## See Also
 
 * class [LoggingOptions](../Primitive.LoggingOptions-apidoc)

@@ -6,6 +6,10 @@ Returns the effective boolean value
 public bool AsBool()
 ```
 
+## Return Value
+
+the effective boolean value
+
 ## See Also
 
 * class [Flag](../TypeSafe.Flag-apidoc)

@@ -47,7 +47,7 @@ $mdfile = "./docs/PowerShell-integration.md"
 $preamble | Out-File -Encoding UTF8 $mdfile
 
 $m.ExportedCmdlets.Keys | Sort-Object | % {
-    "* [$_](#$_)" | Out-File -Encoding UTF8 -Append $mdfile
+    "* [$_](#$($_.ToLowerInvariant()))" | Out-File -Encoding UTF8 -Append $mdfile
 }
 
 " " | Out-File -Encoding UTF8 -Append $mdfile

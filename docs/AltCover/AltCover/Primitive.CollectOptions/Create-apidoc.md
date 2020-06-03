@@ -6,6 +6,10 @@ Returns an instance with all fields empty save `ExposeReturnCode` being `true`
 public static CollectOptions Create()
 ```
 
+## Return Value
+
+a default instance
+
 ## See Also
 
 * class [CollectOptions](../Primitive.CollectOptions-apidoc)

@@ -6,6 +6,10 @@ Returns the strings to be used in the effective command line
 public IEnumerable<string> AsStrings()
 ```
 
+## Return Value
+
+the strings to be used in the effective command line
+
 ## See Also
 
 * class [CommandLine](../TypeSafe.CommandLine-apidoc)

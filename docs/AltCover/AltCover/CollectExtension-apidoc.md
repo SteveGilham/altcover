@@ -10,7 +10,7 @@ public static class CollectExtension
 
 | name | description |
 | --- | --- |
-| static [WhatIf](CollectExtension/WhatIf-apidoc)(…) |  |
+| static [WhatIf](CollectExtension/WhatIf-apidoc)(…) | Validates the supplied options |
 
 ## See Also
 

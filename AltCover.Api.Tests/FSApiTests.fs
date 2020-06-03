@@ -52,6 +52,78 @@ module FSApiTests =
     test <@ transformed |> isNull |> not @>
 
   [<Test>]
+  let PostprocessShouldRestoreBranchOnlyOpenCoverState() =
+    Counter.measureTime <- DateTime.ParseExact
+                              ("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    let resource2 =
+      Assembly.GetExecutingAssembly().GetManifestResourceNames()
+      |> Seq.find
+           (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+    use stream =
+      Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+    let after = XDocument.Load(stream)
+    let setAttribute (x:XElement) n v =
+      x.Attribute(XName.Get n).Value <- v
+    let getAttribute (x:XElement) n =
+      x.Attribute(XName.Get n).Value
+
+    after.Descendants(XName.Get "Summary")
+    |> Seq.iter (fun el ->
+          setAttribute el "visitedSequencePoints" "0"
+          setAttribute el "sequenceCoverage" "0"
+          if getAttribute el "minCrapScore" = "2.11" then
+            setAttribute el "minCrapScore" "2.15"
+          if getAttribute el "maxCrapScore" = "2.11" then
+            setAttribute el "maxCrapScore" "2.15")
+
+    after.Descendants(XName.Get "Method")
+    |> Seq.iter
+          (fun el ->
+          setAttribute el "sequenceCoverage" "0"
+          if getAttribute el "crapScore" = "2.11" then
+            setAttribute el "crapScore" "2.15")
+    after.Descendants(XName.Get "SequencePoint")
+    |> Seq.toList
+    |> List.iter (fun el ->
+          el.Remove())
+    after.Descendants(XName.Get "MethodPoint")
+    |> Seq.iter (fun el -> setAttribute el "vc" "0")
+    let before =
+      after.ToString()
+      |> XDocument.Parse
+
+    after.Descendants(XName.Get "Summary")
+    |> Seq.iter (fun el ->
+          setAttribute el "visitedBranchPoints" "0"
+          setAttribute el "branchCoverage" "0"
+          setAttribute el "visitedSequencePoints" "0"
+          setAttribute el "sequenceCoverage" "0"
+          setAttribute el "visitedClasses" "0"
+          setAttribute el "visitedMethods" "0"
+          if getAttribute el "minCrapScore"
+            |> String.IsNullOrWhiteSpace
+            |> not
+          then
+            setAttribute el "minCrapScore" "0"
+            setAttribute el "maxCrapScore" "0")
+    after.Descendants(XName.Get "Method")
+    |> Seq.iter (fun el ->
+          setAttribute el "visited" "false"
+          setAttribute el "sequenceCoverage" "0"
+          setAttribute el "branchCoverage" "0"
+          if getAttribute el "crapScore"
+            |> String.IsNullOrWhiteSpace
+            |> not
+          then setAttribute el "crapScore" "0")
+    OpenCover.PostProcess after BranchOrdinal.Offset
+#if !NETCOREAPP3_0
+    NUnit.Framework.Assert.That(after.ToString(),
+        NUnit.Framework.Is.EqualTo(before.ToString()))
+#endif
+
+    test <@ after.ToString() = before.ToString() @>
+
+  [<Test>]
   let OpenCoverToLcov() =
     use stream=
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")

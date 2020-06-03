@@ -6,6 +6,10 @@ Returns an instance with all fields empty that has all empty or `false` fields e
 public static PrepareOptions Create()
 ```
 
+## Return Value
+
+a default instance
+
 ## See Also
 
 * class [PrepareOptions](../Primitive.PrepareOptions-apidoc)

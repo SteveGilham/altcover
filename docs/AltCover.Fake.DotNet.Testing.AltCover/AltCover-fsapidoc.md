@@ -46,6 +46,7 @@ This represents the  command line options and its validation
 
 
 
+
 ### type `CollectOptions`
 
 The members correspond to the like-named command line options for `AltCover Runner`, except
@@ -163,6 +164,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
 The property members corresponding to the command line options read the values from the contained instance; null strings will be retrurned as null, but null sequences will be returned as empty ones.
 
  Values that are not applicable to the use case or platform are silently ignored.
+
 
 
 

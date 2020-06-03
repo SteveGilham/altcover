@@ -117,6 +117,7 @@ This holds the strongly-typed equivalent of the command line options
       | Filters of seq<FilterItem>
       | Unfiltered
       with
+        member Join : filters:FilterItem seq -> Filters
         member AsStrings : unit -> System.String list
       end
 ```

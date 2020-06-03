@@ -6,6 +6,10 @@ Returns the string to use in the command line
 public string AsString()
 ```
 
+## Return Value
+
+the string to be used in the effective command line
+
 ## See Also
 
 * class [SummaryFormat](../TypeSafe.SummaryFormat-apidoc)
