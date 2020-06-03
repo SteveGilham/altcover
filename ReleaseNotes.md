@@ -2,6 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.0.77x (Genbu series release 2)
+* [BUGFIX] Compute CRAP score for unvisited methods too (and add it to the higher level summary items)
+* Add `TypeSafe.Filters.Join` to compute the concatenation of a `TypeSafe.FilterItems seq` to an existing `TypeSafe.Filters` instance.  Strict SemVer would bump the minor version at this point, but given the short time since the initial 7.0 release, I doubt the dust has settled fully yet.
+
 # 7.0.770 (Genbu series release 1)
 * There are functional changes (fixes and enhancements from the previous pre-release)
 * [BUGFIX] Don't automatically exclude C# inner functions (and other `[CompilerGenerated]`) from coverage.
