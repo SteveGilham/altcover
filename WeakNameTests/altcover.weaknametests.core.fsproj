@@ -4,7 +4,7 @@
     <TargetFrameworks>net47</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <AssemblyName>AltCover.WeakName.Tests</AssemblyName>
+    <AssemblyName>AltCover.WeakName.Testing</AssemblyName>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
