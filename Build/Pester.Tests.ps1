@@ -687,3 +687,37 @@ Describe "Write-OpenCoverDerivedState" {
     $result | Should -BeExactly $expected
   }
 }
+
+Describe "MergeCoverage" {
+  It "Absorbs Unsupported Xml Files" {
+    $xml = dir -recurse "./Tests/*.cobertura" | Merge-Coverage
+    $xml | Should -BeOfType [xdoc]
+    $xml.ToString() | Should -BeFalse
+  }
+
+  It "Selects Single OpenCover Files" {
+    $files = ("./Tests/HandRolledMonoCoverage.xml", "./Tests/Sample1WithNCover.xml","./Tests/OpenCover.cobertura")
+    $xml = $files | Merge-Coverage
+       $xml | Should -BeOfType [xdoc]
+       $expected = [xdoc]::Load("./Tests/HandRolledMonoCoverage.xml")
+       $xml.ToString() | Should -BeExactly $expected.ToString().Replace(' standalone="yes"', '')
+  }
+
+  It "Selects Single NCoverCover Files" {
+    $files = ("./Tests/HandRolledMonoCoverage.xml", "./Tests/Sample1WithNCover.xml","./Tests/OpenCover.cobertura")
+    $xml = $files | Merge-Coverage -AsNCover -OutputFile "./_Packaging/Sample1WithNCoverOnly.xml"
+    $xml | Should -BeOfType [xdoc]
+    $expected = [xdoc]::Load("./Tests/Sample1WithNCover.xml")
+    $xml.ToString() | Should -BeExactly $expected.ToString()
+    $result = [xdoc]::Load("./_Packaging/Sample1WithNCoverOnly.xml")
+    $result.ToString() | Should -BeExactly $expected.ToString()
+  }
+
+  It "Combines Top Level Summaries" {
+    $files = ("./Tests/HandRolledMonoCoverage.xml", "./Tests/Sample4.Prepare.xml")
+    $xml = $files | Merge-Coverage -OutputFile "./_Packaging/OpenCoverCombination-1.xml"
+    $xml | Should -BeOfType [xdoc]
+    $summary = ($xml.Descendants("Summary") | Select-Object -First 1).ToString()
+    $summary | Should -BeExactly '<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />'
+  }
+}

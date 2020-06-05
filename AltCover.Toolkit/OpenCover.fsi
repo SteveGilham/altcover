@@ -48,4 +48,15 @@ namespace AltCover
         withinSequencePoint:bool -> sameSpan:bool -> System.Xml.Linq.XDocument
 // ```
 // Takes output from the OpenCover program, and adjust from OpenCover's liberal idea of significant branches towards AltCover's more restricted approach -- chose either or both of `sameSpan` to unify branches that go from the same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and `withinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807 being instances of this).
+
+    /// <summary>
+    /// <para type="synopsis">Merges coverage documents.</para>
+    /// <para type="description">Takes a set of coverage documents and crates a composite</para>
+    /// <param name="documentS">The input reportS</param>
+    /// <param name="ncover">Whether to select the NCover format documents (rather than the OpenCover ones)</param>
+    /// </summary>
+    val MergeCoverage :
+      documents:System.Xml.Linq.XDocument seq ->
+        ncover:bool -> System.Xml.Linq.XDocument
+// Takes a set of coverage documents and returns the combined effect
   end //// no doc

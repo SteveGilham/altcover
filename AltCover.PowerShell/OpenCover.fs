@@ -1,6 +1,8 @@
 namespace AltCover.Commands
 
 open System
+open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Management.Automation
 open System.Xml.Linq
@@ -94,3 +96,95 @@ type CompressBranchingCommand() =
       self.WriteObject xmlDocument
     finally
       Directory.SetCurrentDirectory here
+
+/// <summary>
+/// <para type="synopsis">Merges coverage documents.</para>
+/// <para type="description">Takes a set of coverage documents and crates a composite</para>
+/// <example>
+///   <code>    $xml = $docs | Merge-Coverage -OutputFile "./_Packaging/Combined.xml"</code>
+/// </example>
+/// </summary>
+[<Cmdlet(VerbsData.Merge, "Coverage")>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
+  Justification="The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
+  Justification="The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
+type MergeCoverageCommand() =
+  inherit PSCmdlet()
+
+  let whileInCurrentDirectory (self:PSCmdlet) f =
+    let here = Directory.GetCurrentDirectory()
+    try
+       let where = self.SessionState.Path.CurrentLocation.Path
+       Directory.SetCurrentDirectory where
+       f()
+    finally
+      Directory.SetCurrentDirectory here
+
+  /// <summary>
+  /// <para type="description">Input as XML</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<ValidateNotNull; ValidateCount(1, Int32.MaxValue)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val XDocument : XDocument array = [||] with get, set
+
+  /// <summary>
+  /// <para type="description">Input as file paths</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Files", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<ValidateNotNull; ValidateCount(1, Int32.MaxValue)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819",
+                    Justification = "ditto, ditto")>]
+  member val InputFile : string array = [||] with get, set
+
+  /// <summary>
+  /// <para type="description">Output as file path</para>
+  /// </summary>
+  [<Parameter(Mandatory = false, ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile : string = String.Empty with get, set
+
+  /// <summary>
+  /// <para type="description">Select NCover rather than OpenCover if set</para>
+  /// </summary>
+  [<Parameter(Mandatory = false)>]
+  member val AsNCover : SwitchParameter = SwitchParameter(false) with get, set
+
+  member val private Files = new List<XDocument>()
+
+  override self.BeginProcessing() = self.Files.Clear()
+
+  [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+    Justification="Inlined library code")>]
+  member private self.FilesToDocuments() =
+    self.InputFile
+    |> Array.map XDocument.Load
+    |> self.Files.AddRange
+
+  override self.ProcessRecord() =
+    whileInCurrentDirectory self (fun _ ->
+      if self.ParameterSetName.StartsWith("File", StringComparison.Ordinal)
+      then self.FilesToDocuments()
+      self.Files.AddRange self.XDocument)
+
+  override self.EndProcessing() =
+    whileInCurrentDirectory self (fun _ ->
+      let xmlDocument =
+        AltCover.OpenCover.MergeCoverage self.Files self.AsNCover.IsPresent
+      if self.OutputFile
+         |> String.IsNullOrWhiteSpace
+         |> not
+      then xmlDocument.Save(self.OutputFile)
+
+      self.WriteObject xmlDocument)

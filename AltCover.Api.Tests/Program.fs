@@ -26,6 +26,10 @@ module TestMain =
           Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
           Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
           Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
+          Tests.FSApiTests.MergeRejectsNonCoverage, "FSApiTests.MergeRejectsNonCoverage"
+          Tests.FSApiTests.MergePassesSingleNCover, "FSApiTests.MergePassesSingleNCover"
+          Tests.FSApiTests.MergePassesSingleOpenCover, "FSApiTests.MergePassesSingleOpenCover"
+          Tests.FSApiTests.MergeCombinesSummaryCoverage, "FSApiTests.MergeCombinesSummaryCoverage"
         ]
 
   let specials =

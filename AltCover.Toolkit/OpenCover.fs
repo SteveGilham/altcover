@@ -1,6 +1,7 @@
 namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
@@ -484,6 +485,124 @@ module OpenCover =
     // tidy up here
     PostProcess xmlDocument BranchOrdinal.Offset
     xmlDocument
+
+  let mergeNCover (inputs : XDocument list) =
+    let doc = XDocument()
+    XComment(inputs.ToString())
+    |> doc.AddFirst
+    doc
+
+  let mergeOpenCover(inputs : XDocument list) =
+    let loadFromString() =
+      use reader = // fsharplint:disable-next-line  RedundantNewKeyword
+        new StringReader("""<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>""")
+      let doc = XDocument.Load(reader)
+      doc
+
+    let doc = loadFromString()
+
+    let modules =
+      inputs
+      |> List.collect
+           (fun x -> x.Descendants(XName.Get "Module") |> Seq.toList)
+      |> List.groupBy (fun x -> x.Attribute(XName.Get "hash").Value)
+
+    let results = Dictionary<string, XElement>()
+    let classes = Dictionary<string, XElement>()
+    let summaries = List<XElement>()
+    modules
+    |> List.iter (fun (h, l) ->
+         let m = XElement(XName.Get "Module")
+         results.Add(h, m)
+         m.SetAttribute("hash", h)
+         let s =
+           l
+           |> List.map (fun x -> let a = x.Attribute(XName.Get "skippedDueTo")
+                                 if a |> isNull
+                                 then String.Empty
+                                 else a.Value)
+           |> List.distinct
+         if s |> List.exists String.IsNullOrWhiteSpace then ()
+         else m.SetAttribute("skippedDueTo", String.Join(";", s))
+         match l
+               |> List.map (fun x ->
+                    x.Descendants(XName.Get "Summary")
+                    |> Seq.tryHead)
+               |> List.choose id
+               |> List.tryHead with
+         | Some n ->
+           summaries.Add n
+           let copy = XElement(n)
+           m.Add copy
+         | None -> ()
+         (l |> List.head).Descendants()
+         |> Seq.filter (fun n -> n.Name.LocalName.StartsWith("Module", StringComparison.Ordinal))
+         |> Seq.iter (fun n ->
+              let copy = XElement(n)
+              m.Add copy)
+         // Maybe Files
+         let c = XElement(XName.Get "Classes")
+         classes.Add(h, c)
+         c
+         |> m.Add)
+    // Maybe TrackedMethods
+    let (numSequencePoints, numBranchPoints, maxCyclomaticComplexity,
+         minCyclomaticComplexity, numClasses, numMethods) =
+      summaries
+      |> Seq.fold
+           (fun x summary ->
+           let (s, b, xcc, ncc, c, m) = x
+           (s + (Int32.TryParse(summary.Attribute(XName.Get "numSequencePoints").Value) |> snd),
+            b + (Int32.TryParse(summary.Attribute(XName.Get "numBranchPoints").Value) |> snd),
+            Math.Max
+              (xcc, Int32.TryParse(summary.Attribute(XName.Get "maxCyclomaticComplexity").Value) |> snd),
+            Math.Min
+              (ncc, Int32.TryParse(summary.Attribute(XName.Get "minCyclomaticComplexity").Value) |> snd),
+            c + (Int32.TryParse(summary.Attribute(XName.Get "numClasses").Value) |> snd),
+            m + (Int32.TryParse(summary.Attribute(XName.Get "numMethods").Value) |> snd)))
+           (0, 0, 1, Int32.MaxValue, 0, 0)
+
+    let summary = doc.Descendants(XName.Get "Summary") |> Seq.head
+    summary.SetAttribute
+      ("numSequencePoints", numSequencePoints.ToString(CultureInfo.InvariantCulture))
+    summary.SetAttribute
+      ("numBranchPoints", numBranchPoints.ToString(CultureInfo.InvariantCulture))
+    summary.SetAttribute
+      ("maxCyclomaticComplexity",
+       Math.Max(1, maxCyclomaticComplexity).ToString(CultureInfo.InvariantCulture))
+    summary.SetAttribute
+      ("minCyclomaticComplexity",
+       Math.Max(1, Math.Min(minCyclomaticComplexity, maxCyclomaticComplexity))
+           .ToString(CultureInfo.InvariantCulture))
+    summary.SetAttribute("numClasses", numClasses.ToString(CultureInfo.InvariantCulture))
+    summary.SetAttribute("numMethods", numMethods.ToString(CultureInfo.InvariantCulture))
+
+    // tidy up here
+    PostProcess doc BranchOrdinal.Offset
+    doc
+
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="NCover is a name")>]
+  let MergeCoverage (documents : XDocument seq) ncover =
+    let inputs =
+      documents
+      |> Seq.map (fun x ->
+           try
+             let format = XmlUtilities.discoverFormat x
+             match (ncover, format) with
+             | (true, ReportFormat.NCover)
+             | (false, ReportFormat.OpenCover) ->
+               Some x
+             | _ -> None
+           with :? XmlSchemaValidationException -> None)
+      |> Seq.choose id
+      |> Seq.toList
+    match inputs with
+    | [] -> XDocument()
+    | [ x ] -> x
+    | _ ->
+      if ncover then mergeNCover inputs
+      else mergeOpenCover inputs
 
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline",
   Scope="member", Target="<StartupCode$AltCover-Toolkit>.$OpenCover.#.cctor()",

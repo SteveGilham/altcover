@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Summary numSequencePoints="22" visitedSequencePoints="0" numBranchPoints="14" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="6" visitedMethods="0" numMethods="10" minCrapScore="0" maxCrapScore="0" />
+  <Modules>
+    <Module hash="29-1D-19-F6-F3-E2-3E-33-08-36-71-2D-53-09-BD-DA-B2-35-AF-08">
+      <Summary numSequencePoints="22" visitedSequencePoints="0" numBranchPoints="14" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="6" visitedMethods="0" numMethods="10" minCrapScore="0" maxCrapScore="0" />
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\_Binaries\Sample4\Debug+AnyCPU\__Saved18-09-2018+13-34-47\Sample4.dll</ModulePath>
+      <ModuleTime>2018-09-18T13:21:42.434Z</ModuleTime>
+      <ModuleName>Sample4</ModuleName>
+      <Files>
+        <File uid="1" fullPath="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      </Files>
+      <Classes>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>&lt;Module&gt;</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>&lt;StartupCode$Sample4&gt;.$.NETFramework,Version=v4.6.1.AssemblyAttributes</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="5" visitedSequencePoints="0" numBranchPoints="3" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="3" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663297</MetadataToken>
+              <Name>Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="0" ordinal="0" offset="0" sl="41" sc="23" el="41" ec="28" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663298</MetadataToken>
+              <Name>Tests.DU/MyUnion Tests.DU::returnBar(System.String)</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="1" ordinal="0" offset="0" sl="43" sc="23" el="43" ec="28" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="3" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663299</MetadataToken>
+              <Name>System.Void Tests.DU::testMakeUnion()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="4" ordinal="0" offset="0" sl="47" sc="9" el="47" ec="43" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="3" ordinal="1" offset="19" sl="48" sc="9" el="48" ec="45" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="2" ordinal="2" offset="44" sl="49" sc="9" el="49" ec="50" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="10" visitedSequencePoints="0" numBranchPoints="6" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="2" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="11" nPathComplexity="4" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="9" visitedSequencePoints="0" numBranchPoints="5" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="11" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663318</MetadataToken>
+              <Name>Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="13" ordinal="0" offset="0" sl="28" sc="35" el="28" ec="50" bec="4" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="12" ordinal="1" offset="57" sl="29" sc="46" el="29" ec="60" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="11" ordinal="2" offset="141" sl="28" sc="35" el="28" ec="50" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="10" ordinal="3" offset="158" sl="30" sc="46" el="30" ec="60" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="9" ordinal="4" offset="243" sl="28" sc="35" el="28" ec="50" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="8" ordinal="5" offset="260" sl="31" sc="46" el="31" ec="60" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="7" ordinal="6" offset="342" sl="33" sc="42" el="33" ec="46" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="6" ordinal="7" offset="346" sl="34" sc="33" el="34" ec="37" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="5" ordinal="8" offset="353" sl="35" sc="40" el="35" ec="50" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints>
+                <BranchPoint vc="0" uspid="0" ordinal="0" offset="8" sl="28" path="0" offsetchain="29" offsetend="342" fileid="1" />
+                <BranchPoint vc="0" uspid="1" ordinal="1" offset="8" sl="28" path="1" offsetchain="34" offsetend="43" fileid="1" />
+                <BranchPoint vc="0" uspid="2" ordinal="2" offset="8" sl="28" path="2" offsetchain="36" offsetend="141" fileid="1" />
+                <BranchPoint vc="0" uspid="3" ordinal="3" offset="8" sl="28" path="3" offsetchain="38" offsetend="243" fileid="1" />
+              </BranchPoints>
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="true" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663319</MetadataToken>
+              <Name>Microsoft.FSharp.Core.FSharpFunc`2&lt;Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion&gt; Tests.DU/MyUnion::get_MyBar()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="14" ordinal="0" offset="0" sl="36" sc="30" el="36" ec="41" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Tags</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Foo</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Bar</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Baz</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Bop</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Foo@DebugTypeProxy</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Bar@DebugTypeProxy</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Baz@DebugTypeProxy</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyUnion/Bop@DebugTypeProxy</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/get_MyBar@36</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663339</MetadataToken>
+              <Name>Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="15" ordinal="0" offset="0" sl="36" sc="30" el="36" ec="41" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="2" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.DU/MyClass</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="2" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663340</MetadataToken>
+              <Name>System.Void Tests.DU/MyClass::.ctor()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="17" ordinal="0" offset="8" sl="39" sc="32" el="39" ec="33" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="16" ordinal="1" offset="15" sl="38" sc="10" el="38" ec="17" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="3" visitedSequencePoints="0" numBranchPoints="2" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="2" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.M</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663343</MetadataToken>
+              <Name>Tests.M/Thing Tests.M::makeThing(System.String)</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="18" ordinal="0" offset="0" sl="14" sc="21" el="14" ec="34" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="2" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663344</MetadataToken>
+              <Name>System.Void Tests.M::testMakeThing()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="20" ordinal="0" offset="0" sl="18" sc="5" el="18" ec="45" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="19" ordinal="1" offset="25" sl="19" sc="5" el="19" ec="56" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+          <FullName>Tests.M/Thing</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="0">
+              <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="0" maxCrapScore="0" />
+              <MetadataToken>100663354</MetadataToken>
+              <Name>System.Byte[] Tests.M/Thing::bytes()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" uspid="21" ordinal="0" offset="0" sl="13" sc="28" el="13" ec="74" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+          <FullName>&lt;StartupCode$Sample4&gt;.$Tests</FullName>
+          <Methods />
+        </Class>
+      </Classes>
+    </Module>
+  </Modules>
+</CoverageSession>
