@@ -23,7 +23,7 @@ if (Test-Path $x) { Remove-Item -force $x }
 #[accelerators]::add("xdoc", $xdoctype) 
 
 # let's have a cmdlet for that
-$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo") }
+$accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo"); "pinfo" =  [type]::gettype("System.Type").GetProperty("FullName")}
 Add-Accelerator -Accelerator -Xdocument -Mapping $accel
 
 Describe "Get-Accelerator" {
@@ -33,8 +33,26 @@ Describe "Get-Accelerator" {
     $a["xdoc"].FullName | Should -Be "System.Xml.Linq.XDocument"
     $a["accelerators"].FullName | Should -Be "System.Management.Automation.TypeAccelerators"
     $a["minfo"].FullName | Should -Be "System.Reflection.MethodInfo"
+    $a["pinfo"].FullName | Should -Be "System.Reflection.RuntimePropertyInfo"
     $a["xml"].FullName | Should -Be "System.Xml.XmlDocument"
     $a.Count | Should -BeGreaterThan 3
+  }
+}
+
+Describe "Add-Accelerator" {
+  It "Accepts WhatIf" {
+
+    Start-Transcript -Path "./_Packaging/AccelWhatIf.txt"
+    Add-Accelerator -WhatIf
+    Add-Accelerator -Accelerator -Xdocument -Mapping $accel -WhatIf
+    Stop-Transcript
+    $expected = [string]::Join([System.Environment]::NewLine, 
+                ('What if: Performing the operation "Add-Accelerator" on target "Command Line : ".',
+                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Type @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"} -XDocument -Accelerator".'))
+
+    $lines = Get-Content "./_Packaging/AccelWhatIf.txt"
+    $ll = $lines | ? { $_ -like "What if: *" }
+    [string]::Join([System.Environment]::NewLine, $ll) | Should -Be $expected
   }
 }
 
@@ -43,7 +61,7 @@ Describe "Invoke-Altcover" {
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
-        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -InformationAction Continue
+        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
         $o | Should -Exist
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
@@ -100,8 +118,8 @@ Describe "Invoke-Altcover" {
         Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
-                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
+                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:+".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:++ ".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
 
         $lines = Get-Content "./_Packaging/WhatIf.txt"
@@ -600,7 +618,7 @@ Describe "Compress-Branching" {
   It "DoesAtLeastOne" {
     $fail = $false
     try {
-	  $xml = Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+	  Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
 	  $fail = $true
 	}
 	catch {
@@ -629,16 +647,21 @@ Describe "ConvertTo-SourceMap" {
   }
 }
 
-Describe "Format-FromCoverletOpenCover" {
+Describe "Write-OpenCoverDerivedState" {
   It "Outputs a document from a file" {
     $assembly = (Resolve-Path "./_Reports/OpenCoverForPester/Sample18.dll").Path
     $assemblies = @()
     $assemblies += $assembly
-    $hash = Get-FileHash -Algorithm SHA1 $assembly
-    $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
-
-
-    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    # $hash = Get-FileHash -Algorithm SHA1 $assembly
+    # $hexpected= (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
+    $sha1 = new-object "System.Security.Cryptography.SHA1Managed"
+    $fs = [System.IO.File]::OpenRead($assembly)
+    $bytes = $sha1.ComputeHash($fs)
+    $fs.Close()
+    $sha1.Dispose()
+    $hexpected = [System.BitConverter]::ToString($bytes)
+    
+    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType [xdoc]
 
     $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
@@ -648,6 +671,30 @@ Describe "Format-FromCoverletOpenCover" {
     $expected = [xml](Get-Content "./Tests/OpenCoverForPester.coverlet.xml")
     $expected.CoverageSession.Modules.Module.hash = $hactual
     $expected.CoverageSession.Modules.Module.ModulePath = $assembly
+    $expected.CoverageSession.Modules.Module.ModuleTime = $doc.CoverageSession.Modules.Module.ModuleTime
+    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Sample18/Tests.fs").Path
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $expected.WriteTo($xw)
+    $xw.Close()
+    $expect = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+
+    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
+    $written | Should -BeExactly $expect
+  }
+
+  It "Works the pipeline" {
+    
+    $xmlIn = [xdoc]::Load("./Tests/BasicCSharp.xml")
+
+    $xml = $xmlIn | Write-OpenCoverDerivedState -BranchOrdinal SL
+    $xml | Should -BeOfType [xdoc]
+
+    $xml.Save("./_Packaging/BasicCSharp.xml")
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -656,8 +703,9 @@ Describe "Format-FromCoverletOpenCover" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-
-    $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+
+    $expected = [System.IO.File]::ReadAllText("./Tests/BasicCSharp.postprocessed.xml").Replace("`r", "")
+    $result | Should -BeExactly $expected
   }
 }

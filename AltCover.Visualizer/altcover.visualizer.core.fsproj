@@ -59,13 +59,13 @@
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
     <EmbeddedResource Include="VIcon.ico" />
-    <EmbeddedResource Include="..\AltCover.FSApi\xsd\NCover.xsd">
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCover.xsd">
       <Link>NCover.xsd</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCover.xsd">
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd">
       <Link>OpenCover.xsd</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AltCover.FSApi\xsl\OpenCoverToNCoverEx.xsl">
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl">
       <Link>OpenCoverToNCoverEx.xsl</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="..\AltCover.Avalonia\config.xsd" Link="config.xsd" />
@@ -76,13 +76,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.56" Condition="'$(TargetFramework)' != 'net45'"/>
+    <PackageReference Include="GtkSharp" Version="3.22.25.74" Condition="'$(TargetFramework)' != 'net45'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net45'"/>
-    <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net45'"/>
+    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net45'" />
+    <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net45'">
+      <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
@@ -105,15 +107,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net45'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0" Condition="'$(TargetFramework)' == 'net45'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
 <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'"/>
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'"/>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
