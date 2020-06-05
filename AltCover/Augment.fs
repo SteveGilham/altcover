@@ -5,17 +5,15 @@ open System.Diagnostics.CodeAnalysis
 
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
-#if GUI
-module Augment =
-#else
+[<AutoOpen>]
 module internal Augment =
-#endif
 
   type System.Object with
     member self.IsNotNull
       with get() =
         self |> isNull |> not
 
+#if !GUI
 #if !WEAK_NAME
   type System.String with
     member self.X
@@ -23,7 +21,6 @@ module internal Augment =
         System.Xml.Linq.XName.Get self
 #endif
 
-#if !GUI
   type Microsoft.FSharp.Core.Option<'T> with
     [<SuppressMessage("Gendarme.Rules.Naming",
                       "UseCorrectCasingRule",

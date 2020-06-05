@@ -1,0 +1,11 @@
+In WSL, to create a patch  (infrequent)
+
+diff -u Documents/GitHub/altcover/_Documentation/PowerShell-integration.md  Documents/GitHub/altcover.wiki/PowerShell-integration.md > PowerShell-integration.patch
+
+copy to altcover/Build
+
+In altcover.wiki git prompt (every update)
+
+ git apply ../altcover/Build/PowerShell-integration.patch
+
+

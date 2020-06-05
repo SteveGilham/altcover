@@ -5,8 +5,6 @@ open System.Globalization
 open System.IO
 open System.Xml.Linq
 
-open AltCover.Augment
-
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
   "AvoidSpeculativeGeneralityRule",
   Justification="Delegation = first class functions")>]
@@ -38,7 +36,7 @@ module internal LCov =
     let internal multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
       multiSort lineOfMethod l
 
-  let internal convertReport (report : XDocument) (format : Base.ReportFormat) (stream : Stream) =
+  let internal convertReport (report : XDocument) (format : ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
       //If available, a tracefile begins with the testname which
       //   is stored in the following format:
@@ -46,7 +44,7 @@ module internal LCov =
       //     TN:<test name>
       writer.WriteLine "TN:"
       match format with
-      | Base.ReportFormat.NCover ->
+      | ReportFormat.NCover ->
           report.Descendants("method".X)
           |> Seq.filter (fun m ->
                 m.Attribute("excluded".X).Value <> "true"
@@ -277,7 +275,7 @@ module internal LCov =
                 // end_of_record
                 writer.WriteLine "end_of_record"))
 
-  let internal summary (report : XDocument) (format : Base.ReportFormat) result =
+  let internal summary (report : XDocument) (format : ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
       (convertReport report format)
-    result
+    (result, 0uy, String.Empty)

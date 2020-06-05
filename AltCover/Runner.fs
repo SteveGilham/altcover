@@ -12,11 +12,9 @@ open System.Xml.Linq
 
 open Mono.Cecil
 open Mono.Options
-open Augment
-open AltCover.Base
 
 [<ExcludeFromCodeCoverage; NoComparison>]
-type TeamCityFormat =
+type internal TeamCityFormat =
   | Default
   | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
     Justification="TeamCity notation")>]
@@ -50,13 +48,73 @@ type TeamCityFormat =
     | Select "+R" _ -> RPlus
     | _ -> Default
 
+type internal Threshold =
+  {
+    Statements : uint8
+    Branches : uint8
+    Methods : uint8
+    Crap : uint8
+  }
+  static member Default() =
+    {
+      Statements = 0uy
+      Branches = 0uy
+      Methods = 0uy
+      Crap = 0uy
+    }
+  static member Create (x :  string) =
+    let chars = x.ToUpperInvariant()
+                |> Seq.toList
+    let rec partition data result =
+      match data with
+      | [] -> result
+      | _ ->
+        let h = data |> List.takeWhile (Char.IsDigit >> not) |> List.toArray
+        let t = data |> List.skipWhile (Char.IsDigit >> not)
+        let h2 = t |> List.takeWhile Char.IsDigit |> List.toArray
+        let t2 = t |> List.skipWhile Char.IsDigit
+        partition t2 ((String(h), String(h2)) :: result)
+
+    let parse top f t x =
+      let part, v = Byte.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
+      if part && v <= top then (part, f t v)
+      else (false, t)
+
+    let parts =
+      partition chars []
+      |> List.fold (fun (ok, t) (h, h2) ->  let fail t _ = (false, t)
+                                            let defaultMapper = parse 100uy (fun t v -> { t with Statements = v })
+                                            let mapper = match (ok, h) with // can't say String.Empty
+                                                         | (true, x) when x.Length = 0 ->
+                                                           defaultMapper
+                                                         | (true, "S") -> defaultMapper
+                                                         | (true, "B") ->
+                                                           parse 100uy (fun t v -> { t with Branches = v })
+                                                         | (true, "M") ->
+                                                           parse 100uy (fun t v -> { t with Methods = v })
+                                                         | (true, "C") ->
+                                                           parse 255uy (fun t v -> { t with Crap = v })
+                                                         | _ -> fail
+                                            mapper t h2)
+         (true, Threshold.Default())
+
+    parts
+    |> (fun (a,b) -> (a, if a then Some b else None))
+
+  static member Validate (x : string) =
+    let result = Threshold.Create x
+    if not (fst result) then
+      CommandLine.error <-
+              CommandLine.Format.Local("InvalidValue", "--threshold", x) :: CommandLine.error
+    result
+
 module internal Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
   let internal executable : Option<string> ref = ref None
   let internal collect = ref false // ddFlag
-  let mutable internal threshold : Option<int> = None
+  let mutable internal threshold : Threshold option = None
   let mutable internal output : Option<string> = None
   let internal summary = StringBuilder()
   let mutable internal summaryFormat = TeamCityFormat.Default
@@ -165,7 +223,10 @@ module internal Runner =
 
       emitSummary()
 
-      makepc vpoints points.Length
+      [makepc vpoints points.Length
+       "0" // branches
+       makepc vmethods methods.Length
+       "0"] // crap
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -255,12 +316,12 @@ module internal Runner =
       let go = [ Default; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat)
       let (vc, nc, _) =
         summarise go "visitedClasses" "numClasses" None "VisitedClasses"
-      let (vm, nm, _) =
+      let (vm, nm, mcovered) =
         summarise go "visitedMethods" "numMethods" None "VisitedMethods"
       let (vs, ns, covered) =
         summarise go "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage")
           "VisitedPoints"
-      let (vb, nb, _) =
+      let (vb, nb, bcovered) =
         summarise go "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
           "VisitedBranches"
       if go then
@@ -282,31 +343,54 @@ module internal Runner =
         writeTC totalTC tag nb
         writeTC coverTC tag vb
 
-      covered
+      let crap = summary.Attribute("maxCrapScore".X)
+      let crapvalue = if crap.IsNotNull then crap.Value else "0.0"
+
+      [covered
+       bcovered
+       mcovered
+       crapvalue]
 
     let internal invariantParseDouble d =
       Double.TryParse(d, NumberStyles.Number, CultureInfo.InvariantCulture)
 
-    let internal standardSummary (report : XDocument) (format : Base.ReportFormat) result =
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Inlined library code")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Inlined library code")>]
+    let internal standardSummary (report : XDocument) (format : ReportFormat) result =
       let covered =
         report
         |> match format with
-           | Base.ReportFormat.NCover -> nCoverSummary
+           | ReportFormat.NCover -> nCoverSummary
            | _ -> openCoverSummary
-        |> invariantParseDouble
 
-      let value =
-        match covered with
-        | (false, _) -> 0.0
-        | (_, x) -> x
+      let best = (result, 0uy, String.Empty)
 
-      match threshold with
-      | None -> result
-      | Some x ->
-          let f = float x
-          if f <= value then result else Math.Ceiling(f - value) |> int
+      let possibles =
+        match threshold with
+        | None -> [ best ]
+        | Some t -> let found = covered
+                                |> List.map invariantParseDouble
+                    let ceil (f:float) (value : float) =
+                      if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
+                    let sink _ : int option = None
+                    let funs = [
+                      (ceil (float t.Statements), t.Statements, "Statements");
+                      (if format = ReportFormat.NCover
+                       then sink else ceil (float t.Branches)), t.Branches, "Branches";
+                      (ceil (float t.Methods), t.Methods, "Methods");
+                      (if format = ReportFormat.NCover
+                       then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                    ]
+                    List.zip found funs
+                    |> List.filter (fst >> fst)
+                    |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
+                                                       | Some q -> (q, x, y)
+                                                       | None -> best)
+      possibles |> List.maxBy (fun (a, b, c) -> a)
 
-    let mutable internal summaries : (XDocument -> Base.ReportFormat -> int -> int) list =
+    let mutable internal summaries : (XDocument -> ReportFormat -> int -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary() =
@@ -315,17 +399,6 @@ module internal Runner =
       summaries <- Cobertura.summary :: summaries
 
   // "Public"
-  let internal validateThreshold x =
-    let (q, n) =
-      Int32.TryParse(if (String.IsNullOrWhiteSpace(x)) then "!" else x)
-
-    let ok = q && (n >= 0) && (n <= 100)
-    if ok |> not then
-      CommandLine.error <-
-        CommandLine.Format.Local("InvalidValue",
-           "--threshold", x) :: CommandLine.error
-    (ok, n)
-
   let internal declareOptions() =
     I.summaries <- []
     I.summaries <- I.standardSummary :: I.summaries
@@ -371,14 +444,14 @@ module internal Runner =
              I.addLCovSummary()))
       ("t|threshold=",
        (fun x ->
-         let ok, n = validateThreshold x
+         let ok, t = Threshold.Validate x
          if ok then
            if Option.isSome threshold then
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--threshold")
                :: CommandLine.error
            else
-             threshold <- Some n))
+             threshold <- t))
       ("c|cobertura=",
        (fun x ->
          if CommandLine.validatePath "--cobertura" x then
@@ -450,6 +523,8 @@ module internal Runner =
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+    Justification="It's OK, really.")>]
   module internal J =
     let internal requireExe(parse : Either<string * OptionSet, string list * OptionSet>) =
       match parse with
@@ -523,7 +598,7 @@ module internal Runner =
       "Getting results..." |> CommandLine.writeResource
       result
 
-    let internal collectResults (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+    let internal collectResults (hits : Dictionary<string, Dictionary<int, PointVisit>>)
         report =
       let timer = System.Diagnostics.Stopwatch()
       timer.Start()
@@ -547,15 +622,15 @@ module internal Runner =
                    Some
                      (id, strike,
                       match enum tag with
-                      | Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
-                      | Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
-                      | Base.Tag.Both ->
+                      | Tag.Time -> Time <| formatter.ReadInt64()
+                      | Tag.Call -> Call <| formatter.ReadInt32()
+                      | Tag.Both ->
                           let time = formatter.ReadInt64()
                           let call = formatter.ReadInt32()
-                          Base.Both
+                          Both
                             { Time = time
                               Call = call }
-                      | Base.Tag.Table ->
+                      | Tag.Table ->
                           let t = Dictionary<string, Dictionary<int, PointVisit>>()
 
                           let rec ``module``() =
@@ -592,7 +667,7 @@ module internal Runner =
                                         pv.Tracks.Add
                                           (let time = formatter.ReadInt64()
                                            let call = formatter.ReadInt32()
-                                           Base.Both
+                                           Both
                                              { Time = time
                                                Call = call })
                                         tracking()
@@ -615,8 +690,8 @@ module internal Runner =
                         |> String.IsNullOrWhiteSpace
                         |> not
                         || ((String.IsNullOrEmpty key) && hitPointId = 0
-                            && visit.GetType().ToString() = "AltCover.Base.Track+Table") then
-                       Base.Counter.addVisit hits key hitPointId visit
+                            && visit.GetType().ToString() = "AltCover.Track+Table") then
+                       Counter.addVisit hits key hitPointId visit
                      else
                        0L
                    sink (hitcount + increment)
@@ -636,7 +711,7 @@ module internal Runner =
       timer.Stop()
       CommandLine.writeResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0L)
 
-    let internal monitorBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+    let internal monitorBase (hits : Dictionary<string, Dictionary<int, PointVisit>>)
         report (payload : string list -> int) (args : string list) =
       let result =
         if !collect then 0 else runProcess report payload args
@@ -658,7 +733,7 @@ module internal Runner =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal lookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
+    let internal lookUpVisitsByToken token (dict : Dictionary<int, PointVisit>) =
       let (ok, index) =
         Int32.TryParse
           (token, System.Globalization.NumberStyles.Integer,
@@ -668,7 +743,7 @@ module internal Runner =
       | (_, pair) -> pair
 
     let internal fillMethodPoint (mp : XmlElement seq) (method : XmlElement)
-        (dict : Dictionary<int, Base.PointVisit>) =
+        (dict : Dictionary<int, PointVisit>) =
       let token =
         use elements = method.GetElementsByTagName("MetadataToken")
         elements
@@ -702,11 +777,11 @@ module internal Runner =
       | null -> (false, Unchecked.defaultof<'b>)
       | _ -> d.TryGetValue key
 
-    let internal postProcess (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+    let internal postProcess (counts : Dictionary<string, Dictionary<int, PointVisit>>)
         format (document : XmlDocument) =
       match format with
-      | Base.ReportFormat.OpenCoverWithTracking
-      | Base.ReportFormat.OpenCover ->
+      | ReportFormat.OpenCoverWithTracking
+      | ReportFormat.OpenCover ->
           let scoreToString raw =
             (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
 
@@ -728,7 +803,9 @@ module internal Runner =
             |> Seq.tryHead
             |> Option.iter (fun s ->
                  let minc =
-                   (if minCrap = Double.MaxValue then 0.0 else minCrap)
+                   (if minCrap = Double.MaxValue
+                   then 0.0
+                   else minCrap)
                    |> scoreToString
 
                  let maxc =
@@ -778,6 +855,10 @@ module internal Runner =
                  (0, nodes.[0])
             |> ignore
 
+          // https://blog.ndepend.com/crap-metric-thing-tells-risk-code/
+          // Let CC(m) = cyclomatic complexity of a method and
+          // U(m) = the percentage of a method not covered by unit tests.
+          // CRAP(m) = CC(m)^2 * U(m)^3 + CC(m).
           let crapScore (method : XmlElement) =
             let coverage =
               let cover = stringToScore method "sequenceCoverage"
@@ -786,13 +867,13 @@ module internal Runner =
             let complexity = stringToScore method "cyclomaticComplexity"
 
             let raw =
-              (Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
-               + complexity)
+              Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
+               + complexity
             let score = raw |> scoreToString
             method.SetAttribute("crapScore", score)
             raw
 
-          let updateMethod (dict : Dictionary<int, Base.PointVisit>)
+          let updateMethod (dict : Dictionary<int, PointVisit>)
               (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
             use sp = method.GetElementsByTagName("SequencePoint")
             use bp = method.GetElementsByTagName("BranchPoint")
@@ -811,23 +892,25 @@ module internal Runner =
             let pointVisits = visitCount sp
             let b0 = visitCount bp
             let branchVisits = b0 + Math.Sign b0
-            if pointVisits > 0 || b0 > 0 then
-              let fillMethod() =
-                let cover = percentCover pointVisits count
-                let bcover = percentCover branchVisits numBranches
-                method.SetAttribute("visited", "true")
-                method.SetAttribute("sequenceCoverage", cover)
-                method.SetAttribute("branchCoverage", bcover)
-                let raw = crapScore method
-                setSummary method pointVisits branchVisits 1 None cover bcover raw raw
-                computeBranchExitCount method.OwnerDocument sp bp
-                (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br + numBranches,
-                 Math.Min(minc, raw), Math.Max(maxc, raw))
-              fillMethod()
-            else
-              (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
 
-          let updateClass (dict : Dictionary<int, Base.PointVisit>)
+            // zero visits still need to fill in CRAP score
+            let cover = percentCover pointVisits count
+            let bcover = percentCover branchVisits numBranches
+            let methodVisit = if pointVisits > 0 || b0 > 0
+                              then
+                                method.SetAttribute("visited", "true")
+                                1
+                              else 0
+            method.SetAttribute("sequenceCoverage", cover)
+            method.SetAttribute("branchCoverage", bcover)
+            let raw = crapScore method
+            setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
+            computeBranchExitCount method.OwnerDocument sp bp
+            (vb + branchVisits, vs + pointVisits, vm + methodVisit,
+              pt + count, br + numBranches,
+              Math.Min(minc, raw), Math.Max(maxc, raw))
+
+          let updateClass (dict : Dictionary<int, PointVisit>)
               (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
             let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
               use elements = ``class``.GetElementsByTagName("Method")
@@ -845,11 +928,11 @@ module internal Runner =
             (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
              Math.Min(minc, minc0), Math.Max(maxc, maxc0))
 
-          let updateModule (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+          let updateModule (counts : Dictionary<string, Dictionary<int, PointVisit>>)
               (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module`` : XmlElement) =
             let dict =
               match (tryGetValue counts) <| ``module``.GetAttribute("hash") with
-              | (false, _) -> Dictionary<int, Base.PointVisit>()
+              | (false, _) -> Dictionary<int, PointVisit>()
               | (true, d) -> d
 
             let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
@@ -902,18 +985,26 @@ module internal Runner =
         tracks
         |> Seq.map (fun t ->
              match t with
-             | Base.Time x -> (Some x, None)
-             | Base.Both b -> (Some b.Time, Some b.Call)
-             | Base.Call y -> (None, Some y)
+             | Time x -> (Some x, None)
+             | Both b -> (Some b.Time, Some b.Call)
+             | Call y -> (None, Some y)
              | _ -> (None, None))
         |> Seq.toList
         |> List.unzip
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-    let internal writeReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
-        report =
-      AltCover.Base.Counter.doFlush (postProcess hits report) pointProcess true hits report
+    let internal writeReportBase (hits : Dictionary<string, Dictionary<int, PointVisit>>)
+        format report =
+      let reporter (arg: string option) =
+        let (container, file) = Zip.openUpdate report
+        try
+          AltCover.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
+        finally
+          file.Dispose()
+          if container.IsNotNull then container.Dispose()
+      reporter
+
     // mocking points
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
@@ -928,13 +1019,15 @@ module internal Runner =
         Justification = "Unit test accessor")>]
     let mutable internal doReport = writeReportBase
 
-    let internal doSummaries (document : XDocument) (format : Base.ReportFormat) result =
-      let code =
-        I.summaries |> List.fold (fun r summary -> summary document format r) result
-      if (code > 0 && code <> result) then
-        CommandLine.writeErrorResourceWithFormatItems "threshold"
+    let internal doSummaries (document : XDocument) (format : ReportFormat) result =
+      let (code, t, f) =
+        I.summaries |> List.fold (fun (r,t,f) summary -> let rx,t2,f2 = summary document format r
+                                                         if rx > r then (rx, t2, f2)
+                                                         else (r, t, f)) (result, 0uy, String.Empty)
+      if (code > 0 && result = 0 && code <> result) then
+        CommandLine.writeErrorResourceWithFormatItems f
           [| code :> obj
-             (Option.get threshold) :> obj |]
+             t :> obj |]
       code
 
     let internal loadReport report =
@@ -970,7 +1063,7 @@ module internal Runner =
 
             let format =
               (J.getMethod instance "get_CoverageFormat") |> J.getFirstOperandAsNumber
-            let hits = Dictionary<string, Dictionary<int, Base.PointVisit>>()
+            let hits = Dictionary<string, Dictionary<int, PointVisit>>()
             let payload = J.getPayload
             let result = J.getMonitor hits report payload rest
             let format' = enum format

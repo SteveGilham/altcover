@@ -10,7 +10,7 @@ open System.Xml.Xsl
 open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.XPath
-open AltCover.Augment
+open AltCover
 
 [<SuppressMessage("Microsoft.Design", "CA1027:MarkEnumsWithFlags",
   Justification="Not used or intended as a flag")>]

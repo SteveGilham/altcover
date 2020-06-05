@@ -9,7 +9,6 @@ open System.Text.RegularExpressions
 
 open Mono.Cecil
 open Mono.Cecil.Cil
-open AltCover.Augment
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterSense =
@@ -204,7 +203,12 @@ module internal Filter =
           (fun typeDef -> typeDef.FullName)
     | Method ->
         I.matchItem<MethodDefinition> filter.Regex f nameProvider
-          (fun methodDef -> methodDef.Name)
+          (fun methodDef -> let decltype = methodDef.DeclaringType.BaseType.Name
+                            let name = methodDef.Name
+                            if decltype.StartsWith("FSharpFunc", StringComparison.Ordinal) ||
+                               decltype = "FSharpTypeFunc"
+                            then methodDef.DeclaringType.Name + "." + name
+                            else name)
     | Attribute -> I.matchAttribute filter.Regex f nameProvider
     | Path -> I.matchItem<string> filter.Regex f nameProvider Path.GetFullPath
 

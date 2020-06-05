@@ -13,6 +13,7 @@ module TestMain =
 
   let regular = [
           Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
+          Tests.FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState, "FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
           Tests.FSApiTests.OpenCoverToLcov, "FSApiTests.OpenCoverToLcov"
           Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"
           Tests.FSApiTests.OpenCoverToNCover, "FSApiTests.OpenCoverToNCover"
@@ -26,6 +27,7 @@ module TestMain =
           Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
           Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
           Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
+          Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
         ]
 
   let specials =

@@ -10,7 +10,9 @@ open Swensen.Unquote
 [<assembly:AssemblyFileVersionAttribute("1.0.0.0")>]
 do ()
 
+[<NoComparison>]
 module M =
+  [<AutoSerializable(false)>]
   type Thing =
     { Thing : string }
     member this.bytes() = System.Text.Encoding.UTF8.GetBytes(this.Thing)

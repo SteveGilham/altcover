@@ -13,8 +13,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 
 open AltCover
-open AltCover.Augment
-open AltCover.Base
+open Microsoft.FSharp.Reflection
 open Mono.Options
 open Swensen.Unquote
 
@@ -31,47 +30,58 @@ end
 type TestAttribute = NUnit.Framework.TestAttribute
 #endif
 
+module AltCoverUsage =
+    let internal usageText =
+        let usage = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                    |> Seq.find (fun n -> n.EndsWith("AltCover.Usage.txt", StringComparison.Ordinal))
+        use stream =
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(usage)
+        use reader = new StreamReader(stream)
+        reader.ReadToEnd()
+
+    let internal runnerText =
+        let usage = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                    |> Seq.find (fun n -> n.EndsWith("AltCover.Runner.Usage.txt", StringComparison.Ordinal))
+        use stream =
+            Assembly.GetExecutingAssembly().GetManifestResourceStream(usage)
+        use reader = new StreamReader(stream)
+        reader.ReadToEnd()
+
 module AltCoverRunnerTests =
-    // Base.fs
+    // fs
 
     [<Test>]
     let MaxTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.maxTime now ago) = now @>
+      test <@ (Counter.I.maxTime now ago) = now @>
 
     [<Test>]
     let MaxTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.maxTime ago now) = now @>
+      test <@ (Counter.I.maxTime ago now) = now @>
 
     [<Test>]
     let MinTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.minTime ago now) = ago @>
+      test <@ (Counter.I.minTime ago now) = ago @>
 
     [<Test>]
     let MinTimeLast () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
-      test <@ (Base.Counter.I.minTime now ago) = ago @>
+      test <@ (Counter.I.minTime now ago) = ago @>
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let JunkUspidGivesNegativeIndex() =
       Runner.init()
       let key = " "
       let index = Counter.I.findIndexFromUspid 0 key
       test <@ index < 0 @>
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let RealIdShouldIncrementCount() =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -84,10 +94,7 @@ module AltCoverRunnerTests =
       Assert.That(x.Count, Is.EqualTo 1)
       Assert.That(x.Tracks, Is.Empty)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let RealIdShouldIncrementList() =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -101,10 +108,7 @@ module AltCoverRunnerTests =
       Assert.That(x.Count, Is.EqualTo 0)
       Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let DistinctIdShouldBeDistinct() =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -115,10 +119,7 @@ module AltCoverRunnerTests =
       Assert.That(visits.Count, Is.EqualTo 2)
       Assert.That(v4, Is.EqualTo 1)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let DistinctLineShouldBeDistinct() =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -130,10 +131,7 @@ module AltCoverRunnerTests =
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 2)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let RepeatVisitsShouldIncrementCount() =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -146,10 +144,7 @@ module AltCoverRunnerTests =
       Assert.That(x.Count, Is.EqualTo 2)
       Assert.That(x.Tracks, Is.Empty)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let RepeatVisitsShouldIncrementTotal() =
       Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -175,10 +170,7 @@ module AltCoverRunnerTests =
                             tmp.Tracks.AddRange l
                             tmp
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
       Runner.init()
       Counter.measureTime <- DateTime.ParseExact
@@ -212,10 +204,7 @@ module AltCoverRunnerTests =
          |> Seq.cast<XmlElement>
          |> Seq.map (fun x -> x.GetAttribute("vc")), Is.EquivalentTo [ "2"; "2" ])
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let FlushLeavesExpectedTraces() =
       Runner.init()
       let saved = Console.Out
@@ -242,8 +231,13 @@ module AltCoverRunnerTests =
         let payload = Dictionary<int, PointVisit>()
         [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Counter.doFlush ignore (fun _ _ -> ()) true visits
-          AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+        do
+          use coverageFile =
+            new FileStream(reportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                            FileOptions.SequentialScan)
+
+          Counter.doFlushStream ignore (fun _ _ -> ()) true visits
+            AltCover.ReportFormat.NCover coverageFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -260,10 +254,7 @@ module AltCoverRunnerTests =
           Directory.Delete(unique)
         with :? IOException -> ()
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let FlushLeavesExpectedTracesWhenDiverted() =
       Runner.init()
       let saved = Console.Out
@@ -291,8 +282,12 @@ module AltCoverRunnerTests =
         let payload = Dictionary<int, PointVisit>()
         [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Counter.doFlush ignore (fun _ _ -> ()) true visits
-          AltCover.Base.ReportFormat.NCover reportFile (Some outputFile) |> ignore
+        use coverageFile =
+          new FileStream(reportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+
+        Counter.doFlushStream ignore (fun _ _ -> ()) true visits
+          AltCover.ReportFormat.NCover coverageFile (Some outputFile) |> ignore
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -310,10 +305,7 @@ module AltCoverRunnerTests =
         with :? IOException -> ()
 
     // Runner.fs and CommandLine.fs
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let UsageIsAsExpected() =
       Runner.init()
       let options = Runner.declareOptions()
@@ -324,37 +316,20 @@ module AltCoverRunnerTests =
         let empty = OptionSet()
         CommandLine.usageBase { Intro = "UsageError"; Options = empty; Options2 = options}
         let result = stderr.ToString().Replace("\r\n", "\n")
-        let expected = """Error - usage is:
-  -r, --recorderDirectory=VALUE
-                             The folder containing the instrumented code to
-                               monitor (including the AltCover.Recorder.g.dll
-                               generated by previous a use of the .net core
-                               AltCover).
-  -w, --workingDirectory=VALUE
-                             Optional: The working directory for the
-                               application launch
-  -x, --executable=VALUE     The executable to run e.g. dotnet
-      --collect              Optional: Process previously saved raw coverage
-                               data, rather than launching a process.
-  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
-                               collected data
-  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
-                               integer, 0 to 100).  If the coverage result is
-                               below threshold, the return code of the process
-                               is (threshold - actual) rounded up to the
-                               nearest integer.
-  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
-                               collected data
-  -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
-                               rather than overwriting the original report file.
-      --dropReturnCode       Optional: Do not report any non-zero return code
-                               from a launched process.
-      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary
-  -?, --help, -h             Prints out the options.
-"""
+        let expected = "Error - usage is:\n" +
+                       AltCoverUsage.runnerText +
+                       "\nor\n" +
+                       "  ImportModule               Prints out the PowerShell script to import the\n" +
+                       "                               associated PowerShell module\n" +
+                       "or\n" +
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
-          (result, Is.EqualTo(expected.Replace("\r\n", "\n")), "*" + result + "*")
+          (result.Replace("\u200b",String.Empty),
+           Is.EqualTo(expected.Replace("\r\n", "\n")), "*" + result + "*")
       finally
         Console.SetError saved
 
@@ -368,7 +343,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -408,14 +383,99 @@ module AltCoverRunnerTests =
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      Assert.That(options.Count, Is.EqualTo 12)
+      let optionCount = 10
+      let optionNames = options
+                        |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
+                        |> Seq.sort
+                        |> Seq.toList
+
+      // Options add "<>" and "help"
+      Assert.That(options.Count, Is.EqualTo (optionCount + 2), String.Join("; ", optionNames))
+
+      let optionNames = options
+                        |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
+                        |> Seq.sort
+                        |> Seq.toList
+
+      let primitiveNames = typeof<Primitive.CollectOptions>
+                           |> FSharpType.GetRecordFields
+                           |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                           |> Seq.sort
+                           |> Seq.toList
+
+      // swap "collect" and "commandline"
+      Assert.That(primitiveNames |> List.length, Is.EqualTo optionCount,
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", primitiveNames))
+
+      let typesafeNames = typeof<TypeSafe.CollectOptions>
+                          |> FSharpType.GetRecordFields
+                          |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                          |> Seq.sort
+                          |> Seq.toList
+
+      Assert.That(typesafeNames |> List.length, Is.EqualTo optionCount,
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", typesafeNames))
+
+      let fsapiNames = typeof<AltCover.CollectOptions>.GetProperties()
+                       |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                       |> Seq.sort
+                       |> Seq.toList
+      let fsapiCases = (typeof<AltCover.CollectOptions>
+                        |> FSharpType.GetUnionCases).Length
+
+      let args = Primitive.CollectOptions.Create() |> AltCover.CollectOptions.Primitive
+      let commandFragments = Args.buildCollect args
+
+      // adds Runner and the trailing command line arguments
+      Assert.That(commandFragments |> List.length, Is.EqualTo (optionCount + 2),
+                  "expected " + String.Join("; ", optionNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", typesafeNames))  // todo
+
+      // Adds "Tag", "IsPrimitive", "IsTypeSafe"
+      Assert.That(fsapiNames
+                  |> Seq.length, Is.EqualTo (optionCount + fsapiCases + 1),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", fsapiNames))
+
+      let taskNames = typeof<Collect>.GetProperties(BindingFlags.DeclaredOnly ||| BindingFlags.Public ||| BindingFlags.Instance)
+                      |> Seq.map (fun p -> p.Name.ToLowerInvariant())
+                      |> Seq.sort
+                      |> Seq.toList
+
+      // gains summary (output)
+      Assert.That(taskNames
+                  |> Seq.length, Is.EqualTo (optionCount + 1),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", taskNames))
+
+      let targets =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("AltCover.targets", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(targets)
+      let doc = XDocument.Load stream
+      let collect = doc.Descendants()
+                    |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Collect")
+                    |> Seq.head
+      let attributeNames = collect.Attributes()
+                           |> Seq.map (fun p -> p.Name.LocalName.ToLowerInvariant())
+                           |> Seq.sort
+                           |> Seq.toList
+
+      // loses commandline; executable; exposereturncode; outputfile; workingdirectory
+      //       N/A,         N/A,        N/A,              fixed,      N/A
+      Assert.That(attributeNames
+                  |> Seq.length, Is.EqualTo (optionCount - 5),
+                  "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
+                  "but got  " + String.Join("; ", attributeNames))
+
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -424,10 +484,7 @@ module AltCoverRunnerTests =
                   |> Seq.filter (fun x -> x.Prototype = "<>")
                   |> Seq.length, Is.EqualTo 1)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingJunkIsAnError() =
       Runner.init()
       let options = Runner.declareOptions()
@@ -438,10 +495,7 @@ module AltCoverRunnerTests =
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingJunkAfterSeparatorIsExpected() =
       Runner.init()
       let options = Runner.declareOptions()
@@ -453,10 +507,7 @@ module AltCoverRunnerTests =
         Assert.That(x, Is.EquivalentTo(input |> Seq.skip 1))
         Assert.That(y, Is.SameAs options)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingHelpGivesHelp() =
       Runner.init()
       let options = Runner.declareOptions()
@@ -480,10 +531,7 @@ module AltCoverRunnerTests =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty))
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingErrorHelpGivesHelp() =
       Runner.init()
       let options = Runner.declareOptions()
@@ -513,10 +561,7 @@ module AltCoverRunnerTests =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty))
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingExeGivesExe() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -537,10 +582,7 @@ module AltCoverRunnerTests =
         finally
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleExeGivesFailure() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -565,10 +607,7 @@ module AltCoverRunnerTests =
         finally
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoExeGivesFailure() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -586,10 +625,7 @@ module AltCoverRunnerTests =
         finally
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingWorkerGivesWorker() =
       Runner.init()
       try
@@ -609,10 +645,7 @@ module AltCoverRunnerTests =
       finally
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleWorkerGivesFailure() =
       Runner.init()
       try
@@ -635,10 +668,7 @@ module AltCoverRunnerTests =
       finally
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingBadWorkerGivesFailure() =
       Runner.init()
       try
@@ -655,10 +685,7 @@ module AltCoverRunnerTests =
       finally
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoWorkerGivesFailure() =
       Runner.init()
       try
@@ -674,10 +701,7 @@ module AltCoverRunnerTests =
       finally
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingRecorderGivesRecorder() =
       Runner.init()
       try
@@ -697,10 +721,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleRecorderGivesFailure() =
       Runner.init()
       try
@@ -723,10 +744,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingBadRecorderGivesFailure() =
       Runner.init()
       try
@@ -743,10 +761,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoRecorderGivesFailure() =
       Runner.init()
       try
@@ -762,10 +777,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingCollectGivesCollect() =
       Runner.init()
       try
@@ -782,10 +794,7 @@ module AltCoverRunnerTests =
       finally
         Runner.collect := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleCollectGivesFailure() =
       Runner.init()
       try
@@ -802,10 +811,7 @@ module AltCoverRunnerTests =
       finally
         Runner.collect := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingLcovGivesLcov() =
       Runner.init()
       lock LCov.path (fun () ->
@@ -829,10 +835,7 @@ module AltCoverRunnerTests =
           Runner.I.summaries <- [ Runner.I.standardSummary ]
           LCov.path := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleLcovGivesFailure() =
       Runner.init()
       lock LCov.path (fun () ->
@@ -859,10 +862,7 @@ module AltCoverRunnerTests =
           Runner.I.summaries <- [ Runner.I.standardSummary ]
           LCov.path := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoLcovGivesFailure() =
       Runner.init()
       lock LCov.path (fun () ->
@@ -882,10 +882,7 @@ module AltCoverRunnerTests =
           Runner.I.summaries <- [ Runner.I.standardSummary ]
           LCov.path := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingThresholdGivesThreshold() =
       Runner.init()
       try
@@ -900,14 +897,88 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.Empty)
         match Runner.threshold with
         | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo 57)
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 57uy
+                                                Branches = 0uy
+                                                Methods = 0uy
+                                                Crap = 0uy
+                                              })
       finally
         Runner.threshold <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
+    let ParsingComplexThresholdGivesThreshold() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M57C42S16B7" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match Runner.threshold with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 16uy
+                                                Branches = 7uy
+                                                Methods = 57uy
+                                                Crap = 42uy
+                                              })
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingTopThresholdGivesThreshold() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M100C255S100B100" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match Runner.threshold with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 100uy
+                                                Branches = 100uy
+                                                Methods = 100uy
+                                                Crap = 255uy
+                                              })
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingLowThresholdGivesThreshold() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M0C0S0B0" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match Runner.threshold with
+        | None -> Assert.Fail()
+        | Some x -> Assert.That(x, Is.EqualTo {
+                                                Statements = 0uy
+                                                Branches = 0uy
+                                                Methods = 0uy
+                                                Crap = 0uy
+                                              })
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
     let ParsingMultipleThresholdGivesFailure() =
       Runner.init()
       try
@@ -924,10 +995,7 @@ module AltCoverRunnerTests =
       finally
         Runner.threshold <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingBadThresholdGivesFailure() =
       Runner.init()
       try
@@ -943,10 +1011,103 @@ module AltCoverRunnerTests =
       finally
         Runner.threshold <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
+    let ParsingBadThreshold2GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "S" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold3GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "X666" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold4GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "S101" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold5GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "M101" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold6GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "B101" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
+    let ParsingBadThreshold7GivesFailure() =
+      Runner.init()
+      try
+        Runner.threshold <- None
+        let options = Runner.declareOptions()
+        let input = [| "-t"; "C256" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.threshold <- None
+
+    [<Test>]
     let ParsingEmptyThresholdGivesFailure() =
       Runner.init()
       try
@@ -962,10 +1123,7 @@ module AltCoverRunnerTests =
       finally
         Runner.threshold <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoThresholdGivesFailure() =
       Runner.init()
       try
@@ -981,10 +1139,7 @@ module AltCoverRunnerTests =
       finally
         Runner.threshold <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingCoberturaGivesCobertura() =
       Runner.init()
       lock Cobertura.path (fun () ->
@@ -1008,10 +1163,7 @@ module AltCoverRunnerTests =
           Runner.I.summaries <- [ Runner.I.standardSummary ]
           Cobertura.path := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleCoberturaGivesFailure() =
       Runner.init()
       lock Cobertura.path (fun () ->
@@ -1038,10 +1190,7 @@ module AltCoverRunnerTests =
           Runner.I.summaries <- [ Runner.I.standardSummary ]
           Cobertura.path := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoCoberturaGivesFailure() =
       Runner.init()
       lock Cobertura.path (fun () ->
@@ -1061,10 +1210,7 @@ module AltCoverRunnerTests =
           Runner.I.summaries <- [ Runner.I.standardSummary ]
           Cobertura.path := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingOutputGivesOutput() =
       Runner.init()
       try
@@ -1084,10 +1230,7 @@ module AltCoverRunnerTests =
       finally
         Runner.output <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleOutputGivesFailure() =
       Runner.init()
       try
@@ -1112,10 +1255,7 @@ module AltCoverRunnerTests =
       finally
         Runner.output <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingNoOutputGivesFailure() =
       Runner.init()
       try
@@ -1132,10 +1272,7 @@ module AltCoverRunnerTests =
       finally
         Runner.output <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingDropGivesDrop() =
       Runner.init()
       try
@@ -1152,10 +1289,7 @@ module AltCoverRunnerTests =
       finally
         CommandLine.dropReturnCode := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleDropGivesFailure() =
       Runner.init()
       try
@@ -1172,10 +1306,7 @@ module AltCoverRunnerTests =
       finally
         CommandLine.dropReturnCode := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingTCString() =
       Runner.init()
       [
@@ -1199,10 +1330,7 @@ module AltCoverRunnerTests =
                                                Is.EqualTo y,
                                                x))
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingTCGivesTC() =
       Runner.init()
       [
@@ -1240,10 +1368,7 @@ module AltCoverRunnerTests =
 #endif
           | _ -> Assert.Fail(sprintf "%A %A => %A" a v Runner.summaryFormat) ))
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingMultipleTCGivesFailure() =
       Runner.init()
       lock Runner.summaryFormat (fun () ->
@@ -1258,10 +1383,7 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.EqualTo "UsageError")
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--teamcity : specify this only once"))
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ParsingBadTCGivesFailure() =
       Runner.init()
       lock Runner.summaryFormat (fun () ->
@@ -1276,10 +1398,7 @@ module AltCoverRunnerTests =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError"))
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldRequireExe() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -1295,10 +1414,7 @@ module AltCoverRunnerTests =
         finally
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldAcceptExe() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -1315,10 +1431,7 @@ module AltCoverRunnerTests =
         finally
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldRequireCollectIfNotExe() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -1334,10 +1447,7 @@ module AltCoverRunnerTests =
           Runner.collect := false
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldRejectExeIfCollect() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -1355,10 +1465,7 @@ module AltCoverRunnerTests =
           Runner.collect := false
           Runner.executable := None)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldRequireWorker() =
       Runner.init()
       try
@@ -1374,10 +1481,7 @@ module AltCoverRunnerTests =
       finally
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldAcceptWorker() =
       Runner.init()
       try
@@ -1393,10 +1497,7 @@ module AltCoverRunnerTests =
       finally
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldRequireRecorder() =
       Runner.init()
       try
@@ -1412,10 +1513,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldRequireRecorderDll() =
       Runner.init()
       try
@@ -1440,10 +1538,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldAcceptRecorder() =
       Runner.init()
       try
@@ -1469,10 +1564,7 @@ module AltCoverRunnerTests =
       finally
         Runner.recordingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldHandleReturnCodes() =
       Runner.init()
       // Hack for running while instrumented
@@ -1516,7 +1608,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1559,20 +1651,14 @@ module AltCoverRunnerTests =
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldNoOp() =
       Runner.init()
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let r = CommandLine.processTrailingArguments [] <| DirectoryInfo(where)
       Assert.That(r, Is.EqualTo 0)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ErrorResponseIsAsExpected() =
       Runner.init()
       let saved = Console.Error
@@ -1581,146 +1667,36 @@ module AltCoverRunnerTests =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<TeamCityFormat>.Assembly.GetType("AltCover.AltCover")
+          typeof<TeamCityFormat>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n"
-                       + "--recorderDirectory : Directory " + unique + " not found\n" + """Error - usage is:
-  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
-                               to instrument (default: current directory)
-  -o, --outputDirectory=VALUE
-                             Optional, multiple: A folder to receive the
-                               instrumented assemblies and their companions (
-                               default: sub-folder '__Instrumented' of the
-                               current directory; or '__Saved' if '--inplace'
-                               is set).
-                               See also '--inplace'
-  -y, --symbolDirectory=VALUE
-                             Optional, multiple: Additional directory to search
-                               for matching symbols for the assemblies in the
-                               input directory
-  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
-                               missing reference.
-  -k, --key=VALUE            Optional, multiple: any other strong-name key to
-                               use
-      --sn, --strongNameKey=VALUE
-                             Optional: The default strong naming key to apply
-                               to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
-                                coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
-                               from instrumentation
-  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
-                               from instrumentation
-  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
-                               instrumentation
-  -e, --assemblyExcludeFilter=VALUE
-                             Optional, multiple: assembly which links other
-                               instrumented assemblies but for which internal
-                               details may be excluded
-  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
-                               instrumentation
-  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
-                               instrumentation
-  -a, --attributeFilter=VALUE
-                             Optional, multiple: attribute name to exclude from
-                               instrumentation
-  -l, --localSource          Don't instrument code for which the source file is
-                               not present.
-  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
-                               visits in ticks or designated method calls
-                               leading to the visits.
-                                   A single digit 0-7 gives the number of
-                               decimal places of seconds to report; everything
-                               else is at the mercy of the system clock
-                               information available through DateTime.UtcNow
-                                   A string in brackets "[]" is interpreted as
-                               an attribute type name (the trailing "Attribute"
-                               is optional), so [Test] or [TestAttribute] will
-                               match; if the name contains one or more ".",
-                               then it will be matched against the full name of
-                               the attribute type.
-                                   Other strings are interpreted as method
-                               names (fully qualified if the string contains
-                               any "." characters).
-                                   Incompatible with --single
-      --opencover            Optional: Generate the report in OpenCover format
-      --inplace              Optional: Instrument the inputDirectory, rather
-                               than the outputDirectory (e.g. for dotnet test)
-      --save                 Optional: Write raw coverage data to file for
-                               later processing
-      --single               Optional: only record the first hit at any
-                               location.
-                                   Incompatible with --callContext.
-      --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --opencover option.
-                                   Incompatible with --branchcover.
-      --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --opencover option.
-                                   Incompatible with --linecover.
-      --dropReturnCode       Optional: Do not report any non-zero return code
-                               from a launched process.
-      --sourcelink           Optional: Display sourcelink URLs rather than file
-                               paths if present.
-      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
-                               until process exit.
-  -v, --visibleBranches      Hide complex internal IL branching implementation
-                               details in switch/match constructs, and just
-                               show what the source level logic implies.
-      --showstatic[=VALUE]   Optional: Instrument and show code that is by
-                               default skipped as trivial.  --showstatic:- is
-                               equivalent to omitting the parameter; --
-                               showstatic or --showstatic:+ sets the unvisited
-                               count to a negative value interpreted by the
-                               visualizer (but treated as zero by
-                               ReportGenerator) ; --showstatic:++ sets the
-                               unvisited count to zero.
-      --showGenerated        Mark generated code with a visit count of -2 (
-                               Automatic) for the Visualizer if unvisited
-  -?, --help, -h             Prints out the options.
-or
-  Runner
-  -r, --recorderDirectory=VALUE
-                             The folder containing the instrumented code to
-                               monitor (including the AltCover.Recorder.g.dll
-                               generated by previous a use of the .net core
-                               AltCover).
-  -w, --workingDirectory=VALUE
-                             Optional: The working directory for the
-                               application launch
-  -x, --executable=VALUE     The executable to run e.g. dotnet
-      --collect              Optional: Process previously saved raw coverage
-                               data, rather than launching a process.
-  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
-                               collected data
-  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
-                               integer, 0 to 100).  If the coverage result is
-                               below threshold, the return code of the process
-                               is (threshold - actual) rounded up to the
-                               nearest integer.
-  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
-                               collected data
-  -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
-                               rather than overwriting the original report file.
-      --dropReturnCode       Optional: Do not report any non-zero return code
-                               from a launched process.
-      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary
-  -?, --help, -h             Prints out the options.
-"""
+                       + "--recorderDirectory : Directory " + unique + " not found\n" +
+                       "Error - usage is:\n" +
+                       AltCoverUsage.usageText +
+                       "\nor\n" +
+                       AltCoverUsage.runnerText +
+                       "\nor\n" +
+                       "  ImportModule               Prints out the PowerShell script to import the\n" +
+                       "                               associated PowerShell module\n" +
+                       "or\n" +
+                       "  Version                    Prints out the AltCover build version\n" +
+                       "or, for the global tool only\n" +
+                       "  TargetsPath                Prints out the path to the 'altcover.global.targets' file\n" +
+                       "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
+                       "                               The 'altcover.global.props' file is present in the same directory\n"
+
         Assert.That
-          (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+          (result.Replace("\r\n", "\n").Replace("\u200b",String.Empty),
+          Is.EqualTo(expected.Replace("\r\n", "\n")))
       finally
         Console.SetError saved
 
     let synchronized = Object()
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldGetStringConstants() =
       Runner.init()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -1754,7 +1730,7 @@ or
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.toConsole()
+      EntryPoint.toConsole()
       let saved = (Console.Out, Console.Error)
       Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding
@@ -1799,10 +1775,7 @@ or
         Console.SetError(snd saved)
         Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let WriteLeavesExpectedTraces() =
       Runner.init()
       let saved = Console.Out
@@ -1825,20 +1798,20 @@ or
         do use worker = new FileStream(reportFile, FileMode.CreateNew)
            worker.Write(buffer, 0, size)
            ()
-        let hits = List<string * int * Base.Track>()
+        let hits = List<string * int * Track>()
         [ 0..9 ]
         |> Seq.iter (fun i ->
              for j = 1 to i + 1 do
-               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
+               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
                ignore j)
 
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         hits
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
-             AltCover.Base.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+             AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
-        Runner.J.doReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+        Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -1855,10 +1828,60 @@ or
           Directory.Delete(unique)
         with :? IOException -> ()
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
+    let ZipWriteLeavesExpectedTraces() =
+      Runner.init()
+      let saved = Console.Out
+      let here = Directory.GetCurrentDirectory()
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+      try
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Directory.CreateDirectory(unique) |> ignore
+        Directory.SetCurrentDirectory(unique)
+        Counter.measureTime <- DateTime.ParseExact
+                                 ("2017-12-29T16:33:40.9564026+00:00", "o", null)
+        use stream =
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let doc = XDocument.Load stream
+        Zip.save doc reportFile true
+
+        let hits = List<string * int * Track>()
+        [ 0..9 ]
+        |> Seq.iter (fun i ->
+             for j = 1 to i + 1 do
+               hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Null)
+               ignore j)
+
+        let counts = Dictionary<string, Dictionary<int, PointVisit>>()
+        hits
+        |> Seq.iter
+             (fun (moduleId, hitPointId, hit) ->
+             AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+
+        Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None |> ignore
+        let (container, worker) = Zip.openUpdate reportFile
+        use worker' = worker
+        use container' = container
+        let after = XmlDocument()
+        after.Load worker'
+        Assert.That
+          (after.SelectNodes("//seqpnt")
+           |> Seq.cast<XmlElement>
+           |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+           Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
+      finally
+        if File.Exists reportFile then File.Delete reportFile
+        Console.SetOut saved
+        Directory.SetCurrentDirectory(here)
+        try
+          Directory.Delete(unique)
+        with :? IOException -> ()
+
+    [<Test>]
     let NullPayloadShouldReportNothing() =
       Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1871,10 +1894,7 @@ or
       Assert.That(File.Exists(unique + ".acv"))
       Assert.That(counts, Is.Empty)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ActivePayloadShouldReportAsExpected() =
       Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1919,10 +1939,7 @@ or
 
       if File.Exists(unique + ".acv") then File.Delete(unique + ".acv")
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let CollectShouldReportAsExpected() =
       Runner.init()
       try
@@ -1952,10 +1969,7 @@ or
       finally
         Runner.collect := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let JunkPayloadShouldReportAsExpected() =
       Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1969,17 +1983,14 @@ or
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           l
           |> List.mapi (fun i x ->
-               formatter.Serialize(sink, (x, i, Base.Null, DateTime.UtcNow))
+               formatter.Serialize(sink, (x, i, Null, DateTime.UtcNow))
                x)
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
       Assert.That(File.Exists(unique + ".acv"))
       Assert.That(counts, Is.EquivalentTo [])
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let TrackingPayloadShouldReportAsExpected() =
       Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1987,12 +1998,12 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
       let payloads0 =
-        [ Base.Null
-          Base.Call 17
-          Base.Time 23L
-          Base.Both { Time = 5L; Call = 42 }
-          Base.Time 42L
-          Base.Call 5 ]
+        [ Null
+          Call 17
+          Time 23L
+          Both { Time = 5L; Call = 42 }
+          Time 42L
+          Call 5 ]
 
       let pv = Init 42L (payloads0 |> List.tail)
       let table = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -2013,19 +2024,19 @@ or
                formatter.Write x
                formatter.Write i
                match y with
-               | Null -> formatter.Write(Base.Tag.Null |> byte)
+               | Null -> formatter.Write(Tag.Null |> byte)
                | Time t ->
-                 formatter.Write(Base.Tag.Time |> byte)
+                 formatter.Write(Tag.Time |> byte)
                  formatter.Write(t)
                | Call t ->
-                 formatter.Write(Base.Tag.Call |> byte)
+                 formatter.Write(Tag.Call |> byte)
                  formatter.Write(t)
                | Both b ->
-                 formatter.Write(Base.Tag.Both |> byte)
+                 formatter.Write(Tag.Both |> byte)
                  formatter.Write(b.Time)
                  formatter.Write(b.Call)
                | Table t ->
-                 formatter.Write(Base.Tag.Table |> byte)
+                 formatter.Write(Tag.Table |> byte)
                  t.Keys
                  |> Seq.iter (fun m -> formatter.Write m
                                        formatter.Write t.[m].Keys.Count
@@ -2036,33 +2047,33 @@ or
                                                              v.Tracks
                                                              |> Seq.iter (fun tx -> match tx with
                                                                                     | Time t ->
-                                                                                      formatter.Write(Base.Tag.Time |> byte)
+                                                                                      formatter.Write(Tag.Time |> byte)
                                                                                       formatter.Write(t)
                                                                                     | Call t ->
-                                                                                      formatter.Write(Base.Tag.Call |> byte)
+                                                                                      formatter.Write(Tag.Call |> byte)
                                                                                       formatter.Write(t)
                                                                                     | Both b ->
-                                                                                      formatter.Write(Base.Tag.Both |> byte)
+                                                                                      formatter.Write(Tag.Both |> byte)
                                                                                       formatter.Write(b.Time)
                                                                                       formatter.Write(b.Call)
                                                                                     | _ -> tx |> (sprintf "%A") |> Assert.Fail)
-                                                             formatter.Write(Base.Tag.Null |> byte)))
+                                                             formatter.Write(Tag.Null |> byte)))
                  formatter.Write String.Empty
                x)
           |> List.length) inputs
 
-      let expected = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
-      let a = Dictionary<int, int64 * Base.Track list>()
+      let expected = Dictionary<string, Dictionary<int, int64 * Track list>>()
+      let a = Dictionary<int, int64 * Track list>()
       a.Add(1, (1L, []))
-      let b = Dictionary<int, int64 * Base.Track list>()
+      let b = Dictionary<int, int64 * Track list>()
       b.Add(2, (0L, [Call 17]))
-      let c = Dictionary<int, int64 * Base.Track list>()
+      let c = Dictionary<int, int64 * Track list>()
       c.Add(3, (0L, [Time 23L]))
-      let d = Dictionary<int, int64 * Base.Track list>()
+      let d = Dictionary<int, int64 * Track list>()
       d.Add(4, (0L, [Both { Time = 5L; Call = 42 } ]))
-      let e = Dictionary<int, int64 * Base.Track list>()
+      let e = Dictionary<int, int64 * Track list>()
       e.Add(6, (0L, [Call 5]))
-      let f = Dictionary<int, int64 * Base.Track list>()
+      let f = Dictionary<int, int64 * Track list>()
       f.Add(3, (42L, payloads0 |> List.tail))
 
       expected.Add ("a", a)
@@ -2075,9 +2086,9 @@ or
       Assert.That(r, Is.EqualTo 7)
       Assert.That(File.Exists(unique + ".acv"))
 
-      let result = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
+      let result = Dictionary<string, Dictionary<int, int64 * Track list>>()
       counts.Keys
-      |> Seq.iter (fun k -> let inner = Dictionary<int, int64 * Base.Track list>()
+      |> Seq.iter (fun k -> let inner = Dictionary<int, int64 * Track list>()
                             result.Add(k, inner)
                             counts.[k].Keys
                             |> Seq.iter (fun k2 ->
@@ -2087,10 +2098,7 @@ or
 
       Assert.That(result, Is.EquivalentTo expected)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let PointProcessShouldCaptureTimes() =
       Runner.init()
       let x = XmlDocument()
@@ -2098,22 +2106,19 @@ or
       let root = x.DocumentElement
 
       let hits =
-        [ Base.Null
-          Base.Call 17
-          Base.Time 23L
-          Base.Both { Time = 5L;  Call = 42 }
-          Base.Time 42L
-          Base.Time 5L ]
+        [ Null
+          Call 17
+          Time 23L
+          Both { Time = 5L;  Call = 42 }
+          Time 42L
+          Time 5L ]
       Runner.J.pointProcess root hits
       Assert.That
         (x.DocumentElement.OuterXml,
          Is.EqualTo
            """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times><TrackedMethodRefs><TrackedMethodRef uid="17" vc="1" /><TrackedMethodRef uid="42" vc="1" /></TrackedMethodRefs></root>""")
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let PostprocessShouldRestoreKnownOpenCoverState() =
       Runner.init()
       Counter.measureTime <- DateTime.ParseExact
@@ -2142,15 +2147,12 @@ or
       |> Seq.cast<XmlElement>
       |> Seq.iter (fun el -> el.SetAttribute("bev", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
       Counter.measureTime <- DateTime.ParseExact
                                ("2017-12-29T16:33:40.9564026+00:00", "o", null)
@@ -2189,15 +2191,12 @@ or
       visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
       visit.Add(100663297, Init 1L []) // should fill in the expected non-zero value
       visit.Add(100663298, Init 23L []) // should be ignored
-      Runner.J.postProcess visits Base.ReportFormat.OpenCover after
+      Runner.J.postProcess visits ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let PostprocessShouldRestoreDegenerateOpenCoverState() =
       Runner.init()
       Counter.measureTime <- DateTime.ParseExact
@@ -2211,9 +2210,10 @@ or
       |> Seq.iter (fun el ->
            el.SetAttribute("visitedSequencePoints", "0")
            el.SetAttribute("sequenceCoverage", "0")
+           if el.GetAttribute("maxCrapScore") = "2.11" then
+             el.SetAttribute("maxCrapScore", "2.15")
            if el.GetAttribute("minCrapScore") = "2.11" then
-             el.SetAttribute("minCrapScore", "2.15")
-             el.SetAttribute("maxCrapScore", "2.15"))
+             el.SetAttribute("minCrapScore", "2.15"))
       after.DocumentElement.SelectNodes("//Method")
       |> Seq.cast<XmlElement>
       |> Seq.iter
@@ -2262,13 +2262,10 @@ or
               |> not
            then el.SetAttribute("crapScore", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let PostprocessShouldRestoreBranchOnlyOpenCoverState() =
       Runner.init()
       Counter.measureTime <- DateTime.ParseExact
@@ -2284,6 +2281,7 @@ or
            el.SetAttribute("sequenceCoverage", "0")
            if el.GetAttribute("minCrapScore") = "2.11" then
              el.SetAttribute("minCrapScore", "2.15")
+           if el.GetAttribute("maxCrapScore") = "2.11" then
              el.SetAttribute("maxCrapScore", "2.15"))
       after.DocumentElement.SelectNodes("//Method")
       |> Seq.cast<XmlElement>
@@ -2331,13 +2329,10 @@ or
               |> not
            then el.SetAttribute("crapScore", "0"))
       let empty = Dictionary<string, Dictionary<int, PointVisit>>()
-      Runner.J.postProcess empty Base.ReportFormat.OpenCover after
+      Runner.J.postProcess empty ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let JunkTokenShouldDefaultZero() =
       Runner.init()
       let visits = Dictionary<int, PointVisit>()
@@ -2347,10 +2342,7 @@ or
       | (0L, []) -> ()
       | _ -> Assert.Fail(sprintf "%A" result)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let EmptyNCoverGeneratesExpectedSummary() =
       Runner.init()
       let report = XDocument()
@@ -2361,8 +2353,8 @@ or
           Runner.summaryFormat <- Default
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
-          Assert.That(r, Is.EqualTo 0)
+          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
           Assert.That
             (builder.ToString(),
@@ -2373,10 +2365,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let EmptyNCoverGeneratesExpectedTCSummary() =
       Runner.init()
       let report = XDocument()
@@ -2387,8 +2376,8 @@ or
           Runner.summaryFormat <- B
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
-          Assert.That(r, Is.EqualTo 0)
+          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
           Assert.That
@@ -2401,10 +2390,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let EmptyNCoverGeneratesExpectedSummaries() =
       Runner.init()
       let report = XDocument()
@@ -2415,8 +2401,8 @@ or
           Runner.summaryFormat <- BPlus
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.NCover 0
-          Assert.That(r, Is.EqualTo 0)
+          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
           Assert.That
@@ -2429,10 +2415,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let NCoverShouldGeneratePlausibleSummary() =
       Runner.init()
       let resource =
@@ -2447,12 +2430,15 @@ or
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r =
             try
-              Runner.threshold <- Some 25
-              Runner.I.standardSummary baseline Base.ReportFormat.NCover 42
+              Runner.threshold <- Some { Statements = 25uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy }
+              Runner.I.standardSummary baseline ReportFormat.NCover 42
             finally
               Runner.threshold <- None
           // 80% coverage > threshold so expect return code coming in
-          Assert.That(r, Is.EqualTo 42)
+          Assert.That(r, Is.EqualTo (42, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2462,10 +2448,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let EmptyOpenCoverGeneratesExpectedSummary() =
       Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
@@ -2476,8 +2459,8 @@ or
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Default
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
-          Assert.That(r, Is.EqualTo 0)
+          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2488,10 +2471,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let EmptyOpenCoverGeneratesExpectedTCSummary() =
       Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
@@ -2502,8 +2482,8 @@ or
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- B
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
-          Assert.That(r, Is.EqualTo 0)
+          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2518,10 +2498,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let EmptyOpenCoverGeneratesExpectedSummaries() =
       Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
@@ -2532,8 +2509,8 @@ or
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- RPlus
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report Base.ReportFormat.OpenCover 0
-          Assert.That(r, Is.EqualTo 0)
+          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
@@ -2552,10 +2529,7 @@ or
       finally
         Output.info <- ignore
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let OpenCoverShouldGeneratePlausibleSummary() =
       Runner.init()
       let resource =
@@ -2564,36 +2538,50 @@ or
              (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
-      let builder = System.Text.StringBuilder()
-      try
-        lock Runner.summaryFormat (fun () ->
-          Runner.summaryFormat <- BPlus
-          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r =
-            try
-              Runner.threshold <- Some 75
-              Runner.I.standardSummary baseline Base.ReportFormat.OpenCover 23
-            finally
-              Runner.threshold <- None
-          // 70% coverage < threshold so expect shortfall
-          Assert.That(r, Is.EqualTo 5)
-          Assert.That
-            (builder.ToString(),
-             Is.EqualTo
-               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
-                + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
-                + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-                + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
-                + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
-                + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
-               ))
-      finally
-        Output.info <- ignore
+      let thresholds = [
+        { Threshold.Default() with Statements = 75uy }
+        { Threshold.Default() with Branches = 70uy }
+        { Threshold.Default() with Methods = 100uy }
+        { Threshold.Default() with Crap = 1uy }
+        { Threshold.Default() with Crap = 255uy }
+      ]
+      let results = [
+        (5, 75, "Statements")
+        (4, 70, "Branches")
+        (23, 0, String.Empty)
+        (2, 1, "Crap")
+        (23, 0, String.Empty)
+      ]
 
-#if NETCOREAPP2_0
-#else
+      List.zip thresholds results
+      |> List.iter (fun (threshold, expected) ->
+        try
+          lock Runner.summaryFormat (fun () ->
+            Runner.summaryFormat <- BPlus
+            let builder = System.Text.StringBuilder()
+            Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+            let r =
+              try
+                Runner.threshold <- Some threshold
+                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+              finally
+                Runner.threshold <- None
+            // 70% coverage < threshold so expect shortfall
+            Assert.That(r, Is.EqualTo expected)
+            Assert.That
+              (builder.ToString(),
+               Is.EqualTo
+                 ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+                  + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
+                  + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                  + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+                  + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+                  + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
+                 ))
+        finally
+          Output.info <- ignore)
+
     [<Test>]
-#endif
     let OpenCoverShouldGeneratePlausibleLcov() =
       Runner.init()
       let resource =
@@ -2614,8 +2602,8 @@ or
       try
         Runner.I.addLCovSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline Base.ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo 0)
+        let r = summarize baseline ReportFormat.OpenCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2628,10 +2616,7 @@ or
       finally
         LCov.path := None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let NCoverShouldGeneratePlausibleLcov() =
       Runner.init()
       let resource =
@@ -2649,8 +2634,8 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        let r = LCov.summary baseline ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2663,10 +2648,7 @@ or
       finally
         LCov.path := None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let NCoverShouldGeneratePlausibleLcovWithMissingFullName() =
       Runner.init()
       let resource =
@@ -2689,8 +2671,8 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        let r = LCov.summary baseline ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2703,10 +2685,7 @@ or
       finally
         LCov.path := None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let MultiSortDoesItsThing() =
       Runner.init()
       let load f =
@@ -2777,10 +2756,7 @@ or
         xmlDocument.Schemas <- schema
         xmlDocument.Validate(null)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let NCoverShouldGeneratePlausibleCobertura() =
       Runner.init()
       let resource =
@@ -2800,8 +2776,8 @@ or
       try
         Runner.I.addCoberturaSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        let r = summarize baseline ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
@@ -2820,10 +2796,7 @@ or
       finally
         Cobertura.path := None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let NCoverShouldGeneratePlausibleCoberturaWithMissingFullName() =
       Runner.init()
       let resource =
@@ -2846,8 +2819,8 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
+        let r = Cobertura.summary baseline ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
@@ -2867,10 +2840,7 @@ or
       finally
         Cobertura.path := None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let OpenCoverShouldGeneratePlausibleCobertura() =
       Runner.init()
       let resource =
@@ -2889,8 +2859,8 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline Base.ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo 0)
+        let r = Cobertura.summary baseline ReportFormat.OpenCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace
             (File.ReadAllText unique, """timestamp=\"\d*\">""", """timestamp="xx">""")
@@ -2912,10 +2882,7 @@ or
       finally
         Cobertura.path := None
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ThresholdViolationShouldBeReported() =
       Runner.init()
       let saveErr = Output.error
@@ -2923,23 +2890,21 @@ or
       let builder = System.Text.StringBuilder()
       let saved = Runner.threshold
       try
-        Runner.I.summaries <- [ (fun _ _ _ -> 23) ]
+        Runner.I.summaries <- [ (fun _ _ a  -> (a, 0uy, String.Empty))
+                                (fun _ _ _ -> (23, 42uy, "Statements"))
+                                (fun _ _ a  -> (a, 0uy, String.Empty))]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.threshold <- Some 42
-        let delta = Runner.J.doSummaries (XDocument()) Base.ReportFormat.NCover 0
+        let delta = Runner.J.doSummaries (XDocument()) ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),
-           Is.EqualTo "Coverage percentage achieved is 23% below the threshold of 42%.|")
+           Is.EqualTo "Statement coverage percentage achieved is 23% below the threshold of 42%.|")
       finally
         Output.error <- saveErr
         Runner.I.summaries <- saveSummaries
         Runner.threshold <- saved
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let TryGetValueHandlesNull() =
       Runner.init()
       let dict : Dictionary<int, int> = null

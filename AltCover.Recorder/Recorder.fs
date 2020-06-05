@@ -193,7 +193,7 @@ module Instance =
         | _ ->
             withMutex(fun own ->
               let delta =
-                Counter.doFlush ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile
+                Counter.doFlushFile ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile
                   None
               getResource "Coverage statistics flushing took {0:N} seconds"
               |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))

@@ -12,8 +12,6 @@ open System.IO
 open System.Linq
 open System.Text.RegularExpressions
 
-open AltCover.Augment
-open AltCover.Base
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -216,13 +214,15 @@ module internal KeyStore =
     Justification="Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
 [<SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="Anonymous parameter")>]
-type Fix<'T> = delegate of 'T -> Fix<'T>
+type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =
 
+  let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
+  let internal topLevel = new List<FilterClass>()
   let internal nameFilters = new List<FilterClass>()
 
   let mutable internal staticFilter : StaticFilter option = None
@@ -243,14 +243,14 @@ module internal CoverageParameters =
   let mutable internal single = false // more complicated
 
   let internal sampling() =
-    (if single then Base.Sampling.Single else Base.Sampling.All)
+    (if single then Sampling.Single else Sampling.All)
     |> int
 
   let internal sourcelink = ref false // ddFlag
-  let internal defer = ref (Some false)
+  let internal defer = ref false
 
   let internal deferOpCode() =
-    if Option.getOrElse false !defer then OpCodes.Ldc_I4_1 else OpCodes.Ldc_I4_0
+    if !defer then OpCodes.Ldc_I4_1 else OpCodes.Ldc_I4_0
 
   let internal theInputDirectories = List<string>()
   let private defaultInputDirectory = "."
@@ -278,6 +278,7 @@ module internal CoverageParameters =
   let internal sourceDirectories() = (inplaceSelection outputDirectories inputDirectories)()
 
   let mutable internal theReportPath : Option<string> = None
+  let internal zipReport = ref false // ddFlag
   let internal defaultReportPath = "coverage.xml"
   let internal reportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath theReportPath)
 
@@ -288,10 +289,7 @@ module internal CoverageParameters =
   let mutable internal theReportFormat : Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
-  let internal defaultReportFormat() =
-    if coverstyle = CoverStyle.All then ReportFormat.NCover else ReportFormat.OpenCover
-
-  let internal reportKind() = (Option.getOrElse (defaultReportFormat()) theReportFormat)
+  let internal reportKind() = (Option.getOrElse ReportFormat.OpenCover theReportFormat)
 
   let internal reportFormat() =
     let fmt = reportKind()
@@ -456,7 +454,7 @@ module internal Visitor =
         (fun m ->
           let t = m.DeclaringType
           m.IsConstructor
-          && (t.IsNested
+          && ((t.IsNested
               && t.CustomAttributes
                  |> Seq.exists
                       (fun a ->
@@ -466,7 +464,7 @@ module internal Visitor =
              |> Seq.exists
                   (fun a ->
                     a.AttributeType.FullName =
-                      "System.Runtime.CompilerServices.CompilerGeneratedAttribute")) ]
+                      "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
       |> Seq.exists (fun f -> f m)
       |> not
 
@@ -487,7 +485,7 @@ module internal Visitor =
 
              let included =
                inspection ||| if inspection = Inspections.Instrument
-                                 && CoverageParameters.reportFormat() = Base.ReportFormat.OpenCoverWithTracking then
+                                 && CoverageParameters.reportFormat() = ReportFormat.OpenCoverWithTracking then
                                 Inspections.Track
                               else
                                 Inspections.Ignore
@@ -536,7 +534,12 @@ module internal Visitor =
              let types =
                Seq.unfold
                  (fun (state : TypeDefinition) ->
-                   if isNull state then None else Some(state, state.DeclaringType)) t
+                   if isNull state then None
+                   else
+                    Some(state, if CoverageParameters.topLevel
+                                   |> Seq.exists (Filter.``match`` state)
+                                then null
+                                else state.DeclaringType)) t
                |> Seq.toList
 
              let inclusion = Seq.fold updateInspection included types
@@ -739,15 +742,21 @@ module internal Visitor =
                | Some f -> f
            (m, key))
       |> Seq.filter (fun (m, k) -> k <> StaticFilter.Hidden)
+      |> Seq.map (fun (m, k) -> let methods =
+                                 Seq.unfold (fun (state : MethodDefinition option) ->
+                                   match state with
+                                   | None -> None
+                                   | Some x -> Some(x, if CoverageParameters.topLevel
+                                                          |> Seq.exists (Filter.``match`` x)
+                                                       then None
+                                                       else containingMethod x)) (Some m)
+                                 |> Seq.toList
+                                (m, k, methods))
+      // Skip nested methods when in method-point mode
+      |> Seq.filter (fun (_,_,methods) -> !CoverageParameters.methodPoint |> not ||
+                                          methods |> List.tail |> List.isEmpty)
       |> Seq.collect
-           ((fun (m, k) ->
-             let methods =
-               Seq.unfold (fun (state : MethodDefinition option) ->
-                 match state with
-                 | None -> None
-                 | Some x -> Some(x, containingMethod x)) (Some m)
-               |> Seq.toList
-
+           ((fun (m, k, methods) ->
              let visitcount = selectExemption k methods basevc
 
              let inclusion = Seq.fold updateInspection included methods
@@ -1007,18 +1016,23 @@ module internal Visitor =
         i && (s.Document.Url.IsIncluded).IsInstrumented
 
       let methodPointOnly() =
-        interesting && (instructions
-                        |> Seq.isEmpty
-                        || CoverageParameters.coverstyle = CoverStyle.BranchOnly) && rawInstructions
-                                                                                |> Seq.isEmpty
-                                                                                |> not
+        interesting && (((instructions
+                           |> Seq.isEmpty
+                           || CoverageParameters.coverstyle = CoverStyle.BranchOnly) && rawInstructions
+                                                                                        |> Seq.isEmpty
+                                                                                        |> not)
+                           || !CoverageParameters.methodPoint)
 
       let sp =
         if methodPointOnly() then
           rawInstructions
           |> Seq.take 1
           |> Seq.map
-               (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting, vc))
+               (fun i -> MethodPoint(i, dbg.GetSequencePoint(i)
+                                        |> Option.nullable
+                                        |> Option.filter (fun _ -> !CoverageParameters.methodPoint)
+                                        |> Option.map SeqPnt.Build,
+                                        m.MetadataToken.ToInt32(), interesting, vc))
         else
           instructions.OrderByDescending(fun (x : Instruction) -> x.Offset)
           |> Seq.mapi (fun i x ->
@@ -1030,8 +1044,9 @@ module internal Visitor =
                   |> Some, i + point, wanted interesting s, vc))
 
       let includeBranches() =
-        instructions.Any() && CoverageParameters.reportKind() = Base.ReportFormat.OpenCover
+        instructions.Any() && CoverageParameters.reportKind() = ReportFormat.OpenCover
         && (CoverageParameters.coverstyle <> CoverStyle.LineOnly)
+        && (!CoverageParameters.methodPoint |> not)
 
       let bp =
         if includeBranches() then

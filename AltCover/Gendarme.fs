@@ -3,8 +3,6 @@ namespace AltCover
 open Mono.Cecil
 open Mono.Cecil.Cil
 
-open AltCover.Augment
-
 module internal Gendarme =
   module internal I =
 

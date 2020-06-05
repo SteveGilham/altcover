@@ -9,7 +9,6 @@ open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -62,9 +61,11 @@ module AltCoverTests =
     let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 #if NETCOREAPP2_0
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
+    let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
 #else
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
+    let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net47/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
 #endif
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
@@ -987,7 +988,7 @@ module AltCoverTests =
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
@@ -1038,7 +1039,7 @@ module AltCoverTests =
       Visitor.visit [] [] // cheat reset
       try
         CoverageParameters.coalesceBranches := true
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Automatic) |> Seq.toList
@@ -1479,7 +1480,7 @@ module AltCoverTests =
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1522,7 +1523,7 @@ module AltCoverTests =
       Visitor.visit [] [] // cheat reset
       try
         CoverageParameters.coalesceBranches := true
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.Declared)
@@ -1582,7 +1583,7 @@ module AltCoverTests =
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.coalesceBranches := true
         let deeper =
@@ -1626,7 +1627,7 @@ module AltCoverTests =
          |> Seq.head)
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Main"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1661,6 +1662,7 @@ module AltCoverTests =
       let module' = def.MainModule
       Visitor.visit [] [] // cheat reset
       try
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1685,31 +1687,38 @@ module AltCoverTests =
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ModulesAreDeeperThanAssemblies() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path = sample1path
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.readSymbols def
-      Visitor.visit [] [] // cheat reset
-      let deeper = Visitor.I.deeper <| Node.Assembly(def, Inspections.Instrument, []) |> Seq.toList
-      Visitor.visit [] [] // cheat reset
-      let expected =
-        def.Modules // we have no nested types in this test
-        |> Seq.map (fun t ->
-             let node = Node.Module(t, Inspections.Instrument)
-             List.concat [ [ node ]
-                           (Visitor.I.deeper >> Seq.toList) node
-                           [ AfterModule ] ])
-        |> List.concat
-      Assert.That(deeper.Length, Is.EqualTo 21)
-      Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+      try
+        let where = Assembly.GetExecutingAssembly().Location
+        let path = sample1path
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+
+        ProgramDatabase.readSymbols def
+        Visitor.visit [] [] // cheat reset
+        let deeper = Visitor.I.deeper <| Node.Assembly(def, Inspections.Instrument, []) |> Seq.toList
+        Visitor.visit [] [] // cheat reset
+        let expected =
+          def.Modules // we have no nested types in this test
+          |> Seq.map (fun t ->
+               let node = Node.Module(t, Inspections.Instrument)
+               List.concat [ [ node ]
+                             (Visitor.I.deeper >> Seq.toList) node
+                             [ AfterModule ] ])
+          |> List.concat
+        Assert.That(deeper.Length, Is.EqualTo 21)
+        Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+      finally
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let AssembliesAreDeeperThanPaths() =
       try
         CoverageParameters.staticFilter <- Some StaticFilter.AsCovered
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         let where = Assembly.GetExecutingAssembly().Location
         let path = sample1path
         let deeper = Visitor.I.deeper <| Node.Start [ path, [] ] |> Seq.toList
@@ -1732,13 +1741,15 @@ module AltCoverTests =
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.staticFilter <- None
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let FilteredAssembliesDoNotHaveSequencePoints() =
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       try
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.NCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.NCover)
         "Sample"
         |> (Regex
             >> FilterRegex.Exclude
@@ -1764,6 +1775,7 @@ module AltCoverTests =
         Assert.That(deeper, Is.EquivalentTo expected)
       finally
         CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let TestFixPointInvoke() =
@@ -2170,6 +2182,259 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
 
     [<Test>]
+    let ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly() =
+      let visitor, document = Report.reportGenerator()
+      let path = sample4path
+      try
+        CoverageParameters.methodPoint := true
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
+        document.Descendants(XName.Get "method")
+        |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "seqpnt")
+                              test <@ sx |> Seq.length = 1 @>)
+      finally
+        CoverageParameters.methodPoint := false
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportForNCoverWithTopLevel() =
+      let path = sample4path
+      let path5 = sample4path.Replace("4", "5").Replace("57", "461").Replace("netcoreapp2.1", "netstandard2.0")
+      let path6 = sample4path.Replace("4", "6").Replace("67", "461").Replace("2.1", "2.0")
+      try
+        Main.init()
+
+        let visitor1, document1 = Report.reportGenerator()
+        Visitor.visit [ visitor1 ] (Visitor.I.toSeq (path, []))
+        let names1 = document1.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ List.isEmpty names1 @>
+
+        {
+          Scope = Attribute
+          Regex = Regex "NoComparison"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+        let visitor2, document2 = Report.reportGenerator()
+        Visitor.visit [ visitor2 ] (Visitor.I.toSeq (path, []))
+        let names2 = document2.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ names2 = ["bytes"; "makeThing"; "testMakeThing"] @>
+
+        {
+          Scope = Attribute
+          Regex = Regex "AutoSerializable"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+        let visitor3, document3 = Report.reportGenerator()
+        Visitor.visit [ visitor3 ] (Visitor.I.toSeq (path, []))
+        let names3 = document3.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ names3 = ["makeThing"; "testMakeThing"] @>
+
+        CoverageParameters.topLevel.Clear()
+        {
+          Scope = Type
+          Regex = Regex "Thing"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+        let visitor5, document5 = Report.reportGenerator()
+        Visitor.visit [ visitor5 ] (Visitor.I.toSeq (path, []))
+        let names5 = document5.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ names5 = ["makeThing"; "testMakeThing"] @>
+
+        CoverageParameters.topLevel.Clear()
+        CoverageParameters.nameFilters.Clear()
+        {
+          Scope = Method
+          Regex = Regex "F1"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+        {
+          Scope = Method
+          Regex = Regex "F2"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+
+        let visitor6, document6 = Report.reportGenerator()
+        Visitor.visit [ visitor6 ] (Visitor.I.toSeq (path6, []))
+        let names6 = document6.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
+                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                                            mx.Attribute(XName.Get "class").Value))
+                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                                                    n.ToCharArray()
+                                                    |> Seq.take 4
+                                                    |> Seq.rev
+                                                    |> Seq.map byte
+                                                    |> Seq.toArray,
+                                                    0))
+                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                     |> Seq.toList
+        test <@ names6 |> List.isEmpty @>
+
+        {
+          Scope = Method
+          Regex = Regex "aux"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+        {
+          Scope = Method
+          Regex = Regex "fetchUrlAsync"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+
+        let visitor7, document7 = Report.reportGenerator()
+        Visitor.visit [ visitor7 ] (Visitor.I.toSeq (path6, []))
+        let names7 = document7.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                                            mx.Attribute(XName.Get "class").Value))
+                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                                                    n.ToCharArray()
+                                                    |> Seq.take 4
+                                                    |> Seq.rev
+                                                    |> Seq.map byte
+                                                    |> Seq.toArray,
+                                                    0))
+                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                     |> Seq.toList
+        test <@ names7 = ["Sample6.Module.F1"; "Sample6.Module.F2";
+         "Sample6.Module+FII@12T.Invoke"; "Sample6.Module+FI@11T.Invoke";
+         "Sample6.Module+F1@17.Invoke" ] @>
+
+        CoverageParameters.topLevel.Clear()
+        CoverageParameters.nameFilters.Clear()
+        {
+          Scope = Attribute
+          Regex = Regex "Exclude"
+          Sense = Exclude
+        }
+        |> CoverageParameters.nameFilters.Add
+
+        let visitor8, document8 = Report.reportGenerator()
+        Visitor.visit [ visitor8 ] (Visitor.I.toSeq (path5, []))
+        let names8 = document8.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
+                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                                            mx.Attribute(XName.Get "class").Value))
+                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                                                    n.ToCharArray()
+                                                    |> Seq.take 4
+                                                    |> Seq.rev
+                                                    |> Seq.map byte
+                                                    |> Seq.toArray,
+                                                    0))
+                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                     |> Seq.toList
+        test <@ names8|> List.isEmpty @>
+
+        CoverageParameters.topLevel.Clear()
+        {
+          Scope = Method
+          Regex = Regex "Interior"
+          Sense = Exclude
+        }
+        |> CoverageParameters.topLevel.Add
+
+        let visitor9, document9 = Report.reportGenerator()
+        Visitor.visit [ visitor9 ] (Visitor.I.toSeq (path5, []))
+        let names9 = document9.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value + "    ")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.map (fun n -> n.Trim())
+                     |> Seq.toList
+        test <@ names9 = ["<F1>g__Interior|0_1"] @>
+
+        CoverageParameters.nameFilters.Clear()
+        let visitor4, document4 = Report.reportGenerator()
+        Visitor.visit [ visitor4 ] (Visitor.I.toSeq (path, []))
+        let names4 = document4.Descendants(XName.Get "method")
+                     |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
+                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                     |> Seq.filter (fun n -> n <> "Main")
+                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                                              n.ToCharArray()
+                                              |> Seq.take 4
+                                              |> Seq.rev
+                                              |> Seq.map byte
+                                              |> Seq.toArray,
+                                              0))
+                     |> Seq.toList
+        test <@ List.isEmpty names4 @>
+
+      finally
+        Main.init()
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly() =
+      let visitor, document = OpenCover.reportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = sample4path
+      try
+        CoverageParameters.methodPoint := true
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
+        document.Descendants(XName.Get "Method")
+        |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "SequencePoint")
+                              test <@ sx |> Seq.length = 1 @>)
+      finally
+        CoverageParameters.methodPoint := false
+
+    [<Test>]
     let ShouldGenerateExpectedXmlReportWithSourceLink() =
       let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
@@ -2276,6 +2541,7 @@ module AltCoverTests =
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
       try
         "Sample"
         |> (Regex
@@ -2300,6 +2566,7 @@ module AltCoverTests =
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
+        CoverageParameters.theReportFormat <- None
 
     // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
     [<Test>]
@@ -2390,7 +2657,7 @@ module AltCoverTests =
         |> Seq.find (fun m -> m.Name = "as_bar")
       Visitor.visit [] [] // cheat reset
       try
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2489,6 +2756,7 @@ module AltCoverTests =
       let here = SolutionDir()
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
+        CoverageParameters.theReportFormat <- Some ReportFormat.NCover
         CoverageParameters.sourcelink := true
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         Assert.That(Visitor.sourceLinkDocuments |> Option.isSome, "Documents should be present")
@@ -2520,6 +2788,7 @@ module AltCoverTests =
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.sourcelink := false
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle() =
@@ -2529,7 +2798,7 @@ module AltCoverTests =
       let path = sample1path
       try
         CoverageParameters.nameFilters.Clear()
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2553,7 +2822,7 @@ module AltCoverTests =
       let X name = XName.Get(name)
       try
         CoverageParameters.nameFilters.Clear()
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.coverstyle <- CoverStyle.LineOnly
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
         let resource =
@@ -2590,7 +2859,7 @@ module AltCoverTests =
       let X name = XName.Get(name)
       try
         CoverageParameters.nameFilters.Clear()
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.coverstyle <- CoverStyle.BranchOnly
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let resource =
@@ -2642,7 +2911,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         Visitor.visit [ visitor ] (Visitor.I.toSeq (path, []))
         let baseline = AddTrackingForMain "Sample1WithOpenCover.xml"
         let result = document.Elements()
@@ -2694,7 +2963,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
-        CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         "Sample"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2727,12 +2996,12 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       try
-        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCover)
+        Assert.That(CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.OpenCover)
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2755,7 +3024,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithClassExclusionOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2763,7 +3032,7 @@ module AltCoverTests =
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
         Assert.That
-          (CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
+          (CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.OpenCoverWithTracking)
         "Program"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2843,7 +3112,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      CoverageParameters.theReportFormat <- Some Base.ReportFormat.OpenCover
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
@@ -2851,7 +3120,7 @@ module AltCoverTests =
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.trackingNames.Add("Main")
         Assert.That
-          (CoverageParameters.reportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
+          (CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.OpenCoverWithTracking)
         "Main"
         |> (Regex
             >> FilterRegex.Exclude
