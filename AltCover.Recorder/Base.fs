@@ -2,7 +2,7 @@
 namespace AltCover
 #else
 #if AVALONIA
-namespace AltCover.Base
+namespace AltCover
 #else
 namespace AltCover.Recorder
 #endif
@@ -15,16 +15,17 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-#if !RUNNER
-open ICSharpCode.SharpZipLib.Zip
-#endif
-
 type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1
   | OpenCoverWithTracking = 2
 
 #if !AVALONIA
+
+#if !RUNNER
+open ICSharpCode.SharpZipLib.Zip
+#endif
+
 type internal Sampling =
   | All = 0
   | Single = 1
