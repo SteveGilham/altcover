@@ -259,7 +259,7 @@ type MainWindow() as this =
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
     let display = new StackPanel()
-    display.Orientation <- Orientation.Horizontal
+    display.Orientation <- Layout.Orientation.Horizontal
     display.Children.Add image
     display.Children.Add text
     display
@@ -580,7 +580,7 @@ type MainWindow() as this =
     Persistence.readGeometry this
     coverageFiles <- Persistence.readCoverageFiles()
     this.PopulateMenu()
-    ofd.InitialDirectory <- Persistence.readFolder()
+    ofd.Directory <- Persistence.readFolder()
     ofd.Title <- UICommon.GetResourceString "Open Coverage File"
     ofd.AllowMultiple <- false
     let filterBits =
@@ -622,8 +622,8 @@ type MainWindow() as this =
       openFile.Publish
       |> Event.choose id
       |> Event.map (fun n ->
-           ofd.InitialDirectory <- Path.GetDirectoryName n
-           if Persistence.save then Persistence.saveFolder ofd.InitialDirectory
+           ofd.Directory <- Path.GetDirectoryName n
+           if Persistence.save then Persistence.saveFolder ofd.Directory
            justOpened <- n
            -1)
 
