@@ -428,3 +428,22 @@ module FSApiTests =
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+
+  [<Test>]
+  let NCoverFindsFiles() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
+    let doc = XDocument.Load stream
+    use mstream = new MemoryStream()
+    let rewrite = AltCover.RenderToHtml.Action doc
+    test<@ rewrite |> Seq.map fst |> Seq.toList = ["Program.fs"] @>
+
+  [<Test>]
+  let OpenCoverFindsFiles() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
+    let doc = XDocument.Load stream
+    use mstream = new MemoryStream()
+    let rewrite = AltCover.RenderToHtml.Action doc
+    test<@ rewrite |> Seq.map fst |> Seq.toList = ["Filter.fs"] @>
+

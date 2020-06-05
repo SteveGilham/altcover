@@ -1,25 +1,31 @@
 ﻿namespace AltCover
 
+open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml
+open System.Xml.Linq
 open System.Xml.XPath
-open System
 
 module RenderToHtml =
   [<SuppressMessage("Microsoft.Design", "CA1059",
     Justification="Premature abstraction")>]
-  let Action (xmlDocument:XmlDocument) =
+  let Action (xmlDocument:XDocument) =
     let format = XmlUtilities.discoverFormat xmlDocument
+    let nav = xmlDocument.CreateNavigator()
 
-    use nodes = match format with
-                | AltCover.Base.ReportFormat.OpenCover -> "//Files/File/@fullPath"
+    let nodes = match format with
+                | AltCover.ReportFormat.OpenCover -> "//Files/File/@fullPath"
                 | _ -> "//@document"
-                |> xmlDocument.SelectNodes
+                |> nav.Select
+                |> Seq.cast<obj>
+                |> Seq.toList
+
     let files = nodes
-                |> Seq.cast<XmlNode>
-                |> Seq.map (fun n -> n.Value)
+                |> Seq.map (fun n -> let pi = n.GetType().GetProperty("Value")
+                                     pi.GetValue(n).ToString())
                 |> Seq.distinct
+                |> Seq.toList
 
     files // TODO handle repeated names in different folders
     |> Seq.filter File.Exists

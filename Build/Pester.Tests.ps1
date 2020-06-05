@@ -640,7 +640,7 @@ Describe "ConvertTo-SourceMap" {
   }
 
   It "finds files from OpenCover" {
-    $result = [xml](Get-Content  "./_Reports/AltCoverFSharpTests.xml") | ConvertTo-SourceMap
+    $result = [xdoc]::Load("./_Reports/AltCoverFSharpTests.xml") | ConvertTo-SourceMap
 
     $result.Count | Should -Be 1
     $result.Keys | Should -Be 'Library.fs'

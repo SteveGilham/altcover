@@ -13,6 +13,7 @@ module internal Augment =
       with get() =
         self |> isNull |> not
 
+#if !GUI
 #if !WEAK_NAME
   type System.String with
     member self.X
@@ -20,7 +21,6 @@ module internal Augment =
         System.Xml.Linq.XName.Get self
 #endif
 
-#if !GUI
   type Microsoft.FSharp.Core.Option<'T> with
     [<SuppressMessage("Gendarme.Rules.Naming",
                       "UseCorrectCasingRule",
