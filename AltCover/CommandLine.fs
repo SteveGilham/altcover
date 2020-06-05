@@ -4,14 +4,15 @@ open System
 open System.Diagnostics
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Reflection
 open System.Resources
 open System.Security
 open System.Security.Cryptography
 open System.Text.RegularExpressions
+open System.Xml.Linq
 
-open Augment
 open BlackFox.CommandLine
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
@@ -45,6 +46,37 @@ module internal Process =
 
 open Process
 #endif
+
+module internal Zip =
+  let internal save (document : XDocument) (report : string) (zip : bool) =
+    if zip
+    then
+      use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
+      let entry = report
+                  |> Path.GetFileName
+                  |> archive.CreateEntry
+      use sink = entry.Open()
+      document.Save(sink)
+    else document.Save(report)
+
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "This rule does not check to see whether this method opens the stream for a consumer to use and dispose")>]
+  [<SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+                    Justification="ditto, ditto.")>]
+  let internal openUpdate (report : string) =
+    if File.Exists report
+    then
+      let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+      (null, stream :> Stream)
+    else
+      let zip = ZipFile.Open(report + ".zip", ZipArchiveMode.Update)
+      let entry = report
+                  |> Path.GetFileName
+                  |> zip.GetEntry
+      let stream = entry.Open()
+      (zip, stream)
 
 type internal StringSink = Action<String> // delegate of string -> unit
 
@@ -382,18 +414,19 @@ module internal CommandLine =
   let internal writeOut line = I.write Console.Out Console.ForegroundColor line
   let internal usageBase u =
     I.writeColoured Console.Error ConsoleColor.Yellow (fun w ->
-      if u.Options.Any() || u.Options2.Any() then w.WriteLine(resources.GetString u.Intro)
-      if u.Options.Any() then u.Options.WriteOptionDescriptions(w)
+      w.WriteLine(resources.GetString u.Intro)
+      u.Options.WriteOptionDescriptions(w)
       if u.Options.Any() && u.Options2.Any() then
-        w.WriteLine(resources.GetString "binder")
+        w.WriteLine(resources.GetString "orbinder")
       if u.Options2.Any() then
+        w.WriteLine("  Runner")
         u.Options2.WriteOptionDescriptions(w)
-      else if u.Options.Any() then
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "ImportModule")
-        w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "version")
-        )
+      w.WriteLine(resources.GetString "orbinder")
+      w.WriteLine(resources.GetString "ImportModule")
+      w.WriteLine(resources.GetString "orbinder")
+      w.WriteLine(resources.GetString "Version")
+      w.WriteLine(resources.GetString "orglobal")
+      w.WriteLine(resources.GetString "TargetsPath"))
 
   let internal writeResource = resources.GetString >> Output.info
   let internal writeResourceWithFormatItems s x warn =

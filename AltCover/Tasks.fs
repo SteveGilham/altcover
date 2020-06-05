@@ -11,46 +11,7 @@ open System.Diagnostics.CodeAnalysis
 
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
-open Augment
-
-[<RequireQualifiedAccess>]
-[<SuppressMessage("Microsoft.Naming", "CA1704",
-  Justification="'Api' works")>]
-module Api =
-  let Prepare (args : FSApi.PrepareParameters) (log : FSApi.Logging) =
-    log.Apply()
-    args
-    |> FSApi.Args.prepare
-    |> List.toArray
-    |> Main.effectiveMain
-
-  let Collect (args : FSApi.CollectParameters) (log : FSApi.Logging) =
-    log.Apply()
-    FSApi.Args.collect args
-    |> List.toArray
-    |> Main.effectiveMain
-
-  let Summary() = Runner.summary.ToString()
-
-  let mutable internal store = String.Empty
-  let private writeToStore s = store <- s
-  let internal logToStore =
-    FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
-
-  let internal getStringValue s =
-    writeToStore String.Empty
-    logToStore.Apply()
-    [| s |]
-    |> Main.effectiveMain
-    |> ignore
-    store
-
-  let ImportModule() = getStringValue "ImportModule"
-  let Version() = getStringValue "version"
-
-  let internal colourize name =
-    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
-    if ok then Console.ForegroundColor <- colour
+open TaskIO
 
 [<SuppressMessage(
   "Gendarme.Rules.Smells",
@@ -62,7 +23,7 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : FSApi.Logging option = None with get, set
+  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
@@ -117,12 +78,26 @@ type Prepare() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
+  member val AttributeTopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val TypeTopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val MethodTopLevel : string array = [||] with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
   member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
-  member val OpenCover = true with get, set
+  member val ReportFormat = "OpenCover" with get, set
   member val InPlace = true with get, set
   member val Save = true with get, set
-  member val Single = false with get, set // work around Gendarme insistence on non-default values only
+  member val ZipFile = false with get, set
+  member val MethodPoint = false with get, set
+  member val SingleVisit = false with get, set
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
   [<SuppressMessage(
@@ -130,23 +105,24 @@ type Prepare() =
       Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
   member val SourceLink = false with get, set
-  member val Defer = false with get, set
+  member val Defer = true with get, set
   member val VisibleBranches = false with get, set
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
+  member val ExposeReturnCode = true with get, set
 
-  member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse
-        (FSApi.Logging.Primitive
-          { Primitive.Logging.Create() with
-              Error = base.Log.LogError
+        (AltCover.LoggingOptions.Primitive
+          { Primitive.LoggingOptions.Create() with
+              Failure = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.PrepareParameters.Primitive
+      AltCover.PrepareOptions.Primitive
         { InputDirectories = self.InputDirectories
           OutputDirectories = self.OutputDirectories
           SymbolDirectories = self.SymbolDirectories
@@ -161,15 +137,20 @@ type Prepare() =
           MethodFilter = self.MethodFilter
           AttributeFilter = self.AttributeFilter
           PathFilter = self.PathFilter
+          AttributeTopLevel = self.AttributeTopLevel
+          TypeTopLevel = self.TypeTopLevel
+          MethodTopLevel = self.MethodTopLevel
           CallContext = self.CallContext
-          OpenCover = self.OpenCover
+          ReportFormat = self.ReportFormat
           InPlace = self.InPlace
           Save = self.Save
-          Single = self.Single
+          ZipFile = self.ZipFile
+          MethodPoint = self.MethodPoint
+          SingleVisit = self.SingleVisit
           LineCover = self.LineCover
           BranchCover = self.BranchCover
           CommandLine = self.CommandLine
-          ExposeReturnCode = true
+          ExposeReturnCode = self.ExposeReturnCode
           SourceLink = self.SourceLink
           Defer = self.Defer
           LocalSource = self.LocalSource
@@ -177,7 +158,7 @@ type Prepare() =
           ShowStatic = self.ShowStatic
           ShowGenerated = self.ShowGenerated }
 
-    Api.Prepare task log = 0
+    Command.Prepare task log = 0
 
 [<AutoSerializable(false)>]
 type Collect() =
@@ -186,7 +167,7 @@ type Collect() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal ACLog : FSApi.Logging option = None with get, set
+  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -207,6 +188,7 @@ type Collect() =
       Justification = "MSBuild tasks use arrays")>]
   member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
+  member val ExposeReturnCode = true with get, set
 
   [<Output>]
   [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
@@ -216,20 +198,20 @@ type Collect() =
                                                       "MethodCanBeMadeStaticRule",
                                                       Justification =
                                                        "Instance property needed")>]
-  member self.Summary = Api.Summary()
+  member self.Summary = Command.Summary()
 
-  member self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
       Option.getOrElse
-        (FSApi.Logging.Primitive
-          { Primitive.Logging.Create() with
-              Error = base.Log.LogError
+        (AltCover.LoggingOptions.Primitive
+          { Primitive.LoggingOptions.Create() with
+              Failure = base.Log.LogError
               Warn = base.Log.LogWarning
               Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.CollectParameters.Primitive
+      AltCover.CollectOptions.Primitive
         { RecorderDirectory = self.RecorderDirectory
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
@@ -238,10 +220,10 @@ type Collect() =
           Cobertura = self.Cobertura
           OutputFile = self.OutputFile
           CommandLine = self.CommandLine
-          ExposeReturnCode = true
+          ExposeReturnCode = self.ExposeReturnCode
           SummaryFormat = self.SummaryFormat }
 
-    Api.Collect task log = 0
+    Command.Collect task log = 0
 
 [<AutoSerializable(false)>]
 type PowerShell() =
@@ -250,13 +232,13 @@ type PowerShell() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = FSApi.Logging.Primitive
-                             { Primitive.Logging.Create() with
-                                 Error = base.Log.LogError
+  member val internal IO = AltCover.LoggingOptions.Primitive
+                             { Primitive.LoggingOptions.Create() with
+                                 Failure = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.ImportModule()
+    let r = Command.ImportModule()
     self.IO.Apply()
     r |> Output.warn
     true
@@ -268,13 +250,13 @@ type GetVersion() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  member val internal IO = FSApi.Logging.Primitive
-                             { Primitive.Logging.Create() with
-                                 Error = base.Log.LogError
+  member val internal IO = AltCover.LoggingOptions.Primitive
+                             { Primitive.LoggingOptions.Create() with
+                                 Failure = base.Log.LogError
                                  Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
-    let r = Api.Version()
+    let r = Command.FormattedVersion()
     self.IO.Apply()
     r |> Output.warn
     true
@@ -285,6 +267,8 @@ type Echo() =
   [<Required>]
   member val Text = String.Empty with get, set
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="Queen's English, m80!")>]
   member val Colour = String.Empty with get, set
 
   override self.Execute() =
@@ -294,7 +278,7 @@ type Echo() =
     then
       let original = Console.ForegroundColor
       try
-        Api.colourize self.Colour
+        TaskIO.colourize self.Colour
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original

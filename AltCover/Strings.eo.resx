@@ -155,14 +155,17 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/l[ocalSource]] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [--showstatic[=VALO]] [--showGenerated] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/teamcity[=VALO]] [--?|help|h] [-- ] [...]
 aŭ
 AltCover ImportModule
 aŭ
-AltCover version
-Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.
+AltCover Version
+aŭ, nur por la tutmonda ilo
+AltCover TargetsPath
+
+Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.
 </value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -207,10 +210,6 @@ Kovra Raporto: {0}
   <data name="Getting results..." xml:space="preserve">
     <value>Akiri rezultojn ...</value>
   </data>
-  <data name="binder" xml:space="preserve">
-    <value>aŭ
-  Runner</value>
-  </data>
   <data name="orbinder" xml:space="preserve">
     <value>aŭ</value>
   </data>
@@ -218,8 +217,8 @@ Kovra Raporto: {0}
     <value>  ImportModule               Elprenas la PowerShell-skripton por importi la
                                asociita PowerShell-modulo</value>
   </data>
-  <data name="opencover" xml:space="preserve">
-    <value>Laŭvola: Kreu la informon en formato OpenCover</value>
+  <data name="reportFormat=" xml:space="preserve">
+    <value>Laŭvola: Generu la raporton en la specifita formato (NCover aŭ la defaŭlta OpenCover)</value>
   </data>
   <data name="CommandLine" xml:space="preserve">
     <value>Komandlinio: '{0} {1}'</value>
@@ -325,13 +324,13 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
                 &lt;=  {0}</value>
   </data>
   <data name="t|threshold=" xml:space="preserve">
-    <value>Laŭvola: minimuma akceptebla kovra procento (entjero, 0 ĝis 100). Se la rezulto de kovraĵo estas sub sojlo, la rondkodo de la procezo estas (sojlo - reala) rondigita ĝis la plej proksima entjero.</value>
+    <value>Laŭvola: unu aŭ pluraj el minimuma akceptebla deklaro (S), branĉo (B) aŭ metodo (M) kovranta procento (entjero, 1 ĝis 100) aŭ maksimume akceptebla CRAP-poentaro (C sekvita per entjero, 1 ĝis 255) t.e. M80C40B50. Se la valoro komenciĝas per nombro, majstro S supozas. Se iu sojlo estas specifita pli ol unu fojon, la lasta petskribo supozas - do 25S50 estas interpretita kiel S50. Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub sojlo, aŭ la CRAP-poentaro estas super la sojlo, la revena kodo de la procezo estas la plej granda abs (sojlo - reala) rondeta ĝis la plej proksima entjero.</value>
   </data>
   <data name="c|cobertura=" xml:space="preserve">
     <value>Laŭvola: Dosiero por la versio de formato Cobertura de la datumoj kolektitaj</value>
   </data>
-  <data name="threshold" xml:space="preserve">
-    <value>Kovra procento atingita estas {0}% sub la sojlo de {1}%.</value>
+  <data name="Statements" xml:space="preserve">
+    <value>La procenta raporto atingita estas {0}% sub la sojlo de {1}%.</value>
   </data>
   <data name="o|outputFile=" xml:space="preserve">
     <value>Laŭvola: skribu la registradan kovradon al ĉi tiu dosiero anstataŭ anstataŭi la originalan raportan dosieron.</value>
@@ -351,8 +350,8 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="AltCover.Version" xml:space="preserve">
     <value>AltCover version {0}</value>
   </data>
-  <data name="version" xml:space="preserve">
-    <value>  version                    Printas la AltCover-konstruan version</value>
+  <data name="Version" xml:space="preserve">
+    <value>  Version                    Printas la AltCover-konstruan version</value>
   </data>
   <data name="Incompatible" xml:space="preserve">
     <value>Komandlinioj opcioj {0} kaj {1} estas reciproke ekskluzivaj.</value>
@@ -362,11 +361,11 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
     Nekongrua kun --callContext.</value>
   </data>
   <data name="linecover" xml:space="preserve">
-    <value>Laŭvola: Ne registru branĉan kovradon. Implikas, kaj estas kongrua kun, la --opencover opcio.
+    <value>Laŭvola: Ne registru branĉan kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.
     Nekongrua kun --branchcover.</value>
   </data>
   <data name="branchcover" xml:space="preserve">
-    <value>Ne registru linion-kovradon. Implikas, kaj estas kongrua kun, la --opencover opcio.
+    <value>Ne registru linion-kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.
      Nekongrua kun --linecover.</value>
   </data>
   <data name="p|pathFilter=" xml:space="preserve">
@@ -379,9 +378,9 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
     <value>Laŭvola: Montru sourcelink-URLojn prefere ol dosieraj vojoj se ĉeestas.</value>
   </data>
   <data name="teamcity:" xml:space="preserve">
-    <value>Laŭvola: Montri resumon en la formato TeamCity anstataŭ/same kiel la resumo de OpenCover</value>
+    <value>Laŭvola: Montri resumon en la formato TeamCity anstataŭ/same kiel la resumo de OpenCover. Defaŭlta valoro 'B' signifas TeamCity Block-formato, 'R' estas bRanch-formato; aldonu '+' por inkluzivi ankaŭ la resuman stilon de OpenCover.</value>
   </data>
-  <data name="defer:" xml:space="preserve">
+  <data name="defer" xml:space="preserve">
     <value>Laŭvola, transdono de skriba kurant-reĝimaj priraportado ĝis elira procezo.</value>
   </data>
   <data name="DuplicatesNotAllowed" xml:space="preserve">
@@ -398,5 +397,38 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   </data>
   <data name="showGenerated" xml:space="preserve">
     <value>Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
+  </data>
+  <data name="zipfile" xml:space="preserve">
+    <value>Laŭvola: Resendu la XML-raporton ene de zip-arkivo.</value>
+  </data>
+  <data name="methodpoint" xml:space="preserve">
+    <value>Laŭvola: registru nur ĉu metodo estis vizitita aŭ ne. Nuligas la --linecover kaj --branchcover elektojn.</value>
+  </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Branĉa kovrada procento atingita estas {0}% sub la sojlo de {1}%.</value>
+  </data>
+  <data name="Crap" xml:space="preserve">
+    <value>Maksimuma CRAP-poentaro atingita estas {0} super la sojlo de {1}.</value>
+  </data>
+  <data name="Methods" xml:space="preserve">
+    <value>Metoda priraportado atingita estas {0}% sub la sojlo de {1}%.</value>
+  </data>
+  <data name="attributetoplevel=" xml:space="preserve">
+    <value>Laŭvola, multoblaj: Tipoj markitaj kun atributo de tipo kiu kongruas kun la regekso estas konsiderataj supraj niveloj kaj ne estas ekskluditaj de priraportado surbaze de iu tipo, kiu tekste fermas ilin.</value>
+  </data>
+  <data name="methodtoplevel=" xml:space="preserve">
+    <value>Laŭvola, multoblaj: Metodoj kun nomo kiu kongruas kun la regekso estas konsiderataj supraj niveloj kaj ne estas ekskluditaj de priraportado surbaze de ia metodo tekste ĉirkaŭmetanta ilin.</value>
+  </data>
+  <data name="typetoplevel=" xml:space="preserve">
+    <value>Laŭvola, multoblaj: Specoj kun nomo kiu kongruas kun la regekso estas konsiderataj supraj niveloj kaj ne estas ekskluditaj de priraportado surbaze de ia ajn tipo, kiu tekste fermas ilin.</value>
+  </data>
+  <data name="orglobal" xml:space="preserve">
+    <value>aŭ, nur por la tutmonda ilo</value>
+  </data>
+  <data name="TargetsPath" xml:space="preserve">
+    <value>  TargetsPath                Presas la vojon al la dosiero 'altcover.global.targets'
+                                (ĉar la ilo ne povas esti inkluzivita en la projekto
+                                per 'dotnet add'). 
+                                La dosiero 'altcover.global.props' estas en la sama dosierujo</value>
   </data>
 </root>

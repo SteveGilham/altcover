@@ -5,11 +5,8 @@ open System.Diagnostics.CodeAnalysis
 
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
-#if GUI
-module Augment =
-#else
+[<AutoOpen>]
 module internal Augment =
-#endif
 
   type System.Object with
     member self.IsNotNull

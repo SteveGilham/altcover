@@ -1,16 +1,20 @@
 #if RUNNER
-namespace AltCover.Base
+namespace AltCover
 #else
 namespace AltCover.Recorder
 #endif
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Xml
 
-// These conditionally internal for Gendarme
+#if !RUNNER
+open ICSharpCode.SharpZipLib.Zip
+#endif
+
 type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1
@@ -75,19 +79,19 @@ and [<NoComparison>]
 module internal Counter =
   // "Public" "fields"
 
-  /// <summary>
-  /// The time at which coverage run began
-  /// </summary>
+  // // <summary>
+  // // The time at which coverage run began
+  // // </summary>
   let mutable internal startTime = DateTime.UtcNow
 
-  /// <summary>
-  /// The finishing time taken of the coverage run
-  /// </summary>
+  // // <summary>
+  // // The finishing time taken of the coverage run
+  // // </summary>
   let mutable internal measureTime = DateTime.UtcNow
 
-  /// <summary>
-  /// The offset flag for branch counts
-  /// </summary>
+  // // <summary>
+  // // The offset flag for branch counts
+  // // </summary>
   let internal branchFlag = 0x80000000
 
   let internal branchMask = 0x7FFFFFFF
@@ -99,27 +103,27 @@ module internal Counter =
   module private I =
 #endif
 
-    /// <summary>
-    /// Load the XDocument
-    /// </summary>
-    /// <param name="path">The XML file to load</param>
-    /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
-    /// If this is ever a problem, we will need mutability and two streams, with explicit
-    /// stream disposal if and only if the reader or writer doesn't take ownership
-    /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
-    /// Also, this rule is deprecated
-    /// </remarks>
+    // // <summary>
+    // // Load the XDocument
+    // // </summary>
+    // // <param name="path">The XML file to load</param>
+    // // <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
+    // // If this is ever a problem, we will need mutability and two streams, with explicit
+    // // stream disposal if and only if the reader or writer doesn't take ownership
+    // // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+    // // Also, this rule is deprecated
+    // // </remarks>
     let private readXDocument(stream : Stream) =
       let doc = XmlDocument()
       doc.Load(stream)
       doc
 
-    /// <summary>
-    /// Write the XDocument
-    /// </summary>
-    /// <param name="coverageDocument">The XML document to write</param>
-    /// <param name="path">The XML file to write to</param>
-    /// <remarks>Idiom to work with CA2202 as above</remarks>
+    // // <summary>
+    // // Write the XDocument
+    // // </summary>
+    // // <param name="coverageDocument">The XML document to write</param>
+    // // <param name="path">The XML file to write to</param>
+    // // <remarks>Idiom to work with CA2202 as above</remarks>
     let private writeXDocument (coverageDocument : XmlDocument) (stream : Stream) =
       coverageDocument.Save(stream)
 
@@ -155,11 +159,11 @@ module internal Counter =
       then t1
       else t2
 
-    /// <summary>
-    /// Save sequence point hit counts to xml report file
-    /// </summary>
-    /// <param name="hitCounts">The coverage results to incorporate</param>
-    /// <param name="coverageFile">The coverage file to update as a stream</param>
+    // // <summary>
+    // // Save sequence point hit counts to xml report file
+    // // </summary>
+    // // <param name="hitCounts">The coverage results to incorporate</param>
+    // // <param name="coverageFile">The coverage file to update as a stream</param>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule",
      Justification="Most of this gets curried away")>]
@@ -291,6 +295,14 @@ module internal Counter =
                             )))
       hitcount
 #endif
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+     "AvoidLongParameterListsRule",
+     Justification="Most of this gets curried away")>]
+    let doFlush postProcess pointProcess own counts format coverageFile outputFile =
+      let flushStart =
+        updateReport postProcess pointProcess own counts format coverageFile outputFile
+      TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+
   // "Public" API
   let internal addSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
@@ -312,17 +324,13 @@ module internal Counter =
            1L
 #endif
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'Target' is disposed")>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
-  let internal doFlush postProcess pointProcess own counts format report output =
-    use coverageFile =
-      new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-
+  [<SuppressMessage("Microsoft.Reliability",
+                                                    "CA2000:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "'target' is disposed")>]
+  let internal doFlushStream postProcess pointProcess own counts format coverageFile output =
     use target =
       match output with
       | None -> new MemoryStream() :> Stream
@@ -334,6 +342,48 @@ module internal Counter =
       if Option.isSome output then target
       else coverageFile :> Stream
 
-    let flushStart =
-      I.updateReport postProcess pointProcess own counts format coverageFile outputFile
-    TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+    I.doFlush postProcess pointProcess own counts format coverageFile outputFile
+
+#if !RUNNER
+  [<SuppressMessage("Gendarme.Rules.Smells",
+   "AvoidLongParameterListsRule",
+   Justification="Most of this gets curried away")>]
+  [<SuppressMessage("Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+   Justification="'zip' owns 'container' and is 'Close()'d")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "ald also 'target' is disposed")>]
+  let internal doFlushFile postProcess pointProcess own counts format report output =
+    if File.Exists report
+    then
+      use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                                        FileOptions.SequentialScan)
+      doFlushStream postProcess pointProcess own counts format coverageFile output
+    else
+      let container = new FileStream(report + ".zip", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                                        FileOptions.SequentialScan)
+      let zip = new ZipFile(container)
+      try
+        let entryName = report |> Path.GetFileName
+        let entry = zip.GetEntry(entryName)
+        use target =
+          match output with
+          | None -> new MemoryStream() :> Stream
+          | Some f ->
+            new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
+                            FileOptions.SequentialScan) :> Stream
+        let result = use reader = zip.GetInputStream(entry)
+                     I.doFlush postProcess pointProcess own counts format reader target
+        if output.IsNone then
+          zip.BeginUpdate()
+          zip.Delete entry
+          target.Seek(0L, SeekOrigin.Begin) |> ignore
+          let source = { new IStaticDataSource with
+                           member self.GetSource() = target }
+          zip.Add(source, entryName)
+          zip.CommitUpdate();
+
+        result
+      finally
+        zip.Close()
+#endif

@@ -936,6 +936,123 @@ module AltCoverTests =
         Directory.Delete(unique)
       with :? IOException -> ()
 
+#if !NET2
+  [<Test>]
+  let ZipFlushLeavesExpectedTracesWhenDiverted() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenDiverted.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      do use archive = ZipFile.Open(reportFile + ".zip", ZipArchiveMode.Create)
+         let entry = reportFile
+                     |> Path.GetFileName
+                     |> archive.CreateEntry
+         use sink = entry.Open()
+         sink.Write(buffer, 0, size)
+         ()
+      let payload = Dictionary<int, PointVisit>()
+      [ 0 .. 9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisitInit (int64 (i + 1)) [])
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+      Adapter.DoFlush
+        (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, outputFile) |> ignore
+      use worker' = new FileStream(outputFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That
+        (after.SelectNodes("//seqpnt")
+         |> Seq.cast<XmlElement>
+         |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+         Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with :? IOException -> ()
+
+  let ZipFlushLeavesExpectedTraces() =
+    GetMyMethodName "=>"
+    lock Adapter.Lock (fun () ->
+      Instance.I.isRunner <- false
+      try
+        let saved = Console.Out
+        let here = Directory.GetCurrentDirectory()
+        let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+        let unique = Path.Combine(where, Guid.NewGuid().ToString())
+        let save = Instance.I.trace
+        Instance.I.trace <- Adapter.MakeNullTrace null
+        try
+          Adapter.VisitsClear()
+          use stdout = new StringWriter()
+          Console.SetOut stdout
+          Directory.CreateDirectory(unique) |> ignore
+          Directory.SetCurrentDirectory(unique)
+          Counter.measureTime <-
+            DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+          use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+          let size = int stream.Length
+          let buffer = Array.create size 0uy
+          Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+          do use archive = ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Create)
+             let entry = Instance.ReportFile
+                         |> Path.GetFileName
+                         |> archive.CreateEntry
+             use sink = entry.Open()
+             sink.Write(buffer, 0, size)
+             ()
+          [ 0 .. 9 ]
+          |> Seq.iter (fun i ->
+               Adapter.VisitsAdd
+                 ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
+          Adapter.DoExit().Invoke(null, null)
+          let head = "Coverage statistics flushing took "
+          let tail = " seconds\n"
+          let recorded = stdout.ToString().Replace("\r\n", "\n")
+          let index1 = recorded.IndexOf(head, StringComparison.Ordinal)
+          let index2 = recorded.IndexOf(tail, StringComparison.Ordinal)
+          Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
+          Assert.That(index2, Is.GreaterThan index1, recorded)
+
+          use zip = ZipFile.Open(Instance.ReportFile + ".zip", ZipArchiveMode.Update)
+          let entry = Instance.ReportFile
+                      |> Path.GetFileName
+                      |> zip.GetEntry
+          use worker' = entry.Open()
+          let after = XmlDocument()
+          after.Load worker'
+          Assert.That
+            (after.SelectNodes("//seqpnt")
+             |> Seq.cast<XmlElement>
+             |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+             Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
+        finally
+          Instance.I.trace <- save
+          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          Adapter.VisitsClear()
+          Console.SetOut saved
+          Directory.SetCurrentDirectory(here)
+          try
+            Directory.Delete(unique)
+          with :? IOException -> ()
+      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+    GetMyMethodName "<="
+#endif
+
   // Dead simple sequential operation
   // run only once in Framework mode to avoid contention
   [<Test>]
@@ -943,4 +1060,7 @@ module AltCoverTests =
     RealIdShouldIncrementCount()
     PauseLeavesExpectedTraces()
     ResumeLeavesExpectedTraces()
+#if !NET2
+    ZipFlushLeavesExpectedTraces()
+#endif
     FlushLeavesExpectedTraces()

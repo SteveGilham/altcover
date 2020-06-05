@@ -1,0 +1,116 @@
+--- a/PowerShell-integration.md
++++ b/PowerShell-integration.md
+@@ -328,10 +328,8 @@
+ 
+ 
+ ```
+-$xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile
++$xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+ ```
+-"./_Packaging/CompressInterior.xml"
+-
+ 
+ ###    ConvertTo-XmlDocument
+ 
+@@ -396,9 +394,8 @@
+ ----------  EXAMPLE 1  ----------
+ 
+ 
+-Add-Accelerator -XDocument; $xd = [xdoc]::Load("./Tests/Sample1WithNCover.xml");  $xml = $xd |
+ ```
+-ConvertTo-XmlDocument
++Add-Accelerator -XDocument; $xd = [xdoc]::Load("./Tests/Sample1WithNCover.xml");  $xml = $xd | ConvertTo-XmlDocument
+ ```
+ 
+ Adds `[xdoc]` the easy way first, then does the conversion
+@@ -467,7 +464,7 @@
+ 
+ 
+ ```
+-$xd = [xml]"" | ConvertTo-XDocument
++$xd = [xml]"<document />" | ConvertTo-XDocument
+ ```
+ 
+ 
+@@ -567,12 +564,10 @@
+ 
+ ----------  EXAMPLE 1  ----------
+ 
+-
+ ```
+ ConvertTo-Lcov -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
+ ```
+ 
+-
+ ###    ConvertTo-Cobertura
+ 
+ NAME
+@@ -671,12 +666,10 @@
+ 
+ ----------  EXAMPLE 1  ----------
+ 
+-
+ ```
+ ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
+ ```
+ 
+-
+ ###    ConvertTo-NCover
+ 
+ NAME
+@@ -776,9 +769,8 @@
+ 
+ 
+ ```
+-$xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile
++$xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
+ ```
+-"./_Packaging/HandRolledMonoNCover.xml"
+ 
+ 
+ ###    ConvertFrom-NCover
+@@ -894,9 +886,8 @@
+ 
+ 
+ ```
+-$xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies
++$xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
+ ```
+--OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
+ 
+ 
+ ###    Format-FromCoverletOpenCover
+@@ -1013,9 +1004,8 @@
+ 
+ 
+ ```
+-$xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml"
++$xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+ ```
+--Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+ 
+ 
+ ###    ConvertTo-BarChart
+@@ -1117,10 +1107,8 @@
+ 
+ 
+ ```
+-$xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile
++$xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
+ ```
+-"./_Packaging/HandRolledMonoCoverage.html"
+-
+ 
+ ###    Invoke-AltCover
+ 
+@@ -1759,8 +1747,8 @@
+ 
+ 
+ ```
+-Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat
++Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
+ ```
+-NCover -InformationAction Continue
++
+ 
+ 

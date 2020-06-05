@@ -70,6 +70,7 @@ open System.Runtime.CompilerServices
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 #if NETSTANDARD2_0
+[<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests")>]
 #else
 #if NETCOREAPP2_0
@@ -302,23 +303,23 @@ do ()"""
     let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
-      AltCover.PrepareParameters.Primitive
-        { Primitive.PrepareParameters.Create() with
+      AltCover.PrepareOptions.Primitive
+        { Primitive.PrepareOptions.Create() with
             TypeFilter = [ """System\.""" ]
             XmlReport = simpleReport
             OutputDirectories = [| "./" + instrumented |]
-            OpenCover = false
+            ReportFormat = "NCover"
             InPlace = false
             Save = false }
-      |> AltCover.Prepare
+      |> AltCoverCommand.Prepare
 
     let parameters =
-      { AltCover.Parameters.Create prep with
+      { AltCoverCommand.Options.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
           ToolType = framework
           WorkingDirectory = sampleRoot }
 
-    AltCover.run parameters
+    AltCoverCommand.run parameters
     System.Threading.Thread.Sleep(1000)
 
     Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
@@ -346,23 +347,23 @@ do ()"""
         let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
         let prep =
-          AltCover.PrepareParameters.Primitive
-            { Primitive.PrepareParameters.Create() with
+          AltCover.PrepareOptions.Primitive
+            { Primitive.PrepareOptions.Create() with
                 TypeFilter = [ """System\.""" ]
                 XmlReport = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
-                OpenCover = false
+                ReportFormat = "NCover"
                 InPlace = false
                 Save = false }
-          |> AltCover.Prepare
+          |> AltCoverCommand.Prepare
 
         let parameters =
-          { AltCover.Parameters.Create prep with
+          { AltCoverCommand.Options.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
               ToolType = framework
               WorkingDirectory = sampleRoot }
 
-        AltCover.runWithMono monoOnWindows parameters
+        AltCoverCommand.runWithMono monoOnWindows parameters
 
         Run
           (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
@@ -437,7 +438,7 @@ a:hover {color: #ecc;}
         "System.Void Tests.DU::testMakeUnion()"
         "System.Void Tests.M::testMakeThing()"
         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
-        "Tests.DU/MyUnion Tests.DU/get_MyBar@42::Invoke(Microsoft.FSharp.Core.Unit)"
+        "Tests.DU/MyUnion Tests.DU/get_MyBar@44::Invoke(Microsoft.FSharp.Core.Unit)"
         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
         "Tests.M/Thing Tests.M::makeThing(System.String)" ]

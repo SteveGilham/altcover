@@ -1,540 +1,543 @@
+#if RUNNER
 namespace AltCover
+#else
+namespace AltCoverFake.DotNet.Testing
+#endif
 
 open System
-open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
-open System.Globalization
-open System.IO
 open System.Linq
-open System.Reflection
+#if RUNNER
 
-open AltCover.Base
-open Augment
-open Mono.Cecil
-open Mono.Options
-
-[<ExcludeFromCodeCoverage; AutoSerializable(false)>]
-type internal AssemblyInfo =
-  { Path : string list
-    Name : string
-    Refs : string list }
-
-module internal Main =
-  let internal init() =
-    CommandLine.error <- []
-    CommandLine.dropReturnCode := false // ddFlag
-    CoverageParameters.defer := None
-    CoverageParameters.theInputDirectories.Clear()
-    CoverageParameters.theOutputDirectories.Clear()
-    ProgramDatabase.symbolFolders.Clear()
-    Instrument.resolutionTable.Clear()
-
-    CoverageParameters.keys.Clear()
-    CoverageParameters.defaultStrongNameKey <- None
-    use stream =
-      Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
-    use buffer = new MemoryStream()
-    stream.CopyTo(buffer)
-    let snk = StrongNameKeyData.Make(buffer.ToArray())
-    CoverageParameters.add snk
-    CoverageParameters.recorderStrongNameKey <- Some(snk)
-
-    CoverageParameters.theReportPath <- None
-    CoverageParameters.nameFilters.Clear()
-    CoverageParameters.theInterval <- None
-    CoverageParameters.trackingNames.Clear()
-    CoverageParameters.theReportFormat <- None
-    CoverageParameters.inplace := false // ddFlag
-    CoverageParameters.collect := false // ddFlag
-    CoverageParameters.local := false // ddFlag
-    CoverageParameters.single <- false // more complicated
-    CoverageParameters.coverstyle <- CoverStyle.All
-    CoverageParameters.sourcelink := false // ddFlag
-    CoverageParameters.coalesceBranches := false // ddFlag
-    CoverageParameters.staticFilter <- None
-    CoverageParameters.showGenerated := false
-
-  let internal validateCallContext predicate x =
-    if not (String.IsNullOrWhiteSpace x) then
-      let k = x.Trim()
-      if Char.IsDigit <| k.Chars(0) then
-        if predicate || k.Length > 1 then
-          CommandLine.error <-
-            CommandLine.Format.Local(
-              (if predicate then "MultiplesNotAllowed" else "InvalidValue"),
-               "--callContext", x)
-            :: CommandLine.error
-          (false, Left None)
-        else
-          let (ok, n) = Int32.TryParse(k)
-          if ok then
-            (ok, Left(Some(pown 10 (7 - n))))
-          else
-            CommandLine.error <-
-              CommandLine.Format.Local("InvalidValue", "--callContext", x)
-              :: CommandLine.error
-            (false, Left None)
-      else
-        (true, Right k)
-    else
-      CommandLine.error <-
-        String.Format
-          (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
-            "--callContext", x) :: CommandLine.error
-      (false, Left None)
-
-  module internal I =
-    let internal declareOptions() =
-      let makeFilter filterscope (x : String) =
-        x.Replace(char 0, '\\').Replace(char 1, '|')
-        |> CommandLine.validateRegexes
-        |> Seq.iter (FilterClass.Build filterscope >> CoverageParameters.nameFilters.Add)
-
-      [ ("i|inputDirectory=",
-         (fun x ->
-           if CommandLine.validateDirectory "--inputDirectory" x then
-             let arg = Path.GetFullPath x
-             if CoverageParameters.theInputDirectories.Contains arg then
-               CommandLine.error <-
-                 CommandLine.Format.Local("DuplicatesNotAllowed", arg,
-                    "--inputDirectory") :: CommandLine.error
-             else
-               CoverageParameters.theInputDirectories.Add arg))
-
-        ("o|outputDirectory=",
-         (fun x ->
-           if CommandLine.validatePath "--outputDirectory" x then
-             let arg = Path.GetFullPath x
-             if CoverageParameters.theOutputDirectories.Contains arg then
-               CommandLine.error <-
-                 CommandLine.Format.Local("DuplicatesNotAllowed", arg,
-                    "--outputDirectory") :: CommandLine.error
-             else
-               CommandLine.doPathOperation (fun _ -> CoverageParameters.theOutputDirectories.Add arg) ()
-                 false))
-
-        ("y|symbolDirectory=",
-         (fun x ->
-           if CommandLine.validateDirectory "--symbolDirectory" x then
-             ProgramDatabase.symbolFolders.Add x))
-        ("d|dependency=",
-         (fun x ->
-           CommandLine.doPathOperation (fun _ ->
-             let path =
-               x
-               |> Environment.ExpandEnvironmentVariables
-               |> Path.GetFullPath
-
-             let name, ok = CommandLine.validateAssembly "--dependency" path
-             if ok then
-               Instrument.resolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
-             () false))
-
-        ("k|key=",
-         (fun x ->
-           let (pair, ok) = CommandLine.validateStrongNameKey "--key" x
-           if ok then CoverageParameters.add pair))
-        ("sn|strongNameKey=",
-         (fun x ->
-           let (pair, ok) = CommandLine.validateStrongNameKey "--strongNameKey" x
-           if ok then
-             if Option.isSome CoverageParameters.defaultStrongNameKey then
-               CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--strongNameKey")
-                 :: CommandLine.error
-             else
-               CoverageParameters.defaultStrongNameKey <- Some pair
-               CoverageParameters.add pair))
-
-        ("x|xmlReport=",
-         (fun x ->
-           if CommandLine.validatePath "--xmlReport" x then
-             if Option.isSome CoverageParameters.theReportPath then
-               CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
-                 :: CommandLine.error
-             else
-               CommandLine.doPathOperation
-                 (fun () -> CoverageParameters.theReportPath <- Some(Path.GetFullPath x)) () false))
-        ("f|fileFilter=", makeFilter FilterScope.File)
-        ("p|pathFilter=", makeFilter FilterScope.Path)
-        ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
-        ("e|assemblyExcludeFilter=", makeFilter FilterScope.Module)
-        ("t|typeFilter=", makeFilter FilterScope.Type)
-        ("m|methodFilter=", makeFilter FilterScope.Method)
-        ("a|attributeFilter=", makeFilter FilterScope.Attribute)
-        (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
-        ("c|callContext=",
-         (fun x ->
-           if CoverageParameters.single then
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible",
-                  "--single", "--callContext") :: CommandLine.error
-           else
-             let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.theInterval) x
-             if ok then
-               match selection with
-               | Left n -> CoverageParameters.theInterval <- n
-               | Right name -> CoverageParameters.trackingNames.Add(name)))
-        ("opencover",
-         (fun _ ->
-           if Option.isSome CoverageParameters.theReportFormat then
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--opencover")
-               :: CommandLine.error
-           else
-             CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover))
-        (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
-        (CommandLine.ddFlag "save" CoverageParameters.collect)
-        ("single",
-         (fun _ ->
-           if CoverageParameters.single then
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--single")
-               :: CommandLine.error
-           else if Option.isSome CoverageParameters.theInterval || CoverageParameters.trackingNames.Any() then
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible",
-                  "--single", "--callContext") :: CommandLine.error
-           else
-             CoverageParameters.single <- true))
-        ("linecover",
-         (fun _ ->
-           match CoverageParameters.coverstyle with
-           | CoverStyle.LineOnly ->
-               CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--linecover")
-                 :: CommandLine.error
-           | CoverStyle.BranchOnly ->
-               CommandLine.error <-
-                 CommandLine.Format.Local("Incompatible", "--linecover",
-                    "--branchcover") :: CommandLine.error
-           | _ -> CoverageParameters.coverstyle <- CoverStyle.LineOnly))
-        ("branchcover",
-         (fun _ ->
-           match CoverageParameters.coverstyle with
-           | CoverStyle.BranchOnly ->
-               CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--branchcover")
-                 :: CommandLine.error
-           | CoverStyle.LineOnly ->
-               CommandLine.error <-
-                 CommandLine.Format.Local("Incompatible", "--branchcover",
-                    "--linecover") :: CommandLine.error
-           | _ -> CoverageParameters.coverstyle <- CoverStyle.BranchOnly))
-        (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
-        (CommandLine.ddFlag "sourcelink" CoverageParameters.sourcelink)
-        ("defer:",
-         (fun x ->
-           if !CoverageParameters.defer = None then
-             CoverageParameters.defer := if String.IsNullOrWhiteSpace x then
-                                           Some true
-                                         else
-                                           let (|Select|_|) (pattern : String) offered =
-                                             if offered
-                                                |> String.IsNullOrWhiteSpace
-                                                |> not
-                                                && pattern.Equals
-                                                     (offered, StringComparison.OrdinalIgnoreCase) then
-                                               Some offered
-                                             else
-                                               None
-                                           match x with
-                                           | Select "-" _ -> Some false
-                                           | Select "+" _ -> Some true
-                                           | _ -> None
-             if !CoverageParameters.defer = None then
-               CommandLine.error <-
-                 CommandLine.Format.Local("InvalidValue", "--defer", x)
-                 :: CommandLine.error
-           else
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--defer")
-               :: CommandLine.error))
-        (CommandLine.ddFlag "v|visibleBranches" CoverageParameters.coalesceBranches)
-        ("showstatic:",
-         (fun x ->
-           if CoverageParameters.staticFilter = None then
-             CoverageParameters.staticFilter <-
-               if String.IsNullOrWhiteSpace x || x = "+" then Some StaticFilter.AsCovered
-               else if x = "++" then Some StaticFilter.NoFilter
-               else if x = "-" then Some StaticFilter.Hidden
-               else None
-             if CoverageParameters.staticFilter = None then
-               CommandLine.error <-
-                 CommandLine.Format.Local("InvalidValue", "--showstatic", x)
-                 :: CommandLine.error
-           else
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
-               :: CommandLine.error))
-        (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
-        ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
-
-        ("<>",
-         (fun x ->
-           CommandLine.error <-
-             CommandLine.Format.Local("InvalidValue",
-                "AltCover", x) :: CommandLine.error)) ] // default end stop
-      |> List.fold
-           (fun (o : OptionSet) (p, a) ->
-             o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
-           (OptionSet())
-
-    let internal processOutputLocation(action : Either<string * OptionSet, string list * OptionSet>) =
-      match action with
-      | Right(rest, options) ->
-          // Check that the directories are distinct
-          let fromDirectories = CoverageParameters.inputDirectories()
-          let toDirectories = CoverageParameters.outputDirectories()
-          fromDirectories
-          |> Seq.iter (fun fromDirectory ->
-               if toDirectories.Contains fromDirectory then
-                 CommandLine.error <-
-                   CommandLine.Format.Local("NotInPlace", fromDirectory)
-                   :: CommandLine.error)
-
-          CommandLine.doPathOperation (fun () ->
-            let found = toDirectories |> Seq.filter Directory.Exists
-            if !CoverageParameters.inplace && CommandLine.error |> List.isEmpty && found.Any() then
-              found
-              |> Seq.iter (fun toDirectory ->
-                   CommandLine.error <-
-                     CommandLine.Format.Local("SaveExists", toDirectory)
-                     :: CommandLine.error)
-            if CommandLine.error |> List.isEmpty then
-              (Seq.iter CommandLine.ensureDirectory toDirectories)) () false
-          if CommandLine.error
-             |> List.isEmpty
-             |> not then
-            Left("UsageError", options)
-          else
-            Seq.zip toDirectories fromDirectories
-            |> Seq.iter (fun (toDirectory, fromDirectory) ->
-                 if !CoverageParameters.inplace then
-                   Output.info
-                   <| CommandLine.Format.Local("savingto", toDirectory)
-                   Output.info
-                   <| CommandLine.Format.Local("instrumentingin", fromDirectory)
-                  else
-                   Output.info
-                   <| CommandLine.Format.Local("instrumentingfrom",
-                       fromDirectory)
-                   Output.info
-                   <| CommandLine.Format.Local("instrumentingto", toDirectory))
-            Right
-              (rest, fromDirectories |> Seq.map DirectoryInfo,
-               toDirectories |> Seq.map DirectoryInfo,
-               CoverageParameters.sourceDirectories() |> Seq.map DirectoryInfo)
-      | Left intro -> Left intro
-
-    let internal imageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
-      try
-        f()
-      with
-      | :? Mono.Cecil.Cil.SymbolsNotMatchingException
-      | :? BadImageFormatException
-      | :? ArgumentException
-      | :? IOException -> tidy()
-
-    let internal prepareTargetFiles (fromInfos : DirectoryInfo seq)
-        (toInfos : DirectoryInfo seq) (sourceInfos : DirectoryInfo seq)
-        (targets : string seq) =
-      // Copy all the files into the target directory
-      let mapping = Dictionary<string, string>()
-      Seq.zip sourceInfos targets
-      |> Seq.map (fun (x, y) ->
-           let f = x.FullName // trim separator
-           (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
-      |> Seq.iter mapping.Add
-
-      Seq.zip fromInfos toInfos
-      |> Seq.iter (fun (fromInfo, toInfo) ->
-           let files = fromInfo.GetFiles()
-           files
-           |> Seq.iter (fun info ->
-                let fullName = info.FullName
-                let filename = info.Name
-                let copy = Path.Combine(toInfo.FullName, filename)
-                File.Copy(fullName, copy, true)))
-
-      // Track the symbol-bearing assemblies
-      let assemblies =
-        sourceInfos
-        |> Seq.map (fun sourceInfo ->
-             sourceInfo.GetFiles()
-             |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
-                  let fullName = info.FullName
-                  imageLoadResilient (fun () ->
-                    use stream = File.OpenRead(fullName)
-                    use def = AssemblyDefinition.ReadAssembly(stream)
-                    ProgramDatabase.readSymbols def
-                    if def.MainModule.HasSymbols &&
-                      (def.IsIncluded).IsInstrumented
-                       && (def.MainModule.Attributes &&& ModuleAttributes.ILOnly =
-                             ModuleAttributes.ILOnly) then
-                      CommandLine.Format.Local("instrumenting", fullName)
-                      |> Output.info
-                      { Path = [ fullName ]
-                        Name = def.Name.Name
-                        Refs =
-                          def.MainModule.AssemblyReferences
-                          |> Seq.map (fun r -> r.Name)
-                          |> Seq.toList }
-                      :: accumulator
-                    else
-                      accumulator) (fun () -> accumulator)) [])
-        |> Seq.toList
-        |> Seq.concat
-        |> Seq.groupBy (fun a -> a.Name) // assume name is unique
-        |> Seq.map (fun (n, agroup) ->
-             { (agroup |> Seq.head) with
-                 Path =
-                   agroup
-                   |> Seq.map (fun aa -> aa.Path)
-                   |> Seq.concat
-                   |> Seq.toList })
-        |> Seq.toList
-
-      // sort the assemblies into order so that the depended-upon are processed first
-
-      // The set of all names w/o location
-      let candidates =
-        assemblies
-        |> Seq.map (fun a -> a.Name)
-        |> Seq.fold (fun (s : Set<string>) n -> Set.add n s) Set.empty<string>
-
-      let simplified =
-        assemblies
-        |> List.map (fun a ->
-             { a with Refs = a.Refs |> List.filter (fun n -> Set.contains n candidates) })
-
-      let rec bundle unassigned unresolved collection n =
-        match unassigned with
-        | [] -> collection
-        | _ ->
-            let stage =
-              (if n <= 1
-               then unassigned
-               else unassigned |> List.filter (fun u -> u.Refs |> List.isEmpty))
-              |> List.sortBy (fun u -> u.Name)
-
-            let waiting = stage |> List.fold (fun s a -> Set.remove a.Name s) unresolved
-
-            let next =
-              unassigned
-              |> List.filter (fun u ->
-                   u.Refs
-                   |> List.isEmpty
-                   |> not)
-              |> List.map (fun a ->
-                   { a with Refs = a.Refs |> List.filter (fun n -> Set.contains n waiting) })
-            bundle next waiting (stage :: collection) (n - 1)
-
-      let sorted =
-        bundle simplified candidates [] (simplified |> List.length)
-        |> List.concat
-        |> List.rev
-        |> List.map (fun a ->
-             let proto = a.Path.Head
-             let targets =
-               a.Path |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
-             ((proto, targets), a.Name))
-
-      List.unzip sorted
-
-    let internal doInstrumentation arguments =
-#if NETCOREAPP2_0
-      let dotnetBuild =
-        Assembly.GetEntryAssembly() // is null for unit tests
-        |> Option.nullable
-        |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
-        |> Option.getOrElse false
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces",
+  Scope="type", Target="AltCover.AltCover", Justification="Design decision")>]
+()
 
 #else
-      let dotnetBuild = false
-
+open System.Reflection
+open AltCoverFake.DotNet.Testing
+open Fake.Core
+open Fake.DotNet
 #endif
-      let check1 =
-        declareOptions()
-        |> CommandLine.parseCommandLine arguments
-        |> CommandLine.processHelpOption
-        |> processOutputLocation
-      match check1 with
-      | Left(intro, options) ->
-          CommandLine.handleBadArguments dotnetBuild arguments
-            { Intro = intro
-              Options = options
-              Options2 = Runner.declareOptions() }
-          255
-      | Right(rest, fromInfo, toInfo, targetInfo) ->
-          let report = CoverageParameters.reportPath()
 
-          let result =
-            CommandLine.doPathOperation (fun () ->
-              report
-              |> Path.GetDirectoryName
-              |> CommandLine.ensureDirectory
-              let (assemblies, assemblyNames) =
-                prepareTargetFiles fromInfo toInfo targetInfo
-                  (CoverageParameters.instrumentDirectories())
-              Output.info
-              <| CommandLine.Format.Local("reportingto", report)
-              let reporter, document =
-                match CoverageParameters.reportKind() with
-                | ReportFormat.OpenCover -> OpenCover.reportGenerator()
-                | _ -> Report.reportGenerator()
+[<RequireQualifiedAccess>]
+module AltCover =
+#if RUNNER
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+  type ValidatedCommandLine =
+    { Command : string list
+      Errors : string seq }
+    override self.ToString() =
+      let cl =
+        String.Join
+          (" ",
+           Seq.concat
+             [ [ "altcover" ]
+               self.Command ])
+      String.Join
+        (Environment.NewLine,
+         Seq.concat
+           [ [| cl |] |> Array.toSeq
+             self.Errors ])
+#endif
 
-              let visitors =
-                [ reporter
-                  Instrument.instrumentGenerator assemblyNames ]
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
+                    SuppressMessage("Gendarme.Rules.Smells",
+                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                    Justification = "Idiomatic F#")>]
+  type CollectOptions =
+    | Primitive of Primitive.CollectOptions
+    | TypeSafe of TypeSafe.CollectOptions
+    | Abstract of Abstract.ICollectOptions
 
-              Visitor.visit visitors assemblies
-              report
-              |> Path.GetDirectoryName
-              |> Directory.CreateDirectory
-              |> ignore
-              document.Save(report)
-              if !CoverageParameters.collect then Runner.setRecordToFile report
-              CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
-          CommandLine.reportErrors "Instrumentation" (dotnetBuild && !CoverageParameters.inplace)
-          result
+    static member private ToSeq(s : String seq) =
+      match s with
+      | null -> Seq.empty<string>
+      | _ -> s
 
-    let internal (|Select|_|) (pattern : String) offered =
-      if offered
+    member self.RecorderDirectory =
+      match self with
+      | Primitive p -> p.RecorderDirectory
+      | Abstract a -> a.RecorderDirectory
+      | TypeSafe t -> t.RecorderDirectory.AsString()
+
+    member self.WorkingDirectory =
+      match self with
+      | Primitive p -> p.WorkingDirectory
+      | Abstract a -> a.WorkingDirectory
+      | TypeSafe t -> t.WorkingDirectory.AsString()
+
+    member self.Executable =
+      match self with
+      | Primitive p -> p.Executable
+      | Abstract a -> a.Executable
+      | TypeSafe t -> t.Executable.AsString()
+
+    [<SuppressMessage("Microsoft.Naming", "CA1704",
+        Justification="'Lcov' is jargon")>]
+    member self.LcovReport =
+      match self with
+      | Primitive p -> p.LcovReport
+      | Abstract a -> a.LcovReport
+      | TypeSafe t -> t.LcovReport.AsString()
+
+    member self.Threshold =
+      match self with
+      | Primitive p -> p.Threshold
+      | Abstract a -> a.Threshold
+      | TypeSafe t -> t.Threshold.AsString()
+
+    [<SuppressMessage("Microsoft.Naming", "CA1704",
+        Justification="'Cobertura' is jargon")>]
+    member self.Cobertura =
+      match self with
+      | Primitive p -> p.Cobertura
+      | Abstract a -> a.Cobertura
+      | TypeSafe t -> t.Cobertura.AsString()
+
+    member self.OutputFile =
+      match self with
+      | Primitive p -> p.OutputFile
+      | Abstract a -> a.OutputFile
+      | TypeSafe t -> t.OutputFile.AsString()
+
+    member self.CommandLine =
+      match self with
+      | Primitive p -> p.CommandLine |> CollectOptions.ToSeq
+      | Abstract a -> a.CommandLine |> CollectOptions.ToSeq
+      | TypeSafe t -> t.CommandLine.AsStrings()
+
+    member self.ExposeReturnCode =
+      match self with
+      | Primitive p -> p.ExposeReturnCode
+      | Abstract a -> a.ExposeReturnCode
+      | TypeSafe t -> t.ExposeReturnCode.AsBool()
+
+    member self.SummaryFormat =
+      match self with
+      | Primitive p -> p.SummaryFormat
+      | Abstract a -> a.SummaryFormat
+      | TypeSafe t -> t.SummaryFormat.AsString()
+
+    interface Abstract.ICollectOptions with
+      member self.RecorderDirectory = self.RecorderDirectory
+      member self.WorkingDirectory = self.WorkingDirectory
+      member self.Executable = self.Executable
+      member self.LcovReport = self.LcovReport
+      member self.Threshold = self.Threshold
+      member self.Cobertura = self.Cobertura
+      member self.OutputFile = self.OutputFile
+      member self.CommandLine = self.CommandLine
+      member self.ExposeReturnCode = self.ExposeReturnCode
+      member self.SummaryFormat = self.SummaryFormat
+
+#if RUNNER
+    member self.Validate afterPreparation =
+      let saved = CommandLine.error
+
+      let validate f x =
+        if x
+           |> String.IsNullOrWhiteSpace
+           |> not
+        then f x |> ignore
+
+      let validateOptional f key x = validate (f key) x
+
+      let toOption s =
+        if s |> String.IsNullOrWhiteSpace then None else Some s
+      try
+        let recorder = self.RecorderDirectory
+        [ ("--recorderDirectory", recorder)
+          ("--workingDirectory", self.WorkingDirectory) ]
+        |> List.iter (fun (n, x) -> validateOptional CommandLine.validateDirectory n x)
+        [ ("--executable", self.Executable)
+          ("--lcovReport", self.LcovReport)
+          ("--cobertura", self.Cobertura)
+          ("--outputFile", self.OutputFile) ]
+        |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
+        validate Threshold.Validate self.Threshold
+        if afterPreparation then Runner.requireRecorderTest (recorder |> toOption) () ()
+        CommandLine.error |> List.toArray
+      finally
+        CommandLine.error <- saved
+#else
+#endif
+
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
+                    SuppressMessage("Gendarme.Rules.Smells",
+                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                    Justification = "Idiomatic F#")>]
+  type PrepareOptions =
+    | Primitive of Primitive.PrepareOptions
+    | TypeSafe of TypeSafe.PrepareOptions
+    | Abstract of Abstract.IPrepareOptions
+
+    static member private ToSeq(s : 'a seq) =
+      match s with
+      | null -> Seq.empty<'a>
+      | _ -> s
+
+    static member private ToList(s : 'a seq) =
+      s
+      |> PrepareOptions.ToSeq
+      |> Seq.toList
+
+    member self.InputDirectories =
+      match self with
+      | Primitive p -> p.InputDirectories |> PrepareOptions.ToList
+      | Abstract a -> a.InputDirectories |> PrepareOptions.ToList
+      | TypeSafe t -> t.InputDirectories.AsStrings()
+
+    member self.OutputDirectories =
+      match self with
+      | Primitive p -> p.OutputDirectories |> PrepareOptions.ToList
+      | Abstract a -> a.OutputDirectories |> PrepareOptions.ToList
+      | TypeSafe t -> t.OutputDirectories.AsStrings()
+
+    member self.SymbolDirectories =
+      match self with
+      | Primitive p -> p.SymbolDirectories |> PrepareOptions.ToList
+      | Abstract a -> a.SymbolDirectories |> PrepareOptions.ToList
+      | TypeSafe t -> t.SymbolDirectories.AsStrings()
+
+    member self.Dependencies =
+      match self with
+      | Primitive p -> p.Dependencies |> PrepareOptions.ToList
+      | Abstract a -> a.Dependencies |> PrepareOptions.ToList
+      | TypeSafe t -> t.Dependencies.AsStrings()
+
+    member self.Keys =
+      match self with
+      | Primitive p -> p.Keys |> PrepareOptions.ToList
+      | Abstract a -> a.Keys |> PrepareOptions.ToList
+      | TypeSafe t -> t.Keys.AsStrings()
+
+    member self.StrongNameKey =
+      match self with
+      | Primitive p -> p.StrongNameKey
+      | Abstract a -> a.StrongNameKey
+      | TypeSafe t -> t.StrongNameKey.AsString()
+
+    member self.XmlReport =
+      match self with
+      | Primitive p -> p.XmlReport
+      | Abstract a -> a.XmlReport
+      | TypeSafe t -> t.XmlReport.AsString()
+
+    member self.FileFilter =
+      match self with
+      | Primitive p -> p.FileFilter |> PrepareOptions.ToList
+      | Abstract a -> a.FileFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.FileFilter.AsStrings()
+
+    member self.AssemblyFilter =
+      match self with
+      | Primitive p -> p.AssemblyFilter |> PrepareOptions.ToList
+      | Abstract a -> a.AssemblyFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.AssemblyFilter.AsStrings()
+
+    member self.AssemblyExcludeFilter =
+      match self with
+      | Primitive p -> p.AssemblyExcludeFilter |> PrepareOptions.ToList
+      | Abstract a -> a.AssemblyExcludeFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.AssemblyExcludeFilter.AsStrings()
+
+    member self.TypeFilter =
+      match self with
+      | Primitive p -> p.TypeFilter |> PrepareOptions.ToList
+      | Abstract a -> a.TypeFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.TypeFilter.AsStrings()
+
+    member self.MethodFilter =
+      match self with
+      | Primitive p -> p.MethodFilter |> PrepareOptions.ToList
+      | Abstract a -> a.MethodFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.MethodFilter.AsStrings()
+
+    member self.AttributeFilter =
+      match self with
+      | Primitive p -> p.AttributeFilter |> PrepareOptions.ToList
+      | Abstract a -> a.AttributeFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.AttributeFilter.AsStrings()
+
+    member self.PathFilter =
+      match self with
+      | Primitive p -> p.PathFilter |> PrepareOptions.ToList
+      | Abstract a -> a.PathFilter |> PrepareOptions.ToList
+      | TypeSafe t -> t.PathFilter.AsStrings()
+
+    member self.AttributeTopLevel =
+      match self with
+      | Primitive p -> p.AttributeTopLevel |> PrepareOptions.ToList
+      | Abstract a -> a.AttributeTopLevel |> PrepareOptions.ToList
+      | TypeSafe t -> t.AttributeTopLevel.AsStrings()
+
+    member self.TypeTopLevel =
+      match self with
+      | Primitive p -> p.TypeTopLevel |> PrepareOptions.ToList
+      | Abstract a -> a.TypeTopLevel |> PrepareOptions.ToList
+      | TypeSafe t -> t.TypeTopLevel.AsStrings()
+
+    member self.MethodTopLevel =
+      match self with
+      | Primitive p -> p.MethodTopLevel |> PrepareOptions.ToList
+      | Abstract a -> a.MethodTopLevel |> PrepareOptions.ToList
+      | TypeSafe t -> t.MethodTopLevel.AsStrings()
+
+    member self.CallContext =
+      match self with
+      | Primitive p -> p.CallContext |> PrepareOptions.ToList
+      | Abstract a -> a.CallContext |> PrepareOptions.ToList
+      | TypeSafe t -> t.CallContext.AsStrings()
+
+    member self.ReportFormat =
+      let simple =
+        match self with
+        | Primitive p -> p.ReportFormat
+        | Abstract a -> a.ReportFormat
+        | TypeSafe t -> t.ReportFormat.AsString()
+      if String.IsNullOrWhiteSpace simple
+      then "OpenCover"
+      else simple
+
+    member self.InPlace =
+      match self with
+      | Primitive p -> p.InPlace
+      | Abstract a -> a.InPlace
+      | TypeSafe t -> t.InPlace.AsBool()
+
+    member self.Save =
+      match self with
+      | Primitive p -> p.Save
+      | Abstract a -> a.Save
+      | TypeSafe t -> t.Save.AsBool()
+
+    member self.ZipFile =
+      match self with
+      | Primitive p -> p.ZipFile
+      | Abstract a -> a.ZipFile
+      | TypeSafe t -> t.ZipFile.AsBool()
+
+    member self.MethodPoint =
+      match self with
+      | Primitive p -> p.MethodPoint
+      | Abstract a -> a.MethodPoint
+      | TypeSafe t -> t.MethodPoint.AsBool()
+
+    member self.SingleVisit =
+      match self with
+      | Primitive p -> p.SingleVisit
+      | Abstract a -> a.SingleVisit
+      | TypeSafe t -> t.SingleVisit.AsBool()
+
+    member self.LineCover =
+      match self with
+      | Primitive p -> p.LineCover
+      | Abstract a -> a.LineCover
+      | TypeSafe t -> t.LineCover.AsBool()
+
+    member self.BranchCover =
+      match self with
+      | Primitive p -> p.BranchCover
+      | Abstract a -> a.BranchCover
+      | TypeSafe t -> t.BranchCover.AsBool()
+
+    member self.CommandLine =
+      match self with
+      | Primitive p -> p.CommandLine |> PrepareOptions.ToSeq
+      | Abstract a -> a.CommandLine |> PrepareOptions.ToSeq
+      | TypeSafe t -> t.CommandLine.AsStrings()
+
+    member self.ExposeReturnCode =
+      match self with
+      | Primitive p -> p.ExposeReturnCode
+      | Abstract a -> a.ExposeReturnCode
+      | TypeSafe t -> t.ExposeReturnCode.AsBool()
+
+    member self.SourceLink =
+      match self with
+      | Primitive p -> p.SourceLink
+      | Abstract a -> a.SourceLink
+      | TypeSafe t -> t.SourceLink.AsBool()
+
+    member self.Defer =
+      match self with
+      | Primitive p -> p.Defer
+      | Abstract a -> a.Defer
+      | TypeSafe t -> t.Defer.AsBool()
+
+    member self.LocalSource =
+      match self with
+      | Primitive p -> p.LocalSource
+      | Abstract a -> a.LocalSource
+      | TypeSafe t -> t.LocalSource.AsBool()
+
+    member self.VisibleBranches =
+      match self with
+      | Primitive p -> p.VisibleBranches
+      | Abstract a -> a.VisibleBranches
+      | TypeSafe t -> t.VisibleBranches.AsBool()
+
+    member self.ShowStatic =
+      match self with
+      | Primitive p -> p.ShowStatic
+      | Abstract a -> a.ShowStatic
+      | TypeSafe t -> t.ShowStatic.AsString()
+
+    member self.ShowGenerated =
+      match self with
+      | Primitive p -> p.ShowGenerated
+      | Abstract a -> a.ShowGenerated
+      | TypeSafe t -> t.ShowGenerated.AsBool()
+
+    interface Abstract.IPrepareOptions with
+      member self.InputDirectories = self.InputDirectories |> PrepareOptions.ToSeq
+      member self.OutputDirectories = self.OutputDirectories |> PrepareOptions.ToSeq
+      member self.SymbolDirectories = self.SymbolDirectories |> PrepareOptions.ToSeq
+      member self.Dependencies = self.Dependencies |> PrepareOptions.ToSeq
+      member self.Keys = self.Keys |> PrepareOptions.ToSeq
+      member self.StrongNameKey = self.StrongNameKey
+      member self.XmlReport = self.XmlReport
+      member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
+      member self.AssemblyFilter = self.AssemblyFilter |> PrepareOptions.ToSeq
+      member self.AssemblyExcludeFilter = self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
+      member self.TypeFilter = self.TypeFilter |> PrepareOptions.ToSeq
+      member self.MethodFilter = self.MethodFilter |> PrepareOptions.ToSeq
+      member self.AttributeFilter = self.AttributeFilter |> PrepareOptions.ToSeq
+      member self.PathFilter = self.PathFilter |> PrepareOptions.ToSeq
+      member self.AttributeTopLevel = self.AttributeTopLevel |> PrepareOptions.ToSeq
+      member self.TypeTopLevel = self.TypeTopLevel |> PrepareOptions.ToSeq
+      member self.MethodTopLevel = self.MethodTopLevel |> PrepareOptions.ToSeq
+      member self.CallContext = self.CallContext |> PrepareOptions.ToSeq
+      member self.ReportFormat = self.ReportFormat
+      member self.InPlace = self.InPlace
+      member self.Save = self.Save
+      member self.ZipFile = self.ZipFile
+      member self.MethodPoint = self.MethodPoint
+      member self.SingleVisit = self.SingleVisit
+      member self.LineCover = self.LineCover
+      member self.BranchCover = self.BranchCover
+      member self.CommandLine = self.CommandLine |> PrepareOptions.ToSeq
+      member self.ExposeReturnCode = self.ExposeReturnCode
+      member self.SourceLink = self.SourceLink
+      member self.Defer = self.Defer
+      member self.LocalSource = self.LocalSource
+      member self.VisibleBranches = self.VisibleBranches
+      member self.ShowStatic = self.ShowStatic
+      member self.ShowGenerated = self.ShowGenerated
+
+#if RUNNER
+    static member private ValidateArray a f key =
+      PrepareOptions.ValidateArraySimple a (f key)
+
+    static member private ValidateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
+
+    static member private ValidateOptional f key x =
+      if x
          |> String.IsNullOrWhiteSpace
          |> not
-         && pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) then
-        Some offered
-      else
-        None
+      then f key x |> ignore
 
-    let internal main arguments =
-      let first =
-        arguments
-        |> Seq.tryHead
-        |> Option.getOrElse String.Empty
-      init()
-      match first with
-      | Select "Runner" _ ->
-          Runner.init()
-          Runner.doCoverage arguments (declareOptions())
-      | Select "ImportModule" _ ->
-          Path.Combine
-            (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-             "AltCover.PowerShell.dll")
-          |> Path.GetFullPath
-          |> sprintf "Import-Module %A"
-          |> (Output.info)
-          0
-      | Select "version" _ ->
-          CommandLine.writeResourceWithFormatItems "AltCover.Version"
-            [| AssemblyVersionInformation.AssemblyFileVersion |] false
-          0
-      | _ -> doInstrumentation arguments
+    member private self.Consistent() =
+      if self.SingleVisit && self.CallContext.Any() then
+        CommandLine.error <-
+          String.Format
+            (System.Globalization.CultureInfo.CurrentCulture,
+             CommandLine.resources.GetString "Incompatible", "--single", "--callContext")
+          :: CommandLine.error
 
-  // mocking point
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
-  let mutable internal effectiveMain = I.main
+    member private self.Consistent'() =
+      if self.LineCover && self.BranchCover then
+        CommandLine.error <-
+          String.Format
+            (System.Globalization.CultureInfo.CurrentCulture,
+             CommandLine.resources.GetString "Incompatible", "--branchcover", "--linecover")
+          :: CommandLine.error
+
+    member self.Validate() =
+      let saved = CommandLine.error
+
+      let validateContext context =
+        let select state x =
+          let (_, n) = Main.validateCallContext state x
+          match (state, n) with
+          | (true, _)
+          | (_, Left(Some _)) -> true
+          | _ -> false
+        context
+        |> PrepareOptions.ToSeq
+        |> Seq.fold select false
+        |> ignore
+
+      try
+        CommandLine.error <- []
+        PrepareOptions.ValidateArray self.InputDirectories CommandLine.validateDirectory
+          "--inputDirectory"
+        PrepareOptions.ValidateArray self.OutputDirectories CommandLine.validatePath
+          "--outputDirectory"
+        PrepareOptions.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
+          self.StrongNameKey
+        PrepareOptions.ValidateOptional CommandLine.validatePath "--xmlReport"
+          self.XmlReport
+        PrepareOptions.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
+          "--symbolDirectory"
+        PrepareOptions.ValidateArray self.Dependencies CommandLine.validateAssembly
+          "--dependency"
+        PrepareOptions.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
+        [ self.FileFilter
+          self.AssemblyFilter
+          self.AssemblyExcludeFilter
+          self.TypeFilter
+          self.MethodFilter
+          self.AttributeFilter
+          self.PathFilter ]
+        |> Seq.iter
+             (fun a -> PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
+        self.Consistent()
+        self.Consistent'()
+        validateContext self.CallContext
+        CommandLine.error |> List.toArray
+      finally
+        CommandLine.error <- saved
+
+  [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false);
+                    SuppressMessage("Gendarme.Rules.Smells",
+                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                    Justification = "Idiomatic F#")>]
+  type LoggingOptions =
+    | Primitive of Primitive.LoggingOptions
+    | Abstract of Abstract.ILoggingOptions
+
+    static member Create() = Primitive.LoggingOptions.Create() |> Primitive
+    static member Translate (input : Abstract.ILoggingOptions) =
+      { Primitive.LoggingOptions.Create() with
+          Failure = input.Failure |> LoggingOptions.ActionAdapter
+          Warn = input.Warn |> LoggingOptions.ActionAdapter
+          Echo = input.Echo |> LoggingOptions.ActionAdapter
+          Info = input.Info |> LoggingOptions.ActionAdapter } |> Primitive
+
+    static member ActionAdapter(action : Action<String>) =
+      match action with
+      | null -> ignore
+      | _ -> action.Invoke
+
+    member self.Error =
+      match self with
+      | Primitive p -> p.Failure
+      | Abstract a -> a.Failure |> LoggingOptions.ActionAdapter
+
+    member self.Warn =
+      match self with
+      | Primitive p -> p.Warn
+      | Abstract a -> a.Warn |> LoggingOptions.ActionAdapter
+
+    member self.Echo =
+      match self with
+      | Primitive p -> p.Echo
+      | Abstract a -> a.Echo |> LoggingOptions.ActionAdapter
+
+    member self.Info =
+      match self with
+      | Primitive p -> p.Info
+      | Abstract a -> a.Info |> LoggingOptions.ActionAdapter
+#endif

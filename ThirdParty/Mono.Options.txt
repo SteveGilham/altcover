@@ -1,0 +1,2 @@
+ildasm /all /out=Mono.Options.il Mono.Options.dll
+ilasm /dll /output=..\ThirdParty\Mono.Options.dll /key=..\ThirdParty\ThirdParty.snk /resource=Mono.Options.res Mono.Options.il  
