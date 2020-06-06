@@ -264,7 +264,9 @@ type MainWindow() as this =
     display.Children.Add text
     display
 
-  do this.InitializeComponent()
+  do
+    this.InitializeComponent()
+    this.Show()
 
   member private this.ShowMessageBox (status : MessageType) caption message =
     Dispatcher.UIThread.Post(fun _ ->
