@@ -366,10 +366,12 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./AltCover.Recorder/altcover.recorder.core.fsproj" // net20
-    "./AltCover.Shadow/altcover.shadow.core.fsproj" // net20
+  [ "./AltCover.Recorder/altcover.recorder.core.fsproj" // net20 resgen
+    "./AltCover.Shadow/altcover.shadow.core.fsproj" // net20 resgen
+    "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
+    "./AltCover.Avalonia/altcover.avalonia.fsproj"
+    "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/altcover.visualizer.core.fsproj" // GAC
-    "./Recorder.Tests/altcover.recorder.tests.core.fsproj" // net20
     "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj" ]
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
@@ -382,7 +384,7 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./altcover.recorder.core.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
+    [ "./altcover.recorder.core.sln"; "./altcover.visualizer.core.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
 
     [ "./altcover.core.sln" ] |> Seq.iter dotnetBuildRelease
   with x ->
@@ -401,39 +403,11 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.recorder.core.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
+  [ "./altcover.recorder.core.sln"; "./altcover.visualizer.core.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
 
   [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
-
-_Target "AvaloniaDebug" (fun _ ->
-  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
-
-  "./AltCover.Visualizer/altcover.visualizer.core.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Debug"
-               "DebugSymbols", "True" ] }))
-
-_Target "AvaloniaRelease" (fun _ ->
-  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
-
-  "./AltCover.Visualizer/altcover.visualizer.core.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Release"
-               "DebugSymbols", "True" ] }))
 
 _Target "BuildMonoSamples" (fun _ ->
   [ "./Sample8/sample8.core.csproj" ] |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
