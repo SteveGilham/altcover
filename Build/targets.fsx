@@ -4110,7 +4110,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-=?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
+// =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
