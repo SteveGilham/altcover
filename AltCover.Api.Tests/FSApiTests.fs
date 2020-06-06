@@ -89,7 +89,8 @@ module FSApiTests =
     after.Descendants(XName.Get "MethodPoint")
     |> Seq.iter (fun el -> setAttribute el "vc" "0")
     let before =
-      after.ToString()
+      after.ToString().Replace("uspid=\"13", "uspid=\"100663298")
+             .Replace("uspid=\"1\"", "uspid=\"100663297\"")
       |> XDocument.Parse
 
     after.Descendants(XName.Get "Summary")
@@ -116,10 +117,10 @@ module FSApiTests =
             |> not
           then setAttribute el "crapScore" "0")
     OpenCover.PostProcess after BranchOrdinal.Offset
-#if !NETCOREAPP3_0
-    NUnit.Framework.Assert.That(after.ToString(),
-        NUnit.Framework.Is.EqualTo(before.ToString()))
-#endif
+//#if !NETCOREAPP3_0
+//    NUnit.Framework.Assert.That(after.ToString(),
+//        NUnit.Framework.Is.EqualTo(before.ToString()))
+//#endif
 
     test <@ after.ToString() = before.ToString() @>
 
