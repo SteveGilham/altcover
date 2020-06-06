@@ -505,6 +505,29 @@ type MainWindow() as this =
       model.Add newrow
 
     let methods = nodes |> Seq.toArray
+
+    // TODO fix sorting as per the GTK visualizer
+    let MethodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
+      let HandleSpecialName(name : string) =
+        if name.StartsWith("get_", StringComparison.Ordinal)
+           || name.StartsWith("set_", StringComparison.Ordinal) then
+          (name.Substring(4), true)
+        else (name, false)
+
+      let x = leftKey.name
+      let y = rightKey.name
+      let (left, specialLeft) = HandleSpecialName x
+      let (right, specialRight) = HandleSpecialName y
+      let sort = String.CompareOrdinal(left, right)
+      let specialCase = (0 = sort) && specialLeft && specialRight
+      if 0 = sort then
+        if specialCase then String.CompareOrdinal(x, y)
+        else
+          let l1 = leftKey.m.GetAttribute("fullname", String.Empty)
+          let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
+          String.CompareOrdinal(l1, r1)
+      else sort
+
     Array.sortInPlaceWith MethodNameCompare methods // where
     methods |> Array.iter (applyToModel model row)
 
@@ -600,7 +623,8 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
-         Application.Current.Exit())
+         let l = Application.Current.ApplicationLifetime :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
+         l.Shutdown())
     this.FindControl<MenuItem>("About").Click
     |> Event.add (fun _ ->
          this.FindControl<StackPanel>("AboutBox").IsVisible <- true
