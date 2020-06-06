@@ -4121,9 +4121,6 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestDotNetWithCoverlet"
 ==> "UnitTest"
 
-"UnitTestWithAltCoverRunner"
-==> "UnitTest"
-
 "JustUnitTest"
 ==> "UncoveredUnitTest"
 
