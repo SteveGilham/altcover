@@ -23,5 +23,4 @@ let main arguments =
            o.Add(p, UICommon.GetResourceString p, new System.Action<string>(a)))
          (OptionSet())
   options.Parse(arguments) |> ignore
-  AppBuilder.Configure<App>().UsePlatformDetect().Start<MainWindow>()
-  0
+  BuildAvaloniaApp().StartWithClassicDesktopLifetime(arguments)
