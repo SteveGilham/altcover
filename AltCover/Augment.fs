@@ -19,6 +19,11 @@ module internal Augment =
     member self.X
       with get() =
         System.Xml.Linq.XName.Get self
+
+    member self.InvariantParseDouble() =
+      System.Double.TryParse(self,
+                             System.Globalization.NumberStyles.Number,
+                             System.Globalization.CultureInfo.InvariantCulture)
 #endif
 
   type Microsoft.FSharp.Core.Option<'T> with

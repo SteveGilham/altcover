@@ -102,6 +102,7 @@ module TestMain =
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverStateFromMono, "Runner.PostprocessShouldRestoreKnownOpenCoverStateFromMono"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreDegenerateOpenCoverState, "Runner.PostprocessShouldRestoreDegenerateOpenCoverState"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreBranchOnlyOpenCoverState, "Runner.PostprocessShouldRestoreBranchOnlyOpenCoverState"
+          Tests.AltCoverRunnerTests.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc, "Runner.PostprocessShouldRestoreBranchOnlyOpenCoverStateXDoc"
           Tests.AltCoverRunnerTests.JunkTokenShouldDefaultZero, "Runner.JunkTokenShouldDefaultZero"
           Tests.AltCoverRunnerTests.EmptyNCoverGeneratesExpectedSummary, "Runner.EmptyNCoverGeneratesExpectedSummary"
           Tests.AltCoverRunnerTests.EmptyNCoverGeneratesExpectedTCSummary, "Runner.EmptyNCoverGeneratesExpectedTCSummary"

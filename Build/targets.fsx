@@ -3384,14 +3384,14 @@ Target.runOrDefault "DoIt"
 
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + ver + "\""))
 
-    let dependencies = """version 5.241.2
+    let dependencies = """version 5.245.1
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.19.1
-  nuget Fake.DotNet.Cli >= 5.19.1
-  nuget FSharp.Core >= 4.7
+  nuget Fake.Core.Target >= 5.20.0
+  nuget Fake.DotNet.Cli >= 5.20.0
+  nuget FSharp.Core >= 4.7.2
   source {0}
   nuget AltCover.Api {1}
   source {2}
@@ -4084,7 +4084,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-=?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
+// =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
@@ -4093,9 +4093,6 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
-
-"UnitTestWithAltCoverRunner"
 ==> "UnitTest"
 
 "JustUnitTest"
