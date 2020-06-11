@@ -509,8 +509,8 @@ type MainWindow() as this =
     let methods = nodes |> Seq.toArray
 
     // TODO fix sorting as per the GTK visualizer
-    let MethodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
-      let HandleSpecialName(name : string) =
+    let methodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
+      let handleSpecialName(name : string) =
         if name.StartsWith("get_", StringComparison.Ordinal)
            || name.StartsWith("set_", StringComparison.Ordinal) then
           (name.Substring(4), true)
@@ -518,8 +518,8 @@ type MainWindow() as this =
 
       let x = leftKey.name
       let y = rightKey.name
-      let (left, specialLeft) = HandleSpecialName x
-      let (right, specialRight) = HandleSpecialName y
+      let (left, specialLeft) = handleSpecialName x
+      let (right, specialRight) = handleSpecialName y
       let sort = String.CompareOrdinal(left, right)
       let specialCase = (0 = sort) && specialLeft && specialRight
       if 0 = sort then
@@ -530,7 +530,7 @@ type MainWindow() as this =
           String.CompareOrdinal(l1, r1)
       else sort
 
-    Array.sortInPlaceWith MethodNameCompare methods // where
+    Array.sortInPlaceWith methodNameCompare methods // where
     methods |> Array.iter (applyToModel model row)
 
   member private this.PopulateNamespaceNode (model : List<TreeViewItem>)
