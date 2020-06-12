@@ -206,14 +206,30 @@ type MainWindow() as this =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
+  let private eventIcon =
+    lazy
+      (new Pixbuf(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
   let namespaceIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
+  let moduleIcon =
+    lazy
+      (new Bitmap(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
+  let effectIcon =
+    lazy
+      (new Bitmap(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
   let classIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
+  let propertyIcon =
+    lazy
+      (new Bitmap(Assembly.GetExecutingAssembly()
+                          .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
   let methodIcon =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
