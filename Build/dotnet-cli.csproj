@@ -19,6 +19,8 @@
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
     <PackageReference Include="Pester" version="4.10.1" />
     <PackageReference Include="AltCode.Dixon" version="2020.3.16.14542-pre-release" />
-    <PackageReference Include="altcode.gendarme" version="2020.3.9.15370-pre-release" />
+    <PackageReference Include="altcode.gendarme" version="2020.6.12.11211-pre-release" />
+    <!-- for the HtmlRenderer -->
+    <PackageReference Include="avalonia" version="0.6.0" />
   </ItemGroup>
 </Project>
