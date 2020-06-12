@@ -38,6 +38,11 @@ module Persistence =
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions",
+      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+      Justification = "need to exhaustively list the espected ones"
+  )>]
   let private ensureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
@@ -50,16 +55,22 @@ module Persistence =
     else
       try
         let doc = XDocument.Load(file)
-        o <- doc
-        let schemas = new XmlSchemaSet()
-        use xsd =
-          new StreamReader(Assembly.GetExecutingAssembly()
-                                   .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-        schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
-        doc.Validate(schemas, null)
-        (file, doc)
-      with x ->
-        printfn "%A\r\n\r\n%A" x o
+        try
+          let schemas = new XmlSchemaSet()
+          use str = Assembly.GetExecutingAssembly()
+                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
+          use xr = new StreamReader(str)
+          use xsd = xr |> XmlReader.Create
+
+          schemas.Add(String.Empty,  xsd) |> ignore
+          doc.Validate(schemas, null)
+          (file, doc)
+        with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
+          let nl = Environment.NewLine
+          printfn "%A%s%s%A" xx nl nl doc
+          (file, defaultDocument())
+      with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
+        printfn "%A" x
         (file, defaultDocument())
 
   let saveFont (font : string) =
@@ -206,9 +217,9 @@ type MainWindow() as this =
     lazy
       (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
-  let private eventIcon =
+  let eventIcon =
     lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
+      (new Bitmap(Assembly.GetExecutingAssembly()
                           .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
   let namespaceIcon =
     lazy
@@ -390,63 +401,67 @@ type MainWindow() as this =
 
   member private this.PopulateClassNode (model : List<TreeViewItem>) (row : TreeViewItem)
          (nodes : seq<MethodKey>) =
-    let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem) (x : MethodKey) =
-      let fullname = x.m.GetAttribute("fullname", String.Empty)
+    let applyToModel (theModel : List<TreeViewItem>) (theRow : TreeViewItem)
+        (item : (string * MethodType) * MethodKey seq) =
+      let ((itemDisplayName, special), keys) = item
 
-      let args =
-        if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then
-          String.Empty
-        else
-          let bracket = fullname.IndexOf('(')
-          if bracket < 0 then String.Empty else fullname.Substring(bracket)
+      let applyMethod (mmodel : List<TreeViewItem>) (mrow : TreeViewItem) (x : MethodKey) =
+        let fullname = x.m.GetAttribute("fullname", String.Empty)
 
-      let displayname = x.name + args
+        let args =
+          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then
+            String.Empty
+          else
+            let bracket = fullname.IndexOf('(')
+            if bracket < 0 then String.Empty else fullname.Substring(bracket)
 
-      let offset =
-        match displayname.LastIndexOf("::", StringComparison.Ordinal) with
-        | -1 -> 0
-        | o -> o + 2
+        let displayname = x.name + args
 
-      let visbleName = displayname.Substring(offset)
+        let offset =
+          match displayname.LastIndexOf("::", StringComparison.Ordinal) with
+          | -1 -> 0
+          | o -> o + 2
 
-      let (|Select|_|) (pattern : String) offered =
-        if (fst offered)
-           |> String.IsNullOrWhiteSpace
-           |> not
-           && pattern.StartsWith(fst offered, StringComparison.Ordinal) then
-          Some offered
-        else
-          None
+        let visbleName = displayname.Substring(offset) // ??
 
-      let selectStyle because excluded =
-        match (because, excluded) with
-        | Select "author declared (" _ -> TextTag.Declared
-        | Select "tool-generated: " _ -> TextTag.Automatic
-        | Select "static analysis: " _ -> TextTag.StaticAnalysis
-        | (_, true) -> TextTag.Excluded
-        | _ -> TextTag.NotVisited
+        let (|Select|_|) (pattern : String) offered =
+          if (fst offered)
+             |> String.IsNullOrWhiteSpace
+             |> not
+             && pattern.StartsWith(fst offered, StringComparison.Ordinal) then
+            Some offered
+          else
+            None
 
-      let coverageToTag(n : XPathNavigator) =
-        let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
-        let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
-        let line = n.GetAttribute("line", String.Empty)
-        let column = n.GetAttribute("column", String.Empty)
-        let endline = n.GetAttribute("endline", String.Empty)
-        let endcolumn = n.GetAttribute("endcolumn", String.Empty)
-        // Extension behaviour for textual signalling for three lines
-        n.MoveToParent() |> ignore
-        let because = n.GetAttribute("excluded-because", String.Empty)
-        { style =
-            if visitcount = 0 then selectStyle because excluded else TextTag.Visited
-          line = Int32.TryParse(line) |> snd
-          column = (Int32.TryParse(column) |> snd)
-          endline = Int32.TryParse(endline) |> snd
-          endcolumn = (Int32.TryParse(endcolumn) |> snd) }
+        let selectStyle because excluded =
+          match (because, excluded) with
+          | Select "author declared (" _ -> TextTag.Declared
+          | Select "tool-generated: " _ -> TextTag.Automatic
+          | Select "static analysis: " _ -> TextTag.StaticAnalysis
+          | (_, true) -> TextTag.Excluded
+          | _ -> TextTag.NotVisited
 
-      let filterCoverage lines (n : ColourTag) =
-        n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
-      let tagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
-        ()
+        let coverageToTag(n : XPathNavigator) =
+          let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
+          let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
+          let line = n.GetAttribute("line", String.Empty)
+          let column = n.GetAttribute("column", String.Empty)
+          let endline = n.GetAttribute("endline", String.Empty)
+          let endcolumn = n.GetAttribute("endcolumn", String.Empty)
+          // Extension behaviour for textual signalling for three lines
+          n.MoveToParent() |> ignore
+          let because = n.GetAttribute("excluded-because", String.Empty)
+          { style =
+              if visitcount = 0 then selectStyle because excluded else TextTag.Visited
+            line = Int32.TryParse(line) |> snd
+            column = (Int32.TryParse(column) |> snd)
+            endline = Int32.TryParse(endline) |> snd
+            endcolumn = (Int32.TryParse(endcolumn) |> snd) }
+
+        let filterCoverage lines (n : ColourTag) =
+          n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
+        let tagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
+          ()
 
       //// bound by current line length in case we're looking from stale coverage
       //let line = buff.GetIterAtLine(n.line - 1)
@@ -459,104 +474,132 @@ type MainWindow() as this =
       //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
       //buff.ApplyTag(tag, from, until)
 
-      let markCoverage (root : XPathNavigator) textBox (lines : string []) filename =
-        let lc = lines.Length
-        root.Select("//seqpnt[@document='" + filename + "']")
-        |> Seq.cast<XPathNavigator>
-        |> Seq.map coverageToTag
-        |> Seq.filter (filterCoverage lc)
-        |> Seq.iter (tagByCoverage textBox lines)
+        let markCoverage (root : XPathNavigator) textBox (lines : string []) filename =
+          let lc = lines.Length
+          root.Select("//seqpnt[@document='" + filename + "']")
+          |> Seq.cast<XPathNavigator>
+          |> Seq.map coverageToTag
+          |> Seq.filter (filterCoverage lc)
+          |> Seq.iter (tagByCoverage textBox lines)
 
-      let newrow = TreeViewItem()
-      newrow.DoubleTapped
-      |> Event.add (fun _ ->
-           let text = this.FindControl<TextBox>("Source")
-           let points =
-             x.m.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
-           if Seq.isEmpty points then
-             let caption = UICommon.GetResourceString "LoadInfo"
-             this.ShowMessageBox MessageType.Info caption
-             <| String.Format
-                  (System.Globalization.CultureInfo.CurrentCulture,
-                   UICommon.GetResourceString "No source location", visbleName)
-           else
-             let point = points |> Seq.head
-             let path = point.GetAttribute("document", String.Empty)
-             let info = new FileInfo(path)
-             let current = new FileInfo(coverageFiles.Head)
-             if (not info.Exists) then
-               this.MissingSourceThisFileMessage current info
-             else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
-               this.OutdatedCoverageThisFileMessage current info
+        let newrow = TreeViewItem()
+        newrow.DoubleTapped
+        |> Event.add (fun _ ->
+             let text = this.FindControl<TextBox>("Source")
+             let points =
+               x.m.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
+             if Seq.isEmpty points then
+               let caption = UICommon.GetResourceString "LoadInfo"
+               this.ShowMessageBox MessageType.Info caption
+               <| String.Format
+                    (System.Globalization.CultureInfo.CurrentCulture,
+                     UICommon.GetResourceString "No source location", visbleName)
              else
-               let line =
-                 point.GetAttribute("line", String.Empty)
-                 |> Int32.TryParse
-                 |> snd
-               try
-                 // TODO -- font  size control too
-                 text.Text <- File.ReadAllText path
-                 text.FontFamily <- FontFamily(Persistence.readFont())
-                 text.FontSize <- 16.0
-                 text.FontStyle <- FontStyle.Normal
-                 let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
-                 let textLines = File.ReadAllLines path
-                 let scroll = line - 1 + extra
+               let point = points |> Seq.head
+               let path = point.GetAttribute("document", String.Empty)
+               let info = new FileInfo(path)
+               let current = new FileInfo(coverageFiles.Head)
+               if (not info.Exists) then
+                 this.MissingSourceThisFileMessage current info
+               else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
+                 this.OutdatedCoverageThisFileMessage current info
+               else
+                 let line =
+                   point.GetAttribute("line", String.Empty)
+                   |> Int32.TryParse
+                   |> snd
+                 try
+                   // TODO -- font  size control too
+                   text.Text <- File.ReadAllText path
+                   text.FontFamily <- FontFamily(Persistence.readFont())
+                   text.FontSize <- 16.0
+                   text.FontStyle <- FontStyle.Normal
+                   let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
+                   let textLines = File.ReadAllLines path
+                   let scroll = line - 1 + extra
 
-                 let capped =
-                   if scroll >= textLines.Length then textLines.Length - 1 else scroll
-                 // Scroll into mid-view -- not entirely reliable
-                 text.CaretIndex <-
-                   Seq.sumBy (fun (l : String) -> l.Length + 1)
-                     (textLines |> Seq.take capped) //System.Environment.NewLine.Length
+                   let capped =
+                     if scroll >= textLines.Length then textLines.Length - 1 else scroll
+                   // Scroll into mid-view -- not entirely reliable
+                   text.CaretIndex <-
+                     Seq.sumBy (fun (l : String) -> l.Length + 1)
+                       (textLines |> Seq.take capped) //System.Environment.NewLine.Length
 
-                 // TODO -- colouring
-                 let root = x.m.Clone()
-                 root.MoveToRoot()
-                 markCoverage root text textLines path
-               // MarkBranches root text path
-               with x ->
-                 let caption = UICommon.GetResourceString "LoadError"
-                 this.ShowMessageBox MessageType.Error caption x.Message)
-      let display = makeTreeNode visbleName <| methodIcon.Force()
-      newrow.Header <- display
-      model.Add newrow
+                   // TODO -- colouring
+                   let root = x.m.Clone()
+                   root.MoveToRoot()
+                   markCoverage root text textLines path
+                 // MarkBranches root text path
+                 with x ->
+                   let caption = UICommon.GetResourceString "LoadError"
+                   this.ShowMessageBox MessageType.Error caption x.Message)
 
-    let methods = nodes |> Seq.toArray
+        let display = makeTreeNode visbleName <| methodIcon.Force()
+        newrow.Header <- display
+        model.Add newrow
 
-    // TODO fix sorting as per the GTK visualizer
-    let methodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
-      let handleSpecialName(name : string) =
-        if name.StartsWith("get_", StringComparison.Ordinal)
-           || name.StartsWith("set_", StringComparison.Ordinal) then
-          (name.Substring(4), true)
-        else (name, false)
+      if special <> MethodType.Normal then
+        let newrow = TreeViewItem()
+        let icon = (if special = MethodType.Property then propertyIcon else eventIcon)
+                     .Force()
+        let display = makeTreeNode itemDisplayName icon
+        newrow.Header <- display
+        theModel.Add newrow
 
-      let x = leftKey.name
-      let y = rightKey.name
-      let (left, specialLeft) = handleSpecialName x
-      let (right, specialRight) = handleSpecialName y
-      let sort = String.CompareOrdinal(left, right)
-      let specialCase = (0 = sort) && specialLeft && specialRight
-      if 0 = sort then
-        if specialCase then String.CompareOrdinal(x, y)
-        else
-          let l1 = leftKey.m.GetAttribute("fullname", String.Empty)
-          let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
-          String.CompareOrdinal(l1, r1)
-      else sort
+        keys
+          |> Seq.sortBy (fun key -> key.name |> displayName)
+          |> Seq.iter (applyMethod theModel newrow)
+      else
+        applyMethod theModel theRow (keys |> Seq.head)
 
-    Array.sortInPlaceWith methodNameCompare methods // where
-    methods |> Array.iter (applyToModel model row)
+    let methods =
+      nodes
+      |> Seq.groupBy (fun key ->
+           key.name
+           |> displayName
+           |> handleSpecialName)
+      |> Seq.toArray
+
+    let orderMethods array =
+      array
+      |> Array.sortInPlaceWith (fun ((l, (lb : MethodType)), _) ((r, rb), _) ->
+           let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+
+           let sort2 =
+             if sort1 = 0
+             then String.Compare(l, r, StringComparison.Ordinal)
+             else sort1
+           if sort2 = 0 then lb.CompareTo rb else sort2)
+
+    let applyMethods array =
+      array |> Array.iter (applyToModel model row)
+
+    methods |> orderMethods
+    methods |> applyMethods
 
   member private this.PopulateNamespaceNode (model : List<TreeViewItem>)
          (row : TreeViewItem) (nodes : seq<MethodKey>) =
     let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
         (group : string * seq<MethodKey>) =
       let name = fst group
+      let icon =
+        if group
+           |> snd
+           |> Seq.isEmpty then
+          moduleIcon.Force()
+        else if group
+                |> snd
+                |> Seq.exists (fun key ->
+                     let d = key.name |> displayName
+                     (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
+                     |> not) then
+          classIcon.Force()
+        else
+          effectIcon.Force()
+
       let newrow = TreeViewItem()
       model.Add newrow
-      let display = makeTreeNode name <| classIcon.Force()
+      let display = makeTreeNode name icon
       newrow.Header <- display
       let items = List<TreeViewItem>()
       this.PopulateClassNode items newrow (snd group)
@@ -566,22 +609,50 @@ type MainWindow() as this =
     let isNested (name : string) n =
       name.StartsWith(n + "+", StringComparison.Ordinal)
       || name.StartsWith(n + "/", StringComparison.Ordinal)
-    nodes
-    |> Seq.groupBy (fun x -> x.classname)
-    |> Seq.sortBy fst
+
+    let classlist =
+      nodes
+      |> Seq.groupBy (fun x -> x.classname)
+      |> Seq.toList
+
+    let classnames =
+      classlist
+      |> Seq.map fst
+      |> Set.ofSeq
+
+    let modularize =
+      classnames
+      |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
+      |> Seq.map
+           (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
+      |> Seq.distinct
+      |> Seq.filter (fun mn ->
+           classnames
+           |> Set.contains mn
+           |> not)
+      |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
+      |> Seq.toList
+
+    let classes = Seq.append classlist modularize |> Seq.toArray
+
+    Array.sortInPlaceWith (fun l r ->
+      let left = fst l
+      let right = fst r
+      let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
+      if sort = 0
+      then String.Compare(left, right, StringComparison.Ordinal)
+      else sort) classes
+    classes
     |> Seq.fold (fun stack c ->
          let name = fst c
          let restack = stack |> List.filter (fst >> (isNested name))
 
-         let rowModel, pr =
+         let pr =
            match restack with
-           | [] -> model, row
-           | (_, r) :: _ ->
-               let tmp : TreeViewItem = r
-               tmp.Items.OfType<TreeViewItem>().ToList(), r
+           | [] -> row
+           | (_, r) :: _ -> r
 
-         let nr = applyToModel rowModel pr c
-         pr.Items <- rowModel
+         let nr = applyToModel model pr c
          (name, nr) :: restack) []
     |> ignore
 
