@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="2" maxCrapScore="2.09" />
+  <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="2.09" />
   <Modules>
     <Module hash="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F">
-      <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="2" maxCrapScore="2.09" />
+      <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="2.09" />
       <ModulePath>altcover/_Mono/Sample1/Sample1.exe</ModulePath>
       <ModuleTime>2018-02-23T19:05:36.7253612Z</ModuleTime>
       <ModuleName>Sample1</ModuleName>
@@ -17,11 +17,11 @@
           <Methods />
         </Class>
         <Class>
-          <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="2" maxCrapScore="2.09" />
+          <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="2.09" />
           <FullName>TouchTest.Program</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
-              <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="2" maxCrapScore="2" />
+            <Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+              <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="1" maxCrapScore="1" />
               <MetadataToken>100663297</MetadataToken>
               <Name>System.Void TouchTest.Program::.ctor()</Name>
               <SequencePoints />
