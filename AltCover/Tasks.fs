@@ -114,7 +114,7 @@ type Prepare() =
   member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
-      Option.getOrElse
+      Option.defaultValue
         (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
@@ -203,7 +203,7 @@ type Collect() =
   member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
     let log =
-      Option.getOrElse
+      Option.defaultValue
         (AltCover.LoggingOptions.Primitive
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
