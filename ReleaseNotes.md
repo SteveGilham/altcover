@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.0.7xx (Genbu series release 2)
+* [BUGFIX] Set the `visited` attribute and CRAP score accordingly for methods with no sequence points, if the method is recorded as having been visted at all.
+
 # 7.0.773 (Genbu series release 2)
 * [BUGFIX] Compute CRAP score for unvisited methods too (and add it to the higher level summary items)
 * Add `TypeSafe.Filters.Join` to compute the concatenation of a `TypeSafe.FilterItems seq` to an existing `TypeSafe.Filters` instance.  Strict SemVer would bump the minor version at this point, but given the short time since the initial 7.0 release, I doubt the dust has settled fully yet.
