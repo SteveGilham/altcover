@@ -288,19 +288,22 @@ module internal PostProcess =
           // zero visits still need to fill in CRAP score
           let cover = percentCover pointVisits count
           let bcover = percentCover branchVisits numBranches
-          let methodVisit = if pointVisits > 0 || b0 > 0
-                            then 1
-                            else 0
-          if pointVisits > 0 || b0 > 0 || mVisits > 0
-          then method.SetAttribute "visited" "true"
           method.SetAttribute "sequenceCoverage" cover
           method.SetAttribute "branchCoverage" bcover
           let raw = crapScore (mVisits > count) method
+
+          // degenerate methods don't contribute to counts by default
+          let (methodVisit, maxcrap, mincrap) = if pointVisits > 0 || b0 > 0
+                                                then (1, Math.Max(maxc, raw),
+                                                         Math.Min(minc, raw))
+                                                else (0, maxc, minc)
+          if pointVisits > 0 || b0 > 0 || mVisits > 0
+          then method.SetAttribute "visited" "true"
           setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
           computeBranchExitCount method sp bp
           (vb + branchVisits, vs + pointVisits, vm + methodVisit,
             pt + count, br + numBranches,
-            Math.Min(minc, raw), Math.Max(maxc, raw))
+            mincrap, maxcrap)
 
         let updateClass (dict : Dictionary<int, PointVisit>)
             (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElementAbstraction) =
