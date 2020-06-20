@@ -1,3 +1,5 @@
+// dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
+
 open System
 open System.Diagnostics.Tracing
 open System.IO
