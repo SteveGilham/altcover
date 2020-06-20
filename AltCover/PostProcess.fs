@@ -284,6 +284,11 @@ module internal PostProcess =
           let b0 = visitCount bp
           let branchVisits = b0 + Math.Sign b0
           let mVisits = visitCount mp
+          let methodVisit = if pointVisits > 0 || b0 > 0
+                            then 1
+                            else 0
+          if methodVisit = 1 || mVisits > 0
+          then method.SetAttribute "visited" "true"
 
           // zero visits still need to fill in CRAP score
           let cover = percentCover pointVisits count
@@ -293,12 +298,10 @@ module internal PostProcess =
           let raw = crapScore (mVisits > count) method
 
           // degenerate methods don't contribute to counts by default
-          let (methodVisit, maxcrap, mincrap) = if pointVisits > 0 || b0 > 0
-                                                then (1, Math.Max(maxc, raw),
-                                                         Math.Min(minc, raw))
-                                                else (0, maxc, minc)
-          if pointVisits > 0 || b0 > 0 || mVisits > 0
-          then method.SetAttribute "visited" "true"
+          let (maxcrap, mincrap) = if count > 0 || rawCount > 0
+                                   then (Math.Max(maxc, raw),
+                                         Math.Min(minc, raw))
+                                   else (maxc, minc)
           setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
           computeBranchExitCount method sp bp
           (vb + branchVisits, vs + pointVisits, vm + methodVisit,
