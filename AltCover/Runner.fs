@@ -385,7 +385,7 @@ module internal Runner =
                     |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
                                                        | Some q -> (q, x, y)
                                                        | None -> best)
-      possibles |> List.maxBy (fun (a, b, c) -> a)
+      possibles |> List.maxBy (fun (a, _, _) -> a)
 
     let mutable internal summaries : (XDocument -> ReportFormat -> int -> (int * byte * string)) list =
       []
