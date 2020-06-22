@@ -228,6 +228,23 @@ module internal Runner =
        makepc vmethods methods.Length
        "0"] // crap
 
+    [<SuppressMessage(
+      "Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification = "In inlined library code")>]
+    [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidRepetitiveCallsToPropertiesRule",
+      Justification = "In inlined library code")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="In inlined library code")>]
+    let internal emitAltCrapScore (methods:XElement seq) =
+      methods
+      |> Seq.map(fun m -> m.Attribute("crapScore".X))
+      |> Seq.filter (fun a -> a.IsNotNull)
+      |> Seq.map (fun d -> d.Value.InvariantParseDouble() |> snd)
+      |> Seq.max
+      |> (fun a -> CommandLine.Format.Local("altMaxCrap", a))
+      |> write
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
@@ -283,6 +300,9 @@ module internal Runner =
               .ToString(CultureInfo.InvariantCulture)
       writeSummary "AltVM" vm nm pm
 
+      if methods |> List.isEmpty |> not
+      then emitAltCrapScore methods
+
     let internal openCoverSummary(report : XDocument) =
       let summary = report.Descendants("Summary".X) |> Seq.head
 
@@ -325,6 +345,10 @@ module internal Runner =
         summarise go "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
           "VisitedBranches"
       if go then
+        summary.Attribute("maxCrapScore".X)
+        |> Option.ofObj
+        |> Option.iter (fun a -> CommandLine.Format.Local("maxCrap", a.Value)
+                                 |> write)
         write String.Empty
         altSummary report
 

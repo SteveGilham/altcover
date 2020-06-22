@@ -435,4 +435,10 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
                                (as the tool cannot be 'dotnet add'ed to the project).
                                The 'altcover.global.props' file is present in the same directory</value>
   </data>
+  <data name="altMaxCrap" xml:space="preserve">
+    <value>Alternative maximum CRAP score {0}</value>
+  </data>
+  <data name="maxCrap" xml:space="preserve">
+    <value>Maximum CRAP score {0}</value>
+  </data>
 </root>

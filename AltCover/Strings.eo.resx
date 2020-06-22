@@ -431,4 +431,10 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
                                 per 'dotnet add'). 
                                 La dosiero 'altcover.global.props' estas en la sama dosierujo</value>
   </data>
+  <data name="altMaxCrap" xml:space="preserve">
+    <value>Alternativa maksimuma CRAP poentaro {0}</value>
+  </data>
+  <data name="maxCrap" xml:space="preserve">
+    <value>Maksimuma CRAP poentaro {0}</value>
+  </data>
 </root>
