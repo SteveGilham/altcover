@@ -141,6 +141,9 @@ module internal Runner =
     summaryFormat <- Default
     summary.Clear() |> ignore
 
+  [<SuppressMessage("Microsoft.Maintainability",
+    "CA1506:AvoidExcessiveClassCoupling",
+    Justification="Consolidation point")>]
   module internal I =
 
     let internal write line =
@@ -423,7 +426,6 @@ module internal Runner =
                     let ceil (f:float) (value : float) =
                       if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
                     let sink _ : int option = None
-                    let skip _ = Some Int32.MinValue
                     let funs = [
                       (ceil (float t.Statements), t.Statements, "Statements");
                       (if format = ReportFormat.NCover
@@ -431,23 +433,23 @@ module internal Runner =
                       (ceil (float t.Methods), t.Methods, "Methods");
                       (if format = ReportFormat.NCover
                        then sink else ceil (float t.AltMethods)), t.AltMethods, "AltMethods";
-                      (if format = ReportFormat.NCover
-                       then sink else
-                        if t.Crap = 0uy
-                        then skip
-                        else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
-                      (if format = ReportFormat.NCover
-                       then sink else
-                        if t.AltCrap = 0uy
-                        then skip
-                        else (fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
+                      (if format = ReportFormat.NCover || t.Crap = 0uy
+                       then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                      (if format = ReportFormat.NCover || t.AltCrap = 0uy
+                       then sink else(fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
                     ]
                     List.zip found funs
                     |> List.filter (fst >> fst)
                     |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
-                                                       | Some q -> (q, x, y)
-                                                       | None -> best)
-      possibles |> List.maxBy (fun (a, _, _) -> a)
+                                                       | Some q -> Some (q, x, y)
+                                                       | None -> None)
+                    |> List.filter Option.isSome
+                    |> List.map Option.get
+                    |> List.filter (fun (a, _, _) -> a >= 0)
+      match possibles with
+      | [] -> best
+      | _ ->
+        possibles |> List.maxBy (fun (a, _, _) -> a)
 
     let mutable internal summaries : (XDocument -> ReportFormat -> int -> (int * byte * string)) list =
       []

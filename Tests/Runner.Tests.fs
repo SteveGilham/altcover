@@ -2623,6 +2623,7 @@ module AltCoverRunnerTests =
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
       let thresholds = [
+        Threshold.Default()
         { Threshold.Default() with Statements = 75uy }
         { Threshold.Default() with Branches = 70uy }
         { Threshold.Default() with Methods = 100uy }
@@ -2630,8 +2631,13 @@ module AltCoverRunnerTests =
         { Threshold.Default() with Crap = 1uy }
         { Threshold.Default() with AltCrap = 1uy }
         { Threshold.Default() with Crap = 255uy }
+        { Threshold.Default() with Statements = 75uy
+                                   Branches = 70uy }
+        { Threshold.Default() with Statements = 75uy
+                                   AltMethods = 100uy }
       ]
       let results = [
+        (23, 0, String.Empty)
         (5, 75, "Statements")
         (4, 70, "Branches")
         (23, 0, String.Empty)
@@ -2639,6 +2645,8 @@ module AltCoverRunnerTests =
         (2, 1, "Crap")
         (2, 1, "AltCrap")
         (23, 0, String.Empty)
+        (5, 75, "Statements")
+        (50, 100, "AltMethods")
       ]
 
       List.zip thresholds results
