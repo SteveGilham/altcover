@@ -98,18 +98,18 @@ module internal Filter =
       // subtypes nested in the base type
       // Algebraic types have debug proxies nested in the base type which are not attributed at the type level
       let baseType =
-        Option.nullable m.DeclaringType.DeclaringType
+        Option.ofObj m.DeclaringType.DeclaringType
         |> Option.filter (fun t -> t.HasCustomAttributes)
         |> Option.map (fun t -> t.CustomAttributes :> seq<CustomAttribute>)
         |> Option.filter (Seq.isEmpty >> not)
-        |> Option.getOrElse Seq.empty<CustomAttribute>
+        |> Option.defaultValue Seq.empty<CustomAttribute>
 
       let thisType =
         Some m.DeclaringType
         |> Option.filter (fun t -> t.HasCustomAttributes)
         |> Option.map (fun t -> t.CustomAttributes :> seq<CustomAttribute>)
         |> Option.filter (Seq.isEmpty >> not)
-        |> Option.getOrElse Seq.empty<CustomAttribute>
+        |> Option.defaultValue Seq.empty<CustomAttribute>
 
       // Use string literals since Mono doesn't return a Type
       let mappings =
@@ -175,7 +175,7 @@ module internal Filter =
              let f = i.Operand :?> FieldReference
              (f.DeclaringType.FullName = m.DeclaringType.FullName)
              && m.Name.Replace("set_", String.Empty) + "@" = f.Name)
-        |> Option.getOrElse false
+        |> Option.defaultValue false
       else if m.IsGetter then
         body
         |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Ldfld)
@@ -183,7 +183,7 @@ module internal Filter =
              let f = i.Operand :?> FieldReference
              (f.DeclaringType.FullName = m.DeclaringType.FullName)
              && m.Name.Replace("get_", String.Empty) + "@" = f.Name)
-        |> Option.getOrElse false
+        |> Option.defaultValue false
       else
         false
 

@@ -251,8 +251,8 @@ module internal Instrument =
           [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
             Path.Combine
               (Environment.GetEnvironmentVariable "ProgramFiles"
-               |> Option.nullable
-               |> (Option.getOrElse share), shared)
+               |> Option.ofObj
+               |> (Option.defaultValue share), shared)
             Path.Combine(share, shared)
             nugetCache ]
 
@@ -312,7 +312,7 @@ module internal Instrument =
 
       let pdb =
         ProgramDatabase.getPdbWithFallback assembly
-        |> Option.getOrElse "x.pdb"
+        |> Option.defaultValue "x.pdb"
         |> Path.GetExtension
   #if NETCOREAPP2_0
       let separatePdb =

@@ -22,11 +22,13 @@ module CollectExtension =
 [<AutoOpen>]
 module WhatIfExtension =
   type Abstract.ICollectOptions with
+    [<CompiledName("WhatIf")>]
     member self.WhatIf afterPreparation : AltCover.ValidatedCommandLine =
       CollectExtension.WhatIf self afterPreparation
 
   type Abstract.IPrepareOptions with
     [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification="Compiler generated name for unit parameter")>]
+    [<CompiledName("WhatIf")>]
     member self.WhatIf() =
       PrepareExtension.WhatIf self

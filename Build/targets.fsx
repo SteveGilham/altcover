@@ -1,3 +1,5 @@
+// dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
+
 open System
 open System.Diagnostics.Tracing
 open System.IO
@@ -56,10 +58,10 @@ let AltCoverFilterTypeSafe(p : TypeSafe.PrepareOptions) =
 let AltCoverApiFilter(p : Primitive.PrepareOptions) =
   { p with
       AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-      AssemblyFilter = [ "?AltCover\.Toolkit" ] @ (p.AssemblyFilter |> Seq.toList)
+      AssemblyFilter = [ "?^AltCover\." ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode" ] @ (p.TypeFilter |> Seq.toList) }
+        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode"; "<Start" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterX(p : Primitive.PrepareOptions) =
   { p with
@@ -68,7 +70,7 @@ let AltCoverFilterX(p : Primitive.PrepareOptions) =
       AssemblyFilter = [ @"\.DataCollector"; "Sample" ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Tests"; "Microsoft"; "ICSharpCode" ]
+        [ @"System\."; @"Sample3\.Class2"; "Tests"; "Microsoft"; "ICSharpCode"; "<Start"]
         @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterXTypeSafe(p : TypeSafe.PrepareOptions) =
@@ -696,10 +698,9 @@ _Target "UncoveredUnitTest" ignore
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/*Test*.dll")
-    |> Seq.filter (fun f ->
-         Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll"
-         && Path.GetFileName(f).Contains("Tests."))
+    !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
+    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
+    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -724,7 +725,7 @@ _Target "JustUnitTest" (fun _ ->
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
-  !!(@"./*Tests/*.tests.core.fsproj")
+  !!(@"./*Tests/*tests.core.fsproj")
   |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
   |> Seq.iter
        (DotNet.build (fun p ->
@@ -736,7 +737,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    !!(@"./*Tests/*.tests.core.fsproj")
+    !!(@"./*Tests/*tests.core.fsproj")
     |> Seq.iter
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
@@ -749,7 +750,7 @@ _Target "UnitTestDotNet" (fun _ ->
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  !!(@"./*Tests/*.tests.core.fsproj")
+  !!(@"./*Tests/*tests.core.fsproj")
   |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
   |> Seq.iter
        (DotNet.build (fun p ->
@@ -762,7 +763,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
     let xml =
-      !!(@"./*Tests/*.tests.core.fsproj")
+      !!(@"./*Tests/*tests.core.fsproj")
       |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
@@ -772,10 +773,10 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
            try
              f |> DotNet.test coverletTestOptions
            with x -> eprintf "%A" x
-           let covxml =
-             (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
 
            // Can't seem to get this any other way
+           let covxml =
+             (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
            let doc = covxml |> XDocument.Load
 
            let key =
@@ -809,7 +810,8 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
 _Target "UnitTestWithOpenCover" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithOpenCover"
   let testFiles =
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/net4*/*Tests.dll")
+    !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
+    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
     |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
 
@@ -827,7 +829,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -844,7 +846,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -860,7 +862,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -899,7 +901,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
   // net4x tests -- TODO API
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
-  let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
+  let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net47"
   let Recorder4Dir =
     Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
   let apiDir = Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net47"
@@ -939,7 +941,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   try
     [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net47/__ApiTestWithAltCover/*.Tests.dll"
-      !!"_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
+      !!"_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net461/__UnitTestWithAltCover/*ple2.dll" ]
     |> Seq.concat
@@ -1026,13 +1028,13 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         keyfile
       )
       (
-        Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47",
+        Path.getFullName "_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net47",
         "./__WeakNameTestWithAltCoverRunner",
         "WeakNameTestWithAltCoverRunner.xml",
         "./_Reports/WeakNameTestWithAltCoverRunnerReport.xml",
         [ Path.getFullName
-            "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ],
-        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "WeakNameTest" ]}) >> AltCoverFilterXTypeSafe,
+            "_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net47/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Testing.dll" ],
+        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "WeakNameTest"; TypeSafe.Raw "SolutionRoot" ]}) >> AltCoverFilterXTypeSafe,
         keyfile
       )
       (
@@ -1199,6 +1201,14 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        Path.getFullName "AltCover.Api.Tests", // workingDirectory
        AltCoverApiFilter // filter
      )
+     (
+       Path.getFullName "_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "WeakNameTests/_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "WeakNameUnitTestWithAltCoverCore.xml", // report
+       "altcover.weaknametests.core.fsproj", // project
+       Path.getFullName "WeakNameTests", // workingDirectory
+       (fun p -> { p with TypeFilter = [ "<Start"; "Expecto"; "WeakNameTests" ]}) >> AltCoverFilter // filter
+     )
    ]
 
   tests
@@ -1275,7 +1285,13 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
        Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
-       Path.getFullName "./Recorder.Tests/altcover.recorder.tests.core.fsproj") ]
+       Path.getFullName "./Recorder.Tests/altcover.recorder.tests.core.fsproj")
+     (
+       Path.getFullName "_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "WeakNameTests/_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "WeakNameUnitTestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "WeakNameTests/altcover.weaknametests.core.fsproj") // project
+   ]
 
   tests
   |> List.iter (fun (testDirectory, output, report, testproject) ->
@@ -1287,6 +1303,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
            ({ Primitive.PrepareOptions.Create() with
                 XmlReport = report
                 OutputDirectories = [| output |]
+                TypeFilter = [ "SolutionRoot"; "Expecto"; "WeakNameTests" ]
                 VisibleBranches = true
                 StrongNameKey = keyfile
                 SingleVisit = true
@@ -3395,14 +3412,14 @@ Target.runOrDefault "DoIt"
 
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + ver + "\""))
 
-    let dependencies = """version 5.241.2
+    let dependencies = """version 5.245.1
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.19.1
-  nuget Fake.DotNet.Cli >= 5.19.1
-  nuget FSharp.Core >= 4.7
+  nuget Fake.Core.Target >= 5.20.0
+  nuget Fake.DotNet.Cli >= 5.20.0
+  nuget FSharp.Core >= 4.7.2
   source {0}
   nuget AltCover.Api {1}
   source {2}
@@ -4095,7 +4112,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-=?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant
+// =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
@@ -4104,9 +4121,6 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
-
-"UnitTestWithAltCoverRunner"
 ==> "UnitTest"
 
 "JustUnitTest"
