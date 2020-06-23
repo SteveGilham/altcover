@@ -902,6 +902,8 @@ module AltCoverRunnerTests =
                                                 Branches = 0uy
                                                 Methods = 0uy
                                                 Crap = 0uy
+                                                AltMethods = 0uy
+                                                AltCrap = 0uy
                                               })
       finally
         Runner.threshold <- None
@@ -912,7 +914,7 @@ module AltCoverRunnerTests =
       try
         Runner.threshold <- None
         let options = Runner.declareOptions()
-        let input = [| "-t"; "M57C42S16B7" |]
+        let input = [| "-t"; "M57C42S16B7AM14AC101" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -926,6 +928,8 @@ module AltCoverRunnerTests =
                                                 Branches = 7uy
                                                 Methods = 57uy
                                                 Crap = 42uy
+                                                AltMethods = 14uy
+                                                AltCrap = 101uy
                                               })
       finally
         Runner.threshold <- None
@@ -936,7 +940,7 @@ module AltCoverRunnerTests =
       try
         Runner.threshold <- None
         let options = Runner.declareOptions()
-        let input = [| "-t"; "M100C255S100B100" |]
+        let input = [| "-t"; "M100C255S100B100AM100AC255" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -950,6 +954,8 @@ module AltCoverRunnerTests =
                                                 Branches = 100uy
                                                 Methods = 100uy
                                                 Crap = 255uy
+                                                AltMethods = 100uy
+                                                AltCrap = 255uy
                                               })
       finally
         Runner.threshold <- None
@@ -960,7 +966,7 @@ module AltCoverRunnerTests =
       try
         Runner.threshold <- None
         let options = Runner.declareOptions()
-        let input = [| "-t"; "M0C0S0B0" |]
+        let input = [| "-t"; "M0C0S0B0AM0AC0" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -974,6 +980,8 @@ module AltCoverRunnerTests =
                                                 Branches = 0uy
                                                 Methods = 0uy
                                                 Crap = 0uy
+                                                AltMethods = 0uy
+                                                AltCrap = 0uy
                                               })
       finally
         Runner.threshold <- None
@@ -2507,7 +2515,9 @@ module AltCoverRunnerTests =
               Runner.threshold <- Some { Statements = 25uy
                                          Branches = 0uy
                                          Methods = 0uy
-                                         Crap = 0uy }
+                                         Crap = 0uy
+                                         AltMethods = 0uy
+                                         AltCrap = 0uy }
               Runner.I.standardSummary baseline ReportFormat.NCover 42
             finally
               Runner.threshold <- None

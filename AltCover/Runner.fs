@@ -54,6 +54,8 @@ type internal Threshold =
     Branches : uint8
     Methods : uint8
     Crap : uint8
+    AltMethods : uint8
+    AltCrap : uint8
   }
   static member Default() =
     {
@@ -61,6 +63,8 @@ type internal Threshold =
       Branches = 0uy
       Methods = 0uy
       Crap = 0uy
+      AltMethods = 0uy
+      AltCrap = 0uy
     }
   static member Create (x :  string) =
     let chars = x.ToUpperInvariant()
@@ -94,6 +98,10 @@ type internal Threshold =
                                                            parse 100uy (fun t v -> { t with Methods = v })
                                                          | (true, "C") ->
                                                            parse 255uy (fun t v -> { t with Crap = v })
+                                                         | (true, "AM") ->
+                                                           parse 100uy (fun t v -> { t with AltMethods = v })
+                                                         | (true, "AC") ->
+                                                           parse 255uy (fun t v -> { t with AltCrap = v })
                                                          | _ -> fail
                                             mapper t h2)
          (true, Threshold.Default())
@@ -401,8 +409,11 @@ module internal Runner =
                       (if format = ReportFormat.NCover
                        then sink else ceil (float t.Branches)), t.Branches, "Branches";
                       (ceil (float t.Methods), t.Methods, "Methods");
+                      (NotImplementedException() |> raise, t.AltMethods, "AltMethods");
                       (if format = ReportFormat.NCover
                        then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                      (if format = ReportFormat.NCover
+                       then sink else (fun c -> NotImplementedException() |> raise)), t.Crap, "Crap"
                     ]
                     List.zip found funs
                     |> List.filter (fst >> fst)
