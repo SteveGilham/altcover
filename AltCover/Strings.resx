@@ -418,6 +418,12 @@ Zero/absent values are ignored. If a coverage result is below threshold, or the 
   <data name="Methods" xml:space="preserve">
     <value>Method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
   </data>
+  <data name="AltCrap" xml:space="preserve">
+    <value>Alternative maximum CRAP score achieved is {0} above the threshold of {1}.</value>
+  </data>
+  <data name="AltMethods" xml:space="preserve">
+    <value>Alternative method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
   <data name="attributetoplevel=" xml:space="preserve">
     <value>Optional, multiple: Types marked with an attribute of a type that matches the regex are considered top-level, and are not excluded from coverage on the basis of any type which textually encloses them.
 </value>

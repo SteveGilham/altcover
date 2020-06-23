@@ -2626,14 +2626,18 @@ module AltCoverRunnerTests =
         { Threshold.Default() with Statements = 75uy }
         { Threshold.Default() with Branches = 70uy }
         { Threshold.Default() with Methods = 100uy }
+        { Threshold.Default() with AltMethods = 100uy }
         { Threshold.Default() with Crap = 1uy }
+        { Threshold.Default() with AltCrap = 1uy }
         { Threshold.Default() with Crap = 255uy }
       ]
       let results = [
         (5, 75, "Statements")
         (4, 70, "Branches")
         (23, 0, String.Empty)
+        (50, 100, "AltMethods")
         (2, 1, "Crap")
+        (2, 1, "AltCrap")
         (23, 0, String.Empty)
       ]
 

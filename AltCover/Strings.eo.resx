@@ -414,6 +414,12 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
   <data name="Methods" xml:space="preserve">
     <value>Metoda priraportado atingita estas {0}% sub la sojlo de {1}%.</value>
   </data>
+  <data name="AltCrap" xml:space="preserve">
+    <value>Alternativa maksimuma CRAP-poentaro atingita estas {0} super la sojlo de {1}.</value>
+  </data>
+  <data name="AltMethods" xml:space="preserve">
+    <value>Alternativa metoda priraportado atingita estas {0}% sub la sojlo de {1}%.</value>
+  </data>
   <data name="attributetoplevel=" xml:space="preserve">
     <value>Laŭvola, multoblaj: Tipoj markitaj kun atributo de tipo kiu kongruas kun la regekso estas konsiderataj supraj niveloj kaj ne estas ekskluditaj de priraportado surbaze de iu tipo, kiu tekste fermas ilin.</value>
   </data>

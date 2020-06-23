@@ -234,7 +234,9 @@ module internal Runner =
       [makepc vpoints points.Length
        "0" // branches
        makepc vmethods methods.Length
-       "0"] // crap
+       makepc vmethods methods.Length
+       "0" // crap
+       "0"] // altcrap
 
     [<SuppressMessage(
       "Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
@@ -244,22 +246,24 @@ module internal Runner =
       Justification = "In inlined library code")>]
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
       Justification="In inlined library code")>]
-    let internal emitAltCrapScore (methods:XElement seq) =
-      methods
-      |> Seq.map(fun m -> m.Attribute("crapScore".X))
-      |> Seq.filter (fun a -> a.IsNotNull)
-      |> Seq.map (fun d -> d.Value.InvariantParseDouble() |> snd)
-      |> Seq.max
-      |> (fun a -> CommandLine.Format.Local("altMaxCrap", a))
-      |> write
+    let internal emitAltCrapScore go (methods:XElement seq) =
+      let value =  (methods
+                    |> Seq.map(fun m -> m.Attribute("crapScore".X))
+                    |> Seq.filter (fun a -> a.IsNotNull)
+                    |> Seq.map (fun d -> d.Value.InvariantParseDouble() |> snd)
+                    |> Seq.max)
+      if go then
+        CommandLine.Format.Local("altMaxCrap", value)
+        |> write
+      value.ToString(CultureInfo.InvariantCulture)
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal altSummary(report : XDocument) =
+    let internal altSummary go (report : XDocument) =
       "Alternative"
       |> CommandLine.resources.GetString
-      |> write
+      |> if go then write else ignore
 
       let classes =
         report.Descendants("Class".X)
@@ -285,7 +289,7 @@ module internal Runner =
         else
           Math.Round((float vclasses) * 100.0 / (float nc), 2)
               .ToString(CultureInfo.InvariantCulture)
-      writeSummary "AltVC" vclasses nc pc
+      if go then writeSummary "AltVC" vclasses nc pc
 
       let methods =
         classes
@@ -300,16 +304,25 @@ module internal Runner =
 
       let nm = methods.Length
 
+      let amv =
+        if nm = 0 then
+          "0.0"
+        else
+          Math.Round((float vm) * 100.0 / (float nm), 2)
+            .ToString(CultureInfo.InvariantCulture)
+
       let pm =
         if nm = 0 then
           "n/a"
         else
-          Math.Round((float vm) * 100.0 / (float nm), 2)
-              .ToString(CultureInfo.InvariantCulture)
-      writeSummary "AltVM" vm nm pm
+          amv
+      if go then writeSummary "AltVM" vm nm pm
 
-      if methods |> List.isEmpty |> not
-      then emitAltCrapScore methods
+      let acv = if nm > 0
+                then emitAltCrapScore go methods
+                else "0.0"
+
+      (amv, acv)
 
     let internal openCoverSummary(report : XDocument) =
       let summary = report.Descendants("Summary".X) |> Seq.head
@@ -352,13 +365,20 @@ module internal Runner =
       let (vb, nb, bcovered) =
         summarise go "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
           "VisitedBranches"
+
+      let crap = summary.Attribute("maxCrapScore".X)
+      let crapvalue = crap
+                      |> Option.ofObj
+                      |> Option.map (fun a -> a.Value)
+                      |> Option.defaultValue "0.0"
+
       if go then
-        summary.Attribute("maxCrapScore".X)
-        |> Option.ofObj
-        |> Option.iter (fun a -> CommandLine.Format.Local("maxCrap", a.Value)
-                                 |> write)
+        if crap.IsNotNull then
+          CommandLine.Format.Local("maxCrap", crapvalue)
+          |> write
         write String.Empty
-        altSummary report
+
+      let (altmcovered, altcrapvalue) = altSummary go report
 
       if [ B; R; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat) then
         writeTC totalTC "C" nc
@@ -375,13 +395,12 @@ module internal Runner =
         writeTC totalTC tag nb
         writeTC coverTC tag vb
 
-      let crap = summary.Attribute("maxCrapScore".X)
-      let crapvalue = if crap.IsNotNull then crap.Value else "0.0"
-
       [covered
        bcovered
        mcovered
-       crapvalue]
+       altmcovered
+       crapvalue
+       altcrapvalue]
 
     [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
       Justification="Inlined library code")>]
@@ -404,16 +423,24 @@ module internal Runner =
                     let ceil (f:float) (value : float) =
                       if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
                     let sink _ : int option = None
+                    let skip _ = Some Int32.MinValue
                     let funs = [
                       (ceil (float t.Statements), t.Statements, "Statements");
                       (if format = ReportFormat.NCover
                        then sink else ceil (float t.Branches)), t.Branches, "Branches";
                       (ceil (float t.Methods), t.Methods, "Methods");
-                      (NotImplementedException() |> raise, t.AltMethods, "AltMethods");
                       (if format = ReportFormat.NCover
-                       then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                       then sink else ceil (float t.AltMethods)), t.AltMethods, "AltMethods";
                       (if format = ReportFormat.NCover
-                       then sink else (fun c -> NotImplementedException() |> raise)), t.Crap, "Crap"
+                       then sink else
+                        if t.Crap = 0uy
+                        then skip
+                        else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                      (if format = ReportFormat.NCover
+                       then sink else
+                        if t.AltCrap = 0uy
+                        then skip
+                        else (fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
                     ]
                     List.zip found funs
                     |> List.filter (fst >> fst)
