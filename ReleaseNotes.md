@@ -2,12 +2,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.0.7xx (Genbu series release 2)
+# 7.1.7xx (Genbu series release 2)
 * [BUGFIX] Set the `visited` attribute and CRAP score accordingly for methods with no sequence points, if the method is recorded as having been visted at all.
 * [BUGFIX] Exclude CRAP score for methods with no sequence points from the min/max summary values for the containing type and above (just as such methods aren't counted for the other roll-up quantities)
-* Emit CRAP score values in th OpenCover style summary
-* Distinguish between methods with source and no source in the threshold computations, with alternatics (AM, AC) that include the no-source methods
-* On a threshold violation, report that via return code by preference to any non-zero process value.
+* Emit CRAP score values in the OpenCover style summary
+* Distinguish between methods with source and no source in the threshold computations, the option to select the alternative measures (AM, AC) that include the no-source methods
+* On a threshold violation, always report that via return code by preference to any non-zero process value.
 
 # 7.0.773 (Genbu series release 2)
 * [BUGFIX] Compute CRAP score for unvisited methods too (and add it to the higher level summary items)
