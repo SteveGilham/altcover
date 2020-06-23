@@ -13,28 +13,18 @@ module internal Augment =
       with get() =
         self |> isNull |> not
 
-#if GUI
-#else
+#if !GUI
 #if !WEAKNAME
   type System.String with
     member self.X
       with get() =
         System.Xml.Linq.XName.Get self
+
+    member self.InvariantParseDouble() =
+      System.Double.TryParse(self,
+                             System.Globalization.NumberStyles.Number,
+                             System.Globalization.CultureInfo.InvariantCulture)
 #endif
-
-  type Microsoft.FSharp.Core.Option<'T> with
-    [<SuppressMessage("Gendarme.Rules.Naming",
-                      "UseCorrectCasingRule",
-                      Justification = "Idiomatic F# style")>]
-    // fsharplint:disable-next-line MemberNames
-    static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
-
-    [<SuppressMessage("Gendarme.Rules.Naming",
-                      "UseCorrectCasingRule",
-                      Justification = "Idiomatic F# style")>]
-    // fsharplint:disable-next-line MemberNames
-    static member nullable (x : 'T) : option<'T> =
-      if x.IsNotNull then Some x else None
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 

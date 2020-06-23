@@ -64,6 +64,8 @@ module TypeSafe =
       Branches : uint8
       Methods : uint8
       MaxCrap : uint8
+      AltMethods : uint8
+      AltMaxCrap : uint8
     }
     static member Create() =
       {
@@ -71,6 +73,8 @@ module TypeSafe =
         Branches = 0uy
         Methods = 0uy
         MaxCrap = 0uy
+        AltMethods = 0uy
+        AltMaxCrap = 0uy
       }
 
   [<ExcludeFromCodeCoverage; NoComparison>]
@@ -85,7 +89,9 @@ module TypeSafe =
                        (facet "S" t.Statements) +
                        (facet "B" t.Branches) +
                        (facet "M" t.Methods) +
-                       (facet "C" t.MaxCrap)
+                       (facet "C" t.MaxCrap) +
+                       (facet "AM" t.AltMethods) +
+                       (facet "AC" t.AltMaxCrap)
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type Flag =
