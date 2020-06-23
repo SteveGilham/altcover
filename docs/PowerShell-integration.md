@@ -39,7 +39,7 @@ Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.Xm
 SYNTAX
 
 ```
-Add-Accelerator [[-XDocument] <SwitchParameter>] [-Accelerator <SwitchParameter>] [-Mapping <Hashtable>]
+Add-Accelerator [-Accelerator <SwitchParameter>] [-Mapping <Hashtable>] [-XDocument <SwitchParameter>]
 [<CommonParameters>]
 
 
@@ -81,7 +81,7 @@ Add [xdoc] for the `System.Xml.Linq.XDocument` type
 
 ```
 Required?                    false
-Position?                    1
+Position?                    named
 Default value                False
 Accept pipeline input?       false
 Accept wildcard characters?  false
@@ -1034,12 +1034,12 @@ Accept wildcard characters?  false
 ```
 
 #### `-Threshold <string>` 
-One or more of minimum acceptable statement (S), branch (B) or method (M) coverage percentage (integer, 1 to
-100) or maximum acceptable CRAP score (C followed by integer, 1 to 255) e.g. M80C40B50. If the value starts
-with a number, a leading S is assumed. If any threshold is specified more than once, the last instance is
-assumed -- so 25S50 counts as S50. Zero/absent values are ignored. If a coverage result is below threshold, or
-the CRAP score is above threshold, the return code of the process is the largest abs(threshold - actual)
-rounded up to the nearest integer.
+One or more of minimum acceptable statement (S), branch (B) or method (M)/alternative method (AM) coverage
+percentage (integer, 1 to 100) or maximum acceptable CRAP/alternative CRAP score (C/AC followed by integer, 1
+to 255) e.g. M80AM70C40AC100B50. If the value starts with a number, a leading S is assumed. If any threshold
+is specified more than once, the last instance is assumed -- so 25S50 counts as S50. Zero/absent values are
+ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the
+process is the largest abs(threshold - actual) rounded up to the nearest integer.
 
 ```
 Required?                    false
