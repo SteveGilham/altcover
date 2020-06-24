@@ -3427,10 +3427,8 @@ Target.runOrDefault "DoIt"
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
-  nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.20.0
-  nuget Fake.DotNet.Cli >= 5.20.0
-  nuget FSharp.Core >= 4.7.2
+  nuget Fake.Core.Target >= 5.20.1
+  nuget Fake.DotNet.Cli >= 5.20.1
   source {0}
   nuget AltCover.Api {1}
   source {2}
