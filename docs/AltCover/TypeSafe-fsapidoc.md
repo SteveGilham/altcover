@@ -62,7 +62,10 @@ This holds the strongly-typed equivalent of the command line options
         Statements: uint8
         Branches: uint8
         Methods: uint8
-        MaxCrap: uint8 }
+        MaxCrap: uint8
+        AltMethods : uint8
+        AltMaxCrap : uint8
+      }
       with
         static member Create : unit -> Thresholds
       end

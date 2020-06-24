@@ -30,8 +30,10 @@ These provide C#-compatible extension methods to perform a `WhatIf` style comman
 [<AutoOpen>]
 module WhatIfExtension = begin
   type Abstract.ICollectOptions with
+    [<CompiledName("WhatIf")>]
     member WhatIf : afterPreparation:bool -> AltCover.AltCover.ValidatedCommandLine
   type Abstract.IPrepareOptions with
+    [<CompiledName("WhatIf")>]
     member WhatIf : unit -> AltCover.AltCover.ValidatedCommandLine
 end
 ```

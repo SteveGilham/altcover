@@ -1,8 +1,9 @@
-# TypeSafe.Thresholds constructor
+# TypeSafe.Thresholds.AltMethods property
+
+Minimum method coverage %age including methods with no source
 
 ```csharp
-public Thresholds(byte statements, byte branches, byte methods, byte maxCrap, byte altMethods, 
-    byte altMaxCrap)
+public byte AltMethods { get; }
 ```
 
 ## See Also

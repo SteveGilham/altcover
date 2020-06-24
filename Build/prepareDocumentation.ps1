@@ -368,6 +368,7 @@ In release 5.3, the writing the collected data has been offloaded to an in-proce
 
 $footer | Out-File -Encoding UTF8 -Append $mdfile
 
+Write-Host "In node.js prompt, 'harp server C:\Users\steve\Documents\GitHub\altcover\docs'"
 
 
 

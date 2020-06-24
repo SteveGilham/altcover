@@ -31,7 +31,7 @@ module DotNetAltCover =
         let first =
           arguments
           |> Seq.tryHead
-          |> Option.getOrElse String.Empty
+          |> Option.defaultValue String.Empty
         init()
         match first with
         | Select "TargetsPath" _ ->
