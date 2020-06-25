@@ -10,8 +10,7 @@ public static class WhatIfExtension
 
 | name | description |
 | --- | --- |
-| static [ICollectOptions.WhatIf](WhatIfExtension/ICollectOptions.WhatIf-apidoc)(…) |  |
-| static [IPrepareOptions.WhatIf](WhatIfExtension/IPrepareOptions.WhatIf-apidoc)(…) |  |
+| static [WhatIf](WhatIfExtension/WhatIf-apidoc)(…) | Validates the supplied options (2 methods) |
 
 ## See Also
 

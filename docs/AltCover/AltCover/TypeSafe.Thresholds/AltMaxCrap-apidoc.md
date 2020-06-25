@@ -1,8 +1,9 @@
-# TypeSafe.Thresholds constructor
+# TypeSafe.Thresholds.AltMaxCrap property
+
+Maximum acceptable CRAP score including methods with no source
 
 ```csharp
-public Thresholds(byte statements, byte branches, byte methods, byte maxCrap, byte altMethods, 
-    byte altMaxCrap)
+public byte AltMaxCrap { get; }
 ```
 
 ## See Also

@@ -166,8 +166,8 @@ module internal Cobertura =
 
         let vx =
           (vc
-           |> Option.nullable
-           |> Option.getOrElse (XAttribute("dummy".X, "0"))).Value
+           |> Option.ofObj
+           |> Option.defaultValue (XAttribute("dummy".X, "0"))).Value
 
         let bec =
           s.Attribute("bec".X).Value

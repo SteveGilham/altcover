@@ -451,9 +451,9 @@ module internal Main =
 #if NETCOREAPP2_0
       let dotnetBuild =
         Assembly.GetEntryAssembly() // is null for unit tests
-        |> Option.nullable
+        |> Option.ofObj
         |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
-        |> Option.getOrElse false
+        |> Option.defaultValue false
 
 #else
       let dotnetBuild = false
@@ -504,7 +504,7 @@ module internal Main =
       let first =
         arguments
         |> Seq.tryHead
-        |> Option.getOrElse String.Empty
+        |> Option.defaultValue String.Empty
       init()
       match first with
       | Select "Runner" _ ->

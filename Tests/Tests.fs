@@ -80,19 +80,6 @@ module AltCoverTests =
       | 0 -> "/.."
       | _ -> String.Empty
 
-    // Augment.fs
-    [<Test>]
-    let AugmentNullableDetectNulls() =
-      let input = [ "string"; null; "another string" ]
-      let nulls = input |> Seq.map (Option.nullable >> Option.isNone)
-      Assert.That(nulls, Is.EquivalentTo([ false; true; false ]))
-
-    [<Test>]
-    let AugmentGetOrElseFillsInNone() =
-      let input = [ "string"; null; "another string" ]
-      let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
-      Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
-
     // ProgramDatabase.fs
     [<Test>]
     let ShouldGetPdbFromImage() =
@@ -588,17 +575,17 @@ module AltCoverTests =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       Assert.That(def.MainModule.Types
-                  |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generted chaff classes
+                  |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generated chaff classes
                   |> Seq.collect (fun t -> t.Methods)
                   |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                  |> Seq.filter (fun m -> Filter.``match`` m (FF(FilterScope.Method, Regex "Augment", Exclude)))
-                  |> Seq.length, Is.EqualTo(2))
+                  |> Seq.filter (fun m -> Filter.``match`` m (FF(FilterScope.Method, Regex "MethodDoesMatchMethodClass", Exclude)))
+                  |> Seq.length, Is.EqualTo(1))
       Assert.That(def.MainModule.Types
-                  |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generted chaff classes
+                  |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generated chaff classes
                   |> Seq.collect (fun t -> t.Methods)
                   |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                  |> Seq.filter (fun m -> Filter.``match`` m (FF(FilterScope.Method, Regex "Augment", Include)) |> not)
-                  |> Seq.length, Is.EqualTo(2))
+                  |> Seq.filter (fun m -> Filter.``match`` m (FF(FilterScope.Method, Regex "MethodDoesMatchMethodClass", Include)) |> not)
+                  |> Seq.length, Is.EqualTo(1))
 
     [<Test>]
     let AttributeDoesNotMatchNonAttributeClass() =

@@ -12,6 +12,8 @@ public sealed class Thresholds : IEquatable<Thresholds>, IStructuralEquatable
 | --- | --- |
 | [Thresholds](TypeSafe.Thresholds/Thresholds-apidoc)(…) |  |
 | static [Create](TypeSafe.Thresholds/Create-apidoc)() | Returns an all-zero value |
+| [AltMaxCrap](TypeSafe.Thresholds/AltMaxCrap-apidoc) { get; } | Maximum acceptable CRAP score including methods with no source |
+| [AltMethods](TypeSafe.Thresholds/AltMethods-apidoc) { get; } | Minimum method coverage %age including methods with no source |
 | [Branches](TypeSafe.Thresholds/Branches-apidoc) { get; } | Minimum branch coverage %age |
 | [MaxCrap](TypeSafe.Thresholds/MaxCrap-apidoc) { get; } | Maximum acceptable CRAP score |
 | [Methods](TypeSafe.Thresholds/Methods-apidoc) { get; } | Minimum method coverage %age |

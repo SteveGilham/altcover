@@ -1,35 +1,11 @@
-param([string]$ACV="0.0.0.0")
-$x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-$o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
-$i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 Get-ChildItem "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { Remove-Item -force $_.FullName }}
-if (Test-Path $x) { Remove-Item -force $x }
 
-
-# inspired by https://web.archive.org/web/20100330061256/http://www.nivot.org/2008/12/25/ListOfTypeAcceleratorsForPowerShellCTP3.aspx
-# get a reference to the Type   
-#$acceleratorsType = [type]::gettype("System.Management.Automation.TypeAccelerators")  
-# with everything split up, it's not as easy as giving the namespaced name
-#$sma = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Management.Automation" }
-#$acceleratorsType = $sma.GetType("System.Management.Automation.TypeAccelerators")
-
-# add an accelerator for this type ;-)  
-#$acceleratorsType::Add("accelerators", $acceleratorsType)  
-
-# add a user-defined accelerator 
-#Add-Type -AssemblyName System.Xml.Linq
-#$xd = [appdomain]::CurrentDomain.GetAssemblies() | ? { $_.GetName().Name -eq "System.Xml.Linq" }
-#$xdoctype = $xd.GetType("System.Xml.Linq.XDocument")
-#[accelerators]::add("xdoc", $xdoctype) 
-
-# let's have a cmdlet for that
 $accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo"); "pinfo" =  [type]::gettype("System.Type").GetProperty("FullName")}
 Add-Accelerator -Accelerator -Xdocument -Mapping $accel
 
 Describe "Get-Accelerator" {
   It "Has the expected values" {
     $a = Get-Accelerator
-    # $a.Keys | % { Write-Host "$_ => $($a[$_])"}
     $a["xdoc"].FullName | Should -Be "System.Xml.Linq.XDocument"
     $a["accelerators"].FullName | Should -Be "System.Management.Automation.TypeAccelerators"
     $a["minfo"].FullName | Should -Be "System.Reflection.MethodInfo"
@@ -43,12 +19,20 @@ Describe "Add-Accelerator" {
   It "Accepts WhatIf" {
 
     Start-Transcript -Path "./_Packaging/AccelWhatIf.txt"
-    Add-Accelerator -WhatIf
-    Add-Accelerator -Accelerator -Xdocument -Mapping $accel -WhatIf
+    try
+    {
+      $accel = @{ "minfo" = [type]::gettype("System.Reflection.MethodInfo"); "pinfo" =  [type]::gettype("System.Type").GetProperty("FullName")}
+      Add-Accelerator -WhatIf
+      Add-Accelerator -Accelerator -Xdocument -Mapping $accel -WhatIf
+    }
+    catch
+    {
+        Write-Host $_.Exception
+    }
     Stop-Transcript
     $expected = [string]::Join([System.Environment]::NewLine, 
                 ('What if: Performing the operation "Add-Accelerator" on target "Command Line : ".',
-                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Type @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"} -XDocument -Accelerator".'))
+                 'What if: Performing the operation "Add-Accelerator" on target "Command Line :  -Mapping @{"minfo" = "System.Reflection.MethodInfo"; "pinfo" = "System.Reflection.RuntimePropertyInfo"} -XDocument -Accelerator".'))
 
     $lines = Get-Content "./_Packaging/AccelWhatIf.txt"
     $ll = $lines | ? { $_ -like "What if: *" }
@@ -58,9 +42,14 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
+        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+        $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
+        $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
+        if (Test-Path $x) { Remove-Item -force $x }
+	
         Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
         $o | Should -Exist
         $x | Should -Exist
@@ -93,6 +82,8 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
+        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+        $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
           $ev = ""
