@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.x.xxx (Genbu series release 3)
+* Improve error reporting from the data collector
+
 # 7.1.776 (Genbu series release 3)
 * [BUGFIX] Set the `visited` attribute and CRAP score accordingly for methods with no sequence points, if the method is recorded as having been visted at all.
 * [BUGFIX] Exclude CRAP score for methods with no sequence points from the min/max summary values for the containing type and above (just as such methods aren't counted for the other roll-up quantities)
