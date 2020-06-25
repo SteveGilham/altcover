@@ -153,18 +153,21 @@ or
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
   -t, --threshold=VALUE      Optional: one or more of minimum acceptable
-                               statement (S), branch (B) or method (M) coverage
-                               percentage (integer, 1 to 100) or maximum
-                               acceptable CRAP score (C followed by integer, 1
-                               to 255) e.g. M80C40B50. If the value starts with
-                               a number, a leading S is assumed. If any
-                               threshold is specified more than once, the last
-                               instance is assumed -- so 25S50 counts as S50.
+                               statement (S), branch (B) or method (M/AM)
+                               coverage percentage (integer, 1 to 100) or
+                               maximum acceptable CRAP score (C/AC followed by
+                               integer, 1 to 255) e.g. M80C40B50. If the value
+                               starts with a number, a leading S is assumed. If
+                               any threshold is specified more than once, the
+                               last instance is assumed -- so 25S50 counts as
+                               S50.
                                Zero/absent values are ignored. If a coverage
                                result is below threshold, or the CRAP score is
                                above threshold, the return code of the process
                                is the largest abs(threshold - actual) rounded
-                               up to the nearest integer.
+                               up to the nearest integer. AM, AC include
+                               methods with no source; the default is to ignore
+                               such methods.
   -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
                                collected data
   -o, --outputFile=VALUE     Optional: write the recorded coverage to this file

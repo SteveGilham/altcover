@@ -173,7 +173,7 @@ module internal CommandLine =
       let quote =
         enquotes
         |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
-        |> Option.getOrElse String.Empty
+        |> Option.defaultValue String.Empty
 
       let enquoted = quote + cmd.Trim([| '"'; ''' |]) + quote
       Format.Local ("CommandLine", enquoted, args)

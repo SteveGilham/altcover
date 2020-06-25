@@ -45,7 +45,7 @@ module internal Gendarme =
       // have unconditional branches preceded by non-loads
       // However, ILSpy doesn't decompile a release-build return <ternary> properly
       // so I'm not going to try to figure that one out on top of this
-      let index = int (Option.getOrElse Code.Nop code)
+      let index = int (Option.defaultValue Code.Nop code)
       (mask
        |> Seq.skip (index >>> 6)
        |> Seq.head
@@ -60,7 +60,7 @@ module internal Gendarme =
         |> Seq.fold (fun c i ->
              match i.OpCode.FlowControl with
              | FlowControl.Branch ->
-                 c + (Option.nullable i.Previous
+                 c + (Option.ofObj i.Previous
                       |> Option.map (fun (previous : Instruction) ->
                            do if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
                                 match previous.Operand with
@@ -78,13 +78,13 @@ module internal Gendarme =
                    c
                  else
                    let branch = i.Operand :?> Cil.Instruction
-                   c + (Option.nullable branch.Previous
+                   c + (Option.ofObj branch.Previous
                         |> Option.filter (fun (previous : Instruction) ->
                              previous.Previous.OpCode.Code <> OpCodes.Switch.Code && branch
                                                                                      |> targets.Contains
                                                                                      |> not)
                         |> Option.map (fun _ -> 1)
-                        |> Option.getOrElse 0)
+                        |> Option.defaultValue 0)
              | _ -> c) 1
       fast + targets.Count
 
@@ -98,7 +98,7 @@ module internal Gendarme =
                match i.OpCode.FlowControl with
                | FlowControl.Cond_Branch -> c + 1
                | FlowControl.Branch ->
-                   c + (Option.nullable i.Previous
+                   c + (Option.ofObj i.Previous
                         |> Option.map
                              (fun (previous : Instruction) -> previous.OpCode.Code)
                         |> I.``detect ternary pattern``)

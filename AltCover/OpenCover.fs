@@ -240,7 +240,7 @@ module internal OpenCover =
 
       let attr =
         element.Attribute("skippedDueTo".X)
-        |> Option.nullable
+        |> Option.ofObj
         |> Option.map (fun a -> a.Value)
       if included && attr = Some "File" then
         element.SetAttributeValue("skippedDueTo".X, null)
@@ -360,7 +360,7 @@ module internal OpenCover =
            if s.Index < 0
            then fileref.Remove()
            else fileref.Add(XAttribute("uid".X, s.Index)))
-      let cc = Option.getOrElse 1 s.MethodCC.Head
+      let cc = Option.defaultValue 1 s.MethodCC.Head
       let method = head.Parent
       if skipped then
         method.Elements("Summary".X)
@@ -397,7 +397,7 @@ module internal OpenCover =
       let (min, max), methods =
         s.MethodCC
         |> Seq.map (fun q ->
-             (q |> Option.getOrElse 1, q |> Option.getOrElse 0),
+             (q |> Option.defaultValue 1, q |> Option.defaultValue 0),
              (if q.IsSome then 1 else 0))
         |> Seq.fold (fun state pair ->
              let cc = fst state

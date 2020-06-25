@@ -280,16 +280,16 @@ module internal CoverageParameters =
   let mutable internal theReportPath : Option<string> = None
   let internal zipReport = ref false // ddFlag
   let internal defaultReportPath = "coverage.xml"
-  let internal reportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath theReportPath)
+  let internal reportPath() = Path.GetFullPath(Option.defaultValue defaultReportPath theReportPath)
 
   let mutable internal theInterval : Option<int> = None
   let internal defaultInterval = 0
-  let internal interval() = (Option.getOrElse defaultInterval theInterval)
+  let internal interval() = (Option.defaultValue defaultInterval theInterval)
 
   let mutable internal theReportFormat : Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
-  let internal reportKind() = (Option.getOrElse ReportFormat.OpenCover theReportFormat)
+  let internal reportKind() = (Option.defaultValue ReportFormat.OpenCover theReportFormat)
 
   let internal reportFormat() =
     let fmt = reportKind()
@@ -328,7 +328,7 @@ module internal Inspector =
           |> Option.map (fun sp -> sp.Document.Url)
 
         let typeFiles (t : TypeDefinition) =
-          Option.nullable t.Methods
+          Option.ofObj t.Methods
           |> Option.map (fun ms ->
                ms
                |> Seq.map methodFile
@@ -349,7 +349,7 @@ module internal Inspector =
                     |> moduleFiles
                     |> Seq.tryHead
                     |> Option.map File.Exists
-                    |> Option.getOrElse false
+                    |> Option.defaultValue false
                     |> not
         | _ -> false
 
@@ -966,7 +966,7 @@ module internal Visitor =
       |> Seq.mapi (fun i (path, (from, target, indexes)) ->
            Seq.unfold (fun (state : Cil.Instruction) ->
              state
-             |> Option.nullable
+             |> Option.ofObj
              |> Option.map (fun state' -> (state', state'.Previous))) from
            |> (findSequencePoint dbg)
            |> Option.map (fun context ->
@@ -1029,7 +1029,7 @@ module internal Visitor =
           |> Seq.take 1
           |> Seq.map
                (fun i -> MethodPoint(i, dbg.GetSequencePoint(i)
-                                        |> Option.nullable
+                                        |> Option.ofObj
                                         |> Option.filter (fun _ -> !CoverageParameters.methodPoint)
                                         |> Option.map SeqPnt.Build,
                                         m.MetadataToken.ToInt32(), interesting, vc))

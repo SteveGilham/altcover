@@ -14,26 +14,17 @@ module internal Augment =
         self |> isNull |> not
 
 #if !GUI
-#if !WEAK_NAME
+#if !WEAKNAME
   type System.String with
     member self.X
       with get() =
         System.Xml.Linq.XName.Get self
+
+    member self.InvariantParseDouble() =
+      System.Double.TryParse(self,
+                             System.Globalization.NumberStyles.Number,
+                             System.Globalization.CultureInfo.InvariantCulture)
 #endif
-
-  type Microsoft.FSharp.Core.Option<'T> with
-    [<SuppressMessage("Gendarme.Rules.Naming",
-                      "UseCorrectCasingRule",
-                      Justification = "Idiomatic F# style")>]
-    // fsharplint:disable-next-line MemberNames
-    static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
-
-    [<SuppressMessage("Gendarme.Rules.Naming",
-                      "UseCorrectCasingRule",
-                      Justification = "Idiomatic F# style")>]
-    // fsharplint:disable-next-line MemberNames
-    static member nullable (x : 'T) : option<'T> =
-      if x.IsNotNull then Some x else None
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 
@@ -57,7 +48,7 @@ module internal Augment =
     | Choice1Of2 x -> Right x
     | Choice2Of2 x -> Left x
 
-#if !WEAK_NAME
+#if !WEAKNAME
 #if !GUI
   let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
     use stream = create()
@@ -70,7 +61,7 @@ module internal Augment =
     member self.ToInt32
       with get() =
         if self then 1 else 0
-#if !WEAK_NAME
+#if !WEAKNAME
   type System.Int32 with
     member self.Increment (b : bool) =
       self + b.ToInt32

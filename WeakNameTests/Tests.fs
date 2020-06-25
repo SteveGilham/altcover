@@ -126,9 +126,6 @@ module AltCoverTests =
     test <@ (23).IsNotNull @>
     test <@ x.IsNotNull |> not @>
 
-    let maybe = Option.nullable x
-    test <@ Option.isNone maybe @>
-
     let output =
       ([ r; l ]
         |> List.map (fun e ->

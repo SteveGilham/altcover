@@ -138,7 +138,16 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Maximum acceptable CRAP score
         ///</summary>
-        MaxCrap: uint8 }
+        MaxCrap: uint8
+        ///<summary>
+        /// Minimum method coverage %age including methods with no source
+        ///</summary>
+        AltMethods : uint8
+        ///<summary>
+        /// Maximum acceptable CRAP score including methods with no source
+        ///</summary>
+        AltMaxCrap : uint8
+      }
       with
         ///<summary>
         /// Returns an all-zero value
