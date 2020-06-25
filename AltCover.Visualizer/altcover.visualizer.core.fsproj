@@ -76,7 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.74" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Include="GtkSharp" Version="3.22.25.98" Condition="'$(TargetFramework)' != 'net45'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
