@@ -250,10 +250,12 @@ module internal PostProcess =
         // Let CC(m) = cyclomatic complexity of a method and
         // U(m) = the percentage of a method not covered by unit tests.
         // CRAP(m) = CC(m)^2 * U(m)^3 + CC(m).
-        let crapScore (method : XmlElementAbstraction) =
+        let crapScore forceVisited (method : XmlElementAbstraction) =
           let coverage =
-            let cover = stringToScore method "sequenceCoverage"
-            if cover > 0.0 then cover else stringToScore method "branchCoverage"
+            if forceVisited then 100.0
+            else
+              let cover = stringToScore method "sequenceCoverage"
+              if cover > 0.0 then cover else stringToScore method "branchCoverage"
 
           let complexity = stringToScore method "cyclomaticComplexity"
 
@@ -265,7 +267,7 @@ module internal PostProcess =
           raw
 
         let updateMethod (dict : Dictionary<int, PointVisit>)
-            (vb, vs, vm, pt, br, minc, maxc) (method : XmlElementAbstraction) =
+            (vb, vs, vm:int, pt, br, minc, maxc) (method : XmlElementAbstraction) =
           let sp = method.GetElementsByTagName("SequencePoint")
           let bp = method.GetElementsByTagName("BranchPoint")
           let mp = method.GetElementsByTagName("MethodPoint")
@@ -281,23 +283,30 @@ module internal PostProcess =
           let pointVisits = visitCount sp
           let b0 = visitCount bp
           let branchVisits = b0 + Math.Sign b0
+          let mVisits = visitCount mp
+          let methodVisit = if pointVisits > 0 || b0 > 0
+                            then 1
+                            else 0
+          if methodVisit = 1 || mVisits > 0
+          then method.SetAttribute "visited" "true"
 
           // zero visits still need to fill in CRAP score
           let cover = percentCover pointVisits count
           let bcover = percentCover branchVisits numBranches
-          let methodVisit = if pointVisits > 0 || b0 > 0
-                            then
-                              method.SetAttribute "visited" "true"
-                              1
-                            else 0
           method.SetAttribute "sequenceCoverage" cover
           method.SetAttribute "branchCoverage" bcover
-          let raw = crapScore method
+          let raw = crapScore (mVisits > count) method
+
+          // degenerate methods don't contribute to counts by default
+          let (maxcrap, mincrap) = if count > 0 || rawCount > 0
+                                   then (Math.Max(maxc, raw),
+                                         Math.Min(minc, raw))
+                                   else (maxc, minc)
           setSummary method pointVisits branchVisits methodVisit None cover bcover raw raw
           computeBranchExitCount method sp bp
           (vb + branchVisits, vs + pointVisits, vm + methodVisit,
             pt + count, br + numBranches,
-            Math.Min(minc, raw), Math.Max(maxc, raw))
+            mincrap, maxcrap)
 
         let updateClass (dict : Dictionary<int, PointVisit>)
             (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElementAbstraction) =

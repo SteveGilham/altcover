@@ -727,7 +727,7 @@ type MainWindow() as this =
            (ofd.ShowAsync(this)
             |> Async.AwaitTask
             |> Async.RunSynchronously).FirstOrDefault()
-           |> Option.nullable
+           |> Option.ofObj
            |> openFile.Trigger
          }
          |> Async.Start)

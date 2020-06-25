@@ -122,8 +122,6 @@ module TestMain =
           Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported, "Runner.ThresholdViolationShouldBeReported"
           Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
           Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
-          Tests.AltCoverTests.AugmentNullableDetectNulls, "Tests.AugmentNullableDetectNulls"
-          Tests.AltCoverTests.AugmentGetOrElseFillsInNone, "Tests.AugmentGetOrElseFillsInNone"
           Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
           Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage, "Tests.ShouldGetEmbeddedPdbFromImage"
           Tests.AltCoverTests.ShouldGetNoMdbFromMonoImage, "Tests.ShouldGetNoMdbFromMonoImage"

@@ -328,7 +328,7 @@ module AltCoverRunnerTests =
                        "                               (as the tool cannot be 'dotnet add'ed to the project).\n" +
                        "                               The 'altcover.global.props' file is present in the same directory\n"
         Assert.That
-          (result.Replace("\u200b",String.Empty),
+          (result.Replace("\u200b",String.Empty).Replace("\r\n", "\n"),
            Is.EqualTo(expected.Replace("\r\n", "\n")), "*" + result + "*")
       finally
         Console.SetError saved
@@ -902,6 +902,8 @@ module AltCoverRunnerTests =
                                                 Branches = 0uy
                                                 Methods = 0uy
                                                 Crap = 0uy
+                                                AltMethods = 0uy
+                                                AltCrap = 0uy
                                               })
       finally
         Runner.threshold <- None
@@ -912,7 +914,7 @@ module AltCoverRunnerTests =
       try
         Runner.threshold <- None
         let options = Runner.declareOptions()
-        let input = [| "-t"; "M57C42S16B7" |]
+        let input = [| "-t"; "M57C42S16B7AM14AC101" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -926,6 +928,8 @@ module AltCoverRunnerTests =
                                                 Branches = 7uy
                                                 Methods = 57uy
                                                 Crap = 42uy
+                                                AltMethods = 14uy
+                                                AltCrap = 101uy
                                               })
       finally
         Runner.threshold <- None
@@ -936,7 +940,7 @@ module AltCoverRunnerTests =
       try
         Runner.threshold <- None
         let options = Runner.declareOptions()
-        let input = [| "-t"; "M100C255S100B100" |]
+        let input = [| "-t"; "M100C255S100B100AM100AC255" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -950,6 +954,8 @@ module AltCoverRunnerTests =
                                                 Branches = 100uy
                                                 Methods = 100uy
                                                 Crap = 255uy
+                                                AltMethods = 100uy
+                                                AltCrap = 255uy
                                               })
       finally
         Runner.threshold <- None
@@ -960,7 +966,7 @@ module AltCoverRunnerTests =
       try
         Runner.threshold <- None
         let options = Runner.declareOptions()
-        let input = [| "-t"; "M0C0S0B0" |]
+        let input = [| "-t"; "M0C0S0B0AM0AC0" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -974,6 +980,8 @@ module AltCoverRunnerTests =
                                                 Branches = 0uy
                                                 Methods = 0uy
                                                 Crap = 0uy
+                                                AltMethods = 0uy
+                                                AltCrap = 0uy
                                               })
       finally
         Runner.threshold <- None
@@ -2507,7 +2515,9 @@ module AltCoverRunnerTests =
               Runner.threshold <- Some { Statements = 25uy
                                          Branches = 0uy
                                          Methods = 0uy
-                                         Crap = 0uy }
+                                         Crap = 0uy
+                                         AltMethods = 0uy
+                                         AltCrap = 0uy }
               Runner.I.standardSummary baseline ReportFormat.NCover 42
             finally
               Runner.threshold <- None
@@ -2613,18 +2623,30 @@ module AltCoverRunnerTests =
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
       let thresholds = [
+        Threshold.Default()
         { Threshold.Default() with Statements = 75uy }
         { Threshold.Default() with Branches = 70uy }
         { Threshold.Default() with Methods = 100uy }
+        { Threshold.Default() with AltMethods = 100uy }
         { Threshold.Default() with Crap = 1uy }
+        { Threshold.Default() with AltCrap = 1uy }
         { Threshold.Default() with Crap = 255uy }
+        { Threshold.Default() with Statements = 75uy
+                                   Branches = 70uy }
+        { Threshold.Default() with Statements = 75uy
+                                   AltMethods = 100uy }
       ]
       let results = [
+        (23, 0, String.Empty)
         (5, 75, "Statements")
         (4, 70, "Branches")
         (23, 0, String.Empty)
+        (50, 100, "AltMethods")
         (2, 1, "Crap")
+        (2, 1, "AltCrap")
         (23, 0, String.Empty)
+        (5, 75, "Statements")
+        (50, 100, "AltMethods")
       ]
 
       List.zip thresholds results
@@ -2646,9 +2668,9 @@ module AltCoverRunnerTests =
               (builder.ToString(),
                Is.EqualTo
                  ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
-                  + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
+                  + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|Maximum CRAP score 2.11||"
                   + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-                  + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+                  + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|Alternative maximum CRAP score 2.11|"
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
                  ))

@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.CommandLine" version="5.5.1">
+    <PackageReference Include="NuGet.CommandLine" version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -17,7 +17,7 @@
     <PackageReference Include="NUnit.ConsoleRunner" version="3.11.1" />
     <PackageReference Include="OpenCover" version="4.7.922" />
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
-    <PackageReference Include="Pester" version="4.10.1" />
+    <PackageReference Include="Pester" version="5.0.2" />
     <PackageReference Include="AltCode.Dixon" version="2020.3.16.14542-pre-release" />
     <PackageReference Include="altcode.gendarme" version="2020.6.12.11211-pre-release" />
     <!-- for the HtmlRenderer -->

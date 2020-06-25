@@ -8,6 +8,8 @@ open System.IO
 open System.Management.Automation
 open AltCover
 
+// # inspired by https://web.archive.org/web/20100330061256/http://www.nivot.org/2008/12/25/ListOfTypeAcceleratorsForPowerShellCTP3.aspx
+
 /// <summary>
 /// <para type="synopsis">Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`.</para>
 /// <para type="description">Extends the built-in set of type abbreviations with user declared ones.  Two common abbreviations are supplied as switch parameters, and then others can be added free-form.</para>
@@ -46,7 +48,7 @@ type AddAcceleratorCommand() =
   /// <summary>
   /// <para type="description">Add [xdoc] for the `System.Xml.Linq.XDocument` type</para>
   /// </summary>
-  [<Parameter(Mandatory = false, Position = 1,
+  [<Parameter(Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val XDocument = SwitchParameter(false) with get, set
 
@@ -61,13 +63,14 @@ type AddAcceleratorCommand() =
   /// <para type="description">Accumulate new accelerator to type mappings</para>
   /// </summary>
   override self.ProcessRecord() =
-    self.Mapping
-    |> Seq.cast<DictionaryEntry>
-    |> Seq.map (fun x -> (x.Key.ToString(), match x.Value with
-                                            | :? Type as t -> t
-                                            | other -> other.GetType()))
-    |> Seq.distinctBy snd
-    |> Seq.iter (fun (k,v) -> self.TypeMap.Add(k, v))
+    if self.Mapping |> isNull |> not then
+      self.Mapping
+      |> Seq.cast<DictionaryEntry>
+      |> Seq.map (fun x -> (x.Key.ToString(), match x.Value with
+                                              | :? Type as t -> t
+                                              | other -> other.GetType()))
+      |> Seq.distinctBy snd
+      |> Seq.iter (fun (k,v) -> self.TypeMap.Add(k, v))
 
   /// <summary>
   /// <para type="description">Apply the new accelerator to type mappings</para>
@@ -100,7 +103,7 @@ type AddAcceleratorCommand() =
     if  self.ShouldProcess("Command Line : " +
                             (if List.isEmpty finalmap
                              then String.Empty
-                             else (" -Type @{"  + display + "}")) +
+                             else (" -Mapping @{"  + display + "}")) +
                             (if self.XDocument.IsPresent
                              then " -XDocument"
                              else String.Empty) +
