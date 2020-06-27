@@ -7,9 +7,6 @@ open System.IO
 open System.Linq
 open System.Reflection
 open System.Resources
-open System.Xml
-open System.Xml.Linq
-open System.Xml.Schema
 open System.Xml.XPath
 
 open AltCover
@@ -260,195 +257,9 @@ module internal Persistence =
 module private Gui =
 
   // --------------------------  General Purpose ---------------------------
-  // Safe event dispatch => GUI update
-  let private invokeOnGuiThread(action : unit -> unit) =
-    Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
-
   let icons = Icons(fun x -> new Pixbuf(x))
 
   // --------------------------  Persistence ---------------------------
-  // -------------------------- Tree View ---------------------------
-  let mappings = new Dictionary<TreePath, XPathNavigator>()
-
-  let private populateClassNode (model : TreeStore) (row : TreeIter)
-      (nodes : seq<MethodKey>) =
-    let applyToModel (theModel : TreeStore) (theRow : TreeIter)
-        (item : (string * MethodType) * MethodKey seq) =
-      let ((display, special), keys) = item
-
-      let applyMethod (mmodel : TreeStore) (mrow : TreeIter) (x : MethodKey) =
-        let fullname = x.Navigator.GetAttribute("fullname", String.Empty)
-
-        let args =
-          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf('(') > 0 then
-            String.Empty
-          else
-            let bracket = fullname.IndexOf('(')
-            if bracket < 0 then String.Empty else fullname.Substring(bracket)
-
-        let displayname = x.Name + args
-
-        let offset =
-          match displayname.LastIndexOf("::", StringComparison.Ordinal) with
-          | -1 -> 0
-          | o -> o + 2
-
-        let newrow =
-          mmodel.AppendValues
-            (mrow,
-             [| displayname.Substring(offset) :> obj
-                icons.Method.Force() :> obj |])
-
-        mappings.Add(mmodel.GetPath(newrow), x.Navigator)
-
-      if special <> MethodType.Normal then
-        let newrow =
-          theModel.AppendValues
-            (theRow,
-             [| display :> obj
-                (if special = MethodType.Property then icons.Property else icons.Event)
-                  .Force() :> obj |])
-        keys
-          |> Seq.sortBy (fun key -> key.Name |> DisplayName)
-          |> Seq.iter (applyMethod theModel newrow)
-      else
-        applyMethod theModel theRow (keys |> Seq.head)
-
-    let methods =
-      nodes
-      |> Seq.groupBy (fun key ->
-           key.Name
-           |> DisplayName
-           |> HandleSpecialName)
-      |> Seq.toArray
-
-    let orderMethods array =
-      array
-      |> Array.sortInPlaceWith (fun ((l, (lb : MethodType)), _) ((r, rb), _) ->
-           let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
-
-           let sort2 =
-             if sort1 = 0
-             then String.Compare(l, r, StringComparison.Ordinal)
-             else sort1
-           if sort2 = 0 then lb.CompareTo rb else sort2)
-
-    let applyMethods array =
-      array |> Array.iter (applyToModel model row)
-
-    methods |> orderMethods
-    methods |> applyMethods
-
-  let private populateNamespaceNode (model : TreeStore) (row : TreeIter)
-      (nodes : seq<MethodKey>) =
-    let applyToModel (theModel : TreeStore) (theRow : TreeIter)
-        (group : string * seq<MethodKey>) =
-      let name = fst group
-
-      let icon =
-        if group
-           |> snd
-           |> Seq.isEmpty then
-          icons.Module.Force()
-        else if group
-                |> snd
-                |> Seq.exists (fun key ->
-                     let d = key.Name |> DisplayName
-                     (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
-                     |> not) then
-          icons.Class.Force()
-        else
-          icons.Effect.Force()
-
-      let newrow =
-        theModel.AppendValues
-          (theRow,
-           [| name :> obj
-              icon :> obj |])
-
-      populateClassNode theModel newrow (snd group)
-      newrow
-
-    let isNested (name : string) n =
-      name.StartsWith(n + "+", StringComparison.Ordinal)
-      || name.StartsWith(n + "/", StringComparison.Ordinal)
-
-    let classlist =
-      nodes
-      |> Seq.groupBy (fun x -> x.ClassName)
-      |> Seq.toList
-
-    let classnames =
-      classlist
-      |> Seq.map fst
-      |> Set.ofSeq
-
-    let modularize =
-      classnames
-      |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
-      |> Seq.map
-           (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
-      |> Seq.distinct
-      |> Seq.filter (fun mn ->
-           classnames
-           |> Set.contains mn
-           |> not)
-      |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
-      |> Seq.toList
-
-    let classes = Seq.append classlist modularize |> Seq.toArray
-
-    Array.sortInPlaceWith (fun l r ->
-      let left = fst l
-      let right = fst r
-      let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
-      if sort = 0
-      then String.Compare(left, right, StringComparison.Ordinal)
-      else sort) classes
-    classes
-    |> Seq.fold (fun stack c ->
-         let name = fst c
-         let restack = stack |> List.filter (fst >> (isNested name))
-
-         let pr =
-           match restack with
-           | [] -> row
-           | (_, r) :: _ -> r
-
-         let nr = applyToModel model pr c
-         (name, nr) :: restack) []
-    |> ignore
-
-  let private populateAssemblyNode (model : TreeStore) (row : TreeIter)
-      (node : XPathNavigator) =
-    // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
-    let applyToModel (theModel : TreeStore) (theRow : TreeIter)
-        (group : string * seq<MethodKey>) =
-      let name = fst group
-
-      let newrow =
-        theModel.AppendValues
-          (theRow,
-           [| name :> obj
-              icons.Namespace.Force() :> obj |])
-      populateNamespaceNode theModel newrow (snd group)
-
-    let methods =
-      node.SelectChildren("method", String.Empty)
-      |> Seq.cast<XPathNavigator>
-      |> Seq.map (fun m ->
-           let classfullname = m.GetAttribute("class", String.Empty)
-           let lastdot = classfullname.LastIndexOf('.')
-           { Navigator = m
-             NameSpace =
-               if lastdot < 0 then String.Empty else classfullname.Substring(0, lastdot)
-             ClassName =
-               if lastdot < 0 then classfullname else classfullname.Substring(1 + lastdot)
-             Name = m.GetAttribute("name", String.Empty) })
-      |> Seq.groupBy (fun x -> x.NameSpace)
-      |> Seq.sortBy fst
-
-    methods |> Seq.iter (applyToModel model row)
 
   // -------------------------- Message Boxes ---------------------------
   let private showMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
@@ -463,6 +274,9 @@ module private Gui =
 #else
     md.Destroy()
 #endif
+  // Safe event dispatch => GUI update
+  let private invokeOnGuiThread(action : unit -> unit) =
+    Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
 
   let private showMessageOnGuiThread (parent : Window) (severity : AltCover.Visualizer.MessageType) message =
     let sendMessageToWindow() = showMessage parent message severity
@@ -596,8 +410,54 @@ module private Gui =
     openFileDialog.RestoreDirectory <- false
     openFileDialog
 #endif
-
+  // -------------------------- Tree View ---------------------------
+  let mappings = new Dictionary<TreePath, XPathNavigator>()
   // -------------------------- Event handling  ---------------------------
+  let private DoSelected (handler:Handler) doUpdateMRU index =
+    let environment =
+      {
+        Icons = icons
+        GetFileInfo = fun i -> FileInfo(if i < 0
+                                        then handler.justOpened
+                                        else handler.coverageFiles.[i])
+        Display = showMessageOnGuiThread handler.mainWindow
+        UpdateMRUFailure = fun info -> invokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
+        UpdateUISuccess = fun info -> let updateUI (theModel:
+#if NETCOREAPP2_1
+                                                              ITreeModel
+#else
+                                                              TreeModel
+#endif
+                                                    ) (info: FileInfo) () =
+                                        // File is good so enable the refresh button
+                                        handler.refreshButton.Sensitive <- true
+                                        // Do real UI work here
+                                        handler.auxModel <- handler.classStructureTree.Model :?> TreeStore
+                                        handler.classStructureTree.Model <- theModel
+                                        handler.codeView.Buffer.Clear()
+                                        handler.mainWindow.Title <- "AltCover.Visualizer"
+                                        doUpdateMRU handler info.FullName true
+                                      ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
+                                      invokeOnGuiThread(updateUI handler.auxModel info)
+        SetXmlNode = fun name -> let model = handler.auxModel
+                                 model.Clear()
+                                 mappings.Clear()
+                                 let topRow = model.AppendValues(name, icons.Xml.Force())
+                                 {
+                                    Model = model
+                                    Row = topRow
+                                 }
+        AddNode = fun context icon name ->
+                               { context with
+                                     Row = context.Model.AppendValues
+                                            (context.Row,
+                                             [| name :> obj
+                                                icon.Force() :> obj |]) }
+        Map = fun context xpath ->  mappings.Add(context.Model.GetPath context.Row, xpath)
+      }
+
+    CoverageFileTree.DoSelected environment index
+
   let private handleOpenClicked (handler : Handler)
 #if NETCOREAPP2_1
 
@@ -966,15 +826,9 @@ module private Gui =
          if Persistence.save then Persistence.saveGeometry handler.mainWindow
          Application.Quit())
     // Initialize graphics and begin
-    handler.mainWindow.Icon <-
-      new Pixbuf(Assembly.GetExecutingAssembly()
-                         .GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
-    handler.aboutVisualizer.Icon <-
-      new Pixbuf(Assembly.GetExecutingAssembly()
-                         .GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
-    handler.aboutVisualizer.Logo <-
-      new Pixbuf(Assembly.GetExecutingAssembly()
-                         .GetManifestResourceStream("AltCover.Visualizer.logo.png"))
+    handler.mainWindow.Icon <- icons.VIcon
+    handler.aboutVisualizer.Icon <- icons.VIcon
+    handler.aboutVisualizer.Logo <- icons.Logo.Force()
     handler.mainWindow.ShowAll()
     handler
 
@@ -1054,84 +908,7 @@ module private Gui =
     // Now mix in selecting the file currently loaded
     let refresh = handler.refreshButton.Clicked |> Event.map (fun _ -> 0)
     Event.merge fileSelection refresh
-    |> Event.add (fun index ->
-         let h = handler
-         let display = showMessageOnGuiThread h.mainWindow
-         async {
-           let current =
-             FileInfo(if index < 0 then h.justOpened else h.coverageFiles.[index])
-           match CoverageFile.LoadCoverageFile current with
-           | Left failed ->
-               Messages.InvalidCoverageFileMessage display failed
-               invokeOnGuiThread(fun () -> updateMRU h current.FullName false)
-           | Right coverage ->
-               // check if coverage is newer that the source files
-               let sourceFiles =
-                 coverage.Document.CreateNavigator().Select("//seqpnt/@document")
-                 |> Seq.cast<XPathNavigator>
-                 |> Seq.map (fun x -> x.Value)
-                 |> Seq.distinct
-
-               let missing =
-                 sourceFiles
-                 |> Seq.map GetSource
-                 |> Seq.filter (fun f -> not f.Exists)
-
-               if not (Seq.isEmpty missing) then
-                 Messages.MissingSourceFileMessage display current
-               let newer =
-                 sourceFiles
-                 |> Seq.map GetSource
-                 |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
-               // warn if not
-               if not (Seq.isEmpty newer) then
-                 Messages.OutdatedCoverageFileMessage display current
-               let model = handler.auxModel
-               model.Clear()
-               mappings.Clear()
-               let toprow = model.AppendValues(current.Name, icons.Xml.Force())
-
-               let applyToModel (theModel : TreeStore) theRow
-                   (group : XPathNavigator * string) =
-                 let name = snd group
-
-                 let newrow =
-                   theModel.AppendValues
-                     (theRow,
-                      [| name :> obj
-                         icons.Assembly.Force() :> obj |])
-                 populateAssemblyNode theModel newrow (fst group)
-
-               let assemblies =
-                 coverage.Document.CreateNavigator().Select("//module")
-                 |> Seq.cast<XPathNavigator>
-               assemblies
-               |> Seq.map (fun node ->
-                    (node,
-                     node.GetAttribute("assemblyIdentity", String.Empty).Split(',')
-                     |> Seq.head))
-               |> Seq.sortBy snd
-               |> Seq.iter (applyToModel model toprow)
-
-               let updateUI (theModel:
-#if NETCOREAPP2_1
-                                       ITreeModel
-#else
-                                       TreeModel
-#endif
-                             ) (info: FileInfo) () =
-                 // File is good so enable the refresh button
-                 h.refreshButton.Sensitive <- true
-                 // Do real UI work here
-                 h.auxModel <- h.classStructureTree.Model :?> TreeStore
-                 h.classStructureTree.Model <- theModel
-                 h.codeView.Buffer.Clear()
-                 h.mainWindow.Title <- "AltCover.Visualizer"
-                 updateMRU h info.FullName true
-               ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
-               invokeOnGuiThread(updateUI h.auxModel current)
-         }
-         |> Async.Start)
+    |> Event.add (DoSelected handler updateMRU)
     handler.fontButton.Clicked
     |> Event.add (fun x ->
          let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()

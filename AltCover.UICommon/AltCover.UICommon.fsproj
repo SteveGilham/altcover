@@ -5,6 +5,7 @@
     <RootNamespace>AltCover.UICommon</RootNamespace>
     <AssemblyName>AltCover.UICommon</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <Name>AltCover.UICommon</Name>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
@@ -31,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- EmbeddedResource Include="dialog-error.png" />
+    <EmbeddedResource Include="dialog-error.png" />
     <EmbeddedResource Include="dialog-information.png" />
     <EmbeddedResource Include="dialog-warning.png" />
     <EmbeddedResource Include="Assembly_6212.png" />
@@ -61,7 +62,6 @@
     <EmbeddedResource Include="StatusInformation_16x.png" />
     <EmbeddedResource Include="VSTAAbout_16x.png" />
     <EmbeddedResource Include="config.xsd" />
-    <EmbeddedResource Include="Visualizer3.glade" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
     <EmbeddedResource Include="Effects_16x.png" />
@@ -76,7 +76,7 @@
     <EmbeddedResource Include="Branch_12x_16x_red.png" />
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
-    <EmbeddedResource Include="VIcon.ico" / -->
+    <EmbeddedResource Include="VIcon.ico" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCover.xsd" Link="NCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
@@ -94,6 +94,7 @@
     <Compile Include="Configuration.fs" />
     <Compile Include="Icons.fs" />
     <Compile Include="Messages.fs" />
+    <Compile Include="CoverageFileTree.fs" />
   </ItemGroup>
 
   <ItemGroup>

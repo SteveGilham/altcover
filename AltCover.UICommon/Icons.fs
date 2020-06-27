@@ -34,3 +34,9 @@ type Icons<'TIcon> (toIcon: System.IO.Stream -> 'TIcon) =
   member self.Info = makeIcon "dialog-information"
   member self.Warn = makeIcon "dialog-warning"
   member self.Error = makeIcon "dialog-error"
+  member self.Logo = makeIcon "logo"
+  member self.VIcon =
+    let makeIco name =
+      toIcon(Assembly.GetExecutingAssembly()
+                            .GetManifestResourceStream("AltCover.UICommon." + name + ".ico"))
+    makeIco "VIcon"
