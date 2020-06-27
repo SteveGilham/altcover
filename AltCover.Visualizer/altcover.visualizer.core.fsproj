@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;net45</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp2.1</TargetFrameworks>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -42,7 +42,8 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
     <None Include="Visualizer.glade" />
-    <EmbeddedResource Include="Visualizer3.glade" />
+    <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net45'" />
+    <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net45'" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
     <EmbeddedResource Include="Effects_16x.png" />
@@ -113,7 +114,7 @@
     </PackageReference>
   </ItemGroup>
 
-<ItemGroup>
+  <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'" />
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
