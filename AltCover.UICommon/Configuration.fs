@@ -36,7 +36,7 @@ module Configuration =
         try
           let schemas = new XmlSchemaSet()
           use str = Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
+                                     .GetManifestResourceStream("AltCover.UICommon.config.xsd")
           use xr = new StreamReader(str)
           use xsd = xr |> XmlReader.Create
 

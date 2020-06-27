@@ -911,10 +911,7 @@ module private Gui =
     |> Event.add (DoSelected handler updateMRU)
     handler.fontButton.Clicked
     |> Event.add (fun x ->
-         let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-         let resources =
-           ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
-         let format = resources.GetString("SelectFont")
+         let format = Resource.GetResourceString "SelectFont"
 #if NETCOREAPP2_1
          use selector = new FontChooserDialog(format, handler.mainWindow)
          selector.Font <- Persistence.readFont()
