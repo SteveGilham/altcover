@@ -264,58 +264,8 @@ module private Gui =
   let private invokeOnGuiThread(action : unit -> unit) =
     Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
 
-  let private xmlIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
-  let private assemblyIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
-  let private eventIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
-  let private namespaceIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
-  let private moduleIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
-  let private effectIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
-  let private classIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
-  let private propertyIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
-  let private methodIcon =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
-  let branched =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_grn.png")))
-  let branch =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_ylw.png")))
-  let redbranch =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_red.png")))
-  let blank =
-    lazy
-      (new Pixbuf(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
+  let icons = Icons(fun x -> new Pixbuf(x))
+
   // --------------------------  Persistence ---------------------------
   // -------------------------- Tree View ---------------------------
   let mappings = new Dictionary<TreePath, XPathNavigator>()
@@ -347,7 +297,7 @@ module private Gui =
           mmodel.AppendValues
             (mrow,
              [| displayname.Substring(offset) :> obj
-                methodIcon.Force() :> obj |])
+                icons.Method.Force() :> obj |])
 
         mappings.Add(mmodel.GetPath(newrow), x.Navigator)
 
@@ -356,7 +306,7 @@ module private Gui =
           theModel.AppendValues
             (theRow,
              [| display :> obj
-                (if special = MethodType.Property then propertyIcon else eventIcon)
+                (if special = MethodType.Property then icons.Property else icons.Event)
                   .Force() :> obj |])
         keys
           |> Seq.sortBy (fun key -> key.Name |> DisplayName)
@@ -399,16 +349,16 @@ module private Gui =
         if group
            |> snd
            |> Seq.isEmpty then
-          moduleIcon.Force()
+          icons.Module.Force()
         else if group
                 |> snd
                 |> Seq.exists (fun key ->
                      let d = key.Name |> DisplayName
                      (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
                      |> not) then
-          classIcon.Force()
+          icons.Class.Force()
         else
-          effectIcon.Force()
+          icons.Effect.Force()
 
       let newrow =
         theModel.AppendValues
@@ -480,7 +430,7 @@ module private Gui =
         theModel.AppendValues
           (theRow,
            [| name :> obj
-              namespaceIcon.Force() :> obj |])
+              icons.Namespace.Force() :> obj |])
       populateNamespaceNode theModel newrow (snd group)
 
     let methods =
@@ -625,7 +575,7 @@ module private Gui =
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")
 
   let private prepareTreeView(handler : Handler) =
-    [| assemblyIcon; namespaceIcon; classIcon; methodIcon |]
+    [| icons.Assembly; icons.Namespace; icons.Class; icons.Method |]
     |> Seq.iteri (fun i x ->
          let column = new Gtk.TreeViewColumn()
          let cell = new Gtk.CellRendererText()
@@ -795,10 +745,10 @@ module private Gui =
 
       let pix =
         match counts with
-        | (false, _) -> blank
-        | (_, (0, _)) -> redbranch
-        | AllVisited -> branched
-        | _ -> branch
+        | (false, _) -> icons.Blank
+        | (_, (0, _)) -> icons.RedBranch
+        | AllVisited -> icons.Branched
+        | _ -> icons.Branch
 
       let mutable i = buff.GetIterAtLine(l - 1)
       let a = new TextChildAnchor()
@@ -1168,7 +1118,7 @@ module private Gui =
                let model = handler.auxModel
                model.Clear()
                mappings.Clear()
-               let toprow = model.AppendValues(current.Name, xmlIcon.Force())
+               let toprow = model.AppendValues(current.Name, icons.Xml.Force())
 
                let applyToModel (theModel : TreeStore) theRow
                    (group : XPathNavigator * string) =
@@ -1178,7 +1128,7 @@ module private Gui =
                    theModel.AppendValues
                      (theRow,
                       [| name :> obj
-                         assemblyIcon.Force() :> obj |])
+                         icons.Assembly.Force() :> obj |])
                  populateAssemblyNode theModel newrow (fst group)
 
                let assemblies =
@@ -1261,12 +1211,12 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+applyTag@729.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
+                            Target="AltCover.Visualizer.Gui+applyTag@679.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@629.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@579.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

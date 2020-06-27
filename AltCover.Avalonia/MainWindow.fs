@@ -84,86 +84,7 @@ type MainWindow() as this =
   let mutable justOpened = String.Empty
   let mutable coverageFiles : string list = []
   let ofd = OpenFileDialog()
-  let infoIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.dialog-information.png")))
-  let warnIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.dialog-warning.png")))
-  let errorIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.dialog-error.png")))
-  let xmlIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
-  let assemblyIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
-  let eventIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
-  let namespaceIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
-  let moduleIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
-  let effectIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
-  let classIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
-  let propertyIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
-  let methodIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
-  let branched =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_grn.png")))
-  let branch =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_ylw.png")))
-  let redbranch =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_red.png")))
-  let blank =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
-  let mruIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.ExpandChevronDown_16x.png")))
-  let mruInactiveIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.ExpandChevronDown_lightGray_16x.png")))
-  let refreshIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Refresh_16x.png")))
-  let refreshInactiveIcon =
-    lazy
-      (new Bitmap(Assembly.GetExecutingAssembly()
-                          .GetManifestResourceStream("AltCover.Visualizer.Refresh_greyThin_16x.png")))
+  let icons = Icons(fun x -> new Bitmap(x))
 
   let makeTreeNode name icon =
     let text = new TextBlock()
@@ -185,9 +106,9 @@ type MainWindow() as this =
   member private this.ShowMessageBox (status : MessageType) caption message =
     Dispatcher.UIThread.Post(fun _ ->
       this.FindControl<Image>("Status").Source <- (match status with
-                                                   | MessageType.Info -> infoIcon
-                                                   | MessageType.Warning -> warnIcon
-                                                   | _ -> errorIcon).Force()
+                                                   | MessageType.Info -> icons.Info
+                                                   | MessageType.Warning -> icons.Warn
+                                                   | _ -> icons.Error).Force()
       this.FindControl<TextBlock>("Caption").Text <- caption
       this.FindControl<TextBox>("Message").Text <- message
       this.FindControl<StackPanel>("MessageBox").IsVisible <- true
@@ -211,9 +132,9 @@ type MainWindow() as this =
     // set or clear the menu
     listitem.IsEnabled <- coverageFiles.Any()
     this.FindControl<Image>("ListImage").Source <- (if coverageFiles.Any() then
-                                                      mruIcon
+                                                      icons.MRU
                                                     else
-                                                      mruInactiveIcon).Force()
+                                                      icons.MRUInactive).Force()
 
   member private this.UpdateMRU path add =
     let casematch =
@@ -238,9 +159,9 @@ type MainWindow() as this =
     Persistence.saveCoverageFiles coverageFiles
     this.FindControl<MenuItem>("Refresh").IsEnabled <- coverageFiles.Any()
     this.FindControl<Image>("RefreshImage").Source <- (if coverageFiles.Any() then
-                                                         refreshIcon
+                                                         icons.Refresh
                                                        else
-                                                         refreshInactiveIcon).Force()
+                                                         icons.RefreshInactive).Force()
 
   member private this.InvalidCoverageFileMessage(x : InvalidFile) =
     let caption = Resource.GetResourceString "LoadError"
@@ -421,13 +342,13 @@ type MainWindow() as this =
                    let caption = Resource.GetResourceString "LoadError"
                    this.ShowMessageBox MessageType.Error caption x.Message)
 
-        let display = makeTreeNode visbleName <| methodIcon.Force()
+        let display = makeTreeNode visbleName <| icons.Method.Force()
         newrow.Header <- display
         model.Add newrow
 
       if special <> MethodType.Normal then
         let newrow = TreeViewItem()
-        let icon = (if special = MethodType.Property then propertyIcon else eventIcon)
+        let icon = (if special = MethodType.Property then icons.Property else icons.Event)
                      .Force()
         let display = makeTreeNode itemDisplayName icon
         newrow.Header <- display
@@ -473,16 +394,16 @@ type MainWindow() as this =
         if group
            |> snd
            |> Seq.isEmpty then
-          moduleIcon.Force()
+          icons.Module.Force()
         else if group
                 |> snd
                 |> Seq.exists (fun key ->
                      let d = key.Name |> DisplayName
                      (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
                      |> not) then
-          classIcon.Force()
+          icons.Class.Force()
         else
-          effectIcon.Force()
+          icons.Effect.Force()
 
       let newrow = TreeViewItem()
       model.Add newrow
@@ -551,7 +472,7 @@ type MainWindow() as this =
       let name = fst group
       let newrow = TreeViewItem()
       model.Add newrow
-      let display = makeTreeNode name <| namespaceIcon.Force()
+      let display = makeTreeNode name <| icons.Namespace.Force()
       newrow.Header <- display
       let items = List<TreeViewItem>()
       this.PopulateNamespaceNode items newrow (snd group)
@@ -671,7 +592,7 @@ type MainWindow() as this =
                  let name = snd group
                  let row = TreeViewItem()
                  model.Add row
-                 let display = makeTreeNode name <| assemblyIcon.Force()
+                 let display = makeTreeNode name <| icons.Assembly.Force()
                  row.Header <- display
                  let items = List<TreeViewItem>()
                  this.PopulateAssemblyNode items row (fst group)
