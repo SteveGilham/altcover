@@ -90,6 +90,7 @@
     <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />
+    <Compile Include="Configuration.fs" />
   </ItemGroup>
 
   <ItemGroup>

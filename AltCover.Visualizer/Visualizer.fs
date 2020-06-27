@@ -154,169 +154,27 @@ module internal Persistence =
 
 #if NETCOREAPP2_1
 
-  let private defaultDocument() =
-    let doc = XDocument()
-    doc.Add(XElement(XName.Get "AltCover.Visualizer"))
-    doc
-
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Exceptions",
-      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
-      Justification = "need to exhaustively list the espected ones"
-  )>]
-  let private ensureFile() =
-    let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-    let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
-    let file = Path.Combine(dir.FullName, "Visualizer.xml")
-    if file
-       |> File.Exists
-       |> not then
-      (file, defaultDocument())
-    else
-      try
-        let doc = XDocument.Load(file)
-        try
-          let schemas = new XmlSchemaSet()
-          use str = Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
-          use xr = new StreamReader(str)
-          use xsd = xr |> XmlReader.Create
-
-          schemas.Add(String.Empty,  xsd) |> ignore
-          doc.Validate(schemas, null)
-          (file, doc)
-        with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
-          let nl = Environment.NewLine
-          printfn "%A%s%s%A" xx nl nl doc
-          (file, defaultDocument())
-      with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
-        printfn "%A" x
-        (file, defaultDocument())
-
-  let internal saveSchemaDir (s : string) =
-    let file, config = ensureFile()
-
-    let node =
-      config.XPathSelectElements("AltCover.Visualizer")
-      |> Seq.toList
-      |> Seq.head
-    if match (node.Attribute(XName.Get "GSettingsSchemaDir"), String.IsNullOrWhiteSpace s) with
-       | (null, false) ->
-           node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
-           true
-       | (a, false) ->
-           a.Value <- s
-           true
-       | (null, true) -> false
-       | (a, true) ->
-           a.Remove()
-           true
-    then config.Save file
-
-  let internal saveFont (font : string) =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//Font")
-    |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
-    let inject = XElement(XName.Get "Font", font)
-    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
-    | [] -> (config.FirstNode :?> XElement).AddFirst(inject)
-    | x :: _ -> inject |> x.AddAfterSelf
-    config.Save file
-
-  let internal readFont() =
-    let _, config = ensureFile()
-    match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace 10"
-    | x :: _ -> x.FirstNode.ToString()
-
-  let internal readSchemaDir() =
-    let file, config = ensureFile()
-
-    let node =
-      config.XPathSelectElements("AltCover.Visualizer")
-      |> Seq.toList
-      |> Seq.head
-    match node.Attribute(XName.Get "GSettingsSchemaDir") with
-    | null -> String.Empty
-    | a -> a.Value
-
-  let internal saveFolder (path : string) =
-    let file, config = ensureFile()
-    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
-    | [] ->
-        (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
-    | x :: _ ->
-        x.RemoveAll()
-        x.Add path
-    config.Save file
-
-  let internal readFolder() =
-    let _, config = ensureFile()
-    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
-    | [] -> System.IO.Directory.GetCurrentDirectory()
-    | x :: _ -> x.FirstNode.ToString()
-
-  let internal saveCoverageFiles (coverageFiles : string seq) =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//RecentlyOpened")
-    |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
-    let inject = config.FirstNode :?> XElement
-    coverageFiles
-    |> Seq.iter (fun path -> inject.Add(XElement(XName.Get "RecentlyOpened", path)))
-    config.Save file
-
+  let internal saveSchemaDir = Configuration.SaveSchemaDir
+  let internal saveFont = Configuration.SaveFont
+  let internal readFont = Configuration.ReadFont
+  let internal readSchemaDir = Configuration.ReadSchemaDir
+  let internal readFolder = Configuration.ReadFolder
+  let internal saveFolder = Configuration.SaveFolder
+  let internal saveCoverageFiles = Configuration.SaveCoverageFiles
   let internal readCoverageFiles (handler : Handler) =
-    let _, config = ensureFile()
-
-    let files =
-      config.XPathSelectElements("//RecentlyOpened")
-      |> Seq.map (fun n -> n.FirstNode.ToString())
-      |> Seq.toList
-    handler.coverageFiles <- files
+    Configuration.ReadCoverageFiles (fun files -> handler.coverageFiles <- files)
 
   let saveGeometry (w : Window) =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//Geometry")
-    |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
-    let (x, y) = w.GetPosition()
-    let (width, height) = w.GetSize()
-    let element =
-      XElement
-        (XName.Get "Geometry", XAttribute(XName.Get "x", x), XAttribute(XName.Get "y", y),
-         XAttribute(XName.Get "width", width), XAttribute(XName.Get "height", height))
-
-    match config.XPathSelectElements("//RecentlyOpened") |> Seq.toList with
-    | [] -> (config.FirstNode :?> XElement).Add element
-    | x :: _ -> x.AddBeforeSelf element
-    config.Save file
+    Configuration.SaveGeometry w.GetPosition w.GetSize
 
   let readGeometry (w : Window) =
-    let _, config = ensureFile()
+    Configuration.ReadGeometry (fun () -> let bounds = w.Display.PrimaryMonitor.Geometry
+                                          bounds.Width, bounds.Height)
+                               (fun (width,height) (x,y) -> w.DefaultHeight <- height
+                                                            w.DefaultWidth <- width
+                                                            w.Move(x, y))
+  let clearGeometry = Configuration.ClearGeometry
 
-    let attribute (x : XElement) a =
-      x.Attribute(XName.Get a).Value
-      |> Double.TryParse
-      |> snd
-    config.XPathSelectElements("//Geometry")
-    |> Seq.iter (fun e ->
-         let width = Math.Max(attribute e "width" |> int, 600)
-         let height = Math.Max(attribute e "height" |> int, 450)
-         let bounds = w.Display.PrimaryMonitor.Geometry
-         let x = Math.Min(Math.Max(attribute e "x" |> int, 0), bounds.Width - width)
-         let y = Math.Min(Math.Max(attribute e "y" |> int, 0), bounds.Height - height)
-         w.DefaultHeight <- height
-         w.DefaultWidth <- width
-         w.Move(x, y))
-
-  let clearGeometry() =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//Geometry")
-    |> Seq.toList
-    |> Seq.iter (fun f -> f.Remove())
-    config.Save file
 #else
   let internal geometry = "SOFTWARE\\AltCover\\Visualizer\\Geometry"
   let internal recent = "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
@@ -1421,12 +1279,12 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+applyTag@889.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
+                            Target="AltCover.Visualizer.Gui+applyTag@747.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@789.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@647.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
@@ -1438,6 +1296,6 @@ module private Gui =
                             Scope="resource",
                             Target="AltCover.Visualizer.Resource.resources",
                             MessageId="visualstudio",
-                            Justification="Ot is a name.")>]
+                            Justification="It is a name.")>]
 ()
 #endif

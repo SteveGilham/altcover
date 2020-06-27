@@ -31,136 +31,30 @@ module UICommon =
     resources.GetString(key)
 
 module Persistence =
-  let mutable save = true
+  let mutable internal save = true
 
-  let private defaultDocument() =
-    let doc = XDocument()
-    doc.Add(XElement(XName.Get "AltCover.Visualizer"))
-    doc
-
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Exceptions",
-      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
-      Justification = "need to exhaustively list the espected ones"
-  )>]
-  let private ensureFile() =
-    let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-    let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
-    let file = Path.Combine(dir.FullName, "Visualizer.xml")
-    let mutable o = XDocument()
-    if file
-       |> File.Exists
-       |> not then
-      (file, defaultDocument())
-    else
-      try
-        let doc = XDocument.Load(file)
-        try
-          let schemas = new XmlSchemaSet()
-          use str = Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
-          use xr = new StreamReader(str)
-          use xsd = xr |> XmlReader.Create
-
-          schemas.Add(String.Empty,  xsd) |> ignore
-          doc.Validate(schemas, null)
-          (file, doc)
-        with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
-          let nl = Environment.NewLine
-          printfn "%A%s%s%A" xx nl nl doc
-          (file, defaultDocument())
-      with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
-        printfn "%A" x
-        (file, defaultDocument())
-
-  let saveFont (font : string) =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//Font")
-    |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
-    let inject = XElement(XName.Get "Font", font)
-    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
-    | [] -> (config.FirstNode :?> XElement).AddFirst(inject)
-    | x :: _ -> inject |> x.Add
-    config.Save file
-
-  let readFont() =
-    let _, config = ensureFile()
-    match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace" // Font defaults to 'Courier New', which is what we want
-    | x :: _ -> x.FirstNode.ToString()
-
-  let saveFolder (path : string) =
-    let file, config = ensureFile()
-    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
-    | [] ->
-        (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
-    | x :: _ ->
-        x.RemoveAll()
-        x.Add path
-    config.Save file
-
-  let readFolder() =
-    let _, config = ensureFile()
-    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
-    | [] -> System.IO.Directory.GetCurrentDirectory()
-    | x :: _ -> x.FirstNode.ToString()
-
-  let saveCoverageFiles (coverageFiles : string list) =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//RecentlyOpened")
-    |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
-    let inject = config.FirstNode :?> XElement
-    coverageFiles
-    |> Seq.iter (fun path -> inject.Add(XElement(XName.Get "RecentlyOpened", path)))
-    config.Save file
-
+  let internal saveSchemaDir = Configuration.SaveSchemaDir
+  let internal saveFont = Configuration.SaveFont
+  let internal readFont = Configuration.ReadFont
+  let internal readSchemaDir = Configuration.ReadSchemaDir
+  let internal readFolder = Configuration.ReadFolder
+  let internal saveFolder = Configuration.SaveFolder
+  let internal saveCoverageFiles = Configuration.SaveCoverageFiles
   let readCoverageFiles() =
-    let _, config = ensureFile()
-    config.XPathSelectElements("//RecentlyOpened")
-    |> Seq.map (fun n -> n.FirstNode.ToString())
-    |> Seq.toList
-
+    let mutable l = []
+    Configuration.ReadCoverageFiles (fun files -> l <- files)
+    l
   let saveGeometry (w : Window) =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//Geometry")
-    |> Seq.toList
-    |> Seq.iter (fun x -> x.Remove())
-    let element =
-      XElement
-        (XName.Get "Geometry", XAttribute(XName.Get "x", w.Position.X),
-         XAttribute(XName.Get "y", w.Position.Y), XAttribute(XName.Get "width", w.Width),
-         XAttribute(XName.Get "height", w.Height))
-    match config.XPathSelectElements("//RecentlyOpened") |> Seq.toList with
-    | [] -> (config.FirstNode :?> XElement).Add element
-    | x :: _ -> x.AddBeforeSelf element
-    config.Save file
+    Configuration.SaveGeometry (fun () -> w.Position.X, w.Position.Y)
+                               (fun () -> w.Width, w.Height)
 
   let readGeometry (w : Window) =
-    let _, config = ensureFile()
-
-    let attribute (x : XElement) a =
-      x.Attribute(XName.Get a).Value
-      |> Int32.TryParse
-      |> snd
-    config.XPathSelectElements("//Geometry")
-    |> Seq.iter (fun e ->
-         let width = Math.Min(attribute e "width", 750)
-         let height = Math.Min(attribute e "height", 550)
-         let bounds = w.Screens.Primary.WorkingArea
-         let x = Math.Min(Math.Max(attribute e "x", 0), bounds.Width - width)
-         let y = Math.Min(Math.Max(attribute e "y", 0), bounds.Height - height)
-         w.Height <- float height
-         w.Width <- float width
-         w.Position <- PixelPoint(x, y))
-
-  let clearGeometry() =
-    let file, config = ensureFile()
-    config.XPathSelectElements("//Geometry")
-    |> Seq.toList
-    |> Seq.iter (fun f -> f.Remove())
-    config.Save file
+    Configuration.ReadGeometry (fun () -> let bounds = w.Screens.Primary.WorkingArea
+                                          bounds.Width, bounds.Height)
+                               (fun (width,height) (x,y) -> w.Height <- float height
+                                                            w.Width <- float width
+                                                            w.Position <- PixelPoint(x, y))
+  let clearGeometry = Configuration.ClearGeometry
 
 type MessageType =
   | Info = 0
