@@ -80,6 +80,8 @@
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCover.xsd" Link="NCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
+    <EmbeddedResource Include="Resource.eo.resx" />
+    <EmbeddedResource Include="Resource.resx" />
   </ItemGroup>
 
   <ItemGroup>

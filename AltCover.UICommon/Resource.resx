@@ -133,9 +133,9 @@ is out of date with respect to source file
   <data name="SelectFont" xml:space="preserve">
     <value>Select font for source display</value>
   </data>
-  <data name="SelectXml" xml:space="preserve">
+  <!-- data name="SelectXml" xml:space="preserve">
     <value>xml files (*.xml)|*.xml|All files (*.*)|*.*</value>
-  </data>
+  </data -->
   <data name="MissingSourceFile" xml:space="preserve">
     <value>The file {0} 
 refers to source files not found on this computer.</value>
