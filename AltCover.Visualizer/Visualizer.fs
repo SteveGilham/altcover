@@ -488,16 +488,16 @@ module private Gui =
       let ((display, special), keys) = item
 
       let applyMethod (mmodel : TreeStore) (mrow : TreeIter) (x : MethodKey) =
-        let fullname = x.m.GetAttribute("fullname", String.Empty)
+        let fullname = x.Navigator.GetAttribute("fullname", String.Empty)
 
         let args =
-          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then
+          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf('(') > 0 then
             String.Empty
           else
             let bracket = fullname.IndexOf('(')
             if bracket < 0 then String.Empty else fullname.Substring(bracket)
 
-        let displayname = x.name + args
+        let displayname = x.Name + args
 
         let offset =
           match displayname.LastIndexOf("::", StringComparison.Ordinal) with
@@ -510,7 +510,7 @@ module private Gui =
              [| displayname.Substring(offset) :> obj
                 methodIcon.Force() :> obj |])
 
-        mappings.Add(mmodel.GetPath(newrow), x.m)
+        mappings.Add(mmodel.GetPath(newrow), x.Navigator)
 
       if special <> MethodType.Normal then
         let newrow =
@@ -520,7 +520,7 @@ module private Gui =
                 (if special = MethodType.Property then propertyIcon else eventIcon)
                   .Force() :> obj |])
         keys
-          |> Seq.sortBy (fun key -> key.name |> displayName)
+          |> Seq.sortBy (fun key -> key.Name |> DisplayName)
           |> Seq.iter (applyMethod theModel newrow)
       else
         applyMethod theModel theRow (keys |> Seq.head)
@@ -528,9 +528,9 @@ module private Gui =
     let methods =
       nodes
       |> Seq.groupBy (fun key ->
-           key.name
-           |> displayName
-           |> handleSpecialName)
+           key.Name
+           |> DisplayName
+           |> HandleSpecialName)
       |> Seq.toArray
 
     let orderMethods array =
@@ -564,7 +564,7 @@ module private Gui =
         else if group
                 |> snd
                 |> Seq.exists (fun key ->
-                     let d = key.name |> displayName
+                     let d = key.Name |> DisplayName
                      (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
                      |> not) then
           classIcon.Force()
@@ -586,7 +586,7 @@ module private Gui =
 
     let classlist =
       nodes
-      |> Seq.groupBy (fun x -> x.classname)
+      |> Seq.groupBy (fun x -> x.ClassName)
       |> Seq.toList
 
     let classnames =
@@ -650,13 +650,13 @@ module private Gui =
       |> Seq.map (fun m ->
            let classfullname = m.GetAttribute("class", String.Empty)
            let lastdot = classfullname.LastIndexOf('.')
-           { m = m
-             spacename =
+           { Navigator = m
+             NameSpace =
                if lastdot < 0 then String.Empty else classfullname.Substring(0, lastdot)
-             classname =
+             ClassName =
                if lastdot < 0 then classfullname else classfullname.Substring(1 + lastdot)
-             name = m.GetAttribute("name", String.Empty) })
-      |> Seq.groupBy (fun x -> x.spacename)
+             Name = m.GetAttribute("name", String.Empty) })
+      |> Seq.groupBy (fun x -> x.NameSpace)
       |> Seq.sortBy fst
 
     methods |> Seq.iter (applyToModel model row)
@@ -999,28 +999,28 @@ module private Gui =
     n.MoveToParent() |> ignore
     let because = n.GetAttribute("excluded-because", String.Empty)
     let fallback = selectStyle because excluded |> int
-    { visitcount =
+    { VisitCount =
         if visitcount = 0 then fallback else visitcount
-      line = Int32.TryParse(line) |> snd
-      column = (Int32.TryParse(column) |> snd) + 1
-      endline = Int32.TryParse(endline) |> snd
-      endcolumn = (Int32.TryParse(endcolumn) |> snd) + 1 }
+      Line = Int32.TryParse(line) |> snd
+      Column = (Int32.TryParse(column) |> snd) + 1
+      EndLine = Int32.TryParse(endline) |> snd
+      EndColumn = (Int32.TryParse(endcolumn) |> snd) + 1 }
 
   let private filterCoverage (buff : TextBuffer) (n : CodeTag) =
     let lc = buff.LineCount
-    n.line > 0 && n.endline > 0 && n.line <= lc && n.endline <= lc
+    n.Line > 0 && n.EndLine > 0 && n.Line <= lc && n.EndLine <= lc
 
   let private tagByCoverage (buff : TextBuffer) (n : CodeTag) =
     // bound by current line length in case we're looking from stale coverage
-    let line = buff.GetIterAtLine(n.line - 1)
+    let line = buff.GetIterAtLine(n.Line - 1)
     let chars = line.CharsInLine
 
     let from =
       if chars = 0
       then line
-      else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, chars) - 1)
+      else buff.GetIterAtLineOffset(n.Line - 1, Math.Min(n.Column, chars) - 1)
 
-    let endline = buff.GetIterAtLine(n.endline - 1)
+    let endline = buff.GetIterAtLine(n.EndLine - 1)
     let endchars = endline.CharsInLine
 
     let until =
@@ -1028,10 +1028,10 @@ module private Gui =
         endline
       else
         buff.GetIterAtLineOffset
-          (n.endline - 1, Math.Min(n.endcolumn, endchars) - 1)
+          (n.EndLine - 1, Math.Min(n.EndColumn, endchars) - 1)
 
     let tag =
-      match Exemption.OfInt n.visitcount with
+      match Exemption.OfInt n.VisitCount with
       | Exemption.None -> "notVisited"
       | Exemption.Declared -> "declared"
       | Exemption.Automatic -> "automatic"
@@ -1080,7 +1080,7 @@ module private Gui =
         let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
         handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
-        let info = getSource(filename)
+        let info = GetSource(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
         if (not <| info.Exists) then
           missingSourceThisFileMessage handler.mainWindow current info
@@ -1313,14 +1313,14 @@ module private Gui =
 
                let missing =
                  sourceFiles
-                 |> Seq.map getSource
+                 |> Seq.map GetSource
                  |> Seq.filter (fun f -> not f.Exists)
 
                if not (Seq.isEmpty missing) then
                  missingSourceFileMessage h.mainWindow current
                let newer =
                  sourceFiles
-                 |> Seq.map getSource
+                 |> Seq.map GetSource
                  |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
                // warn if not
                if not (Seq.isEmpty newer) then

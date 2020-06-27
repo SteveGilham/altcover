@@ -406,16 +406,16 @@ type MainWindow() as this =
       let ((itemDisplayName, special), keys) = item
 
       let applyMethod (mmodel : List<TreeViewItem>) (mrow : TreeViewItem) (x : MethodKey) =
-        let fullname = x.m.GetAttribute("fullname", String.Empty)
+        let fullname = x.Navigator.GetAttribute("fullname", String.Empty)
 
         let args =
-          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then
+          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf('(') > 0 then
             String.Empty
           else
             let bracket = fullname.IndexOf('(')
             if bracket < 0 then String.Empty else fullname.Substring(bracket)
 
-        let displayname = x.name + args
+        let displayname = x.Name + args
 
         let offset =
           match displayname.LastIndexOf("::", StringComparison.Ordinal) with
@@ -487,7 +487,7 @@ type MainWindow() as this =
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBox>("Source")
              let points =
-               x.m.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
+               x.Navigator.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
              if Seq.isEmpty points then
                let caption = UICommon.GetResourceString "LoadInfo"
                this.ShowMessageBox MessageType.Info caption
@@ -526,7 +526,7 @@ type MainWindow() as this =
                        (textLines |> Seq.take capped) //System.Environment.NewLine.Length
 
                    // TODO -- colouring
-                   let root = x.m.Clone()
+                   let root = x.Navigator.Clone()
                    root.MoveToRoot()
                    markCoverage root text textLines path
                  // MarkBranches root text path
@@ -547,7 +547,7 @@ type MainWindow() as this =
         theModel.Add newrow
 
         keys
-          |> Seq.sortBy (fun key -> key.name |> displayName)
+          |> Seq.sortBy (fun key -> key.Name |> DisplayName)
           |> Seq.iter (applyMethod theModel newrow)
       else
         applyMethod theModel theRow (keys |> Seq.head)
@@ -555,9 +555,9 @@ type MainWindow() as this =
     let methods =
       nodes
       |> Seq.groupBy (fun key ->
-           key.name
-           |> displayName
-           |> handleSpecialName)
+           key.Name
+           |> DisplayName
+           |> HandleSpecialName)
       |> Seq.toArray
 
     let orderMethods array =
@@ -590,7 +590,7 @@ type MainWindow() as this =
         else if group
                 |> snd
                 |> Seq.exists (fun key ->
-                     let d = key.name |> displayName
+                     let d = key.Name |> DisplayName
                      (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
                      |> not) then
           classIcon.Force()
@@ -612,7 +612,7 @@ type MainWindow() as this =
 
     let classlist =
       nodes
-      |> Seq.groupBy (fun x -> x.classname)
+      |> Seq.groupBy (fun x -> x.ClassName)
       |> Seq.toList
 
     let classnames =
@@ -676,13 +676,13 @@ type MainWindow() as this =
       |> Seq.map (fun m ->
            let classfullname = m.GetAttribute("class", String.Empty)
            let lastdot = classfullname.LastIndexOf('.')
-           { m = m
-             spacename =
+           { Navigator = m
+             NameSpace =
                if lastdot < 0 then String.Empty else classfullname.Substring(0, lastdot)
-             classname =
+             ClassName =
                if lastdot < 0 then classfullname else classfullname.Substring(1 + lastdot)
-             name = m.GetAttribute("name", String.Empty) })
-      |> Seq.groupBy (fun x -> x.spacename)
+             Name = m.GetAttribute("name", String.Empty) })
+      |> Seq.groupBy (fun x -> x.NameSpace)
       |> Seq.sortBy fst
 
     methods |> Seq.iter (applyToModel model row)

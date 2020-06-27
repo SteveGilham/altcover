@@ -8,6 +8,8 @@ open System.Diagnostics.CodeAnalysis
 #if !GUI
 type internal Exemption =
 #else
+[<SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
+  Justification="Data size is important")>]
 type Exemption =
 #endif
   | NonCode = 2y // Grey (comments etc.) or

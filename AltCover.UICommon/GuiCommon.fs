@@ -1,6 +1,7 @@
 namespace AltCover.Visualizer
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.XPath
 open System.Net
@@ -9,18 +10,19 @@ module GuiCommon =
   // Binds class name and XML
   [<NoComparison; AutoSerializable(false)>]
   type MethodKey =
-    { m : XPathNavigator
-      spacename : string
-      classname : string
-      name : string }
+    { Navigator : XPathNavigator
+      NameSpace : string
+      ClassName : string
+      Name : string }
 
   // Range colouring information
+  [<NoComparison>]
   type CodeTag =
-    { visitcount : int
-      line : int
-      column : int
-      endline : int
-      endcolumn : int }
+    { VisitCount : int
+      Line : int
+      Column : int
+      EndLine : int
+      EndColumn : int }
 
   type MethodType =
     | Normal = 0
@@ -28,7 +30,7 @@ module GuiCommon =
     | Event = -2
 
   // -------------------------- Method Name Handling ---------------------------
-  let displayName(name : string) =
+  let DisplayName(name : string) =
     let offset =
       match name.LastIndexOf("::", StringComparison.Ordinal) with
       | -1 -> 0
@@ -36,7 +38,7 @@ module GuiCommon =
 
     name.Substring(offset).Split('(') |> Seq.head
 
-  let handleSpecialName(name : string) =
+  let HandleSpecialName(name : string) =
     if name.StartsWith("get_", StringComparison.Ordinal)
        || name.StartsWith("set_", StringComparison.Ordinal) then
       (name.Substring(4), MethodType.Property)
@@ -82,16 +84,39 @@ module GuiCommon =
           use client = new System.Net.WebClient()
           client.DownloadString(u)
 
-  let getSource(document : string) =
+  let GetSource(document : string) =
     if document.StartsWith("http://", StringComparison.Ordinal)
        || document.StartsWith("https://", StringComparison.Ordinal) then
       System.Uri(document) |> Url
     else
       FileInfo(document) |> File
 
-  type internal AltCover.Exemption with
+  type AltCover.Exemption with
     static member OfInt i =
      if i > 0 then AltCover.Exemption.Visited
      else if i < -4
           then AltCover.Exemption.None
           else i |> sbyte |> Microsoft.FSharp.Core.LanguagePrimitives.EnumOfValue<sbyte, AltCover.Exemption>
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="type", Target="AltCover.Visualizer.GuiCommon", MessageId="Gui",
+  Justification="We all know what it means")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Visualizer.GuiCommon.#Exemption.OfInt.Static(System.Int32)",
+  MessageId="i", Justification="Another obvious name")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1703:ResourceStringsShouldBeSpelledCorrectly",
+  Scope="resource", Target="AltCover.UICommon.Resource.resources", MessageId="freedesktop",
+  Justification="A proper name")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1703:ResourceStringsShouldBeSpelledCorrectly",
+  Scope="resource", Target="AltCover.UICommon.Resource.resources", MessageId="ownload",
+  Justification="A proper name")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1703:ResourceStringsShouldBeSpelledCorrectly",
+  Scope="resource", Target="AltCover.UICommon.Resource.resources", MessageId="visualstudio",
+  Justification="A proper name")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
+  Scope="member", Target="AltCover.Visualizer.GuiCommon+MethodKey.#.ctor(System.Xml.XPath.XPathNavigator,System.String,System.String,System.String)",
+  MessageId="nameSpace", Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
+  Scope="member", Target="AltCover.Visualizer.GuiCommon+MethodKey.#NameSpace",
+  MessageId="NameSpace", Justification="Compound of two words")>]
+()

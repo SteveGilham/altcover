@@ -112,4 +112,15 @@ module Augment =
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
   Scope="member", Target="AltCover.Augment.#String.get_X(System.String)",
   Justification="Compiler generated")>]
+#if GUI
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  MessageId="a", Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  MessageId="b", Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
+  Scope="member", Target="AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  Justification="Compiler Generated")>]
+#endif
 ()
