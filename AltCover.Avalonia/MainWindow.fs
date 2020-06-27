@@ -5,7 +5,6 @@ open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.Linq
-open System.Resources
 open System.Reflection
 open System.Xml
 open System.Xml.Linq
@@ -23,12 +22,6 @@ open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
 open Avalonia.Threading
-
-module UICommon =
-  let GetResourceString(key : string) =
-    let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    let resources = ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
-    resources.GetString(key)
 
 module Persistence =
   let mutable internal save = true
@@ -250,8 +243,8 @@ type MainWindow() as this =
                                                          refreshInactiveIcon).Force()
 
   member private this.InvalidCoverageFileMessage(x : InvalidFile) =
-    let caption = UICommon.GetResourceString "LoadError"
-    let format = UICommon.GetResourceString "InvalidFile"
+    let caption = Resource.GetResourceString "LoadError"
+    let format = Resource.GetResourceString "InvalidFile"
     let message =
       String.Format
         (System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName,
@@ -259,30 +252,30 @@ type MainWindow() as this =
     this.ShowMessageBox MessageType.Error caption message
 
   member private this.OutdatedCoverageFileMessage(x : FileInfo) =
-    let caption = UICommon.GetResourceString "LoadWarning"
-    let format = UICommon.GetResourceString "CoverageOutOfDate"
+    let caption = Resource.GetResourceString "LoadWarning"
+    let format = Resource.GetResourceString "CoverageOutOfDate"
     let message =
       String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
     this.ShowMessageBox MessageType.Warning caption message
 
   member private this.MissingSourceFileMessage(x : FileInfo) =
-    let caption = UICommon.GetResourceString "LoadWarning"
-    let format = UICommon.GetResourceString "MissingSourceFile"
+    let caption = Resource.GetResourceString "LoadWarning"
+    let format = Resource.GetResourceString "MissingSourceFile"
     let message =
       String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
     this.ShowMessageBox MessageType.Warning caption message
 
   member private this.OutdatedCoverageThisFileMessage (c : FileInfo) (s : FileInfo) =
-    let caption = UICommon.GetResourceString "LoadWarning"
-    let format = UICommon.GetResourceString "CoverageOutOfDateThisFile"
+    let caption = Resource.GetResourceString "LoadWarning"
+    let format = Resource.GetResourceString "CoverageOutOfDateThisFile"
     let message =
       String.Format
         (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
     this.ShowMessageBox MessageType.Warning caption message
 
   member private this.MissingSourceThisFileMessage (c : FileInfo) (s : FileInfo) =
-    let caption = UICommon.GetResourceString "LoadWarning"
-    let format = UICommon.GetResourceString "MissingSourceThisFile"
+    let caption = Resource.GetResourceString "LoadWarning"
+    let format = Resource.GetResourceString "MissingSourceThisFile"
     let message =
       String.Format
         (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
@@ -383,11 +376,11 @@ type MainWindow() as this =
              let points =
                x.Navigator.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
              if Seq.isEmpty points then
-               let caption = UICommon.GetResourceString "LoadInfo"
+               let caption = Resource.GetResourceString "LoadInfo"
                this.ShowMessageBox MessageType.Info caption
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
-                     UICommon.GetResourceString "No source location", visbleName)
+                     Resource.GetResourceString "No source location", visbleName)
              else
                let point = points |> Seq.head
                let path = point.GetAttribute("document", String.Empty)
@@ -425,7 +418,7 @@ type MainWindow() as this =
                    markCoverage root text textLines path
                  // MarkBranches root text path
                  with x ->
-                   let caption = UICommon.GetResourceString "LoadError"
+                   let caption = Resource.GetResourceString "LoadError"
                    this.ShowMessageBox MessageType.Error caption x.Message)
 
         let display = makeTreeNode visbleName <| methodIcon.Force()
@@ -587,10 +580,10 @@ type MainWindow() as this =
     coverageFiles <- Persistence.readCoverageFiles()
     this.PopulateMenu()
     ofd.Directory <- Persistence.readFolder()
-    ofd.Title <- UICommon.GetResourceString "Open Coverage File"
+    ofd.Title <- Resource.GetResourceString "Open Coverage File"
     ofd.AllowMultiple <- false
     let filterBits =
-      (UICommon.GetResourceString "SelectXml").Split([| '|' |])
+      (Resource.GetResourceString "SelectXml").Split([| '|' |])
       |> Seq.map (fun f ->
            let entry = f.Split([| '%' |])
            let filter = FileDialogFilter()
@@ -602,7 +595,7 @@ type MainWindow() as this =
     [ "Open"; "Refresh"; "Font"; "About"; "Exit" ]
     |> Seq.iter (fun n ->
          let item = this.FindControl<TextBlock>(n + "Text")
-         item.Text <- UICommon.GetResourceString n)
+         item.Text <- Resource.GetResourceString n)
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
@@ -702,16 +695,16 @@ type MainWindow() as this =
          |> Async.Start)
     this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "
                                                    + AssemblyVersionInformation.AssemblyFileVersion
-    this.FindControl<TextBlock>("Description").Text <- UICommon.GetResourceString
+    this.FindControl<TextBlock>("Description").Text <- Resource.GetResourceString
                                                          "ProgramDescription"
     let copyright = AssemblyVersionInformation.AssemblyCopyright
     this.FindControl<TextBlock>("Copyright").Text <- copyright
-    this.FindControl<TextBlock>("Comments").Text <- UICommon.GetResourceString
+    this.FindControl<TextBlock>("Comments").Text <- Resource.GetResourceString
                                                       "ProgramComments"
     let link = this.FindControl<HtmlLabel>("Link")
     link.Text <-
       """<center><a href="http://www.github.com/SteveGilham/altcover">"""
-      + UICommon.GetResourceString "WebsiteLabel" + "</a></center>"
+      + Resource.GetResourceString "WebsiteLabel" + "</a></center>"
     link.PointerPressed |> Event.add (fun _ -> armed <- true)
     link.PointerLeave |> Event.add (fun _ -> armed <- false)
     link.PointerReleased |> Event.add ignore
@@ -720,12 +713,12 @@ type MainWindow() as this =
     // *nix -- ("xdg-open", url)
     //Application.Instance.Open("http://www.github.com/SteveGilham/altcover"))
 
-    this.FindControl<TabItem>("AboutDetails").Header <- UICommon.GetResourceString "About"
-    this.FindControl<TabItem>("License").Header <- UICommon.GetResourceString
+    this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString "About"
+    this.FindControl<TabItem>("License").Header <- Resource.GetResourceString
                                                      "AboutDialog.License"
     this.FindControl<TextBlock>("MIT").Text <- String.Format
                                                  (CultureInfo.InvariantCulture,
-                                                  UICommon.GetResourceString "License",
+                                                  Resource.GetResourceString "License",
                                                   copyright)
     this.Closing
     |> Event.add (fun e ->
