@@ -165,11 +165,18 @@ module internal Persistence =
     Configuration.SaveGeometry w.GetPosition w.GetSize
 
   let readGeometry (w : Window) =
-    Configuration.ReadGeometry (fun () -> let bounds = w.Display.PrimaryMonitor.Geometry
-                                          bounds.Width, bounds.Height)
-                               (fun (width,height) (x,y) -> w.DefaultHeight <- height
+    Configuration.ReadGeometry (fun (width,height) (x,y) -> w.DefaultHeight <- height
                                                             w.DefaultWidth <- width
-                                                            w.Move(x, y))
+                                                            let monitor = {0..w.Display.NMonitors}
+                                                                          |> Seq.filter (fun i -> let bounds = w.Display.GetMonitor(i).Geometry
+                                                                                                  x >= bounds.Left && x <= bounds.Right &&
+                                                                                                     y >= bounds.Top && y <= bounds.Bottom)
+                                                                          |> Seq.tryHead
+                                                                          |> Option.defaultValue 0
+                                                            let bounds = w.Display.GetMonitor(monitor).Geometry
+                                                            let x' = Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
+                                                            let y' = Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
+                                                            w.Move(x', y'))
   let clearGeometry = Configuration.ClearGeometry
 
 #else

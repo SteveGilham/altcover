@@ -150,7 +150,7 @@ module Configuration =
     | x :: _ -> x.AddBeforeSelf element
     config.Save file
 
-  let ReadGeometry display position =
+  let ReadGeometry position =
     let _, config = ensureFile()
 
     let attribute (x : XElement) a =
@@ -161,9 +161,8 @@ module Configuration =
     |> Seq.iter (fun e ->
          let width = Math.Max(attribute e "width" |> int, 600)
          let height = Math.Max(attribute e "height" |> int, 450)
-         let bounds = display()
-         let x = Math.Min(Math.Max(attribute e "x" |> int, 0), fst bounds - width)
-         let y = Math.Min(Math.Max(attribute e "y" |> int, 0), snd bounds - height)
+         let x = attribute e "x" |> int
+         let y = attribute e "y" |> int
          position (width, height) (x,y))
 
   let ClearGeometry() =
