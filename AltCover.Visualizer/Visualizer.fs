@@ -213,18 +213,17 @@ module internal Persistence =
     use key = Registry.CurrentUser.CreateSubKey(geometry)
     let width = Math.Max(key.GetValue("width", 600) :?> int, 600)
     let height = Math.Max(key.GetValue("height", 450) :?> int, 450)
-    let bounds = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea
-    let x =
-      Math.Min
-        (Math.Max(key.GetValue("x", (bounds.Width - width) / 2) :?> int, 0),
-         bounds.Width - width)
-    let y =
-      Math.Min
-        (Math.Max(key.GetValue("y", (bounds.Height - height) / 2) :?> int, 0),
-         bounds.Height - height)
+    let bounds0 = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea
+    let x = key.GetValue("x", bounds0.Left + ((bounds0.Width - width) / 2)) :?> int
+    let y = key.GetValue("y", bounds0.Top + ((bounds0.Height - height) / 2)) :?> int
+
+    let bid = Drawing.Rectangle (x,y,width, height)
+    let bounds = System.Windows.Forms.Screen.GetWorkingArea bid
+    let x' = Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
+    let y' = Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
+    w.Move(x', y')
     w.DefaultHeight <- height
     w.DefaultWidth <- width
-    w.Move(x, y)
 
   let internal readCoverageFiles (handler : Handler) =
     use fileKey = Registry.CurrentUser.CreateSubKey(recent)
