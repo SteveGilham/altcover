@@ -5,24 +5,24 @@ open System.IO
 open System.Xml.XPath
 open System.Net
 
-module internal GuiCommon =
+module GuiCommon =
   // Binds class name and XML
   [<NoComparison; AutoSerializable(false)>]
-  type internal MethodKey =
+  type MethodKey =
     { m : XPathNavigator
       spacename : string
       classname : string
       name : string }
 
   // Range colouring information
-  type internal CodeTag =
+  type CodeTag =
     { visitcount : int
       line : int
       column : int
       endline : int
       endcolumn : int }
 
-  type internal MethodType =
+  type MethodType =
     | Normal = 0
     | Property = -1
     | Event = -2
@@ -49,7 +49,7 @@ module internal GuiCommon =
 
   // -------------------------- Source file Handling ---------------------------
   [<NoComparison; AutoSerializable(false)>]
-  type internal Source =
+  type Source =
     | File of FileInfo
     | Url of Uri
 
@@ -82,7 +82,7 @@ module internal GuiCommon =
           use client = new System.Net.WebClient()
           client.DownloadString(u)
 
-  let internal getSource(document : string) =
+  let getSource(document : string) =
     if document.StartsWith("http://", StringComparison.Ordinal)
        || document.StartsWith("https://", StringComparison.Ordinal) then
       System.Uri(document) |> Url
@@ -90,7 +90,7 @@ module internal GuiCommon =
       FileInfo(document) |> File
 
   type internal AltCover.Exemption with
-    static member internal OfInt i =
+    static member OfInt i =
      if i > 0 then AltCover.Exemption.Visited
      else if i < -4
           then AltCover.Exemption.None

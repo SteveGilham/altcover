@@ -91,7 +91,7 @@ module Transformer =
     | :? ArgumentException as x -> Left(x :> Exception)
 
 [<NoComparison; AutoSerializable(false)>]
-type internal CoverageFile =
+type CoverageFile =
   { File : FileInfo
     Document : XDocument }
 

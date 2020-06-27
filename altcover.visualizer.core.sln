@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-cli.csproj", "{1EF1ED60-3D8B-446C-BC70-397009F794DA}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.UICommon", "AltCover.UICommon\AltCover.UICommon.fsproj", "{D3383B16-5069-4E9C-9A86-920FA408E925}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EF1ED60-3D8B-446C-BC70-397009F794DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1EF1ED60-3D8B-446C-BC70-397009F794DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

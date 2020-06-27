@@ -5,7 +5,11 @@ open System.Diagnostics.CodeAnalysis
   Justification="Data size is important")>]
 [<SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
   Justification="What is 'None', then?")>]
+#if !GUI
 type internal Exemption =
+#else
+type Exemption =
+#endif
   | NonCode = 2y // Grey (comments etc.) or
   | Visited = 1y // White on Green (covered) or
   | None = 0y // Red (uncovered) on White

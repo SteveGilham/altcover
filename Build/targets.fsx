@@ -480,6 +480,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
        "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
        "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
 //    ("./Build/common-rules.xml",
@@ -618,7 +619,8 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ],
      [],
       defaultRules)
-    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
+    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net45/AltCover.UICommon.dll"
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe"],
      [],
      defaultRules)
     ([ "_Binaries/AltCover.Shadow/Debug+AnyCPU/net20/AltCover.Shadow.dll" ],
@@ -2209,7 +2211,7 @@ _Target "Packaging" (fun _ ->
                          (x, Some(where + locale + "/" + (Path.GetFileName x)), None))
     |> Seq.toList
 
-  let dataFiles where = [dataFiles1; dataFiles2] 
+  let dataFiles where = [dataFiles1; dataFiles2]
                         |> List.map (fun f -> f where)
                         |> List.concat
 
