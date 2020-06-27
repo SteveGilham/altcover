@@ -164,7 +164,7 @@ module Configuration =
          let bounds = display()
          let x = Math.Min(Math.Max(attribute e "x" |> int, 0), fst bounds - width)
          let y = Math.Min(Math.Max(attribute e "y" |> int, 0), snd bounds - height)
-         position (height, width) (x,y))
+         position (width, height) (x,y))
 
   let ClearGeometry() =
     let file, config = ensureFile()

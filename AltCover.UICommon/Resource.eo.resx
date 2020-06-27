@@ -171,9 +171,9 @@ raportas al ausente fonta dosiero
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
   </data>
-  <!-- data name="SelectXml" xml:space="preserve">
+  <data name="SelectXmlGtk" xml:space="preserve">
     <value>XML-dosieroj (*.xml)|*.xml|Ĉiuj dosieroj (*.*)|*.*</value>
-  </data -->
+  </data>
   <data name="showAboutButton.Label" xml:space="preserve">
     <value>p&#x2028;_Pri...</value>
   </data>

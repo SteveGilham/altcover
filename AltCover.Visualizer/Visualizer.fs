@@ -386,7 +386,7 @@ module private Gui =
                             FileChooserAction.Open, Resource.GetResourceString "OpenFile.Open",
                             ResponseType.Ok, Resource.GetResourceString "OpenFile.Cancel",
                             ResponseType.Cancel, null)
-    let data = Resource.GetResourceString("SelectXml").Split([| '|'; '%' |])
+    let data = Resource.GetResourceString("SelectXmlGtk").Split([| '|' |])
     let filter = new FileFilter()
     filter.Name <- data.[0]
     filter.AddPattern data.[1]
