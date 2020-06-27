@@ -6,6 +6,7 @@
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformTarget Condition="'$(TargetFramework)' == 'net45'">x86</PlatformTarget>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <Name>AltCover.Visualizer</Name>
