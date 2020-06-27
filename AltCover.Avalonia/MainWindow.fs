@@ -49,11 +49,6 @@ module Persistence =
                                                             w.Position <- PixelPoint(x, y))
   let clearGeometry = Configuration.ClearGeometry
 
-type MessageType =
-  | Info = 0
-  | Warning = 1
-  | Error = 2
-
 type TextTag =
   { Foreground : string
     Background : string }
@@ -102,6 +97,12 @@ type MainWindow() as this =
   do
     this.InitializeComponent()
     this.Show()
+
+  member private this.DisplayMessage (status : MessageType) message =
+    let caption = match status with
+                  | MessageType.Warning -> Resource.GetResourceString "LoadWarning"
+                  | _ -> Resource.GetResourceString "LoadError"
+    this.ShowMessageBox status caption message
 
   member private this.ShowMessageBox (status : MessageType) caption message =
     Dispatcher.UIThread.Post(fun _ ->
@@ -163,44 +164,44 @@ type MainWindow() as this =
                                                        else
                                                          icons.RefreshInactive).Force()
 
-  member private this.InvalidCoverageFileMessage(x : InvalidFile) =
-    let caption = Resource.GetResourceString "LoadError"
-    let format = Resource.GetResourceString "InvalidFile"
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName,
-         x.Fault.Message)
-    this.ShowMessageBox MessageType.Error caption message
+  //member private this.InvalidCoverageFileMessage(x : InvalidFile) =
+  //  let caption = Resource.GetResourceString "LoadError"
+  //  let format = Resource.GetResourceString "InvalidFile"
+  //  let message =
+  //    String.Format
+  //      (System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName,
+  //       x.Fault.Message)
+  //  this.ShowMessageBox MessageType.Error caption message
 
-  member private this.OutdatedCoverageFileMessage(x : FileInfo) =
-    let caption = Resource.GetResourceString "LoadWarning"
-    let format = Resource.GetResourceString "CoverageOutOfDate"
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-    this.ShowMessageBox MessageType.Warning caption message
+  //member private this.OutdatedCoverageFileMessage(x : FileInfo) =
+  //  let caption = Resource.GetResourceString "LoadWarning"
+  //  let format = Resource.GetResourceString "CoverageOutOfDate"
+  //  let message =
+  //    String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
+  //  this.ShowMessageBox MessageType.Warning caption message
 
-  member private this.MissingSourceFileMessage(x : FileInfo) =
-    let caption = Resource.GetResourceString "LoadWarning"
-    let format = Resource.GetResourceString "MissingSourceFile"
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-    this.ShowMessageBox MessageType.Warning caption message
+  //member private this.MissingSourceFileMessage(x : FileInfo) =
+  //  let caption = Resource.GetResourceString "LoadWarning"
+  //  let format = Resource.GetResourceString "MissingSourceFile"
+  //  let message =
+  //    String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
+  //  this.ShowMessageBox MessageType.Warning caption message
 
-  member private this.OutdatedCoverageThisFileMessage (c : FileInfo) (s : FileInfo) =
-    let caption = Resource.GetResourceString "LoadWarning"
-    let format = Resource.GetResourceString "CoverageOutOfDateThisFile"
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    this.ShowMessageBox MessageType.Warning caption message
+  //member private this.OutdatedCoverageThisFileMessage (c : FileInfo) (s : FileInfo) =
+  //  let caption = Resource.GetResourceString "LoadWarning"
+  //  let format = Resource.GetResourceString "CoverageOutOfDateThisFile"
+  //  let message =
+  //    String.Format
+  //      (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
+  //  this.ShowMessageBox MessageType.Warning caption message
 
-  member private this.MissingSourceThisFileMessage (c : FileInfo) (s : FileInfo) =
-    let caption = Resource.GetResourceString "LoadWarning"
-    let format = Resource.GetResourceString "MissingSourceThisFile"
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    this.ShowMessageBox MessageType.Warning caption message
+  //member private this.MissingSourceThisFileMessage (c : FileInfo) (s : FileInfo) =
+  //  let caption = Resource.GetResourceString "LoadWarning"
+  //  let format = Resource.GetResourceString "MissingSourceThisFile"
+  //  let message =
+  //    String.Format
+  //      (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
+  //  this.ShowMessageBox MessageType.Warning caption message
 
   member private this.HideAboutBox _ =
     this.FindControl<StackPanel>("AboutBox").IsVisible <- false
@@ -305,12 +306,13 @@ type MainWindow() as this =
              else
                let point = points |> Seq.head
                let path = point.GetAttribute("document", String.Empty)
-               let info = new FileInfo(path)
+               let info = FileInfo(path)
+               let source = info |> File
                let current = new FileInfo(coverageFiles.Head)
                if (not info.Exists) then
-                 this.MissingSourceThisFileMessage current info
+                 Messages.MissingSourceThisFileMessage (this.DisplayMessage) current source
                else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
-                 this.OutdatedCoverageThisFileMessage current info
+                 Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
                else
                  let line =
                    point.GetAttribute("line", String.Empty)
@@ -564,7 +566,7 @@ type MainWindow() as this =
              FileInfo(if index < 0 then justOpened else coverageFiles.[index])
            match CoverageFile.LoadCoverageFile current with
            | Left failed ->
-               this.InvalidCoverageFileMessage failed
+               Messages.InvalidCoverageFileMessage (this.DisplayMessage) failed
                Dispatcher.UIThread.Post(fun _ -> this.UpdateMRU current.FullName false)
            | Right coverage ->
                // check if coverage is newer that the source files
@@ -579,14 +581,14 @@ type MainWindow() as this =
                  |> Seq.map (fun f -> new FileInfo(f))
                  |> Seq.filter (fun f -> not f.Exists)
 
-               if not (Seq.isEmpty missing) then this.MissingSourceFileMessage current
+               if not (Seq.isEmpty missing) then Messages.MissingSourceFileMessage (this.DisplayMessage) current
                let newer =
                  sourceFiles
                  |> Seq.map (fun f -> new FileInfo(f))
                  |> Seq.filter (fun f ->
                       f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
                // warn if not
-               if not (Seq.isEmpty newer) then this.OutdatedCoverageFileMessage current
+               if not (Seq.isEmpty newer) then Messages.OutdatedCoverageFileMessage (this.DisplayMessage) current
                let applyToModel (model : List<TreeViewItem>)
                    (group : XPathNavigator * string) =
                  let name = snd group

@@ -451,10 +451,10 @@ module private Gui =
     methods |> Seq.iter (applyToModel model row)
 
   // -------------------------- Message Boxes ---------------------------
-  let private showMessage (parent : Window) (message : string) (messageType : MessageType) =
+  let private showMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
     use md =
       new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent,
-                        messageType, ButtonsType.Close, message)
+                        messageType |> int |> enum, ButtonsType.Close, message)
     md.Icon <- parent.Icon
     md.Title <- "AltCover.Visualizer"
     md.Run() |> ignore
@@ -464,40 +464,9 @@ module private Gui =
     md.Destroy()
 #endif
 
-  let private showMessageOnGuiThread (parent : Window) (severity : MessageType) message =
+  let private showMessageOnGuiThread (parent : Window) (severity : AltCover.Visualizer.MessageType) message =
     let sendMessageToWindow() = showMessage parent message severity
     invokeOnGuiThread(sendMessageToWindow)
-
-  let private invalidCoverageFileMessage (parent : Window) (x : InvalidFile) =
-    let message =
-      Resource.Format( "InvalidFile",
-                          [ x.File.FullName
-                            x.Fault.Message ])
-    showMessageOnGuiThread parent MessageType.Error message
-
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")>]
-  let private showMessageResourceFileWarning rn (parent : Window) (x : FileInfo)
-      (s : Source) =
-    let message = // rely of the format to drop the source file if not needed
-      Resource.Format(rn, [x.FullName; s.FullName])
-    showMessageOnGuiThread parent MessageType.Warning message
-
-  let private outdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
-    showMessageResourceFileWarning "CoverageOutOfDate" parent x
-      (Source.File null)
-
-  let private missingSourceFileMessage (parent : Window) (x : FileInfo) =
-    showMessageResourceFileWarning "MissingSourceFile" parent x
-      (Source.File null)
-
-  let private outdatedCoverageThisFileMessage (parent : Window) (c : FileInfo)
-      (s : Source) =
-    showMessageResourceFileWarning "CoverageOutOfDateThisFile" parent c s
-
-  let private missingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : Source) =
-    showMessageResourceFileWarning "MissingSourceThisFile" parent c s
 
   // -------------------------- UI set-up  ---------------------------
   let private initializeHandler() =
@@ -542,7 +511,7 @@ module private Gui =
       | "Windows_NT" -> use browser = System.Diagnostics.Process.Start(link)
                         ()
       // TODO -- other OS types
-      | _ -> showMessage handler.aboutVisualizer link MessageType.Info
+      | _ -> showMessage handler.aboutVisualizer link AltCover.Visualizer.MessageType.Info
     // The first gets the display right, the second the browser launch
 
 #if NETCOREAPP2_1
@@ -864,7 +833,7 @@ module private Gui =
             Resource.Format("No source location",
                (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
                  .Text.Replace("<", "&lt;").Replace(">", "&gt;"))
-          showMessageOnGuiThread handler.mainWindow MessageType.Info message
+          showMessageOnGuiThread handler.mainWindow AltCover.Visualizer.MessageType.Info message
         noSource()
       else
         let child = points |> Seq.head
@@ -872,10 +841,11 @@ module private Gui =
         handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
         let info = GetSource(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
+        let display = showMessageOnGuiThread handler.mainWindow
         if (not <| info.Exists) then
-          missingSourceThisFileMessage handler.mainWindow current info
+          Messages.MissingSourceThisFileMessage display current info
         else if (info.Outdated current.LastWriteTimeUtc) then
-          outdatedCoverageThisFileMessage handler.mainWindow current info
+          Messages.OutdatedCoverageThisFileMessage display current info
         else
           let showSource() =
             let buff = handler.codeView.Buffer
@@ -1086,12 +1056,13 @@ module private Gui =
     Event.merge fileSelection refresh
     |> Event.add (fun index ->
          let h = handler
+         let display = showMessageOnGuiThread h.mainWindow
          async {
            let current =
              FileInfo(if index < 0 then h.justOpened else h.coverageFiles.[index])
            match CoverageFile.LoadCoverageFile current with
            | Left failed ->
-               invalidCoverageFileMessage h.mainWindow failed
+               Messages.InvalidCoverageFileMessage display failed
                invokeOnGuiThread(fun () -> updateMRU h current.FullName false)
            | Right coverage ->
                // check if coverage is newer that the source files
@@ -1107,14 +1078,14 @@ module private Gui =
                  |> Seq.filter (fun f -> not f.Exists)
 
                if not (Seq.isEmpty missing) then
-                 missingSourceFileMessage h.mainWindow current
+                 Messages.MissingSourceFileMessage display current
                let newer =
                  sourceFiles
                  |> Seq.map GetSource
                  |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
                // warn if not
                if not (Seq.isEmpty newer) then
-                 outdatedCoverageFileMessage h.mainWindow current
+                 Messages.OutdatedCoverageFileMessage display current
                let model = handler.auxModel
                model.Clear()
                mappings.Clear()
@@ -1211,23 +1182,17 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+applyTag@679.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
+                            Target="AltCover.Visualizer.Gui+applyTag@648.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@579.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@548.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
                              Scope="member",
                              Target="AltCover.Visualizer.Persistence.#readCoverageFiles(AltCover.Visualizer.Handler)",
                              Justification="Inlined library code")>]
-[<assembly: SuppressMessage("Microsoft.Naming",
-                            "CA1703:ResourceStringsShouldBeSpelledCorrectly",
-                            Scope="resource",
-                            Target="AltCover.Visualizer.Resource.Formats",
-                            MessageId="visualstudio",
-                            Justification="It is a name.")>]
 ()
 #endif

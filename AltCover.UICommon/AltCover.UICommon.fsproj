@@ -93,6 +93,7 @@
     <Compile Include="Resource.fs" />
     <Compile Include="Configuration.fs" />
     <Compile Include="Icons.fs" />
+    <Compile Include="Messages.fs" />
   </ItemGroup>
 
   <ItemGroup>
