@@ -41,8 +41,6 @@
     <None Include="Prepare.ps1" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <None Include="Visualizer.glade" />
-    <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net45'" />
     <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net45'" />
     <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net45'" />
     <Compile Include="AssemblyInfo.fs" />
