@@ -307,13 +307,16 @@ module internal Persistence =
          let height = Math.Max(attribute e "height" |> int, 450)
          let x = attribute e "x" |> int
          let y = attribute e "y" |> int
-         let monitor = {0..w.Display.NMonitors}
-                       |> Seq.filter (fun i -> let bounds = w.Display.GetMonitor(i).Geometry
+         let display = w.Display
+         let monitor = {0..display.NMonitors}
+                       |> Seq.filter (fun i -> use m = display.GetMonitor(i)
+                                               let bounds = m.Geometry
                                                x >= bounds.Left && x <= bounds.Right &&
                                                    y >= bounds.Top && y <= bounds.Bottom)
                        |> Seq.tryHead
                        |> Option.defaultValue 0
-         let bounds = w.Display.GetMonitor(monitor).Geometry
+         use m = display.GetMonitor(monitor)
+         let bounds = m.Geometry
          let x' = Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
          let y' = Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
          w.Move(x', y')
@@ -1437,12 +1440,12 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+applyTag@889.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
+                            Target="AltCover.Visualizer.Gui+applyTag@908.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@789.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@808.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
