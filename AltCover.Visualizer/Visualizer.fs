@@ -469,7 +469,7 @@ module private Gui =
         Map = fun context xpath ->  mappings.Add(context.Model.GetPath context.Row, xpath)
       }
 
-    CoverageFileTree.DoSelected environment index
+    async { CoverageFileTree.DoSelected environment index } |> Async.Start
 
   let private handleOpenClicked (handler : Handler)
 #if NETCOREAPP2_1

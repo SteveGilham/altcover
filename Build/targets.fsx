@@ -358,6 +358,18 @@ _Target "SetVersion" (fun _ ->
            AssemblyInfo.Trademark ""
            AssemblyInfo.InformationalVersion(infoV)
            AssemblyInfo.Copyright copy ] (Some AssemblyInfoFileConfig.Default))
+  printfn "%A" AssemblyInfoFileConfig.Default
+  let lite = AssemblyInfoFileConfig(false)
+  [ "./_Generated/AssemblyVersionLite.fs"; "./_Generated/AssemblyVersionList.cs" ]
+  |> List.iter (fun file ->
+       AssemblyInfoFile.create file
+         [ AssemblyInfo.Product "AltCover"
+           AssemblyInfo.Version(majmin + ".0.0")
+           AssemblyInfo.FileVersion v'
+           AssemblyInfo.Company "Steve Gilham"
+           AssemblyInfo.Trademark ""
+           AssemblyInfo.InformationalVersion(infoV)
+           AssemblyInfo.Copyright copy ] (Some lite))
   let hack = """namespace AltCover
 module SolutionRoot =
   let location = """ + "\"\"\"" + (Path.getFullName ".") + "\"\"\""

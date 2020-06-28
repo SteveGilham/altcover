@@ -569,61 +569,44 @@ type MainWindow() as this =
     |> Event.add this.HideAboutBox
     Event.merge fileSelection refresh
     |> Event.add (fun index ->
-         async {
-           let current =
-             FileInfo(if index < 0 then justOpened else coverageFiles.[index])
-           match CoverageFile.LoadCoverageFile current with
-           | Left failed ->
-               Messages.InvalidCoverageFileMessage (this.DisplayMessage) failed
-               Dispatcher.UIThread.Post(fun _ -> this.UpdateMRU current.FullName false)
-           | Right coverage ->
-               // check if coverage is newer that the source files
-               let sourceFiles =
-                 coverage.Document.CreateNavigator().Select("//seqpnt/@document")
-                 |> Seq.cast<XPathNavigator>
-                 |> Seq.map (fun x -> x.Value)
-                 |> Seq.distinct
+      let mutable auxModel =
+        {
+          Model = List<TreeViewItem>()
+          Row = TreeViewItem()
+        }
+      let environment =
+        {
+          Icons = icons
+          GetFileInfo = fun i -> FileInfo(if i < 0
+                                          then justOpened
+                                          else coverageFiles.[i])
+          Display = this.DisplayMessage
+          UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
+          UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
+                                        tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
+                                        this.FindControl<TextBox>("Source").Text <- String.Empty
+                                        tree.Items <- auxModel.Model
+                                        this.UpdateMRU info.FullName true
+          SetXmlNode = fun name -> let model = auxModel.Model
+                                   // mappings.Clear()
+                                   let row = TreeViewItem()
+                                   model.Add row
+                                   row.Header <- makeTreeNode name <| icons.Xml.Force()
+                                   {
+                                      Model = model
+                                      Row = row
+                                   }
+          AddNode = fun context icon name ->
+                                 { context with
+                                       Row = let row = TreeViewItem()
+                                             context.Model.Add row
+                                             row.Header <- makeTreeNode name <| icon.Force()
+                                             row }
+          Map = fun context xpath ->  () // mappings.Add(context.Model.GetPath context.Row, xpath)
+        }
 
-               let missing =
-                 sourceFiles
-                 |> Seq.map (fun f -> new FileInfo(f))
-                 |> Seq.filter (fun f -> not f.Exists)
+      Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
 
-               if not (Seq.isEmpty missing) then Messages.MissingSourceFileMessage (this.DisplayMessage) current
-               let newer =
-                 sourceFiles
-                 |> Seq.map (fun f -> new FileInfo(f))
-                 |> Seq.filter (fun f ->
-                      f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
-               // warn if not
-               if not (Seq.isEmpty newer) then Messages.OutdatedCoverageFileMessage (this.DisplayMessage) current
-               let applyToModel (model : List<TreeViewItem>)
-                   (group : XPathNavigator * string) =
-                 let name = snd group
-                 let row = TreeViewItem()
-                 model.Add row
-                 let display = makeTreeNode name <| icons.Assembly.Force()
-                 row.Header <- display
-                 let items = List<TreeViewItem>()
-                 this.PopulateAssemblyNode items row (fst group)
-                 row.Items <- items
-               Dispatcher.UIThread.Post(fun _ ->
-                 let tree = this.FindControl<TreeView>("Tree")
-                 tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
-                 this.FindControl<TextBox>("Source").Text <- String.Empty
-                 let items = List<TreeViewItem>()
-                 coverage.Document.CreateNavigator().Select("//module")
-                 |> Seq.cast<XPathNavigator>
-                 |> Seq.map (fun node ->
-                      (node,
-                       node.GetAttribute("assemblyIdentity", String.Empty).Split(',')
-                       |> Seq.head))
-                 |> Seq.sortBy snd
-                 |> Seq.iter (applyToModel items)
-                 tree.Items <- items
-                 this.UpdateMRU current.FullName true)
-         }
-         |> Async.Start)
     this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "
                                                    + AssemblyVersionInformation.AssemblyFileVersion
     this.FindControl<TextBlock>("Description").Text <- Resource.GetResourceString

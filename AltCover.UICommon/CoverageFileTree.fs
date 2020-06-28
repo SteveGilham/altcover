@@ -197,7 +197,6 @@ module CoverageFileTree =
     methods |> Seq.iter (applyToModel model)
 
   let DoSelected environment index =
-    async {
       let current = environment.GetFileInfo index
       match CoverageFile.LoadCoverageFile current with
       | Left failed ->
@@ -247,5 +246,3 @@ module CoverageFileTree =
           |> Seq.iter (applyToModel model)
 
           environment.UpdateUISuccess current
-    }
-    |> Async.Start
