@@ -550,8 +550,10 @@ type MainWindow() as this =
           SetXmlNode = fun name -> let model = auxModel.Model
                                    // mappings.Clear()
                                    let row = TreeViewItem()
-                                   model.Add row
+                                   row.Tapped |> Event.add (fun _ -> row.IsExpanded <- true)
+                                   row.Items <- List<TreeViewItem>()
                                    row.Header <- makeTreeNode name <| icons.Xml.Force()
+                                   model.Add row
                                    {
                                       Model = model
                                       Row = row
@@ -559,8 +561,10 @@ type MainWindow() as this =
           AddNode = fun context icon name ->
                                  { context with
                                        Row = let row = TreeViewItem()
-                                             context.Model.Add row
+                                             row.Tapped |> Event.add (fun _ -> row.IsExpanded <- true)
+                                             row.Items <- List<TreeViewItem>()
                                              row.Header <- makeTreeNode name <| icon.Force()
+                                             (context.Row.Items :?> List<TreeViewItem>).Add row
                                              row }
           Map = fun context xpath ->  () // mappings.Add(context.Model.GetPath context.Row, xpath)
         }
