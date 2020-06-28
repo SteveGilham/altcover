@@ -171,46 +171,6 @@ type MainWindow() as this =
                                                          icons.Refresh
                                                        else
                                                          icons.RefreshInactive).Force()
-
-  //member private this.InvalidCoverageFileMessage(x : InvalidFile) =
-  //  let caption = Resource.GetResourceString "LoadError"
-  //  let format = Resource.GetResourceString "InvalidFile"
-  //  let message =
-  //    String.Format
-  //      (System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName,
-  //       x.Fault.Message)
-  //  this.ShowMessageBox MessageType.Error caption message
-
-  //member private this.OutdatedCoverageFileMessage(x : FileInfo) =
-  //  let caption = Resource.GetResourceString "LoadWarning"
-  //  let format = Resource.GetResourceString "CoverageOutOfDate"
-  //  let message =
-  //    String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-  //  this.ShowMessageBox MessageType.Warning caption message
-
-  //member private this.MissingSourceFileMessage(x : FileInfo) =
-  //  let caption = Resource.GetResourceString "LoadWarning"
-  //  let format = Resource.GetResourceString "MissingSourceFile"
-  //  let message =
-  //    String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-  //  this.ShowMessageBox MessageType.Warning caption message
-
-  //member private this.OutdatedCoverageThisFileMessage (c : FileInfo) (s : FileInfo) =
-  //  let caption = Resource.GetResourceString "LoadWarning"
-  //  let format = Resource.GetResourceString "CoverageOutOfDateThisFile"
-  //  let message =
-  //    String.Format
-  //      (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-  //  this.ShowMessageBox MessageType.Warning caption message
-
-  //member private this.MissingSourceThisFileMessage (c : FileInfo) (s : FileInfo) =
-  //  let caption = Resource.GetResourceString "LoadWarning"
-  //  let format = Resource.GetResourceString "MissingSourceThisFile"
-  //  let message =
-  //    String.Format
-  //      (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-  //  this.ShowMessageBox MessageType.Warning caption message
-
   member private this.HideAboutBox _ =
     this.FindControl<StackPanel>("AboutBox").IsVisible <- false
     this.FindControl<Menu>("Menu").IsVisible <- true
