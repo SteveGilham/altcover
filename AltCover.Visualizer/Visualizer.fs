@@ -166,13 +166,16 @@ module internal Persistence =
   let readGeometry (w : Window) =
     Configuration.ReadGeometry (fun (width,height) (x,y) -> w.DefaultHeight <- height
                                                             w.DefaultWidth <- width
-                                                            let monitor = {0..w.Display.NMonitors}
-                                                                          |> Seq.filter (fun i -> let bounds = w.Display.GetMonitor(i).Geometry
+                                                            let display = w.Display
+                                                            let monitor = {0..display.NMonitors}
+                                                                          |> Seq.filter (fun i -> use monitor = display.GetMonitor(i)
+                                                                                                  let bounds = monitor.Geometry
                                                                                                   x >= bounds.Left && x <= bounds.Right &&
                                                                                                      y >= bounds.Top && y <= bounds.Bottom)
                                                                           |> Seq.tryHead
                                                                           |> Option.defaultValue 0
-                                                            let bounds = w.Display.GetMonitor(monitor).Geometry
+                                                            use m =  display.GetMonitor(monitor)
+                                                            let bounds = m.Geometry
                                                             let x' = Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
                                                             let y' = Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
                                                             w.Move(x', y'))
@@ -411,10 +414,9 @@ module private Gui =
     openFileDialog.AddFilter filter
     openFileDialog
 #else
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification =
-                                                      "'openFileDialog' is returned")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "'openFileDialog' is returned")>]
   let private prepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
     openFileDialog.InitialDirectory <- Persistence.readFolder()
@@ -426,7 +428,7 @@ module private Gui =
   // -------------------------- Tree View ---------------------------
   let mappings = new Dictionary<TreePath, XPathNavigator>()
   // -------------------------- Event handling  ---------------------------
-  let private DoSelected (handler:Handler) doUpdateMRU index =
+  let private doSelected (handler:Handler) doUpdateMRU index =
     let environment =
       {
         Icons = icons
@@ -512,10 +514,9 @@ module private Gui =
          handler.justOpened <- info.FullName
          -1)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification =
-                                                      "'baseline' is returned")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                     Justification = "'baseline' is returned")>]
   let private initializeTextBuffer(buff : TextBuffer) =
     let applyTag (buffer : TextBuffer) (style : string, fg, bg) =
       let tag = new TextTag(style)
@@ -547,10 +548,9 @@ module private Gui =
           ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
       0
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification =
-                                                      "IDisposables are added to the TextView")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                     Justification = "IDisposables are added to the TextView")>]
   let private markBranches (root : XPathNavigator) (codeView : TextView)
       (filename : string) =
     let buff = codeView.Buffer
@@ -744,10 +744,9 @@ module private Gui =
 
           showSource()
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification =
-                                                      "IDisposables are added to other widgets")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                     "CA2000:DisposeObjectsBeforeLosingScope",
+                     Justification = "IDisposables are added to other widgets")>]
   let private addLabelWidget g (button : ToolButton, resource) =
     let keytext = (resource |> Resource.GetResourceString).Split('\u2028') // '\u2028'
 
@@ -783,10 +782,9 @@ module private Gui =
     button.Label <- null
     button.LabelWidget <- label
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification =
-                                                      "IDisposables are added to other widgets")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "IDisposables are added to other widgets")>]
   let private setToolButtons(h : Handler) =
     let g = new AccelGroup()
     h.mainWindow.AddAccelGroup(g)
@@ -839,8 +837,9 @@ module private Gui =
          if Persistence.save then Persistence.saveGeometry handler.mainWindow
          Application.Quit())
     // Initialize graphics and begin
-    handler.mainWindow.Icon <- icons.VIcon
-    handler.aboutVisualizer.Icon <- icons.VIcon
+    let vicon = icons.VIcon
+    handler.mainWindow.Icon <- vicon
+    handler.aboutVisualizer.Icon <- vicon
     handler.aboutVisualizer.Logo <- icons.Logo.Force()
     handler.mainWindow.ShowAll()
     handler
@@ -921,7 +920,7 @@ module private Gui =
     // Now mix in selecting the file currently loaded
     let refresh = handler.refreshButton.Clicked |> Event.map (fun _ -> 0)
     Event.merge fileSelection refresh
-    |> Event.add (DoSelected handler updateMRU)
+    |> Event.add (doSelected handler updateMRU)
     handler.fontButton.Clicked
     |> Event.add (fun x ->
          let format = Resource.GetResourceString "SelectFont"
@@ -969,12 +968,12 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+applyTag@648.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
+                            Target="AltCover.Visualizer.Gui+applyTag@522.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@548.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@378.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

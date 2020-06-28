@@ -1,17 +1,27 @@
 ﻿namespace AltCover.Visualizer
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.XPath
 open AltCover.Augment
 open AltCover.Visualizer.GuiCommon
 
+[<NoComparison>]
 type CoverageTreeContext<'TModel, 'TRow> =
   {
     Model : 'TModel
     Row : 'TRow
   }
 
+[<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Design.Generic",
+    "AvoidExcessiveParametersOnGenericTypesRule",
+    Justification = "Does this act excessive to you?"
+)>]
+[<SuppressMessage("Microsoft.Design", "CA1005:AvoidExcessiveParametersOnGenericTypes",
+  Justification="Does this act excessive to you?")>]
+[<AutoSerializable(false)>]
 type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
   {
     Icons : Icons<'TIcon>
@@ -196,7 +206,7 @@ module CoverageFileTree =
 
     methods |> Seq.iter (applyToModel model)
 
-  let DoSelected environment index =
+  let DoSelected (environment:CoverageModelDisplay<'TModel, 'TRow, 'TIcon>) index =
       let current = environment.GetFileInfo index
       match CoverageFile.LoadCoverageFile current with
       | Left failed ->

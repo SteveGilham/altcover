@@ -45,7 +45,7 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverBranchCover="true|false"` - set "true" to record only branch coverage in OpenCover format
 * `/p:AltCoverSourceLink=true|false` to opt for SourceLink document URLs for tracked files
 * `/p:AltCoverLocalSource=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
-* `/p:AltCoverVisibleBranches`match` branches
+* `/p:AltCoverVisibleBranches=true|false` to ignore compiler generated internal `switch`/`match` branches
 * `/p:AltCoverShowGenerated=true|false` to mark generated code in the coverage file
 * `/p:AltCoverLcovReport=`"path to lcov format result"
 * `/p:AltCoverCobertura=`"path to cobertura format result"
