@@ -7,9 +7,11 @@ open System.IO
 open System.Linq
 open System.Reflection
 open System.Resources
+#if NETCOREAPP2_1
 open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
+#endif
 open System.Xml.XPath
 
 open AltCover
@@ -17,8 +19,7 @@ open AltCover.Visualizer.GuiCommon
 
 open Gdk
 open Gtk
-#if NETCOREAPP2_1
-#else
+#if !NETCOREAPP2_1
 open Glade
 open Microsoft.Win32
 #endif
@@ -304,12 +305,20 @@ module internal Persistence =
     |> Seq.iter (fun e ->
          let width = Math.Max(attribute e "width" |> int, 600)
          let height = Math.Max(attribute e "height" |> int, 450)
-         let bounds = w.Display.PrimaryMonitor.Geometry
-         let x = Math.Min(Math.Max(attribute e "x" |> int, 0), bounds.Width - width)
-         let y = Math.Min(Math.Max(attribute e "y" |> int, 0), bounds.Height - height)
+         let x = attribute e "x" |> int
+         let y = attribute e "y" |> int
+         let monitor = {0..w.Display.NMonitors}
+                       |> Seq.filter (fun i -> let bounds = w.Display.GetMonitor(i).Geometry
+                                               x >= bounds.Left && x <= bounds.Right &&
+                                                   y >= bounds.Top && y <= bounds.Bottom)
+                       |> Seq.tryHead
+                       |> Option.defaultValue 0
+         let bounds = w.Display.GetMonitor(monitor).Geometry
+         let x' = Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
+         let y' = Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
+         w.Move(x', y')
          w.DefaultHeight <- height
-         w.DefaultWidth <- width
-         w.Move(x, y))
+         w.DefaultWidth <- width)
 
   let clearGeometry() =
     let file, config = ensureFile()
@@ -351,18 +360,25 @@ module internal Persistence =
     use key = Registry.CurrentUser.CreateSubKey(geometry)
     let width = Math.Max(key.GetValue("width", 600) :?> int, 600)
     let height = Math.Max(key.GetValue("height", 450) :?> int, 450)
-    let bounds = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea
-    let x =
-      Math.Min
-        (Math.Max(key.GetValue("x", (bounds.Width - width) / 2) :?> int, 0),
-         bounds.Width - width)
-    let y =
-      Math.Min
-        (Math.Max(key.GetValue("y", (bounds.Height - height) / 2) :?> int, 0),
-         bounds.Height - height)
+    let screen = w.Screen
+
+    let bounds0 = screen.GetMonitorGeometry(0)
+    let x = key.GetValue("x", bounds0.Left + ((bounds0.Width - width) / 2)) :?> int
+    let y = key.GetValue("y", bounds0.Top + ((bounds0.Height - height) / 2)) :?> int
+
+    let monitor = {0..screen.NMonitors}
+                  |> Seq.filter (fun i -> let bounds = screen.GetMonitorGeometry(i)
+                                          x >= bounds.Left && x <= bounds.Right &&
+                                              y >= bounds.Top && y <= bounds.Bottom)
+                  |> Seq.tryHead
+                  |> Option.defaultValue 0
+
+    let bounds = screen.GetMonitorGeometry(monitor)
+    let x' = Math.Min(Math.Max(x, bounds.Left), bounds.Right - width)
+    let y' = Math.Min(Math.Max(y, bounds.Top), bounds.Bottom - height)
+    w.Move(x', y')
     w.DefaultHeight <- height
     w.DefaultWidth <- width
-    w.Move(x, y)
 
   let internal readCoverageFiles (handler : Handler) =
     use fileKey = Registry.CurrentUser.CreateSubKey(recent)
