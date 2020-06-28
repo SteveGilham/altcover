@@ -100,6 +100,7 @@ type MainWindow() as this =
     display.Orientation <- Layout.Orientation.Horizontal
     display.Children.Add image
     display.Children.Add text
+    display.Tag <- name
     display
 
   do
@@ -566,7 +567,59 @@ type MainWindow() as this =
                                              row.Header <- makeTreeNode name <| icon.Force()
                                              (context.Row.Items :?> List<TreeViewItem>).Add row
                                              row }
-          Map = fun context xpath ->  () // mappings.Add(context.Model.GetPath context.Row, xpath)
+          Map = fun context xpath ->
+                    context.Row.DoubleTapped
+                    |> Event.add (fun _ ->
+                         let text = this.FindControl<TextBox>("Source")
+                         let points =
+                           xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
+                         if Seq.isEmpty points then
+                           let caption = Resource.GetResourceString "LoadInfo"
+                           let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
+                           this.ShowMessageBox MessageType.Info caption
+                           <| String.Format
+                                (System.Globalization.CultureInfo.CurrentCulture,
+                                 Resource.GetResourceString "No source location", visbleName)
+                         else
+                           let point = points |> Seq.head
+                           let path = point.GetAttribute("document", String.Empty)
+                           let info = FileInfo(path)
+                           let source = info |> File
+                           let current = new FileInfo(coverageFiles.Head)
+                           if (not info.Exists) then
+                             Messages.MissingSourceThisFileMessage (this.DisplayMessage) current source
+                           else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
+                             Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
+                           else
+                             let line =
+                               point.GetAttribute("line", String.Empty)
+                               |> Int32.TryParse
+                               |> snd
+                             try
+                               // TODO -- font  size control too
+                               text.Text <- File.ReadAllText path
+                               text.FontFamily <- FontFamily(Persistence.readFont())
+                               text.FontSize <- 16.0
+                               text.FontStyle <- FontStyle.Normal
+                               let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
+                               let textLines = File.ReadAllLines path
+                               let scroll = line - 1 + extra
+
+                               let capped =
+                                 if scroll >= textLines.Length then textLines.Length - 1 else scroll
+                               // Scroll into mid-view -- not entirely reliable
+                               text.CaretIndex <-
+                                 Seq.sumBy (fun (l : String) -> l.Length + 1)
+                                   (textLines |> Seq.take capped) //System.Environment.NewLine.Length
+
+                               // TODO -- colouring
+                               let root = xpath.Clone()
+                               root.MoveToRoot()
+                               // markCoverage root text textLines path
+                               // MarkBranches root text path
+                             with x ->
+                               let caption = Resource.GetResourceString "LoadError"
+                               this.ShowMessageBox MessageType.Error caption x.Message)
         }
 
       Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
