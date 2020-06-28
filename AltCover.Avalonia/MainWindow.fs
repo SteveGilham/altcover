@@ -177,30 +177,10 @@ type MainWindow() as this =
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
-  member private this.PopulateClassNode (model : List<TreeViewItem>) (row : TreeViewItem)
-         (nodes : seq<MethodKey>) =
-    let applyToModel (theModel : List<TreeViewItem>) (theRow : TreeViewItem)
-        (item : (string * MethodType) * MethodKey seq) =
-      let ((itemDisplayName, special), keys) = item
-
-      let applyMethod (mmodel : List<TreeViewItem>) (mrow : TreeViewItem) (x : MethodKey) =
-        let fullname = x.Navigator.GetAttribute("fullname", String.Empty)
-
-        let args =
-          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf('(') > 0 then
-            String.Empty
-          else
-            let bracket = fullname.IndexOf('(')
-            if bracket < 0 then String.Empty else fullname.Substring(bracket)
-
-        let displayname = x.Name + args
-
-        let offset =
-          match displayname.LastIndexOf("::", StringComparison.Ordinal) with
-          | -1 -> 0
-          | o -> o + 2
-
-        let visbleName = displayname.Substring(offset) // ??
+  member private this.PrepareDoubleTap
+    (context:CoverageTreeContext<List<TreeViewItem>,TreeViewItem>)
+    (xpath: XPathNavigator) =
+        let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
         let (|Select|_|) (pattern : String) offered =
           if (fst offered)
@@ -260,12 +240,11 @@ type MainWindow() as this =
           |> Seq.filter (filterCoverage lc)
           |> Seq.iter (tagByCoverage textBox lines)
 
-        let newrow = TreeViewItem()
-        newrow.DoubleTapped
+        context.Row.DoubleTapped
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBox>("Source")
              let points =
-               x.Navigator.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
+               xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
              if Seq.isEmpty points then
                let caption = Resource.GetResourceString "LoadInfo"
                this.ShowMessageBox MessageType.Info caption
@@ -305,166 +284,13 @@ type MainWindow() as this =
                        (textLines |> Seq.take capped) //System.Environment.NewLine.Length
 
                    // TODO -- colouring
-                   let root = x.Navigator.Clone()
+                   let root = xpath.Clone()
                    root.MoveToRoot()
                    markCoverage root text textLines path
                  // MarkBranches root text path
                  with x ->
                    let caption = Resource.GetResourceString "LoadError"
                    this.ShowMessageBox MessageType.Error caption x.Message)
-
-        let display = makeTreeNode visbleName <| icons.Method.Force()
-        newrow.Header <- display
-        model.Add newrow
-
-      if special <> MethodType.Normal then
-        let newrow = TreeViewItem()
-        let icon = (if special = MethodType.Property then icons.Property else icons.Event)
-                     .Force()
-        let display = makeTreeNode itemDisplayName icon
-        newrow.Header <- display
-        theModel.Add newrow
-
-        keys
-          |> Seq.sortBy (fun key -> key.Name |> DisplayName)
-          |> Seq.iter (applyMethod theModel newrow)
-      else
-        applyMethod theModel theRow (keys |> Seq.head)
-
-    let methods =
-      nodes
-      |> Seq.groupBy (fun key ->
-           key.Name
-           |> DisplayName
-           |> HandleSpecialName)
-      |> Seq.toArray
-
-    let orderMethods array =
-      array
-      |> Array.sortInPlaceWith (fun ((l, (lb : MethodType)), _) ((r, rb), _) ->
-           let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
-
-           let sort2 =
-             if sort1 = 0
-             then String.Compare(l, r, StringComparison.Ordinal)
-             else sort1
-           if sort2 = 0 then lb.CompareTo rb else sort2)
-
-    let applyMethods array =
-      array |> Array.iter (applyToModel model row)
-
-    methods |> orderMethods
-    methods |> applyMethods
-
-  member private this.PopulateNamespaceNode (model : List<TreeViewItem>)
-         (row : TreeViewItem) (nodes : seq<MethodKey>) =
-    let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
-        (group : string * seq<MethodKey>) =
-      let name = fst group
-      let icon =
-        if group
-           |> snd
-           |> Seq.isEmpty then
-          icons.Module.Force()
-        else if group
-                |> snd
-                |> Seq.exists (fun key ->
-                     let d = key.Name |> DisplayName
-                     (d.StartsWith(".", StringComparison.Ordinal) || d.Equals("Invoke"))
-                     |> not) then
-          icons.Class.Force()
-        else
-          icons.Effect.Force()
-
-      let newrow = TreeViewItem()
-      model.Add newrow
-      let display = makeTreeNode name icon
-      newrow.Header <- display
-      let items = List<TreeViewItem>()
-      this.PopulateClassNode items newrow (snd group)
-      newrow.Items <- items
-      newrow
-
-    let isNested (name : string) n =
-      name.StartsWith(n + "+", StringComparison.Ordinal)
-      || name.StartsWith(n + "/", StringComparison.Ordinal)
-
-    let classlist =
-      nodes
-      |> Seq.groupBy (fun x -> x.ClassName)
-      |> Seq.toList
-
-    let classnames =
-      classlist
-      |> Seq.map fst
-      |> Set.ofSeq
-
-    let modularize =
-      classnames
-      |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
-      |> Seq.map
-           (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
-      |> Seq.distinct
-      |> Seq.filter (fun mn ->
-           classnames
-           |> Set.contains mn
-           |> not)
-      |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
-      |> Seq.toList
-
-    let classes = Seq.append classlist modularize |> Seq.toArray
-
-    Array.sortInPlaceWith (fun l r ->
-      let left = fst l
-      let right = fst r
-      let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
-      if sort = 0
-      then String.Compare(left, right, StringComparison.Ordinal)
-      else sort) classes
-    classes
-    |> Seq.fold (fun stack c ->
-         let name = fst c
-         let restack = stack |> List.filter (fst >> (isNested name))
-
-         let pr =
-           match restack with
-           | [] -> row
-           | (_, r) :: _ -> r
-
-         let nr = applyToModel model pr c
-         (name, nr) :: restack) []
-    |> ignore
-
-  member private this.PopulateAssemblyNode (model : List<TreeViewItem>)
-         (row : TreeViewItem) (node : XPathNavigator) =
-    // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
-    let applyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
-        (group : string * seq<MethodKey>) =
-      let name = fst group
-      let newrow = TreeViewItem()
-      model.Add newrow
-      let display = makeTreeNode name <| icons.Namespace.Force()
-      newrow.Header <- display
-      let items = List<TreeViewItem>()
-      this.PopulateNamespaceNode items newrow (snd group)
-      newrow.Items <- items
-
-    let methods =
-      node.SelectChildren("method", String.Empty)
-      |> Seq.cast<XPathNavigator>
-      |> Seq.map (fun m ->
-           let classfullname = m.GetAttribute("class", String.Empty)
-           let lastdot = classfullname.LastIndexOf('.')
-           { Navigator = m
-             NameSpace =
-               if lastdot < 0 then String.Empty else classfullname.Substring(0, lastdot)
-             ClassName =
-               if lastdot < 0 then classfullname else classfullname.Substring(1 + lastdot)
-             Name = m.GetAttribute("name", String.Empty) })
-      |> Seq.groupBy (fun x -> x.NameSpace)
-      |> Seq.sortBy fst
-
-    methods |> Seq.iter (applyToModel model row)
 
   member this.InitializeComponent() =
     AvaloniaXamlLoader.Load(this)
@@ -567,59 +393,7 @@ type MainWindow() as this =
                                              row.Header <- makeTreeNode name <| icon.Force()
                                              (context.Row.Items :?> List<TreeViewItem>).Add row
                                              row }
-          Map = fun context xpath ->
-                    context.Row.DoubleTapped
-                    |> Event.add (fun _ ->
-                         let text = this.FindControl<TextBox>("Source")
-                         let points =
-                           xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
-                         if Seq.isEmpty points then
-                           let caption = Resource.GetResourceString "LoadInfo"
-                           let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
-                           this.ShowMessageBox MessageType.Info caption
-                           <| String.Format
-                                (System.Globalization.CultureInfo.CurrentCulture,
-                                 Resource.GetResourceString "No source location", visbleName)
-                         else
-                           let point = points |> Seq.head
-                           let path = point.GetAttribute("document", String.Empty)
-                           let info = FileInfo(path)
-                           let source = info |> File
-                           let current = new FileInfo(coverageFiles.Head)
-                           if (not info.Exists) then
-                             Messages.MissingSourceThisFileMessage (this.DisplayMessage) current source
-                           else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
-                             Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
-                           else
-                             let line =
-                               point.GetAttribute("line", String.Empty)
-                               |> Int32.TryParse
-                               |> snd
-                             try
-                               // TODO -- font  size control too
-                               text.Text <- File.ReadAllText path
-                               text.FontFamily <- FontFamily(Persistence.readFont())
-                               text.FontSize <- 16.0
-                               text.FontStyle <- FontStyle.Normal
-                               let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
-                               let textLines = File.ReadAllLines path
-                               let scroll = line - 1 + extra
-
-                               let capped =
-                                 if scroll >= textLines.Length then textLines.Length - 1 else scroll
-                               // Scroll into mid-view -- not entirely reliable
-                               text.CaretIndex <-
-                                 Seq.sumBy (fun (l : String) -> l.Length + 1)
-                                   (textLines |> Seq.take capped) //System.Environment.NewLine.Length
-
-                               // TODO -- colouring
-                               let root = xpath.Clone()
-                               root.MoveToRoot()
-                               // markCoverage root text textLines path
-                               // MarkBranches root text path
-                             with x ->
-                               let caption = Resource.GetResourceString "LoadError"
-                               this.ShowMessageBox MessageType.Error caption x.Message)
+          Map = this.PrepareDoubleTap
         }
 
       Dispatcher.UIThread.Post(fun _ -> CoverageFileTree.DoSelected environment index))
