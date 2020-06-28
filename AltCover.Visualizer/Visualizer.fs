@@ -418,7 +418,7 @@ module private Gui =
   let private prepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
     openFileDialog.InitialDirectory <- Persistence.readFolder()
-    openFileDialog.Filter <- Resource.GetResourceString("SelectXml")
+    openFileDialog.Filter <- Resource.GetResourceString("SelectXmlGtk")
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
     openFileDialog
