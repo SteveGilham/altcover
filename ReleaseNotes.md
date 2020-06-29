@@ -2,10 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.x.xxx (Genbu series release 3)
+# 7.1.777 (Genbu series release 4)
 * [BUGFIX] Fix the GTK2/Framework Visualizer (broken since v6.8.761)
 * Multi-monitor support for the Visualizer in all versions; the window will restore to its previous location even when placed on non-primary monitors
-* Improve error reporting from the data collector
+* Use integrated MSBuild error reporting in the data collector [used by the `dotnet test` integration](https://github.com/SteveGilham/altcover/wiki/The-AltCover-data-collector-and-%60dotnet-test%60).
 
 # 7.1.776 (Genbu series release 3)
 * [BUGFIX] Set the `visited` attribute and CRAP score accordingly for methods with no sequence points, if the method is recorded as having been visted at all.
