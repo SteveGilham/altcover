@@ -75,7 +75,9 @@ module internal Zip =
       let entry = report
                   |> Path.GetFileName
                   |> zip.GetEntry
-      let stream = entry.Open()
+      let stream = if entry.IsNotNull
+                   then entry.Open()
+                   else new MemoryStream() :> Stream
       (zip, stream)
 
 type internal StringSink = Action<String> // delegate of string -> unit

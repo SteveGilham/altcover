@@ -115,7 +115,10 @@ module internal Counter =
     // // </remarks>
     let private readXDocument(stream : Stream) =
       let doc = XmlDocument()
-      doc.Load(stream)
+      try
+        doc.Load(stream)
+      with
+      | :? XmlException -> doc.LoadXml "<null/>"
       doc
 
     // // <summary>
@@ -174,9 +177,11 @@ module internal Counter =
       let flushStart = DateTime.UtcNow
       let coverageDocument = readXDocument coverageFile
       let root = coverageDocument.DocumentElement
+      let startTimeNode = root.GetAttributeNode("startTime")
 
-      if format = ReportFormat.NCover then
-        let startTimeAttr = root.GetAttribute("startTime")
+      if format = ReportFormat.NCover &&
+         Object.ReferenceEquals(startTimeNode, null) |> not  then
+        let startTimeAttr = startTimeNode.Value
         let measureTimeAttr = root.GetAttribute("measureTime")
         let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
         let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
@@ -362,28 +367,33 @@ module internal Counter =
     else
       let container = new FileStream(report + ".zip", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
                                         FileOptions.SequentialScan)
-      let zip = new ZipFile(container)
+      use target =
+        match output with
+        | None -> new MemoryStream() :> Stream
+        | Some f ->
+          new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
+                          FileOptions.SequentialScan) :> Stream
       try
-        let entryName = report |> Path.GetFileName
-        let entry = zip.GetEntry(entryName)
-        use target =
-          match output with
-          | None -> new MemoryStream() :> Stream
-          | Some f ->
-            new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
-                            FileOptions.SequentialScan) :> Stream
-        let result = use reader = zip.GetInputStream(entry)
-                     I.doFlush postProcess pointProcess own counts format reader target
-        if output.IsNone then
-          zip.BeginUpdate()
-          zip.Delete entry
-          target.Seek(0L, SeekOrigin.Begin) |> ignore
-          let source = { new IStaticDataSource with
-                           member self.GetSource() = target }
-          zip.Add(source, entryName)
-          zip.CommitUpdate();
+        let zip = new ZipFile(container)
+        try
+          let entryName = report |> Path.GetFileName
+          let entry = zip.GetEntry(entryName)
+          let result = use reader = zip.GetInputStream(entry)
+                       I.doFlush postProcess pointProcess own counts format reader target
+          if output.IsNone then
+            zip.BeginUpdate()
+            zip.Delete entry
+            target.Seek(0L, SeekOrigin.Begin) |> ignore
+            let source = { new IStaticDataSource with
+                             member self.GetSource() = target }
+            zip.Add(source, entryName)
+            zip.CommitUpdate();
 
-        result
-      finally
-        zip.Close()
+          result
+        finally
+          zip.Close()
+      with
+      | :? ZipException -> use reader = new MemoryStream()
+                           I.doFlush postProcess pointProcess own counts format reader target
+
 #endif
