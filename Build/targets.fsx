@@ -2219,10 +2219,21 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
-  let dataFiles where =
+  let dataFiles1 where =
     (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
+
+  let dataFiles2 where =
+    (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/*/AltCover.DataCollector.resources.dll")
+    |> Seq.map (fun x -> let d = Path.GetDirectoryName x
+                         let locale = Path.GetFileName d
+                         (x, Some(where + locale + "/" + (Path.GetFileName x)), None))
+    |> Seq.toList
+
+  let dataFiles where = [dataFiles1; dataFiles2] 
+                        |> List.map (fun f -> f where)
+                        |> List.concat
 
   let fakeFiles where =
     [ (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
@@ -3416,10 +3427,8 @@ Target.runOrDefault "DoIt"
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
-  nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.20.0
-  nuget Fake.DotNet.Cli >= 5.20.0
-  nuget FSharp.Core >= 4.7.2
+  nuget Fake.Core.Target >= 5.20.1
+  nuget Fake.DotNet.Cli >= 5.20.1
   source {0}
   nuget AltCover.Api {1}
   source {2}
