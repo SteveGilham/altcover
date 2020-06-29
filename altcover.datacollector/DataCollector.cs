@@ -5,9 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
+
+[assembly: System.Resources.NeutralResourcesLanguageAttribute("en-GB")]
 
 namespace AltCover
 {
@@ -24,7 +27,11 @@ namespace AltCover
             .FirstOrDefault();
         if (rec == null)
         {
-          Debug.WriteLine("Recorder not found");
+          if (EqtTrace.IsErrorEnabled)
+          {
+            // resgen /PublicClass /compile .\Resources\Resources.resx
+            EqtTrace.Warning(Resources.Resources.RecorderNotFound);
+          }
           yield break;
         }
         else
@@ -34,8 +41,10 @@ namespace AltCover
               .FirstOrDefault();
           if (i == null)
           {
-            Debug.WriteLine("Instance not found");
-            yield break;
+            if (EqtTrace.IsErrorEnabled)
+            {
+              EqtTrace.Warning(Resources.Resources.InstanceNotFound);
+            }
           }
           else
           {
@@ -50,11 +59,14 @@ namespace AltCover
       RecorderInstance.ToList().ForEach(
         i =>
         {
-          var supervision = i.GetProperty("supervision", 
+          var supervision = i.GetProperty("supervision",
                                   BindingFlags.Static | BindingFlags.NonPublic);
           if (supervision == null)
           {
-            Debug.WriteLine("Supervision not found");
+            if (EqtTrace.IsErrorEnabled)
+            {
+              EqtTrace.Warning(Resources.Resources.SupervisionNotFound);
+            }
           }
           else
           {
@@ -89,7 +101,10 @@ namespace AltCover
           var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
           if (flush == null)
           {
-            Debug.WriteLine("Flush not found");
+            if (EqtTrace.IsErrorEnabled)
+            {
+              EqtTrace.Warning(Resources.Resources.FlushNotFound);
+            }
           }
           else
           {
