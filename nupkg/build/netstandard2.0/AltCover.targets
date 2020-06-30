@@ -70,24 +70,26 @@
       ShowGenerated="$(AltCoverShowGenerated)" />
   </Target>
 
-  <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">
-    <CallTarget Targets="AltCoverRunPreparation" />
-  </Target>
-
-  <Target Name="AltCoverInstrumentModulesAfterBuild" AfterTargets="BuildProject" Condition="'$(VSTestNoBuild)' != 'true'">
-    <CallTarget Targets="AltCoverRunPreparation" />
-  </Target>
-
-  <!-- As per Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
+  <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
   <Target Name="VSTest">
+    <CallTarget Targets="VSTestPreFlight" ContinueOnError="ErrorAndStop"/>
+    <CallTarget Targets="VSTestCore" />
+  </Target>
+
+  <!-- As per the first part of Microsoft.TestPlatform.targets v2.1.300, but with pre-flight checks clause -->
+  <Target Name="VSTestPreFlight">
     <PropertyGroup>
       <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
       <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
     </PropertyGroup>
 
     <CallTarget Targets="AltCoverPreFlight" />
-
     <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
+    <CallTarget Targets="AltCoverRunPreparation" ContinueOnError="ErrorAndStop" />
+  </Target>
+
+  <!-- As per the second part Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
+  <Target Name="VSTestCore">
 
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
     <Message Importance="High" Text="Settings Before: $(VSTestSetting)" />
