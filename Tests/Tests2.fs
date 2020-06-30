@@ -1773,7 +1773,8 @@ module AltCoverTests2 =
          .Replace("AltCover.Recorder.g/1.4.0.0", "AltCover.Recorder.g/" + version)
          .Replace("AltCover.Recorder.g\": \"1.4.0.0",
                   "AltCover.Recorder.g\": \"" + version)
-      Assert.That(transform result, Is.EqualTo(transform expected))
+      let r = transform result
+      Assert.That(r, Is.EqualTo(transform expected), r)
 
     [<Test>]
     let JSONInjectionTransformsDependencyFileAsExpected() =
@@ -1791,7 +1792,8 @@ module AltCoverTests2 =
          .Replace("AltCover.Recorder.g/2.0.0.0", "AltCover.Recorder.g/" + version)
          .Replace("AltCover.Recorder.g\": \"2.0.0.0",
                   "AltCover.Recorder.g\": \"" + version)
-      Assert.That(transform result, Is.EqualTo(transform expected))
+      let r = transform result
+      Assert.That(r, Is.EqualTo(transform expected), r)
 
     [<Test>]
     let JSONInjectionIsIdempotent() =
@@ -1800,8 +1802,9 @@ module AltCoverTests2 =
       use reader = new StreamReader(stream)
       let expected = reader.ReadToEnd()
       let result = Instrument.I.injectJSON <| expected
+      let r = result.Replace("\r\n", "\n")
       Assert.That
-        (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+        (r, Is.EqualTo(expected.Replace("\r\n", "\n")), r)
 
     [<Test>]
     let NonFinishShouldDisposeRecordingAssembly() =
