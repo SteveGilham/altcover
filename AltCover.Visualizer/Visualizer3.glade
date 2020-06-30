@@ -17,6 +17,25 @@
     <property name="copyright">xx</property>
     <property name="comments">xx</property>
     <property name="website">https://github.com/SteveGilham/altcover</property>
+    <property name="website_label" translatable="no">xx</propert<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 2.16 -->
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkAboutDialog" id="aboutVisualizer">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="title">xx</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="program_name">AltCover Visualizer</property>
+    <property name="version">xx</property>
+    <property name="copyright">xx</property>
+    <property name="comments">xx</property>
+    <property name="website">https://github.com/SteveGilham/altcover</property>
     <property name="website_label" translatable="no">xx</property>
     <property name="license" translatable="no">The MIT License
 {0}
