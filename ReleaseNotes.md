@@ -2,8 +2,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.1.7xx (Genbu series release 5)
-* [BUGFIX] Address problems revealed in issue #97
+# 7.1.778 (Genbu series release 5)
+* [BUGFIX] Address problems revealed in issue #87
   * The collection process now fails gracefully if the XML report is missing or broken
   * `dotnet test` will halt after instrumentation fails, should it do so, rather than continuing to test and process the missing or broken XML report
   * Work round F# issue 9255 by replacing Newtonsoft as the JSON processor with one that can static link
