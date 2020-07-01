@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="altcover" version="7.1.777" />
+    <PackageReference Include="altcover" version="7.1.778" />
     <PackageReference Include="NuGet.CommandLine" version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
