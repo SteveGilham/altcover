@@ -1758,6 +1758,25 @@ module AltCoverTests2 =
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
+    let JSONInjectionTransformsSimpleFileAsExpected() =
+      let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample8.deps.baseline.json")
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample8.deps.newtonsoft.json")
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
+      use reader = new StreamReader(stream)
+      let result = Instrument.I.injectJSON <| reader.ReadToEnd()
+      use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+      use reader' = new StreamReader(stream')
+      let expected = reader'.ReadToEnd()
+      let version = System.AssemblyVersionInformation.AssemblyVersion
+      let transform (s : string) =
+        s.Replace("\r\n", "\n")
+         .Replace("AltCover.Recorder.g/7.1.0.0", "AltCover.Recorder.g/" + version)
+         .Replace("AltCover.Recorder.g\": \"7.1.0.0",
+                  "AltCover.Recorder.g\": \"" + version)
+      let r = transform result
+      Assert.That(r, Is.EqualTo(transform expected), r)
+
+    [<Test>]
     let JSONInjectionTransformsStandaloneFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")

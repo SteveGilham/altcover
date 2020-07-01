@@ -504,8 +504,13 @@ module internal Instrument =
       let addFirst (properties : KeyValuePair<string, JsonValue> seq) (jsonObject:JsonObject)  =
         let existing = jsonObject |> Seq.toList
         jsonObject.Clear()
-        properties |> Seq.iter (fun l -> app.Add(l.Key, l.Value))
-        existing |> Seq.iter (fun l -> app.Add(l.Key, l.Value))
+
+        [
+          properties
+          existing |> List.toSeq
+        ]
+        |> Seq.concat
+        |> Seq.iter (fun l -> jsonObject.Add(l.Key, l.Value))
 
       //match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
       //| None -> app.AddFirst(rawDependencies)
