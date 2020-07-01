@@ -46,8 +46,8 @@
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
     <ProjectReference Include="..\AltCover.DotNet\altcover.dotnet.core.fsproj" />
   </ItemGroup>
-  
-    <ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net46" Version="1.0.0" Condition="'$(TargetFramework)' == 'net46'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -57,6 +57,6 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net46'" />
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net46'" />
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  
 </Project>

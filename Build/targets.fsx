@@ -1,4 +1,5 @@
 // dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
+// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
 
 open System
 open System.Diagnostics.Tracing
