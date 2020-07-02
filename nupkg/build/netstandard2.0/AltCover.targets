@@ -13,6 +13,11 @@
   <UsingTask TaskName="AltCover.RunSettings"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
+  <PropertyGroup>
+    <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
+    <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
+  </PropertyGroup>
+
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
     <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'"
            Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
@@ -72,25 +77,19 @@
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
   <Target Name="VSTest">
-    <CallTarget Targets="VSTestPreFlight" ContinueOnError="ErrorAndStop"/>
-    <CallTarget Targets="VSTestCore" />
+    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop"/>
+    <CallTarget Targets="AltCoverVSTestCore" />
   </Target>
 
   <!-- As per the first part of Microsoft.TestPlatform.targets v2.1.300, but with pre-flight checks clause -->
-  <Target Name="VSTestPreFlight">
-    <PropertyGroup>
-      <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
-      <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
-    </PropertyGroup>
-
+  <Target Name="AltCoverVSTestPreFlight">
     <CallTarget Targets="AltCoverPreFlight" />
     <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
     <CallTarget Targets="AltCoverRunPreparation" ContinueOnError="ErrorAndStop" />
   </Target>
 
   <!-- As per the second part Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
-  <Target Name="VSTestCore">
-
+  <Target Name="AltCoverVSTestCore">
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
     <Message Importance="High" Text="Settings Before: $(VSTestSetting)" />
     <AltCover.RunSettings
