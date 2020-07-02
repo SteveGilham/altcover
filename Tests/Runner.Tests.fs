@@ -1791,6 +1791,7 @@ module AltCoverRunnerTests =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+      let junkfile = (reportFile + "." + (Path.GetFileName unique))
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
@@ -1819,6 +1820,21 @@ module AltCoverRunnerTests =
              (fun (moduleId, hitPointId, hit) ->
              AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
+        // degenerate case
+        Assert.That(junkfile |> File.Exists |> not)
+        do use junkworker = new FileStream(junkfile, FileMode.CreateNew)
+           junkworker.Write(buffer, 0, 0)
+           ()
+        Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile None |> ignore
+
+        let (c0, w0) = Zip.openUpdate junkfile
+        try
+          Assert.That(c0 |> isNull)
+          Assert.That(w0, Is.InstanceOf<FileStream>())
+          Assert.That(w0.Length, Is.EqualTo 8L)
+        finally
+          w0.Dispose()
+
         Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
@@ -1830,6 +1846,7 @@ module AltCoverRunnerTests =
            Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
       finally
         if File.Exists reportFile then File.Delete reportFile
+        if File.Exists junkfile then File.Delete junkfile
         Console.SetOut saved
         Directory.SetCurrentDirectory(here)
         try
@@ -1844,6 +1861,8 @@ module AltCoverRunnerTests =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+      let junkfile = (reportFile + "." + (Path.GetFileName unique))
+      let junkfile2 = junkfile + ".xml"
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
@@ -1870,6 +1889,32 @@ module AltCoverRunnerTests =
              (fun (moduleId, hitPointId, hit) ->
              AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
 
+        // degenerate case 1
+        Assert.That(junkfile |> File.Exists |> not)
+        let (c0, w0) = Zip.openUpdate junkfile
+        try
+          Assert.That(c0.IsNotNull)
+          Assert.That(w0, Is.InstanceOf<MemoryStream>())
+          Assert.That(w0.Length, Is.EqualTo 0L)
+        finally
+          c0.Dispose()
+          w0.Dispose()
+
+        // degenerate case 2
+        Assert.That(junkfile2 |> File.Exists |> not)
+        Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile2 None |> ignore
+
+        Assert.That(junkfile2 |> File.Exists |> not)
+        let (c1, w1) = Zip.openUpdate junkfile2
+        try
+          Assert.That(c1.IsNotNull)
+          Assert.That(w1, Is.InstanceOf<MemoryStream>())
+          Assert.That(w1.Length, Is.EqualTo 0L)
+        finally
+          c0.Dispose()
+          w0.Dispose()
+          Assert.That(junkfile2 |> File.Exists |> not)
+
         Runner.J.doReport counts AltCover.ReportFormat.NCover reportFile None |> ignore
         let (container, worker) = Zip.openUpdate reportFile
         use worker' = worker
@@ -1882,6 +1927,8 @@ module AltCoverRunnerTests =
            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
            Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
       finally
+        Assert.That(junkfile |> File.Exists |> not)
+        Assert.That(junkfile2 |> File.Exists |> not)
         if File.Exists reportFile then File.Delete reportFile
         Console.SetOut saved
         Directory.SetCurrentDirectory(here)

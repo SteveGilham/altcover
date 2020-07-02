@@ -1,4 +1,5 @@
 // dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
+// Downloads/docker-machine-Windows-x86_64 create --driver virtualbox <name>
 
 open System
 open System.Diagnostics.Tracing
@@ -3454,33 +3455,46 @@ group NetcoreBuild
 
 _Target "DotnetTestIntegration" (fun _ ->
   try
-    Directory.ensure "./_DotnetTest"
-    Shell.cleanDir ("./_DotnetTest")
-    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
-    let repo = config.Descendants(XName.Get("add")) |> Seq.head
-    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-    config.Save "./_DotnetTest/NuGet.config"
+    printfn "Initializing ------------------------------------------------"
 
-    Directory.ensure "./_DotnetTestFail"
-    Shell.cleanDir ("./_DotnetTestFail")
-    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
-    let repo = config.Descendants(XName.Get("add")) |> Seq.head
-    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-    config.Save "./_DotnetTestFail/NuGet.config"
+    [
+     ("./_DotnetTest", "Sample4", "fsproj")
+     ("./_DotnetTestFail", "Sample13", "fsproj")
+     ("./_DotnetTestFailFast", "Sample13", "fsproj")
+     ("./_DotnetTestFailInstrumentation", "Sample13", "fsproj")
+     ("./_DotnetTestLineCover", "Sample10", "csproj")
+     ("./_DotnetTestBranchCover", "Sample10", "csproj")
+    ]
+    |> List.iter (fun (d, p, t) ->  Directory.ensure d
+                                    Shell.cleanDir d
+                                    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+                                    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+                                    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+                                    config.Save (d @@ "NuGet.config")
 
-    let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
-    let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
-    targets.SetValue "netcoreapp2.1"
-    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    fsproj.Save "./_DotnetTest/dotnettest.fsproj"
-    Shell.copy "./_DotnetTest" (!!"./Sample4/*.fs")
-    Shell.copy "./_DotnetTest" (!!"./Sample4/*.json")
+                                    let projpath = "./" + p + "/" + p.ToLowerInvariant() + ".core." + t
+                                    printfn "%s -> %s" d projpath
 
+                                    let fsproj = XDocument.Load projpath
+                                    let targets = [
+                                                    fsproj.Descendants(XName.Get("TargetFrameworks"))
+                                                    fsproj.Descendants(XName.Get("TargetFramework"))
+                                                  ]
+                                                  |> Seq.concat
+                                                  |> Seq.head
+                                    targets.SetValue "netcoreapp2.1"
+                                    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+                                    let inject =
+                                      XElement
+                                        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+                                         XAttribute(XName.Get "Version", !Version))
+                                    pack.AddBeforeSelf inject
+                                    fsproj.Save (d + "/dotnettest." + t)
+                                    Shell.copy d !!("./" + p + "/*." + t.Substring(0, 2))
+                                    Shell.copy d !!("./" + p + "/*.json")
+    )
+
+    printfn "Simple positive case ------------------------------------------------"
     let p0 = Primitive.PrepareOptions.Create()
     let c0 = Primitive.CollectOptions.Create()
 
@@ -3499,17 +3513,26 @@ _Target "DotnetTestIntegration" (fun _ ->
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
     Actions.CheckSample4 x
 
-    // optest failing test
-    let fsproj = XDocument.Load "./Sample13/sample13.core.fsproj"
-    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    fsproj.Save "./_DotnetTestFail/dotnettest.fsproj"
-    Shell.copy "./_DotnetTestFail" (!!"./Sample13/*.fs")
-    Shell.copy "./_DotnetTestFail" (!!"./Sample13/*.json")
+    printfn "optest failing instrumentation ------------------------------------------------"
+
+    let xx0 = Path.getFullName "./_Reports/nonesuch.xml"
+
+    let pf0 =
+      { p0 with AssemblyFilter = [| "NUnit" |] 
+                StrongNameKey = "./_Reports/nonesuch.junk"
+                XmlReport = xx0
+      } |> AltCover.PrepareOptions.Primitive
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInstrumentation")).WithAltCoverOptions
+          pf0 cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That (xx0 |> File.Exists |> not)
+    Assert.That("./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists |> not)
+
+    printfn "optest failing test ------------------------------------------------"
 
     let xx = Path.getFullName "./_DotnetTestFail/coverage.xml"
     let pf1 =
@@ -3521,6 +3544,7 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf1 cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists)
 
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3532,21 +3556,9 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "0" ])
 
-    // optest failing fast test
-    Directory.ensure "./_DotnetTestFailFast"
-    Shell.cleanDir ("./_DotnetTestFailFast")
-    let fsproj = XDocument.Load "./Sample13/sample13.core.fsproj"
-    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    fsproj.Save "./_DotnetTestFailFast/dotnettest.fsproj"
-    Shell.copy "./_DotnetTestFailFast" (!!"./Sample13/*.fs")
-    Shell.copy "./_DotnetTestFailFast" (!!"./Sample13/*.json")
+    printfn "optest failing test fast ------------------------------------------------"
 
     let xx = Path.getFullName "./_DotnetTestFailFast/coverage.xml"
     let pf1 =
@@ -3558,6 +3570,7 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf1 cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists)
 
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3569,27 +3582,9 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0"; "0"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "0"; "0"; "0"; "0"; "0" ])
 
-    // optest linecover
-    Directory.ensure "./_DotnetTestLineCover"
-    Shell.cleanDir ("./_DotnetTestLineCover")
-    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
-    let repo = config.Descendants(XName.Get("add")) |> Seq.head
-    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-    config.Save "./_DotnetTestLineCover/NuGet.config"
-
-    let fsproj = XDocument.Load "./Sample10/sample10.core.csproj"
-    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
-    Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.cs")
-    Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.json")
-
+    printfn "optest line cover ------------------------------------------------"
     let p2 =
       { p0 with
           LineCover = true
@@ -3613,24 +3608,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
           Is.EqualTo 0)
 
-    // optest branchcover
-    Directory.ensure "./_DotnetTestBranchCover"
-    Shell.cleanDir ("./_DotnetTestBranchCover")
-    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
-    let repo = config.Descendants(XName.Get("add")) |> Seq.head
-    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-    config.Save "./_DotnetTestLineCover/NuGet.config"
-
-    let fsproj = XDocument.Load "./Sample10/sample10.core.csproj"
-    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
-    Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.cs")
-    Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.json")
+    printfn "optest branch cover ------------------------------------------------"
 
     let p3 =
       { p0 with
@@ -3656,23 +3634,23 @@ _Target "DotnetTestIntegration" (fun _ ->
          (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
           Is.EqualTo 2)
 
-    // Regression test -- On travis : 'the reference assemblies for framework ".NETFramework,Version=v4.6.1" were not found.'
-    if Environment.isWindows then
-      let proj = XDocument.Load "./RegressionTesting/issue29/issue29.xml"
-      let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
-      let inject =
-        XElement
-          (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-           XAttribute(XName.Get "Version", !Version))
-      pack.AddBeforeSelf inject
-      proj.Save "./RegressionTesting/issue29/issue29.csproj"
-      let p29 = { p0 with AssemblyFilter = [ "NUnit" ] }
-      let pp29 = AltCover.PrepareOptions.Primitive p29
+    printfn "Regression test issue 29 ------------------------------------------------"
+    let proj = XDocument.Load "./RegressionTesting/issue29/issue29.xml"
+    let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    proj.Save "./RegressionTesting/issue29/issue29.csproj"
+    let p29 = { p0 with AssemblyFilter = [ "NUnit" ] }
+    let pp29 = AltCover.PrepareOptions.Primitive p29
 
-      DotNet.test (fun to' ->
-        (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithAltCoverOptions
-          pp29 cc0 ForceTrueFast) |> testWithCLIArguments) ""
+    DotNet.test (fun to' ->
+      (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithAltCoverOptions
+        pp29 cc0 ForceTrueFast) |> testWithCLIArguments) ""
 
+    printfn "Regression test issue 37 ------------------------------------------------"
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =

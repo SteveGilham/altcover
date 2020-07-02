@@ -936,6 +936,48 @@ module AltCoverTests =
         Directory.Delete(unique)
       with :? IOException -> ()
 
+  [<Test>]
+  let FlushLeavesExpectedTracesWhenBroken() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenBroken.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+      do use worker = new FileStream(reportFile, FileMode.CreateNew)
+         worker.Write(buffer, 0, 0)
+         ()
+      let payload = Dictionary<int, PointVisit>()
+      [ 0 .. 9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisitInit (int64 (i + 1)) [])
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+      Adapter.DoFlush
+        (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, outputFile) |> ignore
+      use worker' = new FileStream(outputFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That
+        (after.OuterXml,
+         Is.EqualTo "<null />")
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with :? IOException -> ()
+
 #if !NET2
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenDiverted() =
@@ -979,6 +1021,89 @@ module AltCoverTests =
          Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
     finally
       if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with :? IOException -> ()
+
+  [<Test>]
+  let ZipFlushLeavesExpectedTracesWhenBroken() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenBroken.xml")
+    let zipFile = reportFile + ".zip"
+    try
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      do use worker = new FileStream(zipFile, FileMode.CreateNew)
+         worker.Write(buffer, 0, 0)
+         ()
+      let payload = Dictionary<int, PointVisit>()
+      [ 0 .. 9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisitInit (int64 (i + 1)) [])
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+      Adapter.DoFlush
+        (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, outputFile) |> ignore
+      use worker' = new FileStream(outputFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That
+        (after.OuterXml,
+         Is.EqualTo "<null />")
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      if File.Exists outputFile then File.Delete outputFile
+      if File.Exists zipFile then File.Delete zipFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with :? IOException -> ()
+
+  [<Test>]
+  let ZipFlushLeavesExpectedTracesWhenBrokenInPlace() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let zipFile = reportFile + ".zip"
+    try
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+      Counter.measureTime <-
+        DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      do use worker = new FileStream(zipFile, FileMode.CreateNew)
+         worker.Write(buffer, 0, 0)
+         ()
+      let payload = Dictionary<int, PointVisit>()
+      [ 0 .. 9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisitInit (int64 (i + 1)) [])
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+      Adapter.DoFlush
+        (visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null) |> ignore
+
+      Assert.That(reportFile |> File.Exists |> not)
+      let zipInfo = FileInfo(zipFile)
+      Assert.That(zipInfo.Length, Is.EqualTo 0)
+    finally
+      if File.Exists zipFile then File.Delete zipFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
       try

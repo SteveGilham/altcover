@@ -243,12 +243,14 @@ $lines = (Get-Content  ".\AltCover.DotNet\DotNet.fs") | ? { $_.Contains("//=") }
 $lines | % {
   $line = $_
   if ($line.StartsWith("//")) { $line = $line.Substring(2) }
-  $parts = $line.Split("//")
-  $parts2 = $parts[0].Split("`"")
   
-  $comment = $parts | Select-Object -Last 1
+  $strike = $line.IndexOf("//")
+  $comment = $line.Substring($strike + 2)
+  $parts = $line.Substring(0, $strike)
+  $parts2 = $parts.Split("`"")
   
-  $compose = "* ``/p:AltCover" + $parts2[1] + $comment ##$parts[1]
+  
+  $compose = "* ``/p:AltCover" + $parts2[1] + $comment 
   $compose | Out-File -Encoding UTF8 -Append $mdfile
 }
 
