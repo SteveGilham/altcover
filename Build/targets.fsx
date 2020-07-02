@@ -3516,7 +3516,6 @@ _Target "DotnetTestIntegration" (fun _ ->
     printfn "optest failing instrumentation ------------------------------------------------"
 
     let xx0 = Path.getFullName "./_Reports/nonesuch.xml"
-    let marker0 = Path.getFullName "./_Reports/nonesuch.xml"
 
     let pf0 =
       { p0 with AssemblyFilter = [| "NUnit" |] 
