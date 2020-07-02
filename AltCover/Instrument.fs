@@ -11,10 +11,10 @@ open System.IO
 open System.Reflection
 open System.Resources
 
+open Manatee.Json
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
-open Newtonsoft.Json.Linq
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal RecorderRefs =
@@ -454,61 +454,125 @@ module internal Instrument =
              assemblyReferenceSubstitutions.[original] <- updated)
       assemblyReferenceSubstitutions
 
-    let internal injectJSON json =
-      let o = JObject.Parse json
+    let internal injectJSON (json:String) =
+      //let o = JObject.Parse json
+      let o = JsonValue.Parse json
+      let oo = o.Object
+      //let x = StringComparison.Ordinal
       let x = StringComparison.Ordinal
-      let target =
-        ((o.Property("runtimeTarget", x)).Value :?> JObject).Property("name", x)
-          .Value.ToString()
-      let targets =
-        (o.Properties() |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
+      //let target =
+      //  ((o.Property("runtimeTarget", x)).Value :?> JObject).Property("name", x)
+      //    .Value.ToString()
+      let target = oo.["runtimeTarget"].Object.["name"].String
+      //let targets =
+      //  (o.Properties() |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
+      let targets = (oo |> Seq.find(fun kv -> kv.Key = "targets")).Value.Object
+      //let targeted =
+      //  (targets.Properties() |> Seq.find (fun p -> p.Name = target)).Value :?> JObject
       let targeted =
-        (targets.Properties() |> Seq.find (fun p -> p.Name = target)).Value :?> JObject
-      let app = (targeted.PropertyValues() |> Seq.head) :?> JObject
-      let existingDependencies =
-        app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
+        (targets |> Seq.find (fun p -> p.Key = target)).Value.Object
+      //let app = (targeted.PropertyValues() |> Seq.head) :?> JObject
+      let app = (targeted.Values |> Seq.head).Object
 
+      //let existingDependencies =
+      //  app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
+      let existingDependencies =
+        app |> Seq.tryFind (fun p -> p.Key = "dependencies")
+
+      //let prior =
+      //  match existingDependencies with
+      //  | None -> Set.empty<string>
+      //  | Some p ->
+      //      (p.Value :?> JObject).Properties()
+      //      |> Seq.map (fun p -> p.Name)
+      //      |> Set.ofSeq
       let prior =
         match existingDependencies with
         | None -> Set.empty<string>
         | Some p ->
-            (p.Value :?> JObject).Properties()
-            |> Seq.map (fun p -> p.Name)
+            p.Value.Object
+            |> Seq.map (fun p -> p.Key)
             |> Set.ofSeq
 
+      //let rawDependencies =
+      //  (JObject.Parse dependencies).Properties()
+      //  |> Seq.find (fun p -> p.Name = "dependencies")
       let rawDependencies =
-        (JObject.Parse dependencies).Properties()
-        |> Seq.find (fun p -> p.Name = "dependencies")
-      match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
-      | None -> app.AddFirst(rawDependencies)
+        (JsonValue.Parse dependencies).Object
+        |> Seq.find (fun p -> p.Key = "dependencies")
+
+      let addFirst (properties : KeyValuePair<string, JsonValue> seq) (jsonObject:JsonObject)  =
+        let existing = jsonObject |> Seq.toList
+        jsonObject.Clear()
+
+        [
+          properties
+          existing |> List.toSeq
+        ]
+        |> Seq.concat
+        |> Seq.iter (fun l -> jsonObject.Add(l.Key, l.Value))
+
+      //match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
+      //| None -> app.AddFirst(rawDependencies)
+      //| Some p ->
+      //    (rawDependencies.Value :?> JObject).Properties()
+      //    |> Seq.filter (fun r ->
+      //         prior
+      //         |> Set.contains r.Name
+      //         |> not)
+      //    |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
+      match app |> Seq.tryFind (fun p -> p.Key = "dependencies") with
+      | None ->  app
+                 |> addFirst [rawDependencies]
       | Some p ->
-          (rawDependencies.Value :?> JObject).Properties()
+          rawDependencies.Value.Object
           |> Seq.filter (fun r ->
                prior
-               |> Set.contains r.Name
+               |> Set.contains r.Key
                |> not)
-          |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
+          |> Seq.iter (fun r -> (p.Value.Object).Add(r.Key, r.Value))
 
-      let rt = JObject.Parse runtime
-      rt.Properties()
+      //let rt = JObject.Parse runtime
+      //rt.Properties()
+      //|> Seq.filter (fun r ->
+      //     prior
+      //     |> Set.contains (r.Name.Split('/') |> Seq.head)
+      //     |> not
+      //     && targeted.ContainsKey(r.Name) |> not)
+      //|> Seq.iter (fun r -> targeted.Add(r))
+      (JsonValue.Parse runtime).Object
       |> Seq.filter (fun r ->
            prior
-           |> Set.contains (r.Name.Split('/') |> Seq.head)
+           |> Set.contains (r.Key.Split('/') |> Seq.head)
            |> not
-           && targeted.ContainsKey(r.Name) |> not)
-      |> Seq.iter (fun r -> targeted.Add(r))
+           && targeted.ContainsKey(r.Key) |> not)
+      |> Seq.iter (fun r -> targeted.Add(r.Key, r.Value))
 
+      //let libraries =
+      //  (o.Properties() |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
       let libraries =
-        (o.Properties() |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
-      (JObject.Parse newLibraries).Properties()
-      |> Seq.filter (fun r ->
-           prior
-           |> Set.contains (r.Name.Split('/') |> Seq.head)
-           |> not
-           && libraries.ContainsKey(r.Name) |> not)
-      |> Seq.rev
-      |> Seq.iter (libraries.AddFirst)
-      o.ToString()
+        (oo |> Seq.find (fun p -> p.Key = "libraries")).Value.Object
+
+      //(JObject.Parse newLibraries).Properties()
+      //|> Seq.filter (fun r ->
+      //     prior
+      //     |> Set.contains (r.Name.Split('/') |> Seq.head)
+      //     |> not
+      //     && libraries.ContainsKey(r.Name) |> not)
+      //|> Seq.rev
+      //|> Seq.iter (libraries.AddFirst)
+      let newlibs = (JsonValue.Parse newLibraries).Object
+                    |> Seq.filter (fun r -> prior
+                                            |> Set.contains (r.Key.Split('/') |> Seq.head)
+                                            |> not
+                                            && libraries.ContainsKey(r.Key) |> not)
+                    |> Seq.rev
+
+      libraries
+      |> addFirst newlibs
+
+      //o.ToString()
+      o.GetIndentedString().Replace("\t\t", "  ").Replace("\t", "  ").Replace(" :", ":")
 
     let private visitModule (state : InstrumentContext) (m : ModuleDefinition) included =
       let restate =

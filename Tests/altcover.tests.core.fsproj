@@ -25,8 +25,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="AltCover.Usage.txt" />
-    <EmbeddedResource Include="AltCover.Runner.Usage.txt" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
@@ -39,6 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AltCover.Usage.txt" />
+    <EmbeddedResource Include="AltCover.Runner.Usage.txt" />
     <EmbeddedResource Include="coverage-04.xsd" />
     <EmbeddedResource Include="..\nupkg\build\netstandard2.0\AltCover.targets" Link="AltCover.targets" />
     <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
@@ -57,6 +57,8 @@
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
     <EmbeddedResource Include="Sample2.deps.after.json" />
+    <EmbeddedResource Include="Sample8.deps.baseline.json" />
+    <EmbeddedResource Include="Sample8.deps.newtonsoft.json" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
     <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
     <EmbeddedResource Include="TailCallSample.dl_" />

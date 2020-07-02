@@ -121,6 +121,7 @@ module AltCoverTests =
                || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter (fun f -> f |> Path.GetFileNameWithoutExtension <> "testhost")
           |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
+          |> Seq.filter (fun f -> f |> Path.GetFileName <> "CompilerAttributes.dll")
           |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
           |> Seq.filter (fun x ->
                (fst x) + ".mdb"
@@ -147,6 +148,10 @@ module AltCoverTests =
                 (fun x ->
                 not
                 <| (snd x).FullName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Manatee.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                 (fun x ->
                 not

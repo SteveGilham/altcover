@@ -296,6 +296,7 @@ module TestMain =
           Tests.AltCoverTests2.IncludedMethodPointInsertsVisit, "Tests2.IncludedMethodPointInsertsVisit"
           Tests.AltCoverTests2.IncludedModuleDoesNotChangeRecorderJustTheReference, "Tests2.IncludedModuleDoesNotChangeRecorderJustTheReference"
           Tests.AltCoverTests2.AfterModuleShouldNotChangeState, "Tests2.AfterModuleShouldNotChangeState"
+          Tests.AltCoverTests2.JSONInjectionTransformsSimpleFileAsExpected, "Tests2.JSONInjectionTransformsSimpleFileAsExpected"
           Tests.AltCoverTests2.JSONInjectionTransformsStandaloneFileAsExpected, "Tests2.JSONInjectionTransformsStandaloneFileAsExpected"
           Tests.AltCoverTests2.JSONInjectionTransformsDependencyFileAsExpected, "Tests2.JSONInjectionTransformsDependencyFileAsExpected"
           Tests.AltCoverTests2.JSONInjectionIsIdempotent, "Tests2.JSONInjectionIsIdempotent"
