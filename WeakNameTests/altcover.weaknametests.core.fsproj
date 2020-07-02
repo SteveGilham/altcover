@@ -5,8 +5,8 @@
     <IsPackable>false</IsPackable>
     <NuGetCache Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)\.nuget\packages</NuGetCache>
     <NuGetCache Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.nuget/packages</NuGetCache>
-    <GendarmeToolDir Condition="'$(TargetFramework)' == 'net47'">..\packages\altcode.gendarme\2020.3.9.15370-pre-release\tools\</GendarmeToolDir>
-    <GendarmeToolDir Condition="'$(TargetFramework)' != 'net47'">$(NuGetCache)/altcode.gendarme-tool/2020.3.9.15370-pre-release/tools/netcoreapp2.1/any/</GendarmeToolDir>
+    <GendarmeToolDir Condition="'$(TargetFramework)' == 'net47'">..\packages\altcode.gendarme\2020.6.12.11211-pre-release\tools\</GendarmeToolDir>
+    <GendarmeToolDir Condition="'$(TargetFramework)' != 'net47'">$(NuGetCache)/altcode.gendarme-tool/2020.6.12.11211-pre-release/tools/netcoreapp2.1/any/</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.WeakName.Testing</AssemblyName>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
@@ -81,5 +81,6 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

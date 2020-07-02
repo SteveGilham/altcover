@@ -12,11 +12,10 @@ open System.IO
 open System.Linq
 open System.Text.RegularExpressions
 
+open Manatee.Json
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
-open Newtonsoft.Json
-open Newtonsoft.Json.Linq
 open System.Net
 
 [<Flags>]
@@ -523,8 +522,9 @@ module internal Visitor =
         |> Option.bind id
         |> Option.map (fun i ->
              let c = (i :?> SourceLinkDebugInformation).Content
-             let j = JObject.Parse(c).["documents"]
-             JsonConvert.DeserializeObject<Dictionary<string, string>>(j.ToString()))
+             JsonValue.Parse(c).Object.["documents"].Object.
+                            ToDictionary((fun kv -> kv.Key),
+                                         (fun kv -> kv.Value.String)))
 
       [ x ]
       |> Seq.takeWhile (fun _ -> included <> Inspections.Ignore)

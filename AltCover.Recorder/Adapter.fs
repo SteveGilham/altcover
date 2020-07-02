@@ -98,9 +98,9 @@ module Adapter =
     r
 
   let internal DoFlush (visits, format, report, output) =
-    let output' = //if System.String.IsNullOrEmpty output
-      //then None // this case gets tested elsewhere
-      (*else*) Some output
+    let output' = if System.String.IsNullOrEmpty output
+                  then None
+                  else Some output
     Counter.doFlushFile ignore (fun _ _ -> ()) true visits format report output'
 
   let internal UpdateReport (counts, format, coverageFile, outputFile) =
