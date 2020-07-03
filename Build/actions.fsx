@@ -18,7 +18,7 @@ open AltCoverFake.DotNet.Testing
 
 module Actions =
   let Clean() =
-    let rec Clean1 depth =
+    let rec clean1 depth =
       try
         (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
         |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
@@ -36,8 +36,7 @@ module Actions =
              |> Seq.length)
         |> Seq.map (fun (n, x) -> (n, x |> Seq.sort))
         |> Seq.sortBy (fun p -> -1 * (fst p))
-        |> Seq.map snd
-        |> Seq.concat
+        |> Seq.collect snd
         |> Seq.iter (fun n ->
              printfn "Deleting %s" n
              Directory.Delete(n, true))
@@ -49,17 +48,17 @@ module Actions =
         if not <| String.IsNullOrWhiteSpace temp then
           Directory.GetFiles(temp, "*.tmp.dll.mdb") |> Seq.iter File.Delete
       with
-      | :? System.IO.IOException as x -> Clean' (x :> Exception) depth
-      | :? System.UnauthorizedAccessException as x -> Clean' (x :> Exception) depth
+      | :? System.IO.IOException as x -> clean' (x :> Exception) depth
+      | :? System.UnauthorizedAccessException as x -> clean' (x :> Exception) depth
 
-    and Clean' x depth =
+    and clean' x depth =
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
       if depth < 10
-      then Clean1(depth + 1)
+      then clean1(depth + 1)
       else Assert.Fail "Could not clean all the files"
 
-    Clean1 0
+    clean1 0
 
   let template = """namespace AltCover
 open System.Reflection
@@ -471,8 +470,7 @@ a:hover {color: #ecc;}
 
          let vx =
            sp.Descendants(XName.Get("Time"))
-           |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
-           |> Seq.sum
+           |> Seq.sumBy (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
          Assert.That(vc, Is.EqualTo vx, sp.Value))
     let tracked = """<TrackedMethods>
         <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />

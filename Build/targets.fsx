@@ -210,11 +210,11 @@ let GreenSummary = DotNet.CLIOptions.Summary "Green"
 let ForceTrue = DotNet.CLIOptions.Many [ ForceTrueOnly; GreenSummary ]
 let ForceTrueFast = DotNet.CLIOptions.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
 
-let dotnet_altcover =
+let dotnetAltcover =
   Fake.DotNet.ToolType.CreateFrameworkDependentDeployment dotnetOptions
-let dotnet_altcover86 =
+let dotnetAltcover86 =
   Fake.DotNet.ToolType.CreateFrameworkDependentDeployment dotnetOptions86
-let framework_altcover = Fake.DotNet.ToolType.CreateFullFramework()
+let frameworkAltcover = Fake.DotNet.ToolType.CreateFullFramework()
 
 let defaultTestOptions fwk common (o : DotNet.TestOptions) =
   { o.WithCommon
@@ -470,10 +470,15 @@ _Target "Lint" (fun _ ->
       { Lint.OptionalLintParameters.Default with
           Configuration = FromFile(Path.getFullName "./fsharplint.json") }
 
-    !!"**/*.fsproj"
-    |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
-    |> Seq.distinct
-    |> Seq.map (fun f ->
+    [ 
+      !!"**/*.fsproj"
+      |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+      |> Seq.distinct;
+      !!"./Build/*.fsx"
+      |> Seq.map Path.GetFullPath
+    ]
+    |> Seq.concat
+    |> Seq.collect (fun f ->
          match Lint.lintFile options f with
          | Lint.LintResult.Failure x -> failwithf "%A" x
          | Lint.LintResult.Success w ->
@@ -485,7 +490,6 @@ _Target "Lint" (fun _ ->
                       | Some fix -> fix.FromText <> "AltCover_Fake" // special case
                       | _ -> false
                   | _ -> false))
-    |> Seq.concat
     |> Seq.fold (fun _ x ->
          printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Details.Message
            x.Details.Range x.Details.SuggestedFix
@@ -928,7 +932,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = altcover
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = testDirectory }
   |> AltCoverCommand.run
 
@@ -974,7 +978,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = altcover
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = RecorderDir }
   |> AltCoverCommand.run
 
@@ -1088,7 +1092,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
          |> AltCoverCommand.Prepare
        { AltCoverCommand.Options.Create prep with
            ToolPath = altcover
-           ToolType = framework_altcover
+           ToolType = frameworkAltcover
            WorkingDirectory = testDirectory }
        |> AltCoverCommand.run
 
@@ -1114,7 +1118,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
            |> AltCoverCommand.Collect
          { AltCoverCommand.Options.Create collect with
              ToolPath = altcover
-             ToolType = framework_altcover
+             ToolType = frameworkAltcover
              WorkingDirectory = "." }
          |> AltCoverCommand.run
        with x ->
@@ -1229,7 +1233,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
          |> AltCoverCommand.Prepare
        { AltCoverCommand.Options.Create prep with
            ToolPath = altcover
-           ToolType = dotnet_altcover
+           ToolType = dotnetAltcover
            WorkingDirectory = testDirectory }
        |> AltCoverCommand.run
 
@@ -1314,7 +1318,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
          |> AltCoverCommand.Prepare
        { AltCoverCommand.Options.Create prep with
            ToolPath = altcover
-           ToolType = dotnet_altcover
+           ToolType = dotnetAltcover
            WorkingDirectory = testDirectory }
        |> AltCoverCommand.run
 
@@ -1331,7 +1335,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
          |> AltCoverCommand.Collect
        { AltCoverCommand.Options.Create collect with
            ToolPath = altcover
-           ToolType = dotnet_altcover
+           ToolType = dotnetAltcover
            WorkingDirectory = output }
        |> AltCoverCommand.run)
 
@@ -1374,7 +1378,7 @@ _Target "FSharpTypes" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = binRoot @@ "AltCover.exe"
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
   Actions.ValidateFSharpTypes simpleReport [])
@@ -1408,7 +1412,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   { AltCoverCommand.Options.Create prep with
       ToolPath =
         (Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll")
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1454,7 +1458,7 @@ _Target "FSharpTests" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1472,7 +1476,7 @@ _Target "FSharpTests" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = "Sample7" }
   |> AltCoverCommand.run)
 
@@ -1500,7 +1504,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1519,7 +1523,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = instrumented }
   |> AltCoverCommand.run
 
@@ -1559,7 +1563,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1583,7 +1587,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1632,7 +1636,7 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = altcover
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = "." }
   |> AltCoverCommand.run
 
@@ -1658,7 +1662,7 @@ _Target "CSharpDotNetWithDotNet" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = "." }
   |> AltCoverCommand.run
 
@@ -1686,7 +1690,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = binRoot @@ "AltCover.exe"
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1756,7 +1760,7 @@ _Target "SelfTest" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__SelfTest/AltCover.exe"
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47" }
   |> AltCoverCommand.run
 
@@ -1792,7 +1796,7 @@ _Target "RecordResumeTest" (fun _ ->
 
   { AltCoverCommand.Options.Create prep with
       ToolPath = toolPath
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
@@ -1818,7 +1822,7 @@ _Target "RecordResumeTest" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = toolPath
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1871,7 +1875,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
 
   { AltCoverCommand.Options.Create prep with
       ToolPath = toolPath
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
@@ -1898,7 +1902,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = toolPath
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1945,7 +1949,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = binRoot @@ "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -1974,7 +1978,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = binRoot @@ "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -2019,7 +2023,7 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = binRoot @@ "AltCover.exe"
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -2057,7 +2061,7 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = binRoot @@ "AltCover.exe"
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -2163,8 +2167,7 @@ _Target "Packaging" (fun _ ->
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
     |> List.map (fun f ->
          Directory.GetDirectories(Path.getFullName f)
-         |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
-         |> Seq.concat)
+         |> Seq.collect (fun d -> Directory.GetFiles(d, "*.resources.dll")))
     |> Seq.concat
     |> Seq.map
          (fun x -> (x, Some(path + Path.GetFileName(Path.GetDirectoryName(x))), None))
@@ -2233,8 +2236,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let dataFiles where = [dataFiles1; dataFiles2] 
-                        |> List.map (fun f -> f where)
-                        |> List.concat
+                        |> List.collect (fun f -> f where)
 
   let fakeFiles where =
     [ (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
@@ -2525,7 +2527,7 @@ _Target "Pester" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2541,7 +2543,7 @@ _Target "Pester" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2651,7 +2653,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = (unpack @@ "AltCover.exe")
-      ToolType = framework_altcover
+      ToolType = frameworkAltcover
       WorkingDirectory = sampleRoot }
   |> AltCoverCommand.run
 
@@ -2680,7 +2682,7 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2706,7 +2708,7 @@ _Target "ReleaseDotNetWithDotNet" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
   Actions.RunDotnet dotnetOptions "" (o @@ "Sample1.dll") "ReleaseDotNetWithDotNet test"
@@ -2736,7 +2738,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2757,7 +2759,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = runner
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
   Actions.ValidateFSharpTypesCoverage x)
@@ -2809,7 +2811,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
         |> AltCoverCommand.Prepare
       { AltCoverCommand.Options.Create prep with
           ToolPath = altcover
-          ToolType = dotnet_altcover86
+          ToolType = dotnetAltcover86
           WorkingDirectory = unpack }
       |> AltCoverCommand.run
       Actions.ValidateFSharpTypes x [ "main" ]
@@ -2829,7 +2831,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
         |> AltCoverCommand.Collect
       { AltCoverCommand.Options.Create collect with
           ToolPath = altcover
-          ToolType = dotnet_altcover86
+          ToolType = dotnetAltcover86
           WorkingDirectory = o }
       |> AltCoverCommand.run
 
@@ -2863,7 +2865,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2902,7 +2904,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2923,7 +2925,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = runner
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
   Actions.ValidateFSharpTypesCoverage x)
@@ -2953,7 +2955,7 @@ _Target "OpenCoverForPester" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -2972,7 +2974,7 @@ _Target "OpenCoverForPester" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = runner
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
 
@@ -3025,7 +3027,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -3060,7 +3062,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -3095,7 +3097,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -3131,7 +3133,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
 
@@ -3150,7 +3152,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = runner
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
 
@@ -3195,7 +3197,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
       ToolPath = "AltCover.dll"
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = unpack }
   |> AltCoverCommand.run
   Actions.CheckSample4Content x
@@ -3215,7 +3217,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = runner
-      ToolType = dotnet_altcover
+      ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
   Actions.CheckSample4Visits x)
