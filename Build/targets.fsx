@@ -2426,7 +2426,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
         OutputPath = Some(publish + ".visualizer")
         Configuration = DotNet.BuildConfiguration.Release
         Framework = Some "netcoreapp2.1" })
-    (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
+    (Path.getFullName "./AltCover.Avalonia/altcover.avalonia.fsproj")
 
   // dotnet tooling mods
   [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
@@ -2477,9 +2477,11 @@ _Target "PrepareReadMe" (fun _ ->
 _Target "Deployment" ignore
 
 _Target "Unpack" (fun _ ->
-  let nugget = !!"./_Packaging/*.nupkg" |> Seq.last
-  let unpack = Path.getFullName "_Packaging/Unpack"
-  System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
+  !!"./_Pack*/*.nupkg"
+  |> Seq.iter (fun nugget ->
+    let packdir = Path.GetDirectoryName nugget 
+    let unpack = Path.getFullName (packdir @@ "Unpack")
+    System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack)))
 
 _Target "WindowsPowerShell" (fun _ ->
   Directory.ensure "./_Documentation"

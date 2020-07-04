@@ -1,19 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-      <OutputType>Exe</OutputType>
-      <TargetFramework>netcoreapp3.0</TargetFramework>
-      <RootNamespace>AltCover.Visualizer</RootNamespace>
-      <AssemblyName>AltCover.Visualizer</AssemblyName>
-      <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-      <EmbedUntrackedSources>true</EmbedUntrackedSources>
-      <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
-      <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-      <GlobalDefineConstants>AVALONIA</GlobalDefineConstants>
-      <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</OutputPath>
-      <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-      <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>AltCover.Visualizer</RootNamespace>
+    <AssemblyName>AltCover.Visualizer</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>altcover.visualizer</ToolCommandName>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <GlobalDefineConstants>AVALONIA</GlobalDefineConstants>
+    <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+  </PropertyGroup>
     
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
