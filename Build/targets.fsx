@@ -2120,7 +2120,7 @@ _Target "Packaging" (fun _ ->
 
   let housekeepingVis =
     [ (Path.getFullName "./LICENS*", Some "", None)
-      (Path.getFullName "./AltCover.Visualizer/logo.*", Some "", None) ]
+      (Path.getFullName "./AltCover.UICommon/logo.*", Some "", None) ]
 
   let applicationFiles =
     [ (AltCover, Some "tools/net45", None)
@@ -2434,7 +2434,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
 
     ("DotnetTool", "./_Generated/altcover.visualizer.nuspec",
      "AltCover.Visualizer (dotnet global tool install)",
-     Some "AltCover.Visualizer/logo.png", Some "codecoverage .netcore cross-platform")
+     Some "AltCover.UICommon/logo.png", Some "codecoverage .netcore cross-platform")
 
     (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None,
      None)
