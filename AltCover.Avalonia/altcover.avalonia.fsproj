@@ -87,6 +87,6 @@
     <Move SourceFiles="@(BuiltFiles)"
           DestinationFolder="$(WorkDirectory)" />
     <Exec WorkingDirectory="$(WorkDirectory)"
-          Command="$(ILRepack) /out:$(TargetPath) /attr=$(TargetFileName) /keyfile=$(SolutionDir)Build\Infrastructure.snk /target:library /internalize $(TargetFileName) AltCover.UICommon.dll" />
+          Command="$(ILRepack) /out:$(TargetPath) /attr=$(TargetFileName) /keyfile=$(ProjectDir)..\Build\Infrastructure.snk /target:library /internalize $(TargetFileName) AltCover.UICommon.dll" />
   </Target>
 </Project>
