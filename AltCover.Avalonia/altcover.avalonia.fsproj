@@ -84,7 +84,7 @@
     </ItemGroup>
 
     <MakeDir Directories="$(WorkDirectory)" />
-    <Move SourceFiles="@(BuiltFiles)"
+    <Copy SourceFiles="@(BuiltFiles)"
           DestinationFolder="$(WorkDirectory)" />
     <Exec WorkingDirectory="$(WorkDirectory)"
           Command="$(ILRepack) /out:$(TargetPath) /attr=$(TargetFileName) /keyfile=$(ProjectDir)..\Build\Infrastructure.snk /target:library /internalize $(TargetFileName) AltCover.UICommon.dll" />
