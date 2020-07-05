@@ -132,11 +132,13 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>GitHub repo</value>
   </data>
   <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>La dosiero {0}
+    <value>La dosiero
+{0}
 estas sen dato koncerne iujn el la fontaj dosieroj.</value>
   </data>
   <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>La dosiero {0}
+    <value>La dosiero
+{0}
 estas sen dato pri respekto al fonta dosiero
 {1}.</value>
   </data>
@@ -144,29 +146,33 @@ estas sen dato pri respekto al fonta dosiero
     <value>_Kreditoj</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>t&#x2028;_Tiparo...</value>
+    <value>t _Tiparo...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
-    <value>f&#x2028;_Fermi</value>
+    <value>f _Fermi</value>
   </data>
   <data name="InvalidFile" xml:space="preserve">
-    <value>La dosiero {0} ne estas valida kovra dosiero:
+    <value>La dosiero
+{0}
+ne estas valida kovra dosiero:
 {1}</value>
   </data>
   <data name="MissingSourceFile" xml:space="preserve">
-    <value>La dosiero {0} 
+    <value>La dosiero
+{0} 
 raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
   </data>
   <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>La dosiero {0}
+    <value>La dosiero
+{0}
 raportas al ausente fonta dosiero
 {1}.</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>m&#x2028;_Malferma ...</value>
+    <value>m _Malferma ...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x2028;_Refreŝigi</value>
+    <value>r _Refreŝigi</value>
   </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
@@ -175,7 +181,7 @@ raportas al ausente fonta dosiero
     <value>XML-dosieroj (*.xml)|*.xml|Ĉiuj dosieroj (*.*)|*.*</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>p&#x2028;_Pri...</value>
+    <value>p _Pri...</value>
   </data>
   <data name="_License" xml:space="preserve">
     <value>_Permesilo</value>
@@ -261,40 +267,6 @@ THE SOFTWARE.</value>
   <data name="SelectXml" xml:space="preserve">
     <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
   </data>
-  <data name="g|geometry" xml:space="preserve">
-    <value>Klara geometrio</value>
-  </data>
-  <data name="r|recentFiles" xml:space="preserve">
-    <value>Klara lastatempa listo</value>
-  </data>
-  <data name="InvalidFile" xml:space="preserve">
-    <value>La dosiero
-{0}
-ne estas valida kovra dosiero:
-{1}</value>
-  </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>La dosiero
-{0}
-estas sen dato koncerne iujn el la fontaj dosieroj.</value>
-  </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>La dosiero
-{0}
-estas sen dato pri respekto al fonta dosiero
-{1}.</value>
-  </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>La dosiero
-{0} 
-raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
-  </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>La dosiero
-{0}
-raportas al ausente fonta dosiero
-{1}.</value>
-  </data>
   <data name="LoadError" xml:space="preserve">
     <value>Kovrilo Dosiero Ŝarĝo Malsukcesis</value>
   </data>
@@ -305,17 +277,12 @@ raportas al ausente fonta dosiero
     <value>Pri...</value>
   </data>
   <data name="ProgramComments" xml:space="preserve">
-    <value>{0}
-Ikonoj de la Visual Studio 2017-kolekto
+    <value>Ikonoj de la Visual Studio 2017-kolekto
 https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
 kaj de la Tango Project
 http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>
   <data name="LoadInfo" xml:space="preserve">
     <value>Noto</value>
-  </data>
-  <data name="No source location" xml:space="preserve">
-    <value>Metodo {0}
-havas neniun respondan fontan lokon</value>
   </data>
 </root>

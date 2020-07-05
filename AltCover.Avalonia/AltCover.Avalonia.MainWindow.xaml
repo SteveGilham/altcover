@@ -94,15 +94,15 @@
         <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.UICommon.logo.png?assembly=AltCover.UICommon" HorizontalAlignment="Center" />
         <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <TabControl Name="AboutTab" Margin="40">
-          <TabItem Name="AboutDetails" Height="150">
+          <TabItem Name="AboutDetails" Height="36" MaxHeight="36">
             <StackPanel Height="150">
-              <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
-              <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />
-              <TextBlock Name="Comments" Margin="10" FontSize="8" HorizontalAlignment="Center" />
+              <TextBlock Name="Description" HorizontalAlignment="Center" TextAlignment="Center" />
+              <TextBlock Name="Copyright" Margin="10" HorizontalAlignment="Center" />
+              <TextBlock Name="Comments" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
               <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
             </StackPanel>
           </TabItem>
-          <TabItem Name="License" Height="150">
+          <TabItem Name="License" Height="36" MaxHeight="36">
             <StackPanel>
               <ScrollViewer MaxHeight="150" HorizontalAlignment="Center">
                 <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />

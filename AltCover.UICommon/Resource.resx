@@ -118,15 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidFile" xml:space="preserve">
-    <value>The file {0} is not a valid coverage file:
+    <value>The file
+{0}
+is not a valid coverage file:
 {1}</value>
   </data>
   <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file {0} 
+    <value>The file
+{0} 
 is out of date with respect to some of the source files.</value>
   </data>
   <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file {0} 
+    <value>The file
+{0} 
 is out of date with respect to source file
 {1}.</value>
   </data>
@@ -137,11 +141,13 @@ is out of date with respect to source file
     <value>xml files (*.xml)|*.xml|All files (*.*)|*.*</value>
   </data>
   <data name="MissingSourceFile" xml:space="preserve">
-    <value>The file {0} 
+    <value>The file
+{0} 
 refers to source files not found on this computer.</value>
   </data>
   <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>The file {0} 
+    <value>The file
+{0} 
 refers to absent to source file
 {1}.</value>
   </data>
@@ -163,19 +169,19 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>C_redits</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>f&#x2028;_Font...</value>
+    <value>f _Font...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
     <value>_Close</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>o&#x2028;_Open...</value>
+    <value>o _Open...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x2028;_Refresh</value>
+    <value>r _Refresh</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>a&#x2028;_About...</value>
+    <value>a _About...</value>
   </data>
   <data name="_License" xml:space="preserve">
     <value>_License</value>
@@ -184,7 +190,7 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>{0} of {1} branches visited</value>
   </data>
   <data name="exitButton.Label" xml:space="preserve">
-    <value>x&#x2028;E_xit</value>
+    <value>x E_xit</value>
   </data>
   <data name="No source location" xml:space="preserve">
     <value>Method {0} 
@@ -261,40 +267,6 @@ THE SOFTWARE.</value>
   <data name="SelectXml" xml:space="preserve">
     <value>xml files (*.xml)%xml|All files (*.*)%*</value>
   </data>
-  <data name="g|geometry" xml:space="preserve">
-    <value>Clear geometry</value>
-  </data>
-  <data name="r|recentFiles" xml:space="preserve">
-    <value>Clear recent file list</value>
-  </data>
-  <data name="InvalidFile" xml:space="preserve">
-    <value>The file
-{0}
-is not a valid coverage file:
-{1}</value>
-  </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file
-{0} 
-is out of date with respect to some of the source files.</value>
-  </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file
-{0} 
-is out of date with respect to source file
-{1}.</value>
-  </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>The file
-{0} 
-refers to source files not found on this computer.</value>
-  </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>The file
-{0} 
-refers to absent to source file
-{1}.</value>
-  </data>
   <data name="LoadWarning" xml:space="preserve">
     <value>Inconsistent Coverage File</value>
   </data>
@@ -305,17 +277,12 @@ refers to absent to source file
     <value>About...</value>
   </data>
   <data name="ProgramComments" xml:space="preserve">
-    <value>{0}
-Icons from the Visual Studio 2017 collection
+    <value>Icons from the Visual Studio 2017 collection
 https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
 and from the Tango Project
 http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>
   <data name="LoadInfo" xml:space="preserve">
     <value>Note</value>
-  </data>
-  <data name="No source location" xml:space="preserve">
-    <value>Method {0} 
-has no corresponding source location</value>
   </data>
 </root>
