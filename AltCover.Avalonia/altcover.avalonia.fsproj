@@ -54,7 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
     <PackageReference Include="Avalonia" Version="0.9.10" />
     <PackageReference Include="Avalonia.Desktop" Version="0.9.10" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
