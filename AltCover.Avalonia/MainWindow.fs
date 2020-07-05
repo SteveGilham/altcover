@@ -355,6 +355,24 @@ type MainWindow() as this =
     // The sum of all these events -- we have explicitly selected a file
     let fileSelection = select |> Seq.fold Event.merge click
     let refresh = this.FindControl<MenuItem>("Refresh").Click |> Event.map (fun _ -> 0)
+    let makeNewRow name (anIcon:Lazy<Bitmap>) =
+      let row = TreeViewItem()
+      row.BorderThickness <- Thickness 1.0
+      row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
+      row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
+                                          let items = (row.Header :?> StackPanel).Children
+                                          items.RemoveAt(0)
+                                          let mark = Image()
+                                          mark.Source <- if row.IsExpanded
+                                                         then icons.TreeCollapse.Force()
+                                                         else icons.TreeExpand.Force()
+                                          mark.Margin <- Thickness.Parse("2")
+                                          items.Insert(0, mark)
+                                          evt.Handled <- true)
+      row.Items <- List<TreeViewItem>()
+      row.Header <- makeTreeNode name <| anIcon.Force()
+      row
+
     select
     |> Seq.fold Event.merge refresh
     |> Event.add this.HideAboutBox
@@ -380,42 +398,15 @@ type MainWindow() as this =
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
                                    // mappings.Clear()
-                                   let row = TreeViewItem()
-                                   row.BorderThickness <- Thickness 1.0
-                                   row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
-                                   row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
-                                                                       let items = (row.Header :?> StackPanel).Children
-                                                                       items.RemoveAt(0)
-                                                                       let mark = Image()
-                                                                       mark.Source <- if row.IsExpanded
-                                                                                      then icons.TreeCollapse.Force()
-                                                                                      else icons.TreeExpand.Force()
-                                                                       mark.Margin <- Thickness.Parse("2")
-                                                                       items.Insert(0, mark)
-                                                                       evt.Handled <- true)
-                                   row.Items <- List<TreeViewItem>()
-                                   row.Header <- makeTreeNode name <| icons.Xml.Force()
-                                   model.Add row
                                    {
                                       Model = model
-                                      Row = row
+                                      Row = let row = makeNewRow name icons.Xml
+                                            model.Add row
+                                            row
                                    }
           AddNode = fun context icon name ->
                                  { context with
-                                       Row = let row = TreeViewItem()
-                                             row.Tapped
-                                             |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
-                                                                      let items = (row.Header :?> StackPanel).Children
-                                                                      items.RemoveAt(0)
-                                                                      let mark = Image()
-                                                                      mark.Source <- if row.IsExpanded
-                                                                                     then icons.TreeCollapse.Force()
-                                                                                     else icons.TreeExpand.Force()
-                                                                      mark.Margin <- Thickness.Parse("2")
-                                                                      items.Insert(0, mark)
-                                                                      evt.Handled <- true)
-                                             row.Items <- List<TreeViewItem>()
-                                             row.Header <- makeTreeNode name <| icon.Force()
+                                       Row = let row = makeNewRow name icon
                                              (context.Row.Items :?> List<TreeViewItem>).Add row
                                              row }
           Map = this.PrepareDoubleTap
