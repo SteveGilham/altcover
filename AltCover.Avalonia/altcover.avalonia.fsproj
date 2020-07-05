@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(ProjectDir)..\packages\avostres.ilrepack\2.1.8\build\ILRepack.props" Condition="Exists('$(ProjectDir)..\packages\avostres.ilrepack\2.1.8\build\ILRepack.props')" />
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -14,9 +14,7 @@
     <GlobalDefineConstants>AVALONIA</GlobalDefineConstants>
     <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags Condition="'$(OS)' == 'Windows_NT'">--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --staticlink:AltCover.UICommon</OtherFlags>
-    <OtherFlags Condition="'$(OS)' != 'Windows_NT'">--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
-    <CopyLocalLockFileAssemblies Condition="'$(OS)' != 'Windows_NT'">true</CopyLocalLockFileAssemblies>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -74,19 +72,4 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.2" />
   </ItemGroup>
-
-  <Target Name="StaticLink" BeforeTargets="AfterBuild" Condition="'$(OS)' != 'Windows_NT'">
-    <PropertyGroup>
-      <WorkDirectory>$(OutDir)Raw</WorkDirectory>
-    </PropertyGroup>
-    <ItemGroup>
-      <BuiltFiles Include="$(OutDir)*.*" />
-    </ItemGroup>
-
-    <MakeDir Directories="$(WorkDirectory)" />
-    <Copy SourceFiles="@(BuiltFiles)"
-          DestinationFolder="$(WorkDirectory)" />
-    <Exec WorkingDirectory="$(WorkDirectory)"
-          Command="$(ILRepack) /out:$(TargetPath) /attr=$(TargetFileName) /keyfile=$(ProjectDir)..\Build\Infrastructure.snk /target:library /internalize $(TargetFileName) AltCover.UICommon.dll" />
-  </Target>
 </Project>

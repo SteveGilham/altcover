@@ -3,7 +3,7 @@
         xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
         x:Class="AltCover.Avalonia.MainWindow"
         Title="AltCover.Avalonia"
-        Icon="resm:AltCover.UICommon.VIcon.ico"
+        Icon="resm:AltCover.UICommon.VIcon.ico?assembly=AltCover.UICommon"
         Height="550" Width="750">
   <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
     <Menu Name="Menu" DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Center">
@@ -15,7 +15,7 @@
       <MenuItem Name="Open">
         <MenuItem.Header>
           <StackPanel>
-            <Image Source="resm:AltCover.UICommon.Open_6529.png"  Stretch="None" />
+            <Image Source="resm:AltCover.UICommon.Open_6529.png?assembly=AltCover.UICommon"  Stretch="None" />
             <TextBlock Name="OpenText" Text="" />
           </StackPanel>
         </MenuItem.Header>
@@ -23,7 +23,7 @@
       <MenuItem Name="List" IsEnabled="False">
         <MenuItem.Header>
           <StackPanel>
-            <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandChevronDown_lightGray_16x.png" Stretch="None" Margin="0,8" />
+            <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandChevronDown_lightGray_16x.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
           </StackPanel>
         </MenuItem.Header>
         <MenuItem Header="0"></MenuItem>
@@ -40,7 +40,7 @@
       <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
         <MenuItem.Header>
           <StackPanel>
-            <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin_16x.png"  Stretch="None" />
+            <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
             <TextBlock Name="RefreshText" Text="" HorizontalAlignment="Center" />
           </StackPanel>
         </MenuItem.Header>
@@ -48,7 +48,7 @@
       <MenuItem Name="Font" MinWidth="80" IsVisible="false">
         <MenuItem.Header>
           <StackPanel>
-            <Image Source="resm:AltCover.UICommon.Font_16x.png"  Stretch="None" />
+            <Image Source="resm:AltCover.UICommon.Font_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
             <TextBlock Name="FontText" Text="" HorizontalAlignment="Center" />
           </StackPanel>
         </MenuItem.Header>
@@ -61,7 +61,7 @@
       <MenuItem Name="About" MinWidth="80">
         <MenuItem.Header>
           <StackPanel>
-            <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png"  Stretch="None" />
+            <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
             <TextBlock Name="AboutText" Text="" HorizontalAlignment="Center" />
           </StackPanel>
         </MenuItem.Header>
@@ -69,7 +69,7 @@
       <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
         <MenuItem.Header>
           <StackPanel>
-            <Image Source="resm:AltCover.UICommon.Exit_16x.png" Stretch="None" />
+            <Image Source="resm:AltCover.UICommon.Exit_16x.png?assembly=AltCover.UICommon" Stretch="None" />
             <TextBlock Name="ExitText" Text="" HorizontalAlignment="Center" />
           </StackPanel>
         </MenuItem.Header>
@@ -79,7 +79,7 @@
       <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
         <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Image Name="Status" Source="resm:AltCover.UICommon.dialog-error.png" Stretch="None" />
+          <Image Name="Status" Source="resm:AltCover.UICommon.dialog-error.png?assembly=AltCover.UICommon" Stretch="None" />
           <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
                    TextWrapping="NoWrap"
                    AcceptsReturn="true"
@@ -91,7 +91,7 @@
         </Button>
       </StackPanel>
       <StackPanel DockPanel.Dock="Top" Margin="10" Name="AboutBox" IsVisible="false">
-        <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.UICommon.logo.png" HorizontalAlignment="Center" />
+        <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.UICommon.logo.png?assembly=AltCover.UICommon" HorizontalAlignment="Center" />
         <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <TabControl Name="AboutTab" Margin="40">
           <TabItem Name="AboutDetails" Height="150">
