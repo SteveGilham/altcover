@@ -101,6 +101,7 @@ type MainWindow() as this =
     image.Margin <- Thickness.Parse("2")
     let display = new StackPanel()
     display.Orientation <- Layout.Orientation.Horizontal
+    display.Background <- Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromRgb(0uy, 255uy, 0uy), 1.0)
     display.Children.Add tree
     display.Children.Add image
     display.Children.Add text
@@ -358,15 +359,17 @@ type MainWindow() as this =
     let makeNewRow name (anIcon:Lazy<Bitmap>) =
       let row = TreeViewItem()
       row.BorderThickness <- Thickness 1.0
+      row.BorderBrush <- Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromRgb(255uy, 0uy, 0uy), 1.0)
       row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
       row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
+                                          printfn "%s %d" name row.Level
                                           let items = (row.Header :?> StackPanel).Children
                                           items.RemoveAt(0)
                                           let mark = Image()
                                           mark.Source <- if row.Items.OfType<Object>().Any()
                                                          then if row.IsExpanded
-                                                         then icons.TreeCollapse.Force()
-                                                         else icons.TreeExpand.Force()
+                                                              then icons.TreeCollapse.Force()
+                                                              else icons.TreeExpand.Force()
                                                          else icons.Blank.Force()
                                           mark.Margin <- Thickness.Parse("2")
                                           items.Insert(0, mark)
@@ -410,6 +413,7 @@ type MainWindow() as this =
                                  { context with
                                        Row = let row = makeNewRow name icon
                                              (context.Row.Items :?> List<TreeViewItem>).Add row
+                                             printfn "%s %d" name row.Level
                                              row }
           Map = this.PrepareDoubleTap
         }
