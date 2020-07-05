@@ -125,13 +125,11 @@
                       HorizontalScrollBarVisibility="Auto">
           <TreeView Name="Tree" MinWidth="150" />
         </ScrollViewer>
-        <TextBox DockPanel.Dock="Right"
-                 Name="Source" MinWidth="150"
-                 TextWrapping="NoWrap"
-                 AcceptsReturn="true"
-                 Background="White"
-                 Foreground="Silver"
-                 IsReadOnly="true" />
+        <TextBlock DockPanel.Dock="Right"
+                   Name="Source" MinWidth="150"
+                   TextWrapping="NoWrap"
+                   Background="White"
+                   Foreground="Silver" />
       </DockPanel>
     </DockPanel>
   </DockPanel>

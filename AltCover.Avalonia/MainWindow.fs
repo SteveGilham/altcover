@@ -17,7 +17,6 @@ open AltCover.Visualizer.GuiCommon
 
 open Avalonia
 open Avalonia.Controls
-open Avalonia.Controls.Html
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
@@ -65,7 +64,7 @@ type TextTag =
     { Foreground = a
       Background = b }
 
-  static member Visited = TextTag.Make "#404040" "#cefdce" // Dark on Pale Green
+  static member Visited = TextTag.Make "#00FF00" "#00FF00" // "#404040" "#cefdce" // Dark on Pale Green
   static member Declared = TextTag.Make "#FFA500" "#FFFFFF" // Orange on White
   static member StaticAnalysis = TextTag.Make "#808080" "#F5F5F5" // Grey on White Smoke
   static member Automatic = TextTag.Make "#808080" "#FFFF00" // Grey on Yellow
@@ -76,6 +75,7 @@ type TextTag =
 // Range colouring information
 type internal ColourTag =
   { style : TextTag
+    vc : int
     line : int
     column : int
     endline : int
@@ -216,6 +216,7 @@ type MainWindow() as this =
           let because = n.GetAttribute("excluded-because", String.Empty)
           { style =
               if visitcount = 0 then selectStyle because excluded else TextTag.Visited
+            vc = visitcount
             line = Int32.TryParse(line) |> snd
             column = (Int32.TryParse(column) |> snd)
             endline = Int32.TryParse(endline) |> snd
@@ -223,8 +224,11 @@ type MainWindow() as this =
 
         let filterCoverage lines (n : ColourTag) =
           n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
-        let tagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
-          ()
+        let tagByCoverage (buff : TextBlock) (lines : string array) (n : ColourTag) =
+          let start = (n.column - 1) + (lines |> Seq.take (n.line - 1) |> Seq.sumBy (fun l -> Environment.NewLine.Length + l.Length))
+          let finish = (n.endcolumn - 1) + (lines |> Seq.take (n.endline - 1) |> Seq.sumBy (fun l -> Environment.NewLine.Length + l.Length))
+          FormattedTextStyleSpan(start, finish - start,
+                        SolidColorBrush.Parse n.style.Foreground)
 
       //// bound by current line length in case we're looking from stale coverage
       //let line = buff.GetIterAtLine(n.line - 1)
@@ -239,15 +243,18 @@ type MainWindow() as this =
 
         let markCoverage (root : XPathNavigator) textBox (lines : string []) filename =
           let lc = lines.Length
-          root.Select("//seqpnt[@document='" + filename + "']")
-          |> Seq.cast<XPathNavigator>
-          |> Seq.map coverageToTag
-          |> Seq.filter (filterCoverage lc)
-          |> Seq.iter (tagByCoverage textBox lines)
+          let formats = root.Select("//seqpnt[@document='" + filename + "']")
+                        |> Seq.cast<XPathNavigator>
+                        |> Seq.map coverageToTag
+                        |> Seq.filter (filterCoverage lc)
+                        |> Seq.sortByDescending (fun t -> t.vc)
+                        |> Seq.map (tagByCoverage textBox lines)
+                        |> Seq.toList
+          Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
-             let text = this.FindControl<TextBox>("Source")
+             let text = this.FindControl<TextBlock>("Source")
              let points =
                xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
              if Seq.isEmpty points then
@@ -281,12 +288,12 @@ type MainWindow() as this =
                    let textLines = File.ReadAllLines path
                    let scroll = line - 1 + extra
 
-                   let capped =
-                     if scroll >= textLines.Length then textLines.Length - 1 else scroll
-                   // Scroll into mid-view -- not entirely reliable
-                   text.CaretIndex <-
-                     Seq.sumBy (fun (l : String) -> l.Length + 1)
-                       (textLines |> Seq.take capped) //System.Environment.NewLine.Length
+                   //let capped =
+                   //  if scroll >= textLines.Length then textLines.Length - 1 else scroll
+                   //// Scroll into mid-view -- not entirely reliable
+                   //text.CaretIndex <-
+                   //  Seq.sumBy (fun (l : String) -> l.Length + 1)
+                   //    (textLines |> Seq.take capped) //System.Environment.NewLine.Length
 
                    // TODO -- colouring
                    let root = xpath.Clone()
@@ -398,7 +405,7 @@ type MainWindow() as this =
           UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
           UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
                                         tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
-                                        this.FindControl<TextBox>("Source").Text <- String.Empty
+                                        this.FindControl<TextBlock>("Source").Text <- String.Empty
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
