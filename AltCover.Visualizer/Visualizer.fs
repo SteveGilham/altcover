@@ -365,7 +365,7 @@ module private Gui =
       System.AssemblyVersionInformation.AssemblyFileVersion
     handler.aboutVisualizer.Copyright <-
       Resource.Format("aboutVisualizer.Copyright",
-         System.AssemblyVersionInformation.AssemblyCopyright)
+         [ System.AssemblyVersionInformation.AssemblyCopyright ])
     handler.aboutVisualizer.License <-
       Resource.Format("License",
                         [ System.AssemblyVersionInformation.AssemblyCopyright ])
@@ -704,8 +704,8 @@ module private Gui =
         let noSource() =
           let message =
             Resource.Format("No source location",
-               (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
-                 .Text.Replace("<", "&lt;").Replace(">", "&gt;"))
+               [(activation.Column.Cells.[1] :?> Gtk.CellRendererText)
+                  .Text.Replace("<", "&lt;").Replace(">", "&gt;")])
           showMessageOnGuiThread handler.mainWindow AltCover.Visualizer.MessageType.Info message
         noSource()
       else
