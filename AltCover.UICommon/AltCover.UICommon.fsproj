@@ -40,9 +40,6 @@
     <EmbeddedResource Include="class_16xLG.png" />
     <EmbeddedResource Include="CollapseChevronDown_16x.png" />
     <EmbeddedResource Include="config.xsd" />
-    <EmbeddedResource Include="dialog-error.png" />
-    <EmbeddedResource Include="dialog-information.png" />
-    <EmbeddedResource Include="dialog-warning.png" />
     <EmbeddedResource Include="Effects_16x.png" />
     <EmbeddedResource Include="Event_16x.png" />
     <EmbeddedResource Include="Exit_16x.png" />
@@ -64,7 +61,11 @@
     <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
+    <EmbeddedResource Include="StatusCriticalError_32x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
+    <EmbeddedResource Include="StatusInformation_32x.png" />
+    <EmbeddedResource Include="StatusWarning_16x.png" />
+    <EmbeddedResource Include="StatusWarning_32x.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VSTAAbout_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />

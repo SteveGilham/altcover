@@ -79,7 +79,7 @@
       <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
         <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Image Name="Status" Source="resm:AltCover.UICommon.dialog-error.png?assembly=AltCover.UICommon" Stretch="None" />
+          <Image Name="Status" Source="resm:AltCover.UICommon.StatusCriticalError_32x.png?assembly=AltCover.UICommon" Stretch="None" />
           <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
                    TextWrapping="NoWrap"
                    AcceptsReturn="true"
@@ -98,7 +98,6 @@
             <StackPanel Height="150">
               <TextBlock Name="Description" HorizontalAlignment="Center" TextAlignment="Center" />
               <TextBlock Name="Copyright" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
-              <TextBlock Name="CopyrightTango" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
               <Button Name="LinkButton" HorizontalAlignment="Center"
                       BorderThickness="0,0,0,1" Foreground="DarkBlue"
                       Padding="0" Margin="0">

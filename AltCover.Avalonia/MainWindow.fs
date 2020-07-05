@@ -429,7 +429,6 @@ type MainWindow() as this =
                                                  (CultureInfo.InvariantCulture,
                                                   Resource.GetResourceString "aboutVisualizer.Copyright",
                                                   copyright)
-    this.FindControl<TextBlock>("CopyrightTango").Text <- Resource.GetResourceString "aboutVisualizer.Tango"
 
     let link = this.FindControl<TextBlock>("Link")
     link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"

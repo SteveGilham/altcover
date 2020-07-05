@@ -270,11 +270,6 @@ THE SOFTWARE.</value>
   <data name="About" xml:space="preserve">
     <value>Pri...</value>
   </data>
-  <data name="aboutVisualizer.Tango" xml:space="preserve">
-    <value>
-kaj de la Tango Project
-http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
-  </data>
   <data name="LoadInfo" xml:space="preserve">
     <value>Noto</value>
   </data>
