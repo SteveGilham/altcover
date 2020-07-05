@@ -38,6 +38,7 @@
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
     <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="CollapseChevronDown_16x.png" />
     <EmbeddedResource Include="config.xsd" />
     <EmbeddedResource Include="dialog-error.png" />
     <EmbeddedResource Include="dialog-information.png" />
@@ -47,6 +48,7 @@
     <EmbeddedResource Include="Exit_16x.png" />
     <EmbeddedResource Include="ExpandChevronDown_16x.png" />
     <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
+    <EmbeddedResource Include="ExpandChevronRight_16x.png" />
     <EmbeddedResource Include="Font_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="method_16xLG.png" />

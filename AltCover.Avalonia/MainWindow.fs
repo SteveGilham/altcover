@@ -90,6 +90,9 @@ type MainWindow() as this =
   let icons = Icons(fun x -> new Bitmap(x))
 
   let makeTreeNode name icon =
+    let tree = new Image()
+    tree.Source <- icons.TreeExpand.Force()
+    tree.Margin <- Thickness.Parse("2")
     let text = new TextBlock()
     text.Text <- name
     text.Margin <- Thickness.Parse("2")
@@ -98,6 +101,7 @@ type MainWindow() as this =
     image.Margin <- Thickness.Parse("2")
     let display = new StackPanel()
     display.Orientation <- Layout.Orientation.Horizontal
+    display.Children.Add tree
     display.Children.Add image
     display.Children.Add text
     display.Tag <- name
@@ -377,7 +381,18 @@ type MainWindow() as this =
           SetXmlNode = fun name -> let model = auxModel.Model
                                    // mappings.Clear()
                                    let row = TreeViewItem()
-                                   row.Tapped |> Event.add (fun _ -> row.IsExpanded <- true)
+                                   row.BorderThickness <- Thickness 1.0
+                                   row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
+                                   row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
+                                                                       let items = (row.Header :?> StackPanel).Children
+                                                                       items.RemoveAt(0)
+                                                                       let mark = Image()
+                                                                       mark.Source <- if row.IsExpanded
+                                                                                      then icons.TreeCollapse.Force()
+                                                                                      else icons.TreeExpand.Force()
+                                                                       mark.Margin <- Thickness.Parse("2")
+                                                                       items.Insert(0, mark)
+                                                                       evt.Handled <- true)
                                    row.Items <- List<TreeViewItem>()
                                    row.Header <- makeTreeNode name <| icons.Xml.Force()
                                    model.Add row
@@ -388,7 +403,17 @@ type MainWindow() as this =
           AddNode = fun context icon name ->
                                  { context with
                                        Row = let row = TreeViewItem()
-                                             row.Tapped |> Event.add (fun _ -> row.IsExpanded <- true)
+                                             row.Tapped
+                                             |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
+                                                                      let items = (row.Header :?> StackPanel).Children
+                                                                      items.RemoveAt(0)
+                                                                      let mark = Image()
+                                                                      mark.Source <- if row.IsExpanded
+                                                                                     then icons.TreeCollapse.Force()
+                                                                                     else icons.TreeExpand.Force()
+                                                                      mark.Margin <- Thickness.Parse("2")
+                                                                      items.Insert(0, mark)
+                                                                      evt.Handled <- true)
                                              row.Items <- List<TreeViewItem>()
                                              row.Header <- makeTreeNode name <| icon.Force()
                                              (context.Row.Items :?> List<TreeViewItem>).Add row
