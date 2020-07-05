@@ -97,9 +97,14 @@
           <TabItem Name="AboutDetails" Height="36" MaxHeight="36">
             <StackPanel Height="150">
               <TextBlock Name="Description" HorizontalAlignment="Center" TextAlignment="Center" />
-              <TextBlock Name="Copyright" Margin="10" HorizontalAlignment="Center" />
-              <TextBlock Name="Comments" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
-              <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
+              <TextBlock Name="Copyright" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
+              <TextBlock Name="CopyrightTango" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
+              <Button Name="LinkButton" HorizontalAlignment="Center" BorderThickness="0"
+                      Padding="0">
+                <TextBlock Name="Link" MinHeight="20" Focusable="True"
+                           TextAlignment="Center" Background="White"
+                           HorizontalAlignment="Center" Foreground="DarkBlue" />
+              </Button>
             </StackPanel>
           </TabItem>
           <TabItem Name="License" Height="36" MaxHeight="36">

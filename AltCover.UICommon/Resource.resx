@@ -163,7 +163,7 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>About AltCover Visualizer</value>
   </data>
   <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
-    <value>GitHub repo</value>
+    <value>Visit the AltCover GitHub repo</value>
   </data>
   <data name="C_redits" xml:space="preserve">
     <value>C_redits</value>
@@ -211,9 +211,6 @@ has no corresponding source location</value>
   <data name="OpenFile.Cancel" xml:space="preserve">
     <value>_Cancel</value>
   </data>
-  <data name="ProgramDescription" xml:space="preserve">
-    <value>Coverage visualizer for NCover and OpenCover reports</value>
-  </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
 
@@ -239,9 +236,6 @@ THE SOFTWARE.</value>
   </data>
   <data name="AboutDialog.License" xml:space="preserve">
     <value>License</value>
-  </data>
-  <data name="WebsiteLabel" xml:space="preserve">
-    <value>GitHub repo</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
@@ -276,10 +270,8 @@ THE SOFTWARE.</value>
   <data name="About" xml:space="preserve">
     <value>About...</value>
   </data>
-  <data name="ProgramComments" xml:space="preserve">
-    <value>Icons from the Visual Studio 2017 collection
-https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
-and from the Tango Project
+  <data name="aboutVisualizer.Tango" xml:space="preserve">
+    <value>and from the Tango Project
 http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>
   <data name="LoadInfo" xml:space="preserve">

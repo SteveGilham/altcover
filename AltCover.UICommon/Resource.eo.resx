@@ -129,7 +129,7 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>Pri AltCover Visualizer</value>
   </data>
   <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
-    <value>GitHub repo</value>
+    <value>Vizitu la magazinon AltCover en GitHub</value>
   </data>
   <data name="CoverageOutOfDate" xml:space="preserve">
     <value>La dosiero
@@ -211,9 +211,6 @@ havas neniun respondan fontan lokon</value>
   <data name="OpenFile.Cancel" xml:space="preserve">
     <value>_Nuligi</value>
   </data>
-  <data name="ProgramDescription" xml:space="preserve">
-    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
-  </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
 
@@ -239,9 +236,6 @@ THE SOFTWARE.</value>
   </data>
   <data name="AboutDialog.License" xml:space="preserve">
     <value>Permesilo</value>
-  </data>
-  <data name="WebsiteLabel" xml:space="preserve">
-    <value>GitHub repo</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Fermi</value>
@@ -276,9 +270,8 @@ THE SOFTWARE.</value>
   <data name="About" xml:space="preserve">
     <value>Pri...</value>
   </data>
-  <data name="ProgramComments" xml:space="preserve">
-    <value>Ikonoj de la Visual Studio 2017-kolekto
-https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
+  <data name="aboutVisualizer.Tango" xml:space="preserve">
+    <value>
 kaj de la Tango Project
 http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>

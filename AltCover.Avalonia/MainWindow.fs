@@ -401,22 +401,19 @@ type MainWindow() as this =
     this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "
                                                    + AssemblyVersionInformation.AssemblyFileVersion
     this.FindControl<TextBlock>("Description").Text <- Resource.GetResourceString
-                                                         "ProgramDescription"
+                                                         "aboutVisualizer.Comments"
     let copyright = AssemblyVersionInformation.AssemblyCopyright
-    this.FindControl<TextBlock>("Copyright").Text <- copyright
-    this.FindControl<TextBlock>("Comments").Text <- Resource.GetResourceString
-                                                      "ProgramComments"
-    let link = this.FindControl<HtmlLabel>("Link")
-    link.Text <-
-      """<center><a href="http://www.github.com/SteveGilham/altcover">"""
-      + Resource.GetResourceString "WebsiteLabel" + "</a></center>"
-    link.PointerPressed |> Event.add (fun _ -> armed <- true)
-    link.PointerLeave |> Event.add (fun _ -> armed <- false)
-    link.PointerReleased |> Event.add ignore
-    // Windows -- Process Start (url)
-    // Mac -- ("open", url)
-    // *nix -- ("xdg-open", url)
-    //Application.Instance.Open("http://www.github.com/SteveGilham/altcover"))
+    this.FindControl<TextBlock>("Copyright").Text <- String.Format
+                                                 (CultureInfo.InvariantCulture,
+                                                  Resource.GetResourceString "aboutVisualizer.Copyright",
+                                                  copyright)
+    this.FindControl<TextBlock>("CopyrightTango").Text <- Resource.GetResourceString "aboutVisualizer.Tango"
+
+    let link = this.FindControl<TextBlock>("Link")
+    link.Text <- Resource.GetResourceString "aboutVisualizer.WebsiteLabel"
+    let linkButton = this.FindControl<Button>("LinkButton")
+    linkButton.Click |> Event.add (fun _ -> Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
+                                              "http://www.github.com/SteveGilham/altcover")
 
     this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString "About"
     this.FindControl<TabItem>("License").Header <- Resource.GetResourceString
