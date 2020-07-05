@@ -99,11 +99,12 @@
               <TextBlock Name="Description" HorizontalAlignment="Center" TextAlignment="Center" />
               <TextBlock Name="Copyright" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
               <TextBlock Name="CopyrightTango" Margin="10" HorizontalAlignment="Center" TextAlignment="Center" />
-              <Button Name="LinkButton" HorizontalAlignment="Center" BorderThickness="0"
-                      Padding="0">
-                <TextBlock Name="Link" MinHeight="20" Focusable="True"
+              <Button Name="LinkButton" HorizontalAlignment="Center"
+                      BorderThickness="0,0,0,1" Foreground="DarkBlue"
+                      Padding="0" Margin="0">
+                <TextBlock Name="Link"
                            TextAlignment="Center" Background="White"
-                           HorizontalAlignment="Center" Foreground="DarkBlue" />
+                           HorizontalAlignment="Center" />
               </Button>
             </StackPanel>
           </TabItem>
