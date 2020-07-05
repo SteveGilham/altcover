@@ -68,6 +68,7 @@ type ConvertToBarChartCommand() =
     finally
       Directory.SetCurrentDirectory here
 
+#if SOURCEMAP
 /// <summary>
 /// <para type="synopsis">Generates a set of HTML reports from coverage data.</para>
 /// <para type="description">The report produced is akin to that displayed by the AltCover Visualizer, for both NCover and OpenCover coverage format data.  The input is as a file name or an `XDocument` from the pipeline, the output is to the pipeline as a map from fule path to `XDocument`, and, optionally, to a folder. </para>
@@ -128,3 +129,4 @@ type ConvertToSourceMapCommand(outputFolder : String) =
       result |> self.WriteObject
     finally
       Directory.SetCurrentDirectory here
+#endif

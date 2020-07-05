@@ -42,8 +42,8 @@
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fsi" />
     <Compile Include="CoverageFormats.fs" />
-    <Compile Include="RenderToHtml.fsi" />
-    <Compile Include="RenderToHtml.fs" />
+    <!-- Compile Include="RenderToHtml.fsi" />
+    <Compile Include="RenderToHtml.fs" / -->
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCoverStrict.xsd" />

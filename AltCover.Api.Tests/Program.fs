@@ -25,8 +25,10 @@ module TestMain =
           Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
           Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
           Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
+#if SOURCEMAP
           Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
           Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
+#endif
           Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
         ]
 

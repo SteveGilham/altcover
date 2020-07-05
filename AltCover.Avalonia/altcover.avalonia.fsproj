@@ -44,10 +44,10 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\AltCover.Visualizer\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
+    <!-- Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="..\AltCover.Toolkit\XmlInternal.fs" Link="XmlInternal.fs" />
     <Compile Include="..\AltCover.Toolkit\Xml.fs" Link="Xml.fs" />
-    <Compile Include="..\AltCover.Toolkit\RenderToHtml.fs" Link="RenderToHtml.fs" />
+    <Compile Include="..\AltCover.Toolkit\RenderToHtml.fs" Link="RenderToHtml.fs" / -->
     <Compile Include="MainWindow.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />

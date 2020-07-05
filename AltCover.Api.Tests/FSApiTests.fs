@@ -433,6 +433,7 @@ module FSApiTests =
   let internal mangleFile (f:String) =
     f.Replace(@"C:\Users\steve\Documents\GitHub\altcover", SolutionRoot.location).Replace('\\', Path.DirectorySeparatorChar)
 
+#if SOURCEMAP
   [<Test>]
   let NCoverFindsFiles() =
     use stream =
@@ -467,3 +468,4 @@ module FSApiTests =
 
     let rewrite = AltCover.RenderToHtml.Action doc
     test<@ rewrite |> Seq.map fst |> Seq.toList = ["Filter.fs"] @>
+#endif
