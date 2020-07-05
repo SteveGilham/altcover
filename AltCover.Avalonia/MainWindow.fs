@@ -363,9 +363,11 @@ type MainWindow() as this =
                                           let items = (row.Header :?> StackPanel).Children
                                           items.RemoveAt(0)
                                           let mark = Image()
-                                          mark.Source <- if row.IsExpanded
+                                          mark.Source <- if row.Items.OfType<Object>().Any()
+                                                         then if row.IsExpanded
                                                          then icons.TreeCollapse.Force()
                                                          else icons.TreeExpand.Force()
+                                                         else icons.Blank.Force()
                                           mark.Margin <- Thickness.Parse("2")
                                           items.Insert(0, mark)
                                           evt.Handled <- true)
