@@ -5,10 +5,6 @@ open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.Linq
-open System.Reflection
-open System.Xml
-open System.Xml.Linq
-open System.Xml.Schema
 open System.Xml.XPath
 
 open AltCover.Augment
@@ -101,7 +97,6 @@ type MainWindow() as this =
     image.Margin <- Thickness.Parse("2")
     let display = new StackPanel()
     display.Orientation <- Layout.Orientation.Horizontal
-    display.Background <- Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromRgb(0uy, 255uy, 0uy), 1.0)
     display.Children.Add tree
     display.Children.Add image
     display.Children.Add text
@@ -365,27 +360,18 @@ type MainWindow() as this =
     let refresh = this.FindControl<MenuItem>("Refresh").Click |> Event.map (fun _ -> 0)
     let makeNewRow name (anIcon:Lazy<Bitmap>) =
       let row = TreeViewItem()
-      row.BorderThickness <- Thickness 1.0
-      row.BorderBrush <- Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromRgb(255uy, 0uy, 0uy), 1.0)
       row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
-      row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
-                                          if row.HeaderPresenter.IsNotNull
-                                          then let hp = row.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
-                                               let grid = hp.Parent :?> Grid
-                                               printfn "%A" grid.Margin
-                                               grid.Margin <- Thickness(float row.Level * 4.0, 0.0, 0.0, 0.0)
-                                               //printfn "%A" grid.Padding
-                                               //let space = grid.ColumnDefinitions
-                                               //            |> Seq.head
-                                               //space.Width <- GridLength(4.0)
-                                               grid.ColumnDefinitions
-                                               |> Seq.iter (fun d -> printfn "%A" d.Width)
-                                               let border = grid.Parent :?> Border
-                                               printfn "%A" border.BorderThickness
-                                               printfn "%A" border.Margin
-                                               printfn "%A" border.Padding
+      row.LayoutUpdated
+      |> Event.add (fun _ -> let remargin (t:TreeViewItem) =
+                               if t.HeaderPresenter.IsNotNull
+                               then let hp = t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
+                                    let grid = hp.Parent :?> Grid
+                                    grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
 
-                                          printfn "%s %d" name row.Level
+                             remargin row
+                             row.Items.OfType<TreeViewItem>()
+                             |> Seq.iter remargin)
+      row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
                                           let items = (row.Header :?> StackPanel).Children
                                           items.RemoveAt(0)
                                           let mark = Image()
@@ -436,7 +422,6 @@ type MainWindow() as this =
                                  { context with
                                        Row = let row = makeNewRow name icon
                                              (context.Row.Items :?> List<TreeViewItem>).Add row
-                                             printfn "%s %d" name row.Level
                                              row }
           Map = this.PrepareDoubleTap
         }
