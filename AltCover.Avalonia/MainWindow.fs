@@ -369,6 +369,22 @@ type MainWindow() as this =
       row.BorderBrush <- Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromRgb(255uy, 0uy, 0uy), 1.0)
       row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
       row.Tapped |> Event.add (fun evt -> row.IsExpanded <- not row.IsExpanded
+                                          if row.HeaderPresenter.IsNotNull
+                                          then let hp = row.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
+                                               let grid = hp.Parent :?> Grid
+                                               printfn "%A" grid.Margin
+                                               grid.Margin <- Thickness(float row.Level * 4.0, 0.0, 0.0, 0.0)
+                                               //printfn "%A" grid.Padding
+                                               //let space = grid.ColumnDefinitions
+                                               //            |> Seq.head
+                                               //space.Width <- GridLength(4.0)
+                                               grid.ColumnDefinitions
+                                               |> Seq.iter (fun d -> printfn "%A" d.Width)
+                                               let border = grid.Parent :?> Border
+                                               printfn "%A" border.BorderThickness
+                                               printfn "%A" border.Margin
+                                               printfn "%A" border.Padding
+
                                           printfn "%s %d" name row.Level
                                           let items = (row.Header :?> StackPanel).Children
                                           items.RemoveAt(0)
