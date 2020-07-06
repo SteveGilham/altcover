@@ -393,7 +393,7 @@ type MainWindow() as this =
       let mutable auxModel =
         {
           Model = List<TreeViewItem>()
-          Row = TreeViewItem()
+          Row = null
         }
       let environment =
         {
