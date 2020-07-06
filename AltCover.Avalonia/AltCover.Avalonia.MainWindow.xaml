@@ -125,11 +125,22 @@
                       HorizontalScrollBarVisibility="Auto">
           <TreeView Name="Tree" MinWidth="150" />
         </ScrollViewer>
-        <TextBlock DockPanel.Dock="Right"
-                   Name="Source" MinWidth="150"
-                   TextWrapping="NoWrap"
-                   Background="White"
-                   Foreground="Silver" />
+        <ScrollViewer DockPanel.Dock="Right"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Auto">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock
+                     Name="Branches" MinWidth="50"
+                     TextWrapping="NoWrap"
+                     Background="#F5F5F5"
+                     Foreground="DarkGray" />
+            <TextBlock
+                     Name="Source" MinWidth="150"
+                     TextWrapping="NoWrap"
+                     Background="White"
+                     Foreground="Silver" />
+          </StackPanel>
+        </ScrollViewer>
       </DockPanel>
     </DockPanel>
   </DockPanel>
