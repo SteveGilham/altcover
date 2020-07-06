@@ -60,13 +60,20 @@ type TextTag =
     { Foreground = a
       Background = b }
 
-  static member Visited = TextTag.Make "#00FF00" "#00FF00" // "#404040" "#cefdce" // Dark on Pale Green
-  static member Declared = TextTag.Make "#FFA500" "#FFFFFF" // Orange on White
-  static member StaticAnalysis = TextTag.Make "#808080" "#F5F5F5" // Grey on White Smoke
-  static member Automatic = TextTag.Make "#808080" "#FFFF00" // Grey on Yellow
-  static member NotVisited = TextTag.Make "#ff0000" "#FFFFFF" // Red on White
-  static member Excluded = TextTag.Make "#87CEEB" "#FFFFFF" // Sky Blue on white
-  static member Partial = TextTag.Make "#404040" "#FFFF00" // Dark on Yellow
+  static member Visited = TextTag.Make "#0000CD" "#F5F5F5" // Medium Blue on White Smoke
+  // "#404040" "#cefdce" // Dark on Pale Green
+  static member Declared = TextTag.Make "#FFA500" "#F5F5F5" // Orange on White Smoke
+  // "#FFA500" "#FFFFFF" // Orange on White
+  static member StaticAnalysis = TextTag.Make "#708090" "#F5F5F5" // Slate Grey on White Smoke
+  // "#808080" "#F5F5F5" // Grey on White Smoke
+  static member Automatic = TextTag.Make "#FFD700" "#F5F5F5" // Gold on White Smoke
+  // "#808080" "#FFFF00" // Grey on Yellow
+  static member NotVisited = TextTag.Make "#DC143C" "#F5F5F5"// Crimson on White Smoke
+  //"#ff0000" "#FFFFFF" // Red on White
+  static member Excluded = TextTag.Make "#87CEEB" "#F5F5F5" // Sky Blue on White Smoke
+  // "#87CEEB" "#FFFFFF" // Sky Blue on white
+  static member Partial = TextTag.Make "#000000" "#F5F5F5" // Black on White Smoke
+  // "#404040" "#FFFF00" // Dark on Yellow
 
 // Range colouring information
 type internal ColourTag =

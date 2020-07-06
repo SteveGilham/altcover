@@ -127,18 +127,19 @@
         </ScrollViewer>
         <ScrollViewer DockPanel.Dock="Right"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto">
+                      HorizontalScrollBarVisibility="Auto"
+                      Background="WhiteSmoke">
           <StackPanel Orientation="Horizontal">
             <TextBlock
                      Name="Branches" MinWidth="50"
                      TextWrapping="NoWrap"
-                     Background="#F5F5F5"
+                     Background="White"
                      Foreground="DarkGray" />
             <TextBlock
                      Name="Source" MinWidth="150"
                      TextWrapping="NoWrap"
-                     Background="White"
-                     Foreground="Silver" />
+                     Background="WhiteSmoke"
+                     Foreground="Gray" />
           </StackPanel>
         </ScrollViewer>
       </DockPanel>
