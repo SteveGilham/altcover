@@ -226,9 +226,9 @@ type MainWindow() as this =
 
         let filterCoverage lines (n : ColourTag) =
           n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
-        let tagByCoverage (buff : TextBlock) (lines : string array) (n : ColourTag) =
-          let start = (n.column - 1) + (lines |> Seq.take (n.line - 1) |> Seq.sumBy (fun l -> Environment.NewLine.Length + l.Length))
-          let finish = (n.endcolumn - 1) + (lines |> Seq.take (n.endline - 1) |> Seq.sumBy (fun l -> Environment.NewLine.Length + l.Length))
+        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : ColourTag) =
+          let start = (n.column - 1) + (lines |> Seq.take (n.line - 1) |> Seq.sumBy (fun l -> l.Length))
+          let finish = (n.endcolumn - 1) + (lines |> Seq.take (n.endline - 1) |> Seq.sumBy (fun l -> l.Length))
           FormattedTextStyleSpan(start, finish - start,
                         SolidColorBrush.Parse n.style.Foreground)
 
@@ -243,7 +243,7 @@ type MainWindow() as this =
       //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
       //buff.ApplyTag(tag, from, until)
 
-        let markCoverage (root : XPathNavigator) textBox (lines : string []) filename =
+        let markCoverage (root : XPathNavigator) textBox (lines : FormattedTextLine list) filename =
           let lc = lines.Length
           let formats = root.Select("//seqpnt[@document='" + filename + "']")
                         |> Seq.cast<XPathNavigator>
@@ -287,7 +287,7 @@ type MainWindow() as this =
                    text.FontSize <- 16.0
                    text.FontStyle <- FontStyle.Normal
                    let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
-                   let textLines = File.ReadAllLines path
+                   let textLines = text.FormattedText.GetLines() |> Seq.toList
                    let scroll = line - 1 + extra
 
                    //let capped =
