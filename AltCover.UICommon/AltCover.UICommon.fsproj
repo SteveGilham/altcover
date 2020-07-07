@@ -1,0 +1,93 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <RootNamespace>AltCover.UICommon</RootNamespace>
+    <AssemblyName>AltCover.UICommon</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <Name>AltCover.UICommon</Name>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <!-- https://github.com/dotnet/sdk/issues/987 -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net45'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">NETCOREAPP2_1</GlobalDefineConstants -->
+    <GlobalDefineConstants>GUI</GlobalDefineConstants>
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
+    <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assembly_6212.png" />
+    <EmbeddedResource Include="Blank_12x_16x.png" />
+    <EmbeddedResource Include="Branch_12x_16x_red.png" />
+    <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
+    <EmbeddedResource Include="Branch_12x_16x_grn.png" />
+    <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="CollapseChevronDown_16x.png" />
+    <EmbeddedResource Include="config.xsd" />
+    <EmbeddedResource Include="Effects_16x.png" />
+    <EmbeddedResource Include="Event_16x.png" />
+    <EmbeddedResource Include="Exit_16x.png" />
+    <EmbeddedResource Include="ExpandChevronDown_16x.png" />
+    <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
+    <EmbeddedResource Include="ExpandChevronRight_16x.png" />
+    <EmbeddedResource Include="Font_16x.png" />
+    <EmbeddedResource Include="logo.png" />
+    <EmbeddedResource Include="method_16xLG.png" />
+    <EmbeddedResource Include="Module_16x.png" />
+    <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCover.xsd" Link="NCover.xsd" />
+    <EmbeddedResource Include="Open_6529.png" />
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
+    <EmbeddedResource Include="Property_16x.png" />
+    <EmbeddedResource Include="Refresh_16x.png" />
+    <EmbeddedResource Include="Refresh_greyThin_16x.png" />
+    <EmbeddedResource Include="Resource.eo.resx" />
+    <EmbeddedResource Include="Resource.resx" />
+    <EmbeddedResource Include="StatusCriticalError_16x.png" />
+    <EmbeddedResource Include="StatusCriticalError_32x.png" />
+    <EmbeddedResource Include="StatusInformation_16x.png" />
+    <EmbeddedResource Include="StatusInformation_32x.png" />
+    <EmbeddedResource Include="StatusWarning_16x.png" />
+    <EmbeddedResource Include="StatusWarning_32x.png" />
+    <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
+    <EmbeddedResource Include="VSTAAbout_16x.png" />
+    <EmbeddedResource Include="XMLFile_16x.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\_Generated\AssemblyVersionLite.fs" Link="AssemblyVersionLite.fs" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover\Exemption.fs" Link="Exemption.fs" />
+    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
+    <Compile Include="CoverageFile.fs" />
+    <Compile Include="GuiCommon.fs" />
+    <Compile Include="Resource.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="Icons.fs" />
+    <Compile Include="Messages.fs" />
+    <Compile Include="CoverageFileTree.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
+  </ItemGroup>
+</Project>

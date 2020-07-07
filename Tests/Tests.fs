@@ -45,6 +45,15 @@ type ProxyObject() =
       let methodinfo = t.GetMethod(methodName)
       methodinfo.Invoke(this.Object, args)
 
+[<AutoOpen>]
+module Extensions =
+  type internal Exemption with
+    static member internal OfInt i =
+     if i > 0 then Exemption.Visited
+     else if i < -4
+          then Exemption.None
+          else i |> sbyte |> Microsoft.FSharp.Core.LanguagePrimitives.EnumOfValue<sbyte, Exemption>
+
 module AltCoverTests =
     let SolutionDir() =
       SolutionRoot.location
@@ -79,6 +88,23 @@ module AltCoverTests =
       match dir.IndexOf "__" with
       | 0 -> "/.."
       | _ -> String.Empty
+
+    // Augment.fs
+    [<Test>]
+    let ZeroIsNotVisited() =
+      test <@ Exemption.OfInt 0 = Exemption.None @>
+
+    [<Test>]
+    let PositiveIsVisited() =
+      test <@ [ 1 .. 255 ]
+              |> Seq.map Exemption.OfInt
+              |> Seq.tryFind (fun x -> x <> Exemption.Visited) = None @>
+
+    [<Test>]
+    let NegativesSpray() =
+      test <@ [ 0 .. 5]
+              |> Seq.map (( ~- ) >> Exemption.OfInt)
+              |> Seq.toList = [ Exemption.None; Exemption.Declared; Exemption.Automatic; Exemption.StaticAnalysis; Exemption.Excluded; Exemption.None ] @>
 
     // ProgramDatabase.fs
     [<Test>]
@@ -176,7 +202,7 @@ module AltCoverTests =
           |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
 #endif
           |> Seq.toList
-        Assert.That(files, Is.Not.Empty)
+        test <@ files <> [] @>
         files
         |> Seq.iter
              (fun x ->
@@ -2118,7 +2144,7 @@ module AltCoverTests =
                     (a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
                 | _ ->
                   Assert.That
-                    (a1.Value, Is.EqualTo(a2.Value),
+                    (a1.Value.Replace("\\", "/"), Is.EqualTo(a2.Value.Replace("\\", "/")),
                      r.ToString() + " -> " + a1.Name.ToString()))
            RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 
@@ -2140,7 +2166,7 @@ module AltCoverTests =
         let xml = TTBaseline
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2465,7 +2491,7 @@ module AltCoverTests =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
              .Replace("excluded=\"true\" instrumented=\"false\"",
                       "excluded=\"false\" instrumented=\"true\"")
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2494,7 +2520,7 @@ module AltCoverTests =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2525,7 +2551,7 @@ module AltCoverTests =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()

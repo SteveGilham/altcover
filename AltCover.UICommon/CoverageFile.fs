@@ -46,7 +46,7 @@ module Transformer =
 
   let internal transformFromOpenCover(document : XNode) =
     let report =
-      transformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
+      transformFromOtherCover document "AltCover.UICommon.OpenCoverToNCoverEx.xsl"
     report
 
   // PartCover to NCover style sheet
@@ -54,10 +54,10 @@ module Transformer =
       (document : XDocument) =
     let schemas = new XmlSchemaSet()
     use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
-                                       .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))
+                                       .GetManifestResourceStream("AltCover.UICommon.OpenCover.xsd"))
     use ocreader = XmlReader.Create(sr1)
     use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
-                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))
+                                       .GetManifestResourceStream("AltCover.UICommon.NCover.xsd"))
 
     use ncreader = XmlReader.Create(sr2)
     try
@@ -91,7 +91,7 @@ module Transformer =
     | :? ArgumentException as x -> Left(x :> Exception)
 
 [<NoComparison; AutoSerializable(false)>]
-type internal CoverageFile =
+type CoverageFile =
   { File : FileInfo
     Document : XDocument }
 

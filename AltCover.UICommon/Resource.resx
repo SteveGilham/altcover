@@ -117,8 +117,96 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ProgramDescription" xml:space="preserve">
+  <data name="InvalidFile" xml:space="preserve">
+    <value>The file
+{0}
+is not a valid coverage file:
+{1}</value>
+  </data>
+  <data name="CoverageOutOfDate" xml:space="preserve">
+    <value>The file
+{0} 
+is out of date with respect to some of the source files.</value>
+  </data>
+  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
+    <value>The file
+{0} 
+is out of date with respect to source file
+{1}.</value>
+  </data>
+  <data name="SelectFont" xml:space="preserve">
+    <value>Select font for source display</value>
+  </data>
+  <data name="SelectXml" xml:space="preserve">
+    <value>xml files (*.xml)%xml|All files (*.*)%*</value>
+  </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>The file
+{0} 
+refers to source files not found on this computer.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>The file
+{0} 
+refers to absent to source file
+{1}.</value>
+  </data>
+  <data name="aboutVisualizer.Comments" xml:space="preserve">
     <value>Coverage visualizer for NCover and OpenCover reports</value>
+  </data>
+  <data name="aboutVisualizer.Copyright" xml:space="preserve">
+    <value>{0}
+Icons from the Visual Studio 2017 collection
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
+  </data>
+  <data name="aboutVisualizer.Title" xml:space="preserve">
+    <value>About AltCover Visualizer</value>
+  </data>
+  <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
+    <value>Visit the AltCover GitHub repo</value>
+  </data>
+  <data name="C_redits" xml:space="preserve">
+    <value>C_redits</value>
+  </data>
+  <data name="gtk-close" xml:space="preserve">
+    <value>_Close</value>
+  </data>
+  <data name="openButton.Label" xml:space="preserve">
+    <value>o&#x2028;_Open...</value>
+  </data>
+  <data name="refreshButton.Label" xml:space="preserve">
+    <value>r&#x2028;_Refresh</value>
+  </data>
+  <data name="showAboutButton.Label" xml:space="preserve">
+    <value>a&#x2028;_About...</value>
+  </data>
+  <data name="fontButton.Label" xml:space="preserve">
+    <value>f&#x2028;_Font...</value>
+  </data>
+  <data name="exitButton.Label" xml:space="preserve">
+    <value>x&#x2028;E_xit</value>
+  </data>
+  <data name="branchesVisited" xml:space="preserve">
+    <value>{0} of {1} branches visited</value>
+  </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Method {0} 
+has no corresponding source location</value>
+  </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Clear geometry</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Clear recent file list</value>
+  </data>
+  <data name="OpenFile" xml:space="preserve">
+    <value>Select coverage file</value>
+  </data>
+  <data name="OpenFile.Open" xml:space="preserve">
+    <value>_Open</value>
+  </data>
+  <data name="OpenFile.Cancel" xml:space="preserve">
+    <value>_Cancel</value>
   </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
@@ -146,8 +234,8 @@ THE SOFTWARE.</value>
   <data name="AboutDialog.License" xml:space="preserve">
     <value>License</value>
   </data>
-  <data name="WebsiteLabel" xml:space="preserve">
-    <value>GitHub repo</value>
+  <data name="AboutDialog.About" xml:space="preserve">
+    <value>About</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
@@ -155,79 +243,16 @@ THE SOFTWARE.</value>
   <data name="Visualizer" xml:space="preserve">
     <value>Visualizer</value>
   </data>
-  <data name="Open" xml:space="preserve">
-    <value> Open...</value>
-  </data>
-  <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
-  </data>
-  <data name="Font" xml:space="preserve">
-    <value>Font...</value>
-  </data>
-  <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
-  </data>
   <data name="Open Coverage File" xml:space="preserve">
     <value>Open Coverage File</value>
   </data>
-  <data name="SelectXml" xml:space="preserve">
-    <value>xml files (*.xml)%xml|All files (*.*)%*</value>
-  </data>
-  <data name="g|geometry" xml:space="preserve">
-    <value>Clear geometry</value>
-  </data>
-  <data name="r|recentFiles" xml:space="preserve">
-    <value>Clear recent file list</value>
-  </data>
-  <data name="InvalidFile" xml:space="preserve">
-    <value>The file
-{0}
-is not a valid coverage file:
-{1}</value>
-  </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file
-{0} 
-is out of date with respect to some of the source files.</value>
-  </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file
-{0} 
-is out of date with respect to source file
-{1}.</value>
-  </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>The file
-{0} 
-refers to source files not found on this computer.</value>
-  </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>The file
-{0} 
-refers to absent to source file
-{1}.</value>
-  </data>
-  <data name="Load Warning" xml:space="preserve">
+  <data name="LoadWarning" xml:space="preserve">
     <value>Inconsistent Coverage File</value>
   </data>
   <data name="LoadError" xml:space="preserve">
     <value>Coverage File Load Failed</value>
   </data>
-  <data name="About" xml:space="preserve">
-    <value>About...</value>
-  </data>
-  <data name="ProgramComments" xml:space="preserve">
-    <value>{0}
-Icons from the Visual Studio 2017 collection
-https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
-and from the Tango Project
-http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
-  </data>
   <data name="LoadInfo" xml:space="preserve">
     <value>Note</value>
-  </data>
-  <data name="No source location" xml:space="preserve">
-    <value>Method {0} 
-has no corresponding source location</value>
   </data>
 </root>

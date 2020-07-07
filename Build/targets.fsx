@@ -359,6 +359,18 @@ _Target "SetVersion" (fun _ ->
            AssemblyInfo.Trademark ""
            AssemblyInfo.InformationalVersion(infoV)
            AssemblyInfo.Copyright copy ] (Some AssemblyInfoFileConfig.Default))
+  printfn "%A" AssemblyInfoFileConfig.Default
+  let lite = AssemblyInfoFileConfig(false)
+  [ "./_Generated/AssemblyVersionLite.fs"; "./_Generated/AssemblyVersionList.cs" ]
+  |> List.iter (fun file ->
+       AssemblyInfoFile.create file
+         [ AssemblyInfo.Product "AltCover"
+           AssemblyInfo.Version(majmin + ".0.0")
+           AssemblyInfo.FileVersion v'
+           AssemblyInfo.Company "Steve Gilham"
+           AssemblyInfo.Trademark ""
+           AssemblyInfo.InformationalVersion(infoV)
+           AssemblyInfo.Copyright copy ] (Some lite))
   let hack = """namespace AltCover
 module SolutionRoot =
   let location = """ + "\"\"\"" + (Path.getFullName ".") + "\"\"\""
@@ -369,10 +381,12 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./AltCover.Recorder/altcover.recorder.core.fsproj" // net20
-    "./AltCover.Shadow/altcover.shadow.core.fsproj" // net20
+  [ "./AltCover.Recorder/altcover.recorder.core.fsproj" // net20 resgen
+    "./AltCover.Shadow/altcover.shadow.core.fsproj" // net20 resgen
+    "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
+    "./AltCover.Avalonia/altcover.avalonia.fsproj"
+    "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/altcover.visualizer.core.fsproj" // GAC
-    "./Recorder.Tests/altcover.recorder.tests.core.fsproj" // net20
     "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj" ]
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
@@ -385,7 +399,7 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./altcover.recorder.core.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
+    [ "./altcover.recorder.core.sln"; "./altcover.visualizer.core.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
 
     [ "./altcover.core.sln" ] |> Seq.iter dotnetBuildRelease
   with x ->
@@ -404,39 +418,11 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.recorder.core.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
+  [ "./altcover.recorder.core.sln"; "./altcover.visualizer.core.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
 
   [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
-
-_Target "AvaloniaDebug" (fun _ ->
-  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
-
-  "./AltCover.Visualizer/altcover.visualizer.core.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Debug"
-               "DebugSymbols", "True" ] }))
-
-_Target "AvaloniaRelease" (fun _ ->
-  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
-
-  "./AltCover.Visualizer/altcover.visualizer.core.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Release"
-               "DebugSymbols", "True" ] }))
 
 _Target "BuildMonoSamples" (fun _ ->
   [ "./Sample8/sample8.core.csproj" ] |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
@@ -511,8 +497,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
        "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
        "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
+//    ("./Build/common-rules.xml",
+//     [ "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
+//    ("./Build/common-rules.xml",
+//     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/netcoreapp3.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
@@ -645,7 +636,8 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ],
      [],
       defaultRules)
-    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
+    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net45/AltCover.UICommon.dll"
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe"],
      [],
      defaultRules)
     ([ "_Binaries/AltCover.Shadow/Debug+AnyCPU/net20/AltCover.Shadow.dll" ],
@@ -2117,6 +2109,9 @@ _Target "Packaging" (fun _ ->
   let vis =
     Path.getFullName
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45/AltCover.Visualizer.exe"
+  let uic =
+    Path.getFullName
+      "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45/AltCover.UICommon.dll"
   let packable = Path.getFullName "./_Binaries/README.html"
 
   let libFiles path =
@@ -2132,7 +2127,7 @@ _Target "Packaging" (fun _ ->
 
   let housekeepingVis =
     [ (Path.getFullName "./LICENS*", Some "", None)
-      (Path.getFullName "./AltCover.Visualizer/logo.*", Some "", None) ]
+      (Path.getFullName "./AltCover.UICommon/logo.*", Some "", None) ]
 
   let applicationFiles =
     [ (AltCover, Some "tools/net45", None)
@@ -2142,6 +2137,7 @@ _Target "Packaging" (fun _ ->
       (poshHelp, Some "tools/net45", None)
       (toolkit, Some "tools/net45", None)
       (vis, Some "tools/net45", None)
+      (uic, Some "tools/net45", None)
       (fscore, Some "tools/net45", None)
       (fox, Some "tools/net45", None)
       (options, Some "tools/net45", None)
@@ -2235,7 +2231,7 @@ _Target "Packaging" (fun _ ->
                          (x, Some(where + locale + "/" + (Path.GetFileName x)), None))
     |> Seq.toList
 
-  let dataFiles where = [dataFiles1; dataFiles2] 
+  let dataFiles where = [dataFiles1; dataFiles2]
                         |> List.collect (fun f -> f where)
 
   let fakeFiles where =
@@ -2317,7 +2313,6 @@ _Target "Packaging" (fun _ ->
          netcoreFiles "tools/netcoreapp2.0/"
          poshFiles "tools/netcoreapp2.0/"
          poshHelpFiles "tools/netcoreapp2.0/"
-         vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
          otherFiles
          housekeeping ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
@@ -2333,7 +2328,6 @@ _Target "Packaging" (fun _ ->
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         poshHelpFiles "lib/netstandard2.0/"
-        vizFiles "tools/netcoreapp2.1"
         otherFilesApi
         housekeeping
          ],
@@ -2436,7 +2430,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
         OutputPath = Some(publish + ".visualizer")
         Configuration = DotNet.BuildConfiguration.Release
         Framework = Some "netcoreapp2.1" })
-    (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
+    (Path.getFullName "./AltCover.Avalonia/altcover.avalonia.fsproj")
 
   // dotnet tooling mods
   [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
@@ -2444,7 +2438,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
 
     ("DotnetTool", "./_Generated/altcover.visualizer.nuspec",
      "AltCover.Visualizer (dotnet global tool install)",
-     Some "AltCover.Visualizer/logo.png", Some "codecoverage .netcore cross-platform")
+     Some "AltCover.UICommon/logo.png", Some "codecoverage .netcore cross-platform")
 
     (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None,
      None)
@@ -2487,9 +2481,11 @@ _Target "PrepareReadMe" (fun _ ->
 _Target "Deployment" ignore
 
 _Target "Unpack" (fun _ ->
-  let nugget = !!"./_Packaging/*.nupkg" |> Seq.last
-  let unpack = Path.getFullName "_Packaging/Unpack"
-  System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
+  !!"./_Pack*/*.nupkg"
+  |> Seq.iter (fun nugget ->
+    let packdir = Path.GetDirectoryName nugget 
+    let unpack = Path.getFullName (packdir @@ "Unpack")
+    System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack)))
 
 _Target "WindowsPowerShell" (fun _ ->
   Directory.ensure "./_Documentation"
@@ -4214,7 +4210,11 @@ Target.activateFinal "ResetConsoleColours"
 ==> "Pester"
 ==> "UnitTestWithAltCoverRunner"
 
-"WindowsPowerShell"
+"FSharpTests"
+==> "Pester"
+
+"FSharpTests"
+==> "WindowsPowerShell"
 =?> ("Pester", Environment.isWindows)
 
 "Unpack"

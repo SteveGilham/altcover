@@ -117,92 +117,142 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidFile" xml:space="preserve">
-    <value>The file {0} is not a valid coverage file:
-{1}</value>
-  </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file {0} 
-is out of date with respect to some of the source files.</value>
-  </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file {0} 
-is out of date with respect to source file
-{1}.</value>
-  </data>
-  <data name="SelectFont" xml:space="preserve">
-    <value>Select font for source display</value>
-  </data>
-  <data name="SelectXml" xml:space="preserve">
-    <value>xml files (*.xml)|*.xml|All files (*.*)|*.*</value>
-  </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>The file {0} 
-refers to source files not found on this computer.</value>
-  </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>The file {0} 
-refers to absent to source file
-{1}.</value>
-  </data>
   <data name="aboutVisualizer.Comments" xml:space="preserve">
-    <value>Coverage visualizer for NCover and OpenCover reports</value>
+    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
   </data>
   <data name="aboutVisualizer.Copyright" xml:space="preserve">
     <value>{0}
-Icons from the Visual Studio 2017 collection
+Ikonoj de la Visual Studio 2017-kolekto
 https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
   </data>
   <data name="aboutVisualizer.Title" xml:space="preserve">
-    <value>About AltCover Visualizer</value>
+    <value>Pri AltCover Visualizer</value>
   </data>
   <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
-    <value>GitHub repo</value>
+    <value>Vizitu la magazinon AltCover en GitHub</value>
+  </data>
+  <data name="CoverageOutOfDate" xml:space="preserve">
+    <value>La dosiero
+{0}
+estas sen dato koncerne iujn el la fontaj dosieroj.</value>
+  </data>
+  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
+    <value>La dosiero
+{0}
+estas sen dato pri respekto al fonta dosiero
+{1}.</value>
   </data>
   <data name="C_redits" xml:space="preserve">
-    <value>C_redits</value>
+    <value>_Kreditoj</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>f&#x2028;_Font...</value>
+    <value>t&#x2028;_Tiparo...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
-    <value>_Close</value>
+    <value>f&#x2028;_Fermi</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>o&#x2028;_Open...</value>
+    <value>m&#x2028;_Malferma ...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x2028;_Refresh</value>
+    <value>r&#x2028;_Refreŝigi</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>a&#x2028;_About...</value>
+    <value>p&#x2028;_Pri...</value>
   </data>
-  <data name="_License" xml:space="preserve">
-    <value>_License</value>
+  <data name="InvalidFile" xml:space="preserve">
+    <value>La dosiero
+{0}
+ne estas valida kovra dosiero:
+{1}</value>
+  </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>La dosiero
+{0} 
+raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>La dosiero
+{0}
+raportas al ausente fonta dosiero
+{1}.</value>
+  </data>
+  <data name="SelectFont" xml:space="preserve">
+    <value>Elektu tiparon por fonta ekrano</value>
+  </data>
+  <data name="SelectXml" xml:space="preserve">
+    <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
   </data>
   <data name="branchesVisited" xml:space="preserve">
-    <value>{0} of {1} branches visited</value>
+    <value>{0} de {1} branĉoj vizititaj</value>
   </data>
   <data name="exitButton.Label" xml:space="preserve">
-    <value>x&#x2028;E_xit</value>
+    <value>_Eliro</value>
   </data>
   <data name="No source location" xml:space="preserve">
-    <value>Method {0} 
-has no corresponding source location</value>
+    <value>Metodo {0}
+havas neniun respondan fontan lokon</value>
   </data>
   <data name="g|geometry" xml:space="preserve">
-    <value>Clear geometry</value>
+    <value>Klara geometrio</value>
   </data>
   <data name="r|recentFiles" xml:space="preserve">
-    <value>Clear recent file list</value>
+    <value>Klara lastatempa listo</value>
   </data>
   <data name="OpenFile" xml:space="preserve">
-    <value>Select coverage file</value>
+    <value>Elektu kovra dosiero</value>
   </data>
   <data name="OpenFile.Open" xml:space="preserve">
-    <value>_Open</value>
+    <value>_Malferma</value>
   </data>
   <data name="OpenFile.Cancel" xml:space="preserve">
-    <value>_Cancel</value>
+    <value>_Nuligi</value>
+  </data>
+  <data name="License" xml:space="preserve">
+    <value>The MIT License
+
+Copyright {0}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</value>
+  </data>
+  <data name="AboutDialog.License" xml:space="preserve">
+    <value>Permesilo</value>
+  </data>
+  <data name="AboutDialog." xml:space="preserve">
+    <value>Pri</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fermi</value>
+  </data>
+  <data name="Visualizer" xml:space="preserve">
+    <value>Visualizer</value>
+  </data>
+  <data name="Open Coverage File" xml:space="preserve">
+    <value>Malferma Kovrilo Dosiero</value>
+  </data>
+  <data name="LoadError" xml:space="preserve">
+    <value>Kovrilo Dosiero Ŝarĝo Malsukcesis</value>
+  </data>
+  <data name="LoadWarning" xml:space="preserve">
+    <value>Nekonforma Kovrilo Dosiero</value>
+  </data>
+  <data name="LoadInfo" xml:space="preserve">
+    <value>Noto</value>
   </data>
 </root>
