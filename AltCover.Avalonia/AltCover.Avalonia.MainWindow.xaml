@@ -137,11 +137,17 @@
                         Background="WhiteSmoke">
             <StackPanel Orientation="Horizontal">
               <TextBlock
-                       Name="Branches" MinWidth="50"
+                       Name="Lines" MinWidth="50"
                        TextAlignment="Right"
                        TextWrapping="NoWrap"
                        Background="White"
                        Foreground="DarkGray" />
+              <StackPanel Orientation="Vertical"
+                          Background="White"
+                          Width="16"
+                          MinWidth="16"
+                          MaxWidth="16">
+              </StackPanel>
               <TextBlock
                        Name="Source" MinWidth="150"
                        TextWrapping="NoWrap"
