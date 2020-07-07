@@ -2105,6 +2105,9 @@ _Target "Packaging" (fun _ ->
   let vis =
     Path.getFullName
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45/AltCover.Visualizer.exe"
+  let uic =
+    Path.getFullName
+      "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45/AltCover.UICommon.dll"
   let packable = Path.getFullName "./_Binaries/README.html"
 
   let libFiles path =
@@ -2130,6 +2133,7 @@ _Target "Packaging" (fun _ ->
       (poshHelp, Some "tools/net45", None)
       (toolkit, Some "tools/net45", None)
       (vis, Some "tools/net45", None)
+      (uic, Some "tools/net45", None)
       (fscore, Some "tools/net45", None)
       (fox, Some "tools/net45", None)
       (options, Some "tools/net45", None)
