@@ -388,10 +388,14 @@ type MainWindow() as this =
                    root.MoveToRoot()
                    markBranches root stack textLines path
 
-                   Dispatcher.UIThread.Post(fun _ ->
-                                       let midpoint = scroller.Viewport.Height / 2.0
-                                       if (depth > midpoint)
-                                       then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+                   async {
+                       Threading.Thread.Sleep(300)
+                       Dispatcher.UIThread.Post(fun _ ->
+                                           let midpoint = scroller.Viewport.Height / 2.0
+                                           if (depth > midpoint)
+                                           then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+                    }
+                    |> Async.Start
 
                  with x ->
                    let caption = Resource.GetResourceString "LoadError"
