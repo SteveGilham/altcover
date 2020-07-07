@@ -90,7 +90,14 @@ type MainWindow() as this =
   let mutable justOpened = String.Empty
   let mutable coverageFiles : string list = []
   let ofd = OpenFileDialog()
-  let icons = Icons(fun x -> new Bitmap(x))
+  let iconMaker (x:Stream) =
+    new Bitmap(x)
+  let icons = Icons(iconMaker)
+  let getIcon name =
+    let iconstype =icons.GetType()
+    let named = iconstype.GetProperty(name)
+    let value = named.GetValue(icons) :?> Lazy<Bitmap>
+    value.Force()
 
   let makeTreeNode name icon =
     let tree = new Image()
@@ -174,11 +181,12 @@ type MainWindow() as this =
       |> Seq.toList
     this.PopulateMenu()
     Persistence.saveCoverageFiles coverageFiles
-    this.FindControl<MenuItem>("Refresh").IsEnabled <- coverageFiles.Any()
-    this.FindControl<Image>("RefreshImage").Source <- (if coverageFiles.Any() then
-                                                         icons.Refresh
-                                                       else
-                                                         icons.RefreshInactive).Force()
+    let menu = this.FindControl<MenuItem>("Refresh")
+    menu.IsEnabled <- coverageFiles.Any()
+    menu.Icon <- (if coverageFiles.Any() then
+                    icons.RefreshActive
+                  else
+                    icons.Refresh).Force()
   member private this.HideAboutBox _ =
     this.FindControl<StackPanel>("AboutBox").IsVisible <- false
     this.FindControl<Menu>("Menu").IsVisible <- true
@@ -423,12 +431,18 @@ type MainWindow() as this =
     |> Seq.iter (fun n ->
          let cap = n.First().ToString().ToUpper() + n.Substring(1)
          let menu = this.FindControl<MenuItem> cap
-         let item = this.FindControl<TextBlock>(cap + "Text")
          let raw = Resource.GetResourceString (n + "Button.Label")
          let keytext = raw.Split('\u2028') // '\u2028'
-         item.Text <- keytext.[1]
+         menu.Header <- keytext.[1]
          let key = Enum.Parse<Avalonia.Input.Key>(keytext.[0], true)
          let hotkey = Avalonia.Input.KeyGesture(key, Avalonia.Input.KeyModifiers.Alt)
+
+         // Why doesn't this stick?
+         let icon = new Image()
+         icon.Source <- getIcon cap
+         icon.Margin <- Thickness.Parse("2")
+         menu.Icon <- icon
+
          menu.HotKey <- hotkey
     )
     this.FindControl<MenuItem>("Exit").Click

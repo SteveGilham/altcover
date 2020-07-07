@@ -146,10 +146,10 @@ estas sen dato pri respekto al fonta dosiero
     <value>_Kreditoj</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>t _Tiparo...</value>
+    <value>t&x2028;_Tiparo...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
-    <value>f _Fermi</value>
+    <value>f&x2028;_Fermi</value>
   </data>
   <data name="InvalidFile" xml:space="preserve">
     <value>La dosiero
@@ -169,19 +169,19 @@ raportas al ausente fonta dosiero
 {1}.</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>m _Malferma ...</value>
+    <value>m&x2028;_Malferma ...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r _Refreŝigi</value>
+    <value>r&x2028;_Refreŝigi</value>
   </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
   </data>
-  <data name="SelectXmlGtk" xml:space="preserve">
-    <value>XML-dosieroj (*.xml)|*.xml|Ĉiuj dosieroj (*.*)|*.*</value>
+  <data name="SelectXml" xml:space="preserve">
+    <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>p _Pri...</value>
+    <value>p&x2028;_Pri...</value>
   </data>
   <data name="_License" xml:space="preserve">
     <value>_Permesilo</value>
@@ -243,32 +243,14 @@ THE SOFTWARE.</value>
   <data name="Visualizer" xml:space="preserve">
     <value>Visualizer</value>
   </data>
-  <data name="Open" xml:space="preserve">
-    <value>_Malferma...</value>
-  </data>
-  <data name="Exit" xml:space="preserve">
-    <value>Eliro</value>
-  </data>
-  <data name="Font" xml:space="preserve">
-    <value>Tiparo...</value>
-  </data>
-  <data name="Refresh" xml:space="preserve">
-    <value>Refreŝigi</value>
-  </data>
   <data name="Open Coverage File" xml:space="preserve">
     <value>Malferma Kovrilo Dosiero</value>
-  </data>
-  <data name="SelectXml" xml:space="preserve">
-    <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
   </data>
   <data name="LoadError" xml:space="preserve">
     <value>Kovrilo Dosiero Ŝarĝo Malsukcesis</value>
   </data>
   <data name="LoadWarning" xml:space="preserve">
     <value>Nekonforma Kovrilo Dosiero</value>
-  </data>
-  <data name="About" xml:space="preserve">
-    <value>Pri...</value>
   </data>
   <data name="LoadInfo" xml:space="preserve">
     <value>Noto</value>

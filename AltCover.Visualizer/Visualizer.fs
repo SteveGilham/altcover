@@ -402,7 +402,7 @@ module private Gui =
                             FileChooserAction.Open, Resource.GetResourceString "OpenFile.Open",
                             ResponseType.Ok, Resource.GetResourceString "OpenFile.Cancel",
                             ResponseType.Cancel, null)
-    let data = Resource.GetResourceString("SelectXmlGtk").Split([| '|' |])
+    let data = Resource.GetResourceString("SelectXml").Replace("%", "|*.").Split([| '|' |])
     let filter = new FileFilter()
     filter.Name <- data.[0]
     filter.AddPattern data.[1]
@@ -420,7 +420,7 @@ module private Gui =
   let private prepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
     openFileDialog.InitialDirectory <- Persistence.readFolder()
-    openFileDialog.Filter <- Resource.GetResourceString("SelectXmlGtk")
+    openFileDialog.Filter <- Resource.GetResourceString("SelectXml").Replace("%", "|*.")
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
     openFileDialog
