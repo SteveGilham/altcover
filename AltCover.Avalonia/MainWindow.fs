@@ -435,8 +435,8 @@ type MainWindow() as this =
          let keytext = raw.Split('\u2028') // '\u2028'
          menu.Header <- keytext.[1]
 
-         // Why is this case sensitive (assumes Shift+) ?
-         let hotkey = Avalonia.Input.KeyGesture.Parse("Alt+" + keytext.[0])
+         // Why is this Shift inverted?  This turns into Alt+key.  TODO raise issue
+         let hotkey = Avalonia.Input.KeyGesture.Parse("Alt+Shift+" + keytext.[0])
          printfn "hotkey %A" hotkey
          menu.HotKey <- hotkey
 
