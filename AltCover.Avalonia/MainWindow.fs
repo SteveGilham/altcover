@@ -430,21 +430,17 @@ type MainWindow() as this =
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->
          let cap = n.First().ToString().ToUpper() + n.Substring(1)
-         let menu = this.FindControl<MenuItem> cap
          let raw = Resource.GetResourceString (n + "Button.Label")
          let keytext = raw.Split('\u2028') // '\u2028'
-         menu.Header <- keytext.[1]
 
+         let menu = this.FindControl<MenuItem> cap
          // Why is this Shift inverted?  This turns into Alt+key.  TODO raise issue
          let hotkey = Avalonia.Input.KeyGesture.Parse("Alt+Shift+" + keytext.[0])
-         printfn "hotkey %A" hotkey
          menu.HotKey <- hotkey
 
-         // Why doesn't this stick?
-         let icon = new Image()
-         icon.Source <- getIcon cap
-         icon.Margin <- Thickness.Parse("2")
-         menu.Icon <- icon
+         let item = this.FindControl<Primitives.AccessText>(cap + "Text")
+         item.Text <- keytext.[1]
+
     )
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
@@ -571,7 +567,7 @@ type MainWindow() as this =
     linkButton.Click |> Event.add (fun _ -> Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
                                               "http://www.github.com/SteveGilham/altcover")
 
-    this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString "About"
+    this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString "AboutDialog.About"
     this.FindControl<TabItem>("License").Header <- Resource.GetResourceString
                                                      "AboutDialog.License"
     this.FindControl<TextBlock>("MIT").Text <- String.Format

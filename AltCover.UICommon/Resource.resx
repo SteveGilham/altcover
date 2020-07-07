@@ -186,9 +186,6 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
   <data name="exitButton.Label" xml:space="preserve">
     <value>x&#x2028;E_xit</value>
   </data>
-  <data name="_License" xml:space="preserve">
-    <value>_License</value>
-  </data>
   <data name="branchesVisited" xml:space="preserve">
     <value>{0} of {1} branches visited</value>
   </data>
@@ -236,6 +233,9 @@ THE SOFTWARE.</value>
   </data>
   <data name="AboutDialog.License" xml:space="preserve">
     <value>License</value>
+  </data>
+  <data name="AboutDialog.About" xml:space="preserve">
+    <value>About</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>

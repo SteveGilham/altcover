@@ -15,7 +15,14 @@
             <DockPanel HorizontalAlignment="Stretch" />
           </ItemsPanelTemplate>
         </Menu.ItemsPanel>
-        <MenuItem Name="Open" />
+        <MenuItem Name="Open">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.Open_6529.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <AccessText Name="OpenText" Text="" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
         <MenuItem Name="List" IsEnabled="False">
           <MenuItem.Header>
             <StackPanel>
@@ -33,15 +40,43 @@
           <MenuItem Header="8"></MenuItem>
           <MenuItem Header="9"></MenuItem>
         </MenuItem>
-        <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False" />
-        <MenuItem Name="Font" MinWidth="80" IsVisible="false" />
+        <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <AccessText Name="RefreshText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem Name="Font" MinWidth="80" IsVisible="false">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.Font_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <AccessText Name="FontText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
         <MenuItem IsEnabled="false" Background="DarkGray" Width="4" Height="28" MaxHeight="28">
           <MenuItem.Header>
             <Separator />
           </MenuItem.Header>
         </MenuItem>
-        <MenuItem Name="ShowAbout" MinWidth="80" />
-        <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80" />
+        <MenuItem Name="ShowAbout" MinWidth="80">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <AccessText Name="ShowAboutText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.Exit_16x.png?assembly=AltCover.UICommon" Stretch="None" />
+              <AccessText Name="ExitText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
       </Menu>
     </Border>
     <DockPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
