@@ -142,11 +142,11 @@
                        TextWrapping="NoWrap"
                        Background="White"
                        Foreground="DarkGray" />
-              <StackPanel Orientation="Vertical"
+              <StackPanel x:Name="Branches"
+                          Orientation="Vertical"
                           Background="White"
                           Width="16"
-                          MinWidth="16"
-                          MaxWidth="16">
+                          MinWidth="16">
               </StackPanel>
               <TextBlock
                        Name="Source" MinWidth="150"

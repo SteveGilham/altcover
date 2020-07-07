@@ -231,6 +231,16 @@ type MainWindow() as this =
           let finish = (n.endcolumn - 1) + (lines |> Seq.take (n.endline - 1) |> Seq.sumBy (fun l -> l.Length))
           FormattedTextStyleSpan(start, finish - start,
                         SolidColorBrush.Parse n.style.Foreground)
+        let parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
+          let text = element.GetAttribute(attribute, String.Empty)
+          let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
+          if (fst number) then
+            snd number
+          else
+            if not <| String.IsNullOrEmpty(text) then
+              System.Diagnostics.Debug.WriteLine
+                ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
+            0
 
       //// bound by current line length in case we're looking from stale coverage
       //let line = buff.GetIterAtLine(n.line - 1)
@@ -242,28 +252,93 @@ type MainWindow() as this =
       //  if endline.CharsInLine = 0 then endline
       //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
       //buff.ApplyTag(tag, from, until)
-        let markBranches (root : XPathNavigator) (textBox : TextBlock) (lines : FormattedTextLine list) filename =
+        let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
+          let branches = new Dictionary<int, int * int>()
+
+          root.Select("//method")
+          |> Seq.cast<XPathNavigator>
+          |> Seq.filter (fun n ->
+               let f = n.Clone()
+               f.MoveToFirstChild()
+               && filename.Equals
+                    (f.GetAttribute("document", String.Empty),
+                     StringComparison.Ordinal))
+          |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
+          |> Seq.cast<XPathNavigator>
+          |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
+          |> Seq.toList
+          |> Seq.iter (fun n ->
+               let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
+               let num = (snd n) |> Seq.length
+               let v =
+                 (snd n)
+                 |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
+                 |> Seq.length
+               branches.Add(line, (v, num)))
+
+          let h = (lines |> Seq.head).Height
+          let pad = (h - 16.0)/2.0
+          let margin = Thickness(0.0, pad)
+
+          Dispatcher.UIThread.Post(fun _ ->
+            for l in 1 .. lines.Length do
+              let counts = branches.TryGetValue l
+
+              let (|AllVisited|_|) (b, (v, num)) =
+                if b |> not
+                   || v <> num then
+                  None
+                else
+                  Some()
+
+              let pix =
+                match counts with
+                | (false, _) -> icons.Blank.Force()
+                | (_, (0, _)) -> icons.RedBranch.Force()
+                | AllVisited -> icons.Branched.Force()
+                | _ -> icons.Branch.Force()
+
+              let pic = new Image()
+              pic.Source <- pix
+              pic.Margin <- margin
+              stack.Children.Add pic
+              if fst counts then
+                let v, num = snd counts
+                ToolTip.SetTip(pic,
+                  Resource.Format("branchesVisited", [v; num])))
+
+        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock) (lines : FormattedTextLine list) filename =
+          let lc = lines.Length
+          let tags = root.Select("//seqpnt[@document='" + filename + "']")
+                     |> Seq.cast<XPathNavigator>
+                     |> Seq.map coverageToTag
+                     |> Seq.filter (filterCoverage lc)
+                     |> Seq.sortByDescending (fun t -> t.vc)
+                     |> Seq.toList
+
+          let formats = tags
+                        |> List.map (tagByCoverage textBox lines)
+
+          let linemark = tags
+                         |> List.groupBy (fun t -> t.line)
+                         |> List.map (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.vc <= 0
+                                                                                           then 0
+                                                                                           else tag.vc)
+                                                    let style = if total > 0
+                                                                then TextTag.Visited
+                                                                else TextTag.NotVisited
+                                                    let start = (l - 1) * (7 + Environment.NewLine.Length)
+                                                    FormattedTextStyleSpan(start, 7,
+                                                                           SolidColorBrush.Parse style.Foreground))
+
           let linetext = String.Join (Environment.NewLine,
                                       lines
                                       // Font limitation or Avalonia limitation? -- character \u2442 just shows as a box.
                                       |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i)))
-          let formats = root.Select("//branch[@document='" + filename + "']")
-                        |> Seq.cast<XPathNavigator>
-                        |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
-                        // TODO
-                        |> Seq.toList
-          Dispatcher.UIThread.Post(fun _ -> textBox.Text <- linetext)
 
-        let markCoverage (root : XPathNavigator) textBox (lines : FormattedTextLine list) filename =
-          let lc = lines.Length
-          let formats = root.Select("//seqpnt[@document='" + filename + "']")
-                        |> Seq.cast<XPathNavigator>
-                        |> Seq.map coverageToTag
-                        |> Seq.filter (filterCoverage lc)
-                        |> Seq.sortByDescending (fun t -> t.vc)
-                        |> Seq.map (tagByCoverage textBox lines)
-                        |> Seq.toList
-          Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats)
+          Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
+                                            text2.Text <- linetext
+                                            text2.FormattedText.Spans <- linemark)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
@@ -302,8 +377,6 @@ type MainWindow() as this =
                          t.FontSize <- 16.0
                          t.FontStyle <- FontStyle.Normal)
 
-                   // text2.FontFamily <- FontFamily("Lucida Sans Unicode")
-
                    let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
                    let textLines = text.FormattedText.GetLines() |> Seq.toList
                    let scroll = line - 1 + extra
@@ -318,8 +391,10 @@ type MainWindow() as this =
                    // TODO -- colouring
                    let root = xpath.Clone()
                    root.MoveToRoot()
-                   markCoverage root text textLines path
-                   markBranches root text2 textLines path
+                   markCoverage root text text2 textLines path
+                   let stack = this.FindControl<StackPanel>("Branches")
+                   root.MoveToRoot()
+                   markBranches root stack textLines path
                  with x ->
                    let caption = Resource.GetResourceString "LoadError"
                    this.ShowMessageBox MessageType.Error caption x.Message)
@@ -433,6 +508,8 @@ type MainWindow() as this =
           UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
                                         tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
                                         this.FindControl<TextBlock>("Source").Text <- String.Empty
+                                        this.FindControl<TextBlock>("Lines").Text <- String.Empty
+                                        this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
