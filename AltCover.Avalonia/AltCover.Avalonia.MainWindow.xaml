@@ -61,11 +61,11 @@
             <Separator />
           </MenuItem.Header>
         </MenuItem>
-        <MenuItem Name="About" MinWidth="80">
+        <MenuItem Name="ShowAbout" MinWidth="80">
           <MenuItem.Header>
             <StackPanel>
               <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
-              <TextBlock Name="AboutText" Text="" HorizontalAlignment="Center" />
+              <TextBlock Name="ShowAboutText" Text="" HorizontalAlignment="Center" />
             </StackPanel>
           </MenuItem.Header>
         </MenuItem>

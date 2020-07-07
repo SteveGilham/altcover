@@ -419,16 +419,24 @@ type MainWindow() as this =
            filter)
     ofd.Filters <- List(filterBits)
     this.Title <- "AltCover.Visualizer"
-    [ "Open"; "Refresh"; "Font"; "About"; "Exit" ]
+    [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->
-         let item = this.FindControl<TextBlock>(n + "Text")
-         item.Text <- Resource.GetResourceString n)
+         let cap = n.First().ToString().ToUpper() + n.Substring(1)
+         let menu = this.FindControl<MenuItem> cap
+         let item = this.FindControl<TextBlock>(cap + "Text")
+         let raw = Resource.GetResourceString (n + "Button.Label")
+         let keytext = raw.Split('\u2028') // '\u2028'
+         item.Text <- keytext.[1]
+         let key = Enum.Parse<Avalonia.Input.Key>(keytext.[0], true)
+         let hotkey = Avalonia.Input.KeyGesture(key, Avalonia.Input.KeyModifiers.Alt)
+         menu.HotKey <- hotkey
+    )
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
          let l = Application.Current.ApplicationLifetime :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
          l.Shutdown())
-    this.FindControl<MenuItem>("About").Click
+    this.FindControl<MenuItem>("ShowAbout").Click
     |> Event.add (fun _ ->
          this.FindControl<StackPanel>("AboutBox").IsVisible <- true
          this.FindControl<Menu>("Menu").IsVisible <- false
