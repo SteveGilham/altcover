@@ -2311,7 +2311,6 @@ _Target "Packaging" (fun _ ->
          netcoreFiles "tools/netcoreapp2.0/"
          poshFiles "tools/netcoreapp2.0/"
          poshHelpFiles "tools/netcoreapp2.0/"
-         vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
          otherFiles
          housekeeping ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
@@ -2327,7 +2326,6 @@ _Target "Packaging" (fun _ ->
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         poshHelpFiles "lib/netstandard2.0/"
-        vizFiles "tools/netcoreapp2.1"
         otherFilesApi
         housekeeping
          ],
