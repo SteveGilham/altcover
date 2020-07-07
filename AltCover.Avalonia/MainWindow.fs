@@ -344,6 +344,7 @@ type MainWindow() as this =
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBlock>("Source")
              let text2 = this.FindControl<TextBlock>("Lines")
+             let scroller = this.FindControl<ScrollViewer>("Coverage")
              let points =
                xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
              if Seq.isEmpty points then
@@ -377,24 +378,21 @@ type MainWindow() as this =
                          t.FontSize <- 16.0
                          t.FontStyle <- FontStyle.Normal)
 
-                   let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
                    let textLines = text.FormattedText.GetLines() |> Seq.toList
-                   let scroll = line - 1 + extra
-
-                   //let capped =
-                   //  if scroll >= textLines.Length then textLines.Length - 1 else scroll
-                   //// Scroll into mid-view -- not entirely reliable
-                   //text.CaretIndex <-
-                   //  Seq.sumBy (fun (l : String) -> l.Length + 1)
-                   //    (textLines |> Seq.take capped) //System.Environment.NewLine.Length
-
-                   // TODO -- colouring
+                   let sample = textLines |> Seq.head
+                   let depth = sample.Height * float (line - 1)
                    let root = xpath.Clone()
                    root.MoveToRoot()
                    markCoverage root text text2 textLines path
                    let stack = this.FindControl<StackPanel>("Branches")
                    root.MoveToRoot()
                    markBranches root stack textLines path
+
+                   Dispatcher.UIThread.Post(fun _ ->
+                                       let midpoint = scroller.Viewport.Height / 2.0
+                                       if (depth > midpoint)
+                                       then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+
                  with x ->
                    let caption = Resource.GetResourceString "LoadError"
                    this.ShowMessageBox MessageType.Error caption x.Message)

@@ -132,6 +132,7 @@
         <Border BorderThickness="1,0,0,0"
                 BorderBrush="Black">
           <ScrollViewer DockPanel.Dock="Right"
+                        x:Name="Coverage"
                         VerticalScrollBarVisibility="Auto"
                         HorizontalScrollBarVisibility="Auto"
                         Background="WhiteSmoke">
