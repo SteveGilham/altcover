@@ -242,6 +242,11 @@ type MainWindow() as this =
       //  if endline.CharsInLine = 0 then endline
       //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
       //buff.ApplyTag(tag, from, until)
+        let markBranches (root : XPathNavigator) (textBox : TextBlock) (lines : FormattedTextLine list) filename =
+          let linetext = String.Join (Environment.NewLine,
+                                      lines
+                                      |> Seq.mapi (fun i _ -> sprintf "%6d  " (1 + i)))
+          Dispatcher.UIThread.Post(fun _ -> textBox.Text <- linetext)
 
         let markCoverage (root : XPathNavigator) textBox (lines : FormattedTextLine list) filename =
           let lc = lines.Length
@@ -257,6 +262,7 @@ type MainWindow() as this =
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBlock>("Source")
+             let text2 = this.FindControl<TextBlock>("Branches")
              let points =
                xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
              if Seq.isEmpty points then
@@ -283,9 +289,13 @@ type MainWindow() as this =
                  try
                    // TODO -- font  size control too
                    text.Text <- File.ReadAllText path
-                   text.FontFamily <- FontFamily(Persistence.readFont())
-                   text.FontSize <- 16.0
-                   text.FontStyle <- FontStyle.Normal
+
+                   [ text; text2 ]
+                   |> List.iter (fun t ->
+                         t.FontFamily <- FontFamily(Persistence.readFont())
+                         t.FontSize <- 16.0
+                         t.FontStyle <- FontStyle.Normal)
+
                    let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
                    let textLines = text.FormattedText.GetLines() |> Seq.toList
                    let scroll = line - 1 + extra
@@ -301,7 +311,7 @@ type MainWindow() as this =
                    let root = xpath.Clone()
                    root.MoveToRoot()
                    markCoverage root text textLines path
-                 // MarkBranches root text path
+                   markBranches root text2 textLines path
                  with x ->
                    let caption = Resource.GetResourceString "LoadError"
                    this.ShowMessageBox MessageType.Error caption x.Message)

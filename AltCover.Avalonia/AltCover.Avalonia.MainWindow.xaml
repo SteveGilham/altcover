@@ -6,75 +6,79 @@
         Icon="resm:AltCover.UICommon.VIcon.ico?assembly=AltCover.UICommon"
         Height="550" Width="750">
   <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-    <Menu Name="Menu" DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Center">
-      <Menu.ItemsPanel>
-        <ItemsPanelTemplate>
-          <DockPanel HorizontalAlignment="Stretch" />
-        </ItemsPanelTemplate>
-      </Menu.ItemsPanel>
-      <MenuItem Name="Open">
-        <MenuItem.Header>
-          <StackPanel>
-            <Image Source="resm:AltCover.UICommon.Open_6529.png?assembly=AltCover.UICommon"  Stretch="None" />
-            <TextBlock Name="OpenText" Text="" />
-          </StackPanel>
-        </MenuItem.Header>
-      </MenuItem>
-      <MenuItem Name="List" IsEnabled="False">
-        <MenuItem.Header>
-          <StackPanel>
-            <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandChevronDown_lightGray_16x.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
-          </StackPanel>
-        </MenuItem.Header>
-        <MenuItem Header="0"></MenuItem>
-        <MenuItem Header="1"></MenuItem>
-        <MenuItem Header="2"></MenuItem>
-        <MenuItem Header="3"></MenuItem>
-        <MenuItem Header="4"></MenuItem>
-        <MenuItem Header="5"></MenuItem>
-        <MenuItem Header="6"></MenuItem>
-        <MenuItem Header="7"></MenuItem>
-        <MenuItem Header="8"></MenuItem>
-        <MenuItem Header="9"></MenuItem>
-      </MenuItem>
-      <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
-        <MenuItem.Header>
-          <StackPanel>
-            <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
-            <TextBlock Name="RefreshText" Text="" HorizontalAlignment="Center" />
-          </StackPanel>
-        </MenuItem.Header>
-      </MenuItem>
-      <MenuItem Name="Font" MinWidth="80" IsVisible="false">
-        <MenuItem.Header>
-          <StackPanel>
-            <Image Source="resm:AltCover.UICommon.Font_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
-            <TextBlock Name="FontText" Text="" HorizontalAlignment="Center" />
-          </StackPanel>
-        </MenuItem.Header>
-      </MenuItem>
-      <MenuItem IsEnabled="false" Background="DarkGray" Width="4" Height="28" MaxHeight="28">
-        <MenuItem.Header>
-          <Separator />
-        </MenuItem.Header>
-      </MenuItem>
-      <MenuItem Name="About" MinWidth="80">
-        <MenuItem.Header>
-          <StackPanel>
-            <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
-            <TextBlock Name="AboutText" Text="" HorizontalAlignment="Center" />
-          </StackPanel>
-        </MenuItem.Header>
-      </MenuItem>
-      <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
-        <MenuItem.Header>
-          <StackPanel>
-            <Image Source="resm:AltCover.UICommon.Exit_16x.png?assembly=AltCover.UICommon" Stretch="None" />
-            <TextBlock Name="ExitText" Text="" HorizontalAlignment="Center" />
-          </StackPanel>
-        </MenuItem.Header>
-      </MenuItem>
-    </Menu>
+    <Border BorderThickness="0,0,0,1"
+            DockPanel.Dock="Top"
+            BorderBrush="Black">
+      <Menu Name="Menu" MaxHeight="48" VerticalAlignment="Center">
+        <Menu.ItemsPanel>
+          <ItemsPanelTemplate>
+            <DockPanel HorizontalAlignment="Stretch" />
+          </ItemsPanelTemplate>
+        </Menu.ItemsPanel>
+        <MenuItem Name="Open">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.Open_6529.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <TextBlock Name="OpenText" Text="" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem Name="List" IsEnabled="False">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandChevronDown_lightGray_16x.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
+            </StackPanel>
+          </MenuItem.Header>
+          <MenuItem Header="0"></MenuItem>
+          <MenuItem Header="1"></MenuItem>
+          <MenuItem Header="2"></MenuItem>
+          <MenuItem Header="3"></MenuItem>
+          <MenuItem Header="4"></MenuItem>
+          <MenuItem Header="5"></MenuItem>
+          <MenuItem Header="6"></MenuItem>
+          <MenuItem Header="7"></MenuItem>
+          <MenuItem Header="8"></MenuItem>
+          <MenuItem Header="9"></MenuItem>
+        </MenuItem>
+        <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Name ="RefreshImage" Source="resm:AltCover.UICommon.Refresh_greyThin_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <TextBlock Name="RefreshText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem Name="Font" MinWidth="80" IsVisible="false">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.Font_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <TextBlock Name="FontText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem IsEnabled="false" Background="DarkGray" Width="4" Height="28" MaxHeight="28">
+          <MenuItem.Header>
+            <Separator />
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem Name="About" MinWidth="80">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.VSTAAbout_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <TextBlock Name="AboutText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+        <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="resm:AltCover.UICommon.Exit_16x.png?assembly=AltCover.UICommon" Stretch="None" />
+              <TextBlock Name="ExitText" Text="" HorizontalAlignment="Center" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+      </Menu>
+    </Border>
     <DockPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
       <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
         <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
@@ -123,25 +127,29 @@
       <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
         <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
                       HorizontalScrollBarVisibility="Auto">
-          <TreeView Name="Tree" MinWidth="150" />
+          <TreeView Name="Tree" MinWidth="150" BorderThickness="0" />
         </ScrollViewer>
-        <ScrollViewer DockPanel.Dock="Right"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto"
-                      Background="WhiteSmoke">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock
-                     Name="Branches" MinWidth="50"
-                     TextWrapping="NoWrap"
-                     Background="White"
-                     Foreground="DarkGray" />
-            <TextBlock
-                     Name="Source" MinWidth="150"
-                     TextWrapping="NoWrap"
-                     Background="WhiteSmoke"
-                     Foreground="Gray" />
-          </StackPanel>
-        </ScrollViewer>
+        <Border BorderThickness="1,0,0,0"
+                BorderBrush="Black">
+          <ScrollViewer DockPanel.Dock="Right"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Auto"
+                        Background="WhiteSmoke">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock
+                       Name="Branches" MinWidth="50"
+                       TextAlignment="Right"
+                       TextWrapping="NoWrap"
+                       Background="White"
+                       Foreground="DarkGray" />
+              <TextBlock
+                       Name="Source" MinWidth="150"
+                       TextWrapping="NoWrap"
+                       Background="WhiteSmoke"
+                       Foreground="Gray" />
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
       </DockPanel>
     </DockPanel>
   </DockPanel>
