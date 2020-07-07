@@ -434,16 +434,17 @@ type MainWindow() as this =
          let raw = Resource.GetResourceString (n + "Button.Label")
          let keytext = raw.Split('\u2028') // '\u2028'
          menu.Header <- keytext.[1]
-         let key = Enum.Parse<Avalonia.Input.Key>(keytext.[0], true)
-         let hotkey = Avalonia.Input.KeyGesture(key, Avalonia.Input.KeyModifiers.Alt)
+
+         // Why is this case sensitive (assumes Shift+) ?
+         let hotkey = Avalonia.Input.KeyGesture.Parse("Alt+" + keytext.[0])
+         printfn "hotkey %A" hotkey
+         menu.HotKey <- hotkey
 
          // Why doesn't this stick?
          let icon = new Image()
          icon.Source <- getIcon cap
          icon.Margin <- Thickness.Parse("2")
          menu.Icon <- icon
-
-         menu.HotKey <- hotkey
     )
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
