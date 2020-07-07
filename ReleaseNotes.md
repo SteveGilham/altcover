@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.1.7xx  (Genbu series release 6)
+* [Visualizer] Rewritten global tool based on the cross-platform AvaloniaUI toolkit (so no need for all the GTK3 set-up, including the `--schemadir[=path]` command-line parameter)
+
 # 7.1.778 (Genbu series release 5)
 * [BUGFIX] Address problems revealed in issue #87
   * The collection process now fails gracefully if the XML report is missing or broken
