@@ -245,7 +245,14 @@ type MainWindow() as this =
         let markBranches (root : XPathNavigator) (textBox : TextBlock) (lines : FormattedTextLine list) filename =
           let linetext = String.Join (Environment.NewLine,
                                       lines
-                                      |> Seq.mapi (fun i _ -> sprintf "%6d  " (1 + i)))
+                                      // Font limitation or Avalonia limitation? -- character \u2442 just shows as a box.
+                                      |> Seq.mapi (fun i _ -> sprintf "%6d Y" (1 + i)))
+          let formats = root.Select("//branch[@document='" + filename + "']")
+                        |> Seq.cast<XPathNavigator>
+                        |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
+                        // TODO
+                        |> Seq.toList
+
           Dispatcher.UIThread.Post(fun _ -> textBox.Text <- linetext)
 
         let markCoverage (root : XPathNavigator) textBox (lines : FormattedTextLine list) filename =
@@ -295,6 +302,8 @@ type MainWindow() as this =
                          t.FontFamily <- FontFamily(Persistence.readFont())
                          t.FontSize <- 16.0
                          t.FontStyle <- FontStyle.Normal)
+
+                   // text2.FontFamily <- FontFamily("Lucida Sans Unicode")
 
                    let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
                    let textLines = text.FormattedText.GetLines() |> Seq.toList
