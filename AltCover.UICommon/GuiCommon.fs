@@ -51,15 +51,16 @@ module GuiCommon =
 
   // -------------------------- Source file Handling ---------------------------
   [<NoComparison; AutoSerializable(false)>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Smells", "RelaxedAvoidCodeDuplicatedInSameClassRule",
+    Justification = "match expressions are still too much the same for it")>]
   type Source =
     | File of FileInfo
     | Url of Uri
-    | Dummy
 
     member self.Exists =
       match self with
       | File info -> info.Exists
-      | Dummy -> false
       | Url u ->
           let request = WebRequest.CreateHttp(u)
           request.Method <- "HEAD"
@@ -71,9 +72,10 @@ module GuiCommon =
 
     member self.FullName =
       match self with
-      | File info -> info.FullName
+      | File info -> if info |> isNull
+                     then String.Empty
+                     else info.FullName
       | Url u -> u.AbsoluteUri
-      | Dummy -> String.Empty
 
     member self.Outdated epoch =
       match self with
@@ -83,7 +85,6 @@ module GuiCommon =
     member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
-      | Dummy -> String.Empty
       | Url u ->
           use client = new System.Net.WebClient()
           client.DownloadString(u)
