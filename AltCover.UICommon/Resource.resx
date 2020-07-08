@@ -172,19 +172,19 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>_Close</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>o&#x2028;_Open...</value>
+    <value>o|_Open...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x2028;_Refresh</value>
+    <value>r|_Refresh</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>a&#x2028;_About...</value>
+    <value>a|_About...</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>f&#x2028;_Font...</value>
+    <value>f|_Font...</value>
   </data>
   <data name="exitButton.Label" xml:space="preserve">
-    <value>x&#x2028;E_xit</value>
+    <value>x|E_xit</value>
   </data>
   <data name="branchesVisited" xml:space="preserve">
     <value>{0} of {1} branches visited</value>

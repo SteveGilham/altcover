@@ -146,19 +146,19 @@ estas sen dato pri respekto al fonta dosiero
     <value>_Kreditoj</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>t&#x2028;_Tiparo...</value>
+    <value>t|_Tiparo...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
-    <value>f&#x2028;_Fermi</value>
+    <value>f|_Fermi</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>m&#x2028;_Malferma ...</value>
+    <value>m|_Malferma ...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x2028;_Refreŝigi</value>
+    <value>r|_Refreŝigi</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>p&#x2028;_Pri...</value>
+    <value>p|_Pri...</value>
   </data>
   <data name="InvalidFile" xml:space="preserve">
     <value>La dosiero
@@ -234,7 +234,7 @@ THE SOFTWARE.</value>
   <data name="AboutDialog.License" xml:space="preserve">
     <value>Permesilo</value>
   </data>
-  <data name="AboutDialog." xml:space="preserve">
+  <data name="AboutDialog.About" xml:space="preserve">
     <value>Pri</value>
   </data>
   <data name="Close" xml:space="preserve">

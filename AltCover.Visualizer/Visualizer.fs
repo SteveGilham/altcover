@@ -417,6 +417,9 @@ module private Gui =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "'openFileDialog' is returned")>]
+  [<SuppressMessage("Microsoft.Globalization",
+                    "CA1303:Do not pass literals as localized parameters",
+                     Justification="It's furniture, not user visible text")>]
   let private prepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
     openFileDialog.InitialDirectory <- Persistence.readFolder()
@@ -516,13 +519,17 @@ module private Gui =
 
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
+                     Justification = "'tag' is subsumed")>]
+  let private applyTag (buffer : TextBuffer) (style : string, fg, bg) =
+    let tag = new TextTag(style)
+    tag.Foreground <- fg
+    tag.Background <- bg
+    buffer.TagTable.Add(tag)
+
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
                      Justification = "'baseline' is returned")>]
   let private initializeTextBuffer(buff : TextBuffer) =
-    let applyTag (buffer : TextBuffer) (style : string, fg, bg) =
-      let tag = new TextTag(style)
-      tag.Foreground <- fg
-      tag.Background <- bg
-      buffer.TagTable.Add(tag)
 
     let baseline = new TextTag("baseline")
     baseline.Font <- Persistence.readFont()
@@ -690,8 +697,10 @@ module private Gui =
       h.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
       buff.DeleteMark("line")
 
+#if NETCOREAPP2_1
   // fsharplint:disable-next-line RedundantNewKeyword
   let latch = new Threading.ManualResetEvent false
+#endif
 
   let private onRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let hitFilter (activated : RowActivatedArgs) (path : TreePath) =
@@ -748,7 +757,7 @@ module private Gui =
                      "CA2000:DisposeObjectsBeforeLosingScope",
                      Justification = "IDisposables are added to other widgets")>]
   let private addLabelWidget g (button : ToolButton, resource) =
-    let keytext = (resource |> Resource.GetResourceString).Split('\u2028') // '\u2028'
+    let keytext = (resource |> Resource.GetResourceString).Split('|')
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))

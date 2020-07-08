@@ -431,7 +431,7 @@ type MainWindow() as this =
     |> Seq.iter (fun n ->
          let cap = n.First().ToString().ToUpper() + n.Substring(1)
          let raw = Resource.GetResourceString (n + "Button.Label")
-         let keytext = raw.Split('\u2028') // '\u2028'
+         let keytext = raw.Split('|')
 
          let menu = this.FindControl<MenuItem> cap
          // Why is this Shift inverted?  This turns into Alt+key.  TODO raise issue
