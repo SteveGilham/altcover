@@ -1,4 +1,4 @@
-version: 7.1.{build}-pre
+version: 7.1.{build}
 branches:
   except:
   - /develop.*/
@@ -40,7 +40,7 @@ test:
     - _Binaries\AltCover.Tests.Visualizer\Debug+AnyCPU\net471\AltCover.Tests.Visualizer.dll
     - _Binaries\AltCover.WeakName.Tests\Debug+AnyCPU\net47\AltCover.WeakName.Tests.dll
 artifacts:
-- path: _Packagin*\*.nupkg
+- path: _Packaging.visualizer\*.nupkg
   name: NuGet
 deploy:
 - provider: NuGet
