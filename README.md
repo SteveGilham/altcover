@@ -18,7 +18,7 @@ For Mono, .net framework and .net core, except as noted
 * A coverage visualizer tool 
   * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
   * For .net core : uses the cross-platform AvaloniaUI toolkit
-  ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
+  ![Visualizer screenshot](./AltCover.Visualizer/Screenshot-Avalonia.png)
     
 ### NuGet Packages
 * [![Nuget](https://buildstats.info/nuget/AltCover) General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the `dotnet test` API with FAKE and CAKE integration and the AvaloniaUI visualizer
