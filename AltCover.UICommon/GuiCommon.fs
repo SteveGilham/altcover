@@ -54,10 +54,12 @@ module GuiCommon =
   type Source =
     | File of FileInfo
     | Url of Uri
+    | Dummy
 
     member self.Exists =
       match self with
       | File info -> info.Exists
+      | Dummy -> false
       | Url u ->
           let request = WebRequest.CreateHttp(u)
           request.Method <- "HEAD"
@@ -71,6 +73,7 @@ module GuiCommon =
       match self with
       | File info -> info.FullName
       | Url u -> u.AbsoluteUri
+      | Dummy -> String.Empty
 
     member self.Outdated epoch =
       match self with
@@ -80,6 +83,7 @@ module GuiCommon =
     member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
+      | Dummy -> String.Empty
       | Url u ->
           use client = new System.Net.WebClient()
           client.DownloadString(u)
