@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.1.7xx  (Genbu series release 5a)
+# 7.1.780  (Genbu series release 5a)
 * [Visualizer] Rewritten global tool based on the cross-platform AvaloniaUI toolkit (so no need for all the GTK3 set-up, including the `--schemadir[=path]` command-line parameter)
   * There's no font selection support yet as AvaloniaUI doesn't offer a cross-platform one
   * The colour scheme differs as there's not yet support for selecting a different background brush for text ranges -- covered = blue text
