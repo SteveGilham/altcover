@@ -31,11 +31,11 @@ module Messages =
 
   let OutdatedCoverageFileMessage (display : Display) (file : FileInfo) =
     showMessageResourceFileWarning "CoverageOutOfDate" display file
-      (Source.Dummy)
+      (Source.File null)
 
   let MissingSourceFileMessage (display : Display) (file : FileInfo) =
     showMessageResourceFileWarning "MissingSourceFile" display file
-      (Source.Dummy)
+      (Source.File null)
 
   let OutdatedCoverageThisFileMessage (display : Display) (file : FileInfo)
       (source : Source) =
