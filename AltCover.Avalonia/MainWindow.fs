@@ -7,6 +7,7 @@ open System.IO
 open System.Linq
 open System.Xml.XPath
 
+open AltCover
 open AltCover.Augment
 open AltCover.Visualizer
 open AltCover.Visualizer.GuiCommon
@@ -64,7 +65,7 @@ type TextTag =
   // "#404040" "#cefdce" // Dark on Pale Green
   static member Declared = TextTag.Make "#FFA500" "#F5F5F5" // Orange on White Smoke
   // "#FFA500" "#FFFFFF" // Orange on White
-  static member StaticAnalysis = TextTag.Make "#708090" "#F5F5F5" // Slate Grey on White Smoke
+  static member StaticAnalysis = TextTag.Make "#000000" "#F5F5F5" // Black on White Smoke
   // "#808080" "#F5F5F5" // Grey on White Smoke
   static member Automatic = TextTag.Make "#FFD700" "#F5F5F5" // Gold on White Smoke
   // "#808080" "#FFFF00" // Grey on Yellow
@@ -225,7 +226,13 @@ type MainWindow() as this =
           n.MoveToParent() |> ignore
           let because = n.GetAttribute("excluded-because", String.Empty)
           { style =
-              if visitcount = 0 then selectStyle because excluded else TextTag.Visited
+              match Exemption.OfInt visitcount with
+              | Exemption.None -> selectStyle because excluded
+              | Exemption.Declared -> TextTag.Declared
+              | Exemption.Automatic -> TextTag.Automatic
+              | Exemption.StaticAnalysis -> TextTag.StaticAnalysis
+              | Exemption.Excluded -> TextTag.Excluded
+              | _ -> TextTag.Visited
             vc = visitcount
             line = Int32.TryParse(line) |> snd
             column = (Int32.TryParse(column) |> snd)
