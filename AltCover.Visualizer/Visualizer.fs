@@ -736,16 +736,26 @@ module private Gui =
     tags
     |> Seq.iter (tagByCoverage buff)
 
+  let internal lineHeights  (h : Handler) =
+    let v = h.codeView
+    let lines = v.Buffer.LineCount
+    let icode = v.Buffer.GetIterAtLine(1)
+    let (pcode, _h1) = v.GetLineYrange icode
+    let iline = h.lineView.Buffer.GetIterAtLine(1)
+    let (pline, _h2) = h.lineView.GetLineYrange iline
+    (pcode, pline)
+
+  let internal balanceLines h =
+    let (pcode, pline) = lineHeights h
+    if pline > pcode
+    then h.codeView.PixelsAboveLines <- pline - pcode
+    else h.lineView.PixelsBelowLines <- pcode - pline
+
   let internal scrollToRow (h : Handler) =
     let v = h.codeView
     let scroller = h.codeScroller
     let va = scroller.Vadjustment
     let lines = v.Buffer.LineCount
-    let icode = v.Buffer.GetIterAtLine(lines - 1)
-    let (_, pcode) = v.GetLineYrange icode
-
-    let iline = h.lineView.Buffer.GetIterAtLine(lines - 1)
-    let (_, pline) = h.lineView.GetLineYrange iline
 
     let pages = va.Upper / va.PageSize // total document size
     let ``lines per page`` = (float lines) / pages
@@ -755,9 +765,8 @@ module private Gui =
                  then let pageshift = (pagedepth - 0.5)
                       Math.Min(va.Upper - va.PageSize, pageshift * va.PageSize)
                  else 0.0
-    invokeOnGuiThread(fun () -> if pline > pcode
-                                then h.codeView.PixelsAboveLines <- pline - pcode
-                                else h.lineView.PixelsBelowLines <- pcode - pline
+
+    invokeOnGuiThread(fun () -> balanceLines h
                                 va.Value <- adjust)
 
 #if NETCOREAPP2_1
@@ -1038,12 +1047,20 @@ module private Gui =
 
            Persistence.saveFont (font)
            [
-            handler.codeView.Buffer.TagTable
-            handler.lineView.Buffer.TagTable
+            handler.codeView
+            handler.lineView
            ]
-           |> Seq.iter (fun t -> t.Foreach(fun tag -> tag.Font <- font))
+           |> Seq.iter (fun v -> v.Buffer.TagTable.Foreach(fun tag -> tag.Font <- font)
+                                 v.PixelsAboveLines <- 0
+                                 v.PixelsBelowLines <- 0)
 
            handler.viewport1.QueueDraw()
+           async {
+              Threading.Thread.Sleep(300)
+              invokeOnGuiThread(fun () -> balanceLines handler)
+            }
+            |> Async.Start
+
 #if NETCOREAPP2_1
          ) // implicit Dispose()
 #else

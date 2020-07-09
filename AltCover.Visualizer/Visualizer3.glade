@@ -288,6 +288,7 @@
                           <object class="GtkTextView" id="codeView">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="border_width">1</property>
                             <property name="editable">False</property>
                             <property name="cursor_visible">False</property>
                           </object>
@@ -300,8 +301,7 @@
                         <child>
                           <object class="GtkTextView" id="padding">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="border_width">1</property>
+                            <property name="can_focus">False</property>
                             <property name="editable">False</property>
                             <property name="wrap_mode">char</property>
                             <property name="cursor_visible">False</property>
