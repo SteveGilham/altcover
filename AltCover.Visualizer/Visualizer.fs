@@ -657,9 +657,9 @@ module private Gui =
     { VisitCount =
         if visitcount = 0 then fallback else visitcount
       Line = Int32.TryParse(line) |> snd
-      Column = (Int32.TryParse(column) |> snd) + 1
+      Column = (Int32.TryParse(column) |> snd)
       EndLine = Int32.TryParse(endline) |> snd
-      EndColumn = (Int32.TryParse(endcolumn) |> snd) + 1 }
+      EndColumn = (Int32.TryParse(endcolumn) |> snd) }
 
   let private filterCoverage (buff : TextBuffer) (n : CodeTag) =
     let lc = buff.LineCount
