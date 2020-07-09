@@ -121,7 +121,16 @@ type internal Handler() =
     [<DefaultValue(true)>]
     val mutable auxModel : TreeStore
 
-        [<
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+    DefaultValue(true)>]
+    val mutable scrolledwindow2 : ScrolledWindow
+
+    [<
 #if NETCOREAPP2_1
       Builder.Object;
 #else
@@ -720,16 +729,27 @@ module private Gui =
 
   let internal scrollToRow (h : Handler) =
     let v = h.codeView
-    let scroller = v.Parent.Parent.Parent :?> ScrolledWindow
+    let scroller = h.scrolledwindow2
     let va = scroller.Vadjustment
+    let lines = v.Buffer.LineCount
+    let icode = v.Buffer.GetIterAtLine(lines - 1)
+    let (_, pcode) = v.GetLineYrange icode
+
+    let iline = h.lineView.Buffer.GetIterAtLine(lines - 1)
+    let (_, pline) = h.lineView.GetLineYrange iline
+
     let pages = va.Upper / va.PageSize // total document size
-    let ``lines per page`` = (float v.Buffer.LineCount) / pages
+    let ``lines per page`` = (float lines) / pages
     let pagedepth = float (h.activeRow - 1) / ``lines per page``
 
-    if pagedepth > 0.5
-    then let pageshift = (pagedepth - 0.5)
-         let adjust = Math.Min(va.Upper - va.PageSize, pageshift * va.PageSize)
-         invokeOnGuiThread(fun () -> va.Value <- adjust)
+    let adjust = if pagedepth > 0.5
+                 then let pageshift = (pagedepth - 0.5)
+                      Math.Min(va.Upper - va.PageSize, pageshift * va.PageSize)
+                 else 0.0
+    invokeOnGuiThread(fun () -> if pline > pcode
+                                then h.codeView.PixelsBelowLines <- pline - pcode
+                                else h.lineView.PixelsBelowLines <- pcode - pline
+                                va.Value <- adjust)
 
 #if NETCOREAPP2_1
   // fsharplint:disable-next-line RedundantNewKeyword
@@ -773,8 +793,14 @@ module private Gui =
                             seq { 1 .. buff.LineCount }
                             |> Seq.map (fun i -> sprintf "%6d " i))
 
+            [ handler.codeView; handler.lineView ]
+            |> Seq.iter (fun v -> v.PixelsAboveLines <- 0
+                                  v.PixelsInsideWrap <- 0
+                                  v.PixelsBelowLines <- 0)
+
             [buff; buff2]
-            |> List.iter (fun b -> b.ApplyTag("baseline", b.StartIter, b.EndIter))
+            |> List.iter (fun b ->
+               b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
             let line = child.GetAttribute("line", String.Empty)
             let root = m.Clone()
