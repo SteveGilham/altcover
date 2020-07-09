@@ -34,6 +34,9 @@
               <xsl:attribute name="fullname">
                 <xsl:value-of select="$method" />
               </xsl:attribute>
+              <xsl:attribute name="document">
+                <xsl:value-of select="$file" />
+              </xsl:attribute>
 
               <xsl:for-each select="descendant::SequencePoint|descendant::BranchPoint">
                 <xsl:sort select="@offset" data-type="number" />
@@ -46,11 +49,7 @@
                     </seqpnt>
                   </xsl:when>
                   <xsl:otherwise>
-                    <branch visitcount="{@vc}" line="{@sl}" path="{@path}" offset="{@offset}" offsetend="{@offsetend}">
-                      <xsl:attribute name="document">
-                        <xsl:value-of select="$file" />
-                      </xsl:attribute>
-                    </branch>
+                    <branch visitcount="{@vc}" line="{@sl}" path="{@path}" offset="{@offset}" offsetend="{@offsetend}" />
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:for-each>

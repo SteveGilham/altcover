@@ -267,8 +267,9 @@ type MainWindow() as this =
         let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
           let branches = new Dictionary<int, int * int>()
 
-          root.Select("//branch[@document='" + filename + "']")
+          root.Select("//method[@document='" + filename + "']")
           |> Seq.cast<XPathNavigator>
+          |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
           |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
           |> Seq.toList
           |> Seq.iter (fun n ->
@@ -351,18 +352,19 @@ type MainWindow() as this =
              this.FindControl<StackPanel>("Branches").Children.Clear()
 
              let scroller = this.FindControl<ScrollViewer>("Coverage")
+             let path = xpath.GetAttribute("document", String.Empty)
              let points = [ "seqpnt"; "branch"]
                           |> List.map (fun tag -> xpath.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
                           |> Seq.concat
-             if Seq.isEmpty points then
+
+             if Seq.isEmpty points ||
+                 path |> String.IsNullOrWhiteSpace then
                let caption = Resource.GetResourceString "LoadInfo"
                this.ShowMessageBox MessageType.Info caption
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
                      Resource.GetResourceString "No source location", visbleName)
              else
-               let point = points |> Seq.head
-               let path = point.GetAttribute("document", String.Empty)
                let info = FileInfo(path)
                let source = info |> File
                let current = new FileInfo(coverageFiles.Head)
@@ -372,7 +374,7 @@ type MainWindow() as this =
                  Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
                else
                  this.Title <- "AltCover.Avalonia - " + info.FullName
-
+                 let point = points |> Seq.head
                  let line =
                    point.GetAttribute("line", String.Empty)
                    |> Int32.TryParse

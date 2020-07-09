@@ -654,8 +654,10 @@ module private Gui =
       (filename : string) =
     let buff = lineView.Buffer
     let branches = new Dictionary<int, int * int>()
-    root.Select("//branch[@document='" + filename + "']")
+
+    root.Select("//method[@document='" + filename + "']")
     |> Seq.cast<XPathNavigator>
+    |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
     |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
     |> Seq.iter (fun n ->
          let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
@@ -831,10 +833,13 @@ module private Gui =
     let hits = mappings.Keys |> Seq.filter (hitFilter activation)
     if not (Seq.isEmpty hits) then
       let m = mappings.[Seq.head hits]
+      let filename = m.GetAttribute("document", String.Empty)
       let points = [ "seqpnt"; "branch"]
                    |> List.map (fun tag -> m.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
                    |> Seq.concat
-      if Seq.isEmpty points then
+
+      if Seq.isEmpty points ||
+          filename |> String.IsNullOrWhiteSpace then
         let noSource() =
           let message =
             Resource.Format("No source location",
@@ -843,8 +848,6 @@ module private Gui =
           showMessageOnGuiThread handler.mainWindow AltCover.Visualizer.MessageType.Info message
         noSource()
       else
-        let child = points |> Seq.head
-        let filename = child.GetAttribute("document", String.Empty)
         handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
         let info = GetSource(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
@@ -873,6 +876,7 @@ module private Gui =
             |> List.iter (fun b ->
                b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
+            let child = points |> Seq.head
             let line = child.GetAttribute("line", String.Empty)
             let root = m.Clone()
             root.MoveToRoot()
