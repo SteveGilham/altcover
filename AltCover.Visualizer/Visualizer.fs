@@ -654,15 +654,8 @@ module private Gui =
       (filename : string) =
     let buff = lineView.Buffer
     let branches = new Dictionary<int, int * int>()
-    root.Select("//method")
+    root.Select("//branch[@document='" + filename + "']")
     |> Seq.cast<XPathNavigator>
-    |> Seq.filter (fun n ->
-         let f = n.Clone()
-         f.MoveToFirstChild()
-         && filename.Equals
-              (f.GetAttribute("document", String.Empty),
-               StringComparison.OrdinalIgnoreCase))
-    |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
     |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
     |> Seq.iter (fun n ->
          let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
@@ -838,7 +831,9 @@ module private Gui =
     let hits = mappings.Keys |> Seq.filter (hitFilter activation)
     if not (Seq.isEmpty hits) then
       let m = mappings.[Seq.head hits]
-      let points = m.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
+      let points = [ "seqpnt"; "branch"]
+                   |> List.map (fun tag -> m.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
+                   |> Seq.concat
       if Seq.isEmpty points then
         let noSource() =
           let message =

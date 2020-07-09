@@ -267,15 +267,7 @@ type MainWindow() as this =
         let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
           let branches = new Dictionary<int, int * int>()
 
-          root.Select("//method")
-          |> Seq.cast<XPathNavigator>
-          |> Seq.filter (fun n ->
-               let f = n.Clone()
-               f.MoveToFirstChild()
-               && filename.Equals
-                    (f.GetAttribute("document", String.Empty),
-                     StringComparison.Ordinal))
-          |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
+          root.Select("//branch[@document='" + filename + "']")
           |> Seq.cast<XPathNavigator>
           |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
           |> Seq.toList
@@ -359,8 +351,9 @@ type MainWindow() as this =
              this.FindControl<StackPanel>("Branches").Children.Clear()
 
              let scroller = this.FindControl<ScrollViewer>("Coverage")
-             let points =
-               xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
+             let points = [ "seqpnt"; "branch"]
+                          |> List.map (fun tag -> xpath.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
+                          |> Seq.concat
              if Seq.isEmpty points then
                let caption = Resource.GetResourceString "LoadInfo"
                this.ShowMessageBox MessageType.Info caption
