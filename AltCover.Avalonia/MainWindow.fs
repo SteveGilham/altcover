@@ -352,19 +352,28 @@ type MainWindow() as this =
              this.FindControl<StackPanel>("Branches").Children.Clear()
 
              let scroller = this.FindControl<ScrollViewer>("Coverage")
-             let path = xpath.GetAttribute("document", String.Empty)
+
              let points = [ "seqpnt"; "branch"]
                           |> List.map (fun tag -> xpath.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
                           |> Seq.concat
 
-             if Seq.isEmpty points ||
-                 path |> String.IsNullOrWhiteSpace then
+             let allpoints = [[xpath] |> List.toSeq; points] |> Seq.concat
+             let document = allpoints
+                            |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
+                            |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+             let line = allpoints
+                        |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
+                        |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+             if document |> Option.isNone ||
+                line |> Option.isNone
+             then
                let caption = Resource.GetResourceString "LoadInfo"
                this.ShowMessageBox MessageType.Info caption
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
                      Resource.GetResourceString "No source location", visbleName)
              else
+               let path = Option.get document
                let info = FileInfo(path)
                let source = info |> File
                let current = new FileInfo(coverageFiles.Head)
@@ -375,8 +384,9 @@ type MainWindow() as this =
                else
                  this.Title <- "AltCover.Avalonia - " + info.FullName
                  let point = points |> Seq.head
-                 let line =
-                   point.GetAttribute("line", String.Empty)
+                 let lineno =
+                   line
+                   |> Option.get
                    |> Int32.TryParse
                    |> snd
                  try
@@ -391,7 +401,7 @@ type MainWindow() as this =
 
                    let textLines = text.FormattedText.GetLines() |> Seq.toList
                    let sample = textLines |> Seq.head
-                   let depth = sample.Height * float (line - 1)
+                   let depth = sample.Height * float (lineno - 1)
                    let root = xpath.Clone()
                    root.MoveToRoot()
                    markCoverage root text text2 textLines path

@@ -833,13 +833,19 @@ module private Gui =
     let hits = mappings.Keys |> Seq.filter (hitFilter activation)
     if not (Seq.isEmpty hits) then
       let m = mappings.[Seq.head hits]
-      let filename = m.GetAttribute("document", String.Empty)
+
       let points = [ "seqpnt"; "branch"]
                    |> List.map (fun tag -> m.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
                    |> Seq.concat
-
-      if Seq.isEmpty points ||
-          filename |> String.IsNullOrWhiteSpace then
+      let allpoints = [[m] |> List.toSeq; points] |> Seq.concat
+      let document = allpoints
+                     |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
+                     |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+      let line = allpoints
+                 |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
+                 |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+      if document |> Option.isNone ||
+         line |> Option.isNone then
         let noSource() =
           let message =
             Resource.Format("No source location",
@@ -848,6 +854,7 @@ module private Gui =
           showMessageOnGuiThread handler.mainWindow AltCover.Visualizer.MessageType.Info message
         noSource()
       else
+        let filename = Option.get document
         handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
         let info = GetSource(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
@@ -876,13 +883,11 @@ module private Gui =
             |> List.iter (fun b ->
                b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
-            let child = points |> Seq.head
-            let line = child.GetAttribute("line", String.Empty)
             let root = m.Clone()
             root.MoveToRoot()
             markBranches root handler.lineView filename
             markCoverage root buff buff2 filename
-            handler.activeRow <- Int32.TryParse(line) |> snd
+            handler.activeRow <- Int32.TryParse(Option.get line) |> snd
             handler.codeView.CursorVisible <- false
             handler.viewport1.QueueDraw()
 
