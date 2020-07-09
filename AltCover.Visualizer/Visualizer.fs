@@ -747,7 +747,7 @@ module private Gui =
                       Math.Min(va.Upper - va.PageSize, pageshift * va.PageSize)
                  else 0.0
     invokeOnGuiThread(fun () -> if pline > pcode
-                                then h.codeView.PixelsBelowLines <- pline - pcode
+                                then h.codeView.PixelsAboveLines <- pline - pcode
                                 else h.lineView.PixelsBelowLines <- pcode - pline
                                 va.Value <- adjust)
 
