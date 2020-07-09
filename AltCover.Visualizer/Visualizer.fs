@@ -574,9 +574,9 @@ module private Gui =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                      Justification = "IDisposables are added to the TextView")>]
-  let private markBranches (root : XPathNavigator) (codeView : TextView)
+  let private markBranches (root : XPathNavigator) (lineView : TextView)
       (filename : string) =
-    let buff = codeView.Buffer
+    let buff = lineView.Buffer
     let branches = new Dictionary<int, int * int>()
     root.Select("//method")
     |> Seq.cast<XPathNavigator>
@@ -615,12 +615,12 @@ module private Gui =
         | AllVisited -> icons.Branched
         | _ -> icons.Branch
 
-      let mutable i = buff.GetIterAtLine(l - 1)
+      let mutable i = buff.GetIterAtLineOffset(l - 1, 7)
       let a = new TextChildAnchor()
       buff.InsertChildAnchor(&i, a)
       let image = new Image(pix.Force())
       image.Visible <- true
-      codeView.AddChildAtAnchor(image, a)
+      lineView.AddChildAtAnchor(image, a)
       if fst counts then
         let v, num = snd counts
         image.TooltipText <-
@@ -776,7 +776,7 @@ module private Gui =
             let line = child.GetAttribute("line", String.Empty)
             let root = m.Clone()
             root.MoveToRoot()
-            markBranches root handler.codeView filename
+            markBranches root handler.lineView filename
             markCoverage root buff buff2 filename
             handler.activeRow <- Int32.TryParse(line) |> snd
             handler.codeView.CursorVisible <- false
