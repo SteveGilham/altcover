@@ -390,10 +390,19 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Interoperability",
                     "CentralizePInvokesIntoNativeMethodsTypeRule",
                     Justification = "Prefer local scoping")>]
+  [<SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass",
+                    Justification = "Prefer local scoping")>]
   //From Managed.Windows.Forms/XplatUI
   [<DllImport ("libc")>]
   extern int uname (IntPtr buf)
 
+  [<SuppressMessage("Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+                    Justification = "Passed as a delegate")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+                    Justification = "A call to native code")>]
+  [<SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", 
+                    Justification = "A call to native code")>]
   [<SuppressMessage("Gendarme.Rules.Design", "PreferUriOverStringRule",
                     Justification = "Avoid spurious generality")>]
   let private showUrl(url : string) =
@@ -474,7 +483,7 @@ module private Gui =
 
   let private prepareTreeView(handler : Handler) =
     [| icons.Assembly; icons.Namespace; icons.Class; icons.Method |]
-    |> Seq.iteri (fun i x ->
+    |> Seq.iteri (fun i x -> // this line number
          let column = new Gtk.TreeViewColumn()
          let cell = new Gtk.CellRendererText()
          let icon = new Gtk.CellRendererPixbuf()
@@ -838,6 +847,9 @@ module private Gui =
   let latch = new Threading.ManualResetEvent false
 #endif
 
+  [<SuppressMessage("Microsoft.Maintainability",
+                    "CA1506:AvoidExcessiveClassCoupling",
+                    Justification = "I see no problem here")>]
   let private onRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let hitFilter (activated : RowActivatedArgs) (path : TreePath) =
       activated.Path.Compare(path) = 0
@@ -1167,7 +1179,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@378.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@486.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
