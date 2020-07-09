@@ -718,15 +718,18 @@ module private Gui =
     tags
     |> Seq.iter (tagByCoverage buff)
 
-  let internal scrollToRow (h : Handler) _ =
-    let buff = h.codeView.Buffer
-    if buff.IsNotNull
-       && h.activeRow > 0
-    then
-      let iter = buff.GetIterAtLine(h.activeRow - 1)
-      let mark = buff.CreateMark("line", iter, false)
-      h.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
-      buff.DeleteMark("line")
+  let internal scrollToRow (h : Handler) =
+    let v = h.codeView
+    let scroller = v.Parent.Parent.Parent :?> ScrolledWindow
+    let va = scroller.Vadjustment
+    let pages = va.Upper / va.PageSize // total document size
+    let ``lines per page`` = (float v.Buffer.LineCount) / pages
+    let pagedepth = float (h.activeRow - 1) / ``lines per page``
+
+    if pagedepth > 0.5
+    then let pageshift = (pagedepth - 0.5)
+         let adjust = Math.Min(va.Upper - va.PageSize, pageshift * va.PageSize)
+         invokeOnGuiThread(fun () -> va.Value <- adjust)
 
 #if NETCOREAPP2_1
   // fsharplint:disable-next-line RedundantNewKeyword
@@ -782,15 +785,12 @@ module private Gui =
             handler.codeView.CursorVisible <- false
             handler.codeView.QueueDraw()
             handler.lineView.QueueDraw()
-#if NETCOREAPP2_1
+
             async {
               Threading.Thread.Sleep(300)
-              scrollToRow handler ()
+              scrollToRow handler
             }
             |> Async.Start
-#else
-            scrollToRow handler ()
-#endif
 
           showSource()
 
