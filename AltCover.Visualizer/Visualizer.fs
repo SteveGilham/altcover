@@ -2,9 +2,11 @@ namespace AltCover.Visualizer
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.Globalization
 open System.IO
 open System.Linq
+open System.Runtime.InteropServices
 open System.Xml.XPath
 
 open AltCover
@@ -367,14 +369,70 @@ module private Gui =
     handler.openButton.Menu <-
       if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
+  // browser launch from Avalonia
+  let private ShellExec (cmd:string) waitForExit =
+    let escapedArgs = cmd.Replace("\"", "\\\"") // Blackfox???
+    let psi = ProcessStartInfo()
+    psi.FileName <- "/bin/sh"
+    psi.Arguments <- "-c \"" + escapedArgs + "\""
+    psi.RedirectStandardOutput <- true
+    psi.UseShellExecute <- false
+    psi.CreateNoWindow <- true
+    psi.WindowStyle <- ProcessWindowStyle.Hidden
+    use proc = Process.Start(psi)
+    if waitForExit
+    then proc.WaitForExit();
+
+  //From Managed.Windows.Forms/XplatUI
+  [<DllImport ("libc")>]
+  extern int uname (IntPtr buf)
+
   let private prepareAboutDialog(handler : Handler) =
-    let showUrl(link : string) =
-      match System.Environment.GetEnvironmentVariable("OS") with
-      | "Windows_NT" -> use browser = System.Diagnostics.Process.Start(link)
-                        ()
-      // TODO -- other OS types
-      | _ -> showMessage handler.aboutVisualizer link AltCover.Visualizer.MessageType.Info
-    // The first gets the display right, the second the browser launch
+    let showUrl(url : string) =
+#if NETCOREAPP2_1
+      let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+      let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+      let isOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+#else
+      let p = Environment.OSVersion.Platform |> int
+      let isWindows = p <= 3
+        // System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+
+      // from https://github.com/jpobst/Pinta/blob/1.6/Pinta.Core/Managers/SystemManager.cs#L125
+      let isOSX =
+        let mutable buf = IntPtr.Zero
+        try
+          buf <- Marshal.AllocHGlobal (8192)
+          try
+            // This is a hacktastic way of getting sysname from uname ()
+            if (uname (buf) = 0)
+            then let os = Marshal.PtrToStringAnsi (buf);
+                 os = "Darwin"
+            else false
+            with
+            | _ -> false
+        finally
+          if buf <> IntPtr.Zero
+          then Marshal.FreeHGlobal buf
+
+      //let isLinux =  (p = 4) || (p = 6) || (p = 128) // hack
+      //               && System.Environment.GetEnvironmentVariable("OSTYPE") = "linux-gnu"
+      let isLinux = (isWindows || isOSX) |>  not  // by default
+#endif
+
+      if isLinux
+      then ShellExec ("xdg-open " + url) false
+      else let psi = ProcessStartInfo()
+           psi.FileName <- if isWindows
+                           then url
+                           else "open"
+           psi.Arguments <- if isOSX
+                            then ("-e " + url)
+                            else String.Empty
+           psi.CreateNoWindow <- true
+           psi.UseShellExecute <- isWindows
+           use _proc = System.Diagnostics.Process.Start(psi)
+           ()
 
 #if NETCOREAPP2_1
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
@@ -931,6 +989,7 @@ module private Gui =
                           handler.codeView.ModifyBase(state, whiteSmoke)
                           handler.codeView.ModifyBg(state, whiteSmoke))
 #else
+// Now obsolete but...
 // TODO -- https://developer.gnome.org/gtk3/stable/GtkWidget.html#gtk-widget-override-color
 // needs CSS styling here too
 #endif
