@@ -556,6 +556,10 @@ module private Gui =
       ("excluded", "#87CEEB", "#F5F5F5") ] // Sky Blue on White Smoke
     |> Seq.iter (fun x -> applyTag font buff x |> ignore)
 
+  let private setDefaultTags (h:Handler) =
+    initializeTextBuffer "#f5f5f5" h.codeView.Buffer
+    initializeTextBuffer "#fffff" h.lineView.Buffer
+
   let private parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
     let text = element.GetAttribute(attribute, String.Empty)
     let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
@@ -777,6 +781,7 @@ module private Gui =
             handler.activeRow <- Int32.TryParse(line) |> snd
             handler.codeView.CursorVisible <- false
             handler.codeView.QueueDraw()
+            handler.lineView.QueueDraw()
 #if NETCOREAPP2_1
             async {
               Threading.Thread.Sleep(300)
@@ -883,8 +888,7 @@ module private Gui =
 // needs CSS styling here too
 #endif
     handler.lineView.Editable <- false
-    initializeTextBuffer "#f5f5f5" handler.codeView.Buffer
-    initializeTextBuffer "#fffff" handler.lineView.Buffer
+    setDefaultTags handler
     setDefaultText handler
 
     handler.refreshButton.Sensitive <- false
@@ -995,7 +999,14 @@ module private Gui =
 #endif
 
            Persistence.saveFont (font)
+           [
+            handler.codeView.Buffer.TagTable
+            handler.lineView.Buffer.TagTable
+           ]
+           |> Seq.iter (fun t -> t.Foreach(fun tag -> tag.Font <- font))
+
            handler.codeView.QueueDraw()
+           handler.lineView.QueueDraw()
 #if NETCOREAPP2_1
          ) // implicit Dispose()
 #else
