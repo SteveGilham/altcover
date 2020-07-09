@@ -8,7 +8,6 @@ open System.Linq
 open System.Xml.XPath
 
 open AltCover
-open AltCover.Augment
 open AltCover.Visualizer
 open AltCover.Visualizer.GuiCommon
 
@@ -357,6 +356,8 @@ type MainWindow() as this =
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBlock>("Source")
              let text2 = this.FindControl<TextBlock>("Lines")
+             this.FindControl<StackPanel>("Branches").Children.Clear()
+
              let scroller = this.FindControl<ScrollViewer>("Coverage")
              let points =
                xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
@@ -377,6 +378,8 @@ type MainWindow() as this =
                else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
                  Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
                else
+                 this.Title <- "AltCover.Avalonia - " + info.FullName
+
                  let line =
                    point.GetAttribute("line", String.Empty)
                    |> Int32.TryParse
@@ -532,10 +535,10 @@ type MainWindow() as this =
           Display = this.DisplayMessage
           UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
           UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
+                                        this.Title <- "AltCover.Avalonia"
                                         tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
                                         this.FindControl<TextBlock>("Source").Text <- String.Empty
                                         this.FindControl<TextBlock>("Lines").Text <- String.Empty
-                                        this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
