@@ -73,8 +73,6 @@ type TextTag =
   //"#ff0000" "#FFFFFF" // Red on White
   static member Excluded = TextTag.Make "#87CEEB" "#F5F5F5" // Sky Blue on White Smoke
   // "#87CEEB" "#FFFFFF" // Sky Blue on white
-  static member Partial = TextTag.Make "#000000" "#F5F5F5" // Black on White Smoke
-  // "#404040" "#FFFF00" // Dark on Yellow
 
 // Range colouring information
 type internal ColourTag =

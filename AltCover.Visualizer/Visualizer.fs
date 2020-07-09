@@ -5,8 +5,6 @@ open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.Linq
-open System.Reflection
-open System.Resources
 open System.Xml.XPath
 
 open AltCover
@@ -123,6 +121,15 @@ type internal Handler() =
     [<DefaultValue(true)>]
     val mutable auxModel : TreeStore
 
+        [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+    DefaultValue(true)>]
+    val mutable lineView : TextView
+
     [<
 #if NETCOREAPP2_1
       Builder.Object;
@@ -137,9 +144,6 @@ type internal Handler() =
 
     [<DefaultValue(true)>]
     val mutable justOpened : string
-
-    [<DefaultValue(true)>]
-    val mutable baseline : TextTag
 
     [<DefaultValue(true)>]
     val mutable activeRow : int
@@ -305,7 +309,7 @@ module private Gui =
 #if NETCOREAPP2_1
     |> List.iter (fun name ->
          use b =
-           new Builder(Assembly.GetExecutingAssembly()
+           new Builder(System.Reflection.Assembly.GetExecutingAssembly()
                                .GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"),
                        name)
          b.Autoconnect handler)
@@ -317,6 +321,16 @@ module private Gui =
 
     handler.coverageFiles <- []
     handler
+
+  let private setDefaultText (h:Handler) =
+    [
+      (h.codeView.Buffer, 100)
+      (h.lineView.Buffer, 7)
+    ]
+    |> Seq.iter (fun (b, n) ->
+        b.Text <- String(' ', n)
+        b.ApplyTag("baseline", b.StartIter, b.EndIter)
+    )
 
   // Fill in the menu from the memory cache
   let private populateMenu (handler : Handler) =
@@ -452,7 +466,7 @@ module private Gui =
                                         // Do real UI work here
                                         handler.auxModel <- handler.classStructureTree.Model :?> TreeStore
                                         handler.classStructureTree.Model <- theModel
-                                        handler.codeView.Buffer.Clear()
+                                        setDefaultText handler
                                         handler.mainWindow.Title <- "AltCover.Visualizer"
                                         doUpdateMRU handler info.FullName true
                                       ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
@@ -520,29 +534,27 @@ module private Gui =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                      Justification = "'tag' is subsumed")>]
-  let private applyTag (buffer : TextBuffer) (style : string, fg, bg) =
+  let private applyTag font (buffer : TextBuffer) (style : string, fg, bg) =
     let tag = new TextTag(style)
+    tag.Font <- font
     tag.Foreground <- fg
     tag.Background <- bg
     buffer.TagTable.Add(tag)
 
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
-                     Justification = "'baseline' is returned")>]
-  let private initializeTextBuffer(buff : TextBuffer) =
-
-    let baseline = new TextTag("baseline")
-    baseline.Font <- Persistence.readFont()
-    baseline.Foreground <- "#8080A0"
-    buff.TagTable.Add(baseline) |> ignore
-    [ ("visited", "#404040", "#cefdce") // Dark on Pale Green
+                     Justification = "All added to the text buffer")>]
+  let private initializeTextBuffer bg (buff : TextBuffer) =
+    let font = Persistence.readFont()
+    [
+      ("baseline", "#808080", bg)
+      ("visited", "#0000CD", "#cefdce") // Medium Blue on Pale Green
       ("declared", "#FF8C00", "#FFFFFF") // Dark Orange on White
-      ("static", "#F5F5F5", "#808080") // White Smoke on Grey
-      ("automatic", "#808080", "#FFFF00") // Grey on Yellow
-      ("notVisited", "#ff0000", "#FFFFFF") // Red on White
-      ("excluded", "#00BFFF", "#FFFFFF") ] // Deep Sky Blue on white
-    |> Seq.iter (fun x -> applyTag buff x |> ignore)
-    baseline
+      ("static", "#F5F5F5", "#000000") // White Smoke on Black
+      ("automatic", "#808080", "#FFD700" ) // Grey on Gold
+      ("notVisited", "#DC143C", "#FFFFFF") // Crimson on White
+      ("excluded", "#87CEEB", "#F5F5F5") ] // Sky Blue on White Smoke
+    |> Seq.iter (fun x -> applyTag font buff x |> ignore)
 
   let private parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
     let text = element.GetAttribute(attribute, String.Empty)
@@ -680,11 +692,26 @@ module private Gui =
 
     buff.ApplyTag(tag, from, until)
 
-  let private markCoverage (root : XPathNavigator) buff filename =
-    root.Select("//seqpnt[@document='" + filename + "']")
-    |> Seq.cast<XPathNavigator>
-    |> Seq.map coverageToTag
-    |> Seq.filter (filterCoverage buff)
+  let private markCoverage (root : XPathNavigator) buff (buff2:TextBuffer) filename =
+    let tags = root.Select("//seqpnt[@document='" + filename + "']")
+                |> Seq.cast<XPathNavigator>
+                |> Seq.map coverageToTag
+                |> Seq.filter (filterCoverage buff)
+                |> Seq.toList
+    tags
+    |> List.groupBy (fun t -> t.Line)
+    |> List.iter (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.VisitCount <= 0
+                                                                       then 0
+                                                                       else tag.VisitCount)
+                                let style = if total > 0
+                                            then "visited"
+                                            else "notVisited"
+
+                                let start = buff2.GetIterAtLine (l - 1)
+                                let finish = buff2.GetIterAtLineOffset (l-1, 7)
+                                buff2.ApplyTag(style, start, finish))
+
+    tags
     |> Seq.iter (tagByCoverage buff)
 
   let internal scrollToRow (h : Handler) _ =
@@ -731,13 +758,22 @@ module private Gui =
         else
           let showSource() =
             let buff = handler.codeView.Buffer
+            let buff2 = handler.lineView.Buffer
+
             buff.Text <- info.ReadAllText()
-            buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
+
+            buff2.Text <- String.Join (Environment.NewLine,
+                            seq { 1 .. buff.LineCount }
+                            |> Seq.map (fun i -> sprintf "%6d " i))
+
+            [buff; buff2]
+            |> List.iter (fun b -> b.ApplyTag("baseline", b.StartIter, b.EndIter))
+
             let line = child.GetAttribute("line", String.Empty)
             let root = m.Clone()
             root.MoveToRoot()
             markBranches root handler.codeView filename
-            markCoverage root buff filename
+            markCoverage root buff buff2 filename
             handler.activeRow <- Int32.TryParse(line) |> snd
             handler.codeView.CursorVisible <- false
             handler.codeView.QueueDraw()
@@ -839,7 +875,18 @@ module private Gui =
     handler.separator1.Expand <- true
     handler.separator1.Homogeneous <- false
     handler.codeView.Editable <- false
-    handler.baseline <- initializeTextBuffer handler.codeView.Buffer
+#if !NETCOREAPP2_1
+    seq { 0..4 }
+    |> Seq.iter (fun i -> handler.codeView.ModifyBase(i |> enum, Color(245uy, 245uy, 245uy)))
+#else
+// TODO -- https://developer.gnome.org/gtk3/stable/GtkWidget.html#gtk-widget-override-color
+// needs CSS styling here too
+#endif
+    handler.lineView.Editable <- false
+    initializeTextBuffer "#f5f5f5" handler.codeView.Buffer
+    initializeTextBuffer "#fffff" handler.lineView.Buffer
+    setDefaultText handler
+
     handler.refreshButton.Sensitive <- false
     handler.exitButton.Clicked
     |> Event.add (fun _ ->
@@ -948,7 +995,6 @@ module private Gui =
 #endif
 
            Persistence.saveFont (font)
-           handler.baseline.Font <- font
            handler.codeView.QueueDraw()
 #if NETCOREAPP2_1
          ) // implicit Dispose()

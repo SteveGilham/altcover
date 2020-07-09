@@ -17,8 +17,8 @@
     <property name="copyright">xx</property>
     <property name="comments">xx</property>
     <property name="website">https://github.com/SteveGilham/altcover</property>
-    <property name="website_label" translatable="no">xx</property>
-    <property name="license" translatable="no">License</property>
+    <property name="website_label">xx</property>
+    <property name="license">License</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
@@ -38,7 +38,7 @@
           </packing>
         </child>
         <child>
-          <placeholder />
+          <placeholder/>
         </child>
       </widget>
     </child>
@@ -263,9 +263,38 @@
                 <property name="hscrollbar_policy">automatic</property>
                 <property name="vscrollbar_policy">automatic</property>
                 <child>
-                  <widget class="GtkTextView" id="codeView">
+                  <widget class="GtkViewport" id="viewport1">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">1</property>
+                    <child>
+                      <widget class="GtkHBox" id="hbox1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <widget class="GtkTextView" id="lineView">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkTextView" id="codeView">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                    </child>
                   </widget>
                 </child>
               </widget>
