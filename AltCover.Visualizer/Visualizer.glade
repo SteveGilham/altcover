@@ -38,7 +38,7 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <placeholder />
         </child>
       </widget>
     </child>
@@ -257,7 +257,7 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkScrolledWindow" id="codeScroller">
+              <widget class="GtkScrolledWindow" id="sourceScroller">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">automatic</property>

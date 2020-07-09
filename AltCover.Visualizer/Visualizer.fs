@@ -130,7 +130,7 @@ type internal Handler() =
       Widget;
 #endif
     DefaultValue(true)>]
-    val mutable codeScroller : ScrolledWindow
+    val mutable sourceScroller : ScrolledWindow
 
     [<
 #if NETCOREAPP2_1
@@ -369,8 +369,10 @@ module private Gui =
     handler.openButton.Menu <-
       if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
+  [<SuppressMessage("Gendarme.Rules.Portability", "DoNotHardcodePathsRule",
+                    Justification = "I know what I'm doing herer")>]
   // browser launch from Avalonia
-  let private ShellExec (cmd:string) waitForExit =
+  let private shellExec (cmd:string) waitForExit =
     let escapedArgs = cmd.Replace("\"", "\\\"") // Blackfox???
     let psi = ProcessStartInfo()
     psi.FileName <- "/bin/sh"
@@ -383,57 +385,64 @@ module private Gui =
     if waitForExit
     then proc.WaitForExit();
 
+  [<SuppressMessage("Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+                    Justification = "Invoked by pointer")>]
+  [<SuppressMessage("Gendarme.Rules.Interoperability",
+                    "CentralizePInvokesIntoNativeMethodsTypeRule",
+                    Justification = "Prefer local scoping")>]
   //From Managed.Windows.Forms/XplatUI
   [<DllImport ("libc")>]
   extern int uname (IntPtr buf)
 
-  let private prepareAboutDialog(handler : Handler) =
-    let showUrl(url : string) =
+  [<SuppressMessage("Gendarme.Rules.Design", "PreferUriOverStringRule",
+                    Justification = "Avoid spurious generality")>]
+  let private showUrl(url : string) =
 #if NETCOREAPP2_1 // or net471+
-      let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-      let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-      let isOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+    let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+    let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+    let isOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
 #else
-      let p = Environment.OSVersion.Platform |> int
-      let isWindows = p <= 3
-        // System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+    let p = Environment.OSVersion.Platform |> int
+    let isWindows = p <= 3
+      // System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
-      // from https://github.com/jpobst/Pinta/blob/1.6/Pinta.Core/Managers/SystemManager.cs#L125
-      let isOSX =
-        let mutable buf = IntPtr.Zero
+    // from https://github.com/jpobst/Pinta/blob/1.6/Pinta.Core/Managers/SystemManager.cs#L125
+    let isOSX =
+      let mutable buf = IntPtr.Zero
+      try
+        buf <- Marshal.AllocHGlobal (8192)
         try
-          buf <- Marshal.AllocHGlobal (8192)
-          try
-            // This is a hacktastic way of getting sysname from uname ()
-            if (uname (buf) = 0)
-            then let os = Marshal.PtrToStringAnsi (buf);
-                 os = "Darwin"
-            else false
-            with
-            | _ -> false
-        finally
-          if buf <> IntPtr.Zero
-          then Marshal.FreeHGlobal buf
+          // This is a hacktastic way of getting sysname from uname ()
+          if (uname (buf) = 0)
+          then let os = Marshal.PtrToStringAnsi (buf);
+               os = "Darwin"
+          else false
+          with
+          | _ -> false
+      finally
+        if buf <> IntPtr.Zero
+        then Marshal.FreeHGlobal buf
 
-      //let isLinux =  (p = 4) || (p = 6) || (p = 128) // hack
-      //               && System.Environment.GetEnvironmentVariable("OSTYPE") = "linux-gnu"
-      let isLinux = (isWindows || isOSX) |>  not  // by default
+    //let isLinux =  (p = 4) || (p = 6) || (p = 128) // hack
+    //               && System.Environment.GetEnvironmentVariable("OSTYPE") = "linux-gnu"
+    let isLinux = (isWindows || isOSX) |>  not  // by default
 #endif
 
-      if isLinux
-      then ShellExec ("xdg-open " + url) false
-      else let psi = ProcessStartInfo()
-           psi.FileName <- if isWindows
-                           then url
-                           else "open"
-           psi.Arguments <- if isOSX
-                            then ("-e " + url)
-                            else String.Empty
-           psi.CreateNoWindow <- true
-           psi.UseShellExecute <- isWindows
-           use _proc = System.Diagnostics.Process.Start(psi)
-           ()
+    if isLinux
+    then shellExec ("xdg-open " + url) false
+    else let psi = ProcessStartInfo()
+         psi.FileName <- if isWindows
+                         then url
+                         else "open"
+         psi.Arguments <- if isOSX
+                          then ("-e " + url)
+                          else String.Empty
+         psi.CreateNoWindow <- true
+         psi.UseShellExecute <- isWindows
+         use _proc = System.Diagnostics.Process.Start(psi)
+         ()
 
+  let private prepareAboutDialog(handler : Handler) =
 #if NETCOREAPP2_1
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
@@ -791,11 +800,13 @@ module private Gui =
 
   let internal lineHeights  (h : Handler) =
     let v = h.codeView
-    let lines = v.Buffer.LineCount
-    let icode = v.Buffer.GetIterAtLine(1)
+    let l = h.lineView
+    let buf = v.Buffer
+    let lines = buf.LineCount
+    let icode = buf.GetIterAtLine(1)
     let (pcode, _h1) = v.GetLineYrange icode
-    let iline = h.lineView.Buffer.GetIterAtLine(1)
-    let (pline, _h2) = h.lineView.GetLineYrange iline
+    let iline = l.Buffer.GetIterAtLine(1)
+    let (pline, _h2) = l.GetLineYrange iline
     (pcode, pline)
 
   let internal balanceLines h =
@@ -806,7 +817,7 @@ module private Gui =
 
   let internal scrollToRow (h : Handler) =
     let v = h.codeView
-    let scroller = h.codeScroller
+    let scroller = h.sourceScroller
     let va = scroller.Vadjustment
     let lines = v.Buffer.LineCount
 
