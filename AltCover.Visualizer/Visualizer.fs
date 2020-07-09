@@ -128,7 +128,7 @@ type internal Handler() =
       Widget;
 #endif
     DefaultValue(true)>]
-    val mutable scrolledwindow2 : ScrolledWindow
+    val mutable codeScroller : ScrolledWindow
 
     [<
 #if NETCOREAPP2_1
@@ -147,6 +147,15 @@ type internal Handler() =
 #endif
     DefaultValue(true)>]
     val mutable codeView : TextView
+
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+    DefaultValue(true)>]
+    val mutable viewport1 : Viewport
 
     [<DefaultValue(true)>]
     val mutable coverageFiles : string list
@@ -729,7 +738,7 @@ module private Gui =
 
   let internal scrollToRow (h : Handler) =
     let v = h.codeView
-    let scroller = h.scrolledwindow2
+    let scroller = h.codeScroller
     let va = scroller.Vadjustment
     let lines = v.Buffer.LineCount
     let icode = v.Buffer.GetIterAtLine(lines - 1)
@@ -809,8 +818,7 @@ module private Gui =
             markCoverage root buff buff2 filename
             handler.activeRow <- Int32.TryParse(line) |> snd
             handler.codeView.CursorVisible <- false
-            handler.codeView.QueueDraw()
-            handler.lineView.QueueDraw()
+            handler.viewport1.QueueDraw()
 
             async {
               Threading.Thread.Sleep(300)
@@ -907,8 +915,12 @@ module private Gui =
     handler.separator1.Homogeneous <- false
     handler.codeView.Editable <- false
 #if !NETCOREAPP2_1
+    let whiteSmoke = Color(245uy, 245uy, 245uy)
     seq { 0..4 }
-    |> Seq.iter (fun i -> handler.codeView.ModifyBase(i |> enum, Color(245uy, 245uy, 245uy)))
+    |> Seq.iter (fun i -> let state = i |> enum
+                          handler.viewport1.ModifyBg(state, whiteSmoke)
+                          handler.codeView.ModifyBase(state, whiteSmoke)
+                          handler.codeView.ModifyBg(state, whiteSmoke))
 #else
 // TODO -- https://developer.gnome.org/gtk3/stable/GtkWidget.html#gtk-widget-override-color
 // needs CSS styling here too
@@ -1031,8 +1043,7 @@ module private Gui =
            ]
            |> Seq.iter (fun t -> t.Foreach(fun tag -> tag.Font <- font))
 
-           handler.codeView.QueueDraw()
-           handler.lineView.QueueDraw()
+           handler.viewport1.QueueDraw()
 #if NETCOREAPP2_1
          ) // implicit Dispose()
 #else
