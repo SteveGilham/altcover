@@ -389,7 +389,7 @@ module private Gui =
 
   let private prepareAboutDialog(handler : Handler) =
     let showUrl(url : string) =
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 // or net471+
       let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
       let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
       let isOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
