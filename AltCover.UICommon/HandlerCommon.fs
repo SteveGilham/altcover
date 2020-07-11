@@ -2,7 +2,9 @@
 
 open System
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
 open System.IO
+open System.Linq
 open System.Xml.XPath
 open AltCover
 open AltCover.Visualizer.GuiCommon
@@ -91,3 +93,29 @@ module HandlerCommon =
     |> Seq.filter (filterCoverage sourceLines)
     |> Seq.sortByDescending (fun t -> t.VisitCount)
     |> Seq.toList
+
+  let private parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
+    let text = element.GetAttribute(attribute, String.Empty)
+    let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
+    if (fst number) then
+      snd number
+    else
+      if not <| String.IsNullOrEmpty(text) then
+        System.Diagnostics.Debug.WriteLine
+          ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
+      0
+
+  let TagBranches (methodPath:XPathNavigator) (fileName:string) =
+    (methodPath.Select("//method[@document='" + fileName + "']")
+          |> Seq.cast<XPathNavigator>
+          |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
+          |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
+          |> Seq.toList
+          |> Seq.map (fun n ->
+               let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
+               let num = (snd n) |> Seq.length
+               let v =
+                 (snd n)
+                 |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
+                 |> Seq.length
+               line, (v, num))).ToDictionary(fst, snd)

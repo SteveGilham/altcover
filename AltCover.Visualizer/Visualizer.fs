@@ -363,38 +363,14 @@ module private Gui =
     initializeTextBuffer "#f5f5f5" h.codeView.Buffer
     initializeTextBuffer "#fffff" h.lineView.Buffer
 
-  let private parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
-    let text = element.GetAttribute(attribute, String.Empty)
-    let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
-    if (fst number) then
-      snd number
-    else
-      if not <| String.IsNullOrEmpty(text) then
-        System.Diagnostics.Debug.WriteLine
-          ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
-      0
-
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                      Justification = "IDisposables are added to the TextView")>]
   let private markBranches (root : XPathNavigator) (lineView : TextView)
       (filename : string) =
     let buff = lineView.Buffer
-    let branches = new Dictionary<int, int * int>()
+    let branches = HandlerCommon.TagBranches root filename
 
-    root.Select("//method[@document='" + filename + "']")
-    |> Seq.cast<XPathNavigator>
-    |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
-    |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
-    |> Seq.iter (fun n ->
-         let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
-         let num = (snd n) |> Seq.length
-
-         let v =
-           (snd n)
-           |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
-           |> Seq.length
-         branches.Add(line, (v, num)))
     for l in 1 .. buff.LineCount do
       let counts = branches.TryGetValue l
 

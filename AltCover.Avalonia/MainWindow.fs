@@ -89,17 +89,11 @@ type MainWindow() as this =
     value.Force()
 
   let visited = SolidColorBrush.Parse "#0000CD" // "#F5F5F5" // Medium Blue on White Smoke
-  // "#404040" "#cefdce" // Dark on Pale Green
   let declared = SolidColorBrush.Parse "#FFA500" // "#F5F5F5" // Orange on White Smoke
-  // "#FFA500" "#FFFFFF" // Orange on White
   let staticAnalysis = SolidColorBrush.Parse "#000000" // "#F5F5F5" // Black on White Smoke
-  // "#808080" "#F5F5F5" // Grey on White Smoke
   let automatic = SolidColorBrush.Parse "#FFD700" // "#F5F5F5" // Gold on White Smoke
-  // "#808080" "#FFFF00" // Grey on Yellow
   let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
-  //"#ff0000" "#FFFFFF" // Red on White
   let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
-  // "#87CEEB" "#FFFFFF" // Sky Blue on white
 
   let makeTreeNode name icon =
     let tree = new Image()
@@ -214,33 +208,8 @@ type MainWindow() as this =
                         | _ -> notVisited
                         )
 
-        let parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
-          let text = element.GetAttribute(attribute, String.Empty)
-          let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
-          if (fst number) then
-            snd number
-          else
-            if not <| String.IsNullOrEmpty(text) then
-              System.Diagnostics.Debug.WriteLine
-                ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
-            0
-
         let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
-          let branches = new Dictionary<int, int * int>()
-
-          root.Select("//method[@document='" + filename + "']")
-          |> Seq.cast<XPathNavigator>
-          |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
-          |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
-          |> Seq.toList
-          |> Seq.iter (fun n ->
-               let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
-               let num = (snd n) |> Seq.length
-               let v =
-                 (snd n)
-                 |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
-                 |> Seq.length
-               branches.Add(line, (v, num)))
+          let branches = HandlerCommon.TagBranches root filename
 
           let h = (lines |> Seq.head).Height
           let pad = (h - 16.0)/2.0
