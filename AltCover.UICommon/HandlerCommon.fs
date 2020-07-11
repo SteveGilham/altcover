@@ -1,6 +1,7 @@
 ﻿namespace AltCover.Visualizer
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
@@ -139,3 +140,22 @@ module HandlerCommon =
              | StringComparison.Ordinal -> n
              | _ -> n.ToUpperInvariant())
         |> Seq.toList
+
+  [<SuppressMessage("Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+                    Justification="Avoid speculative generality too")>]
+  let IconForBranches (icons:Icons<'TIcon>) (branches:Dictionary<int,int*int>) line =
+      let counts = branches.TryGetValue line
+
+      let (|AllVisited|_|) (b, (v, num)) =
+        if b
+           |> not
+           || v <> num then
+          None
+        else
+          Some()
+
+      (counts, (match counts with
+                | (false, _) -> icons.Blank
+                | (_, (0, _)) -> icons.RedBranch
+                | AllVisited -> icons.Branched
+                | _ -> icons.Branch).Force())

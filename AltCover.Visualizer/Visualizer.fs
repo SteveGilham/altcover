@@ -377,27 +377,11 @@ module private Gui =
     let branches = HandlerCommon.TagBranches root filename
 
     for l in 1 .. buff.LineCount do
-      let counts = branches.TryGetValue l
-
-      let (|AllVisited|_|) (b, (v, num)) =
-        if b
-           |> not
-           || v <> num then
-          None
-        else
-          Some()
-
-      let pix =
-        match counts with
-        | (false, _) -> icons.Blank
-        | (_, (0, _)) -> icons.RedBranch
-        | AllVisited -> icons.Branched
-        | _ -> icons.Branch
-
+      let (counts, pix) = HandlerCommon.IconForBranches icons branches l
       let mutable i = buff.GetIterAtLineOffset(l - 1, 7)
       let a = new TextChildAnchor()
       buff.InsertChildAnchor(&i, a)
-      let image = new Image(pix.Force())
+      let image = new Image(pix)
       image.Visible <- true
       lineView.AddChildAtAnchor(image, a)
       if fst counts then
@@ -439,6 +423,9 @@ module private Gui =
   let private markCoverage (root : XPathNavigator) (buff:TextBuffer) (buff2:TextBuffer) filename =
     let tags = HandlerCommon.TagCoverage root filename buff.LineCount
     tags
+    |> Seq.iter (tagByCoverage buff)
+
+    tags
     |> List.groupBy (fun t -> t.Line)
     |> List.iter (fun (l, t) ->
       let total = t |> Seq.sumBy (fun tag ->
@@ -452,9 +439,6 @@ module private Gui =
       let start = buff2.GetIterAtLine (l - 1)
       let finish = buff2.GetIterAtLineOffset (l-1, 7)
       buff2.ApplyTag(style, start, finish))
-
-    tags
-    |> Seq.iter (tagByCoverage buff)
 
   let internal lineHeights  (h : Handler) =
     let v = h.codeView

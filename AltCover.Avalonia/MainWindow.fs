@@ -146,22 +146,7 @@ type MainWindow() as this =
 
           Dispatcher.UIThread.Post(fun _ ->
             for l in 1 .. lines.Length do
-              let counts = branches.TryGetValue l
-
-              let (|AllVisited|_|) (b, (v, num)) =
-                if b |> not
-                   || v <> num then
-                  None
-                else
-                  Some()
-
-              let pix =
-                match counts with
-                | (false, _) -> icons.Blank.Force()
-                | (_, (0, _)) -> icons.RedBranch.Force()
-                | AllVisited -> icons.Branched.Force()
-                | _ -> icons.Branch.Force()
-
+              let (counts, pix) = HandlerCommon.IconForBranches icons branches l
               let pic = new Image()
               pic.Source <- pix
               pic.Margin <- margin
