@@ -121,6 +121,7 @@ type MainWindow() as this =
 
   member private this.DisplayMessage (status : MessageType) message =
     let caption = match status with
+                  | MessageType.Info -> Resource.GetResourceString "LoadInfo"
                   | MessageType.Warning -> Resource.GetResourceString "LoadWarning"
                   | _ -> Resource.GetResourceString "LoadError"
     this.ShowMessageBox status caption message
@@ -349,78 +350,47 @@ type MainWindow() as this =
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBlock>("Source")
              let text2 = this.FindControl<TextBlock>("Lines")
-             this.FindControl<StackPanel>("Branches").Children.Clear()
-
              let scroller = this.FindControl<ScrollViewer>("Coverage")
 
-             let points = [ "seqpnt"; "branch"]
-                          |> List.map (fun tag -> xpath.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
-                          |> Seq.concat
-
-             let allpoints = [[xpath] |> List.toSeq; points] |> Seq.concat
-             let document = allpoints
-                            |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
-                            |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
-             let line = allpoints
-                        |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
-                        |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
-             if document |> Option.isNone ||
-                line |> Option.isNone
-             then
-               let caption = Resource.GetResourceString "LoadInfo"
-               this.ShowMessageBox MessageType.Info caption
+             let noSource() =
+               this.DisplayMessage MessageType.Info
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
                      Resource.GetResourceString "No source location", visbleName)
-             else
-               let path = Option.get document
-               let info = FileInfo(path)
-               let source = info |> File
-               let current = new FileInfo(coverageFiles.Head)
-               if (not info.Exists) then
-                 Messages.MissingSourceThisFileMessage (this.DisplayMessage) current source
-               else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
-                 Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
-               else
-                 this.Title <- "AltCover.Avalonia - " + info.FullName
-                 let point = points |> Seq.head
-                 let lineno =
-                   line
-                   |> Option.get
-                   |> Int32.TryParse
-                   |> snd
-                 try
-                   // TODO -- font  size control too
-                   text.Text <- File.ReadAllText path
 
-                   [ text; text2 ]
-                   |> List.iter (fun t ->
-                         t.FontFamily <- FontFamily(Persistence.readFont())
-                         t.FontSize <- 16.0
-                         t.FontStyle <- FontStyle.Normal)
+             let showSource (info:Source) (line:int) =
+                try
+                  text.Text <- File.ReadAllText info.FullName
+                  [ text; text2 ]
+                  |> List.iter (fun t ->
+                        t.FontFamily <- FontFamily(Persistence.readFont())
+                        t.FontSize <- 16.0
+                        t.FontStyle <- FontStyle.Normal)
 
-                   let textLines = text.FormattedText.GetLines() |> Seq.toList
-                   let sample = textLines |> Seq.head
-                   let depth = sample.Height * float (lineno - 1)
-                   let root = xpath.Clone()
-                   root.MoveToRoot()
-                   markCoverage root text text2 textLines path
-                   let stack = this.FindControl<StackPanel>("Branches")
-                   root.MoveToRoot()
-                   markBranches root stack textLines path
+                  let textLines = text.FormattedText.GetLines() |> Seq.toList
+                  let sample = textLines |> Seq.head
+                  let depth = sample.Height * float (line - 1)
+                  let root = xpath.Clone()
+                  root.MoveToRoot()
+                  markCoverage root text text2 textLines info.FullName
+                  let stack = this.FindControl<StackPanel>("Branches")
+                  root.MoveToRoot()
+                  markBranches root stack textLines info.FullName
 
-                   async {
-                       Threading.Thread.Sleep(300)
-                       Dispatcher.UIThread.Post(fun _ ->
-                                           let midpoint = scroller.Viewport.Height / 2.0
-                                           if (depth > midpoint)
-                                           then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
-                    }
-                    |> Async.Start
+                  async {
+                      Threading.Thread.Sleep(300)
+                      Dispatcher.UIThread.Post(fun _ ->
+                                          let midpoint = scroller.Viewport.Height / 2.0
+                                          if (depth > midpoint)
+                                          then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+                  }
+                  |> Async.Start
 
-                 with x ->
-                   let caption = Resource.GetResourceString "LoadError"
-                   this.ShowMessageBox MessageType.Error caption x.Message)
+                with x ->
+                  let caption = Resource.GetResourceString "LoadError"
+                  this.ShowMessageBox MessageType.Error caption x.Message
+
+             HandlerCommon.DoRowActivation xpath this noSource showSource)
 
   member this.InitializeComponent() =
     AvaloniaXamlLoader.Load(this)
@@ -544,6 +514,7 @@ type MainWindow() as this =
                                         tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
                                         this.FindControl<TextBlock>("Source").Text <- String.Empty
                                         this.FindControl<TextBlock>("Lines").Text <- String.Empty
+                                        this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
@@ -613,3 +584,11 @@ type MainWindow() as this =
          this.FindControl<StackPanel>("AboutBox").IsVisible <- false
          this.FindControl<Menu>("Menu").IsVisible <- true
          this.FindControl<DockPanel>("Grid").IsVisible <- true)
+
+  interface IVisualizerWindow with
+    member self.CoverageFiles = coverageFiles
+    member self.Title
+      with get() = self.Title
+      and set(value) = self.Title <- value
+    member self.ShowMessageOnGuiThread mtype message =
+      self.DisplayMessage mtype message

@@ -873,7 +873,7 @@ module private Gui =
                 .Text.Replace("<", "&lt;").Replace(">", "&gt;")])
         (handler :> IVisualizerWindow).ShowMessageOnGuiThread AltCover.Visualizer.MessageType.Info message
 
-      let showSource (info:Source) line =
+      let showSource (info:Source) (line:int) =
         let buff = handler.codeView.Buffer
         let buff2 = handler.lineView.Buffer
 
@@ -896,8 +896,7 @@ module private Gui =
         root.MoveToRoot()
         markBranches root handler.lineView info.FullName
         markCoverage root buff buff2 info.FullName
-        let lineValue : string = Option.get line
-        handler.activeRow <- Int32.TryParse(lineValue) |> snd
+        handler.activeRow <- line
         handler.codeView.CursorVisible <- false
         handler.viewport1.QueueDraw()
 

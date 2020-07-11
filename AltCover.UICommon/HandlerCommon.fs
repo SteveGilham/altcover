@@ -33,4 +33,5 @@ module HandlerCommon =
         else if (info.Outdated current.LastWriteTimeUtc) then
           Messages.OutdatedCoverageThisFileMessage vWindow.ShowMessageOnGuiThread current info
         else
-          showSource info line
+          let lineNumber = Int32.TryParse(line |> Option.get) |> snd
+          showSource info lineNumber
