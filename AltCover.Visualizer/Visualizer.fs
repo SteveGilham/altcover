@@ -518,7 +518,6 @@ module private Gui =
         let pathname = info.FullName
 
         buff.Text <- info.ReadAllText()
-
         buff2.Text <- String.Join (Environment.NewLine,
                         seq { 1 .. buff.LineCount }
                         |> Seq.map (fun i -> sprintf "%6d " i))

@@ -190,13 +190,7 @@ type MainWindow() as this =
                                                     FormattedTextStyleSpan(start, 7,
                                                                            style))
 
-          let linetext = String.Join (Environment.NewLine,
-                                      lines
-                                      // Font limitation or Avalonia limitation? -- character \u2442 just shows as a box.
-                                      |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i)))
-
           Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
-                                            text2.Text <- linetext
                                             text2.FormattedText.Spans <- linemark)
 
         context.Row.DoubleTapped
@@ -213,14 +207,19 @@ type MainWindow() as this =
 
              let showSource (info:Source) (line:int) =
                 try
-                  text.Text <- File.ReadAllText info.FullName
                   [ text; text2 ]
                   |> List.iter (fun t ->
                         t.FontFamily <- FontFamily(Persistence.readFont())
                         t.FontSize <- 16.0
                         t.FontStyle <- FontStyle.Normal)
-
+                  text.Text <- File.ReadAllText info.FullName
                   let textLines = text.FormattedText.GetLines() |> Seq.toList
+                  text2.Text <- String.Join (Environment.NewLine,
+                                             textLines
+                                             // Font limitation or Avalonia limitation? -- character \u2442 just shows as a box.
+                                             |> Seq.mapi (fun i _ ->
+                                               sprintf "%6d " (1 + i)))
+
                   let sample = textLines |> Seq.head
                   let depth = sample.Height * float (line - 1)
                   let root = xpath.Clone()
@@ -363,7 +362,7 @@ type MainWindow() as this =
           Display = this.DisplayMessage
           UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
           UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
-                                        this.Title <- "AltCover.Avalonia"
+                                        this.Title <- "AltCover.Visualizer"
                                         tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
                                         this.FindControl<TextBlock>("Source").Text <- String.Empty
                                         this.FindControl<TextBlock>("Lines").Text <- String.Empty
@@ -371,7 +370,6 @@ type MainWindow() as this =
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
-                                   // mappings.Clear()
                                    {
                                       Model = model
                                       Row = let row = makeNewRow name icons.Xml
