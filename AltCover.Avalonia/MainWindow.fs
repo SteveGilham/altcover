@@ -125,8 +125,10 @@ type MainWindow() as this =
         let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
         let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
-          let start = (n.Column - 1) + (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
-          let finish = (n.EndColumn - 1) + (lines |> Seq.take (n.EndLine - 1) |> Seq.sumBy (fun l -> l.Length))
+          let start = (n.Column - 1) +
+                      (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
+          let finish = (n.EndColumn - 1) +
+                       (lines |> Seq.take (n.EndLine - 1) |> Seq.sumBy (fun l -> l.Length))
           FormattedTextStyleSpan(start, finish - start,
                         match n.Style with
                         | Exemption.Visited -> visited
@@ -137,7 +139,8 @@ type MainWindow() as this =
                         | _ -> notVisited
                         )
 
-        let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
+        let markBranches (root : XPathNavigator) (stack : StackPanel)
+          (lines : FormattedTextLine list) (filename:string) =
           let branches = HandlerCommon.TagBranches root filename
 
           let h = (lines |> Seq.head).Height
@@ -165,15 +168,16 @@ type MainWindow() as this =
 
           let linemark = tags
                          |> List.groupBy (fun t -> t.Line)
-                         |> List.map (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.VisitCount <= 0
-                                                                                           then 0
-                                                                                           else tag.VisitCount)
-                                                    let style = if total > 0
-                                                                then visited
-                                                                else notVisited
-                                                    let start = (l - 1) * (7 + Environment.NewLine.Length)
-                                                    FormattedTextStyleSpan(start, 7,
-                                                                           style))
+                         |> List.map (fun (l, t) ->
+                          let total = t |> Seq.sumBy (fun tag ->
+                            if tag.VisitCount <= 0
+                            then 0
+                            else tag.VisitCount)
+                          let style = if total > 0
+                                      then visited
+                                       else notVisited
+                          let start = (l - 1) * (7 + Environment.NewLine.Length)
+                          FormattedTextStyleSpan(start, 7, style))
 
           Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
                                             text2.FormattedText.Spans <- linemark)
@@ -201,7 +205,8 @@ type MainWindow() as this =
                   let textLines = text.FormattedText.GetLines() |> Seq.toList
                   text2.Text <- String.Join (Environment.NewLine,
                                              textLines
-                                             // Font limitation or Avalonia limitation? -- character \u2442 just shows as a box.
+                                             // Font limitation or Avalonia limitation?
+                                             // character \u2442 just shows as a box.
                                              |> Seq.mapi (fun i _ ->
                                                sprintf "%6d " (1 + i)))
 
@@ -217,9 +222,9 @@ type MainWindow() as this =
                   async {
                       Threading.Thread.Sleep(300)
                       Dispatcher.UIThread.Post(fun _ ->
-                                          let midpoint = scroller.Viewport.Height / 2.0
-                                          if (depth > midpoint)
-                                          then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+                        let midpoint = scroller.Viewport.Height / 2.0
+                        if (depth > midpoint)
+                        then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
                   }
                   |> Async.Start
 
@@ -265,7 +270,8 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
-         let l = Avalonia.Application.Current.ApplicationLifetime :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
+         let l = Avalonia.Application.Current.ApplicationLifetime
+                   :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
          l.Shutdown())
     this.FindControl<MenuItem>("ShowAbout").Click
     |> Event.add (fun _ ->
@@ -305,9 +311,11 @@ type MainWindow() as this =
       row.LayoutUpdated
       |> Event.add (fun _ -> let remargin (t:TreeViewItem) =
                                if t.HeaderPresenter.IsNotNull
-                               then let hp = t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
+                               then let hp = t.HeaderPresenter
+                                               :?> Avalonia.Controls.Presenters.ContentPresenter
                                     let grid = hp.Parent :?> Grid
-                                    grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
+                                    grid.Margin <-
+                                      Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
 
                              remargin row
                              row.Items.OfType<TreeViewItem>()
@@ -348,9 +356,12 @@ type MainWindow() as this =
           UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
           UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
                                         this.Title <- "AltCover.Visualizer"
-                                        tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
-                                        this.FindControl<TextBlock>("Source").Text <- String.Empty
-                                        this.FindControl<TextBlock>("Lines").Text <- String.Empty
+                                        tree.Items.OfType<IDisposable>()
+                                        |> Seq.iter (fun x -> x.Dispose())
+                                        this.FindControl<TextBlock>("Source").Text <-
+                                          String.Empty
+                                        this.FindControl<TextBlock>("Lines").Text <-
+                                          String.Empty
                                         this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
@@ -364,7 +375,8 @@ type MainWindow() as this =
           AddNode = fun context icon name ->
                                  { context with
                                        Row = let row = makeNewRow name icon
-                                             (context.Row.Items :?> List<TreeViewItem>).Add row
+                                             (context.Row.Items
+                                               :?> List<TreeViewItem>).Add row
                                              row }
           Map = this.PrepareDoubleTap
         }
