@@ -11,67 +11,13 @@ open AltCover
 open AltCover.Visualizer
 open AltCover.Visualizer.GuiCommon
 
-open Avalonia
 open Avalonia.Controls
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
 open Avalonia.Threading
 
-module Persistence =
-  let mutable internal save = true
-
-  let internal saveSchemaDir = Configuration.SaveSchemaDir
-  let internal saveFont = Configuration.SaveFont
-  let internal readFont = Configuration.ReadFont
-  let internal readSchemaDir = Configuration.ReadSchemaDir
-  let internal readFolder = Configuration.ReadFolder
-  let internal saveFolder = Configuration.SaveFolder
-  let internal saveCoverageFiles = Configuration.SaveCoverageFiles
-  let readCoverageFiles() =
-    let mutable l = []
-    Configuration.ReadCoverageFiles (fun files -> l <- files)
-    l
-  let saveGeometry (w : Window) =
-    Configuration.SaveGeometry (fun () -> w.Position.X, w.Position.Y)
-                               (fun () -> w.Width, w.Height)
-
-  let readGeometry (w : Window) =
-    Configuration.ReadGeometry (fun (width,height) (x,y) -> w.Height <- float height
-                                                            w.Width <- float width
-                                                            let monitor = w.Screens.All
-                                                                          |> Seq.filter (fun s -> let tl = s.WorkingArea.TopLeft
-                                                                                                  let br = s.WorkingArea.BottomRight
-                                                                                                  x >= tl.X && x <= br.X &&
-                                                                                                     y >= tl.Y && y <= br.Y)
-                                                                          |> Seq.tryHead
-                                                                          |> Option.defaultValue w.Screens.Primary
-                                                            let bounds = monitor.WorkingArea
-                                                            let x' = Math.Min(Math.Max(x, bounds.TopLeft.X), bounds.BottomRight.X - width)
-                                                            let y' = Math.Min(Math.Max(y, bounds.TopLeft.Y), bounds.BottomRight.Y - height)
-                                                            w.Position <- PixelPoint(x', y'))
-  let clearGeometry = Configuration.ClearGeometry
-
-type TextTag =
-  { Foreground : string
-    Background : string }
-
-  static member Make a b =
-    { Foreground = a
-      Background = b }
-
-  static member Visited = TextTag.Make "#0000CD" "#F5F5F5" // Medium Blue on White Smoke
-  // "#404040" "#cefdce" // Dark on Pale Green
-  static member Declared = TextTag.Make "#FFA500" "#F5F5F5" // Orange on White Smoke
-  // "#FFA500" "#FFFFFF" // Orange on White
-  static member StaticAnalysis = TextTag.Make "#000000" "#F5F5F5" // Black on White Smoke
-  // "#808080" "#F5F5F5" // Grey on White Smoke
-  static member Automatic = TextTag.Make "#FFD700" "#F5F5F5" // Gold on White Smoke
-  // "#808080" "#FFFF00" // Grey on Yellow
-  static member NotVisited = TextTag.Make "#DC143C" "#F5F5F5"// Crimson on White Smoke
-  //"#ff0000" "#FFFFFF" // Red on White
-  static member Excluded = TextTag.Make "#87CEEB" "#F5F5F5" // Sky Blue on White Smoke
-  // "#87CEEB" "#FFFFFF" // Sky Blue on white
+type Thickness = Avalonia.Thickness
 
 type MainWindow() as this =
   inherit Window()
@@ -106,7 +52,7 @@ type MainWindow() as this =
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
     let display = new StackPanel()
-    display.Orientation <- Layout.Orientation.Horizontal
+    display.Orientation <- Avalonia.Layout.Orientation.Horizontal
     display.Children.Add tree
     display.Children.Add image
     display.Children.Add text
@@ -255,11 +201,11 @@ type MainWindow() as this =
                                                                                            then 0
                                                                                            else tag.VisitCount)
                                                     let style = if total > 0
-                                                                then TextTag.Visited
-                                                                else TextTag.NotVisited
+                                                                then visited
+                                                                else notVisited
                                                     let start = (l - 1) * (7 + Environment.NewLine.Length)
                                                     FormattedTextStyleSpan(start, 7,
-                                                                           SolidColorBrush.Parse style.Foreground))
+                                                                           style))
 
           let linetext = String.Join (Environment.NewLine,
                                       lines
@@ -352,7 +298,7 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
-         let l = Application.Current.ApplicationLifetime :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
+         let l = Avalonia.Application.Current.ApplicationLifetime :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
          l.Shutdown())
     this.FindControl<MenuItem>("ShowAbout").Click
     |> Event.add (fun _ ->
@@ -388,7 +334,7 @@ type MainWindow() as this =
     let refresh = this.FindControl<MenuItem>("Refresh").Click |> Event.map (fun _ -> 0)
     let makeNewRow name (anIcon:Lazy<Bitmap>) =
       let row = TreeViewItem()
-      row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
+      row.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Left
       row.LayoutUpdated
       |> Event.add (fun _ -> let remargin (t:TreeViewItem) =
                                if t.HeaderPresenter.IsNotNull
