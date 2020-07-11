@@ -1,11 +1,14 @@
 ﻿namespace AltCover.Visualizer
 
 open System
+open System.Diagnostics.CodeAnalysis
 open Gtk
 #if !NETCOREAPP2_1
 open Glade
 #endif
 
+[<SuppressMessage("Gendarme.Rules.Design", "DoNotDeclareVirtualMethodsInSealedTypeRule",
+                  Justification="Compiler generated explicit interface methods")>]
 [<Sealed; AutoSerializable(false)>]
 type internal Handler() =
   class
@@ -152,7 +155,7 @@ type internal Handler() =
     [<DefaultValue(true)>]
     val mutable activeRow : int
 
-    static member private showMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
+    static member private ShowMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
       use md =
         new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent,
                           messageType |> int |> enum, ButtonsType.Close, message)
@@ -169,8 +172,8 @@ type internal Handler() =
     static member InvokeOnGuiThread(action : unit -> unit) =
       Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
 
-    member private self.showMessageOnGuiThread (severity : AltCover.Visualizer.MessageType) message =
-      let sendMessageToWindow() = Handler.showMessage self.mainWindow message severity
+    member private self.ShowMessageOnGuiThread (severity : AltCover.Visualizer.MessageType) message =
+      let sendMessageToWindow() = Handler.ShowMessage self.mainWindow message severity
       Handler.InvokeOnGuiThread(sendMessageToWindow)
 
     interface IVisualizerWindow with
@@ -181,5 +184,5 @@ type internal Handler() =
        with get() = self.mainWindow.Title
        and set(value) = self.mainWindow.Title <- value
       member self.ShowMessageOnGuiThread mtype message =
-        self.showMessageOnGuiThread mtype message
+        self.ShowMessageOnGuiThread mtype message
   end

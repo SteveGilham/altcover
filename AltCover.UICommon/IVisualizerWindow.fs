@@ -1,15 +1,14 @@
 ﻿namespace AltCover.Visualizer
 
-open System
 open System.Diagnostics.CodeAnalysis
-open System.IO
-open System.Xml.XPath
-open AltCover.Augment
-open AltCover.Visualizer.GuiCommon
 
+[<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInTypeNameRule",
+                  Justification="It's no big deal here")>]
 type IVisualizerWindow =
   interface
   abstract member Title : string with get, set
   abstract member CoverageFiles : string list with get, set
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification="Compiler generated")>]
   abstract member ShowMessageOnGuiThread : MessageType -> string -> unit
   end

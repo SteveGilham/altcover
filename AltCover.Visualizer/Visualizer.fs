@@ -575,6 +575,7 @@ module private Gui =
       let showSource (info:Source) (line:int) =
         let buff = handler.codeView.Buffer
         let buff2 = handler.lineView.Buffer
+        let pathname = info.FullName
 
         buff.Text <- info.ReadAllText()
 
@@ -593,8 +594,8 @@ module private Gui =
 
         let root = m.Clone()
         root.MoveToRoot()
-        markBranches root handler.lineView info.FullName
-        markCoverage root buff buff2 info.FullName
+        markBranches root handler.lineView pathname
+        markCoverage root buff buff2 pathname
         handler.activeRow <- line
         handler.codeView.CursorVisible <- false
         handler.viewport1.QueueDraw()
@@ -858,12 +859,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+applyTag@522.#Invoke(Gtk.TextBuffer,System.Tuple`3<System.String,System.String,System.String>)",
-                            Justification="Added to GUI widget tree")>]
-[<assembly: SuppressMessage("Microsoft.Reliability",
-                            "CA2000:Dispose objects before losing scope",
-                            Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@486.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@195.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

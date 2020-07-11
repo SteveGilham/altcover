@@ -1,7 +1,7 @@
 ﻿namespace AltCover.Visualizer
 
 open System
-
+open System.Diagnostics.CodeAnalysis
 open System.IO
 
 open Gtk
@@ -99,6 +99,10 @@ module internal Persistence =
     w.DefaultHeight <- height
     w.DefaultWidth <- width
 
+  [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+                    Justification="Inlined library code")>]
+  [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+                    Justification="Ditto, ditto")>]
   let internal readCoverageFiles (handler : IVisualizerWindow) =
     use fileKey = Registry.CurrentUser.CreateSubKey(recent)
     let keyToValue (key : RegistryKey) (n : string) = key.GetValue(n, String.Empty)
@@ -133,3 +137,9 @@ module internal Persistence =
        ()
     Registry.CurrentUser.DeleteSubKeyTree(geometry)
 #endif
+
+[<assembly: SuppressMessage("Microsoft.Performance",
+  "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
+  Target="<StartupCode$AltCover-Visualizer>.$Persistence.#.cctor()",
+  Justification="Compiler generated")>]
+()
