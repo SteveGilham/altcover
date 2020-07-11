@@ -167,6 +167,35 @@ type internal Handler() =
 
     [<DefaultValue(true)>]
     val mutable activeRow : int
+
+    static member private showMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
+      use md =
+        new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent,
+                          messageType |> int |> enum, ButtonsType.Close, message)
+      md.Icon <- parent.Icon
+      md.Title <- "AltCover.Visualizer"
+      md.Run() |> ignore
+#if NETCOREAPP2_1
+    // implicit Dispose()
+#else
+      md.Destroy()
+#endif
+
+  // Safe event dispatch => GUI update
+    static member InvokeOnGuiThread(action : unit -> unit) =
+      Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
+
+    member private self.showMessageOnGuiThread (severity : AltCover.Visualizer.MessageType) message =
+      let sendMessageToWindow() = Handler.showMessage self.mainWindow message severity
+      Handler.InvokeOnGuiThread(sendMessageToWindow)
+
+    interface IVisualizerWindow with
+      member self.CoverageFiles = self.coverageFiles
+      member self.Title
+       with get() = self.mainWindow.Title
+       and set(value) = self.mainWindow.Title <- value
+      member self.ShowMessageOnGuiThread mtype message =
+        self.showMessageOnGuiThread mtype message
   end
 
 module internal Persistence =
@@ -302,25 +331,6 @@ module private Gui =
   // --------------------------  Persistence ---------------------------
 
   // -------------------------- Message Boxes ---------------------------
-  let private showMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
-    use md =
-      new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent,
-                        messageType |> int |> enum, ButtonsType.Close, message)
-    md.Icon <- parent.Icon
-    md.Title <- "AltCover.Visualizer"
-    md.Run() |> ignore
-#if NETCOREAPP2_1
-  // implicit Dispose()
-#else
-    md.Destroy()
-#endif
-  // Safe event dispatch => GUI update
-  let private invokeOnGuiThread(action : unit -> unit) =
-    Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
-
-  let private showMessageOnGuiThread (parent : Window) (severity : AltCover.Visualizer.MessageType) message =
-    let sendMessageToWindow() = showMessage parent message severity
-    invokeOnGuiThread(sendMessageToWindow)
 
   // -------------------------- UI set-up  ---------------------------
   let private initializeHandler() =
@@ -401,7 +411,7 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
                     Justification = "A call to native code")>]
-  [<SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", 
+  [<SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
                     Justification = "A call to native code")>]
   [<SuppressMessage("Gendarme.Rules.Design", "PreferUriOverStringRule",
                     Justification = "Avoid spurious generality")>]
@@ -546,8 +556,8 @@ module private Gui =
         GetFileInfo = fun i -> FileInfo(if i < 0
                                         then handler.justOpened
                                         else handler.coverageFiles.[i])
-        Display = showMessageOnGuiThread handler.mainWindow
-        UpdateMRUFailure = fun info -> invokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
+        Display = (handler :> IVisualizerWindow).ShowMessageOnGuiThread
+        UpdateMRUFailure = fun info -> Handler.InvokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
         UpdateUISuccess = fun info -> let updateUI (theModel:
 #if NETCOREAPP2_1
                                                               ITreeModel
@@ -564,7 +574,7 @@ module private Gui =
                                         handler.mainWindow.Title <- "AltCover.Visualizer"
                                         doUpdateMRU handler info.FullName true
                                       ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
-                                      invokeOnGuiThread(updateUI handler.auxModel info)
+                                      Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode = fun name -> let model = handler.auxModel
                                  model.Clear()
                                  mappings.Clear()
@@ -839,8 +849,8 @@ module private Gui =
                       Math.Min(va.Upper - va.PageSize, pageshift * va.PageSize)
                  else 0.0
 
-    invokeOnGuiThread(fun () -> balanceLines h
-                                va.Value <- adjust)
+    Handler.InvokeOnGuiThread(fun () -> balanceLines h
+                                        va.Value <- adjust)
 
 #if NETCOREAPP2_1
   // fsharplint:disable-next-line RedundantNewKeyword
@@ -856,71 +866,47 @@ module private Gui =
     let hits = mappings.Keys |> Seq.filter (hitFilter activation)
     if not (Seq.isEmpty hits) then
       let m = mappings.[Seq.head hits]
+      let noSource() =
+        let message =
+          Resource.Format("No source location",
+              [(activation.Column.Cells.[1] :?> Gtk.CellRendererText)
+                .Text.Replace("<", "&lt;").Replace(">", "&gt;")])
+        (handler :> IVisualizerWindow).ShowMessageOnGuiThread AltCover.Visualizer.MessageType.Info message
 
-      let points = [ "seqpnt"; "branch"]
-                   |> List.map (fun tag -> m.SelectChildren(tag, String.Empty) |> Seq.cast<XPathNavigator>)
-                   |> Seq.concat
-      let allpoints = [[m] |> List.toSeq; points] |> Seq.concat
-      let document = allpoints
-                     |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
-                     |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
-      let line = allpoints
-                 |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
-                 |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
-      if document |> Option.isNone ||
-         line |> Option.isNone then
-        let noSource() =
-          let message =
-            Resource.Format("No source location",
-               [(activation.Column.Cells.[1] :?> Gtk.CellRendererText)
-                  .Text.Replace("<", "&lt;").Replace(">", "&gt;")])
-          showMessageOnGuiThread handler.mainWindow AltCover.Visualizer.MessageType.Info message
-        noSource()
-      else
-        let filename = Option.get document
-        handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
-        let info = GetSource(filename)
-        let current = new FileInfo(handler.coverageFiles.Head)
-        let display = showMessageOnGuiThread handler.mainWindow
-        if (not <| info.Exists) then
-          Messages.MissingSourceThisFileMessage display current info
-        else if (info.Outdated current.LastWriteTimeUtc) then
-          Messages.OutdatedCoverageThisFileMessage display current info
-        else
-          let showSource() =
-            let buff = handler.codeView.Buffer
-            let buff2 = handler.lineView.Buffer
+      let showSource (info:Source) line =
+        let buff = handler.codeView.Buffer
+        let buff2 = handler.lineView.Buffer
 
-            buff.Text <- info.ReadAllText()
+        buff.Text <- info.ReadAllText()
 
-            buff2.Text <- String.Join (Environment.NewLine,
-                            seq { 1 .. buff.LineCount }
-                            |> Seq.map (fun i -> sprintf "%6d " i))
+        buff2.Text <- String.Join (Environment.NewLine,
+                        seq { 1 .. buff.LineCount }
+                        |> Seq.map (fun i -> sprintf "%6d " i))
 
-            [ handler.codeView; handler.lineView ]
-            |> Seq.iter (fun v -> v.PixelsAboveLines <- 0
-                                  v.PixelsInsideWrap <- 0
-                                  v.PixelsBelowLines <- 0)
+        [ handler.codeView; handler.lineView ]
+        |> Seq.iter (fun v -> v.PixelsAboveLines <- 0
+                              v.PixelsInsideWrap <- 0
+                              v.PixelsBelowLines <- 0)
 
-            [buff; buff2]
-            |> List.iter (fun b ->
-               b.ApplyTag("baseline", b.StartIter, b.EndIter))
+        [buff; buff2]
+        |> List.iter (fun b ->
+            b.ApplyTag("baseline", b.StartIter, b.EndIter))
 
-            let root = m.Clone()
-            root.MoveToRoot()
-            markBranches root handler.lineView filename
-            markCoverage root buff buff2 filename
-            handler.activeRow <- Int32.TryParse(Option.get line) |> snd
-            handler.codeView.CursorVisible <- false
-            handler.viewport1.QueueDraw()
+        let root = m.Clone()
+        root.MoveToRoot()
+        markBranches root handler.lineView info.FullName
+        markCoverage root buff buff2 info.FullName
+        let lineValue : string = Option.get line
+        handler.activeRow <- Int32.TryParse(lineValue) |> snd
+        handler.codeView.CursorVisible <- false
+        handler.viewport1.QueueDraw()
 
-            async {
-              Threading.Thread.Sleep(300)
-              scrollToRow handler
-            }
-            |> Async.Start
-
-          showSource()
+        async {
+          Threading.Thread.Sleep(300)
+          scrollToRow handler
+        }
+        |> Async.Start
+      HandlerCommon.DoRowActivation m handler noSource showSource
 
   [<SuppressMessage("Microsoft.Reliability",
                      "CA2000:DisposeObjectsBeforeLosingScope",
@@ -1143,7 +1129,7 @@ module private Gui =
            handler.viewport1.QueueDraw()
            async {
               Threading.Thread.Sleep(300)
-              invokeOnGuiThread(fun () -> balanceLines handler)
+              Handler.InvokeOnGuiThread(fun () -> balanceLines handler)
             }
             |> Async.Start
 

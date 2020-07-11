@@ -84,6 +84,8 @@
     <Compile Include="Icons.fs" />
     <Compile Include="Messages.fs" />
     <Compile Include="CoverageFileTree.fs" />
+    <Compile Include="IVisualizerWindow.fs" />
+    <Compile Include="HandlerCommon.fs" />
   </ItemGroup>
 
   <ItemGroup>
