@@ -186,6 +186,7 @@ type MainWindow() as this =
                     icons.RefreshActive
                   else
                     icons.Refresh).Force()
+
   member private this.HideAboutBox _ =
     this.FindControl<StackPanel>("AboutBox").IsVisible <- false
     this.FindControl<Menu>("Menu").IsVisible <- true
@@ -255,16 +256,6 @@ type MainWindow() as this =
                 ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
             0
 
-      //// bound by current line length in case we're looking from stale coverage
-      //let line = buff.GetIterAtLine(n.line - 1)
-      //let from =
-      //  if line.CharsInLine = 0 then line
-      //  else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, line.CharsInLine) - 1)
-      //let endline = buff.GetIterAtLine(n.endline - 1)
-      //let until =
-      //  if endline.CharsInLine = 0 then endline
-      //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
-      //buff.ApplyTag(tag, from, until)
         let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
           let branches = new Dictionary<int, int * int>()
 
