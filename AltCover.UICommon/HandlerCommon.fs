@@ -119,3 +119,23 @@ module HandlerCommon =
                  |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
                  |> Seq.length
                line, (v, num))).ToDictionary(fst, snd)
+
+  let UpdateCoverageFiles (window:IVisualizerWindow) path add =
+      let casematch =
+        match System.Environment.GetEnvironmentVariable("OS") with
+        | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
+        | _ -> StringComparison.Ordinal
+
+      let files =
+        window.CoverageFiles
+        |> List.filter (fun n -> not (n.Equals(path, casematch)))
+        |> Seq.truncate (9)
+        |> Seq.toList
+
+      window.CoverageFiles <-
+        (if add then (path :: files) else files)
+        |> Seq.distinctBy (fun n ->
+             match casematch with
+             | StringComparison.Ordinal -> n
+             | _ -> n.ToUpperInvariant())
+        |> Seq.toList

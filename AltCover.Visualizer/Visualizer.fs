@@ -706,24 +706,7 @@ module private Gui =
     let fileSelection = select |> Seq.fold Event.merge click
 
     let updateMRU (h : Handler) path add =
-      let casematch =
-        match System.Environment.GetEnvironmentVariable("OS") with
-        | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
-        | _ -> StringComparison.Ordinal
-
-      let files =
-        h.coverageFiles
-        |> List.filter (fun n -> not (n.Equals(path, casematch)))
-        |> Seq.truncate (9)
-        |> Seq.toList
-
-      h.coverageFiles <-
-        (if add then (path :: files) else files)
-        |> Seq.distinctBy (fun n ->
-             match casematch with
-             | StringComparison.Ordinal -> n
-             | _ -> n.ToUpperInvariant())
-        |> Seq.toList
+      HandlerCommon.UpdateCoverageFiles h path add
       populateMenu h
       Persistence.saveCoverageFiles h.coverageFiles
       handler.refreshButton.Sensitive <- h.coverageFiles.Any()

@@ -104,24 +104,7 @@ type MainWindow() as this =
                                                       icons.MRUInactive).Force()
 
   member private this.UpdateMRU path add =
-    let casematch =
-      match System.Environment.GetEnvironmentVariable("OS") with
-      | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
-      | _ -> StringComparison.Ordinal
-
-    let files =
-      coverageFiles
-      |> List.filter (fun n -> not (n.Equals(path, casematch)))
-      |> Seq.truncate (9)
-      |> Seq.toList
-
-    coverageFiles <-
-      (if add then (path :: files) else files)
-      |> Seq.distinctBy (fun n ->
-           match casematch with
-           | StringComparison.Ordinal -> n
-           | _ -> n.ToUpperInvariant())
-      |> Seq.toList
+    HandlerCommon.UpdateCoverageFiles this path add
     this.PopulateMenu()
     Persistence.saveCoverageFiles coverageFiles
     let menu = this.FindControl<MenuItem>("Refresh")
