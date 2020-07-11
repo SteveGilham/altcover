@@ -424,45 +424,6 @@ module private Gui =
         image.TooltipText <-
           Resource.Format("branchesVisited", [v; num])
 
-  let internal (|Select|_|) (pattern : String) offered =
-    if (fst offered)
-       |> String.IsNullOrWhiteSpace
-       |> not
-       && pattern.StartsWith(fst offered, StringComparison.Ordinal) then
-      Some offered
-    else
-      None
-
-  let private selectStyle because excluded =
-    match (because, excluded) with
-    | Select "author declared (" _ -> Exemption.Declared
-    | Select "tool-generated: " _ -> Exemption.Automatic
-    | Select "static analysis: " _ -> Exemption.StaticAnalysis
-    | (_, true) -> Exemption.Excluded
-    | _ -> Exemption.None
-
-  let private coverageToTag(n : XPathNavigator) =
-    let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
-    let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
-    let line = n.GetAttribute("line", String.Empty)
-    let column = n.GetAttribute("column", String.Empty)
-    let endline = n.GetAttribute("endline", String.Empty)
-    let endcolumn = n.GetAttribute("endcolumn", String.Empty)
-    // Extension behaviour for textual signalling for three lines
-    n.MoveToParent() |> ignore
-    let because = n.GetAttribute("excluded-because", String.Empty)
-    let fallback = selectStyle because excluded |> int
-    { VisitCount =
-        if visitcount = 0 then fallback else visitcount
-      Line = Int32.TryParse(line) |> snd
-      Column = (Int32.TryParse(column) |> snd)
-      EndLine = Int32.TryParse(endline) |> snd
-      EndColumn = (Int32.TryParse(endcolumn) |> snd) }
-
-  let private filterCoverage (buff : TextBuffer) (n : CodeTag) =
-    let lc = buff.LineCount
-    n.Line > 0 && n.EndLine > 0 && n.Line <= lc && n.EndLine <= lc
-
   let private tagByCoverage (buff : TextBuffer) (n : CodeTag) =
     // bound by current line length in case we're looking from stale coverage
     let line = buff.GetIterAtLine(n.Line - 1)
@@ -484,22 +445,18 @@ module private Gui =
           (n.EndLine - 1, Math.Min(n.EndColumn, endchars) - 1)
 
     let tag =
-      match Exemption.OfInt n.VisitCount with
-      | Exemption.None -> "notVisited"
+      match n.Style with
+      | Exemption.Visited -> "visited"
       | Exemption.Declared -> "declared"
       | Exemption.Automatic -> "automatic"
       | Exemption.StaticAnalysis -> "static"
       | Exemption.Excluded -> "excluded"
-      | _ -> "visited"
+      | _ -> "notVisited"
 
     buff.ApplyTag(tag, from, until)
 
-  let private markCoverage (root : XPathNavigator) buff (buff2:TextBuffer) filename =
-    let tags = root.Select("//seqpnt[@document='" + filename + "']")
-                |> Seq.cast<XPathNavigator>
-                |> Seq.map coverageToTag
-                |> Seq.filter (filterCoverage buff)
-                |> Seq.toList
+  let private markCoverage (root : XPathNavigator) (buff:TextBuffer) (buff2:TextBuffer) filename =
+    let tags = HandlerCommon.TagCoverage root filename buff.LineCount
     tags
     |> List.groupBy (fun t -> t.Line)
     |> List.iter (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.VisitCount <= 0

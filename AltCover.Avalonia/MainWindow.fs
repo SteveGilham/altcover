@@ -73,15 +73,6 @@ type TextTag =
   static member Excluded = TextTag.Make "#87CEEB" "#F5F5F5" // Sky Blue on White Smoke
   // "#87CEEB" "#FFFFFF" // Sky Blue on white
 
-// Range colouring information
-type internal ColourTag =
-  { style : TextTag
-    vc : int
-    line : int
-    column : int
-    endline : int
-    endcolumn : int }
-
 type MainWindow() as this =
   inherit Window()
   let mutable armed = false
@@ -96,6 +87,19 @@ type MainWindow() as this =
     let named = iconstype.GetProperty(name)
     let value = named.GetValue(icons) :?> Lazy<Bitmap>
     value.Force()
+
+  let visited = SolidColorBrush.Parse "#0000CD" // "#F5F5F5" // Medium Blue on White Smoke
+  // "#404040" "#cefdce" // Dark on Pale Green
+  let declared = SolidColorBrush.Parse "#FFA500" // "#F5F5F5" // Orange on White Smoke
+  // "#FFA500" "#FFFFFF" // Orange on White
+  let staticAnalysis = SolidColorBrush.Parse "#000000" // "#F5F5F5" // Black on White Smoke
+  // "#808080" "#F5F5F5" // Grey on White Smoke
+  let automatic = SolidColorBrush.Parse "#FFD700" // "#F5F5F5" // Gold on White Smoke
+  // "#808080" "#FFFF00" // Grey on Yellow
+  let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
+  //"#ff0000" "#FFFFFF" // Red on White
+  let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
+  // "#87CEEB" "#FFFFFF" // Sky Blue on white
 
   let makeTreeNode name icon =
     let tree = new Image()
@@ -197,54 +201,19 @@ type MainWindow() as this =
     (xpath: XPathNavigator) =
         let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
-        let (|Select|_|) (pattern : String) offered =
-          if (fst offered)
-             |> String.IsNullOrWhiteSpace
-             |> not
-             && pattern.StartsWith(fst offered, StringComparison.Ordinal) then
-            Some offered
-          else
-            None
-
-        let selectStyle because excluded =
-          match (because, excluded) with
-          | Select "author declared (" _ -> TextTag.Declared
-          | Select "tool-generated: " _ -> TextTag.Automatic
-          | Select "static analysis: " _ -> TextTag.StaticAnalysis
-          | (_, true) -> TextTag.Excluded
-          | _ -> TextTag.NotVisited
-
-        let coverageToTag(n : XPathNavigator) =
-          let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
-          let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
-          let line = n.GetAttribute("line", String.Empty)
-          let column = n.GetAttribute("column", String.Empty)
-          let endline = n.GetAttribute("endline", String.Empty)
-          let endcolumn = n.GetAttribute("endcolumn", String.Empty)
-          // Extension behaviour for textual signalling for three lines
-          n.MoveToParent() |> ignore
-          let because = n.GetAttribute("excluded-because", String.Empty)
-          { style =
-              match Exemption.OfInt visitcount with
-              | Exemption.None -> selectStyle because excluded
-              | Exemption.Declared -> TextTag.Declared
-              | Exemption.Automatic -> TextTag.Automatic
-              | Exemption.StaticAnalysis -> TextTag.StaticAnalysis
-              | Exemption.Excluded -> TextTag.Excluded
-              | _ -> TextTag.Visited
-            vc = visitcount
-            line = Int32.TryParse(line) |> snd
-            column = (Int32.TryParse(column) |> snd)
-            endline = Int32.TryParse(endline) |> snd
-            endcolumn = (Int32.TryParse(endcolumn) |> snd) }
-
-        let filterCoverage lines (n : ColourTag) =
-          n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
-        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : ColourTag) =
-          let start = (n.column - 1) + (lines |> Seq.take (n.line - 1) |> Seq.sumBy (fun l -> l.Length))
-          let finish = (n.endcolumn - 1) + (lines |> Seq.take (n.endline - 1) |> Seq.sumBy (fun l -> l.Length))
+        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
+          let start = (n.Column - 1) + (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
+          let finish = (n.EndColumn - 1) + (lines |> Seq.take (n.EndLine - 1) |> Seq.sumBy (fun l -> l.Length))
           FormattedTextStyleSpan(start, finish - start,
-                        SolidColorBrush.Parse n.style.Foreground)
+                        match n.Style with
+                        | Exemption.Visited -> visited
+                        | Exemption.Automatic -> automatic
+                        | Exemption.Declared -> declared
+                        | Exemption.Excluded -> excluded
+                        | Exemption.StaticAnalysis -> staticAnalysis
+                        | _ -> notVisited
+                        )
+
         let parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
           let text = element.GetAttribute(attribute, String.Empty)
           let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
@@ -304,23 +273,18 @@ type MainWindow() as this =
                 ToolTip.SetTip(pic,
                   Resource.Format("branchesVisited", [v; num])))
 
-        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock) (lines : FormattedTextLine list) filename =
-          let lc = lines.Length
-          let tags = root.Select("//seqpnt[@document='" + filename + "']")
-                     |> Seq.cast<XPathNavigator>
-                     |> Seq.map coverageToTag
-                     |> Seq.filter (filterCoverage lc)
-                     |> Seq.sortByDescending (fun t -> t.vc)
-                     |> Seq.toList
+        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock)
+                           (lines : FormattedTextLine list) filename =
+          let tags = HandlerCommon.TagCoverage root filename lines.Length
 
           let formats = tags
                         |> List.map (tagByCoverage textBox lines)
 
           let linemark = tags
-                         |> List.groupBy (fun t -> t.line)
-                         |> List.map (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.vc <= 0
+                         |> List.groupBy (fun t -> t.Line)
+                         |> List.map (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.VisitCount <= 0
                                                                                            then 0
-                                                                                           else tag.vc)
+                                                                                           else tag.VisitCount)
                                                     let style = if total > 0
                                                                 then TextTag.Visited
                                                                 else TextTag.NotVisited

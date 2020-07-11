@@ -5,6 +5,7 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.XPath
 open System.Net
+open AltCover
 
 module GuiCommon =
   // Binds class name and XML
@@ -22,7 +23,8 @@ module GuiCommon =
       Line : int
       Column : int
       EndLine : int
-      EndColumn : int }
+      EndColumn : int
+      Style : Exemption}
 
   type MethodType =
     | Normal = 0
