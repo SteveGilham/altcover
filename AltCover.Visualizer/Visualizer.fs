@@ -79,7 +79,7 @@ module private Gui =
       if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
   [<SuppressMessage("Gendarme.Rules.Portability", "DoNotHardcodePathsRule",
-                    Justification = "I know what I'm doing herer")>]
+                    Justification = "I know what I'm doing here")>]
   // browser launch from Avalonia
   let private shellExec (cmd:string) waitForExit =
     let escapedArgs = cmd.Replace("\"", "\\\"") // Blackfox???
@@ -256,39 +256,44 @@ module private Gui =
                                         then handler.justOpened
                                         else handler.coverageFiles.[i])
         Display = (handler :> IVisualizerWindow).ShowMessageOnGuiThread
-        UpdateMRUFailure = fun info -> Handler.InvokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
-        UpdateUISuccess = fun info -> let updateUI (theModel:
+        UpdateMRUFailure = fun info ->
+          Handler.InvokeOnGuiThread(fun () ->
+            doUpdateMRU handler info.FullName false)
+        UpdateUISuccess = fun info ->
+          let updateUI (theModel:
 #if NETCOREAPP2_1
-                                                              ITreeModel
+                                  ITreeModel
 #else
-                                                              TreeModel
+                                  TreeModel
 #endif
-                                                    ) (info: FileInfo) () =
-                                        // File is good so enable the refresh button
-                                        handler.refreshButton.Sensitive <- true
-                                        // Do real UI work here
-                                        handler.auxModel <- handler.classStructureTree.Model :?> TreeStore
-                                        handler.classStructureTree.Model <- theModel
-                                        setDefaultText handler
-                                        handler.mainWindow.Title <- "AltCover.Visualizer"
-                                        doUpdateMRU handler info.FullName true
-                                      ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
-                                      Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
-        SetXmlNode = fun name -> let model = handler.auxModel
-                                 model.Clear()
-                                 mappings.Clear()
-                                 let topRow = model.AppendValues(name, icons.Xml.Force())
-                                 {
-                                    Model = model
-                                    Row = topRow
-                                 }
+                                            ) (info: FileInfo) () =
+            // File is good so enable the refresh button
+            handler.refreshButton.Sensitive <- true
+            // Do real UI work here
+            handler.auxModel <- handler.classStructureTree.Model :?> TreeStore
+            handler.classStructureTree.Model <- theModel
+            setDefaultText handler
+            handler.mainWindow.Title <- "AltCover.Visualizer"
+            doUpdateMRU handler info.FullName true
+          ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
+          Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
+        SetXmlNode = fun name ->
+          let model = handler.auxModel
+          model.Clear()
+          mappings.Clear()
+          let topRow = model.AppendValues(name, icons.Xml.Force())
+          {
+            Model = model
+            Row = topRow
+          }
         AddNode = fun context icon name ->
-                               { context with
-                                     Row = context.Model.AppendValues
-                                            (context.Row,
-                                             [| name :> obj
-                                                icon.Force() :> obj |]) }
-        Map = fun context xpath ->  mappings.Add(context.Model.GetPath context.Row, xpath)
+          { context with
+             Row = context.Model.AppendValues
+                    (context.Row,
+                      [| name :> obj
+                         icon.Force() :> obj |]) }
+        Map = fun context xpath ->
+          mappings.Add(context.Model.GetPath context.Row, xpath)
       }
 
     async { CoverageFileTree.DoSelected environment index } |> Async.Start
@@ -435,16 +440,18 @@ module private Gui =
     let tags = HandlerCommon.TagCoverage root filename buff.LineCount
     tags
     |> List.groupBy (fun t -> t.Line)
-    |> List.iter (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.VisitCount <= 0
-                                                                       then 0
-                                                                       else tag.VisitCount)
-                                let style = if total > 0
-                                            then "visited"
-                                            else "notVisited"
+    |> List.iter (fun (l, t) ->
+      let total = t |> Seq.sumBy (fun tag ->
+        if tag.VisitCount <= 0
+        then 0
+        else tag.VisitCount)
+      let style = if total > 0
+                  then "visited"
+                  else "notVisited"
 
-                                let start = buff2.GetIterAtLine (l - 1)
-                                let finish = buff2.GetIterAtLineOffset (l-1, 7)
-                                buff2.ApplyTag(style, start, finish))
+      let start = buff2.GetIterAtLine (l - 1)
+      let finish = buff2.GetIterAtLineOffset (l-1, 7)
+      buff2.ApplyTag(style, start, finish))
 
     tags
     |> Seq.iter (tagByCoverage buff)
