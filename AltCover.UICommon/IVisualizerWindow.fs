@@ -10,6 +10,6 @@ open AltCover.Visualizer.GuiCommon
 type IVisualizerWindow =
   interface
   abstract member Title : string with get, set
-  abstract member CoverageFiles : string list with get
+  abstract member CoverageFiles : string list with get, set
   abstract member ShowMessageOnGuiThread : MessageType -> string -> unit
   end

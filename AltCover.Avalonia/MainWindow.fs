@@ -577,7 +577,9 @@ type MainWindow() as this =
          this.FindControl<DockPanel>("Grid").IsVisible <- true)
 
   interface IVisualizerWindow with
-    member self.CoverageFiles = coverageFiles
+    member self.CoverageFiles
+      with get () = coverageFiles
+      and set(value) = coverageFiles <- value
     member self.Title
       with get() = self.Title
       and set(value) = self.Title <- value
