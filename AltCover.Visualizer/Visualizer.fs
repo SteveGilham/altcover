@@ -75,6 +75,7 @@ module private Gui =
     // set or clear the menu
     handler.openButton.Menu <-
       if active then handler.fileOpenMenu :> Widget else null
+    active
 
   let private prepareAboutDialog(handler : Handler) =
 #if NETCOREAPP2_1
@@ -524,7 +525,7 @@ module private Gui =
     prepareTreeView handler
     Persistence.readGeometry handler.mainWindow
     Persistence.readCoverageFiles handler
-    populateMenu handler
+    populateMenu handler |> ignore // no refresh at this point
     handler.separator1.Expand <- true
     handler.separator1.Homogeneous <- false
     handler.codeView.Editable <- false
@@ -609,9 +610,9 @@ module private Gui =
 
     let updateMRU (h : Handler) path add =
       HandlerCommon.UpdateCoverageFiles h path add
-      populateMenu h
+      let active = populateMenu h
       Persistence.saveCoverageFiles h.coverageFiles
-      handler.refreshButton.Sensitive <- h.coverageFiles.Any()
+      handler.refreshButton.Sensitive <- active
 
     // Now mix in selecting the file currently loaded
     let refresh = handler.refreshButton.Clicked |> Event.map (fun _ -> 0)

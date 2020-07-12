@@ -100,14 +100,15 @@ type MainWindow() as this =
                                                       icons.MRU
                                                     else
                                                       icons.MRUInactive).Force()
+    active
 
   member private this.UpdateMRU path add =
     HandlerCommon.UpdateCoverageFiles this path add
-    this.PopulateMenu()
+    let active = this.PopulateMenu()
     Persistence.saveCoverageFiles coverageFiles
     let menu = this.FindControl<MenuItem>("Refresh")
-    menu.IsEnabled <- coverageFiles.Any()
-    menu.Icon <- (if coverageFiles.Any() then
+    menu.IsEnabled <- active
+    menu.Icon <- (if active then
                     icons.RefreshActive
                   else
                     icons.Refresh).Force()
@@ -236,7 +237,7 @@ type MainWindow() as this =
     AvaloniaXamlLoader.Load(this)
     Persistence.readGeometry this
     coverageFiles <- Persistence.readCoverageFiles()
-    this.PopulateMenu()
+    this.PopulateMenu() |> ignore // no refresh at this point
     ofd.Directory <- Persistence.readFolder()
     ofd.Title <- Resource.GetResourceString "Open Coverage File"
     ofd.AllowMultiple <- false
