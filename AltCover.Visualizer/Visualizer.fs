@@ -81,8 +81,8 @@ module private Gui =
 #if NETCOREAPP2_1
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl link) |> ignore
-    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl link) |> ignore
+    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl (Uri link)) |> ignore
+    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl (Uri link)) |> ignore
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter (fun w ->
          let t = Resource.GetResourceString w.Label
@@ -290,17 +290,16 @@ module private Gui =
     let branches = HandlerCommon.TagBranches root filename
 
     for l in 1 .. buff.LineCount do
-      let (counts, pix) = HandlerCommon.IconForBranches icons branches l
+      let image = new Image()
+      let pix = HandlerCommon.IconForBranches icons branches l
+                    (fun text ->
+                      image.TooltipText <- text)
       let mutable i = buff.GetIterAtLineOffset(l - 1, 7)
       let a = new TextChildAnchor()
       buff.InsertChildAnchor(&i, a)
-      let image = new Image(pix)
+      image.Pixbuf <- pix
       image.Visible <- true
       lineView.AddChildAtAnchor(image, a)
-      if fst counts then
-        let v, num = snd counts
-        image.TooltipText <-
-          Resource.Format("branchesVisited", [v; num])
 
   let private tagByCoverage (buff : TextBuffer) (n : CodeTag) =
     // bound by current line length in case we're looking from stale coverage
@@ -339,19 +338,11 @@ module private Gui =
     |> Seq.iter (tagByCoverage buff)
 
     tags
-    |> List.groupBy (fun t -> t.Line)
-    |> List.iter (fun (l, t) ->
-      let total = t |> Seq.sumBy (fun tag ->
-        if tag.VisitCount <= 0
-        then 0
-        else tag.VisitCount)
-      let style = if total > 0
-                  then "visited"
-                  else "notVisited"
-
+    |> HandlerCommon.TagLines "visited" "notVisited"
+    |> List.iter (fun (l, tag) ->
       let start = buff2.GetIterAtLine (l - 1)
       let finish = buff2.GetIterAtLineOffset (l-1, 7)
-      buff2.ApplyTag(style, start, finish))
+      buff2.ApplyTag(tag, start, finish))
 
   let internal lineHeights  (h : Handler) =
     let v = h.codeView
@@ -678,7 +669,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@195.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Visualizer.Gui+prepareTreeView@112.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

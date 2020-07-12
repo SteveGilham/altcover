@@ -95,6 +95,20 @@ module HandlerCommon =
     |> Seq.sortByDescending (fun t -> t.VisitCount)
     |> Seq.toList
 
+  [<SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
+                    Justification="Why is this different to 'TagBranches'???")>]
+  let TagLines (visited:'Tag) (notVisited:'Tag) (tags:CodeTag list) =
+    tags
+    |> List.groupBy (fun t -> t.Line)
+    |> List.map (fun (l, t) ->
+      let total = t |> Seq.sumBy (fun tag ->
+        if tag.VisitCount <= 0
+        then 0
+        else tag.VisitCount)
+      (l, if total > 0
+          then visited
+          else notVisited))
+
   let private parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
     let text = element.GetAttribute(attribute, String.Empty)
     let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
@@ -143,7 +157,8 @@ module HandlerCommon =
 
   [<SuppressMessage("Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
                     Justification="Avoid speculative generality too")>]
-  let IconForBranches (icons:Icons<'TIcon>) (branches:Dictionary<int,int*int>) line =
+  let IconForBranches (icons:Icons<'TIcon>) (branches:Dictionary<int,int*int>) line
+    (setToolTip:string -> unit) =
       let counts = branches.TryGetValue line
 
       let (|AllVisited|_|) (b, (v, num)) =
@@ -154,11 +169,16 @@ module HandlerCommon =
         else
           Some()
 
-      (counts, (match counts with
-                | (false, _) -> icons.Blank
-                | (_, (0, _)) -> icons.RedBranch
-                | AllVisited -> icons.Branched
-                | _ -> icons.Branch).Force())
+      if fst counts
+      then
+        let v, num = snd counts
+        setToolTip <| Resource.Format("branchesVisited", [v; num])
+
+      (match counts with
+       | (false, _) -> icons.Blank
+       | (_, (0, _)) -> icons.RedBranch
+       | AllVisited -> icons.Branched
+       | _ -> icons.Branch).Force()
 
   // Fill in the menu from the memory cache
   let PopulateMenu (items:'TMenuItem seq) (newItems:string seq)

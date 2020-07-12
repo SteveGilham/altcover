@@ -5,6 +5,13 @@ open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open System.Runtime.InteropServices
 
+#if !NETCOREAPP2_1
+module internal NativeMethods =
+  //From Managed.Windows.Forms/XplatUI
+  [<DllImport ("libc")>]
+  extern int private uname (IntPtr buf)
+#endif
+
 module Browser =
 
   [<SuppressMessage("Gendarme.Rules.Portability", "DoNotHardcodePathsRule",
@@ -23,19 +30,6 @@ module Browser =
     if waitForExit
     then proc.WaitForExit();
 
-#if !NETCOREAPP2_1
-  [<SuppressMessage("Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-                    Justification = "Invoked by pointer")>]
-  [<SuppressMessage("Gendarme.Rules.Interoperability",
-                    "CentralizePInvokesIntoNativeMethodsTypeRule",
-                    Justification = "Prefer local scoping")>]
-  [<SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass",
-                    Justification = "Prefer local scoping")>]
-  //From Managed.Windows.Forms/XplatUI
-  [<DllImport ("libc")>]
-  extern int private uname (IntPtr buf)
-#endif
-
   [<SuppressMessage("Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
                     Justification = "Passed as a delegate")>]
   [<SuppressMessage("Gendarme.Rules.Exceptions",
@@ -43,9 +37,7 @@ module Browser =
                     Justification = "A call to native code")>]
   [<SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
                     Justification = "A call to native code")>]
-  [<SuppressMessage("Gendarme.Rules.Design", "PreferUriOverStringRule",
-                    Justification = "Avoid spurious generality")>]
-  let ShowUrl(url : string) =
+  let ShowUrl(url : Uri) =
 #if NETCOREAPP2_1 // or net471+
     let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
     let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -62,7 +54,7 @@ module Browser =
         buf <- Marshal.AllocHGlobal (8192)
         try
           // This is a hacktastic way of getting sysname from uname ()
-          if (uname (buf) = 0)
+          if (NativeMethods.uname (buf) = 0)
           then let os = Marshal.PtrToStringAnsi (buf);
                os = "Darwin"
           else false
@@ -78,13 +70,13 @@ module Browser =
 #endif
 
     if isLinux
-    then shellExec ("xdg-open " + url) false
+    then shellExec ("xdg-open " + url.ToString()) false
     else let psi = ProcessStartInfo()
          psi.FileName <- if isWindows
-                         then url
+                         then url.ToString()
                          else "open"
          psi.Arguments <- if isOSX
-                          then ("-e " + url)
+                          then ("-e " + url.ToString())
                           else String.Empty
          psi.CreateNoWindow <- true
          psi.UseShellExecute <- isWindows

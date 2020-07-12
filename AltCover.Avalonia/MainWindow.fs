@@ -148,15 +148,13 @@ type MainWindow() as this =
 
           Dispatcher.UIThread.Post(fun _ ->
             for l in 1 .. lines.Length do
-              let (counts, pix) = HandlerCommon.IconForBranches icons branches l
               let pic = new Image()
+              let pix = HandlerCommon.IconForBranches icons branches l
+                                         (fun text ->
+                                            ToolTip.SetTip(pic, text))
               pic.Source <- pix
               pic.Margin <- margin
-              stack.Children.Add pic
-              if fst counts then
-                let v, num = snd counts
-                ToolTip.SetTip(pic,
-                  Resource.Format("branchesVisited", [v; num])))
+              stack.Children.Add pic)
 
         let markCoverage (root : XPathNavigator) textBox (text2: TextBlock)
                            (lines : FormattedTextLine list) filename =
@@ -165,18 +163,12 @@ type MainWindow() as this =
           let formats = tags
                         |> List.map (tagByCoverage textBox lines)
 
-          let linemark = tags
-                         |> List.groupBy (fun t -> t.Line)
-                         |> List.map (fun (l, t) ->
-                          let total = t |> Seq.sumBy (fun tag ->
-                            if tag.VisitCount <= 0
-                            then 0
-                            else tag.VisitCount)
-                          let style = if total > 0
-                                      then visited
-                                       else notVisited
+          let linemark =
+            tags
+            |> HandlerCommon.TagLines visited notVisited
+            |> List.map (fun (l, tag) ->
                           let start = (l - 1) * (7 + Environment.NewLine.Length)
-                          FormattedTextStyleSpan(start, 7, style))
+                          FormattedTextStyleSpan(start, 7, tag))
 
           Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
                                             text2.FormattedText.Spans <- linemark)
