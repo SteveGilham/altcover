@@ -272,7 +272,7 @@ module private Gui =
 
   let private setDefaultTags (h:Handler) =
     initializeTextBuffer "#f5f5f5" h.codeView.Buffer
-    initializeTextBuffer "#fffff" h.lineView.Buffer
+    initializeTextBuffer "#ffffff" h.lineView.Buffer
 
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
@@ -521,9 +521,16 @@ module private Gui =
                           handler.codeView.ModifyBase(state, whiteSmoke)
                           handler.codeView.ModifyBg(state, whiteSmoke))
 #else
-// Now obsolete but...
-// TODO -- https://developer.gnome.org/gtk3/stable/GtkWidget.html#gtk-widget-override-color
-// needs CSS styling here too
+    let prov = new CssProvider()
+    let nl = Environment.NewLine
+    let style = nl +
+                "* {" + nl +
+                "     background-color: whiteSmoke;" + nl +
+                "  }" + nl
+
+    prov.LoadFromData(style) |> ignore
+    handler.viewport1.StyleContext.AddProvider(prov, UInt32.MaxValue)
+    handler.codeView.StyleContext.AddProvider(prov, UInt32.MaxValue)
 #endif
     handler.lineView.Editable <- false
     setDefaultTags handler
