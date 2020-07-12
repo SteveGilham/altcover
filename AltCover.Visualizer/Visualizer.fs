@@ -1,22 +1,15 @@
-namespace AltCover.Visualizer
+namespace AltCover
 
 open System
 open System.Collections.Generic
-open System.Diagnostics
 open System.IO
 open System.Linq
-open System.Runtime.InteropServices
 open System.Xml.XPath
 
-open AltCover
-open AltCover.Visualizer.GuiCommon
+open GuiCommon
 
 open Gdk
 open Gtk
-#if !NETCOREAPP2_1
-open Glade
-open Microsoft.Win32
-#endif
 
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
@@ -398,7 +391,7 @@ module private Gui =
           Resource.Format("No source location",
               [(activation.Column.Cells.[1] :?> Gtk.CellRendererText)
                 .Text.Replace("<", "&lt;").Replace(">", "&gt;")])
-        (handler :> IVisualizerWindow).ShowMessageOnGuiThread AltCover.Visualizer.MessageType.Info message
+        (handler :> IVisualizerWindow).ShowMessageOnGuiThread AltCover.MessageType.Info message
 
       let showSource (info:Source) (line:int) =
         let buff = handler.codeView.Buffer
@@ -660,21 +653,21 @@ module private Gui =
                             Justification="Compiler generated")>]
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
                             Scope="type",
-                            Target="AltCover.Visualizer.Gui",
+                            Target="AltCover.Gui",
                             Justification="That's the way things are")>]
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui.#main(System.String[])",
+                            Target="AltCover.Gui.#main(System.String[])",
                             Justification="That's the way things are")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",
-                            Target="AltCover.Visualizer.Gui+prepareTreeView@112.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target="AltCover.Gui+prepareTreeView@105.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification="Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
                              Scope="member",
-                             Target="AltCover.Visualizer.Persistence.#readCoverageFiles(AltCover.Visualizer.Handler)",
+                             Target="AltCover.Persistence.#readCoverageFiles(AltCover.Visualizer.Handler)",
                              Justification="Inlined library code")>]
 ()
 #endif

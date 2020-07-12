@@ -1,4 +1,4 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -155,7 +155,8 @@ type internal Handler() =
     [<DefaultValue(true)>]
     val mutable activeRow : int
 
-    static member private ShowMessage (parent : Window) (message : string) (messageType : AltCover.Visualizer.MessageType) =
+    static member private ShowMessage (parent : Window) (message : string)
+      (messageType : AltCover.MessageType) =
       use md =
         new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent,
                           messageType |> int |> enum, ButtonsType.Close, message)
@@ -172,7 +173,7 @@ type internal Handler() =
     static member InvokeOnGuiThread(action : unit -> unit) =
       Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
 
-    member private self.ShowMessageOnGuiThread (severity : AltCover.Visualizer.MessageType) message =
+    member private self.ShowMessageOnGuiThread (severity : AltCover.MessageType) message =
       let sendMessageToWindow() = Handler.ShowMessage self.mainWindow message severity
       Handler.InvokeOnGuiThread(sendMessageToWindow)
 

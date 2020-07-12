@@ -1,9 +1,7 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 
-[<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInTypeNameRule",
-                  Justification="It's no big deal here")>]
 type IVisualizerWindow =
   interface
   abstract member Title : string with get, set

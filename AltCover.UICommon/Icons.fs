@@ -1,4 +1,4 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 open System.Diagnostics.CodeAnalysis
 open System.Reflection

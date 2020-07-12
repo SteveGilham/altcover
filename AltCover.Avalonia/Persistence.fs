@@ -1,7 +1,6 @@
-﻿namespace AltCover.Avalonia
+﻿namespace AltCover
 
 open System
-open AltCover.Visualizer
 
 open Avalonia
 open Avalonia.Controls

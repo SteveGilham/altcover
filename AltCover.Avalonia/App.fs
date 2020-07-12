@@ -1,4 +1,4 @@
-namespace AltCover.Avalonia
+namespace AltCover
 
 open Avalonia
 open Avalonia.Markup.Xaml

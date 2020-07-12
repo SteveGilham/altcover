@@ -1,4 +1,4 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -7,8 +7,7 @@ open System.Globalization
 open System.IO
 open System.Linq
 open System.Xml.XPath
-open AltCover
-open AltCover.Visualizer.GuiCommon
+open GuiCommon
 
 module HandlerCommon =
   let DoRowActivation (methodPath:XPathNavigator) (window:IVisualizerWindow)

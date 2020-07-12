@@ -1,11 +1,11 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.XPath
-open AltCover.Augment
-open AltCover.Visualizer.GuiCommon
+open Augment
+open GuiCommon
 
 [<NoComparison>]
 type CoverageTreeContext<'TModel, 'TRow> =

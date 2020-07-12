@@ -1,11 +1,10 @@
-namespace AltCover.Visualizer
+namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.XPath
 open System.Net
-open AltCover
 
 module GuiCommon =
   // Binds class name and XML
@@ -106,10 +105,10 @@ module GuiCommon =
           else i |> sbyte |> Microsoft.FSharp.Core.LanguagePrimitives.EnumOfValue<sbyte, AltCover.Exemption>
 
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="type", Target="AltCover.Visualizer.GuiCommon", MessageId="Gui",
+  Scope="type", Target="AltCover.GuiCommon", MessageId="Gui",
   Justification="We all know what it means")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="member", Target="AltCover.Visualizer.GuiCommon.#Exemption.OfInt.Static(System.Int32)",
+  Scope="member", Target="AltCover.GuiCommon.#Exemption.OfInt.Static(System.Int32)",
   MessageId="i", Justification="Another obvious name")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1703:ResourceStringsShouldBeSpelledCorrectly",
   Scope="resource", Target="AltCover.UICommon.Resource.resources", MessageId="freedesktop",
@@ -121,9 +120,9 @@ module GuiCommon =
   Scope="resource", Target="AltCover.UICommon.Resource.resources", MessageId="visualstudio",
   Justification="A proper name")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
-  Scope="member", Target="AltCover.Visualizer.GuiCommon+MethodKey.#.ctor(System.Xml.XPath.XPathNavigator,System.String,System.String,System.String)",
+  Scope="member", Target="AltCover.GuiCommon+MethodKey.#.ctor(System.Xml.XPath.XPathNavigator,System.String,System.String,System.String)",
   MessageId="nameSpace", Justification="Compiler Generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
-  Scope="member", Target="AltCover.Visualizer.GuiCommon+MethodKey.#NameSpace",
+  Scope="member", Target="AltCover.GuiCommon+MethodKey.#NameSpace",
   MessageId="NameSpace", Justification="Compound of two words")>]
 ()

@@ -1,4 +1,4 @@
-namespace AltCover.Avalonia
+namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -7,9 +7,7 @@ open System.IO
 open System.Linq
 open System.Xml.XPath
 
-open AltCover
-open AltCover.Visualizer
-open AltCover.Visualizer.GuiCommon
+open GuiCommon
 
 open Avalonia.Controls
 open Avalonia.Markup.Xaml

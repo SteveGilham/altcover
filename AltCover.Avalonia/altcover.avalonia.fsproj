@@ -31,12 +31,12 @@
 
   <ItemGroup>
     <None Include="nuget.config" />
-    <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
-      <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
+    <EmbeddedResource Include="AltCove.MainWindow.xaml">
+      <LogicalName>AltCover.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
 
-    <EmbeddedResource Include="AltCover.Avalonia.App.xaml">
-      <LogicalName>AltCover.Avalonia.App.xaml</LogicalName>
+    <EmbeddedResource Include="AltCover.App.xaml">
+      <LogicalName>AltCover.App.xaml</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

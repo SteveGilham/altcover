@@ -1,4 +1,4 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 #if NETSTANDARD2_0
 
