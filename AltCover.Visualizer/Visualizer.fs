@@ -219,12 +219,6 @@ module private Gui =
 
       (openFileDialogFactory : Handler -> FileChooserDialog) =
     let openFileDialog = openFileDialogFactory handler
-#else
-      (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
-    use openFileDialog = openFileDialogFactory()
-#endif
-
-#if NETCOREAPP2_1
     let makeSelection (ofd : FileChooserDialog) x =
       openFileDialog.SetCurrentFolder(Persistence.readFolder()) |> ignore
       try
@@ -233,6 +227,8 @@ module private Gui =
           let file = new FileInfo(ofd.Filename)
           let dir = file.Directory.FullName
 #else
+      (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
+    use openFileDialog = openFileDialogFactory()
     let makeSelection (ofd: System.Windows.Forms.OpenFileDialog) x =
         if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
           let file = new FileInfo(ofd.FileName)
