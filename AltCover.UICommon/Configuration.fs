@@ -130,6 +130,7 @@ module Configuration =
 
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.map (fun n -> n.FirstNode.ToString())
+    |> Seq.filter (fun n -> File.Exists(n))
     |> Seq.toList
     |> sink
 
