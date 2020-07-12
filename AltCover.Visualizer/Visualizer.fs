@@ -64,19 +64,18 @@ module private Gui =
   // Fill in the menu from the memory cache
   let private populateMenu (handler : Handler) =
     let items = handler.fileOpenMenu.AllChildren |> Seq.cast<MenuItem>
-    // blank the whole menu
-    items
-    |> Seq.iter (fun (i : MenuItem) ->
-         i.Visible <- false
-         (i.Child :?> Label).Text <- String.Empty)
-    // fill in with the items we have
-    Seq.zip handler.coverageFiles items
-    |> Seq.iter (fun (name, item) ->
-         item.Visible <- true
-         (item.Child :?> Label).Text <- name)
+    let active = HandlerCommon.PopulateMenu
+                  items
+                  handler.coverageFiles
+                  (fun (i : MenuItem) ->
+                           i.Visible <- false
+                           (i.Child :?> Label).Text <- String.Empty)
+                  (fun name item ->
+                           item.Visible <- true
+                           (item.Child :?> Label).Text <- name)
     // set or clear the menu
     handler.openButton.Menu <-
-      if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
+      if active then handler.fileOpenMenu :> Widget else null
 
   [<SuppressMessage("Gendarme.Rules.Portability", "DoNotHardcodePathsRule",
                     Justification = "I know what I'm doing here")>]

@@ -159,3 +159,14 @@ module HandlerCommon =
                 | (_, (0, _)) -> icons.RedBranch
                 | AllVisited -> icons.Branched
                 | _ -> icons.Branch).Force())
+
+  // Fill in the menu from the memory cache
+  let PopulateMenu (items:'TMenuItem seq) (newItems:string seq)
+    (clear:'TMenuItem -> unit) (set:string -> 'TMenuItem -> unit) =
+    // blank the whole menu
+    items
+    |> Seq.iter clear
+    // fill in with the items we have
+    Seq.zip newItems items
+    |> Seq.iter (fun (name, item) -> set name item)
+    items.Any()

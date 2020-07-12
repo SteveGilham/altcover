@@ -86,19 +86,17 @@ type MainWindow() as this =
   member private this.PopulateMenu() =
     let listitem = this.FindControl<MenuItem>("List")
     let items = listitem.Items.OfType<MenuItem>()
-    // blank the whole menu
-    items
-    |> Seq.iter (fun (i : MenuItem) ->
-         i.IsVisible <- false
-         i.Header <- String.Empty)
-    // fill in with the items we have
-    Seq.zip coverageFiles items
-    |> Seq.iter (fun (name, item) ->
-         item.IsVisible <- true
-         item.Header <- name)
-    // set or clear the menu
-    listitem.IsEnabled <- coverageFiles.Any()
-    this.FindControl<Image>("ListImage").Source <- (if coverageFiles.Any() then
+    let active = HandlerCommon.PopulateMenu
+                  items
+                  coverageFiles
+                  (fun (i : MenuItem) ->
+                           i.IsVisible <- false
+                           i.Header <- String.Empty)
+                  (fun name item ->
+                           item.IsVisible <- true
+                           item.Header <- name)
+    listitem.IsEnabled <- active
+    this.FindControl<Image>("ListImage").Source <- (if active then
                                                       icons.MRU
                                                     else
                                                       icons.MRUInactive).Force()
