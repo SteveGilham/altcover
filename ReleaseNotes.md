@@ -3,8 +3,14 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.1.7xx  (Genbu series release 6)
-* [Visualizer-global-tool] Fix the display of branch information on the second and subsequent coverage file; other minor tidyings
-* [Visualizer-GTK2] Make this look more like the Avalonia version; tentative fix for the `About` dialog link button on non-Windows platforms based on the Avalonia code.
+* [Visualizer-global-tool] 
+  * Fix the display of branch information on the second and subsequent coverage file;
+  * Fix the loading of the most recently accesed files to prunt ones that don't exist'
+  * other minor tidyings
+* [Visualizer-GTK] 
+  * Make this look more like the Avalonia version
+  * Tentative fix for the `About` dialog link button on non-Windows platforms based partly on the Avalonia code.
+  * Keep the GTK3 build in step
 
 # 7.1.780  (Genbu series release 5a)
 * [Visualizer] Rewritten global tool based on the cross-platform AvaloniaUI toolkit (so no need for all the GTK3 set-up, including the `--schemadir[=path]` command-line parameter)
