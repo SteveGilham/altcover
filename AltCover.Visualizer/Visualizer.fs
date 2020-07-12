@@ -3,7 +3,6 @@ namespace AltCover.Visualizer
 open System
 open System.Collections.Generic
 open System.Diagnostics
-open System.Globalization
 open System.IO
 open System.Linq
 open System.Runtime.InteropServices
@@ -77,94 +76,12 @@ module private Gui =
     handler.openButton.Menu <-
       if active then handler.fileOpenMenu :> Widget else null
 
-  [<SuppressMessage("Gendarme.Rules.Portability", "DoNotHardcodePathsRule",
-                    Justification = "I know what I'm doing here")>]
-  // browser launch from Avalonia
-  let private shellExec (cmd:string) waitForExit =
-    let escapedArgs = cmd.Replace("\"", "\\\"") // Blackfox???
-    let psi = ProcessStartInfo()
-    psi.FileName <- "/bin/sh"
-    psi.Arguments <- "-c \"" + escapedArgs + "\""
-    psi.RedirectStandardOutput <- true
-    psi.UseShellExecute <- false
-    psi.CreateNoWindow <- true
-    psi.WindowStyle <- ProcessWindowStyle.Hidden
-    use proc = Process.Start(psi)
-    if waitForExit
-    then proc.WaitForExit();
-
-  [<SuppressMessage("Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-                    Justification = "Invoked by pointer")>]
-  [<SuppressMessage("Gendarme.Rules.Interoperability",
-                    "CentralizePInvokesIntoNativeMethodsTypeRule",
-                    Justification = "Prefer local scoping")>]
-  [<SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass",
-                    Justification = "Prefer local scoping")>]
-  //From Managed.Windows.Forms/XplatUI
-  [<DllImport ("libc")>]
-  extern int uname (IntPtr buf)
-
-  [<SuppressMessage("Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-                    Justification = "Passed as a delegate")>]
-  [<SuppressMessage("Gendarme.Rules.Exceptions",
-                    "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
-                    Justification = "A call to native code")>]
-  [<SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
-                    Justification = "A call to native code")>]
-  [<SuppressMessage("Gendarme.Rules.Design", "PreferUriOverStringRule",
-                    Justification = "Avoid spurious generality")>]
-  let private showUrl(url : string) =
-#if NETCOREAPP2_1 // or net471+
-    let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-    let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-    let isOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-#else
-    let p = Environment.OSVersion.Platform |> int
-    let isWindows = p <= 3
-      // System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-
-    // from https://github.com/jpobst/Pinta/blob/1.6/Pinta.Core/Managers/SystemManager.cs#L125
-    let isOSX =
-      let mutable buf = IntPtr.Zero
-      try
-        buf <- Marshal.AllocHGlobal (8192)
-        try
-          // This is a hacktastic way of getting sysname from uname ()
-          if (uname (buf) = 0)
-          then let os = Marshal.PtrToStringAnsi (buf);
-               os = "Darwin"
-          else false
-          with
-          | _ -> false
-      finally
-        if buf <> IntPtr.Zero
-        then Marshal.FreeHGlobal buf
-
-    //let isLinux =  (p = 4) || (p = 6) || (p = 128) // hack
-    //               && System.Environment.GetEnvironmentVariable("OSTYPE") = "linux-gnu"
-    let isLinux = (isWindows || isOSX) |>  not  // by default
-#endif
-
-    if isLinux
-    then shellExec ("xdg-open " + url) false
-    else let psi = ProcessStartInfo()
-         psi.FileName <- if isWindows
-                         then url
-                         else "open"
-         psi.Arguments <- if isOSX
-                          then ("-e " + url)
-                          else String.Empty
-         psi.CreateNoWindow <- true
-         psi.UseShellExecute <- isWindows
-         use _proc = System.Diagnostics.Process.Start(psi)
-         ()
-
   let private prepareAboutDialog(handler : Handler) =
 #if NETCOREAPP2_1
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(fun _ link -> showUrl link) |> ignore
-    LinkButton.SetUriHook(fun _ link -> showUrl link) |> ignore
+    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl link) |> ignore
+    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl link) |> ignore
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter (fun w ->
          let t = Resource.GetResourceString w.Label

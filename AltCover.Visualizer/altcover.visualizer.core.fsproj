@@ -44,6 +44,7 @@
     <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net45'" />
     <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net45'" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Browser.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="Handler.fs" />
     <Compile Include="Visualizer.fs" />
