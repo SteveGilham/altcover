@@ -762,8 +762,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
     let xml =
-      !!(@"./*Tests/*tests.core.fsproj")
-      |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
+      !!(@"./*Tests*/*tests.core.fsproj")
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
@@ -812,7 +811,6 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
-    |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
 
   let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net47/*Recorder.Tests.dll")
 
@@ -828,7 +826,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.UICommon]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -904,6 +902,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let Recorder4Dir =
     Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
   let apiDir = Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net47"
+  let uiDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471"
 
   let altReport = reports @@ "UnitTestWithAltCover.xml"
 
@@ -912,12 +911,13 @@ _Target "UnitTestWithAltCover" (fun _ ->
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = altReport
-           InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir |]
+           InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir; uiDir |]
            OutputDirectories =
              [| "./__UnitTestWithAltCover"
                 weakDir @@ "__WeakNameTestWithAltCover"
                 Recorder4Dir @@ "__RecorderTestWithAltCover"
-                apiDir @@ "__ApiTestWithAltCover" |]
+                apiDir @@ "__ApiTestWithAltCover"
+                uiDir @@ "__UiTestWithAltCover" |]
            StrongNameKey = keyfile
            ReportFormat = "NCover"
            InPlace = false
@@ -942,6 +942,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       !!"_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net47/__ApiTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCover/Alt*Test*.dll"
+      !!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/Alt*Test*.dll"
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net461/__UnitTestWithAltCover/*ple2.dll" ]
     |> Seq.concat
     |> Seq.distinct
@@ -1017,6 +1018,16 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         keyfile
       )
       (
+        Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471", // test directory
+        "./__UnitTestWithAltCoverRunner", // relative output
+        "UIUnitTestWithAltCoverRunner.xml", // coverage report
+        "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+        [ Path.getFullName // test assemblies
+            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/AltCover.Tests.Visualizer.dll"],
+        AltCoverFilterTypeSafe,
+        keyfile
+      )
+      (
         Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net47", // test directory
         "./__ApiTestWithAltCoverRunner", // relative output
         "ApiTestWithAltCoverRunner.xml", // coverage report
@@ -1055,17 +1066,6 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
             "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
         AltCoverFilterTypeSafe,
         shadowkeyfile
-      )
-      (
-        Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471",
-        "./__GTKVTestWithAltCoverRunner",
-        "GTKVTestWithAltCoverRunner.xml",
-        "./_Reports/GTKVTestWithAltCoverRunnerReport.xml",
-        [ Path.getFullName
-            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ],
-        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "Gui" ]
-                           AssemblyFilter = TypeSafe.Filters [ TypeSafe.Raw "\\-sharp" ]}) >> AltCoverFilterTypeSafe,
-        keyfile
       )
     ]
 
@@ -1193,6 +1193,14 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        AltCoverFilterG
      )
      (
+       Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0",
+       reports @@ "UITestWithAltCoverCore.xml",
+       "altcover.visualizer.tests.core.fsproj",
+       Path.getFullName "Tests.Visualizer",
+       AltCoverFilter
+     )
+     (
        Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
        Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
        reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
@@ -1279,6 +1287,12 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
        Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./AltCover.Api.Tests/altcover.api.tests.core.fsproj"
+     )
+     (
+       Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "UITestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj"
      )
      (
        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",

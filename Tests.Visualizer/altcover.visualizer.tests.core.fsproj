@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net471;netcoreapp3.0</TargetFrameworks>
     <PlatformTarget Condition="'$(TargetFramework)' == 'net471'">x86</PlatformTarget>
 
     <IsPackable>false</IsPackable>
