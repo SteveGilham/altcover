@@ -32,6 +32,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Reports\NCover1.5.8.xml" />
+    <EmbeddedResource Include="Reports\OpenCover.xml" />
+    <EmbeddedResource Include="Reports\OpenCoverWithTrackedMethods.xml" />
+    <EmbeddedResource Include="Reports\OpenCover_altcover.xml" />
+    <EmbeddedResource Include="Reports\OpenCover_coverlet.xml" />
     <Compile Include="..\Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
