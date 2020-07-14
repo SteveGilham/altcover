@@ -2381,7 +2381,7 @@ _Target "Packaging" (fun _ ->
        Directory.ensure workingDir
        Directory.ensure outputPath
 
-       NuGet (fun p ->
+       NuGetPack (fun p ->
          { p with
              Authors = [ "Steve Gilham" ]
              Project = project
