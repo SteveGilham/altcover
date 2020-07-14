@@ -750,7 +750,6 @@ _Target "UnitTestDotNet" (fun _ ->
 
 _Target "BuildForCoverlet" (fun _ ->
   !!(@"./*Tests/*tests.core.fsproj")
-  |> Seq.filter (fun s -> s.Contains("visualizer") |> not) // incomplete
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
