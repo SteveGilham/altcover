@@ -749,7 +749,7 @@ _Target "UnitTestDotNet" (fun _ ->
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  !!(@"./*Tests/*tests.core.fsproj")
+  !!(@"./*Tests*/*tests.core.fsproj")
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
