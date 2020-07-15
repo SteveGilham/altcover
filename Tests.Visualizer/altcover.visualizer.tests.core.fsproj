@@ -47,7 +47,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="GtkVisualizerTests.fs" />
+    <Compile Include="UICommonTests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net471'" />
   </ItemGroup>
 
