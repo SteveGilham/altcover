@@ -941,7 +941,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       !!"_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net47/__ApiTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCover/Alt*Test*.dll"
-      !!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/Alt*Test*.dll"
+      !!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/__UiTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net461/__UnitTestWithAltCover/*ple2.dll" ]
     |> Seq.concat
     |> Seq.distinct

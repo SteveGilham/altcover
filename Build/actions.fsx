@@ -71,11 +71,11 @@ open System.Runtime.CompilerServices
 #if NETSTANDARD2_0
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests")>]
+[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer")>]
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer")>]
 #else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]

@@ -47,24 +47,18 @@ module Augment =
                     Justification = "Idiomatic F# style")>]
   let Left x : Either<'a, 'b> = Choice2Of2 x
 
-#if !GUI
   let internal (|Right|Left|) =
-#else
-  let (|Right|Left|) =
-#endif
     function
     | Choice1Of2 x -> Right x
     | Choice2Of2 x -> Left x
 
-#if !WEAKNAME
 #if !GUI
+#if !WEAKNAME
   let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
     use stream = create()
     action stream
 #endif
-#endif
 
-#if !GUI
   type System.Boolean with
     member self.ToInt32
       with get() =
