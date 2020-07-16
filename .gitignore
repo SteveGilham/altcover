@@ -69,3 +69,6 @@ Demo/MultiTest/**/coverage.xml
 TestResults/
 AltCover/Abstract.fs
 Tests.Visualizer/Reports/
+
+.fake
+.ionide

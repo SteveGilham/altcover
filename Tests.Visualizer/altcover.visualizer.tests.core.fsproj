@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net471</TargetFrameworks>
-    <PlatformTarget Condition="'$(TargetFramework)' == 'net471'">x86</PlatformTarget>
 
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>

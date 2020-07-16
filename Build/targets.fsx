@@ -825,7 +825,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.UICommon]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.UICommon]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -842,7 +842,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover.Recorder]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -858,7 +858,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover.Recorder]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -4100,10 +4100,16 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
+//=?> ("UnitTestWithOpenCover", 
+//     (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
+//     |> Seq.length) < 6)
 =?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support
 
 "Compilation"
 ==> "UnitTestWithAltCover"
+//=?> ("UnitTestWithAltCover", 
+//     (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
+//     |> Seq.length) < 6)
 ==> "UnitTest"
 
 "Compilation"
