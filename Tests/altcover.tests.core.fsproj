@@ -99,6 +99,7 @@
     <ProjectReference Include="..\Sample16\sample16.core.csproj" />
     <ProjectReference Include="..\Sample17\sample17.core.fsproj" />
     <ProjectReference Include="..\Sample1\sample1.core.csproj" Condition="'$(TargetFramework)' != 'net47'" />
+    <ProjectReference Include="..\Sample21\Sample21.csproj" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />
     <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
