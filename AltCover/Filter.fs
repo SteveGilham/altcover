@@ -203,7 +203,11 @@ module internal Filter =
           (fun typeDef -> typeDef.FullName)
     | Method ->
         I.matchItem<MethodDefinition> filter.Regex f nameProvider
-          (fun methodDef -> let decltype = methodDef.DeclaringType.BaseType.Name
+                            // Interfaces w/implementation have no base type
+          (fun methodDef -> let decltype = methodDef.DeclaringType.BaseType
+                                           |> Option.ofObj
+                                           |> Option.map (fun x -> x.Name)
+                                           |> Option.defaultValue String.Empty
                             let name = methodDef.Name
                             if decltype.StartsWith("FSharpFunc", StringComparison.Ordinal) ||
                                decltype = "FSharpTypeFunc"

@@ -46,9 +46,10 @@ module CoverageFormats =
     |> Seq.iter (fun p ->
          let a =
            XmlUtilities.assemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
-         paths.Add(p, a))
+         paths.Add(p |> Path.GetFullPath, a))
     let usefulAssemblies =
       assemblies
+      |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
       |> Seq.map (fun p -> (p, []))
 
@@ -69,6 +70,7 @@ module CoverageFormats =
            target.Descendants(XName.Get "ModulePath")
            |> Seq.map (fun n -> n.Value)
            |> Seq.head
+           |> Path.GetFullPath
 
          let identity = paths.[path]
          let source = identities.[identity]

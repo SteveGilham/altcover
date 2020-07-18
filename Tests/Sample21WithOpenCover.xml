@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ampersand "C:\Users\steve\Documents\GitHub\altcover\packages\opencover\4.7.922\tools\OpenCover.Console.exe" -target:"C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\nunit3-console.exe" -targetargs:"C:\Users\steve\Documents\GitHub\altcover\Sample21\bin\Debug\net47\Sample21.dll - -result=./_Reports/Sample21Report.xml" -output:C:\Users\steve\Documents\GitHub\altcover\_Reports\Sample21WithOpenCover.xml -register:user -filter:+[Sample*]* -mergebyhash -returntargetcode -->
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="4.7.922.0">
+  <Summary numSequencePoints="9" visitedSequencePoints="9" numBranchPoints="3" visitedBranchPoints="3" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="2" minCrapScore="1" visitedClasses="2" numClasses="2" visitedMethods="3" numMethods="3" />
+  <Modules>
+    <Module skippedDueTo="Filter" hash="9A-E6-DA-BB-7D-11-9E-EA-1E-52-33-F2-BE-98-32-8A-A8-E1-55-C1">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll</ModulePath>
+      <ModuleTime>2020-03-26T23:10:19.56535Z</ModuleTime>
+      <ModuleName>mscorlib</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="42-C9-8F-EF-AA-E3-63-C5-C5-2D-17-C3-6F-59-D1-AD-14-6C-99-BE">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\nunit3-console.exe</ModulePath>
+      <ModuleTime>2020-02-15T16:53:42Z</ModuleTime>
+      <ModuleName>nunit3-console</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="4A-9D-81-85-DC-CF-74-ED-91-AC-6F-7B-37-3D-3E-0B-36-5C-56-66">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll</ModulePath>
+      <ModuleTime>2019-09-12T02:25:10.6349156Z</ModuleTime>
+      <ModuleName>System</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="32-22-F7-34-49-53-3E-B3-76-84-22-8E-73-CA-B5-1C-BA-AE-AC-DA">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\nunit.engine.api.dll</ModulePath>
+      <ModuleTime>2020-02-15T16:53:40Z</ModuleTime>
+      <ModuleName>nunit.engine.api</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="55-68-0A-99-61-63-60-B6-04-BF-64-64-0F-2D-A7-2F-84-F0-63-24">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\nunit.engine.dll</ModulePath>
+      <ModuleTime>2020-02-15T16:53:42Z</ModuleTime>
+      <ModuleName>nunit.engine</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="33-0F-CC-4F-90-8C-B0-D8-44-D2-72-BB-E0-86-1E-17-FE-06-EB-9C">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\nunit.engine.core.dll</ModulePath>
+      <ModuleTime>2020-02-15T16:53:40Z</ModuleTime>
+      <ModuleName>nunit.engine.core</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="BA-94-4B-50-1E-D5-31-87-F3-25-6E-BA-07-71-E4-9F-22-0D-B8-34">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll</ModulePath>
+      <ModuleTime>2019-03-19T04:46:51.77351Z</ModuleTime>
+      <ModuleName>System.Xml</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="04-92-31-F6-AF-DB-82-CE-7F-AD-A9-52-42-0C-26-C5-2A-65-10-FA">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_64\System.Web\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Web.dll</ModulePath>
+      <ModuleTime>2019-11-23T04:37:24.5053551Z</ModuleTime>
+      <ModuleName>System.Web</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="A7-7B-4E-D4-75-E8-13-EA-81-E3-7A-CE-3B-E3-5B-7B-B9-B9-D8-B3">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Remoting\v4.0_4.0.0.0__b77a5c561934e089\System.Runtime.Remoting.dll</ModulePath>
+      <ModuleTime>2019-03-19T04:46:46.6637279Z</ModuleTime>
+      <ModuleName>System.Runtime.Remoting</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="C8-2E-64-82-9F-3E-E5-68-28-EC-A3-5B-05-18-0A-CC-70-C1-0D-04">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Configuration\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Configuration.dll</ModulePath>
+      <ModuleTime>2020-06-05T05:04:06Z</ModuleTime>
+      <ModuleName>System.Configuration</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="8A-2E-8F-D6-9D-39-02-4A-2F-30-FC-06-42-F7-0F-A8-32-69-07-72">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\Mono.Cecil.dll</ModulePath>
+      <ModuleTime>2015-04-30T15:02:16Z</ModuleTime>
+      <ModuleName>Mono.Cecil</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="22-5B-0D-43-CD-61-A2-25-A2-96-F8-58-18-EF-B4-63-29-C8-C8-2E">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\packages\nunit.consolerunner\3.11.1\tools\nunit-agent.exe</ModulePath>
+      <ModuleTime>2020-02-15T16:53:42Z</ModuleTime>
+      <ModuleName>nunit-agent</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="9B-2E-1C-9C-2D-F2-EF-54-0A-49-10-2E-FB-9D-3F-3C-92-2A-D1-72">
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\Sample21\bin\Debug\net47\nunit.framework.dll</ModulePath>
+      <ModuleTime>2019-05-14T22:37:20Z</ModuleTime>
+      <ModuleName>nunit.framework</ModuleName>
+      <Classes />
+    </Module>
+    <Module skippedDueTo="Filter" hash="03-8C-28-FF-B1-AD-98-09-DB-C2-77-9C-30-0B-76-C3-52-AE-19-2E">
+      <ModulePath>C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll</ModulePath>
+      <ModuleTime>2020-03-26T23:11:52Z</ModuleTime>
+      <ModuleName>System.Core</ModuleName>
+      <Classes />
+    </Module>
+    <Module hash="7C-84-BE-93-65-A9-39-F0-E5-2D-0B-50-E7-88-FB-67-92-B1-FB-D7">
+      <Summary numSequencePoints="9" visitedSequencePoints="9" numBranchPoints="3" visitedBranchPoints="3" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="2" minCrapScore="1" visitedClasses="2" numClasses="2" visitedMethods="3" numMethods="3" />
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\Sample21\bin\Debug\net47\Sample21.dll</ModulePath>
+      <ModuleTime>2020-07-18T07:57:29.6529519Z</ModuleTime>
+      <ModuleName>Sample21</ModuleName>
+      <Files>
+        <File uid="1" fullPath="C:\Users\steve\Documents\GitHub\altcover\Sample21\UnitTest1.cs" />
+      </Files>
+      <Classes>
+        <Class>
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" maxCrapScore="0" minCrapScore="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+          <FullName>&lt;Module&gt;</FullName>
+          <Methods />
+        </Class>
+        <Class>
+          <Summary numSequencePoints="6" visitedSequencePoints="6" numBranchPoints="2" visitedBranchPoints="2" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="2" minCrapScore="1" visitedClasses="1" numClasses="1" visitedMethods="2" numMethods="2" />
+          <FullName>Sample21.Tests</FullName>
+          <Methods>
+            <Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="100" crapScore="1" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numSequencePoints="2" visitedSequencePoints="2" numBranchPoints="1" visitedBranchPoints="1" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="1" minCrapScore="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
+              <MetadataToken>100663297</MetadataToken>
+              <Name>System.Void Sample21.Tests::Setup()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="1" uspid="1" ordinal="0" offset="0" sl="9" sc="5" el="9" ec="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="2" ordinal="1" offset="1" sl="10" sc="5" el="10" ec="6" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint xsi:type="SequencePoint" vc="1" uspid="1" ordinal="0" offset="0" sl="9" sc="5" el="9" ec="6" bec="0" bev="0" fileid="1" />
+            </Method>
+            <Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="100" crapScore="1" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numSequencePoints="4" visitedSequencePoints="4" numBranchPoints="1" visitedBranchPoints="1" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="1" minCrapScore="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
+              <MetadataToken>100663298</MetadataToken>
+              <Name>System.Void Sample21.Tests::Test1()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="1" uspid="3" ordinal="0" offset="0" sl="14" sc="5" el="14" ec="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="4" ordinal="1" offset="1" sl="15" sc="7" el="15" ec="50" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="5" ordinal="2" offset="7" sl="20" sc="7" el="20" ec="73" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="6" ordinal="3" offset="29" sl="25" sc="5" el="25" ec="6" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint xsi:type="SequencePoint" vc="1" uspid="3" ordinal="0" offset="0" sl="14" sc="5" el="14" ec="6" bec="0" bev="0" fileid="1" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" crapScore="2" isConstructor="true" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="2" minCrapScore="2" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+              <MetadataToken>100663299</MetadataToken>
+              <Name>System.Void Sample21.Tests::.ctor()</Name>
+              <SequencePoints />
+              <BranchPoints />
+              <MethodPoint vc="0" uspid="7" ordinal="0" offset="0" />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numSequencePoints="3" visitedSequencePoints="3" numBranchPoints="1" visitedBranchPoints="1" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="2" minCrapScore="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+          <FullName>Sample21.Traditional</FullName>
+          <Methods>
+            <Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="100" crapScore="1" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numSequencePoints="3" visitedSequencePoints="3" numBranchPoints="1" visitedBranchPoints="1" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="1" minCrapScore="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
+              <MetadataToken>100663301</MetadataToken>
+              <Name>System.String Sample21.Traditional::DoSomething()</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="1" uspid="8" ordinal="0" offset="0" sl="36" sc="5" el="36" ec="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="9" ordinal="1" offset="1" sl="37" sc="7" el="37" ec="30" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="10" ordinal="2" offset="10" sl="38" sc="5" el="38" ec="6" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint xsi:type="SequencePoint" vc="1" uspid="8" ordinal="0" offset="0" sl="36" sc="5" el="36" ec="6" bec="0" bev="0" fileid="1" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" crapScore="2" isConstructor="true" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" maxCrapScore="2" minCrapScore="2" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+              <MetadataToken>100663302</MetadataToken>
+              <Name>System.Void Sample21.Traditional::.ctor()</Name>
+              <SequencePoints />
+              <BranchPoints />
+              <MethodPoint vc="0" uspid="11" ordinal="0" offset="0" />
+            </Method>
+          </Methods>
+        </Class>
+      </Classes>
+    </Module>
+  </Modules>
+</CoverageSession>

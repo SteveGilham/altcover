@@ -6,7 +6,11 @@ open System.Diagnostics.CodeAnalysis
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
 [<AutoOpen>]
+#if !GUI
 module internal Augment =
+#else
+module Augment =
+#endif
 
   type System.Object with
     member self.IsNotNull
@@ -43,17 +47,28 @@ module internal Augment =
                     Justification = "Idiomatic F# style")>]
   let Left x : Either<'a, 'b> = Choice2Of2 x
 
+#if !GUI
   let internal (|Right|Left|) =
+#else
+  let (|Right|Left|) =
+#endif
     function
     | Choice1Of2 x -> Right x
     | Choice2Of2 x -> Left x
-#if GUI
-#else
+
+#if !WEAKNAME
+#if !GUI
+  let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
+    use stream = create()
+    action stream
+#endif
+#endif
+
+#if !GUI
   type System.Boolean with
     member self.ToInt32
       with get() =
         if self then 1 else 0
-
 #if !WEAKNAME
   type System.Int32 with
     member self.Increment (b : bool) =
@@ -64,11 +79,6 @@ module internal Augment =
    member self.Split
      with get () =
       (self.Head, self.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
-#if !WEAKNAME
-  let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
-    use stream = create()
-    action stream
-#endif
 #endif
 
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
@@ -96,4 +106,21 @@ module internal Augment =
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
   Scope="member", Target="AltCover.Augment.#Right`2(!!0)", MessageId="x",
   Justification="Trivial usage")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#String.get_X(System.String)", MessageId="param",
+  Justification="Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
+  Scope="member", Target="AltCover.Augment.#String.get_X(System.String)",
+  Justification="Compiler generated")>]
+#if GUI
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  MessageId="a", Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  MessageId="b", Justification="Compiler Generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
+  Scope="member", Target="AltCover.Augment.#|Right|Left|`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  Justification="Compiler Generated")>]
+#endif
 ()
