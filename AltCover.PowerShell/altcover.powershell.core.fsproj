@@ -47,6 +47,7 @@
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0">
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net47|Windows_NT'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

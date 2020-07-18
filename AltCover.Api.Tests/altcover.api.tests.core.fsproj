@@ -44,6 +44,7 @@
   <ItemGroup>
     <PackageReference Include="Expecto" Version="9.0.0" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
