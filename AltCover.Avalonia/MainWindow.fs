@@ -245,6 +245,11 @@ type MainWindow() as this =
     let p = Environment.OSVersion.Platform |> int
     let isWindows = p <= 3
 
+    if AltCover.FontSupport.Fonts.GTK().Any()
+    then printfn "GTK found!"
+    else Environment.GetEnvironmentVariable("PATH").Split(";")
+         |> Seq.iter (printfn "%A")
+
     if isWindows
     then
       let fontItem = this.FindControl<MenuItem>("Font")

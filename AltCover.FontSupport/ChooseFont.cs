@@ -1,16 +1,40 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
 namespace AltCover.FontSupport
 {
   internal static class NativeMethods
   {
-    [DllImport("comdlg32.dll", CharSet = CharSet.Auto, EntryPoint = "ChooseFont", SetLastError = true)]
+    [DllImport("comdlg32", CharSet = CharSet.Auto, EntryPoint = "ChooseFont", SetLastError = true)]
     public extern static bool ChooseFont(IntPtr lpcf);
+
+    [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true)]
+    public extern static long g_get_real_time();
   }
 
   public static class Fonts
   {
+    //TODO -- WindowFromPoint & GetAncestor(..., root) -> hwndOwner
+
+    //
+
+    public static IEnumerable<long> GTK()
+    {
+      long time;
+      try
+      {
+        time = NativeMethods.g_get_real_time();
+      }
+      catch (System.DllNotFoundException)
+      {
+        yield break;
+      }
+
+      yield return time;
+    }
+
     public static string Select(string font)
     {
       LOGFONT logfont = new LOGFONT();
