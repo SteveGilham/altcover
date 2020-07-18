@@ -235,6 +235,8 @@ module TestMain =
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle, "Tests.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle"
           Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle, "Tests.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle"
           Tests.AltCoverTests.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle, "Tests.ShouldGenerateExpectedTrackingXmlReportWithMethodExclusionOpenCoverStyle"
+          Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle, "Tests.ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle"
+          Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle, "Tests.ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle"
           Tests.AltCoverTests.ShouldSortFileIds, "Tests.ShouldSortFileIds"
           Tests.AltCoverTests.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
           Tests.AltCoverTests.PositiveIsVisited, "Tests.PositiveIsVisited"
