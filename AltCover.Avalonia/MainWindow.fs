@@ -241,6 +241,18 @@ type MainWindow() as this =
            filter)
     ofd.Filters <- List(filterBits)
     this.Title <- "AltCover.Visualizer"
+
+    let p = Environment.OSVersion.Platform |> int
+    let isWindows = p <= 3
+
+    if isWindows
+    then
+      let fontItem = this.FindControl<MenuItem>("Font")
+      fontItem.IsVisible <- isWindows
+      fontItem.Click
+      |> Event.add (fun _ -> AltCover.FontSupport.Fonts.Select("dummy")
+                             |> ignore) //TODO
+
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->
          let cap = n.First().ToString().ToUpper() + n.Substring(1)

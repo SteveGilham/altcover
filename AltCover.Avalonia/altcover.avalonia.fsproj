@@ -62,6 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AltCover.FontSupport\AltCover.FontSupport.csproj" />
     <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
   </ItemGroup>
 
