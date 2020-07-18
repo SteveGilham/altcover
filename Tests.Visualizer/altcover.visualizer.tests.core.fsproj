@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="nunit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -43,12 +43,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Visualizer\altcover.visualizer.core.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net471'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net471'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'net471'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,5 +52,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
   </ItemGroup>
 </Project>

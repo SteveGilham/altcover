@@ -89,7 +89,7 @@ module AltCoverXTests =
                   else a2.Value
                 test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
               | _ ->
-                test' <@ a1.Value = a2.Value @>
+                test' <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
                   (r.ToString() + " -> " + a1.Name.ToString()))
          RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 
@@ -634,8 +634,7 @@ module AltCoverXTests =
       targeted.Properties()
       |> Seq.map (fun p -> p.Name)
       |> Set.ofSeq
-    test <@
-            (aux
+    test <@ (aux
              |> Set.contains
                   ("AltCover.Recorder.g/" + System.AssemblyVersionInformation.AssemblyVersion)) @>
     let libraries =
@@ -645,15 +644,14 @@ module AltCoverXTests =
       libraries.Properties()
       |> Seq.map (fun p -> p.Name)
       |> Set.ofSeq
-    test <@
-            (lib
+    test <@ (lib
              |> Set.contains
                   ("AltCover.Recorder.g/" + System.AssemblyVersionInformation.AssemblyVersion)) @>
 
   [<Test>]
   let ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = monoSample1path |> Path.GetDirectoryName
+    let path = monoSample1path |> Path.GetDirectoryName |> Path.GetFullPath
     let key = Path.Combine(SolutionDir(), "Build/SelfTest.snk")
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
@@ -681,17 +679,18 @@ module AltCoverXTests =
       let result = Main.I.doInstrumentation args
       test <@ result = 0 @>
       test <@ stderr.ToString() |> Seq.isEmpty @>
+      let subjectAssembly = Path.Combine(path, "Sample1.exe")
       let expected =
         "Creating folder " + output + "\nInstrumenting files from "
-        + (Path.GetFullPath path) + "\nWriting files to " + output + "\n   => "
-        + Path.Combine(Path.GetFullPath path, "Sample1.exe") + "\n\nCoverage Report: "
+        + path + "\nWriting files to " + output + "\n   => "
+        + monoSample1path + "\n\nCoverage Report: "
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       let console = stdout.ToString()
       test <@ console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/")) @>
       test <@  CoverageParameters.outputDirectories() |> Seq.head = output @>
       test <@ (CoverageParameters.inputDirectories() |> Seq.head).Replace("\\", "/") =
-               ((Path.GetFullPath path).Replace("\\", "/")) @>
+               (path.Replace("\\", "/")) @>
       test <@ CoverageParameters.reportPath() = report @>
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
@@ -743,7 +742,8 @@ module AltCoverXTests =
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       test <@ actual = theFiles @>
-      let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
+      let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
+      let expectedXml = XDocument.Load(new StringReader(expectedText))
       let recordedXml = Runner.J.loadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
@@ -940,11 +940,10 @@ module AltCoverXTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMono() =
     let visitor, document = Report.reportGenerator()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = monoSample1path
     Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
-    let baseline = XDocument.Load(new System.IO.StringReader(MonoBaseline))
+    let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path |> Path.GetFullPath) + "\"")
+    let baseline = XDocument.Load(new System.IO.StringReader(expectedText))
     let result = document.Elements()
     let expected = baseline.Elements()
     RecursiveValidate result expected 0 true
@@ -964,6 +963,11 @@ module AltCoverXTests =
              (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      ("ModulePath"
+       |> XName.Get
+       |> baseline.Descendants
+       |> Seq.head).SetValue path
+
       let result = document.Elements()
       let expected = baseline.Elements()
       RecursiveValidateOpenCover result expected 0 true false

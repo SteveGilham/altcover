@@ -42,6 +42,8 @@
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fsi" />
     <Compile Include="CoverageFormats.fs" />
+    <!-- Compile Include="RenderToHtml.fsi" />
+    <Compile Include="RenderToHtml.fs" / -->
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCoverStrict.xsd" />
@@ -56,6 +58,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="System.ValueTuple" />
   </ItemGroup>
 
   <ItemGroup>

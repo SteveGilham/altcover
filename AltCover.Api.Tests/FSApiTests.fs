@@ -286,7 +286,7 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream2)
     let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     test <@ result = expected @>
 
   [<Test>]
@@ -429,3 +429,43 @@ module FSApiTests =
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+
+  let internal mangleFile (f:String) =
+    f.Replace(@"C:\Users\steve\Documents\GitHub\altcover", SolutionRoot.location).Replace('\\', Path.DirectorySeparatorChar)
+
+#if SOURCEMAP
+  [<Test>]
+  let NCoverFindsFiles() =
+    use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
+    let doc = XDocument.Load stream
+
+    [
+      ("seqpnt", "document")
+      ("module", "name")
+    ]
+    |> Seq.map (fun (k,v) -> (XName.Get k, XName.Get v))
+    |> Seq.iter (fun (k,v) -> doc.Descendants k
+                              |> Seq.iter (fun x -> let old = x.Attribute(v).Value
+                                                    x.Attribute(v).Value <- mangleFile old))
+
+    let rewrite = AltCover.RenderToHtml.Action doc
+    test<@ rewrite |> Seq.map fst |> Seq.toList = ["Program.fs"] @>
+
+  [<Test>]
+  let OpenCoverFindsFiles() =
+    use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
+    let doc = XDocument.Load stream
+
+    [
+      ("File", "fullPath")
+    ]
+    |> Seq.map (fun (k,v) -> (XName.Get k, XName.Get v))
+    |> Seq.iter (fun (k,v) -> doc.Descendants k
+                              |> Seq.iter (fun x -> let old = x.Attribute(v).Value
+                                                    x.Attribute(v).Value <- mangleFile old))
+
+    let rewrite = AltCover.RenderToHtml.Action doc
+    test<@ rewrite |> Seq.map fst |> Seq.toList = ["Filter.fs"] @>
+#endif

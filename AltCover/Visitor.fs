@@ -511,6 +511,10 @@ module internal Visitor =
       then Exemption.Automatic
       else exemption
 
+    let internal stripInterfaces (t:TypeDefinition) =
+      t.BaseType.IsNotNull ||
+      t.Methods |> Seq.exists (fun m -> m.IsAbstract |> not)
+
     let private visitModule (x : ModuleDefinition) included (buildSequence : Node -> seq<Node>) =
       zeroPoints()
       sourceLinkDocuments <-
@@ -528,7 +532,9 @@ module internal Visitor =
 
       [ x ]
       |> Seq.takeWhile (fun _ -> included <> Inspections.Ignore)
-      |> Seq.collect (fun x -> x.GetAllTypes() |> Seq.cast)
+      |> Seq.collect (fun x -> x.GetAllTypes()
+                               |> Seq.cast<TypeDefinition>
+                               |> Seq.filter stripInterfaces)
       |> Seq.collect
            ((fun t ->
              let types =

@@ -33,7 +33,7 @@ let options =
   |> !+("k|key=", "The strong naming key to apply", (fun s -> keyName := s))
   |> !+("a|assembly=", "The assembly to process", (fun s -> assemblyName := s))
   |> !+("c|cor32", "Do what CorFlags  /32BIT+ /Force does.",
-        (fun x -> cor32plus := x <> null))
+        (fun x -> cor32plus := x |> isNull |> not))
 
 let rest =
   try

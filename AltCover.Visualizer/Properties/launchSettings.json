@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "altcover.visualizer.core": {
+      "commandName": "Project",
+      "commandLineArgs": "-schemadir=\"C:\\msys64\\mingw64\\share\\glib-2.0\\schemas\""
+    }
+  }
+}
