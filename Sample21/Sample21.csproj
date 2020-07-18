@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework netcoreapp3.0 /p:AltCover="true" /p:AltCoverForce=true -->
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net47</TargetFrameworks>
@@ -13,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- PackageReference Include="altcover" version="7.1.782" / -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
