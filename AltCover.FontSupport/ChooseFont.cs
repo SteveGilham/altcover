@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace AltCover.FontSupport
 {
   internal static class NativeMethods
   {
-    [DllImport("comdlg32", CharSet = CharSet.Auto, EntryPoint = "ChooseFont", SetLastError = true)]
+    [DllImport("comdlg32", CharSet = CharSet.Ansi, EntryPoint = "ChooseFont", SetLastError = true)]
     public extern static bool ChooseFont(IntPtr lpcf);
 
     [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true)]
@@ -41,7 +42,16 @@ namespace AltCover.FontSupport
       IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
       try
       {
-        logfont.lfFaceName = "Segoe UI"; // TODO
+        // Pango names like Fira Code Bold Oblique 17
+        // This is not sufficient
+        var facets = font.Split(' ');
+        var face = string.Join(" ", facets.Take(facets.Length - 2));
+        var weight = FontWeight.Dontcare;
+        if (!Enum.TryParse<FontWeight>(facets[facets.Length - 2], true, out weight))
+        {
+          weight = FontWeight.Dontcare;
+        }
+        logfont.lfFaceName = face;
         Marshal.StructureToPtr(logfont, pLogfont, false);
 
         CHOOSEFONT choosefont = new CHOOSEFONT();
@@ -64,6 +74,9 @@ namespace AltCover.FontSupport
 
           if (NativeMethods.ChooseFont(pChoosefont))
           {
+            var chosen = Marshal.PtrToStructure(pChoosefont, typeof(CHOOSEFONT)) as CHOOSEFONT;
+            var newfont = Marshal.PtrToStructure(chosen.lpLogFont, typeof(LOGFONT)) as LOGFONT;
+
             // TODO
             return "Monospace";
           }
@@ -82,8 +95,8 @@ namespace AltCover.FontSupport
     }
   }
 
-  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-  public struct CHOOSEFONT
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+  public class CHOOSEFONT
   {
     public int lStructSize;
     public IntPtr hwndOwner;
@@ -137,7 +150,7 @@ namespace AltCover.FontSupport
     CF_INACTIVEFONTS = 0x02000000
   }
 
-  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
   public class LOGFONT
   {
     public int lfHeight = 0;
@@ -158,18 +171,21 @@ namespace AltCover.FontSupport
     public string lfFaceName = string.Empty;
   }
 
-  public enum FontWeight : int
+  public enum FontWeight
   {
-    FW_DONTCARE = 0,
-    FW_THIN = 100,
-    FW_EXTRALIGHT = 200,
-    FW_LIGHT = 300,
-    FW_NORMAL = 400,
-    FW_MEDIUM = 500,
-    FW_SEMIBOLD = 600,
-    FW_BOLD = 700,
-    FW_EXTRABOLD = 800,
-    FW_HEAVY = 900,
+    Dontcare = 0,
+    Thin = 100,
+    Ultralight = 200,
+    Light = 300,
+    Semilight = 350,
+    Book = 380,
+    Normal = 400,
+    Medium = 500,
+    Semibold = 600,
+    Bold = 700,
+    Ultrabold = 800,
+    Heavy = 900,
+    Ultraheavy = 1000
   }
 
   public enum FontCharSet : byte

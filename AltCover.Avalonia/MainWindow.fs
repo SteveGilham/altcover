@@ -255,7 +255,7 @@ type MainWindow() as this =
       let fontItem = this.FindControl<MenuItem>("Font")
       fontItem.IsVisible <- isWindows
       fontItem.Click
-      |> Event.add (fun _ -> AltCover.FontSupport.Fonts.Select("dummy")
+      |> Event.add (fun _ -> AltCover.FontSupport.Fonts.Select("Monospace Normal 10")
                              |> ignore) //TODO
 
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
