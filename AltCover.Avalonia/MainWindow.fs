@@ -9,6 +9,7 @@ open System.Xml.XPath
 
 open GuiCommon
 
+open AltCover.FontSupport
 open Avalonia.Controls
 open Avalonia.Markup.Xaml
 open Avalonia.Media
@@ -119,7 +120,7 @@ type MainWindow() as this =
   member private this.PrepareDoubleTap
     (context:CoverageTreeContext<List<TreeViewItem>,TreeViewItem>)
     (xpath: XPathNavigator) =
-        let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
+        let visibleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
         let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
           let start = (n.Column - 1) +
@@ -181,15 +182,20 @@ type MainWindow() as this =
                this.DisplayMessage MessageType.Info
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
-                     Resource.GetResourceString "No source location", visbleName)
+                     Resource.GetResourceString "No source location", visibleName)
 
              let showSource (info:Source) (line:int) =
                 try
                   [ text; text2 ]
                   |> List.iter (fun t ->
-                        t.FontFamily <- FontFamily(Persistence.readFont())
-                        t.FontSize <- 16.0
-                        t.FontStyle <- FontStyle.Normal)
+                        let (_, logfont) = LogFont.TryParse(Persistence.readFont())
+                        t.FontFamily <- FontFamily(logfont.faceName)
+                        t.FontSize <- float logfont.height
+                        t.FontWeight <- enum logfont.weight
+                        t.FontStyle <- match logfont.italic with
+                                       | 0uy -> FontStyle.Normal
+                                       | 255uy -> FontStyle.Italic
+                                       | _ -> FontStyle.Oblique)
                   text.Text <- File.ReadAllText info.FullName
                   let textLines = text.FormattedText.GetLines() |> Seq.toList
                   text2.Text <- String.Join (Environment.NewLine,
@@ -245,7 +251,7 @@ type MainWindow() as this =
     let p = Environment.OSVersion.Platform |> int
     let isWindows = p <= 3
 
-    if AltCover.FontSupport.Fonts.GTK().Any()
+    if Fonts.GTK().Any()
     then printfn "GTK found!"
     else Environment.GetEnvironmentVariable("PATH").Split(";")
          |> Seq.iter (printfn "%A")
@@ -255,8 +261,11 @@ type MainWindow() as this =
       let fontItem = this.FindControl<MenuItem>("Font")
       fontItem.IsVisible <- isWindows
       fontItem.Click
-      |> Event.add (fun _ -> AltCover.FontSupport.Fonts.Select("Monospace Normal 10")
-                             |> ignore) //TODO
+      |> Event.add (fun _ -> let font = Fonts.SelectWin32(Persistence.readFont())
+                             if font.IsNotNull
+                             then
+                               font.ToString()
+                               |> Persistence.saveFont)
 
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->

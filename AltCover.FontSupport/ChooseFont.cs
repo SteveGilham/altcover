@@ -38,22 +38,14 @@ namespace AltCover.FontSupport
       yield return time;
     }
 
-    public static LogFont Select(string font)
+    public static LogFont SelectWin32(string font)
     {
       var _ = LogFont.TryParse(font, out LogFont logfont);
       IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
       try
       {
-        // Pango names like Fira Code Bold Oblique 17
-        // This is not sufficient
-        //var facets = font.Split(' ');
-        //var face = string.Join(" ", facets.Take(facets.Length - 2));
-        //var weight = FontWeight.Dontcare;
-        //if (!Enum.TryParse<FontWeight>(facets[facets.Length - 2], true, out weight))
-        //{
-        //  weight = FontWeight.Dontcare;
-        //}
-        //logfont.faceName = face;
+        // Fudge-factor here
+        logfont.height = -(int)Math.Round(Math.Abs(logfont.height * 4.0 / 3.0));
         Marshal.StructureToPtr(logfont, pLogfont, false);
 
         ChooseFont choosefont = new ChooseFont();
@@ -68,9 +60,9 @@ namespace AltCover.FontSupport
                | (int)ChooseFontOptions.InactiveFonts
                | (int)ChooseFontOptions.InitToLogFont
                | (int)ChooseFontOptions.ScaledOnly
-               | (int)ChooseFontOptions.FixedPitchOnly
-               | (int)ChooseFontOptions.UseStyle;
+               | (int)ChooseFontOptions.FixedPitchOnly;
           choosefont.logFont = pLogfont;
+          choosefont.pointSize = logfont.height * 10;
 
           Marshal.StructureToPtr(choosefont, pChoosefont, false);
 
@@ -78,12 +70,11 @@ namespace AltCover.FontSupport
           {
             var chosen = Marshal.PtrToStructure(pChoosefont, typeof(ChooseFont)) as ChooseFont;
             var newfont = Marshal.PtrToStructure(chosen.logFont, typeof(LogFont)) as LogFont;
-
-            // TODO
+            newfont.height = chosen.pointSize / 10;
             return newfont;
           }
 
-          return new LogFont();
+          return null;
         }
         finally
         {
@@ -261,7 +252,10 @@ namespace AltCover.FontSupport
 
     public LogFont()
     {
-      faceName = "Monospace";
+      var p = (int)Environment.OSVersion.Platform;
+      var isWindows = p <= 3;
+
+      faceName = isWindows ? "Courier New" : "Monospace";
       weight = (int)FontWeight.Normal;
       height = 10;
     }
@@ -280,7 +274,12 @@ namespace AltCover.FontSupport
     {
       // Pango names like Fira Code Bold Oblique 17
       // This is not quite sufficient
-      return $"{faceName}, {(FontWeight)weight} {height}";
+      // NORMAL: the font is upright.
+      // OBLIQUE: the font is slanted, but in a roman style.
+      // ITALIC: the font is slanted in an italic style.
+      var slant = string.Empty;
+      if (this.italic != 0) slant = "Italic ";
+      return $"{faceName}, {(FontWeight)weight} {slant}{height}";
     }
   }
 
@@ -301,7 +300,7 @@ namespace AltCover.FontSupport
     Semilight = 350,
 
     Book = 380,
-    Normal = 400,
+    Normal = 400, //aka Regular
     Medium = 500,
 
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
