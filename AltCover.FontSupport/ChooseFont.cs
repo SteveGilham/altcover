@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace AltCover.FontSupport
 {
   internal static class NativeMethods
   {
     [DllImport("comdlg32", CharSet = CharSet.Ansi, EntryPoint = "ChooseFont", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
     public extern static bool ChooseFont(IntPtr lpcf);
 
-    [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true)]
+    [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true),
+     SuppressMessage("Gendarme.Rules.Naming", "UseCorrectCasingRule",
+      Justification = "Represents a native function")]
     public extern static long g_get_real_time();
   }
 
   public static class Fonts
   {
-    //TODO -- WindowFromPoint & GetAncestor(..., root) -> hwndOwner
+    //TODO?? -- WindowFromPoint & GetAncestor(..., root) -> hwndOwner
 
-    //
-
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
+      Justification = "Seriously, u wot m8!?")]
     public static IEnumerable<long> GTK()
     {
       long time;
@@ -36,52 +38,52 @@ namespace AltCover.FontSupport
       yield return time;
     }
 
-    public static string Select(string font)
+    public static LogFont Select(string font)
     {
-      LOGFONT logfont = new LOGFONT();
+      var _ = LogFont.TryParse(font, out LogFont logfont);
       IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
       try
       {
         // Pango names like Fira Code Bold Oblique 17
         // This is not sufficient
-        var facets = font.Split(' ');
-        var face = string.Join(" ", facets.Take(facets.Length - 2));
-        var weight = FontWeight.Dontcare;
-        if (!Enum.TryParse<FontWeight>(facets[facets.Length - 2], true, out weight))
-        {
-          weight = FontWeight.Dontcare;
-        }
-        logfont.lfFaceName = face;
+        //var facets = font.Split(' ');
+        //var face = string.Join(" ", facets.Take(facets.Length - 2));
+        //var weight = FontWeight.Dontcare;
+        //if (!Enum.TryParse<FontWeight>(facets[facets.Length - 2], true, out weight))
+        //{
+        //  weight = FontWeight.Dontcare;
+        //}
+        //logfont.faceName = face;
         Marshal.StructureToPtr(logfont, pLogfont, false);
 
-        CHOOSEFONT choosefont = new CHOOSEFONT();
+        ChooseFont choosefont = new ChooseFont();
         IntPtr pChoosefont = Marshal.AllocHGlobal(Marshal.SizeOf(choosefont));
         try
         {
-          choosefont.lStructSize = Marshal.SizeOf(choosefont);
-          choosefont.nSizeMin = 64;
-          choosefont.nSizeMax = 64;
-          choosefont.Flags = (int)CHOOSEFONTFLAGS.CF_SCREENFONTS
-               | (int)CHOOSEFONTFLAGS.CF_FORCEFONTEXIST
-               | (int)CHOOSEFONTFLAGS.CF_INACTIVEFONTS
-               | (int)CHOOSEFONTFLAGS.CF_INITTOLOGFONTSTRUCT
-               | (int)CHOOSEFONTFLAGS.CF_SCALABLEONLY
-               | (int)CHOOSEFONTFLAGS.CF_FIXEDPITCHONLY
-               | (int)CHOOSEFONTFLAGS.CF_USESTYLE;
-          choosefont.lpLogFont = pLogfont;
+          choosefont.structSize = Marshal.SizeOf(choosefont);
+          choosefont.minSize = 64;
+          choosefont.maxSize = 64;
+          choosefont.options = (int)ChooseFontOptions.ScreenFonts
+               | (int)ChooseFontOptions.ForceFontExist
+               | (int)ChooseFontOptions.InactiveFonts
+               | (int)ChooseFontOptions.InitToLogFont
+               | (int)ChooseFontOptions.ScaledOnly
+               | (int)ChooseFontOptions.FixedPitchOnly
+               | (int)ChooseFontOptions.UseStyle;
+          choosefont.logFont = pLogfont;
 
           Marshal.StructureToPtr(choosefont, pChoosefont, false);
 
           if (NativeMethods.ChooseFont(pChoosefont))
           {
-            var chosen = Marshal.PtrToStructure(pChoosefont, typeof(CHOOSEFONT)) as CHOOSEFONT;
-            var newfont = Marshal.PtrToStructure(chosen.lpLogFont, typeof(LOGFONT)) as LOGFONT;
+            var chosen = Marshal.PtrToStructure(pChoosefont, typeof(ChooseFont)) as ChooseFont;
+            var newfont = Marshal.PtrToStructure(chosen.logFont, typeof(LogFont)) as LogFont;
 
             // TODO
-            return "Monospace";
+            return newfont;
           }
 
-          return String.Empty;
+          return new LogFont();
         }
         finally
         {
@@ -95,172 +97,353 @@ namespace AltCover.FontSupport
     }
   }
 
-  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-  public class CHOOSEFONT
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi),
+   SuppressMessage("Gendarme.Rules.Performance", "AvoidUnusedPrivateFieldsRule",
+    Justification = "Represents a native structure"),
+   SuppressMessage("Gendarme.Rules.Design", "AvoidVisibleFieldsRule",
+    Justification = "Represents a native structure"),
+   SuppressMessage("Gendarme.Rules.Security", "NativeFieldsShouldNotBeVisibleRule",
+    Justification = "Represents a native structure"),
+   SuppressMessage("Gendarme.Rules.BadPractice", "PreferSafeHandleRule",
+    Justification = "Represents a native structure")
+  ]
+  public class ChooseFont
   {
-    public int lStructSize;
-    public IntPtr hwndOwner;
-    public IntPtr hDC;
-    public IntPtr lpLogFont;
-    public int iPointSize;
-    public int Flags;
-    public int rgbColors;
-    public IntPtr lCustData;
-    public IntPtr lpfnHook;
-    public string lpTemplateName;
-    public IntPtr hInstance;
-    public string lpszStyle;
-    public short nFontType;
-    private short __MISSING_ALIGNMENT__;
-    public int nSizeMin;
-    public int nSizeMax;
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int structSize;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+    public IntPtr owner;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+    public IntPtr dc;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+    public IntPtr logFont;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int pointSize;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int options; //flags
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int colours;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+    public IntPtr customData;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+    public IntPtr hook;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public string templateName;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+    public IntPtr instance;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public string style;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public short fontType;
+
+    private short alignmentDummy;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int minSize;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int maxSize;
   }
 
-  [Flags]
-  public enum CHOOSEFONTFLAGS
+  [Flags,
+   Serializable]
+  public enum ChooseFontOptions
   {
-    CF_SCREENFONTS = 0x00000001,
-    CF_PRINTERFONTS = 0x00000002,
-    CF_BOTH = (CF_SCREENFONTS | CF_PRINTERFONTS),
-    CF_SHOWHELP = 0x00000004,
-    CF_ENABLEHOOK = 0x00000008,
-    CF_ENABLETEMPLATE = 0x00000010,
-    CF_ENABLETEMPLATEHANDLE = 0x00000020,
-    CF_INITTOLOGFONTSTRUCT = 0x00000040,
-    CF_USESTYLE = 0x00000080,
-    CF_EFFECTS = 0x00000100,
-    CF_APPLY = 0x00000200,
-    CF_ANSIONLY = 0x00000400,
-    CF_SCRIPTSONLY = CF_ANSIONLY,
-    CF_NOVECTORFONTS = 0x00000800,
-    CF_NOOEMFONTS = CF_NOVECTORFONTS,
-    CF_NOSIMULATIONS = 0x00001000,
-    CF_LIMITSIZE = 0x00002000,
-    CF_FIXEDPITCHONLY = 0x00004000,
-    CF_WYSIWYG = 0x00008000,
-    CF_FORCEFONTEXIST = 0x00010000,
-    CF_SCALABLEONLY = 0x00020000,
-    CF_TTONLY = 0x00040000,
-    CF_NOFACESEL = 0x00080000,
-    CF_NOSTYLESEL = 0x00100000,
-    CF_NOSIZESEL = 0x00200000,
-    CF_SELECTSCRIPT = 0x00400000,
-    CF_NOSCRIPTSEL = 0x00800000,
-    CF_NOVERTFONTS = 0x01000000,
-    CF_INACTIVEFONTS = 0x02000000
+    ScreenFonts = 0x00000001,
+    PrinterFonts = 0x00000002,
+    Both = (ScreenFonts | PrinterFonts),
+    ShowHelp = 0x00000004,
+    EnableHook = 0x00000008,
+    EnableTemplate = 0x00000010,
+    EnableTemplateHandle = 0x00000020,
+    InitToLogFont = 0x00000040,
+    UseStyle = 0x00000080,
+    Effects = 0x00000100,
+    Apply = 0x00000200,
+    AnsiOnly = 0x00000400,
+    ScriptsOnly = AnsiOnly,
+    NoVectorFonts = 0x00000800,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    NoOemFonts = NoVectorFonts,
+
+    NoSimulations = 0x00001000,
+    LimitSize = 0x00002000,
+    FixedPitchOnly = 0x00004000,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    Wysiwyg = 0x00008000,
+
+    ForceFontExist = 0x00010000,
+    ScaledOnly = 0x00020000,
+    TTOnly = 0x00040000,
+    NoFace = 0x00080000,
+    NoStyle = 0x00100000,
+    NoSize = 0x00200000,
+    SelectScript = 0x00400000,
+    NoScript = 0x00800000,
+    NoVerticalFonts = 0x01000000,
+    InactiveFonts = 0x02000000
   }
 
-  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-  public class LOGFONT
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi),
+   SuppressMessage("Gendarme.Rules.Design", "AvoidVisibleFieldsRule",
+    Justification = "Represents a native structure"),
+   SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
+    Justification = "Seriously, u wot m8!?")
+    ]
+  public class LogFont
   {
-    public int lfHeight = 0;
-    public int lfWidth = 0;
-    public int lfEscapement = 0;
-    public int lfOrientation = 0;
-    public int lfWeight = 0;
-    public byte lfItalic = 0;
-    public byte lfUnderline = 0;
-    public byte lfStrikeOut = 0;
-    public byte lfCharSet = 0;
-    public byte lfOutPrecision = 0;
-    public byte lfClipPrecision = 0;
-    public byte lfQuality = 0;
-    public byte lfPitchAndFamily = 0;
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int height;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int width;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int escapement;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int orientation;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public int weight;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte italic;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte underline;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    public byte strikeOut;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte charSet;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte outPrecision;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte clipPrecision;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte quality;
+
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public byte pitchAndFamily;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-    public string lfFaceName = string.Empty;
+    [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+    public string faceName = string.Empty;
+
+    public LogFont()
+    {
+      faceName = "Monospace";
+      weight = (int)FontWeight.Normal;
+      height = 10;
+    }
+
+    // Pango-style text
+    public static bool TryParse(string encoded, out LogFont decode)
+    {
+      decode = new LogFont();
+      return String.IsNullOrEmpty(encoded);
+    }
+
+    [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
+      Justification = "Seriously, u wot m8!?")]
+    public override string ToString()
+
+    {
+      // Pango names like Fira Code Bold Oblique 17
+      // This is not quite sufficient
+      return $"{faceName}, {(FontWeight)weight} {height}";
+    }
   }
 
+  [Serializable]
   public enum FontWeight
   {
-    Dontcare = 0,
+    DoNotCare = 0,
     Thin = 100,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
     Ultralight = 200,
+
     Light = 300,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
     Semilight = 350,
+
     Book = 380,
     Normal = 400,
     Medium = 500,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
     Semibold = 600,
+
     Bold = 700,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
     Ultrabold = 800,
+
     Heavy = 900,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
     Ultraheavy = 1000
   }
 
+  [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
+    Justification = "Seriously, u wot m8!?"),
+   Serializable]
   public enum FontCharSet : byte
   {
-    ANSI_CHARSET = 0,
-    DEFAULT_CHARSET = 1,
-    SYMBOL_CHARSET = 2,
-    SHIFTJIS_CHARSET = 128,
-    HANGEUL_CHARSET = 129,
-    HANGUL_CHARSET = 129,
-    GB2312_CHARSET = 134,
-    CHINESEBIG5_CHARSET = 136,
-    OEM_CHARSET = 255,
-    JOHAB_CHARSET = 130,
-    HEBREW_CHARSET = 177,
-    ARABIC_CHARSET = 178,
-    GREEK_CHARSET = 161,
-    TURKISH_CHARSET = 162,
-    VIETNAMESE_CHARSET = 163,
-    THAI_CHARSET = 222,
-    EASTEUROPE_CHARSET = 238,
-    RUSSIAN_CHARSET = 204,
-    MAC_CHARSET = 77,
-    BALTIC_CHARSET = 186,
+    Ansi = 0,
+    Default = 1,
+    Symbol = 2,
+
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    ShiftJIS = 128,
+
+    Hangeul = 129,
+    Hangul = 129,
+    GB2312 = 134,
+    ChineseBig5 = 136,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    Oem = 255,
+
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    Johab = 130,
+
+    Hebrew = 177,
+    Arabic = 178,
+    Greek = 161,
+    Turkish = 162,
+    Vietnamese = 163,
+    Thai = 222,
+    EastEurope = 238,
+    Russian = 204,
+    Mac = 77,
+    Baltic = 186,
   }
 
+  [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
+    Justification = "Seriously, u wot m8!?"),
+   Serializable]
   public enum FontPrecision : byte
   {
-    OUT_DEFAULT_PRECIS = 0,
-    OUT_STRING_PRECIS = 1,
-    OUT_CHARACTER_PRECIS = 2,
-    OUT_STROKE_PRECIS = 3,
-    OUT_TT_PRECIS = 4,
-    OUT_DEVICE_PRECIS = 5,
-    OUT_RASTER_PRECIS = 6,
-    OUT_TT_ONLY_PRECIS = 7,
-    OUT_OUTLINE_PRECIS = 8,
-    OUT_SCREEN_OUTLINE_PRECIS = 9,
-    OUT_PS_ONLY_PRECIS = 10,
+    Default = 0,
+    String = 1,
+    Character = 2,
+    Stroke = 3,
+    TT = 4,
+    Device = 5,
+    Raster = 6,
+    TTOnly = 7,
+    Outlines = 8,
+    ScreenOutline = 9,
+    PSOnly = 10,
   }
 
+  [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
+    Justification = "Seriously, u wot m8!?"),
+   Serializable]
   public enum FontClipPrecision : byte
   {
-    CLIP_DEFAULT_PRECIS = 0,
-    CLIP_CHARACTER_PRECIS = 1,
-    CLIP_STROKE_PRECIS = 2,
-    CLIP_MASK = 0xf,
-    CLIP_LH_ANGLES = (1 << 4),
-    CLIP_TT_ALWAYS = (2 << 4),
-    CLIP_DFA_DISABLE = (4 << 4),
-    CLIP_EMBEDDED = (8 << 4),
+    Default = 0,
+    Character = 1,
+    Stroke = 2,
+    Mask = 0xf,
+    LHAngles = (1 << 4),
+    TTAlways = (2 << 4),
+
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
+      Justification = "Seriously, u wot m8!?")]
+    DFADisable = (4 << 4),
+
+    Embedded = (8 << 4),
   }
 
+  [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
+    Justification = "Seriously, u wot m8!?"),
+   Serializable]
   public enum FontQuality : byte
   {
-    DEFAULT_QUALITY = 0,
-    DRAFT_QUALITY = 1,
-    PROOF_QUALITY = 2,
-    NONANTIALIASED_QUALITY = 3,
-    ANTIALIASED_QUALITY = 4,
-    CLEARTYPE_QUALITY = 5,
-    CLEARTYPE_NATURAL_QUALITY = 6,
+    Default = 0,
+    Draft = 1,
+    Proof = 2,
+    NonAntiAliased = 3,
+    AntiAliased = 4,
+    ClearType = 5,
+    ClearTypeNatural = 6,
   }
 
-  [Flags]
-  public enum FontPitchAndFamily : byte
+  [Flags,
+   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
+    Justification = "Represents a byte-valued field"),
+   SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue",
+    Justification = "Seriously, u wot m8!?"),
+   Serializable]
+  public enum FontPitchAndFamilyOptions : byte
   {
-    DEFAULT_PITCH = 0,
-    FIXED_PITCH = 1,
-    VARIABLE_PITCH = 2,
-    FF_DONTCARE = (0 << 4),
-    FF_ROMAN = (1 << 4),
-    FF_SWISS = (2 << 4),
-    FF_MODERN = (3 << 4),
-    FF_SCRIPT = (4 << 4),
-    FF_DECORATIVE = (5 << 4),
+    Default = 0,
+    Fixed = 1,
+    Variable = 2,
+    DoNotCare = (0 << 4),
+    Roman = (1 << 4),
+    Swiss = (2 << 4),
+    Modern = (3 << 4),
+    Script = (4 << 4),
+    Decorative = (5 << 4),
   }
 }
