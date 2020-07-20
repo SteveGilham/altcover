@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace AltCover.FontSupport
@@ -46,6 +47,7 @@ namespace AltCover.FontSupport
       {
         // Fudge-factor here
         logfont.height = -(int)Math.Round(Math.Abs(logfont.height * 4.0 / 3.0));
+        logfont.italic = (byte)(logfont.italic == (byte)0 ? 0 : 255);
         Marshal.StructureToPtr(logfont, pLogfont, false);
 
         ChooseFont choosefont = new ChooseFont();
@@ -264,11 +266,169 @@ namespace AltCover.FontSupport
     public static bool TryParse(string encoded, out LogFont decode)
     {
       decode = new LogFont();
-      return String.IsNullOrEmpty(encoded);
+      var core = encoded;
+
+      // discard variations
+      var at = core.IndexOf('@');
+      if (at >= 0)
+        core = core.Substring(0, at);
+
+      core = core.TrimEnd();
+
+      // look for a size
+      var end = core.LastIndexOfAny(new char[] { ' ', ',' });
+      var sized = false;
+      if (end >= 0)
+      {
+        var size = core.Substring(end + 1).TrimEnd();
+        if (size.EndsWith("px", StringComparison.Ordinal))
+          size = size.Substring(0, size.Length - 2);
+        sized = Int32.TryParse(size, out int fontsize);
+        if (sized)
+        {
+          decode.height = fontsize;
+          core = core.Substring(0, end);
+        }
+      }
+
+      // style words
+      end = core.LastIndexOfAny(new char[] { ' ', ',' });
+      while (end >= 0)
+      {
+        var slug = core.Substring(end + 1).TrimEnd();
+        bool matched(string item, LogFont font)
+        {
+          switch (item)
+          {
+            case "Normal":
+              break;
+
+            case "Roman":
+              break; // todo
+            case "Oblique":
+              font.italic = 127;
+              break;
+
+            case "Italic":
+              font.italic = 255;
+              break;
+
+            case "Small-Caps":
+              break; // todo
+            case "Thin":
+              font.weight = (int)FontWeight.Thin;
+              break;
+
+            case "Ultra-Light":
+            case "Extra-Light":
+              font.weight = (int)FontWeight.Ultralight;
+              break;
+
+            case "Light":
+              font.weight = (int)FontWeight.Light;
+              break;
+
+            case "Semi-Light":
+            case "Demi-Light":
+              font.weight = (int)FontWeight.Semilight;
+              break;
+
+            case "Book":
+              font.weight = (int)FontWeight.Book;
+              break;
+
+            case "Regular":
+              font.weight = (int)FontWeight.Normal;
+              break;
+
+            case "Medium":
+              font.weight = (int)FontWeight.Medium;
+              break;
+
+            case "Semi-Bold":
+            case "Demi-Bold":
+              font.weight = (int)FontWeight.Semibold;
+              break;
+
+            case "Bold":
+              font.weight = (int)FontWeight.Bold;
+              break;
+
+            case "Ultra-Bold":
+            case "Extra-Bold":
+              font.weight = (int)FontWeight.Ultrabold;
+              break;
+
+            case "Heavy":
+            case "Black":
+              font.weight = (int)FontWeight.Heavy;
+              break;
+
+            case "Ultra-Heavy":
+            case "Extra-Heavy":
+            case "Ultra-Black":
+            case "Extra-Black":
+              font.weight = (int)FontWeight.Ultraheavy;
+              break;
+
+            case "Ultra-Condensed":
+              break; // todo
+            case "Extra-Condensed":
+              break; // todo
+            case "Condensed":
+              break; // todo
+            case "Semi-Condensed":
+              break; // todo
+            case "Semi-Expanded":
+              break; // todo
+            case "Expanded":
+              break; // todo
+            case "Extra-Expanded":
+              break; // todo
+            case "Ultra-Expanded":
+              break; // todo
+            case "Not-Rotated":
+              break; // todo
+            case "South":
+              break; // todo
+            case "Upside-Down":
+              break; // todo
+            case "North":
+              break; // todo
+            case "Rotated-Left":
+              break; // todo
+            case "East":
+              break; // todo
+            case "Rotated-Right":
+              break; // todo
+            case "West":
+              break; // todo
+            default:
+              return false;
+          }
+          return true;
+        }
+
+        if (!matched(slug, decode))
+        {
+          break;
+        }
+
+        core = core.Substring(0, end);
+        end = core.LastIndexOfAny(new char[] { ' ', ',' });
+      }
+
+      // Family list, just want the first one
+      core = core.TrimEnd(' ', ',');
+      end = core.IndexOf(',');
+      if (end >= 0)
+        core = core.Substring(0, end);
+
+      decode.faceName = core;
+
+      return core.Length > 0;
     }
 
-    [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
-      Justification = "Seriously, u wot m8!?")]
     public override string ToString()
 
     {
@@ -277,9 +437,11 @@ namespace AltCover.FontSupport
       // NORMAL: the font is upright.
       // OBLIQUE: the font is slanted, but in a roman style.
       // ITALIC: the font is slanted in an italic style.
+      //
+      // AOB??
       var slant = string.Empty;
       if (this.italic != 0) slant = "Italic ";
-      return $"{faceName}, {(FontWeight)weight} {slant}{height}";
+      return FormattableString.Invariant($"{faceName} {(FontWeight)weight} {slant}{height}");
     }
   }
 
