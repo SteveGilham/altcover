@@ -256,41 +256,53 @@ type MainWindow() as this =
     let p = Environment.OSVersion.Platform |> int
     let isWindows = p <= 3
 
-    if Fonts.GTK().Any()
-    then printfn "GTK found!"
-    else Environment.GetEnvironmentVariable("PATH").Split(";")
-         |> Seq.iter (printfn "%A")
+    let respondToFont () =
+      let text = this.FindControl<TextBlock>("Source")
+      let text2 = this.FindControl<TextBlock>("Lines")
+      this.UpdateTextFonts text text2
+      [ text; text2 ]
+      |> Seq.iter (fun t ->
+        let tmp = t.Text
+        t.Text <- String.Empty
+        t.Text <- tmp
+        t.FormattedText.Spans <- match t.Tag with
+                                  | :? list<FormattedTextStyleSpan> as l -> l
+                                  | _ -> [])
+      let h = (text.FormattedText.GetLines() |> Seq.head).Height
+      let pad = (h - 16.0)/2.0
+      let margin = Thickness(0.0, pad)
+      this.FindControl<StackPanel>("Branches").Children
+      |> Seq.cast<Image>
+      |> Seq.iter (fun pic -> pic.Margin <- margin)
 
-    if isWindows
-    then
-      let fontItem = this.FindControl<MenuItem>("Font")
-      fontItem.IsVisible <- isWindows
-      fontItem.Click
-      |> Event.add (fun _evt ->
-        let hwnd = this.PlatformImpl.Handle.Handle
-        let font = Fonts.SelectWin32(Persistence.readFont(), hwnd)
-        if font.IsNotNull
-        then
-          font.ToString()
-          |> Persistence.saveFont
-          let text = this.FindControl<TextBlock>("Source")
-          let text2 = this.FindControl<TextBlock>("Lines")
-          this.UpdateTextFonts text text2
-          [ text; text2 ]
-          |> Seq.iter (fun t ->
-            let tmp = t.Text
-            t.Text <- String.Empty
-            t.Text <- tmp
-            t.FormattedText.Spans <- match t.Tag with
-                                     | :? list<FormattedTextStyleSpan> as l -> l
-                                     | _ -> [])
-          let h = (text.FormattedText.GetLines() |> Seq.head).Height
-          let pad = (h - 16.0)/2.0
-          let margin = Thickness(0.0, pad)
-          this.FindControl<StackPanel>("Branches").Children
-          |> Seq.cast<Image>
-          |> Seq.iter (fun pic -> pic.Margin <- margin)
-      )
+    let fontItem = this.FindControl<MenuItem>("Font")
+
+    if Fonts.GTK(Resource.GetResourceString "SelectFont").Any()
+    then printfn "GTK found!"
+         fontItem.IsVisible <- true
+         fontItem.Click
+         |> Event.add (fun _ ->
+           let hwnd = this.PlatformImpl.Handle.Handle
+           let font = Fonts.SelectGnome(Persistence.readFont(), hwnd)
+           if font.IsNotNull
+           then
+             font
+             |> Persistence.saveFont
+             respondToFont ()
+        )
+    else if isWindows
+      then
+        fontItem.IsVisible <- true
+        fontItem.Click
+        |> Event.add (fun _ ->
+          let hwnd = this.PlatformImpl.Handle.Handle
+          let font = Fonts.SelectWin32(Persistence.readFont(), hwnd)
+          if font.IsNotNull
+          then
+            font.ToString()
+            |> Persistence.saveFont
+            respondToFont ()
+        )
 
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->

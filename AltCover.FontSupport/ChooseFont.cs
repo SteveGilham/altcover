@@ -12,29 +12,36 @@ namespace AltCover.FontSupport
     [return: MarshalAs(UnmanagedType.Bool)]
     public extern static bool ChooseFont(IntPtr lpcf);
 
-    [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true)]
-    public extern static long RealTime();
+    [DllImport("libgtk-3-0.dll", CharSet = CharSet.Auto, EntryPoint = "gtk_font_chooser_dialog_new", SetLastError = true)]
+    public extern static IntPtr FontChooserDialog([MarshalAs(UnmanagedType.LPWStr)] string title, IntPtr parent);
   }
 
   public static class Fonts
   {
-    //TODO?? -- WindowFromPoint & GetAncestor(..., root) -> hwndOwner
-
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
       Justification = "Seriously, u wot m8!?")]
-    public static IEnumerable<long> GTK()
+    public static IEnumerable<IntPtr> GTK(string title)
     {
-      long time;
+      IntPtr dialog;
       try
       {
-        time = NativeMethods.RealTime();
+        dialog = NativeMethods.FontChooserDialog(title, IntPtr.Zero);
       }
       catch (System.DllNotFoundException)
       {
         yield break;
       }
+      catch (System.EntryPointNotFoundException)
+      {
+        yield break;
+      }
 
-      yield return time;
+      yield return dialog;
+    }
+
+    public static string SelectGnome(string font, IntPtr handle)
+    {
+      return font;
     }
 
     public static LogFont SelectWin32(string font, IntPtr handle)
