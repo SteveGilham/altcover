@@ -12,10 +12,8 @@ namespace AltCover.FontSupport
     [return: MarshalAs(UnmanagedType.Bool)]
     public extern static bool ChooseFont(IntPtr lpcf);
 
-    [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true),
-     SuppressMessage("Gendarme.Rules.Naming", "UseCorrectCasingRule",
-      Justification = "Represents a native function")]
-    public extern static long g_get_real_time();
+    [DllImport("libglib-2.0-0.dll", CharSet = CharSet.Auto, EntryPoint = "g_get_real_time", SetLastError = true)]
+    public extern static long RealTime();
   }
 
   public static class Fonts
@@ -29,7 +27,7 @@ namespace AltCover.FontSupport
       long time;
       try
       {
-        time = NativeMethods.g_get_real_time();
+        time = NativeMethods.RealTime();
       }
       catch (System.DllNotFoundException)
       {
