@@ -261,10 +261,12 @@ namespace AltCover.FontSupport
     }
 
     // Pango-style text
+    [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods",
+      Justification = "validate local variable ''(*decode)'', which was reassigned from parameter 'decode', before using it -- u wot m8!?")]
     public static bool TryParse(string encoded, out LogFont decode)
     {
       decode = new LogFont();
-      var core = encoded;
+      var core = encoded ?? string.Empty;
 
       // discard variations
       var at = core.IndexOf('@');
