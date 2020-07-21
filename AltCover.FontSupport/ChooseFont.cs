@@ -486,8 +486,6 @@ namespace AltCover.FontSupport
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
-    Justification = "Seriously, u wot m8!?"),
    Serializable]
   public enum FontCharSet : byte
   {
@@ -528,8 +526,6 @@ namespace AltCover.FontSupport
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
-    Justification = "Seriously, u wot m8!?"),
    Serializable]
   public enum FontPrecision : byte
   {
@@ -550,8 +546,6 @@ namespace AltCover.FontSupport
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
-    Justification = "Seriously, u wot m8!?"),
    Serializable]
   public enum FontClipPrecision : byte
   {
@@ -573,8 +567,6 @@ namespace AltCover.FontSupport
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
-    Justification = "Seriously, u wot m8!?"),
    Serializable]
   public enum FontQuality : byte
   {

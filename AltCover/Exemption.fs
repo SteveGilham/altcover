@@ -3,8 +3,6 @@ open System.Diagnostics.CodeAnalysis
 
 [<SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
   Justification="Data size is important")>]
-[<SuppressMessage("Gendarme.Rules.Design", "EnumsShouldDefineAZeroValueRule",
-  Justification="What is 'None', then?")>]
 #if !GUI
 type internal Exemption =
 #else
