@@ -117,6 +117,18 @@ type MainWindow() as this =
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
+  member private this.UpdateTextFonts (text:TextBlock) text2 =
+    [ text; text2 ]
+    |> List.iter (fun t ->
+          let (_, logfont) = LogFont.TryParse(Persistence.readFont())
+          t.FontFamily <- FontFamily(logfont.faceName)
+          t.FontSize <- float logfont.height
+          t.FontWeight <- enum logfont.weight
+          t.FontStyle <- match logfont.italic with
+                          | 0uy -> FontStyle.Normal
+                          | 255uy -> FontStyle.Italic
+                          | _ -> FontStyle.Oblique)
+
   member private this.PrepareDoubleTap
     (context:CoverageTreeContext<List<TreeViewItem>,TreeViewItem>)
     (xpath: XPathNavigator) =
@@ -170,7 +182,9 @@ type MainWindow() as this =
                           FormattedTextStyleSpan(start, 7, tag))
 
           Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
-                                            text2.FormattedText.Spans <- linemark)
+                                            textBox.Tag <- formats
+                                            text2.FormattedText.Spans <- linemark
+                                            text2.Tag <- linemark)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
@@ -186,16 +200,7 @@ type MainWindow() as this =
 
              let showSource (info:Source) (line:int) =
                 try
-                  [ text; text2 ]
-                  |> List.iter (fun t ->
-                        let (_, logfont) = LogFont.TryParse(Persistence.readFont())
-                        t.FontFamily <- FontFamily(logfont.faceName)
-                        t.FontSize <- float logfont.height
-                        t.FontWeight <- enum logfont.weight
-                        t.FontStyle <- match logfont.italic with
-                                       | 0uy -> FontStyle.Normal
-                                       | 255uy -> FontStyle.Italic
-                                       | _ -> FontStyle.Oblique)
+                  this.UpdateTextFonts text text2
                   text.Text <- File.ReadAllText info.FullName
                   let textLines = text.FormattedText.GetLines() |> Seq.toList
                   text2.Text <- String.Join (Environment.NewLine,
@@ -261,11 +266,30 @@ type MainWindow() as this =
       let fontItem = this.FindControl<MenuItem>("Font")
       fontItem.IsVisible <- isWindows
       fontItem.Click
-      |> Event.add (fun _ -> let font = Fonts.SelectWin32(Persistence.readFont())
-                             if font.IsNotNull
-                             then
-                               font.ToString()
-                               |> Persistence.saveFont)
+      |> Event.add (fun _evt ->
+        let font = Fonts.SelectWin32(Persistence.readFont())
+        if font.IsNotNull
+        then
+          font.ToString()
+          |> Persistence.saveFont
+          let text = this.FindControl<TextBlock>("Source")
+          let text2 = this.FindControl<TextBlock>("Lines")
+          this.UpdateTextFonts text text2
+          [ text; text2 ]
+          |> Seq.iter (fun t ->
+            let tmp = t.Text
+            t.Text <- String.Empty
+            t.Text <- tmp
+            t.FormattedText.Spans <- match t.Tag with
+                                     | :? list<FormattedTextStyleSpan> as l -> l
+                                     | _ -> [])
+          let h = (text.FormattedText.GetLines() |> Seq.head).Height
+          let pad = (h - 16.0)/2.0
+          let margin = Thickness(0.0, pad)
+          this.FindControl<StackPanel>("Branches").Children
+          |> Seq.cast<Image>
+          |> Seq.iter (fun pic -> pic.Margin <- margin)
+      )
 
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->
@@ -373,10 +397,13 @@ type MainWindow() as this =
                                         this.Title <- "AltCover.Visualizer"
                                         tree.Items.OfType<IDisposable>()
                                         |> Seq.iter (fun x -> x.Dispose())
-                                        this.FindControl<TextBlock>("Source").Text <-
-                                          String.Empty
-                                        this.FindControl<TextBlock>("Lines").Text <-
-                                          String.Empty
+                                        let t1 = this.FindControl<TextBlock>("Source")
+                                        let t2 = this.FindControl<TextBlock>("Lines")
+                                        [t1; t2]
+                                        |> Seq.iter (fun t ->
+                                          t.Text <- String.Empty
+                                          t.FormattedText.Spans <- []
+                                          t.Tag <- t.FormattedText.Spans)
                                         this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
