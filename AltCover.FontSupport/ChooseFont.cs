@@ -442,7 +442,7 @@ namespace AltCover.FontSupport
       // AOB??
       var slant = string.Empty;
       if (this.italic != 0) slant = "Italic ";
-      return FormattableString.Invariant($"{faceName} {(FontWeight)weight} {slant}{height}");
+      return FormattableString.Invariant($"{faceName}, {(FontWeight)weight} {slant}{height}");
     }
   }
 
