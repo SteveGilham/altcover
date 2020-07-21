@@ -9,6 +9,7 @@ open System.Xml.XPath
 
 open GuiCommon
 
+open AltCover.FontSupport
 open Avalonia.Controls
 open Avalonia.Markup.Xaml
 open Avalonia.Media
@@ -116,10 +117,22 @@ type MainWindow() as this =
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
+  member private this.UpdateTextFonts (text:TextBlock) text2 =
+    [ text; text2 ]
+    |> List.iter (fun t ->
+          let (_, logfont) = LogFont.TryParse(Persistence.readFont())
+          t.FontFamily <- FontFamily(logfont.faceName)
+          t.FontSize <- float logfont.height
+          t.FontWeight <- enum logfont.weight
+          t.FontStyle <- match logfont.italic with
+                          | 0uy -> FontStyle.Normal
+                          | 255uy -> FontStyle.Italic
+                          | _ -> FontStyle.Oblique)
+
   member private this.PrepareDoubleTap
     (context:CoverageTreeContext<List<TreeViewItem>,TreeViewItem>)
     (xpath: XPathNavigator) =
-        let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
+        let visibleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
         let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
           let start = (n.Column - 1) +
@@ -169,7 +182,9 @@ type MainWindow() as this =
                           FormattedTextStyleSpan(start, 7, tag))
 
           Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
-                                            text2.FormattedText.Spans <- linemark)
+                                            textBox.Tag <- formats
+                                            text2.FormattedText.Spans <- linemark
+                                            text2.Tag <- linemark)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
@@ -181,15 +196,11 @@ type MainWindow() as this =
                this.DisplayMessage MessageType.Info
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
-                     Resource.GetResourceString "No source location", visbleName)
+                     Resource.GetResourceString "No source location", visibleName)
 
              let showSource (info:Source) (line:int) =
                 try
-                  [ text; text2 ]
-                  |> List.iter (fun t ->
-                        t.FontFamily <- FontFamily(Persistence.readFont())
-                        t.FontSize <- 16.0
-                        t.FontStyle <- FontStyle.Normal)
+                  this.UpdateTextFonts text text2
                   text.Text <- File.ReadAllText info.FullName
                   let textLines = text.FormattedText.GetLines() |> Seq.toList
                   text2.Text <- String.Join (Environment.NewLine,
@@ -241,6 +252,56 @@ type MainWindow() as this =
            filter)
     ofd.Filters <- List(filterBits)
     this.Title <- "AltCover.Visualizer"
+
+    let p = Environment.OSVersion.Platform |> int
+    let isWindows = p <= 3
+
+    let respondToFont font =
+      font |> Persistence.saveFont
+      let text = this.FindControl<TextBlock>("Source")
+      let text2 = this.FindControl<TextBlock>("Lines")
+      this.UpdateTextFonts text text2
+      [ text; text2 ]
+      |> Seq.iter (fun t ->
+        let tmp = t.Text
+        t.Text <- String.Empty
+        t.Text <- tmp
+        t.FormattedText.Spans <- match t.Tag with
+                                  | :? list<FormattedTextStyleSpan> as l -> l
+                                  | _ -> [])
+      let h = (text.FormattedText.GetLines() |> Seq.head).Height
+      let pad = (h - 16.0)/2.0
+      let margin = Thickness(0.0, pad)
+      this.FindControl<StackPanel>("Branches").Children
+      |> Seq.cast<Image>
+      |> Seq.iter (fun pic -> pic.Margin <- margin)
+
+    let fontItem = this.FindControl<MenuItem>("Font")
+
+    if
+#if GTK_HACK // can we get this working??
+      Fonts.GTK(Resource.GetResourceString "SelectFont").Any()
+    then printfn "GTK found!"
+         fontItem.IsVisible <- true
+         fontItem.Click
+         |> Event.add (fun _ ->
+           let hwnd = this.PlatformImpl.Handle.Handle
+           Fonts.SelectGnome(Persistence.readFont(), hwnd)
+           |> Option.ofObj
+           |> Option.iter respondToFont ())
+    else if
+#endif
+            isWindows
+      then
+        fontItem.IsVisible <- true
+        fontItem.Click
+        |> Event.add (fun _ ->
+          let hwnd = this.PlatformImpl.Handle.Handle
+          Fonts.SelectWin32(Persistence.readFont(), hwnd)
+          |> Option.ofObj
+          |> Option.map (fun f -> f.ToString())
+          |> Option.iter respondToFont)
+
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->
          let cap = n.First().ToString().ToUpper() + n.Substring(1)
@@ -347,10 +408,13 @@ type MainWindow() as this =
                                         this.Title <- "AltCover.Visualizer"
                                         tree.Items.OfType<IDisposable>()
                                         |> Seq.iter (fun x -> x.Dispose())
-                                        this.FindControl<TextBlock>("Source").Text <-
-                                          String.Empty
-                                        this.FindControl<TextBlock>("Lines").Text <-
-                                          String.Empty
+                                        let t1 = this.FindControl<TextBlock>("Source")
+                                        let t2 = this.FindControl<TextBlock>("Lines")
+                                        [t1; t2]
+                                        |> Seq.iter (fun t ->
+                                          t.Text <- String.Empty
+                                          t.FormattedText.Spans <- []
+                                          t.Tag <- t.FormattedText.Spans)
                                         this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true

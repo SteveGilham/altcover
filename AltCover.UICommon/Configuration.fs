@@ -85,7 +85,7 @@ module Configuration =
   let ReadFont() =
     let _, config = ensureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace 10"
+    | [] -> "Monospace Normal 10"
     | x :: _ -> x.FirstNode.ToString()
 
   let ReadSchemaDir() =
