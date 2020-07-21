@@ -267,7 +267,8 @@ type MainWindow() as this =
       fontItem.IsVisible <- isWindows
       fontItem.Click
       |> Event.add (fun _evt ->
-        let font = Fonts.SelectWin32(Persistence.readFont())
+        let hwnd = this.PlatformImpl.Handle.Handle
+        let font = Fonts.SelectWin32(Persistence.readFont(), hwnd)
         if font.IsNotNull
         then
           font.ToString()

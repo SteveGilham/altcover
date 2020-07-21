@@ -37,7 +37,7 @@ namespace AltCover.FontSupport
       yield return time;
     }
 
-    public static LogFont SelectWin32(string font)
+    public static LogFont SelectWin32(string font, IntPtr handle)
     {
       var _ = LogFont.TryParse(font, out LogFont logfont);
       IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
@@ -53,6 +53,7 @@ namespace AltCover.FontSupport
         try
         {
           choosefont.structSize = Marshal.SizeOf(choosefont);
+          choosefont.owner = handle;
           choosefont.minSize = 64;
           choosefont.maxSize = 64;
           choosefont.options = (int)ChooseFontOptions.ScreenFonts
