@@ -345,9 +345,10 @@ type MainWindow() as this =
          async {
            (ofd.ShowAsync(this)
             |> Async.AwaitTask
-            |> Async.RunSynchronously).FirstOrDefault()
+            |> Async.RunSynchronously)
            |> Option.ofObj
-           |> openFile.Trigger
+           |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
+           |> Option.iter openFile.Trigger
          }
          |> Async.Start)
     let click =
