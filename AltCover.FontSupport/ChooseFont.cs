@@ -74,8 +74,10 @@ namespace AltCover.FontSupport
       Console.WriteLine("result {0}", tk);
       // fails -- message invalid command name "wm"
       // tk = NativeMethods.Tcl_Eval(interpreter, "wm title . \"Hello World\"");
+      // fails -- message invalid command name "label"
+      tk = NativeMethods.Tcl_Eval(interpreter, "label .hello -text \"Hello World\"");
       // fails -- message invalid command name "tk"
-      tk = NativeMethods.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {} -visible 1 19");
+      // tk = NativeMethods.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {} -visible 1 19");
       Console.WriteLine("result {0}", tk);
       if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
     }
