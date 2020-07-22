@@ -70,8 +70,28 @@ namespace AltCover.FontSupport
 
     public void FontChooser()
     {
-      var tk = NativeMethods.Tcl_Eval(interpreter, "tk fontchooser configure -font Consolas");
+      var tk = NativeMethods.Tcl_Eval(interpreter, "puts \"Hello World\""); // works
       Console.WriteLine("result {0}", tk);
+      // fails -- message invalid command name "wm"
+      // tk = NativeMethods.Tcl_Eval(interpreter, "wm title . \"Hello World\"");
+      // fails -- message invalid command name "tk"
+      tk = NativeMethods.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {} -visible 1 19");
+      Console.WriteLine("result {0}", tk);
+      if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
+    }
+
+    private string GetErrorMessage()
+    {
+      IntPtr obj = NativeMethods.Tcl_GetObjResult(interpreter);
+      if (obj == IntPtr.Zero)
+      {
+        return string.Empty;
+      }
+      else
+      {
+        IntPtr ptr = NativeMethods.Tcl_GetStringFromObj(obj, IntPtr.Zero);
+        return Marshal.PtrToStringAnsi(ptr);
+      }
     }
 
     protected virtual void Dispose(bool disposing)
