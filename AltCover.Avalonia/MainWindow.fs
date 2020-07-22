@@ -20,6 +20,7 @@ type Thickness = Avalonia.Thickness
 
 type MainWindow() as this =
   inherit Window()
+  let tcl = new FontSupport.Tcl()
   let mutable armed = false
   let mutable justOpened = String.Empty
   let mutable coverageFiles : string list = []
@@ -278,20 +279,16 @@ type MainWindow() as this =
 
     let fontItem = this.FindControl<MenuItem>("Font")
 
-    if
-#if GTK_HACK // can we get this working??
-      Fonts.GTK(Resource.GetResourceString "SelectFont").Any()
-    then printfn "GTK found!"
-         fontItem.IsVisible <- true
-         fontItem.Click
-         |> Event.add (fun _ ->
-           let hwnd = this.PlatformImpl.Handle.Handle
-           Fonts.SelectGnome(Persistence.readFont(), hwnd)
-           |> Option.ofObj
-           |> Option.iter respondToFont ())
-    else if
-#endif
-            isWindows
+    if tcl.IsValid
+    then printfn "Tcl found!"
+         //fontItem.IsVisible <- true
+         //fontItem.Click
+         //|> Event.add (fun _ ->
+         //  let hwnd = this.PlatformImpl.Handle.Handle
+         //  Fonts.SelectGnome(Persistence.readFont(), hwnd)
+         //  |> Option.ofObj
+         //  |> Option.iter respondToFont ())
+    else if isWindows
       then
         fontItem.IsVisible <- true
         fontItem.Click
@@ -320,6 +317,7 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
+         tcl.Dispose();
          let l = Avalonia.Application.Current.ApplicationLifetime
                    :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
          l.Shutdown())

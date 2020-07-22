@@ -12,20 +12,105 @@ namespace AltCover.FontSupport
     [return: MarshalAs(UnmanagedType.Bool)]
     public extern static bool ChooseFont(IntPtr lpcf);
 
-    [DllImport("libgtk-3-0.dll", CharSet = CharSet.Auto, EntryPoint = "gtk_font_chooser_dialog_new", SetLastError = true)]
-    public extern static IntPtr FontChooserDialog([MarshalAs(UnmanagedType.LPWStr)] string title, IntPtr parent);
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr Tcl_CreateInterp();
+
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern int Tcl_Init(IntPtr interp);
+
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr Tcl_GetObjResult(IntPtr interp);
+
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length);
+
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
+
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern int Tcl_EvalFile(IntPtr interp, string filename);
+
+    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
+  }
+
+  public class Tcl : IDisposable
+  {
+    private IntPtr interpreter = IntPtr.Zero;
+    private bool disposedValue;
+
+    public Tcl()
+    {
+      try
+      {
+        var tmp = NativeMethods.Tcl_CreateInterp();
+        var state = NativeMethods.Tcl_Init(tmp);
+        if (state != 0)
+        {
+          NativeMethods.Tcl_DeleteInterp(tmp);
+        }
+        else
+        {
+          interpreter = tmp;
+        }
+      }
+      catch (System.DllNotFoundException)
+      {
+        interpreter = IntPtr.Zero;
+      }
+      catch (System.EntryPointNotFoundException)
+      {
+        interpreter = IntPtr.Zero;
+      }
+    }
+
+    public bool IsValid => interpreter != IntPtr.Zero;
+
+    protected virtual void Dispose(bool disposing)
+    {
+      if (!disposedValue)
+      {
+        if (disposing)
+        {
+          // TODO: dispose managed state (managed objects)
+        }
+
+        // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+        // TODO: set large fields to null
+        if (interpreter != IntPtr.Zero)
+        {
+          NativeMethods.Tcl_DeleteInterp(interpreter);
+          interpreter = IntPtr.Zero;
+        }
+        disposedValue = true;
+      }
+    }
+
+    // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+    ~Tcl()
+    {
+      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+      Dispose(disposing: false);
+    }
+
+    public void Dispose()
+    {
+      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+      Dispose(disposing: true);
+      GC.SuppressFinalize(this);
+    }
   }
 
   public static class Fonts
   {
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
       Justification = "Seriously, u wot m8!?")]
-    public static IEnumerable<IntPtr> GTK(string title)
+    public static IEnumerable<IntPtr> Tcl()
     {
       IntPtr dialog;
       try
       {
-        dialog = NativeMethods.FontChooserDialog(title, IntPtr.Zero);
+        dialog = NativeMethods.Tcl_CreateInterp();
       }
       catch (System.DllNotFoundException)
       {
