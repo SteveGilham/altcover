@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace AltCover.FontSupport
@@ -12,6 +11,7 @@ namespace AltCover.FontSupport
     [return: MarshalAs(UnmanagedType.Bool)]
     public extern static bool ChooseFont(IntPtr lpcf);
 
+#if TCL_WORKING
     [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern IntPtr Tcl_CreateInterp();
 
@@ -28,12 +28,14 @@ namespace AltCover.FontSupport
     public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
 
     [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern int Tcl_EvalFile(IntPtr interp, string filename);
+    public static extern int Tcl_Eval(IntPtr interp, string script);
 
     [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
+#endif
   }
 
+#if TCL_WORKING
   public class Tcl : IDisposable
   {
     private IntPtr interpreter = IntPtr.Zero;
@@ -65,6 +67,12 @@ namespace AltCover.FontSupport
     }
 
     public bool IsValid => interpreter != IntPtr.Zero;
+
+    public void FontChooser()
+    {
+      var tk = NativeMethods.Tcl_Eval(interpreter, "tk fontchooser configure -font Consolas");
+      Console.WriteLine("result {0}", tk);
+    }
 
     protected virtual void Dispose(bool disposing)
     {
@@ -100,35 +108,10 @@ namespace AltCover.FontSupport
       GC.SuppressFinalize(this);
     }
   }
+#endif
 
   public static class Fonts
   {
-    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
-      Justification = "Seriously, u wot m8!?")]
-    public static IEnumerable<IntPtr> Tcl()
-    {
-      IntPtr dialog;
-      try
-      {
-        dialog = NativeMethods.Tcl_CreateInterp();
-      }
-      catch (System.DllNotFoundException)
-      {
-        yield break;
-      }
-      catch (System.EntryPointNotFoundException)
-      {
-        yield break;
-      }
-
-      yield return dialog;
-    }
-
-    public static string SelectGnome(string font, IntPtr handle)
-    {
-      return font;
-    }
-
     public static LogFont SelectWin32(string font, IntPtr handle)
     {
       var _ = LogFont.TryParse(font, out LogFont logfont);
@@ -345,10 +328,8 @@ namespace AltCover.FontSupport
 
     public LogFont()
     {
-      var p = (int)Environment.OSVersion.Platform;
-      var isWindows = p <= 3;
-
-      faceName = isWindows ? "Courier New" : "Monospace";
+      faceName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        "Courier New" : "Monospace";
       weight = (int)FontWeight.Normal;
       height = 10;
     }
