@@ -1,41 +1,129 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace AltCover.FontSupport
 {
-  internal static class NativeMethods
+  namespace Win32
   {
-    [DllImport("comdlg32", CharSet = CharSet.Ansi, EntryPoint = "ChooseFont", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public extern static bool ChooseFont(IntPtr lpcf);
+    internal static class NativeMethods
+    {
+      [DllImport("comdlg32", CharSet = CharSet.Ansi, EntryPoint = "ChooseFont", SetLastError = true)]
+      [return: MarshalAs(UnmanagedType.Bool)]
+      public extern static bool ChooseFont(IntPtr lpcf);
 
-#if TCL_WORKING
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern IntPtr Tcl_CreateInterp();
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_CreateInterp();
 
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern int Tcl_Init(IntPtr interp);
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern int Tcl_Init(IntPtr interp);
 
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern IntPtr Tcl_GetObjResult(IntPtr interp);
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_GetObjResult(IntPtr interp);
 
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length);
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length);
 
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
 
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern int Tcl_Eval(IntPtr interp, string script);
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern int Tcl_Eval(IntPtr interp, string script);
 
-    [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
-#endif
+      [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
+    }
   }
 
-#if TCL_WORKING
+  namespace NonWindows
+  {
+    // I seem to need 'export PATH=/usr/lib/x86_64-linux-gnu:$PATH'??
+    internal static class NativeMethods
+    {
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_CreateInterp();
+
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern int Tcl_Init(IntPtr interp);
+
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_GetObjResult(IntPtr interp);
+
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length);
+
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
+
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern int Tcl_Eval(IntPtr interp, string script);
+
+      [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
+    }
+  }
+
+  internal static class Externals
+  {
+    private static bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+    public static IntPtr Tcl_CreateInterp()
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_CreateInterp();
+      else
+        return NonWindows.NativeMethods.Tcl_CreateInterp();
+    }
+
+    public static int Tcl_Init(IntPtr interp)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_Init(interp);
+      else
+        return NonWindows.NativeMethods.Tcl_Init(interp);
+    }
+
+    public static IntPtr Tcl_GetObjResult(IntPtr interp)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_GetObjResult(interp);
+      else
+        return NonWindows.NativeMethods.Tcl_GetObjResult(interp);
+    }
+
+    public static IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_GetStringFromObj(tclObj, length);
+      else
+        return NonWindows.NativeMethods.Tcl_GetStringFromObj(tclObj, length);
+    }
+
+    public static IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_SetVar(interp, varName, newValue, flags);
+      else
+        return NonWindows.NativeMethods.Tcl_SetVar(interp, varName, newValue, flags);
+    }
+
+    public static int Tcl_Eval(IntPtr interp, string script)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_Eval(interp, script);
+      else
+        return NonWindows.NativeMethods.Tcl_Eval(interp, script);
+    }
+
+    public static IntPtr Tcl_DeleteInterp(IntPtr interp)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tcl_DeleteInterp(interp);
+      else
+        return NonWindows.NativeMethods.Tcl_DeleteInterp(interp);
+    }
+  }
+
   public class Tcl : IDisposable
   {
     private IntPtr interpreter = IntPtr.Zero;
@@ -45,23 +133,25 @@ namespace AltCover.FontSupport
     {
       try
       {
-        var tmp = NativeMethods.Tcl_CreateInterp();
-        var state = NativeMethods.Tcl_Init(tmp);
+        var tmp = Externals.Tcl_CreateInterp();
+        var state = Externals.Tcl_Init(tmp);
         if (state != 0)
         {
-          NativeMethods.Tcl_DeleteInterp(tmp);
+          Externals.Tcl_DeleteInterp(tmp);
         }
         else
         {
           interpreter = tmp;
         }
       }
-      catch (System.DllNotFoundException)
+      catch (System.DllNotFoundException dnf)
       {
+        Console.WriteLine(dnf);
         interpreter = IntPtr.Zero;
       }
-      catch (System.EntryPointNotFoundException)
+      catch (System.EntryPointNotFoundException epnf)
       {
+        Console.WriteLine(epnf);
         interpreter = IntPtr.Zero;
       }
     }
@@ -70,28 +160,28 @@ namespace AltCover.FontSupport
 
     public void FontChooser()
     {
-      var tk = NativeMethods.Tcl_Eval(interpreter, "puts \"Hello World\""); // works
+      var tk = Externals.Tcl_Eval(interpreter, "puts \"Hello World\""); // works
       Console.WriteLine("result {0}", tk);
       // fails -- message invalid command name "wm"
-      // tk = NativeMethods.Tcl_Eval(interpreter, "wm title . \"Hello World\"");
+      // tk = Externals.Tcl_Eval(interpreter, "wm title . \"Hello World\"");
       // fails -- message invalid command name "label"
-      tk = NativeMethods.Tcl_Eval(interpreter, "label .hello -text \"Hello World\"");
+      tk = Externals.Tcl_Eval(interpreter, "label .hello -text \"Hello World\"");
       // fails -- message invalid command name "tk"
-      // tk = NativeMethods.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {} -visible 1 19");
+      // tk = Externals.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {} -visible 1 19");
       Console.WriteLine("result {0}", tk);
       if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
     }
 
     private string GetErrorMessage()
     {
-      IntPtr obj = NativeMethods.Tcl_GetObjResult(interpreter);
+      IntPtr obj = Externals.Tcl_GetObjResult(interpreter);
       if (obj == IntPtr.Zero)
       {
         return string.Empty;
       }
       else
       {
-        IntPtr ptr = NativeMethods.Tcl_GetStringFromObj(obj, IntPtr.Zero);
+        IntPtr ptr = Externals.Tcl_GetStringFromObj(obj, IntPtr.Zero);
         return Marshal.PtrToStringAnsi(ptr);
       }
     }
@@ -109,7 +199,7 @@ namespace AltCover.FontSupport
         // TODO: set large fields to null
         if (interpreter != IntPtr.Zero)
         {
-          NativeMethods.Tcl_DeleteInterp(interpreter);
+          Externals.Tcl_DeleteInterp(interpreter);
           interpreter = IntPtr.Zero;
         }
         disposedValue = true;
@@ -130,7 +220,6 @@ namespace AltCover.FontSupport
       GC.SuppressFinalize(this);
     }
   }
-#endif
 
   public static class Fonts
   {
@@ -164,7 +253,7 @@ namespace AltCover.FontSupport
 
           Marshal.StructureToPtr(choosefont, pChoosefont, false);
 
-          if (NativeMethods.ChooseFont(pChoosefont))
+          if (Win32.NativeMethods.ChooseFont(pChoosefont))
           {
             var chosen = Marshal.PtrToStructure(pChoosefont, typeof(ChooseFont)) as ChooseFont;
             var newfont = Marshal.PtrToStructure(chosen.logFont, typeof(LogFont)) as LogFont;

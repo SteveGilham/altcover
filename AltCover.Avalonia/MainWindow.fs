@@ -22,11 +22,9 @@ type Thickness = Avalonia.Thickness
 type MainWindow() as this =
   inherit Window()
   let isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-#if TCL_WORKING
   let isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
   let isOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
   let tcl = new FontSupport.Tcl()
-#endif
   let mutable armed = false
   let mutable justOpened = String.Empty
   let mutable coverageFiles : string list = []
@@ -283,7 +281,7 @@ type MainWindow() as this =
     let fontItem = this.FindControl<MenuItem>("Font")
 
     if
-#if TCL_WORKING
+// #if NATIVE
        tcl.IsValid
     then printfn "Tcl found!"
          fontItem.IsVisible <- true
@@ -297,7 +295,7 @@ type MainWindow() as this =
          //  |> Option.iter respondToFont ())
     else
       if
-#endif
+// #endif
          isWindows
       then
         fontItem.IsVisible <- true
@@ -327,9 +325,7 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
-#if TCL_WORKING
          tcl.Dispose()
-#endif
          let l = Avalonia.Application.Current.ApplicationLifetime
                    :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
          l.Shutdown())
