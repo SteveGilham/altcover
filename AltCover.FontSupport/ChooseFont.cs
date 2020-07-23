@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace AltCover.FontSupport
 {
@@ -32,6 +33,9 @@ namespace AltCover.FontSupport
 
       [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
+
+      [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern int Tk_Init(IntPtr interp);
     }
   }
 
@@ -60,6 +64,9 @@ namespace AltCover.FontSupport
 
       [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern IntPtr Tcl_DeleteInterp(IntPtr interp);
+
+      [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern int Tk_Init(IntPtr interp);
     }
   }
 
@@ -122,6 +129,14 @@ namespace AltCover.FontSupport
       else
         return NonWindows.NativeMethods.Tcl_DeleteInterp(interp);
     }
+
+    public static int Tk_Init(IntPtr interp)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tk_Init(interp);
+      else
+        return NonWindows.NativeMethods.Tk_Init(interp);
+    }
   }
 
   public class Tcl : IDisposable
@@ -141,7 +156,15 @@ namespace AltCover.FontSupport
         }
         else
         {
-          interpreter = tmp;
+          state = Externals.Tk_Init(tmp);
+          if (state != 0)
+          {
+            Externals.Tcl_DeleteInterp(tmp);
+          }
+          else
+          {
+            interpreter = tmp;
+          }
         }
       }
       catch (System.DllNotFoundException dnf)
@@ -160,14 +183,10 @@ namespace AltCover.FontSupport
 
     public void FontChooser()
     {
-      var tk = Externals.Tcl_Eval(interpreter, "puts \"Hello World\""); // works
+      var tk = Externals.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {}");
       Console.WriteLine("result {0}", tk);
-      // fails -- message invalid command name "wm"
-      // tk = Externals.Tcl_Eval(interpreter, "wm title . \"Hello World\"");
-      // fails -- message invalid command name "label"
-      tk = Externals.Tcl_Eval(interpreter, "label .hello -text \"Hello World\"");
-      // fails -- message invalid command name "tk"
-      // tk = Externals.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {} -visible 1 19");
+      if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
+      tk = Externals.Tcl_Eval(interpreter, "tk fontchooser show");
       Console.WriteLine("result {0}", tk);
       if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
     }
