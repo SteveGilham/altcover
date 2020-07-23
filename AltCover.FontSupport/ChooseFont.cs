@@ -43,6 +43,9 @@ namespace AltCover.FontSupport
       public static extern void Tk_MakeWindowExist(IntPtr tkwin);
 
       [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern void Tk_MapWindow(IntPtr tkwin);
+
+      [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern void Tk_DestroyWindow(IntPtr tkwin);
     }
   }
@@ -81,6 +84,9 @@ namespace AltCover.FontSupport
 
       [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern void Tk_MakeWindowExist(IntPtr tkwin);
+
+      [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern void Tk_MapWindow(IntPtr tkwin);
 
       [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern void Tk_DestroyWindow(IntPtr tkwin);
@@ -171,6 +177,14 @@ namespace AltCover.FontSupport
         NonWindows.NativeMethods.Tk_MakeWindowExist(tkwin);
     }
 
+    public static void Tk_MapWindow(IntPtr tkwin)
+    {
+      if (isWindows)
+        Win32.NativeMethods.Tk_MapWindow(tkwin);
+      else
+        NonWindows.NativeMethods.Tk_MapWindow(tkwin);
+    }
+
     public static void Tk_DestroyWindow(IntPtr tkwin)
     {
       if (isWindows)
@@ -237,11 +251,17 @@ namespace AltCover.FontSupport
     {
       Console.WriteLine("main window {0}", mainWindow);
       Externals.Tk_MakeWindowExist(mainWindow);
+      Eval("wm geometry . 1x1");
+      //Eval("wm iconify  .");
+      Eval("puts [winfo ismapped .]");
+      Eval("wm attributes  . -alpha 0.0");
+      Externals.Tk_MapWindow(mainWindow);
+
       Console.WriteLine("status {0}", GetErrorMessage());
       var handler = "proc fontchosen {f} {" + Environment.NewLine
-+ "  puts stdout \"***fontchosen***\"" + Environment.NewLine
-+ "  puts stdout $f" + Environment.NewLine // needs to be a callback
-+ "}";
+      + "  puts stdout \"***fontchosen***\"" + Environment.NewLine
+      + "  puts stdout $f" + Environment.NewLine // needs to be a callback
+      + "}";
       Eval(handler);
       // TCL_CHANNEL_VERSION_5 = IntPtr(5)
 
@@ -252,9 +272,8 @@ namespace AltCover.FontSupport
       //      Eval(handler2);
       //      Eval("bind . <<TkFontchooserFontChanged>> [list fontchosen2]");
 
+      Eval("puts [winfo ismapped .]");
       Eval("tk fontchooser configure -parent . -font " + font.ToTkString() + " -command fontchosen");
-      Eval("wm geometry . 1x1");
-      Eval("wm attributes  . -alpha 0.0");
       Eval("tk fontchooser show"); // segfaults on linux
 
       //      Eval("set wfont [tk fontchooser configure -font]"); // seems pretty write-only
