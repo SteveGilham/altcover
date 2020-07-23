@@ -287,12 +287,10 @@ type MainWindow() as this =
          fontItem.IsVisible <- true
          fontItem.Click
          |> Event.add (fun _ ->
-          tcl.FontChooser() // TODO
-         )
-         //  let hwnd = this.PlatformImpl.Handle.Handle
-         //  Fonts.SelectGnome(Persistence.readFont(), hwnd)
-         //  |> Option.ofObj
-         //  |> Option.iter respondToFont ())
+          let (_, lf) = FontSupport.LogFont.TryParse(Persistence.readFont());
+          let callback = Option.ofObj // TODO reparse
+                         >> Option.iter respondToFont
+          tcl.FontChooser(lf, new Action<string>(callback)))
     else
       if
 // #endif

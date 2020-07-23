@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace AltCover.FontSupport
 {
@@ -26,7 +25,7 @@ namespace AltCover.FontSupport
       public static extern IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length);
 
       [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-      public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
+      public static extern IntPtr Tcl_GetVar(IntPtr interp, string varName, int flags);
 
       [DllImport("tcl86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern int Tcl_Eval(IntPtr interp, string script);
@@ -36,6 +35,15 @@ namespace AltCover.FontSupport
 
       [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern int Tk_Init(IntPtr interp);
+
+      [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tk_MainWindow(IntPtr interp);
+
+      [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern void Tk_MakeWindowExist(IntPtr tkwin);
+
+      [DllImport("tk86", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern void Tk_DestroyWindow(IntPtr tkwin);
     }
   }
 
@@ -57,7 +65,7 @@ namespace AltCover.FontSupport
       public static extern IntPtr Tcl_GetStringFromObj(IntPtr tclObj, IntPtr length);
 
       [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-      public static extern IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags);
+      public static extern IntPtr Tcl_GetVar(IntPtr interp, string varName, int flags);
 
       [DllImport("tcl8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern int Tcl_Eval(IntPtr interp, string script);
@@ -67,6 +75,15 @@ namespace AltCover.FontSupport
 
       [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
       public static extern int Tk_Init(IntPtr interp);
+
+      [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern IntPtr Tk_MainWindow(IntPtr interp);
+
+      [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern void Tk_MakeWindowExist(IntPtr tkwin);
+
+      [DllImport("tk8.6", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+      public static extern void Tk_DestroyWindow(IntPtr tkwin);
     }
   }
 
@@ -106,12 +123,12 @@ namespace AltCover.FontSupport
         return NonWindows.NativeMethods.Tcl_GetStringFromObj(tclObj, length);
     }
 
-    public static IntPtr Tcl_SetVar(IntPtr interp, string varName, string newValue, int flags)
+    public static IntPtr Tcl_GetVar(IntPtr interp, string varName, int flags)
     {
       if (isWindows)
-        return Win32.NativeMethods.Tcl_SetVar(interp, varName, newValue, flags);
+        return Win32.NativeMethods.Tcl_GetVar(interp, varName, flags);
       else
-        return NonWindows.NativeMethods.Tcl_SetVar(interp, varName, newValue, flags);
+        return NonWindows.NativeMethods.Tcl_GetVar(interp, varName, flags);
     }
 
     public static int Tcl_Eval(IntPtr interp, string script)
@@ -137,11 +154,37 @@ namespace AltCover.FontSupport
       else
         return NonWindows.NativeMethods.Tk_Init(interp);
     }
+
+    public static IntPtr Tk_MainWindow(IntPtr interp)
+    {
+      if (isWindows)
+        return Win32.NativeMethods.Tk_MainWindow(interp);
+      else
+        return NonWindows.NativeMethods.Tk_MainWindow(interp);
+    }
+
+    public static void Tk_MakeWindowExist(IntPtr tkwin)
+    {
+      if (isWindows)
+        Win32.NativeMethods.Tk_MakeWindowExist(tkwin);
+      else
+        NonWindows.NativeMethods.Tk_MakeWindowExist(tkwin);
+    }
+
+    public static void Tk_DestroyWindow(IntPtr tkwin)
+    {
+      if (isWindows)
+        Win32.NativeMethods.Tk_DestroyWindow(tkwin);
+      else
+        NonWindows.NativeMethods.Tk_DestroyWindow(tkwin);
+    }
   }
 
   public class Tcl : IDisposable
   {
+    private static bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
     private IntPtr interpreter = IntPtr.Zero;
+    private IntPtr mainWindow = IntPtr.Zero;
     private bool disposedValue;
 
     public Tcl()
@@ -164,6 +207,7 @@ namespace AltCover.FontSupport
           else
           {
             interpreter = tmp;
+            mainWindow = Externals.Tk_MainWindow(interpreter);
           }
         }
       }
@@ -181,14 +225,45 @@ namespace AltCover.FontSupport
 
     public bool IsValid => interpreter != IntPtr.Zero;
 
-    public void FontChooser()
+    private void Eval(string script)
     {
-      var tk = Externals.Tcl_Eval(interpreter, "tk fontchooser configure -parent . -font {{Consolas} 12 bold roman} -command {}");
+      Console.WriteLine("{0}", script);
+      var tk = Externals.Tcl_Eval(interpreter, script);
       Console.WriteLine("result {0}", tk);
       if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
-      tk = Externals.Tcl_Eval(interpreter, "tk fontchooser show");
-      Console.WriteLine("result {0}", tk);
-      if (tk != 0) Console.WriteLine("message {0}", GetErrorMessage());
+    }
+
+    public void FontChooser(LogFont font, Action<string> callback)
+    {
+      Console.WriteLine("main window {0}", mainWindow);
+      Externals.Tk_MakeWindowExist(mainWindow);
+      Console.WriteLine("status {0}", GetErrorMessage());
+      var handler = "proc fontchosen {f} {" + Environment.NewLine
++ "  puts stdout \"***fontchosen***\"" + Environment.NewLine
++ "  puts stdout $f" + Environment.NewLine // needs to be a callback
++ "}";
+      Eval(handler);
+      // TCL_CHANNEL_VERSION_5 = IntPtr(5)
+
+      //      var handler2 = "proc fontchosen2 {} {" + Environment.NewLine
+      //+ "  puts stdout \"***fontchosen2***\"" + Environment.NewLine
+      //+ "  puts stdout [tk fontchooser configure -font]" + Environment.NewLine
+      //+ "}";
+      //      Eval(handler2);
+      //      Eval("bind . <<TkFontchooserFontChanged>> [list fontchosen2]");
+
+      Eval("tk fontchooser configure -parent . -font " + font.ToTkString() + " -command fontchosen");
+      Eval("wm geometry . 1x1");
+      Eval("wm attributes  . -alpha 0.0");
+      Eval("tk fontchooser show"); // segfaults on linux
+
+      //      Eval("set wfont [tk fontchooser configure -font]"); // seems pretty write-only
+      //      Eval("puts stdout $wfont");
+      Eval("wm withdraw .");
+      //var wfont = Externals.Tcl_GetVar(interpreter, "wfont", 0);
+      //Console.WriteLine("wfont {0}", wfont);
+      //IntPtr ptr = Externals.Tcl_GetStringFromObj(wfont, IntPtr.Zero);
+      //Console.WriteLine("font result {0}", Marshal.PtrToStringAnsi(ptr));
     }
 
     private string GetErrorMessage()
@@ -218,6 +293,7 @@ namespace AltCover.FontSupport
         // TODO: set large fields to null
         if (interpreter != IntPtr.Zero)
         {
+          Externals.Tk_DestroyWindow(mainWindow);
           Externals.Tcl_DeleteInterp(interpreter);
           interpreter = IntPtr.Zero;
         }
@@ -634,7 +710,6 @@ namespace AltCover.FontSupport
     }
 
     public override string ToString()
-
     {
       // Pango names like Fira Code Bold Oblique 17
       // This is not quite sufficient
@@ -646,6 +721,16 @@ namespace AltCover.FontSupport
       var slant = string.Empty;
       if (this.italic != 0) slant = "Italic ";
       return FormattableString.Invariant($"{faceName}, {(FontWeight)weight} {slant}{height}");
+    }
+
+    public string ToTkString()
+    {
+      // Tk names like {{Consolas} 12 bold roman}
+      var w = "normal";
+      if (weight > (int)FontWeight.Normal) w = "bold";
+      var i = "italic";
+      if (italic == 0) i = "roman";
+      return FormattableString.Invariant($"{{{{{faceName}}} {height} {w} {i}}}");
     }
   }
 
