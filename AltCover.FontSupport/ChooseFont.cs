@@ -13,9 +13,6 @@ namespace AltCover.FontSupport
     [DllImport("comdlg32", CharSet = CharSet.Ansi, EntryPoint = "ChooseFont", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public extern static bool ChooseFont(IntPtr lpcf);
-
-    [DllImport("libgtk-3-0.dll", CharSet = CharSet.Auto, EntryPoint = "gtk_font_chooser_dialog_new", SetLastError = true)]
-    public extern static IntPtr FontChooserDialog([MarshalAs(UnmanagedType.LPWStr)] string title, IntPtr parent);
   }
 
   public static class Fonts
@@ -39,46 +36,51 @@ namespace AltCover.FontSupport
       };
 
       //Console.WriteLine("font in '{0}'", font);
-      LogFont.TryParse(font, out var lf);
-      var tkfont = lf.ToTkString();
+      var _ = LogFont.TryParse(font, out var lf);
+      var tkfont = lf.ToWishString();
       //Console.WriteLine("font in '{0}'", tkfont);
 
-      var wish = Process.Start(info);
-      wish.StandardInput.WriteLine("wm geometry . 1x1");
-      wish.StandardInput.WriteLine("wm attributes  . -alpha 0.0");
-      wish.StandardInput.WriteLine("proc fontchosen {f} {");
-      wish.StandardInput.WriteLine("  puts stdout \"***fontchosen***\"");
-      wish.StandardInput.WriteLine("  puts stdout $f");
-      wish.StandardInput.WriteLine("  destroy .");
-      wish.StandardInput.WriteLine("}");
-      wish.StandardInput.WriteLine("proc closeout {} {");
-      wish.StandardInput.WriteLine("  [expr {");
-      wish.StandardInput.WriteLine("  [tk fontchooser configure -visible] ?");
-      wish.StandardInput.WriteLine("  \"raise\" : \"destroy\" }] .");
-      wish.StandardInput.WriteLine("}");
-      wish.StandardInput.WriteLine("bind . <<TkFontchooserVisibility>> closeout");
-      wish.StandardInput.WriteLine("tk fontchooser configure -parent . -font "
-        + tkfont + " -command fontchosen");
-      wish.StandardInput.WriteLine("tk fontchooser show");
-      wish.WaitForExit();
-      var found = false;
-      while (!found)
+      using (var wish = Process.Start(info))
       {
-        var sol = wish.StandardOutput.ReadLine();
-        found = string.IsNullOrEmpty(sol) ||
-          sol.Equals("***fontchosen***");
+        var si = wish.StandardInput;
+        si.WriteLine("wm geometry . 1x1");
+        si.WriteLine("wm attributes  . -alpha 0.0");
+        si.WriteLine("proc fontchosen {f} {");
+        si.WriteLine("  puts stdout \"***fontchosen***\"");
+        si.WriteLine("  puts stdout $f");
+        si.WriteLine("  destroy .");
+        si.WriteLine("}");
+        si.WriteLine("proc closeout {} {");
+        si.WriteLine("  [expr {");
+        si.WriteLine("  [tk fontchooser configure -visible] ?");
+        si.WriteLine("  \"raise\" : \"destroy\" }] .");
+        si.WriteLine("}");
+        si.WriteLine("bind . <<TkFontchooserVisibility>> closeout");
+        si.WriteLine("tk fontchooser configure -parent . -font "
+          + tkfont + " -command fontchosen");
+        si.WriteLine("tk fontchooser show");
+        wish.WaitForExit();
+        var found = false;
+
+        var so = wish.StandardOutput;
+        while (!found)
+        {
+          var sol = so.ReadLine();
+          found = string.IsNullOrEmpty(sol) ||
+            sol.Equals("***fontchosen***");
+        }
+
+        if (!found)
+          return null;
+
+        var line = so.ReadLine();
+        //Console.WriteLine("font out '{0}'", line);
+
+        if (!LogFont.TryWishParse(line, out var fontOut))
+          return null;
+        //Console.WriteLine("font out'{0}'", fontOut);
+        return fontOut;
       }
-
-      if (!found)
-        return null;
-
-      var line = wish.StandardOutput.ReadLine();
-      //Console.WriteLine("font out '{0}'", line);
-
-      if (!LogFont.TryTkParse(line, out var fontOut))
-        return null;
-      //Console.WriteLine("font out'{0}'", fontOut);
-      return fontOut;
     }
 
     public static LogFont SelectWin32(string font, IntPtr handle)
@@ -479,7 +481,7 @@ namespace AltCover.FontSupport
     // Tcl/Tk-style text like {Consolas} 12 bold roman
     [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods",
       Justification = "validate local variable ''(*decode)'', which was reassigned from parameter 'decode', before using it -- u wot m8!?")]
-    public static bool TryTkParse(string encoded, out LogFont decode)
+    public static bool TryWishParse(string encoded, out LogFont decode)
     {
       decode = new LogFont();
       if (string.IsNullOrEmpty(encoded))
@@ -531,7 +533,7 @@ namespace AltCover.FontSupport
       return FormattableString.Invariant($"{faceName}, {(FontWeight)weight} {slant}{height}");
     }
 
-    public string ToTkString()
+    public string ToWishString()
     {
       // Tk names like {{Consolas} 12 bold roman}
       var w = "normal";

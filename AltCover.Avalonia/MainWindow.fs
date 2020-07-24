@@ -290,8 +290,7 @@ type MainWindow() as this =
           |> Option.iter respondToFont)
     else if
       Fonts.Wish().Any()
-    then printfn "Wish found!"
-         fontItem.IsVisible <- true
+    then fontItem.IsVisible <- true
          fontItem.Click
          |> Event.add (fun _ ->
            Persistence.readFont()
