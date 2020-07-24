@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace AltCover.FontSupport
 {
@@ -19,7 +18,11 @@ namespace AltCover.FontSupport
   {
     public static IEnumerable<string> Wish()
     {
+#if NETSTANDARD2_0
       return Fake.Core.ProcessUtils.findFilesOnPath("wish");
+#else
+      return Enumerable.Empty<string>();
+#endif
     }
 
     public static LogFont SelectWish(string font)
@@ -29,7 +32,7 @@ namespace AltCover.FontSupport
         Arguments = String.Empty,
         CreateNoWindow = true,
         ErrorDialog = false,
-        FileName = Fake.Core.ProcessUtils.findFilesOnPath("wish").FirstOrDefault(),
+        FileName = Wish().FirstOrDefault(),
         RedirectStandardError = true,
         RedirectStandardInput = true,
         RedirectStandardOutput = true

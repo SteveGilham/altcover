@@ -456,7 +456,7 @@ _Target "Lint" (fun _ ->
       { Lint.OptionalLintParameters.Default with
           Configuration = FromFile(Path.getFullName "./fsharplint.json") }
 
-    [ 
+    [
       !!"**/*.fsproj"
       |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
       |> Seq.distinct;
@@ -613,7 +613,7 @@ _Target "FxCop" (fun _ ->
   ]
 
   [ ([ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net45/AltCover.NetCoreApp.exe"
-       "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net471/AltCover.FontSupport.dll"
+       "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net46/AltCover.FontSupport.dll"
        "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
       [],
       standardRules)
@@ -2487,7 +2487,7 @@ _Target "Deployment" ignore
 _Target "Unpack" (fun _ ->
   !!"./_Pack*/*.nupkg"
   |> Seq.iter (fun nugget ->
-    let packdir = Path.GetDirectoryName nugget 
+    let packdir = Path.GetDirectoryName nugget
     let unpack = Path.getFullName (packdir @@ "Unpack")
     System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack)))
 
@@ -3520,7 +3520,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let xx0 = Path.getFullName "./_Reports/nonesuch.xml"
 
     let pf0 =
-      { p0 with AssemblyFilter = [| "NUnit" |] 
+      { p0 with AssemblyFilter = [| "NUnit" |]
                 StrongNameKey = "./_Reports/nonesuch.junk"
                 XmlReport = xx0
       } |> AltCover.PrepareOptions.Primitive
