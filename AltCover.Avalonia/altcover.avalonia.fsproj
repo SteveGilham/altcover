@@ -31,12 +31,12 @@
 
   <ItemGroup>
     <None Include="nuget.config" />
-    <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
-      <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
+    <EmbeddedResource Include="AltCove.MainWindow.xaml">
+      <LogicalName>AltCover.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
 
-    <EmbeddedResource Include="AltCover.Avalonia.App.xaml">
-      <LogicalName>AltCover.Avalonia.App.xaml</LogicalName>
+    <EmbeddedResource Include="AltCover.App.xaml">
+      <LogicalName>AltCover.App.xaml</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
@@ -44,18 +44,15 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\AltCover.Visualizer\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
-    <!-- Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
-    <Compile Include="..\AltCover.Toolkit\XmlInternal.fs" Link="XmlInternal.fs" />
-    <Compile Include="..\AltCover.Toolkit\Xml.fs" Link="Xml.fs" />
-    <Compile Include="..\AltCover.Toolkit\RenderToHtml.fs" Link="RenderToHtml.fs" / -->
+    <Compile Include="Persistence.fs" />
     <Compile Include="MainWindow.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.10" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.10" />
+    <PackageReference Include="Avalonia" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -65,6 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AltCover.FontSupport\AltCover.FontSupport.csproj" />
     <ProjectReference Include="..\AltCover.UICommon\AltCover.UICommon.fsproj" />
   </ItemGroup>
 

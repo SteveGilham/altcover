@@ -19,6 +19,6 @@
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
     <PackageReference Include="Pester" version="5.0.2" />
     <PackageReference Include="AltCode.Dixon" version="2020.3.16.14542-pre-release" />
-    <PackageReference Include="altcode.gendarme" version="2020.6.12.11211-pre-release" />
+    <PackageReference Include="altcode.gendarme" version="2020.7.21.12091-pre-release" />
   </ItemGroup>
 </Project>

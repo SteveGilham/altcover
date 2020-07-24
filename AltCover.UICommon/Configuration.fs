@@ -1,4 +1,4 @@
-﻿namespace AltCover.Visualizer
+﻿namespace AltCover
 
 #if NETSTANDARD2_0
 
@@ -85,7 +85,7 @@ module Configuration =
   let ReadFont() =
     let _, config = ensureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace 10"
+    | [] -> "Monospace Normal 10"
     | x :: _ -> x.FirstNode.ToString()
 
   let ReadSchemaDir() =
@@ -130,6 +130,7 @@ module Configuration =
 
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.map (fun n -> n.FirstNode.ToString())
+    |> Seq.filter (fun n -> File.Exists(n))
     |> Seq.toList
     |> sink
 

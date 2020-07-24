@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
-        x:Class="AltCover.Avalonia.MainWindow"
-        Title="AltCover.Avalonia"
+        x:Class="AltCover.MainWindow"
+        Title="AltCover.Visualizer"
         Icon="resm:AltCover.UICommon.VIcon.ico?assembly=AltCover.UICommon"
         Height="550" Width="750">
   <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">

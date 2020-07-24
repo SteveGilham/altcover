@@ -1,4 +1,4 @@
-namespace AltCover.Avalonia
+namespace AltCover
 
 open System
 open System.Collections.Generic
@@ -7,83 +7,16 @@ open System.IO
 open System.Linq
 open System.Xml.XPath
 
-open AltCover
-open AltCover.Augment
-open AltCover.Visualizer
-open AltCover.Visualizer.GuiCommon
+open GuiCommon
 
-open Avalonia
+open AltCover.FontSupport
 open Avalonia.Controls
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
 open Avalonia.Threading
 
-module Persistence =
-  let mutable internal save = true
-
-  let internal saveSchemaDir = Configuration.SaveSchemaDir
-  let internal saveFont = Configuration.SaveFont
-  let internal readFont = Configuration.ReadFont
-  let internal readSchemaDir = Configuration.ReadSchemaDir
-  let internal readFolder = Configuration.ReadFolder
-  let internal saveFolder = Configuration.SaveFolder
-  let internal saveCoverageFiles = Configuration.SaveCoverageFiles
-  let readCoverageFiles() =
-    let mutable l = []
-    Configuration.ReadCoverageFiles (fun files -> l <- files)
-    l
-  let saveGeometry (w : Window) =
-    Configuration.SaveGeometry (fun () -> w.Position.X, w.Position.Y)
-                               (fun () -> w.Width, w.Height)
-
-  let readGeometry (w : Window) =
-    Configuration.ReadGeometry (fun (width,height) (x,y) -> w.Height <- float height
-                                                            w.Width <- float width
-                                                            let monitor = w.Screens.All
-                                                                          |> Seq.filter (fun s -> let tl = s.WorkingArea.TopLeft
-                                                                                                  let br = s.WorkingArea.BottomRight
-                                                                                                  x >= tl.X && x <= br.X &&
-                                                                                                     y >= tl.Y && y <= br.Y)
-                                                                          |> Seq.tryHead
-                                                                          |> Option.defaultValue w.Screens.Primary
-                                                            let bounds = monitor.WorkingArea
-                                                            let x' = Math.Min(Math.Max(x, bounds.TopLeft.X), bounds.BottomRight.X - width)
-                                                            let y' = Math.Min(Math.Max(y, bounds.TopLeft.Y), bounds.BottomRight.Y - height)
-                                                            w.Position <- PixelPoint(x', y'))
-  let clearGeometry = Configuration.ClearGeometry
-
-type TextTag =
-  { Foreground : string
-    Background : string }
-
-  static member Make a b =
-    { Foreground = a
-      Background = b }
-
-  static member Visited = TextTag.Make "#0000CD" "#F5F5F5" // Medium Blue on White Smoke
-  // "#404040" "#cefdce" // Dark on Pale Green
-  static member Declared = TextTag.Make "#FFA500" "#F5F5F5" // Orange on White Smoke
-  // "#FFA500" "#FFFFFF" // Orange on White
-  static member StaticAnalysis = TextTag.Make "#000000" "#F5F5F5" // Black on White Smoke
-  // "#808080" "#F5F5F5" // Grey on White Smoke
-  static member Automatic = TextTag.Make "#FFD700" "#F5F5F5" // Gold on White Smoke
-  // "#808080" "#FFFF00" // Grey on Yellow
-  static member NotVisited = TextTag.Make "#DC143C" "#F5F5F5"// Crimson on White Smoke
-  //"#ff0000" "#FFFFFF" // Red on White
-  static member Excluded = TextTag.Make "#87CEEB" "#F5F5F5" // Sky Blue on White Smoke
-  // "#87CEEB" "#FFFFFF" // Sky Blue on white
-  static member Partial = TextTag.Make "#000000" "#F5F5F5" // Black on White Smoke
-  // "#404040" "#FFFF00" // Dark on Yellow
-
-// Range colouring information
-type internal ColourTag =
-  { style : TextTag
-    vc : int
-    line : int
-    column : int
-    endline : int
-    endcolumn : int }
+type Thickness = Avalonia.Thickness
 
 type MainWindow() as this =
   inherit Window()
@@ -100,6 +33,13 @@ type MainWindow() as this =
     let value = named.GetValue(icons) :?> Lazy<Bitmap>
     value.Force()
 
+  let visited = SolidColorBrush.Parse "#0000CD" // "#F5F5F5" // Medium Blue on White Smoke
+  let declared = SolidColorBrush.Parse "#FFA500" // "#F5F5F5" // Orange on White Smoke
+  let staticAnalysis = SolidColorBrush.Parse "#000000" // "#F5F5F5" // Black on White Smoke
+  let automatic = SolidColorBrush.Parse "#FFD700" // "#F5F5F5" // Gold on White Smoke
+  let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
+  let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
+
   let makeTreeNode name icon =
     let tree = new Image()
     tree.Source <- icons.TreeExpand.Force()
@@ -111,7 +51,7 @@ type MainWindow() as this =
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
     let display = new StackPanel()
-    display.Orientation <- Layout.Orientation.Horizontal
+    display.Orientation <- Avalonia.Layout.Orientation.Horizontal
     display.Children.Add tree
     display.Children.Add image
     display.Children.Add text
@@ -124,6 +64,7 @@ type MainWindow() as this =
 
   member private this.DisplayMessage (status : MessageType) message =
     let caption = match status with
+                  | MessageType.Info -> Resource.GetResourceString "LoadInfo"
                   | MessageType.Warning -> Resource.GetResourceString "LoadWarning"
                   | _ -> Resource.GetResourceString "LoadError"
     this.ShowMessageBox status caption message
@@ -144,152 +85,73 @@ type MainWindow() as this =
   member private this.PopulateMenu() =
     let listitem = this.FindControl<MenuItem>("List")
     let items = listitem.Items.OfType<MenuItem>()
-    // blank the whole menu
-    items
-    |> Seq.iter (fun (i : MenuItem) ->
-         i.IsVisible <- false
-         i.Header <- String.Empty)
-    // fill in with the items we have
-    Seq.zip coverageFiles items
-    |> Seq.iter (fun (name, item) ->
-         item.IsVisible <- true
-         item.Header <- name)
-    // set or clear the menu
-    listitem.IsEnabled <- coverageFiles.Any()
-    this.FindControl<Image>("ListImage").Source <- (if coverageFiles.Any() then
+    let active = HandlerCommon.PopulateMenu
+                  items
+                  coverageFiles
+                  (fun (i : MenuItem) ->
+                           i.IsVisible <- false
+                           i.Header <- String.Empty)
+                  (fun name item ->
+                           item.IsVisible <- true
+                           item.Header <- name)
+    listitem.IsEnabled <- active
+    this.FindControl<Image>("ListImage").Source <- (if active then
                                                       icons.MRU
                                                     else
                                                       icons.MRUInactive).Force()
+    active
 
   member private this.UpdateMRU path add =
-    let casematch =
-      match System.Environment.GetEnvironmentVariable("OS") with
-      | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
-      | _ -> StringComparison.Ordinal
-
-    let files =
-      coverageFiles
-      |> List.filter (fun n -> not (n.Equals(path, casematch)))
-      |> Seq.truncate (9)
-      |> Seq.toList
-
-    coverageFiles <-
-      (if add then (path :: files) else files)
-      |> Seq.distinctBy (fun n ->
-           match casematch with
-           | StringComparison.Ordinal -> n
-           | _ -> n.ToUpperInvariant())
-      |> Seq.toList
-    this.PopulateMenu()
+    HandlerCommon.UpdateCoverageFiles this path add
+    let active = this.PopulateMenu()
     Persistence.saveCoverageFiles coverageFiles
     let menu = this.FindControl<MenuItem>("Refresh")
-    menu.IsEnabled <- coverageFiles.Any()
-    menu.Icon <- (if coverageFiles.Any() then
+    menu.IsEnabled <- active
+    menu.Icon <- (if active then
                     icons.RefreshActive
                   else
                     icons.Refresh).Force()
+
   member private this.HideAboutBox _ =
     this.FindControl<StackPanel>("AboutBox").IsVisible <- false
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
+  member private this.UpdateTextFonts (text:TextBlock) text2 =
+    [ text; text2 ]
+    |> List.iter (fun t ->
+          let (_, logfont) = LogFont.TryParse(Persistence.readFont())
+          t.FontFamily <- FontFamily(logfont.faceName)
+          t.FontSize <- float logfont.height
+          t.FontWeight <- enum logfont.weight
+          t.FontStyle <- match logfont.italic with
+                          | 0uy -> FontStyle.Normal
+                          | 255uy -> FontStyle.Italic
+                          | _ -> FontStyle.Oblique)
+
   member private this.PrepareDoubleTap
     (context:CoverageTreeContext<List<TreeViewItem>,TreeViewItem>)
     (xpath: XPathNavigator) =
-        let visbleName = (context.Row.Header :?> StackPanel).Tag.ToString()
+        let visibleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
-        let (|Select|_|) (pattern : String) offered =
-          if (fst offered)
-             |> String.IsNullOrWhiteSpace
-             |> not
-             && pattern.StartsWith(fst offered, StringComparison.Ordinal) then
-            Some offered
-          else
-            None
-
-        let selectStyle because excluded =
-          match (because, excluded) with
-          | Select "author declared (" _ -> TextTag.Declared
-          | Select "tool-generated: " _ -> TextTag.Automatic
-          | Select "static analysis: " _ -> TextTag.StaticAnalysis
-          | (_, true) -> TextTag.Excluded
-          | _ -> TextTag.NotVisited
-
-        let coverageToTag(n : XPathNavigator) =
-          let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
-          let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
-          let line = n.GetAttribute("line", String.Empty)
-          let column = n.GetAttribute("column", String.Empty)
-          let endline = n.GetAttribute("endline", String.Empty)
-          let endcolumn = n.GetAttribute("endcolumn", String.Empty)
-          // Extension behaviour for textual signalling for three lines
-          n.MoveToParent() |> ignore
-          let because = n.GetAttribute("excluded-because", String.Empty)
-          { style =
-              match Exemption.OfInt visitcount with
-              | Exemption.None -> selectStyle because excluded
-              | Exemption.Declared -> TextTag.Declared
-              | Exemption.Automatic -> TextTag.Automatic
-              | Exemption.StaticAnalysis -> TextTag.StaticAnalysis
-              | Exemption.Excluded -> TextTag.Excluded
-              | _ -> TextTag.Visited
-            vc = visitcount
-            line = Int32.TryParse(line) |> snd
-            column = (Int32.TryParse(column) |> snd)
-            endline = Int32.TryParse(endline) |> snd
-            endcolumn = (Int32.TryParse(endcolumn) |> snd) }
-
-        let filterCoverage lines (n : ColourTag) =
-          n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
-        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : ColourTag) =
-          let start = (n.column - 1) + (lines |> Seq.take (n.line - 1) |> Seq.sumBy (fun l -> l.Length))
-          let finish = (n.endcolumn - 1) + (lines |> Seq.take (n.endline - 1) |> Seq.sumBy (fun l -> l.Length))
+        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
+          let start = (n.Column - 1) +
+                      (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
+          let finish = (n.EndColumn - 1) +
+                       (lines |> Seq.take (n.EndLine - 1) |> Seq.sumBy (fun l -> l.Length))
           FormattedTextStyleSpan(start, finish - start,
-                        SolidColorBrush.Parse n.style.Foreground)
-        let parseIntegerAttribute (element : XPathNavigator) (attribute : string) =
-          let text = element.GetAttribute(attribute, String.Empty)
-          let number = Int32.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture)
-          if (fst number) then
-            snd number
-          else
-            if not <| String.IsNullOrEmpty(text) then
-              System.Diagnostics.Debug.WriteLine
-                ("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
-            0
+                        match n.Style with
+                        | Exemption.Visited -> visited
+                        | Exemption.Automatic -> automatic
+                        | Exemption.Declared -> declared
+                        | Exemption.Excluded -> excluded
+                        | Exemption.StaticAnalysis -> staticAnalysis
+                        | _ -> notVisited
+                        )
 
-      //// bound by current line length in case we're looking from stale coverage
-      //let line = buff.GetIterAtLine(n.line - 1)
-      //let from =
-      //  if line.CharsInLine = 0 then line
-      //  else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, line.CharsInLine) - 1)
-      //let endline = buff.GetIterAtLine(n.endline - 1)
-      //let until =
-      //  if endline.CharsInLine = 0 then endline
-      //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
-      //buff.ApplyTag(tag, from, until)
-        let markBranches (root : XPathNavigator) (stack : StackPanel) (lines : FormattedTextLine list) (filename:string) =
-          let branches = new Dictionary<int, int * int>()
-
-          root.Select("//method")
-          |> Seq.cast<XPathNavigator>
-          |> Seq.filter (fun n ->
-               let f = n.Clone()
-               f.MoveToFirstChild()
-               && filename.Equals
-                    (f.GetAttribute("document", String.Empty),
-                     StringComparison.Ordinal))
-          |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
-          |> Seq.cast<XPathNavigator>
-          |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
-          |> Seq.toList
-          |> Seq.iter (fun n ->
-               let line = parseIntegerAttribute ((snd n) |> Seq.head) "line"
-               let num = (snd n) |> Seq.length
-               let v =
-                 (snd n)
-                 |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
-                 |> Seq.length
-               branches.Add(line, (v, num)))
+        let markBranches (root : XPathNavigator) (stack : StackPanel)
+          (lines : FormattedTextLine list) (filename:string) =
+          let branches = HandlerCommon.TagBranches root filename
 
           let h = (lines |> Seq.head).Height
           let pad = (h - 16.0)/2.0
@@ -297,130 +159,86 @@ type MainWindow() as this =
 
           Dispatcher.UIThread.Post(fun _ ->
             for l in 1 .. lines.Length do
-              let counts = branches.TryGetValue l
-
-              let (|AllVisited|_|) (b, (v, num)) =
-                if b |> not
-                   || v <> num then
-                  None
-                else
-                  Some()
-
-              let pix =
-                match counts with
-                | (false, _) -> icons.Blank.Force()
-                | (_, (0, _)) -> icons.RedBranch.Force()
-                | AllVisited -> icons.Branched.Force()
-                | _ -> icons.Branch.Force()
-
               let pic = new Image()
+              let pix = HandlerCommon.IconForBranches icons branches l
+                                         (fun text ->
+                                            ToolTip.SetTip(pic, text))
               pic.Source <- pix
               pic.Margin <- margin
-              stack.Children.Add pic
-              if fst counts then
-                let v, num = snd counts
-                ToolTip.SetTip(pic,
-                  Resource.Format("branchesVisited", [v; num])))
+              stack.Children.Add pic)
 
-        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock) (lines : FormattedTextLine list) filename =
-          let lc = lines.Length
-          let tags = root.Select("//seqpnt[@document='" + filename + "']")
-                     |> Seq.cast<XPathNavigator>
-                     |> Seq.map coverageToTag
-                     |> Seq.filter (filterCoverage lc)
-                     |> Seq.sortByDescending (fun t -> t.vc)
-                     |> Seq.toList
+        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock)
+                           (lines : FormattedTextLine list) filename =
+          let tags = HandlerCommon.TagCoverage root filename lines.Length
 
           let formats = tags
                         |> List.map (tagByCoverage textBox lines)
 
-          let linemark = tags
-                         |> List.groupBy (fun t -> t.line)
-                         |> List.map (fun (l, t) -> let total = t |> Seq.sumBy (fun tag -> if tag.vc <= 0
-                                                                                           then 0
-                                                                                           else tag.vc)
-                                                    let style = if total > 0
-                                                                then TextTag.Visited
-                                                                else TextTag.NotVisited
-                                                    let start = (l - 1) * (7 + Environment.NewLine.Length)
-                                                    FormattedTextStyleSpan(start, 7,
-                                                                           SolidColorBrush.Parse style.Foreground))
-
-          let linetext = String.Join (Environment.NewLine,
-                                      lines
-                                      // Font limitation or Avalonia limitation? -- character \u2442 just shows as a box.
-                                      |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i)))
+          let linemark =
+            tags
+            |> HandlerCommon.TagLines visited notVisited
+            |> List.map (fun (l, tag) ->
+                          let start = (l - 1) * (7 + Environment.NewLine.Length)
+                          FormattedTextStyleSpan(start, 7, tag))
 
           Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
-                                            text2.Text <- linetext
-                                            text2.FormattedText.Spans <- linemark)
+                                            textBox.Tag <- formats
+                                            text2.FormattedText.Spans <- linemark
+                                            text2.Tag <- linemark)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
              let text = this.FindControl<TextBlock>("Source")
              let text2 = this.FindControl<TextBlock>("Lines")
              let scroller = this.FindControl<ScrollViewer>("Coverage")
-             let points =
-               xpath.SelectChildren("seqpnt", String.Empty) |> Seq.cast<XPathNavigator>
-             if Seq.isEmpty points then
-               let caption = Resource.GetResourceString "LoadInfo"
-               this.ShowMessageBox MessageType.Info caption
+
+             let noSource() =
+               this.DisplayMessage MessageType.Info
                <| String.Format
                     (System.Globalization.CultureInfo.CurrentCulture,
-                     Resource.GetResourceString "No source location", visbleName)
-             else
-               let point = points |> Seq.head
-               let path = point.GetAttribute("document", String.Empty)
-               let info = FileInfo(path)
-               let source = info |> File
-               let current = new FileInfo(coverageFiles.Head)
-               if (not info.Exists) then
-                 Messages.MissingSourceThisFileMessage (this.DisplayMessage) current source
-               else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
-                 Messages.OutdatedCoverageThisFileMessage (this.DisplayMessage) current source
-               else
-                 let line =
-                   point.GetAttribute("line", String.Empty)
-                   |> Int32.TryParse
-                   |> snd
-                 try
-                   // TODO -- font  size control too
-                   text.Text <- File.ReadAllText path
+                     Resource.GetResourceString "No source location", visibleName)
 
-                   [ text; text2 ]
-                   |> List.iter (fun t ->
-                         t.FontFamily <- FontFamily(Persistence.readFont())
-                         t.FontSize <- 16.0
-                         t.FontStyle <- FontStyle.Normal)
+             let showSource (info:Source) (line:int) =
+                try
+                  this.UpdateTextFonts text text2
+                  text.Text <- File.ReadAllText info.FullName
+                  let textLines = text.FormattedText.GetLines() |> Seq.toList
+                  text2.Text <- String.Join (Environment.NewLine,
+                                             textLines
+                                             // Font limitation or Avalonia limitation?
+                                             // character \u2442 just shows as a box.
+                                             |> Seq.mapi (fun i _ ->
+                                               sprintf "%6d " (1 + i)))
 
-                   let textLines = text.FormattedText.GetLines() |> Seq.toList
-                   let sample = textLines |> Seq.head
-                   let depth = sample.Height * float (line - 1)
-                   let root = xpath.Clone()
-                   root.MoveToRoot()
-                   markCoverage root text text2 textLines path
-                   let stack = this.FindControl<StackPanel>("Branches")
-                   root.MoveToRoot()
-                   markBranches root stack textLines path
+                  let sample = textLines |> Seq.head
+                  let depth = sample.Height * float (line - 1)
+                  let root = xpath.Clone()
+                  root.MoveToRoot()
+                  markCoverage root text text2 textLines info.FullName
+                  let stack = this.FindControl<StackPanel>("Branches")
+                  root.MoveToRoot()
+                  markBranches root stack textLines info.FullName
 
-                   async {
-                       Threading.Thread.Sleep(300)
-                       Dispatcher.UIThread.Post(fun _ ->
-                                           let midpoint = scroller.Viewport.Height / 2.0
-                                           if (depth > midpoint)
-                                           then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
-                    }
-                    |> Async.Start
+                  async {
+                      Threading.Thread.Sleep(300)
+                      Dispatcher.UIThread.Post(fun _ ->
+                        let midpoint = scroller.Viewport.Height / 2.0
+                        if (depth > midpoint)
+                        then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+                  }
+                  |> Async.Start
 
-                 with x ->
-                   let caption = Resource.GetResourceString "LoadError"
-                   this.ShowMessageBox MessageType.Error caption x.Message)
+                with x ->
+                  let caption = Resource.GetResourceString "LoadError"
+                  this.ShowMessageBox MessageType.Error caption x.Message
+
+             HandlerCommon.DoRowActivation xpath this noSource showSource)
 
   member this.InitializeComponent() =
     AvaloniaXamlLoader.Load(this)
     Persistence.readGeometry this
     coverageFiles <- Persistence.readCoverageFiles()
-    this.PopulateMenu()
+    this.PopulateMenu() |> ignore // no refresh at this point
     ofd.Directory <- Persistence.readFolder()
     ofd.Title <- Resource.GetResourceString "Open Coverage File"
     ofd.AllowMultiple <- false
@@ -434,6 +252,52 @@ type MainWindow() as this =
            filter)
     ofd.Filters <- List(filterBits)
     this.Title <- "AltCover.Visualizer"
+
+    let p = Environment.OSVersion.Platform |> int
+    let isWindows = p <= 3
+
+    let respondToFont font =
+      font.ToString() |> Persistence.saveFont
+      let text = this.FindControl<TextBlock>("Source")
+      let text2 = this.FindControl<TextBlock>("Lines")
+      this.UpdateTextFonts text text2
+      [ text; text2 ]
+      |> Seq.iter (fun t ->
+        let tmp = t.Text
+        t.Text <- String.Empty
+        t.Text <- tmp
+        t.FormattedText.Spans <- match t.Tag with
+                                  | :? list<FormattedTextStyleSpan> as l -> l
+                                  | _ -> [])
+      let h = (text.FormattedText.GetLines() |> Seq.head).Height
+      let pad = (h - 16.0)/2.0
+      let margin = Thickness(0.0, pad)
+      this.FindControl<StackPanel>("Branches").Children
+      |> Seq.cast<Image>
+      |> Seq.iter (fun pic -> pic.Margin <- margin)
+
+    let fontItem = this.FindControl<MenuItem>("Font")
+
+    if
+      isWindows
+    then
+        fontItem.IsVisible <- true
+        fontItem.Click
+        |> Event.add (fun _ ->
+          let hwnd = this.PlatformImpl.Handle.Handle
+          Fonts.SelectWin32(Persistence.readFont(), hwnd)
+          |> Option.ofObj
+          |> Option.iter respondToFont)
+    else if
+      Fonts.Wish().Any()
+    then fontItem.IsVisible <- true
+         fontItem.Click
+         |> Event.add (fun _ ->
+           Persistence.readFont()
+           |> Fonts.SelectWish
+           |> Option.ofObj
+           |> Option.iter respondToFont)
+
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->
          let cap = n.First().ToString().ToUpper() + n.Substring(1)
@@ -452,7 +316,8 @@ type MainWindow() as this =
     this.FindControl<MenuItem>("Exit").Click
     |> Event.add (fun _ ->
          if Persistence.save then Persistence.saveGeometry this
-         let l = Application.Current.ApplicationLifetime :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
+         let l = Avalonia.Application.Current.ApplicationLifetime
+                   :?> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime
          l.Shutdown())
     this.FindControl<MenuItem>("ShowAbout").Click
     |> Event.add (fun _ ->
@@ -466,9 +331,10 @@ type MainWindow() as this =
          async {
            (ofd.ShowAsync(this)
             |> Async.AwaitTask
-            |> Async.RunSynchronously).FirstOrDefault()
+            |> Async.RunSynchronously)
            |> Option.ofObj
-           |> openFile.Trigger
+           |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
+           |> Option.iter openFile.Trigger
          }
          |> Async.Start)
     let click =
@@ -488,13 +354,15 @@ type MainWindow() as this =
     let refresh = this.FindControl<MenuItem>("Refresh").Click |> Event.map (fun _ -> 0)
     let makeNewRow name (anIcon:Lazy<Bitmap>) =
       let row = TreeViewItem()
-      row.HorizontalAlignment <- Layout.HorizontalAlignment.Left
+      row.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Left
       row.LayoutUpdated
       |> Event.add (fun _ -> let remargin (t:TreeViewItem) =
                                if t.HeaderPresenter.IsNotNull
-                               then let hp = t.HeaderPresenter :?> Avalonia.Controls.Presenters.ContentPresenter
+                               then let hp = t.HeaderPresenter
+                                               :?> Avalonia.Controls.Presenters.ContentPresenter
                                     let grid = hp.Parent :?> Grid
-                                    grid.Margin <- Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
+                                    grid.Margin <-
+                                      Thickness(float t.Level * 4.0, 0.0, 0.0, 0.0)
 
                              remargin row
                              row.Items.OfType<TreeViewItem>()
@@ -534,14 +402,20 @@ type MainWindow() as this =
           Display = this.DisplayMessage
           UpdateMRUFailure = fun info -> this.UpdateMRU info.FullName false
           UpdateUISuccess = fun info -> let tree = this.FindControl<TreeView>("Tree")
-                                        tree.Items.OfType<IDisposable>() |> Seq.iter (fun x -> x.Dispose())
-                                        this.FindControl<TextBlock>("Source").Text <- String.Empty
-                                        this.FindControl<TextBlock>("Lines").Text <- String.Empty
+                                        this.Title <- "AltCover.Visualizer"
+                                        tree.Items.OfType<IDisposable>()
+                                        |> Seq.iter (fun x -> x.Dispose())
+                                        let t1 = this.FindControl<TextBlock>("Source")
+                                        let t2 = this.FindControl<TextBlock>("Lines")
+                                        [t1; t2]
+                                        |> Seq.iter (fun t ->
+                                          t.Text <- String.Empty
+                                          t.FormattedText.Spans <- []
+                                          t.Tag <- t.FormattedText.Spans)
                                         this.FindControl<StackPanel>("Branches").Children.Clear()
                                         tree.Items <- auxModel.Model
                                         this.UpdateMRU info.FullName true
           SetXmlNode = fun name -> let model = auxModel.Model
-                                   // mappings.Clear()
                                    {
                                       Model = model
                                       Row = let row = makeNewRow name icons.Xml
@@ -551,7 +425,8 @@ type MainWindow() as this =
           AddNode = fun context icon name ->
                                  { context with
                                        Row = let row = makeNewRow name icon
-                                             (context.Row.Items :?> List<TreeViewItem>).Add row
+                                             (context.Row.Items
+                                               :?> List<TreeViewItem>).Add row
                                              row }
           Map = this.PrepareDoubleTap
         }
@@ -607,3 +482,13 @@ type MainWindow() as this =
          this.FindControl<StackPanel>("AboutBox").IsVisible <- false
          this.FindControl<Menu>("Menu").IsVisible <- true
          this.FindControl<DockPanel>("Grid").IsVisible <- true)
+
+  interface IVisualizerWindow with
+    member self.CoverageFiles
+      with get () = coverageFiles
+      and set(value) = coverageFiles <- value
+    member self.Title
+      with get() = self.Title
+      and set(value) = self.Title <- value
+    member self.ShowMessageOnGuiThread mtype message =
+      self.DisplayMessage mtype message

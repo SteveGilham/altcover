@@ -1666,6 +1666,7 @@ module AltCoverTests =
         Visitor.visit [] [] // cheat reset
         let expected =
           module'.Types // we have no nested types in this test
+          |> Seq.filter Visitor.I.stripInterfaces
           |> Seq.map (fun t ->
                let flag =
                  if t.Name <> "Program" then Inspections.Instrument
@@ -1676,7 +1677,7 @@ module AltCoverTests =
                              (Visitor.I.deeper >> Seq.toList) node
                              [ Node.AfterType ] ])
           |> List.concat
-        Assert.That(deeper.Length, Is.EqualTo 18)
+        Assert.That(deeper.Length, Is.EqualTo 16)
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.nameFilters.Clear()
@@ -1702,7 +1703,7 @@ module AltCoverTests =
                              (Visitor.I.deeper >> Seq.toList) node
                              [ AfterModule ] ])
           |> List.concat
-        Assert.That(deeper.Length, Is.EqualTo 21)
+        Assert.That(deeper.Length, Is.EqualTo 19)
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.theReportFormat <- None
@@ -1730,7 +1731,12 @@ module AltCoverTests =
           List.concat [ [ assembly ]
                         (Visitor.I.deeper >> Seq.toList) assembly
                         [ AfterAssembly (def, []) ] ]
-        Assert.That(deeper.Length, Is.EqualTo 23)
+
+        //deeper |> Seq.map (fun x -> x.GetType().Name) |> Seq.iter (printfn "%A")
+        //printfn "-----------"
+        //expected |> Seq.map (fun x -> x.GetType().Name) |> Seq.iter (printfn "%A")
+
+        Assert.That(deeper.Length, Is.EqualTo 21)
         Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
       finally
         CoverageParameters.staticFilter <- None
@@ -3128,6 +3134,95 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.theReportFormat <- None
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle() =
+      let visitor, document = OpenCover.reportGenerator()
+      let sample21trad = Path.Combine(SolutionRoot.location, "./Sample21/bin/Debug/net47/Sample21.dll")
+      Assert.That(File.Exists sample21trad, "Test file Sample21 for net47 not built")
+      try
+        "Program"
+        |> (Regex
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Type
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (sample21trad,[]))
+
+        let classes = document.Descendants(XName.Get "FullName")
+                      |> Seq.map (fun x -> x.Value)
+                      |> Seq.filter (fun n -> n |> Seq.head |> Char.IsLetterOrDigit)
+                      |> Seq.sort
+                      |> Seq.toList
+
+        let methods = document.Descendants(XName.Get "Name")
+                      |> Seq.map (fun x -> x.Value)
+                      |> Seq.sort
+                      |> Seq.toList
+
+        test <@ classes = [ "Sample21.Tests"; "Sample21.Traditional" ] @>
+        let expectedMethods =
+          [
+            "System.String Sample21.Traditional::DoSomething()"
+            "System.Void Sample21.Tests::.ctor()"
+            "System.Void Sample21.Tests::Setup()"
+            "System.Void Sample21.Tests::Test1()"
+            "System.Void Sample21.Traditional::.ctor()"
+          ]
+        test <@ methods = expectedMethods @>
+      finally
+        CoverageParameters.nameFilters.Clear()
+
+    [<Test>]
+    let ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle() =
+      let visitor, document = OpenCover.reportGenerator()
+      let sample21 = Path.Combine(SolutionRoot.location, "./Sample21/bin/Debug/netcoreapp3.0/Sample21.dll")
+      Assert.That(File.Exists sample21, "Test file Sample21 for netcoreapp3.0 not built")
+      try
+        "Program"
+        |> (Regex
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Type
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq (sample21,[]))
+
+        let classes = document.Descendants(XName.Get "FullName")
+                      |> Seq.filter (fun x -> x.Parent.Attribute(XName.Get "skippedDueTo") |> isNull)
+                      |> Seq.map (fun x -> x.Value)
+                      |> Seq.filter (fun n -> n |> Seq.head |> Char.IsLetterOrDigit)
+                      |> Seq.sort
+                      |> Seq.toList
+
+        let methods = document.Descendants(XName.Get "Name")
+                      |> Seq.map (fun x -> x.Value)
+                      |> Seq.sort
+                      |> Seq.toList
+
+        // document.Save(@"C:\Users\steve\Documents\GitHub\altcover\Sample21Modern.xml")
+
+        let expectedTypes =
+          [
+            "Sample21.IModern"
+            "Sample21.Modern1"
+            "Sample21.Modern2"
+            "Sample21.Tests";
+            "Sample21.Traditional"
+          ]
+        test <@ classes = expectedTypes @>
+        let expectedMethods =
+          [
+            "System.String Sample21.IModern::DoSomething()"
+            "System.String Sample21.Modern2::DoSomething()"
+            "System.String Sample21.Traditional::DoSomething()"
+            "System.Void Sample21.Modern1::.ctor()"
+            "System.Void Sample21.Modern2::.ctor()"
+            "System.Void Sample21.Tests::.ctor()"
+            "System.Void Sample21.Tests::Setup()"
+            "System.Void Sample21.Tests::Test1()";
+            "System.Void Sample21.Traditional::.ctor()"
+          ]
+        test <@ methods = expectedMethods @>
+      finally
+        CoverageParameters.nameFilters.Clear()
 
     [<Test>]
     let ShouldSortFileIds() =

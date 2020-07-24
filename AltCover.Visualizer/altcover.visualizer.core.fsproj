@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net45;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net45</TargetFrameworks>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -44,6 +44,9 @@
     <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net45'" />
     <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net45'" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Browser.fs" />
+    <Compile Include="Persistence.fs" />
+    <Compile Include="Handler.fs" />
     <Compile Include="Visualizer.fs" />
   </ItemGroup>
 
@@ -90,8 +93,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'net45'" />
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

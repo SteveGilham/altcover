@@ -1,4 +1,4 @@
-namespace AltCover.Visualizer
+namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -10,7 +10,6 @@ open System.Xml.Xsl
 open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.XPath
-open AltCover
 
 [<SuppressMessage("Microsoft.Design", "CA1027:MarkEnumsWithFlags",
   Justification="Not used or intended as a flag")>]
@@ -136,7 +135,7 @@ module Extensions =
 
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Visualizer.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
+  Target="AltCover.Extensions.#Choice`2.ToOption.Static`2(Microsoft.FSharp.Core.FSharpChoice`2<!!0,!!1>)",
   MessageId="x",
   Justification="Trivial usage")>]
 ()
