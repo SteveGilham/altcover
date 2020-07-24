@@ -613,7 +613,7 @@ _Target "FxCop" (fun _ ->
   ]
 
   [ ([ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net45/AltCover.NetCoreApp.exe"
-       "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net46/AltCover.FontSupport.dll"
+       // "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net46/AltCover.FontSupport.dll"
        "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
       [],
       standardRules)

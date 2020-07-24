@@ -89,7 +89,7 @@ namespace AltCover.FontSupport
     public static LogFont SelectWin32(string font, IntPtr handle)
     {
       var _ = LogFont.TryParse(font, out LogFont logfont);
-      IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
+      IntPtr pLogfont = Marshal.AllocHGlobal(Marshal.SizeOf(logfont)); // FxCop funny on AppVeyor??
       try
       {
         // Fudge-factor here
