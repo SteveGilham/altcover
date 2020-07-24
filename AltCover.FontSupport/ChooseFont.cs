@@ -907,4 +907,18 @@ namespace AltCover.FontSupport
     Script = (4 << 4),
     Decorative = (5 << 4),
   }
+
+#if STANDALONE
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using(var tcl = new Tcl())
+            {
+               LogFont.TryParse("Monospace normal 10", out LogFont f);
+               tcl.FontChooser(f, Console.WriteLine);
+            }
+        }
+    }
+#endif
 }
