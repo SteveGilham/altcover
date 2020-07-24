@@ -257,7 +257,7 @@ type MainWindow() as this =
     let isWindows = p <= 3
 
     let respondToFont font =
-      font |> Persistence.saveFont
+      font.ToString() |> Persistence.saveFont
       let text = this.FindControl<TextBlock>("Source")
       let text2 = this.FindControl<TextBlock>("Lines")
       this.UpdateTextFonts text text2
@@ -279,28 +279,25 @@ type MainWindow() as this =
     let fontItem = this.FindControl<MenuItem>("Font")
 
     if
-#if GTK_HACK // can we get this working??
-      Fonts.GTK(Resource.GetResourceString "SelectFont").Any()
-    then printfn "GTK found!"
-         fontItem.IsVisible <- true
-         fontItem.Click
-         |> Event.add (fun _ ->
-           let hwnd = this.PlatformImpl.Handle.Handle
-           Fonts.SelectGnome(Persistence.readFont(), hwnd)
-           |> Option.ofObj
-           |> Option.iter respondToFont ())
-    else if
-#endif
-            isWindows
-      then
+      isWindows
+    then
         fontItem.IsVisible <- true
         fontItem.Click
         |> Event.add (fun _ ->
           let hwnd = this.PlatformImpl.Handle.Handle
           Fonts.SelectWin32(Persistence.readFont(), hwnd)
           |> Option.ofObj
-          |> Option.map (fun f -> f.ToString())
           |> Option.iter respondToFont)
+    else if
+      Fonts.Wish().Any()
+    then printfn "Wish found!"
+         fontItem.IsVisible <- true
+         fontItem.Click
+         |> Event.add (fun _ ->
+           Persistence.readFont()
+           |> Fonts.SelectWish
+           |> Option.ofObj
+           |> Option.iter respondToFont)
 
     [ "open"; "refresh"; "font"; "showAbout"; "exit" ]
     |> Seq.iter (fun n ->

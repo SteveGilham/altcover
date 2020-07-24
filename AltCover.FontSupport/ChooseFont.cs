@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace AltCover.FontSupport
 {
@@ -18,30 +20,65 @@ namespace AltCover.FontSupport
 
   public static class Fonts
   {
-    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
-      Justification = "Seriously, u wot m8!?")]
-    public static IEnumerable<IntPtr> GTK(string title)
+    public static IEnumerable<string> Wish()
     {
-      IntPtr dialog;
-      try
-      {
-        dialog = NativeMethods.FontChooserDialog(title, IntPtr.Zero);
-      }
-      catch (System.DllNotFoundException)
-      {
-        yield break;
-      }
-      catch (System.EntryPointNotFoundException)
-      {
-        yield break;
-      }
-
-      yield return dialog;
+      return Fake.Core.ProcessUtils.findFilesOnPath("wish");
     }
 
-    public static string SelectGnome(string font, IntPtr handle)
+    public static LogFont SelectWish(string font)
     {
-      return font;
+      var info = new ProcessStartInfo()
+      {
+        Arguments = String.Empty,
+        CreateNoWindow = true,
+        ErrorDialog = false,
+        FileName = Fake.Core.ProcessUtils.findFilesOnPath("wish").FirstOrDefault(),
+        RedirectStandardError = true,
+        RedirectStandardInput = true,
+        RedirectStandardOutput = true
+      };
+
+      //Console.WriteLine("font in '{0}'", font);
+      LogFont.TryParse(font, out var lf);
+      var tkfont = lf.ToTkString();
+      //Console.WriteLine("font in '{0}'", tkfont);
+
+      var wish = Process.Start(info);
+      wish.StandardInput.WriteLine("wm geometry . 1x1");
+      wish.StandardInput.WriteLine("wm attributes  . -alpha 0.0");
+      wish.StandardInput.WriteLine("proc fontchosen {f} {");
+      wish.StandardInput.WriteLine("  puts stdout \"***fontchosen***\"");
+      wish.StandardInput.WriteLine("  puts stdout $f");
+      wish.StandardInput.WriteLine("  destroy .");
+      wish.StandardInput.WriteLine("}");
+      wish.StandardInput.WriteLine("proc closeout {} {");
+      wish.StandardInput.WriteLine("  [expr {");
+      wish.StandardInput.WriteLine("  [tk fontchooser configure -visible] ?");
+      wish.StandardInput.WriteLine("  \"raise\" : \"destroy\" }] .");
+      wish.StandardInput.WriteLine("}");
+      wish.StandardInput.WriteLine("bind . <<TkFontchooserVisibility>> closeout");
+      wish.StandardInput.WriteLine("tk fontchooser configure -parent . -font "
+        + tkfont + " -command fontchosen");
+      wish.StandardInput.WriteLine("tk fontchooser show");
+      wish.WaitForExit();
+      var found = false;
+      while (!found)
+      {
+        var sol = wish.StandardOutput.ReadLine();
+        found = string.IsNullOrEmpty(sol) ||
+          sol.Equals("***fontchosen***");
+      }
+
+      if (!found)
+        return null;
+
+      var line = wish.StandardOutput.ReadLine();
+      //Console.WriteLine("font out '{0}'", line);
+
+      if (!LogFont.TryTkParse(line, out var fontOut))
+        return null;
+      //Console.WriteLine("font out'{0}'", fontOut);
+      return fontOut;
     }
 
     public static LogFont SelectWin32(string font, IntPtr handle)
@@ -274,7 +311,9 @@ namespace AltCover.FontSupport
     public static bool TryParse(string encoded, out LogFont decode)
     {
       decode = new LogFont();
-      var core = encoded ?? string.Empty;
+      if (string.IsNullOrEmpty(encoded))
+        return false;
+      var core = encoded;
 
       // discard variations
       var at = core.IndexOf('@');
@@ -437,6 +476,46 @@ namespace AltCover.FontSupport
       return core.Length > 0;
     }
 
+    // Tcl/Tk-style text like {Consolas} 12 bold roman
+    [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods",
+      Justification = "validate local variable ''(*decode)'', which was reassigned from parameter 'decode', before using it -- u wot m8!?")]
+    public static bool TryTkParse(string encoded, out LogFont decode)
+    {
+      decode = new LogFont();
+      if (string.IsNullOrEmpty(encoded))
+        return false;
+
+      var core = encoded;
+      core = core.TrimEnd();
+
+      var curly = core.IndexOf('}');
+      if (curly > 0)
+      {
+        decode.faceName = core.Substring(1, curly - 1);
+        core = core.Substring(curly + 1);
+      }
+      else
+      {
+        var space = core.IndexOf(' ');
+        if (space < 0)
+          return false;
+        decode.faceName = core.Substring(0, space);
+        core = core.Substring(space + 1);
+      }
+
+      foreach (var token in core.Split(' '))
+      {
+        if (token.Equals("italic", StringComparison.OrdinalIgnoreCase))
+          decode.italic = 255;
+        if (token.Equals("bold", StringComparison.OrdinalIgnoreCase))
+          decode.weight = (int)FontWeight.Bold;
+        if (Int32.TryParse(token, out var points))
+          decode.height = points;
+      }
+
+      return true;
+    }
+
     public override string ToString()
 
     {
@@ -450,6 +529,16 @@ namespace AltCover.FontSupport
       var slant = string.Empty;
       if (this.italic != 0) slant = "Italic ";
       return FormattableString.Invariant($"{faceName}, {(FontWeight)weight} {slant}{height}");
+    }
+
+    public string ToTkString()
+    {
+      // Tk names like {{Consolas} 12 bold roman}
+      var w = "normal";
+      if (weight > (int)FontWeight.Normal) w = "bold";
+      var i = "italic";
+      if (italic == 0) i = "roman";
+      return FormattableString.Invariant($"{{{{{faceName}}} {height} {w} {i}}}");
     }
   }
 
