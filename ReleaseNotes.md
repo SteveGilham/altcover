@@ -5,8 +5,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 # 7.1.783  (Genbu series release 6a)
 * [Visualizer-global-tool] 
   * [BUGFIX] Don't NRE when cancelling a File Open dialog when Avalonia uses its GTK binding (Linux)
-  * Support font selection on Windows natively
-  * On non-Windows platforms, if Tcl/Tk `wish` is present, use that to perform font selection
+  * Support font selection on Windows natively (monospace fonts only)
+  * On non-Windows platforms, if Tcl/Tk `wish` is present, use that to perform font selection (choose wisely)
 
 # 7.1.782  (Genbu series release 6)
 * [BUGFIX] Don't throw NRE when encountering an interface with a default method implementation
