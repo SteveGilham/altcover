@@ -612,9 +612,15 @@ _Target "FxCop" (fun _ ->
     standardRules
   ]
 
-  [ ([ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net45/AltCover.NetCoreApp.exe"
-       "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net46/AltCover.FontSupport.dll"
-       "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ], // TODO netcore support
+  [ (
+     (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
+      then
+        [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net45/AltCover.NetCoreApp.exe"
+          "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net46/AltCover.FontSupport.dll"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ]
+      else // HACK HACK HACK
+        [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net45/AltCover.NetCoreApp.exe"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net46/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net46/AltCover.Fake.dll" ],
