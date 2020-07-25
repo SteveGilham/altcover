@@ -90,8 +90,12 @@ namespace AltCover.FontSupport
       Justification = "private method, not for morts.")]
     private static IntPtr Allocate<T>()
     {
+#if NETSTANDARD2_0  //Because AppVeyor doesn't like this despite working on my machine (FxCop fail)
       var size = Marshal.SizeOf<T>();
       return Marshal.AllocHGlobal(size);
+#else
+      return IntPtr.Zero;
+#endif
     }
 
     public static LogFont SelectWin32(string font, IntPtr handle)
@@ -541,7 +545,11 @@ namespace AltCover.FontSupport
       // AOB??
       var slant = string.Empty;
       if (this.italic != 0) slant = "Italic ";
+#if NETSTANDARD2_0  //Because AppVeyor can't find this despite working on my machine (FxCop fail)
       return FormattableString.Invariant($"{faceName}, {(FontWeight)weight} {slant}{height}");
+#else
+      return String.Empty;
+#endif
     }
 
     public string ToWishString()
@@ -551,7 +559,11 @@ namespace AltCover.FontSupport
       if (weight > (int)FontWeight.Normal) w = "bold";
       var i = "italic";
       if (italic == 0) i = "roman";
+#if NETSTANDARD2_0  //Because AppVeyor can't find this despite working on my machine (FxCop fail)
       return FormattableString.Invariant($"{{{{{faceName}}} {height} {w} {i}}}");
+#else
+      return String.Empty;
+#endif
     }
   }
 

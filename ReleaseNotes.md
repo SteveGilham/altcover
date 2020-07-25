@@ -4,13 +4,6 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 7.1.xxx (Genbu series release 7)
 
-Microsoft (R) FxCop Command-Line Tool, Version 16.0 (16.0.30222.195) X86
-Copyright (C) Microsoft Corporation, All Rights Reserved.
-Loaded altcode.dixon.dll...
-Loaded dataflowrules.dll...
-Project : error : CA0001 : Rule=Microsoft.Reliability#CA2001, Target=AltCover.FontSupport.Fonts.#SelectWin32(System.String,System.IntPtr) : An error was encountered while parsing IL for method: 'AltCover.FontSupport.Fonts.SelectWin32(System.String,System.IntPtr)', instruction at offset '0x10' with opcode 'Call'.
-
-
 # 7.1.783  (Genbu series release 6a)
 * [Visualizer-global-tool] 
   * [BUGFIX] Don't NRE when cancelling a File Open dialog when Avalonia uses its GTK binding (Linux)
