@@ -86,7 +86,7 @@ namespace AltCover.FontSupport
       }
     }
 
-    private static IntPtr Allocate<T>(T target)
+    private static IntPtr Allocate<T>()
     {
       var size = Marshal.SizeOf<T>();
       return Marshal.AllocHGlobal(size);
@@ -95,7 +95,7 @@ namespace AltCover.FontSupport
     public static LogFont SelectWin32(string font, IntPtr handle)
     {
       var _ = LogFont.TryParse(font, out LogFont logfont);
-      IntPtr pLogfont = Allocate(logfont); //Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
+      IntPtr pLogfont = Allocate<LogFont>(); //Marshal.AllocHGlobal(Marshal.SizeOf(logfont));
       try
       {
         // Fudge-factor here
@@ -104,7 +104,7 @@ namespace AltCover.FontSupport
         Marshal.StructureToPtr(logfont, pLogfont, false);
 
         ChooseFont choosefont = new ChooseFont();
-        IntPtr pChoosefont = Allocate(choosefont); //Marshal.AllocHGlobal(Marshal.SizeOf(choosefont));
+        IntPtr pChoosefont = Allocate<ChooseFont>(); //Marshal.AllocHGlobal(Marshal.SizeOf(choosefont));
         try
         {
           choosefont.structSize = Marshal.SizeOf(choosefont);
