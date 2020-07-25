@@ -86,6 +86,8 @@ namespace AltCover.FontSupport
       }
     }
 
+    [SuppressMessage("Gendarme.Rules.Design", "Generic.AvoidMethodWithUnusedGenericTypeRule",
+      Justification = "private method, not for morts.")]
     private static IntPtr Allocate<T>()
     {
       var size = Marshal.SizeOf<T>();
