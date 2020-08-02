@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
-    <PlatformTarget Condition="'$(TargetFramework)' == 'net471'">x86</PlatformTarget>
+    <TargetFrameworks>net472;netcoreapp3.0</TargetFrameworks>
+    <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
 
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -25,10 +25,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net471'">
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net471'" />
+    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,16 +39,15 @@
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="GtkVisualizerTests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net471'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net471'" />
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'net471'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net471" Version="1.0.0" Condition="'$(TargetFramework)' == 'net471'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

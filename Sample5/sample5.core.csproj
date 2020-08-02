@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <AssemblyName>Sample5</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -22,9 +22,9 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net461'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

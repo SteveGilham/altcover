@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>AltCover.Cake</RootNamespace>
     <AssemblyName>AltCover.Cake</AssemblyName>
@@ -41,7 +41,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net46" Version="1.0.0" Condition="'$(TargetFramework)' == 'net46'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -56,7 +56,7 @@
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net46|AnyCPU'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
     <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>

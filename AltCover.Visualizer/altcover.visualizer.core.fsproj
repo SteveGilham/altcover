@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;net45</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <PlatformTarget Condition="'$(TargetFramework)' == 'net45'">x86</PlatformTarget>
+    <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <Name>AltCover.Visualizer</Name>
@@ -14,8 +14,8 @@
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <!-- https://github.com/dotnet/sdk/issues/987 -->
-    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net45'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
-    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">NETCOREAPP2_1</GlobalDefineConstants -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net472'">NETCOREAPP2_1</GlobalDefineConstants -->
     <GlobalDefineConstants>GUI</GlobalDefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
@@ -41,8 +41,8 @@
     <None Include="Prepare.ps1" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net45'" />
-    <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net45'" />
+    <EmbeddedResource Include="Visualizer3.glade" Condition="'$(TargetFramework)' != 'net472'" />
+    <EmbeddedResource Include="Visualizer.glade" Condition="'$(TargetFramework)' == 'net472'" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Browser.fs" />
     <Compile Include="Persistence.fs" />
@@ -51,18 +51,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.98" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Include="GtkSharp" Version="3.22.25.98" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net45'" />
-    <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net472'" />
+    <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="gdk-sharp">
       <Private>False</Private>
     </Reference>
@@ -82,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0" Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -93,8 +93,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' != 'net45'" />
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

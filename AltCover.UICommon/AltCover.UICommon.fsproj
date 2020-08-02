@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <RootNamespace>AltCover.UICommon</RootNamespace>
     <AssemblyName>AltCover.UICommon</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -11,8 +11,8 @@
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <!-- https://github.com/dotnet/sdk/issues/987 -->
-    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net45'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
-    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">NETCOREAPP2_1</GlobalDefineConstants -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net472'">NETCOREAPP2_1</GlobalDefineConstants -->
     <GlobalDefineConstants>GUI</GlobalDefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
@@ -93,7 +93,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' != 'net45'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
   </ItemGroup>
 </Project>

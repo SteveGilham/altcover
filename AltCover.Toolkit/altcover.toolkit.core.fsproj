@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <RootNamespace>AltCover.Toolkit</RootNamespace>
     <AssemblyName>AltCover.Toolkit</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -66,15 +66,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net45" Version="1.0.0" Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net45'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
@@ -83,7 +82,7 @@
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net45|AnyCPU'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
     <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>

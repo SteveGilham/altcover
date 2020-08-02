@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net472</TargetFrameworks>
     <AssemblyName>Sample6</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
   </PropertyGroup>
@@ -19,9 +19,9 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Library1.fs" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0" Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net461'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net461'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
   </ItemGroup>
 </Project>

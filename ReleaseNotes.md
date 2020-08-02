@@ -3,6 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.1.xxx (Genbu series release 7)
+* Except for the dedicated net20 Recorder code, level up to net472 and FSharp.Core 4.7.2 everywhere Framework
 
 # 7.1.783  (Genbu series release 6a)
 * [Visualizer-global-tool] 

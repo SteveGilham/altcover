@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <RootNamespace>AltCover.Fake.DotNet.Testing.AltCover</RootNamespace>
     <AssemblyName>AltCover.Fake.DotNet.Testing.AltCover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -57,11 +57,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Collections.Immutable" Version="1.6.0" Condition="'$(TargetFramework)' == 'net462'" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.6.0" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.0" Condition="'$(TargetFramework)' == 'net462'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -70,7 +70,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

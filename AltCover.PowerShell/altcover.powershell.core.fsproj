@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <RootNamespace>AltCover.PowerShell</RootNamespace>
     <AssemblyName>AltCover.PowerShell</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -48,7 +48,7 @@
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net47|Windows_NT'">
+    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net472|Windows_NT'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -60,7 +60,7 @@
   </ItemGroup>
   <ItemGroup>
 
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.0" Condition="'$(TargetFramework)' == 'net47'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -71,13 +71,12 @@
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
-  <Target Name="PreXmlDoc2CmdletDoc" BeforeTargets="XmlDoc2CmdletDoc" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net47|Windows_NT'">
+  <Target Name="PreXmlDoc2CmdletDoc" BeforeTargets="XmlDoc2CmdletDoc" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net472|Windows_NT'">
     <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
   </Target>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net47'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
@@ -86,7 +85,7 @@
     <AltCoverDll Include="$(OutputPath)AltCover.dll" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net47|AnyCPU'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
     <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>

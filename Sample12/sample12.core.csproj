@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net472</TargetFrameworks>
     <AssemblyName>Sample12</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -17,10 +17,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net462'" >
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
 </Project>
