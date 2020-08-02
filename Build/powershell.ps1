@@ -1,6 +1,6 @@
 param([string]$ACV="0.0.0.0")
 
-Import-Module "./_Packaging/Unpack/tools/net45/AltCover.PowerShell.dll"
+Import-Module "./_Packaging/Unpack/tools/net472/AltCover.PowerShell.dll"
 Import-Module "./packages/pester/5.0.2/Pester.psm1"
 
 Invoke-Altcover -?

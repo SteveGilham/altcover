@@ -1,0 +1,3 @@
+ildasm /all /out=BlackFox.CommandLine.il BlackFox.CommandLine.dll
+-- patch F# version --
+ilasm /dll /output=..\ThirdParty\BlackFox.CommandLine.dll /key=..\ThirdParty\ThirdParty.snk BlackFox.CommandLine.il  
