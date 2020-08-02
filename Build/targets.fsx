@@ -2524,7 +2524,7 @@ _Target "Pester" (fun _ ->
            InputDirectories = [ i ]
            StrongNameKey = key
            TypeFilter = [ "System\\."; "DotNet" ]
-           AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
+           AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector"; "FSharp" ]
            InPlace = true
            ReportFormat = "OpenCover"
            Save = true
