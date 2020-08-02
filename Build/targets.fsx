@@ -2090,6 +2090,8 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
   let config = AltCover + ".config"
+  let manatee =
+    Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Manatee.Json.dll"
   let fox =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/FSharp.Core.dll"
@@ -2149,6 +2151,7 @@ _Target "Packaging" (fun _ ->
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
+      (manatee, Some "tools/net472", None)
       (fox, Some "tools/net472", None)
       (options, Some "tools/net472", None)
       (packable, Some "", None) ]
@@ -2164,6 +2167,7 @@ _Target "Packaging" (fun _ ->
       (cake, Some "lib/net472", None)
       (fake, Some "lib/net472", None)
       (fscore, Some "lib/net472", None)
+      (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
       (options, Some "lib/net472", None)
       (packable, Some "", None) ]

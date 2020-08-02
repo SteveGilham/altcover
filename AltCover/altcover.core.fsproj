@@ -31,7 +31,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --staticlink:Manatee.Json</OtherFlags>
+    <!-- OtherFlags>- -keyfile:$(SolutionDir)Build\Infrastructure.snk - -staticlink:Manatee.Json</OtherFlags -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -95,6 +95,8 @@
     <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
+    <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
+    <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
     <PackageReference Include="Manatee.Json" Version="13.0.2" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
