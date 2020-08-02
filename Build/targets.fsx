@@ -321,7 +321,8 @@ _Target "RebuildPaketLock" ignore
 _Target "Preparation" ignore
 
 _Target "PreClean" (fun _ -> 
-      !!"**/*.ssemblyAttributes.cs"
+// dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
+      !!"**/*ssemblyAttributes.cs"
       |> Seq.map Path.GetFullPath
       |> Seq.toList
       |> List.iter File.delete)
