@@ -469,13 +469,7 @@ _Target "Lint" (fun _ ->
          | Lint.LintResult.Failure x -> failwithf "%A" x
          | Lint.LintResult.Success w ->
              w
-             |> Seq.filter (fun x ->
-                  match x.Details.SuggestedFix with
-                  | Some l ->
-                      match l.Force() with
-                      | Some fix -> fix.FromText <> "AltCover_Fake" // special case
-                      | _ -> false
-                  | _ -> false))
+             |> Seq.filter (fun x -> x.Details.SuggestedFix |> Option.isSome))
     |> Seq.fold (fun _ x ->
          printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Details.Message
            x.Details.Range x.Details.SuggestedFix
@@ -502,7 +496,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
     ("./Build/common-rules.xml",
      [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ])
-//    ("./Build/common-rules.xml",
+//    ("./Build/common-rules.xml", // Avalonia generated code breaks everything
 //     [ "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
 //    ("./Build/common-rules.xml",
 //     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/netcoreapp3.0/AltCover.Visualizer.dll" ])
