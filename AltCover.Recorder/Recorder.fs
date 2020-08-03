@@ -361,14 +361,12 @@ module Instance =
   // Used by the datacollector
   let FlushFinish() = I.flushAll ProcessExit
 
-#if SHADOW
 [<assembly: SuppressMessage("Microsoft.Performance",
   "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
-  Target="<StartupCode$AltCover-Shadow>.$Base.#.cctor()",
+  Target="<StartupCode$AltCover-Recorder>.$Base.#.cctor()",
   Justification="Compiler generated")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
   "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
-  Target="<StartupCode$AltCover-Shadow>.$Recorder.#.cctor()",
+  Target="<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
   Justification="Compiler generated")>]
 ()
-#endif

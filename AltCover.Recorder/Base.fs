@@ -168,6 +168,17 @@ module internal Counter =
       then t1
       else t2
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+     "EnsureLocalDisposalRule",
+     Justification="Not an IDisposeable at net2.0")>]
+    let
+#if !DEBUG
+         inline
+#endif
+                  internal selectNodes (node:XmlNode) name =
+      node.SelectNodes(name)
+      |> Seq.cast<XmlNode>
+
     // // <summary>
     // // Save sequence point hit counts to xml report file
     // // </summary>
@@ -209,12 +220,7 @@ module internal Counter =
 
       let (m, i, m', s, v) = xmlByFormat format
 
-  #if NET2
-      let
-  #else
-      use
-  #endif
-         moduleNodes = coverageDocument.SelectNodes(m)
+      let moduleNodes = selectNodes coverageDocument m
       moduleNodes
       |> Seq.cast<XmlElement>
       |> Seq.map (fun el -> el.GetAttribute(i), el)
@@ -225,23 +231,13 @@ module internal Counter =
            // affectedModule.Descendants(XName.Get("seqpnt"))
            // Get the methods, then flip their
            // contents before concatenating
-  #if NET2
-           let
-  #else
-           use
-  #endif
-               nn = affectedModule.SelectNodes(m')
+           let nn = selectNodes affectedModule m'
            nn
            |> Seq.cast<XmlElement>
            |> Seq.collect (fun (method : XmlElement) ->
                 s
                 |> Seq.collect (fun (name, flag) ->
-  #if NET2
-                     let
-  #else
-                     use
-  #endif
-                         nodes = method.SelectNodes(name)
+                     let nodes = selectNodes method name
                      nodes
                      |> Seq.cast<XmlElement>
                      |> Seq.map (fun x -> (x, flag))
@@ -380,6 +376,7 @@ module internal Counter =
           new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
                           FileOptions.SequentialScan) :> Stream
       try
+        ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
         let zip = new ZipFile(container)
         try
           let entryName = report |> Path.GetFileName

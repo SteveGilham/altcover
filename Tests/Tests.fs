@@ -139,6 +139,10 @@ module AltCoverTests =
           |> Seq.filter
                (fun x ->
                not
+               <| (snd x).FullName.StartsWith("ICSharp", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+               (fun x ->
+               not
                <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                 (fun x ->

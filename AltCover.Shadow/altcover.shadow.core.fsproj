@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>AltCover.Shadow</AssemblyName>
-    <TargetFrameworks>netstandard2.0;net20</TargetFrameworks>
+    <TargetFramework>net20</TargetFramework>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
@@ -41,14 +41,13 @@
 
   <ItemGroup>
     <PackageReference Include="ICSharpCode.SharpZipLib.Patched" Version="0.86.5.3" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" Condition="'$(TargetFramework)' != 'netstandard2.0'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
+    <PackageReference Update="FSharp.Core" Version="4.1.18" />
   </ItemGroup>
 </Project>

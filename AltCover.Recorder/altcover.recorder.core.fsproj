@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net20</TargetFrameworks>
+    <TargetFramework>net20</TargetFramework>
     <AssemblyName>AltCover.Recorder</AssemblyName>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -10,12 +10,12 @@
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone $(StaticLink) --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone $(StaticLink) --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -24,6 +24,7 @@
     <NoWarn>52</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +34,6 @@
     <Compile Include="Base.fs" />
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
-    <Compile Include="Adapter.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,15 +42,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" Condition="'$(TargetFramework)' != 'netstandard2.0'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' != 'net20'" />
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
+    <PackageReference Update="FSharp.Core" Version="4.1.18" />
   </ItemGroup>
 </Project>

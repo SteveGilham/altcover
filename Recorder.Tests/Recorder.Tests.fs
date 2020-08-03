@@ -100,12 +100,12 @@ module AltCoverTests =
 
         let key = " "
         Instance.I.recording <- false
-        Instance.Visit("key", 17)
+        Instance.Visit "key" 17
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit(key, 23)
+        Instance.Visit key 23
         Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-        Instance.Visit(key, 23)
+        Instance.Visit key 23
         Assert.True( Adapter.VisitsSeq()
                      |> Seq.length = 1 )
         Assert.True( Adapter.VisitsEntrySeq key
@@ -121,7 +121,7 @@ module AltCoverTests =
   [<Test>]
   let JunkUspidGivesNegativeIndex() =
     let key = " "
-    let index = Counter.I.findIndexFromUspid(0, key)
+    let index = Counter.I.findIndexFromUspid 0 key
     Assert.True( index < 0 )
 
   [<Test>]
@@ -174,7 +174,7 @@ module AltCoverTests =
         Instance.I.visits.Clear()
         Instance.I.trace <- Adapter.MakeNullTrace null
         let key = " "
-        Instance.I.visitSelection((Adapter.Null()), key, 23)
+        Instance.I.visitSelection (Adapter.Null()) key 23
         Assert.That
           (Instance.I.visits.Count, Is.EqualTo 1,
            "A visit that should have happened, didn't")
@@ -193,7 +193,7 @@ module AltCoverTests =
     let path = Instance.ReportFile |> Path.GetFullPath
     let where = path |> Path.GetDirectoryName
     let before = Directory.GetFiles(where, "*.exn")
-    Instance.I.logException("a", "b", "c", "ex")
+    Instance.I.logException "a" "b" "c" "ex"
     let after = Directory.GetFiles(where, "*.exn")
     Assert.That(after.Length, Is.GreaterThan before.Length)
     let all = HashSet<String>(after)
@@ -261,7 +261,7 @@ module AltCoverTests =
         let path = Instance.ReportFile |> Path.GetFullPath
         let where = path |> Path.GetDirectoryName
         let before = Directory.GetFiles(where, "*.exn")
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
         let after = Directory.GetFiles(where, "*.exn")
         Assert.That(after.Length, Is.GreaterThan before.Length)
         let all = HashSet<String>(after)
@@ -294,8 +294,8 @@ module AltCoverTests =
       try
         Instance.I.visits.Clear()
         let key = " "
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl("key", 42, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl "key" 42 (Adapter.Null())
         Assert.That(Instance.I.visits.Count, Is.EqualTo 2)
       finally
         Instance.I.visits.Clear())
@@ -308,8 +308,8 @@ module AltCoverTests =
       try
         Instance.I.visits.Clear()
         let key = " "
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl(key, 42, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl key 42 (Adapter.Null())
         Assert.That(Instance.I.visits.Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
       finally
@@ -324,8 +324,8 @@ module AltCoverTests =
       try
         Instance.I.visits.Clear()
         let key = " "
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl key 23 (Adapter.Null())
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
@@ -341,8 +341,8 @@ module AltCoverTests =
         Instance.I.visits.Clear()
         let key = " "
         let payload = Adapter.Time DateTime.UtcNow.Ticks
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl(key, 23, payload)
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl key 23 payload
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
       finally

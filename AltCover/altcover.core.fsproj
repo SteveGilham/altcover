@@ -104,10 +104,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
-    <Reference Include="AltCover.Recorder" Condition="'$(TargetFramework)' != 'net472'">
-      <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\netstandard2.0\AltCover.Recorder.dll</HintPath>
-    </Reference>
-    <Reference Include="AltCover.Recorder" Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="AltCover.Recorder">
       <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
     </Reference>
     <Reference Include="BlackFox.CommandLine" Condition="'$(TargetFramework)' == 'net472'">
