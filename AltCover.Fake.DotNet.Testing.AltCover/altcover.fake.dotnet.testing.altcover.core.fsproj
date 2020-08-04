@@ -31,15 +31,15 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Toolkit\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover\Abstract.fsi" Link="Abstract.fsi" />
-    <Compile Include="..\AltCover\Abstract.fs" Link="Abstract.fs" />
-    <Compile Include="..\AltCover\Primitive.fsi" Link="Primitive.fsi" />
-    <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
-    <Compile Include="..\AltCover\TypeSafe.fsi" Link="TypeSafe.fsi" />
-    <Compile Include="..\AltCover\TypeSafe.fs" Link="TypeSafe.fs" />
-    <Compile Include="..\AltCover\AltCover.fsi" Link="AltCover.fsi" />
-    <Compile Include="..\AltCover\AltCover.fs" Link="AltCover.fs" />
-    <Compile Include="..\AltCover\Args.fs" Link="Args.fs" />
+    <Compile Include="..\AltCover.Engine\Abstract.fsi" Link="Abstract.fsi" />
+    <Compile Include="..\AltCover.Engine\Abstract.fs" Link="Abstract.fs" />
+    <Compile Include="..\AltCover.Engine\Primitive.fsi" Link="Primitive.fsi" />
+    <Compile Include="..\AltCover.Engine\Primitive.fs" Link="Primitive.fs" />
+    <Compile Include="..\AltCover.Engine\TypeSafe.fsi" Link="TypeSafe.fsi" />
+    <Compile Include="..\AltCover.Engine\TypeSafe.fs" Link="TypeSafe.fs" />
+    <Compile Include="..\AltCover.Engine\AltCover.fsi" Link="AltCover.fsi" />
+    <Compile Include="..\AltCover.Engine\AltCover.fs" Link="AltCover.fs" />
+    <Compile Include="..\AltCover.Engine\Args.fs" Link="Args.fs" />
     <Compile Include="AltCoverCommand.fsi" />
     <Compile Include="AltCoverCommand.fs" />
     <Compile Include="..\AltCover.DotNet\DotNet.fsi" Link="DotNet.fsi" />

@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <ProjectReference Include="..\AltCover.Engine\altcover.engine.core.fsproj" />
     <ProjectReference Include="..\AltCover.DotNet\altcover.dotnet.core.fsproj" />
   </ItemGroup>
 
