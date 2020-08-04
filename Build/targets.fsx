@@ -351,7 +351,7 @@ _Target "SetVersion" (fun _ ->
   Copyright := "Copyright " + copy
 
   Directory.ensure "./_Generated"
-  Shell.copyFile "./AltCover.Engine/Abstract.fs" "./AltCover.Engine/Abstract.fsi"
+  Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
   Actions.InternalsVisibleTo(!Version)
   let v' = !Version
 
@@ -490,6 +490,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
   [ ("./Build/common-rules.xml",
      [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/netcoreapp2.0/AltCover.NetCoreApp.dll"
+       "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
        "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
@@ -616,9 +617,11 @@ _Target "FxCop" (fun _ ->
       then
         [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net472/AltCover.NetCoreApp.exe"
           "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
+          "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
       else // HACK HACK HACK
         [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net472/AltCover.NetCoreApp.exe"
+          "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
@@ -652,7 +655,7 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
-    ([ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
+    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
      [],
       List.concat [
         defaultRules
@@ -2093,6 +2096,7 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
 
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
+  let engine = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Engine.dll"
   let config = AltCover + ".config"
   let manatee =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Manatee.Json.dll"
@@ -2147,6 +2151,7 @@ _Target "Packaging" (fun _ ->
 
   let applicationFiles =
     [ (AltCover, Some "tools/net472", None)
+      (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
       (posh, Some "tools/net472", None)
@@ -2162,6 +2167,7 @@ _Target "Packaging" (fun _ ->
 
   let apiFiles =
     [ (AltCover, Some "lib/net472", None)
+      (engine, Some "lib/net472", None)
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
       (posh, Some "lib/net472", None)
@@ -2430,7 +2436,7 @@ _Target "Packaging" (fun _ ->
 _Target "PrepareFrameworkBuild" ignore
 
 _Target "PrepareDotNetBuild" (fun _ ->
-  let netcoresource = Path.getFullName "./AltCover/altcover.core.fsproj"
+  let netcoresource = Path.getFullName "./AltCover/Altcover.fsproj"
   let publish = Path.getFullName "./_Publish"
 
   DotNet.publish (fun options ->

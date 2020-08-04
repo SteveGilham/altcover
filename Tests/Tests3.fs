@@ -45,7 +45,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2009,7 +2009,7 @@ module AltCoverTests3 =
       Main.init()
       let options = Main.I.declareOptions()
       let saved = (Console.Out, Console.Error)
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       CommandLine.error <- []
       try
         use stdout = new StringWriter()
@@ -2047,7 +2047,7 @@ module AltCoverTests3 =
     let OutputToReallyNewPlaceIsOK() =
       Main.init()
       let options = Main.I.declareOptions()
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
       try
@@ -2280,7 +2280,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2333,7 +2333,7 @@ module AltCoverTests3 =
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
-        EntryPoint.toConsole()
+        CommandLine.toConsole()
         let rc = AltCover.Main.effectiveMain [| "i" |]
         Assert.That(rc, Is.EqualTo 0)
         let result = stdout.ToString().Replace("\r\n", "\n")
@@ -2354,7 +2354,7 @@ module AltCoverTests3 =
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
-        EntryPoint.toConsole()
+        CommandLine.toConsole()
         let rc = AltCover.Main.effectiveMain [| "v" |]
         Assert.That(rc, Is.EqualTo 0)
         let result = stdout.ToString().Replace("\r\n", "\n")
@@ -2406,7 +2406,7 @@ module AltCoverTests3 =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<Node>.Assembly.GetType("AltCover.EntryPoint")
+          typeof<Marker>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)

@@ -12,20 +12,18 @@ open AltCover.Main
 [<assembly:ComVisible(false)>]
 ()
 
-module DotNetAltCover =
-  let internal toConsole() =
-    Output.error <- CommandLine.writeErr
-    Output.usage <- CommandLine.usageBase
-    Output.echo <- CommandLine.writeErr
-    Output.info <- CommandLine.writeOut
+#if DEBUG
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+  "AvoidUninstantiatedInternalClassesRule",
+  Justification="Like the name says")>]
+type internal Marker =
+  DummyValueForReflectiveAccess = 0
+#endif
 
+module EntryPoint =
   [<EntryPoint>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Portability",
-      "ExitCodeIsLimitedOnUnixRule",
-      Justification="limited 0-255 elsewhere")>]
   let private main arguments =
-    toConsole()
+    CommandLine.toConsole()
     let result =
 #if GLOBALTOOL
         let first =

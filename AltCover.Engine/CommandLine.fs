@@ -437,3 +437,12 @@ module internal CommandLine =
   let internal writeErrorResourceWithFormatItems s x =
     Format.Local(s, x)
     |> Output.error
+
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "An internal API")>]
+  let internal toConsole() =
+    Output.error <- writeErr
+    Output.usage <- usageBase
+    Output.echo <- writeErr
+    Output.info <- writeOut

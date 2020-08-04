@@ -1,8 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="AltCover.Prepare"
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Engine.dll" />
   <UsingTask TaskName="AltCover.Collect"
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Engine.dll" />
 
   <ItemGroup>
     <CallContext Include="0" />
@@ -13,20 +13,14 @@
   </ItemGroup>
   <Target Name="MSBuildTest">
     <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj -f netcoreapp2.1" />
-    <Message Text="1" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
       XmlReport="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
-      AssemblyFilter="@(AssemblyFilter)"
-      />  
-    <Message Text="2"/>
+      AssemblyFilter="@(AssemblyFilter)" />
     <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj  -f netcoreapp2.1" />
-    <Message Text="3"/>
-    <AltCover.Collect 
-      RecorderDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"   
-      />  
-    <Message Text="4"/>
+    <AltCover.Collect
+      RecorderDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1" />
   </Target>
 </Project>

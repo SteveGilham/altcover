@@ -3,8 +3,8 @@
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <UsingTask TaskName="AltCover.Prepare"  
-             Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.exe')" 
-             AssemblyFile="$(AltCoverPath)/AltCover.exe"/>  
+             Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')" 
+             AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll"/>  
   <PropertyGroup>
     <SolutionDir Condition="'$(SolutionDir)' == ''">$(ProjectDir)../</SolutionDir>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>

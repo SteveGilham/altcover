@@ -96,6 +96,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Engine\altcover.engine.core.fsproj" />
+    <ProjectReference Include="..\AltCover\AltCover.fsproj" />
     <ProjectReference Include="..\Sample11\sample11.core.csproj" />
     <ProjectReference Include="..\Sample16\sample16.core.csproj" />
     <ProjectReference Include="..\Sample17\sample17.core.fsproj" />

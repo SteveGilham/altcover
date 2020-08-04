@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <UsingTask TaskName="AltCover.Prepare" Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.exe')" AssemblyFile="$(AltCoverPath)/AltCover.exe" />
+  <UsingTask TaskName="AltCover.Prepare"
+             Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')"
+             AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>

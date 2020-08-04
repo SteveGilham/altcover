@@ -69,6 +69,7 @@ open System.Runtime.CompilerServices
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 #if NETSTANDARD2_0
+[<assembly: InternalsVisibleTo("AltCover.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests")>]
 #else

@@ -51,13 +51,7 @@
     <ProjectReference Include="..\AltCover.DotNet\altcover.dotnet.core.fsproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AltCoverExe Include="$(OutputPath)AltCover.exe" />
-    <AltCoverDll Include="$(OutputPath)AltCover.dll" />
-  </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
-    <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>
 </Project>

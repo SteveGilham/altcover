@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;netstandard2.0;net472</TargetFrameworks>
-    <RootNamespace>AltCover.Engine</RootNamespace>
-    <AssemblyName>AltCover</AssemblyName>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <RootNamespace>AltCover</RootNamespace>
+    <AssemblyName>AltCover.Engine</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GlobalDefineConstants Condition="'$(TargetFramework)' != 'net472'">RUNNER;NETCOREAPP2_0</GlobalDefineConstants>
     <GlobalDefineConstants Condition="'$(TargetFramework)' == 'net472'">RUNNER</GlobalDefineConstants>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-    <ApplicationIcon>AltCover.ico</ApplicationIcon>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <!-- https://github.com/dotnet/sdk/issues/987 -->
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
@@ -71,15 +69,12 @@
     <Compile Include="Command.fs" />
     <Compile Include="Tasks.fsi" />
     <Compile Include="Tasks.fs" />
-    <Compile Include="EntryPoint.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
-    <None Include="Resource.rc" />
-    <None Include="Resource.res" />
   </ItemGroup>
 
   <ItemGroup>
@@ -134,7 +129,7 @@
   </Target>
 
   <!-- Has to be Debug because of the staticlink in Release -->
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU' AND&#xD;&#xA;                Exists('$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Utilities.v4.0.dll')">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU' AND Exists('$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Utilities.v4.0.dll')">
     <Copy SourceFiles="$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Utilities.v4.0.dll;$(WinDir)\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Framework.dll" DestinationFolder="$(TargetDir)" />
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>
