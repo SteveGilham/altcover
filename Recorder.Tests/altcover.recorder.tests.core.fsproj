@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover.Recorder\Adapter.fs" Link="Adapter.fs" />
+    <Compile Include="Adapter.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
     <Compile Include="Program.fs" />
