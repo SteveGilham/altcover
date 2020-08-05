@@ -447,6 +447,9 @@ module internal Main =
 
       List.unzip sorted
 
+    [<SuppressMessage("Gendarme.Rules.BadPractice",
+      "GetEntryAssemblyMayReturnNullRule",
+      Justification="That is the whole point of the call.")>]
     let internal doInstrumentation arguments =
 #if NETCOREAPP2_0
       let dotnetBuild =

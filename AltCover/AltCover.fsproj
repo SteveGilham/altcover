@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net472</TargetFrameworks>
+    <ToolCommandName Condition="'$(TargetFramework)' == 'netcoreapp2.1'">altcover</ToolCommandName>
+    <PackAsTool Condition="'$(TargetFramework)' == 'netcoreapp2.1'">True</PackAsTool>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -20,7 +22,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.1'">TRACE;DEBUG;CODE_ANALYSIS;GLOBALTOOL</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -28,13 +31,20 @@
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.1'">TRACE;GLOBALTOOL</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
+    <None Include="DotnetToolSettings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="..\AltCover.NetCoreApp\Program.fs" Link="Program.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,7 +12,6 @@ nuget Fake.IO.FileSystem >= 5.20.1 //"
 
 open System
 open System.IO
-open System.Xml
 open System.Xml.Linq
 
 open Fake.Core
@@ -27,7 +26,7 @@ let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
 
 // Really bootstrap
-let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
+let dotnetPath = "dotnet" |> ProcessUtils.tryFindFileOnPath
 
 let dotnetOptions (o : DotNet.Options) =
   match dotnetPath with

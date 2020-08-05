@@ -297,12 +297,12 @@ let msbuildDebug proj =
 let dotnetBuildRelease proj =
   DotNet.build (fun p ->
     { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Release }
-    |> buildWithCLIArguments) proj
+    |> buildWithCLIArguments) (Path.GetFullPath proj)
 
 let dotnetBuildDebug proj =
   DotNet.build (fun p ->
     { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
-    |> buildWithCLIArguments) proj
+    |> buildWithCLIArguments) (Path.GetFullPath proj)
 
 // Information.getCurrentHash()
 let commitHash = Information.getCurrentSHA1 (".")
@@ -404,9 +404,9 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./altcover.recorder.core.sln"; "./altcover.visualizer.core.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
+    [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
 
-    [ "./altcover.core.sln" ] |> Seq.iter dotnetBuildRelease
+    [ "./AltCover.sln" ] |> Seq.iter dotnetBuildRelease
   with x ->
     printfn "%A" x
     reraise())
@@ -423,9 +423,9 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.recorder.core.sln"; "./altcover.visualizer.core.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
+  [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
 
-  [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
+  [ "./AltCover.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
 
@@ -489,8 +489,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
   Directory.ensure "./_Reports"
 
   [ ("./Build/common-rules.xml",
-     [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/netcoreapp2.0/AltCover.NetCoreApp.dll"
-       "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
+     [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
        "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
@@ -501,7 +500,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
     ("./Build/common-rules.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ]) // GTK2
+     [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool build
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ]) // GTK2
 //    ("./Build/common-rules.xml", // Avalonia generated code breaks everything
 //     [ "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
 //    ("./Build/common-rules.xml",
@@ -615,13 +615,11 @@ _Target "FxCop" (fun _ ->
   [ (
      (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
       then
-        [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net472/AltCover.NetCoreApp.exe"
-          "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
+        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
       else // HACK HACK HACK
-        [ "_Binaries/AltCover.NetCoreApp/Debug+AnyCPU/net472/AltCover.NetCoreApp.exe"
-          "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
+        [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
@@ -2284,26 +2282,18 @@ _Target "Packaging" (fun _ ->
           None))
     |> Seq.toList
 
-  let publishapi = (Path.getFullName "./_Publish.api").Length
+  let publishapi = (Path.getFullName "./_Publish").Length
 
   let netstdFiles where =
-    (!!"./_Publish.api/**/*.*")
-    |> Seq.filter (fun f ->
-         let n = f |> Path.GetFileName
-         n.StartsWith("System.", StringComparison.OrdinalIgnoreCase) |> not)
+    (!!"./_Publish/**/*.*")
     |> Seq.map (fun x ->
          (x,
           Some(where + Path.GetDirectoryName(x).Substring(publishapi).Replace("\\", "/")),
           None))
     |> Seq.toList
 
-  let apiNetcoreAppFiles where =
-    (!!"./_Binaries/AltCover.NetCoreApp/Release+AnyCPU/netcoreapp2.0/AltCover.NetCoreApp.*")
-    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
-    |> Seq.toList
-
   let globalFiles =
-    (!!"./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/global-altcover.*")
+    (!!"./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.1/AltCover.*")
     |> Seq.map
          (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
     |> Seq.toList
@@ -2324,7 +2314,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let auxFiles =
-    (!!"./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/*.xml")
+    (!!"./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.1/*.xml")
     |> Seq.map
          (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
     |> Seq.toList
@@ -2345,7 +2335,6 @@ _Target "Packaging" (fun _ ->
       [ apiFiles
         resourceFiles "lib/net472/"
         libFiles "lib/net472/"
-        apiNetcoreAppFiles "lib/netstandard2.0/"
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
@@ -2444,11 +2433,6 @@ _Target "PrepareDotNetBuild" (fun _ ->
         OutputPath = Some publish
         Configuration = DotNet.BuildConfiguration.Release
         Framework = Some "netcoreapp2.0" }) netcoresource
-  DotNet.publish (fun options ->
-    { options with
-        OutputPath = Some(publish + ".api")
-        Configuration = DotNet.BuildConfiguration.Release
-        Framework = Some "netstandard2.0" }) netcoresource
   DotNet.publish (fun options ->
     { options with
         OutputPath = Some(publish + ".visualizer")
@@ -2805,7 +2789,8 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       |> printfn "%A"
 
       printfn "Build the sample2 code as x86"
-      "./altcover.core.sln"
+      "./AltCover.sln"
+      |> Path.GetFullPath
       |> DotNet.build (fun p ->
            { p with
                Configuration = DotNet.BuildConfiguration.Debug

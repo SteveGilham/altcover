@@ -3216,7 +3216,7 @@ module AltCoverTests =
     let ShouldSortFileIds() =
       let visitor, document = OpenCover.reportGenerator()
       let X name = XName.Get(name)
-      let path = Path.Combine(SolutionDir(), "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll")
+      let path = Path.Combine(SolutionDir(), "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.Engine.dll")
       Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
       Assert.That(document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
       Assert.That(document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
