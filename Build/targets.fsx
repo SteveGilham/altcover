@@ -841,7 +841,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.WeakName.Testing]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -858,7 +858,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -874,7 +874,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.WeakName.Testing]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =

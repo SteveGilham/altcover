@@ -51,6 +51,13 @@
     <None Include="Resource.rc" />
     <None Include="Resource.res" />
   </ItemGroup>
+  
+    <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.2" />
