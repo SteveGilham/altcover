@@ -2425,7 +2425,7 @@ _Target "Packaging" (fun _ ->
 _Target "PrepareFrameworkBuild" ignore
 
 _Target "PrepareDotNetBuild" (fun _ ->
-  let netcoresource = Path.getFullName "./AltCover/Altcover.fsproj"
+  let netcoresource = Path.getFullName "./AltCover/AltCover.fsproj"
   let publish = Path.getFullName "./_Publish"
 
   DotNet.publish (fun options ->
