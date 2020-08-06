@@ -2,33 +2,33 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.engine.core", "AltCover.Engine\altcover.engine.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Engine", "AltCover.Engine\AltCover.Engine.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.powershell.core", "AltCover.PowerShell\altcover.powershell.core.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.PowerShell", "AltCover.PowerShell\AltCover.PowerShell.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.toolkit.core", "AltCover.Toolkit\altcover.toolkit.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Toolkit", "AltCover.Toolkit\AltCover.Toolkit.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.cake.core", "AltCover.Cake\altcover.cake.core.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.Cake", "AltCover.Cake\AltCover.Cake.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fake.core", "AltCover.Fake\altcover.fake.core.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Fake", "AltCover.Fake\AltCover.Fake.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests\altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Tests", "Tests\AltCover.Tests.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1\sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample1", "Sample1\Sample1.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample2.core", "Sample2\sample2.core.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample2.core", "Sample2\Sample2.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3\sample3.core.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample3", "Sample3\Sample3.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample4.core", "Sample4\sample4.core.fsproj", "{358265A1-C7B3-48E8-9707-2F344ECAAE9F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample4", "Sample4\Sample4.fsproj", "{358265A1-C7B3-48E8-9707-2F344ECAAE9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample5.core", "Sample5\sample5.core.csproj", "{8510ED92-510C-42D7-9E4D-85810B4DE86B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample5", "Sample5\Sample5.csproj", "{8510ED92-510C-42D7-9E4D-85810B4DE86B}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample6.core", "Sample6\sample6.core.fsproj", "{54F49C6B-AF20-42E4-95A0-386296CB9125}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample6", "Sample6\Sample6.fsproj", "{54F49C6B-AF20-42E4-95A0-386296CB9125}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample7.core", "Sample7\sample7.core.fsproj", "{8E0DC7BC-C322-466C-8409-B69A12062AB6}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample7", "Sample7\Sample7.fsproj", "{8E0DC7BC-C322-466C-8409-B69A12062AB6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample10.core", "Sample10\sample10.core.csproj", "{6D52273D-097D-4C30-82D1-5F276FAB4187}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample10", "Sample10\Sample10.csproj", "{6D52273D-097D-4C30-82D1-5F276FAB4187}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
 EndProject
@@ -66,29 +66,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fake.dotnet.testing.altcover.core", "AltCover.Fake.DotNet.Testing.AltCover\altcover.fake.dotnet.testing.altcover.core.fsproj", "{D431AAE4-AD1F-4531-BFBD-A202868B328D}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Fake.DotNet.Testing.AltCover", "AltCover.Fake.DotNet.Testing.AltCover\AltCover.Fake.DotNet.Testing.AltCover.fsproj", "{D431AAE4-AD1F-4531-BFBD-A202868B328D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample11.core", "Sample11\sample11.core.csproj", "{B206AF1F-A0F3-45F2-8751-383728CCED02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample11", "Sample11\Sample11.csproj", "{B206AF1F-A0F3-45F2-8751-383728CCED02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample12.core", "Sample12\sample12.core.csproj", "{8CCA1249-0561-43D5-9E60-AB284477B48F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample12", "Sample12\Sample12.csproj", "{8CCA1249-0561-43D5-9E60-AB284477B48F}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample13.core", "Sample13\sample13.core.fsproj", "{D588F8AA-50D3-455D-A070-04EAA48A2E93}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample13", "Sample13\Sample13.fsproj", "{D588F8AA-50D3-455D-A070-04EAA48A2E93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.datacollector.core", "altcover.datacollector\altcover.datacollector.core.csproj", "{4AB7CAB3-2463-4289-9E34-B783070477AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.DataCollector", "altcover.datacollector\AltCover.DataCollector.csproj", "{4AB7CAB3-2463-4289-9E34-B783070477AD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample16.core", "Sample16\sample16.core.csproj", "{792FD866-D256-4695-8C76-C14C49BB0207}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample16", "Sample16\Sample16.csproj", "{792FD866-D256-4695-8C76-C14C49BB0207}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample17.core", "Sample17\sample17.core.fsproj", "{5DB22786-389D-4193-AFDE-144FD59CF586}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample17", "Sample17\Sample17.fsproj", "{5DB22786-389D-4193-AFDE-144FD59CF586}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-cli.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.weaknametests.core", "WeakNameTests\altcover.weaknametests.core.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.WeakNameTests", "WeakNameTests\AltCover.WeakNameTests.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample18.core", "Sample18\sample18.core.fsproj", "{8F488261-3FF5-4983-AE1E-17B151507552}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample18", "Sample18\Sample18.fsproj", "{8F488261-3FF5-4983-AE1E-17B151507552}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.api.tests.core", "AltCover.Api.Tests\altcover.api.tests.core.fsproj", "{40FF8254-82F7-4875-A731-EB746B12F83B}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Api.Tests", "AltCover.Api.Tests\AltCover.Api.Tests.fsproj", "{40FF8254-82F7-4875-A731-EB746B12F83B}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.dotnet.core", "AltCover.DotNet\altcover.dotnet.core.fsproj", "{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.DotNet", "AltCover.DotNet\AltCover.DotNet.fsproj", "{9CD47BC5-6C03-4BE5-ACD8-FC8F06942140}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample21", "Sample21\Sample21.csproj", "{978C8A9B-1470-4FD0-BA83-268B21599FFB}"
 EndProject

@@ -35,10 +35,10 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Naming", "UseCorrectCasingRule",
       Justification = "Code rewritten")>]
   let
@@ -68,7 +68,7 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Token = "AltCover"
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Access by reflection in the data collector")>]
   let mutable internal supervision =
@@ -223,10 +223,9 @@ module Instance =
         if counts.Count > 0 then clear()
         trace.OnVisit counts moduleId hitPointId context)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
-                                                      "CA2202:DisposeObjectsBeforeLosingScope",
-                                                      Justification =
-                                                        "Damned if you do, damned if you don't Dispose()")>]
+    [<SuppressMessage("Microsoft.Usage",
+                      "CA2202:DisposeObjectsBeforeLosingScope",
+                      Justification = "Damned if you do, damned if you don't Dispose()")>]
     let internal logException moduleId hitPointId context x =
       let text =
         [| sprintf "ModuleId = %A" moduleId

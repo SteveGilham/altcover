@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

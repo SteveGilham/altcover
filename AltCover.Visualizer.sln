@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.avalonia", "AltCover.Avalonia\altcover.avalonia.fsproj", "{48032486-334E-4D3A-B6B6-4E3165A33FBD}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Avalonia", "AltCover.Avalonia\AltCover.Avalonia.fsproj", "{48032486-334E-4D3A-B6B6-4E3165A33FBD}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Avalonia.FuncUI", "AltCover.Avalonia.FuncUI\AltCover.Avalonia.FuncUI.fsproj", "{15C2C311-8D52-422C-9C79-F31D91228DE8}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.core", "AltCover.Visualizer\altcover.visualizer.core.fsproj", "{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer", "AltCover.Visualizer\AltCover.Visualizer.fsproj", "{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.tests.core", "Tests.Visualizer\altcover.visualizer.tests.core.fsproj", "{93D327EE-100B-4837-A0CA-499ADEEADCD2}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer.Tests", "Tests.Visualizer\AltCover.Visualizer.Tests.fsproj", "{93D327EE-100B-4837-A0CA-499ADEEADCD2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
@@ -42,7 +42,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.UICommon", "AltCover.UICommon\AltCover.UICommon.fsproj", "{D3383B16-5069-4E9C-9A86-920FA408E925}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltCover.FontSupport", "AltCover.FontSupport\AltCover.FontSupport.csproj", "{660BB1CF-D777-4C8F-8145-84A6A497C91E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.FontSupport", "AltCover.FontSupport\AltCover.FontSupport.csproj", "{660BB1CF-D777-4C8F-8145-84A6A497C91E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

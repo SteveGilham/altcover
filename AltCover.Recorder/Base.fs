@@ -1,11 +1,7 @@
 #if RUNNER
 namespace AltCover
 #else
-#if AVALONIA
-namespace AltCover
-#else
 namespace AltCover.Recorder
-#endif
 #endif
 
 open System
@@ -20,10 +16,15 @@ type internal ReportFormat =
   | OpenCover = 1
   | OpenCoverWithTracking = 2
 
-#if !AVALONIA
-
 #if !RUNNER
 open ICSharpCode.SharpZipLib.Zip
+[<AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)>]
+[<Sealed>]
+[<SuppressMessage("Gendarme.Rules.Performance",
+  "AvoidUninstantiatedInternalClassesRule",
+  Justification="Looks like a bug, not detecting its use")>]
+type internal ExcludeFromCodeCoverageAttribute() =
+  inherit Attribute()
 #endif
 
 type internal Sampling =
@@ -32,7 +33,7 @@ type internal Sampling =
 
 // TODO isolate where
 #if RUNNER
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+[<SuppressMessage("Gendarme.Rules.Performance",
   "AvoidUninstantiatedInternalClassesRule",
   Justification="Used as pattern match and compiled away")>]
 #endif
@@ -43,20 +44,12 @@ type internal Tag =
   | Both = 3
   | Table = 4
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+[<ExcludeFromCodeCoverage>]
 [<NoComparison>]
 type internal Pair =
   { Time : int64; Call : int }
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+[<ExcludeFromCodeCoverage>]
 [<NoComparison>]
 type internal Track =
   | Null
@@ -65,11 +58,7 @@ type internal Track =
   | Both of Pair
   | Table of Dictionary<string, Dictionary<int, PointVisit>>
 and [<NoComparison>]
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+    [<ExcludeFromCodeCoverage>]
     internal PointVisit =
     {
       mutable Count : int64
@@ -168,7 +157,7 @@ module internal Counter =
       then t1
       else t2
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+    [<SuppressMessage("Gendarme.Rules.Correctness",
      "EnsureLocalDisposalRule",
      Justification="Not an IDisposeable at net2.0")>]
     let
@@ -184,7 +173,7 @@ module internal Counter =
     // // </summary>
     // // <param name="hitCounts">The coverage results to incorporate</param>
     // // <param name="coverageFile">The coverage file to update as a stream</param>
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+    [<SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule",
      Justification="Most of this gets curried away")>]
     let internal updateReport (postProcess : XmlDocument -> unit)
@@ -302,7 +291,7 @@ module internal Counter =
                             )))
       hitcount
 #endif
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+    [<SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule",
      Justification="Most of this gets curried away")>]
     let doFlush postProcess pointProcess own counts format coverageFile outputFile =
@@ -331,7 +320,7 @@ module internal Counter =
            1L
 #endif
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+  [<SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
   [<SuppressMessage("Microsoft.Reliability",
@@ -400,4 +389,3 @@ module internal Counter =
                            I.doFlush postProcess pointProcess own counts format reader target
 
 #endif // !RUNNER
-#endif // !AVALONIA

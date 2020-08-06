@@ -2,15 +2,11 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
-open System.Threading
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+[<ExcludeFromCodeCoverage>]
 type internal Close =
   | DomainUnload
   | ProcessExit
@@ -38,12 +34,12 @@ type Tracer =
       | null -> false
       | _ -> this.Runner
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+  [<SuppressMessage("Gendarme.Rules.Correctness",
          "EnsureLocalDisposalRule",
          Justification="Record return confusing Gendarme -- TODO")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'fs' is subsumed")>]
+  [<SuppressMessage("Microsoft.Reliability",
+         "CA2000:DisposeObjectsBeforeLosingScope",
+          Justification = "'fs' is subsumed")>]
   member private this.MakeConnection f =
     let fs = File.OpenWrite f
     let s = new DeflateStream(fs, CompressionMode.Compress)

@@ -2882,11 +2882,7 @@ module AltCoverRunnerTests =
 
       use stream =
           Assembly.GetExecutingAssembly()
-#if LEGACY
-                  .GetManifestResourceStream("coverage-04.xsd")
-#else
-                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
-#endif
+                  .GetManifestResourceStream("AltCover.Tests.coverage-04.xsd")
       use reader = new StreamReader(stream)
       use xreader = XmlReader.Create(reader)
       schemas.Add(String.Empty, xreader) |> ignore

@@ -65,6 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Engine\altcover.engine.core.fsproj" />
+    <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
   </ItemGroup>
 </Project>

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder\altcover.recorder.core.fsproj", "{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Recorder.Tests\altcover.recorder.tests.core.fsproj", "{7F197884-A015-4D01-9543-AF0837A4BE33}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Recorder.Tests", "Recorder.Tests\AltCover.Recorder.Tests.fsproj", "{7F197884-A015-4D01-9543-AF0837A4BE33}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject

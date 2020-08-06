@@ -1182,6 +1182,8 @@ module AltCoverTests =
   // run only once in Framework mode to avoid contention
   [<Test>]
   let MailboxFunctionsAsExpected() =
+    let dummy = AltCover.Recorder.ExcludeFromCodeCoverageAttribute()
+    Assert.That(dummy, Is.Not.Null)
     RealIdShouldIncrementCount()
     PauseLeavesExpectedTraces()
     ResumeLeavesExpectedTraces()
