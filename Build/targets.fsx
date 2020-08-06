@@ -2113,25 +2113,12 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Mono.Options.dll"
   let recorder =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
-  let posh =
-    Path.getFullName
-      "_Binaries/AltCover.PowerShell/Release+AnyCPU/net472/AltCover.PowerShell.dll"
   let poshHelp =
     Path.getFullName
-      "_Binaries/AltCover.PowerShell/Release+AnyCPU/net472/AltCover.PowerShell.dll-Help.xml"
+      "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll-Help.xml"
   if (poshHelp |> File.Exists |> not) && (Environment.isWindows |> not)
   then File.WriteAllText(poshHelp, "DUMMY TEXT")
-  let toolkit =
-    Path.getFullName "_Binaries/AltCover.Toolkit/Release+AnyCPU/net472/AltCover.Toolkit.dll"
-  let dotnet =
-    Path.getFullName "_Binaries/AltCover.DotNet/Release+AnyCPU/net472/AltCover.DotNet.dll"
-  let cake =
-    Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/net472/AltCover.Cake.dll"
-  let fake =
-    Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/net472/AltCover.Fake.dll"
-  let fake2 =
-    Path.getFullName
-      "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll"
+
   let vis =
     Path.getFullName
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/net472/AltCover.Visualizer.exe"
@@ -2160,9 +2147,6 @@ _Target "Packaging" (fun _ ->
       (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
-      (posh, Some "tools/net472", None)
-      (poshHelp, Some "tools/net472", None)
-      (toolkit, Some "tools/net472", None)
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
@@ -2176,12 +2160,6 @@ _Target "Packaging" (fun _ ->
       (engine, Some "lib/net472", None)
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
-      (posh, Some "lib/net472", None)
-      (poshHelp, Some "lib/net472", None)
-      (toolkit, Some "lib/net472", None)
-      (dotnet, Some "lib/net472", None)
-      (cake, Some "lib/net472", None)
-      (fake, Some "lib/net472", None)
       (fscore, Some "lib/net472", None)
       (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
@@ -2378,15 +2356,10 @@ _Target "Packaging" (fun _ ->
         housekeepingVis ], [], "_Packaging.visualizer",
      "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer")
 
-    let frameworkFake2Files =
-      [ (fake2, Some "lib/net472", None)
-        (fox, Some "lib/net472", None) ]
-
     (List.concat
       [ fake2Files "lib/netstandard2.0/"
         fox2Files "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
-        frameworkFake2Files
         housekeeping ],
      [ // make these explicit, as this package implies an opt-in
        ("Fake.Core.Environment", "5.18.1")
@@ -2508,7 +2481,7 @@ _Target "WindowsPowerShell" (fun _ ->
 
   let v = (!Version).Split([| '-' |]).[0]
   CreateProcess.fromRawCommand "powershell.exe"
-    [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ]
+    [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v; "-ReportName"; "PoshReport"; "-FolderName"; "Unpack" ]
   |> CreateProcess.withWorkingDirectory "."
   |> Proc.run
   |> (Actions.AssertResult "powershell"))
@@ -2544,7 +2517,7 @@ _Target "Pester" (fun _ ->
   |> AltCoverCommand.run
 
   printfn "Execute the instrumented tests"
-  CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v ]
+  CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v; "-ReportName"; "PesterReport"; "-FolderName"; "Module" ]
   |> CreateProcess.withWorkingDirectory "."
   |> Proc.run
   |> (Actions.AssertResult "pwsh")

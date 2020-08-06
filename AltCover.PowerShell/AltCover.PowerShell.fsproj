@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.PowerShell</RootNamespace>
     <AssemblyName>AltCover.PowerShell</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -48,7 +49,7 @@
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net472|Windows_NT'">
+    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Debug|net472|Windows_NT'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -66,7 +67,7 @@
     </PackageReference>
   </ItemGroup>
 
-  <Target Name="PreXmlDoc2CmdletDoc" BeforeTargets="XmlDoc2CmdletDoc" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Release|net472|Windows_NT'">
+  <Target Name="PreXmlDoc2CmdletDoc" BeforeTargets="XmlDoc2CmdletDoc" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Debug|net472|Windows_NT'">
     <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
   </Target>
 
@@ -75,7 +76,7 @@
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
     <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
   </Target>
 </Project>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,10 +9,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BlackFox.CommandLine" version="1.0.0" />
     <PackageReference Include="NuGet.CommandLine" version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Mono.Options" version="6.6.0.161"/>
     <PackageReference Include="coveralls.io" version="1.4.2" />
     <PackageReference Include="NUnit.ConsoleRunner" version="3.11.1" />
     <PackageReference Include="OpenCover" version="4.7.922" />
