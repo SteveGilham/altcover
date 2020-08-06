@@ -17,8 +17,7 @@ open BlackFox.CommandLine
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
 
-#if NETCOREAPP2_0
-#else
+#if !NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module internal Process =
   type System.Diagnostics.Process with
@@ -194,7 +193,7 @@ module internal CommandLine =
       proc.Start() |> ignore
       proc.BeginErrorReadLine()
       proc.BeginOutputReadLine()
-  #if NETCOREAPP2_0
+  #if NETSTANDARD2_0
       proc.WaitForExit()
   #else
       proc.WaitForExitCustom()

@@ -60,7 +60,7 @@ module internal Instrument =
                     Justification = "partitioned into closures")>]
   module internal I =
 
-#if NETCOREAPP2_0
+#if NETSTANDARD2_0
 #else
     let monoRuntime =
       ("Mono.Runtime"
@@ -167,7 +167,7 @@ module internal Instrument =
     let internal prepareAssembly(location : string) =
       let definition = AssemblyDefinition.ReadAssembly(location)
       guard definition (fun () ->  // set the timer interval in ticks
-  #if NETCOREAPP2_0
+  #if NETSTANDARD2_0
   #else
         if monoRuntime |> not then ProgramDatabase.readSymbols definition
   #endif
@@ -220,7 +220,7 @@ module internal Instrument =
              worker.InsertBefore(head, worker.Create(OpCodes.Ret))
              initialBody |> Seq.iter worker.Remove))
 
-  #if NETCOREAPP2_0
+  #if NETSTANDARD2_0
   #else
     let internal createSymbolWriter pdb isWindows isMono =
       match (isWindows, isMono) with
@@ -291,7 +291,7 @@ module internal Instrument =
         let hook = resolver.GetType().GetMethod("add_ResolveFailure")
         hook.Invoke(resolver, [| hookResolveHandler :> obj |]) |> ignore
 
-  #if NETCOREAPP2_0
+  #if NETSTANDARD2_0
     let internal findProvider pdb write =
       match (pdb, write) with
       | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
@@ -314,7 +314,7 @@ module internal Instrument =
         ProgramDatabase.getPdbWithFallback assembly
         |> Option.defaultValue "x.pdb"
         |> Path.GetExtension
-  #if NETCOREAPP2_0
+  #if NETSTANDARD2_0
       let separatePdb =
         ProgramDatabase.getPdbFromImage assembly
         |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))

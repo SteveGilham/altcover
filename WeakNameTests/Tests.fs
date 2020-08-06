@@ -31,7 +31,7 @@ module AltCoverTests =
     let path =
       Path.Combine(
         SolutionRoot.location,
-        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll")
+        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.Engine.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
     let failures =

@@ -451,7 +451,7 @@ module internal Main =
       "GetEntryAssemblyMayReturnNullRule",
       Justification="That is the whole point of the call.")>]
     let internal doInstrumentation arguments =
-#if NETCOREAPP2_0
+#if NETSTANDARD2_0
       let dotnetBuild =
         Assembly.GetEntryAssembly() // is null for unit tests
         |> Option.ofObj

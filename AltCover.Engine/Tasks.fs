@@ -1,7 +1,7 @@
 namespace AltCover
 
 open System
-#if NETCOREAPP2_0
+#if NETSTANDARD2_0
 open System.IO
 open System.Reflection
 open System.Xml
@@ -284,7 +284,7 @@ type Echo() =
         Console.ForegroundColor <- original
 
     true
-#if NETCOREAPP2_0
+#if NETSTANDARD2_0
 type RunSettings() =
   inherit Task(null)
 
