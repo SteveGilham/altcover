@@ -420,6 +420,7 @@ module TestMain =
           Tests.AltCoverTests3.StoresAsExpected, "Tests3.StoresAsExpected"
           Tests.AltCoverTests3.ImportModuleIsAsExpected, "Tests3.ImportModuleIsAsExpected"
           Tests.AltCoverTests3.VersionIsAsExpected, "Tests3.VersionIsAsExpected"
+          Tests.AltCoverTests3.TargetsPathIsAsExpected, "Tests3.TargetsPathIsAsExpected"
           Tests.AltCoverTests3.UsageIsAsExpected, "Tests3.UsageIsAsExpected"
           Tests.AltCoverTests3.ErrorResponseIsAsExpected, "Tests3.ErrorResponseIsAsExpected"
           Tests.AltCoverTests3.LoggingCanBeExercised, "Tests3.LoggingCanBeExercised"

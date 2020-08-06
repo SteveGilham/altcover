@@ -271,6 +271,14 @@ let uncovered (path : string) =
                    |> Path.GetFileName) numeric
                 numeric))
   |> Seq.toList
+  
+let coverageSummary _ =
+  let numbers = uncovered "_Reports/_Unit*/Summary.xml"
+  if numbers
+     |> List.tryFind (fun n -> n > 0)
+     |> Option.isSome
+     || !misses > 1
+  then Assert.Fail("Coverage is too low")
 
 let msbuildRelease proj =
   MSBuild.build (fun p ->
@@ -699,7 +707,7 @@ _Target "FxCop" (fun _ ->
     reraise())
 // Unit Test
 
-_Target "UnitTest" ignore
+_Target "UnitTest" coverageSummary
 _Target "UncoveredUnitTest" ignore
 
 _Target "JustUnitTest" (fun _ ->
@@ -4012,24 +4020,8 @@ _Target "MakeDocumentation" (fun _ ->
 
 _Target "BulkReport" (fun _ ->
   printfn "Overall coverage reporting"
-  Directory.ensure "./_Reports/_BulkReport"
 
-  !!"./_Reports/*.xml"
-  |> Seq.filter (fun f ->
-       not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
-  |> Seq.toList
-  |> ReportGenerator.generateReports (fun p ->
-       { p with
-           ToolType = ToolType.CreateLocalTool()
-           ReportTypes = [ ReportGenerator.ReportType.Html ]
-           TargetDir = "_Reports/_BulkReport" })
-
-  let numbers = uncovered @"_Reports/_Unit*/Summary.xml"
-  if numbers
-     |> List.tryFind (fun n -> n > 0)
-     |> Option.isSome
-     || !misses > 1
-  then Assert.Fail("Coverage is too low")
+  // coverageSummary ()
 
   let issue71 = !!(@"./**/*.exn") |> Seq.toList
   match issue71 with

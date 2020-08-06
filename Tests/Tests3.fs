@@ -2397,6 +2397,34 @@ module AltCoverTests3 =
       finally
         Console.SetError saved
 
+#if NETCOREAPP3_0
+    [<Test>]
+    let TargetsPathIsAsExpected() =
+      Main.init()
+      let saved = (Console.Out, Console.Error)
+      try
+        use stdout = new StringWriter()
+        use stderr = new StringWriter()
+        Console.SetOut stdout
+        Console.SetError stderr
+        let main =
+          typeof<Marker>.Assembly.GetType("AltCover.EntryPoint")
+            .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
+        let returnCode = main.Invoke(null, [| [| "TargetsPath" |] |])
+        Assert.That(returnCode, Is.EqualTo 0)
+        test<@ stderr.ToString() |> String.IsNullOrEmpty@>
+        let here = Assembly.GetExecutingAssembly().Location
+        let expected =
+          Path.Combine(
+            here |> Path.GetDirectoryName,
+            "../../../build/netstandard2.0/altcover.global.targets")
+          |> Path.GetFullPath
+        test<@ stdout.ToString().Equals(expected.Replace("\\\\", "\\") + Environment.NewLine, StringComparison.Ordinal) @>
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+#endif
+
     [<Test>]
     let ErrorResponseIsAsExpected() =
       Main.init()
