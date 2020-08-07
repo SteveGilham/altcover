@@ -2419,7 +2419,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
         OutputPath = Some(publish + ".visualizer")
         Configuration = DotNet.BuildConfiguration.Release
         Framework = Some "netcoreapp2.1" })
-    (Path.getFullName "./AltCover.Avalonia/altcover.avalonia.fsproj")
+    (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
   // dotnet tooling mods
   [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
