@@ -3412,12 +3412,12 @@ Target.runOrDefault "DoIt"
 
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}","\"" + ver + "\""))
 
-    let dependencies = """version 5.245.1
+    let dependencies = """version 5.249.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
-  nuget Fake.Core.Target >= 5.20.1
-  nuget Fake.DotNet.Cli >= 5.20.1
+  nuget Fake.Core.Target >= 5.20.3
+  nuget Fake.DotNet.Cli >= 5.20.3
   source {0}
   nuget AltCover.Api {1}
   source {2}
