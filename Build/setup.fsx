@@ -36,11 +36,11 @@ let dotnetOptions (o : DotNet.Options) =
 DotNet.restore (fun o ->
   { o with
       Packages = [ "./packages" ]
-      Common = dotnetOptions o.Common }) "./Build/dotnet-cli.csproj"
+      Common = dotnetOptions o.Common }) "./Build/NuGet.csproj"
 
 let toolPackages =
   let xml =
-    "./Build/dotnet-cli.csproj"
+    "./Build/NuGet.csproj"
     |> Path.getFullName
     |> XDocument.Load
   xml.Descendants(XName.Get("PackageReference"))

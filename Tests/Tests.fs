@@ -853,7 +853,7 @@ module AltCoverTests =
 
       let toolPackages =
         let xml =
-          Path.Combine(SolutionRoot.location, "./Build/dotnet-cli.csproj")
+          Path.Combine(SolutionRoot.location, "./Build/NuGet.csproj")
           |> Path.GetFullPath
           |> XDocument.Load
         xml.Descendants(XName.Get("PackageReference"))
