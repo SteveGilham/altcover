@@ -519,7 +519,7 @@ module internal Main =
           Directory.GetDirectories(parent)
           |> Seq.collect (fun d -> Directory.GetFiles(d,
                                                       "AltCover.PowerShell.dll",
-                                                      SearchOption.AllDirectories))
+                                                      SearchOption.TopDirectoryOnly))
           |> Seq.tryHead
           |> Option.map (sprintf "Import-Module %A")
           |> Option.iter Output.info
