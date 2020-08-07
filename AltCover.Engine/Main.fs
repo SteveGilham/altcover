@@ -514,12 +514,15 @@ module internal Main =
           Runner.init()
           Runner.doCoverage arguments (declareOptions())
       | Select "ImportModule" _ ->
-          Path.Combine
-            (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-             "AltCover.PowerShell.dll")
-          |> Path.GetFullPath
-          |> sprintf "Import-Module %A"
-          |> (Output.info)
+          let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+          let parent = here |> Path.GetDirectoryName
+          Directory.GetDirectories(parent)
+          |> Seq.collect (fun d -> Directory.GetFiles(d,
+                                                      "AltCover.PowerShell.dll",
+                                                      SearchOption.AllDirectories))
+          |> Seq.tryHead
+          |> Option.map (sprintf "Import-Module %A")
+          |> Option.iter Output.info
           0
       | Select "version" _ ->
           CommandLine.writeResourceWithFormatItems "AltCover.Version"

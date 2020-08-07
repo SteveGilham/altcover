@@ -2331,19 +2331,31 @@ module AltCoverTests3 =
       Main.init()
       let saved = Console.Out
       try
+        let unique = "ImportModuleIsAsExpected"
+        let here = Assembly.GetExecutingAssembly().Location
+                   |> Path.GetDirectoryName
+                   |> Path.GetDirectoryName
+        let placeholder = Path.Combine(here, unique)
+        let info = Directory.CreateDirectory(placeholder)
+        let psh = Path.Combine(info.FullName, "AltCover.PowerShell.dll")
+        if psh |> File.Exists |> not
+        then use _dummy = File.Create psh
+             ()
+
         use stdout = new StringWriter()
         Console.SetOut stdout
         CommandLine.toConsole()
         let rc = AltCover.Main.effectiveMain [| "i" |]
         Assert.That(rc, Is.EqualTo 0)
-        let result = stdout.ToString().Replace("\r\n", "\n")
+        let result = stdout.ToString()
+
         let expected = "Import-Module \""
-                       + Path.Combine
-                           (Assembly.GetExecutingAssembly().Location
-                            |> Path.GetDirectoryName, "AltCover.PowerShell.dll") + """"
-"""
-        Assert.That
-          (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+                       + (Path.Combine
+                           (here, unique + "/AltCover.PowerShell.dll")
+                            |> Path.GetFullPath)
+                       + "\"" + Environment.NewLine
+        test <@ result.Equals(expected, StringComparison.Ordinal) @>
+        //Assert.That(result, Is.EqualTo(expected))
       finally
         Console.SetOut saved
 
