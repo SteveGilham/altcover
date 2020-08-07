@@ -451,17 +451,12 @@ module internal Main =
       "GetEntryAssemblyMayReturnNullRule",
       Justification="That is the whole point of the call.")>]
     let internal doInstrumentation arguments =
-#if NETSTANDARD2_0
       let dotnetBuild =
         Assembly.GetEntryAssembly() // is null for unit tests
         |> Option.ofObj
         |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
         |> Option.defaultValue false
 
-#else
-      let dotnetBuild = false
-
-#endif
       let check1 =
         declareOptions()
         |> CommandLine.parseCommandLine arguments

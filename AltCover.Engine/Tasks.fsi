@@ -302,7 +302,6 @@ type Echo =
     member Text : string with get, set
   end
 // ```
-#if NETSTANDARD2_0
 // ## Task `AltCover.RunSettings`
 // Used by the .net core implementation to inject an AltCover data collector, by creating a temporary run-settings file that includes AltCover as well as any user-defined settings.
 //
@@ -334,5 +333,4 @@ type RunSettings =
     ///</summary>
     member TestSetting : string with get, set
   end
-#endif
 // ```

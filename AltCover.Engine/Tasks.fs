@@ -1,12 +1,10 @@
 namespace AltCover
 
 open System
-#if NETSTANDARD2_0
 open System.IO
 open System.Reflection
 open System.Xml
 open System.Xml.Linq
-#endif
 open System.Diagnostics.CodeAnalysis
 
 open Microsoft.Build.Utilities
@@ -284,7 +282,7 @@ type Echo() =
         Console.ForegroundColor <- original
 
     true
-#if NETSTANDARD2_0
+
 type RunSettings() =
   inherit Task(null)
 
@@ -316,13 +314,13 @@ type RunSettings() =
         else
           XDocument()
 
-      let X n = XName.Get n
+      let xname n = XName.Get n
 
       let ensureHas (parent : XContainer) childName =
-        match parent.Descendants(X childName) |> Seq.tryHead with
+        match parent.Descendants(xname childName) |> Seq.tryHead with
         | Some child -> child
         | _ ->
-            let extra = XElement(X childName)
+            let extra = XElement(xname childName)
             parent.Add extra
             extra
 
@@ -339,14 +337,14 @@ type RunSettings() =
         let name = AssemblyName.GetAssemblyName(expected)
         let altcover =
           XElement
-            (X "InProcDataCollector", XAttribute(X "friendlyName", "AltCover"),
+            (xname "InProcDataCollector", XAttribute(xname "friendlyName", "AltCover"),
              XAttribute
-               (X "uri",
+               (xname "uri",
                 "InProcDataCollector://AltCover/Recorder/" + name.Version.ToString()),
              XAttribute
-               (X "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
-             XAttribute(X "codebase", expected),
-             XElement(X "Configuration", XElement(X "Offload", XText("true"))))
+               (xname "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
+             XAttribute(xname "codebase", expected),
+             XElement(xname "Configuration", XElement(xname "Offload", XText("true"))))
         ip2.Add(altcover)
 
         self.Extended <- Path.ChangeExtension(tempFile, ".altcover.runsettings")
@@ -355,4 +353,3 @@ type RunSettings() =
       result
     finally
       File.Delete(tempFile)
-#endif

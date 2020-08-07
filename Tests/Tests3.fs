@@ -2797,7 +2797,6 @@ module AltCoverTests3 =
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
-#if NETCOREAPP2_0
     [<Test>]
     let RunSettingsFailsIfCollectorNotFound() =
       Main.init()
@@ -2883,5 +2882,4 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty,
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
-#endif
   // Recorder.fs => Recorder.Tests
