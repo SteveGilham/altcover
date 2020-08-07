@@ -74,13 +74,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample12", "Sample12\Sample
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample13", "Sample13\Sample13.fsproj", "{D588F8AA-50D3-455D-A070-04EAA48A2E93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.DataCollector", "altcover.datacollector\AltCover.DataCollector.csproj", "{4AB7CAB3-2463-4289-9E34-B783070477AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.DataCollector", "AltCover.DataCollector\AltCover.DataCollector.csproj", "{4AB7CAB3-2463-4289-9E34-B783070477AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample16", "Sample16\Sample16.csproj", "{792FD866-D256-4695-8C76-C14C49BB0207}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample17", "Sample17\Sample17.fsproj", "{5DB22786-389D-4193-AFDE-144FD59CF586}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-cli.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet", "Build\NuGet.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.WeakNameTests", "WeakNameTests\AltCover.WeakNameTests.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
