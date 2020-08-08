@@ -16,7 +16,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Tests", "Tests\Alt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample1", "Sample1\Sample1.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample2.core", "Sample2\Sample2.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample2", "Sample2\Sample2.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample3", "Sample3\Sample3.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
 EndProject
@@ -51,7 +51,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\msbuildtest.proj = Build\msbuildtest.proj
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
-		Build\powershell.ps1 = Build\powershell.ps1
 		Build\prepareDocumentation.ps1 = Build\prepareDocumentation.ps1
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md

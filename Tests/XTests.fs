@@ -549,10 +549,7 @@ module AltCoverXTests =
 #endif
       let expected =
         [ "AltCover.Recorder.g.dll"
-#if NETCOREAPP2_1
-#else
           "AltCover.Recorder.g.pdb";
-#endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
           "xunit.runner.reporters.netcoreapp10.dll";
@@ -711,10 +708,7 @@ module AltCoverXTests =
       let theFiles =
         if File.Exists(pdb) then
           [ "AltCover.Recorder.g.dll";
-#if NETCOREAPP2_1
-#else
             "AltCover.Recorder.g.pdb"
-#endif
             "Sample1.exe"; "Sample1.exe.mdb" ]
            // See Instrument.WriteAssembly
 #if NETCOREAPP2_1

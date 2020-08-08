@@ -238,12 +238,12 @@ module AltCoverTests2 =
       finally
         CoverageParameters.keys.Clear()
 
-#if NETCOREAPP2_0
-    [<Test>]
-    let MonoCombinationCanBeExercisedOnNetCore() =
-      let provider = Instrument.I.findProvider "thing.mdb" true
-      Assert.That (provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
-#endif
+//#if NETCOREAPP2_0
+//    [<Test>]
+//    let MonoCombinationCanBeExercisedOnNetCore() =
+//      let provider = Instrument.I.findProvider "thing.mdb" true
+//      Assert.That (provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
+//#endif
 
     [<Test>]
     let GuardShouldDisposeRecordingAssemblyOnException() =
@@ -432,24 +432,24 @@ module AltCoverTests2 =
         CoverageParameters.theInterval <- save3
       CoverageParameters.trackingNames.Clear()
 
-    [<Test>]
-    let ShouldSymbolWriterOnWindowsOnly () =
-#if NETCOREAPP2_0
-      ()
-#else
-      match Instrument.I.createSymbolWriter ".pdb" true true with
-      | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
-      | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
-      match Instrument.I.createSymbolWriter ".pdb" true false with
-      | :? Mono.Cecil.Pdb.PdbWriterProvider -> ()
-      | x -> Assert.Fail("Mono.Cecil.Pdb.PdbWriterProvider expected but got " + x.GetType().FullName)
-      match Instrument.I.createSymbolWriter ".pdb" false false with
-      | null -> ()
-      | x -> Assert.Fail("null expected but got " + x.GetType().FullName)
-      match Instrument.I.createSymbolWriter ".exe" true false with
-      | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
-      | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
-#endif
+//    [<Test>]
+//    let ShouldSymbolWriterOnWindowsOnly () =
+//#if NETCOREAPP2_0
+//      ()
+//#else
+//      match Instrument.I.createSymbolWriter ".pdb" true true with
+//      | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
+//      | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
+//      match Instrument.I.createSymbolWriter ".pdb" true false with
+//      | :? Mono.Cecil.Pdb.PdbWriterProvider -> ()
+//      | x -> Assert.Fail("Mono.Cecil.Pdb.PdbWriterProvider expected but got " + x.GetType().FullName)
+//      match Instrument.I.createSymbolWriter ".pdb" false false with
+//      | null -> ()
+//      | x -> Assert.Fail("null expected but got " + x.GetType().FullName)
+//      match Instrument.I.createSymbolWriter ".exe" true false with
+//      | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
+//      | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
+//#endif
 
 #if NETCOREAPP2_0
     type TestAssemblyLoadContext () =

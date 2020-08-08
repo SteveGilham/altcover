@@ -26,9 +26,7 @@ type internal RecorderRefs =
       Push = null
       Pop = null }
 
-// // <summary>
-// // State object passed from visit to visit
-// // </summary>
+// State object passed from visit to visit
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal InstrumentContext =
   { InstrumentedAssemblies : string list
@@ -47,9 +45,7 @@ type internal InstrumentContext =
       MethodBody = null
       MethodWorker = null } // to save fetching repeatedly
 
-// // <summary>
-// // Module to handle instrumentation visitor
-// // </summary>
+// Module to handle instrumentation visitor
 module internal Instrument =
   let private resources =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
@@ -60,12 +56,9 @@ module internal Instrument =
                     Justification = "partitioned into closures")>]
   module internal I =
 
-#if NETSTANDARD2_0
-#else
-    let monoRuntime =
-      ("Mono.Runtime"
-      |> Type.GetType).IsNotNull
-#endif
+    //let monoRuntime =
+    //  ("Mono.Runtime"
+    //  |> Type.GetType).IsNotNull
 
     let dependencies =
       (resources.GetString "frameworkDependencies").Replace("version", version)
@@ -76,11 +69,9 @@ module internal Instrument =
       (resources.GetString "frameworkLibraries")
         .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
 
-    // // <summary>
-    // // Locate the method that must be called to register a code point for coverage visit.
-    // // </summary>
-    // // <param name="assembly">The assembly containing the recorder method</param>
-    // // <returns>A representation of the method to call to signal a coverage visit.</returns>
+    // Locate the method that must be called to register a code point for coverage visit.
+    // param name="assembly">The assembly containing the recorder method</param>
+    // returns>A representation of the method to call to signal a coverage visit.</returns>
     let internal recordingMethod(recordingAssembly : AssemblyDefinition) =
       recordingAssembly.MainModule.GetAllTypes()
       |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
@@ -92,11 +83,9 @@ module internal Instrument =
       |> Seq.toList
       |> List.rev
 
-    // // <summary>
-    // // Applies a new key to an assembly name
-    // // </summary>
-    // // <param name="assemblyName">The name to update</param>
-    // // <param name="key">The possibly empty key to use</param>
+    // Applies a new key to an assembly name
+    // param name="assemblyName">The name to update</param>
+    // param name="key">The possibly empty key to use</param>
     let internal updateStrongNaming (assembly : AssemblyDefinition)
         (key : StrongNameKeyData option) =
       let assemblyName = assembly.Name
@@ -111,11 +100,9 @@ module internal Instrument =
           assemblyName.HasPublicKey <- true
           assemblyName.PublicKey <- key'.PublicKey |> Seq.toArray // sets token implicitly
 
-    // // <summary>
-    // // Locate the key, if any, which was used to name this assembly.
-    // // </summary>
-    // // <param name="name">The name of the assembly</param>
-    // // <returns>A key, if we have a match.</returns>
+    // Locate the key, if any, which was used to name this assembly.
+    // param name="name">The name of the assembly</param>
+    // returns>A key, if we have a match.</returns>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
@@ -128,11 +115,9 @@ module internal Instrument =
         | (false, _) -> None
         | (_, record) -> Some record.Pair
 
-    // // <summary>
-    // // Locate the key, if any, which was used to name this assembly.
-    // // </summary>
-    // // <param name="name">The name of the assembly</param>
-    // // <returns>A key, if we have a match.</returns>
+    // Locate the key, if any, which was used to name this assembly.
+    // param name="name">The name of the assembly</param>
+    // returns>A key, if we have a match.</returns>
     let internal knownToken(name : AssemblyNameReference) =
       let pktoken = name.PublicKeyToken
       if pktoken.Length <> 8 then
@@ -157,20 +142,18 @@ module internal Instrument =
         (assembly :> IDisposable).Dispose()
         reraise()
 
-    // // <summary>
-    // // Create the new assembly that will record visits, based on the prototype.
-    // // </summary>
-    // // <returns>A representation of the assembly used to record all coverage visits.</returns>
+    // Create the new assembly that will record visits, based on the prototype.
+    // returns>A representation of the assembly used to record all coverage visits.</returns>
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
            "EnsureLocalDisposalRule",
            Justification="Return confusing Gendarme -- TODO")>]
     let internal prepareAssembly(location : string) =
       let definition = AssemblyDefinition.ReadAssembly(location)
       guard definition (fun () ->  // set the timer interval in ticks
-  #if NETSTANDARD2_0
-  #else
-        if monoRuntime |> not then ProgramDatabase.readSymbols definition
-  #endif
+
+        //if monoRuntime |> not then
+        ProgramDatabase.readSymbols definition
+
         definition.Name.Name <- (extractName definition) + ".g"
 
         let pair = CoverageParameters.recorderStrongNameKey
@@ -219,18 +202,6 @@ module internal Instrument =
              worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
              worker.InsertBefore(head, worker.Create(OpCodes.Ret))
              initialBody |> Seq.iter worker.Remove))
-
-  #if NETSTANDARD2_0
-  #else
-    let internal createSymbolWriter pdb isWindows isMono =
-      match (isWindows, isMono) with
-      | (true, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-      | (true, false) ->
-          match pdb with
-          | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-          | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-      | _ -> null
-  #endif
 
     let private nugetCache =
       Path.Combine
@@ -291,58 +262,80 @@ module internal Instrument =
         let hook = resolver.GetType().GetMethod("add_ResolveFailure")
         hook.Invoke(resolver, [| hookResolveHandler :> obj |]) |> ignore
 
-  #if NETSTANDARD2_0
-    let internal findProvider pdb write =
-      match (pdb, write) with
-      | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-      | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-      | _ -> null
-  #endif
+    // pdb writing fails with
+    // mono on Windows when writing with
+    // System.NullReferenceException : Object reference not set to an instance of an object.
+    // from deep inside Cecil
+    // mono on non-Windows with
+    // System.DllNotFoundException : ole32.dll
+    //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance
+    // If there are portable .pdbs on mono, those fail to write, too with
+    // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
+    // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
 
-    // // <summary>
-    // // Commit an instrumented assembly to disk
-    // // </summary>
-    // // <param name="assembly">The instrumented assembly object</param>
-    // // <param name="path">The full path of the output file</param>
-    // // <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
-    // // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
+    // Mdb writing now fails in .net framework, it throws
+    // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
+    // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
+
+    //let internal findProvider pdb write =
+    //  match (pdb, write) with
+    //  | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    //  | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+    //  | _ -> null
+
+    //let internal createSymbolWriter pdb isWindows isMono =
+    //  match (isWindows, isMono) with
+    //  | (true, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+    //  | (true, false) ->
+    //      match pdb with
+    //      | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    //      | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+    //  | _ -> null
+
+    let safeSymbolWriterProvider  pdb //_isWindows _isMono
+      =
+          match pdb with
+          | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+          | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+
+    // Commit an instrumented assembly to disk
+    // param name="assembly">The instrumented assembly object</param>
+    // param name="path">The full path of the output file</param>
+    // remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
+    // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
     let internal writeAssembly (assembly : AssemblyDefinition) (path : string) =
       let pkey = Mono.Cecil.WriterParameters()
-      let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+      //let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let pdb =
         ProgramDatabase.getPdbWithFallback assembly
         |> Option.defaultValue "x.pdb"
         |> Path.GetExtension
-  #if NETSTANDARD2_0
-      let separatePdb =
-        ProgramDatabase.getPdbFromImage assembly
-        |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
-        |> Option.isSome
+
+      //let separatePdb =
+      //  ProgramDatabase.getPdbFromImage assembly
+      //  |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
+      //  |> Option.isSome
 
       // Once Cecil 0.10 beta6 is taken out of the equation, this works
       // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
       // or for assemblies with embedded .pdb information (on *nix)
-      pkey.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
+
+      // NetStandard
+      //pkey.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
+      //pkey.SymbolWriterProvider <-
+      //  findProvider pdb pkey.WriteSymbols
+
+      //// Framework/Mono
+      //pkey.WriteSymbols <- isWindows
+      //pkey.SymbolWriterProvider <-
+      //  createSymbolWriter pdb isWindows monoRuntime
+
       pkey.SymbolWriterProvider <-
-        findProvider pdb pkey.WriteSymbols
-  #else
-      // Assembly with pdb writing fails on mono on Windows when writing with
-      // System.NullReferenceException : Object reference not set to an instance of an object.
-      // from deep inside Cecil
-      // Pdb writing fails on mono on non-Windows with
-      // System.DllNotFoundException : ole32.dll
-      //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance
-      // Mdb writing now fails in .net framework, it throws
-      // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
-      // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-      // If there are portable .pdbs on mono, those fail to write, too with
-      // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
-      // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-      pkey.WriteSymbols <- isWindows
-      pkey.SymbolWriterProvider <-
-        createSymbolWriter pdb isWindows monoRuntime
-  #endif
+        safeSymbolWriterProvider pdb // isWindows monoRuntime
+      pkey.WriteSymbols <- pkey.SymbolWriterProvider.IsNotNull &&
+                             assembly.MainModule.HasSymbols
+
       knownKey assembly.Name
       |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
 
@@ -364,12 +357,10 @@ module internal Instrument =
        Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" );
       AutoSerializable(false); Sealed>]
     type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
-      // // <summary>
-      // // Adjust the IL for exception handling
-      // // </summary>
-      // // <param name="handler">The exception handler</param>
-      // // <param name="oldBoundary">The uninstrumented location</param>
-      // // <param name="newBoundary">Where it has moved to</param>
+      // Adjust the IL for exception handling
+      // param name="handler">The exception handler</param>
+      // param name="oldBoundary">The uninstrumented location</param>
+      // param name="newBoundary">Where it has moved to</param>
       member this.SubstituteExceptionBoundary(handler : ExceptionHandler) =
         if handler.FilterStart = oldValue then handler.FilterStart <- newValue
         if handler.HandlerEnd = oldValue then handler.HandlerEnd <- newValue
@@ -377,12 +368,10 @@ module internal Instrument =
         if handler.TryEnd = oldValue then handler.TryEnd <- newValue
         if handler.TryStart = oldValue then handler.TryStart <- newValue
 
-      // // <summary>
-      // // Adjust the IL to substitute an opcode
-      // // </summary>
-      // // <param name="instruction">Instruction being processed</param>
-      // // <param name="oldOperand">Type we are looking for</param>
-      // // <param name="newOperand">Type to replace it with</param>
+      // Adjust the IL to substitute an opcode
+      // param name="instruction">Instruction being processed</param>
+      // param name="oldOperand">Type we are looking for</param>
+      // param name="newOperand">Type to replace it with</param>
       member this.SubstituteInstructionOperand(instruction : Instruction) =
         // Performance reasons - only 3 types of operators have operands of Instruction types
         // instruction.Operand getter - is rather slow to execute it for every operator
@@ -411,12 +400,10 @@ module internal Instrument =
       methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
       instrLoadModuleId
 
-    // // <summary>
-    // // Determine new names for input strong-named assemblies; if we have a key and
-    // // the assembly was already strong-named then give it the new key token, otherwise
-    // // set that there is no strongname.
-    // // </summary>
-    // // <param name="assembly">The assembly object being operated upon</param>
+    // Determine new names for input strong-named assemblies; if we have a key and
+    // the assembly was already strong-named then give it the new key token, otherwise
+    // set that there is no strongname.
+    // param name="assembly">The assembly object being operated upon</param>
     let internal updateStrongReferences (assembly : AssemblyDefinition)
         (assemblies : string list) =
       let effectiveKey =
@@ -800,12 +787,10 @@ module internal Instrument =
       let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
       { state with RecordingAssembly = recordingAssembly }
 
-    // // <summary>
-    // // Perform visitor operations
-    // // </summary>
-    // // <param name="state">Contextual information for the visit</param>
-    // // <param name="node">The node being visited</param>
-    // // <returns>Updated state</returns>
+    // Perform visitor operations
+    // param name="state">Contextual information for the visit</param>
+    // param name="node">The node being visited</param>
+    // returns>Updated state</returns>
     let internal instrumentationVisitorCore (state : InstrumentContext) (node : Node) =
       match node with
       | Start _ -> visitStart state
@@ -844,10 +829,8 @@ module internal Instrument =
       instrumentationVisitorWrapper instrumentationVisitorCore state node
 
   // "Public" API
-  // // <summary>
-  // // Higher-order function that returns a visitor
-  // // </summary>
-  // // <param name="assemblies">List of assembly paths to visit</param>
-  // // <returns>Stateful visitor function</returns>
+  // Higher-order function that returns a visitor
+  // param name="assemblies">List of assembly paths to visit</param>
+  // returns>Stateful visitor function</returns>
   let internal instrumentGenerator(assemblies : string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
