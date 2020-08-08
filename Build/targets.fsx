@@ -174,7 +174,7 @@ let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
 let xmldoc2cmdletdoc =
-  ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp2.1/XmlDoc2CmdletDoc.dll")
+  ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp3.1/XmlDoc2CmdletDoc.dll")
   |> Path.getFullName
 
 let cliArguments =
