@@ -268,15 +268,6 @@ module internal Instrument =
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
       | _ -> null
 
-    //let internal createSymbolWriter pdb isWindows isMono =
-    //  match (isWindows, isMono) with
-    //  | (true, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-    //  | (true, false) ->
-    //      match pdb with
-    //      | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-    //      | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-    //  | _ -> null
-
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
     // param name="path">The full path of the output file</param>

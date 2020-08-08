@@ -261,7 +261,7 @@ module TestMain =
           Tests.AltCoverTests2.ShouldBeAbleToLocateAReference, "Tests2.ShouldBeAbleToLocateAReference"
           Tests.AltCoverTests2.ShouldBeAbleToPrepareTheAssembly, "Tests2.ShouldBeAbleToPrepareTheAssembly"
           Tests.AltCoverTests2.ShouldGetTrackingStyleIfSet, "Tests2.ShouldGetTrackingStyleIfSet"
-//          Tests.AltCoverTests2.ShouldSymbolWriterOnWindowsOnly, "Tests2.ShouldSymbolWriterOnWindowsOnly"
+          Tests.AltCoverTests2.ShouldSymbolWriterAsExpected, "Tests2.ShouldSymbolWriterAsExpected"
           Tests.AltCoverTests2.ShouldGetNewFilePathFromPreparedAssembly, "Tests2.ShouldGetNewFilePathFromPreparedAssembly"
           Tests.AltCoverTests2.ShouldWriteMonoAssemblyOK, "Tests2.ShouldWriteMonoAssemblyOK"
           Tests.AltCoverTests2.ShouldGetVisitFromWrittenAssembly, "Tests2.ShouldGetVisitFromWrittenAssembly"
