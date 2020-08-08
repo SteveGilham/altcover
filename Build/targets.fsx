@@ -420,13 +420,31 @@ _Target "BuildRelease" (fun _ ->
     [ "./AltCover.sln" ] |> Seq.iter dotnetBuildRelease
 
     // document cmdlets ahead of packaging
-    // TODO -- get version numbers from PoSh project
+    let packages =
+      let xml =
+        "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+        |> Path.getFullName
+        |> XDocument.Load
+      xml.Descendants(XName.Get("PackageReference"))
+      |> Seq.map
+           (fun x ->
+             let incl = x.Attribute(XName.Get("Include"))
+             let update = x.Attribute(XName.Get("Update"))
+             let version = x.Attribute(XName.Get("Version")).Value
+             if incl |> isNull
+             then (update.Value, version)
+             else (incl.Value, version))
+      |> Map.ofSeq
+    let packageVersionPart (p : string) = nugetCache + 
+                                          "/" + p.ToLowerInvariant() + "/" + (packages.Item p) +
+                                          "/lib/netstandard2.0/"
+
     Shell.copyFile 
       ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/FSharp.Core.dll") 
-      (nugetCache + "/fsharp.core/4.7.2/lib/netstandard2.0/FSharp.Core.dll")
+      ((packageVersionPart "FSharp.Core") + "FSharp.Core.dll")
     Shell.copyFile 
-      ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/System.Management.Automation.dll") 
-      (nugetCache + "/powershellstandard.library/5.1.0/lib/netstandard2.0/System.Management.Automation.dll")
+      ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/System.Management.Automation.dll")
+      ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
     Actions.RunDotnet dotnetOptions xmldoc2cmdletdoc
       " -strict ./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
@@ -2493,13 +2511,37 @@ _Target "Unpack" (fun _ ->
     System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
     
   // C# style API documentation
-  // TODO -- get version numbers from projects
+  let packages =
+    let xml =
+     [
+      "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+      "./AltCover.Cake/AltCover.Cake.csproj"
+     ]
+     |> List.map (Path.getFullName >>  XDocument.Load)
+    xml
+    |> List.map (fun x -> x.Descendants(XName.Get("PackageReference")))
+    |> Seq.concat
+    |> Seq.map
+         (fun x ->
+           let incl = x.Attribute(XName.Get("Include"))
+           let update = x.Attribute(XName.Get("Update"))
+           let version = x.Attribute(XName.Get("Version")).Value
+           if incl |> isNull
+           then (update.Value, version)
+           else (incl.Value, version))
+    |> Seq.distinctBy fst
+    |> Map.ofSeq
+  let packageVersionPart (p : string) = nugetCache + 
+                                        "/" + p.ToLowerInvariant() + "/" + (packages.Item p) +
+                                        "/lib/netstandard2.0/"
 
   let unpacked = "./_Packaging.api/Unpack/lib/netstandard2.0/"
-  Shell.copyFile (unpacked + "Cake.Core.dll") (nugetCache + "/cake.core/0.28.0/lib/netstandard2.0/Cake.Core.dll")
-  Shell.copyFile (unpacked + "Cake.Common.dll") (nugetCache + "/cake.common/0.28.0/lib/netstandard2.0/Cake.Common.dll")
+  Shell.copyFile (unpacked + "Cake.Core.dll")
+      ((packageVersionPart "Cake.Core") + "Cake.Core.dll")
+  Shell.copyFile (unpacked + "Cake.Common.dll")
+      ((packageVersionPart "Cake.Common") + "Cake.Common.dll")
   Shell.copyFile (unpacked + "System.Management.Automation.dll") 
-    (nugetCache + "/powershellstandard.library/5.1.0/lib/netstandard2.0/System.Management.Automation.dll")
+      ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
   [ 
     "AltCover.Cake"
