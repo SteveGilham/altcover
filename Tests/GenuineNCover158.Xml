@@ -2,24 +2,24 @@
 <?xml-stylesheet href="coverage.xsl" type="text/xsl"?>
 <!-- saved from url=(0022)http://www.ncover.org/ -->
 <coverage profilerVersion="1.5.8 Beta" driverVersion="1.5.8.0" startTime="2018-03-21T10:44:36.8488124+00:00" measureTime="2018-03-21T10:44:37.9118701+00:00">
-  <module moduleId="2" name="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\bin\Debug\ConsoleApplication1.exe" assembly="ConsoleApplication1" assemblyIdentity="ConsoleApplication1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null, processorArchitecture=x86">
+  <module moduleId="2" name="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\bin\Debug\ConsoleApplication1.exe" assembly="ConsoleApplication1" assemblyIdentity="ConsoleApplication1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null, processorArchitecture=x86">
     <method name="Example" excluded="false" instrumented="true" class="Program">
-      <seqpnt visitcount="1" line="2" column="5" endline="5" endcolumn="57" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="1" line="2" column="5" endline="5" endcolumn="57" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
     </method>
     <method name="main" excluded="false" instrumented="true" class="Program">
-      <seqpnt visitcount="1" line="9" column="5" endline="9" endcolumn="29" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
-      <seqpnt visitcount="1" line="10" column="5" endline="10" endcolumn="17" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
-      <seqpnt visitcount="1" line="11" column="5" endline="11" endcolumn="19" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
-      <seqpnt visitcount="1" line="12" column="5" endline="12" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="1" line="9" column="5" endline="9" endcolumn="29" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="1" line="10" column="5" endline="10" endcolumn="17" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="1" line="11" column="5" endline="11" endcolumn="19" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="1" line="12" column="5" endline="12" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
     </method>
     <method name="Invoke" excluded="false" instrumented="true" class="Program+Example@3">
-      <seqpnt visitcount="0" line="3" column="30" endline="5" endcolumn="56" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="0" line="3" column="30" endline="5" endcolumn="56" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
     </method>
     <method name="Invoke" excluded="false" instrumented="false" class="Program+Example@3-1">
-      <seqpnt visitcount="0" line="3" column="47" endline="3" endcolumn="49" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="0" line="3" column="47" endline="3" endcolumn="49" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
     </method>
     <method name="Invoke" excluded="false" instrumented="false" class="Program+Example@5-2">
-      <seqpnt visitcount="0" line="5" column="43" endline="5" endcolumn="55" excluded="false" document="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs" />
+      <seqpnt visitcount="0" line="5" column="43" endline="5" endcolumn="55" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample19\ConsoleApplication1\Program.fs" />
     </method>
   </module>
 </coverage>

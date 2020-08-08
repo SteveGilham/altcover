@@ -127,7 +127,7 @@ module FSApiTests =
   [<Test>]
   let OpenCoverToLcov() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.xml")
     let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
     CoverageFormats.ConvertToLcov doc stream2
@@ -136,7 +136,7 @@ module FSApiTests =
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream3 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.lcov")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.lcov")
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
 
@@ -145,7 +145,7 @@ module FSApiTests =
   [<Test>]
   let OpenCoverToBarChart() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.xml")
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
     let rewrite = Xhtml.ConvertToBarChart doc
@@ -155,7 +155,7 @@ module FSApiTests =
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.html")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.html")
     use rdr2 = new StreamReader(stream2)
     let expected = rdr2.ReadToEnd().Replace("&#x2442;", "\u2442").Replace("\r", String.Empty)
 
@@ -165,7 +165,7 @@ module FSApiTests =
   [<Test>]
   let OpenCoverToNCover() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.xml")
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
     let rewrite = CoverageFormats.ConvertToNCover doc
@@ -175,7 +175,7 @@ module FSApiTests =
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledToNCover.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledToNCover.xml")
     use rdr2 = new StreamReader(stream2)
     let time = (rewrite.Descendants(XName.Get "coverage")
                 |> Seq.head).Attribute(XName.Get "startTime").Value
@@ -196,7 +196,7 @@ module FSApiTests =
   [<Test>]
   let FormatsConvertToXmlDocument() =
     use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.html")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.html")
     use rdr = new StreamReader(stream)
     let expected = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
     rdr.BaseStream.Position <- 0L
@@ -213,7 +213,7 @@ module FSApiTests =
   [<Test>]
   let FormatsConvertToXDocument() =
     use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.html")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.html")
     use rdr = new StreamReader(stream)
     let expected = rdr.ReadToEnd().Replace("\r", String.Empty).Replace("&#x2442;", "\u2442")
     rdr.BaseStream.Position <- 0L
@@ -242,7 +242,7 @@ module FSApiTests =
   [<Test>]
   let NCoverToCobertura() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.xml")
     let doc = XDocument.Load(stream)
     doc.Descendants()
     |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
@@ -257,7 +257,7 @@ module FSApiTests =
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
     use stream3 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.cob.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")
     use rdr2 = new StreamReader(stream3)
 
     let coverage = cob.Descendants(XName.Get "coverage") |> Seq.head
@@ -272,7 +272,7 @@ module FSApiTests =
   [<Test>]
   let NCoverToBarChart() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.Xml")
     let doc = XDocument.Load stream
     use mstream = new MemoryStream()
     let rewrite = Xhtml.ConvertToBarChart doc
@@ -282,17 +282,17 @@ module FSApiTests =
     let result = rdr.ReadToEnd().Replace("html >", "html>").Replace("\r", String.Empty)
 
     use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158Chart.html")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158Chart.html")
     use rdr2 = new StreamReader(stream2)
     let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
 
-    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     test <@ result = expected @>
 
   [<Test>]
   let OpenCoverBranchCompression() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Compressible.xml")
     let doc = XDocument.Load stream
 
     [("CompressInterior", true, false)
@@ -307,7 +307,7 @@ module FSApiTests =
         let result = rdr.ReadToEnd().Replace("\r", String.Empty)
 
         use stream2 =
-            Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core."+ test + ".xml")
+            Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests."+ test + ".xml")
         use rdr2 = new StreamReader(stream2)
         let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
 
@@ -473,3 +473,43 @@ module FSApiTests =
     let merge = AltCover.OpenCover.MergeCoverage [doc1; doc2] false
     let summary = merge.Descendants(XName.Get "Summary") |> Seq.head
     test <@ summary.ToString() = """<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />""" @>
+
+  let internal mangleFile (f:String) =
+    f.Replace(@"C:\Users\steve\Documents\GitHub\altcover", SolutionRoot.location).Replace('\\', Path.DirectorySeparatorChar)
+
+#if SOURCEMAP
+  [<Test>]
+  let NCoverFindsFiles() =
+    use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
+    let doc = XDocument.Load stream
+
+    [
+      ("seqpnt", "document")
+      ("module", "name")
+    ]
+    |> Seq.map (fun (k,v) -> (XName.Get k, XName.Get v))
+    |> Seq.iter (fun (k,v) -> doc.Descendants k
+                              |> Seq.iter (fun x -> let old = x.Attribute(v).Value
+                                                    x.Attribute(v).Value <- mangleFile old))
+
+    let rewrite = AltCover.RenderToHtml.Action doc
+    test<@ rewrite |> Seq.map fst |> Seq.toList = ["Program.fs"] @>
+
+  [<Test>]
+  let OpenCoverFindsFiles() =
+    use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
+    let doc = XDocument.Load stream
+
+    [
+      ("File", "fullPath")
+    ]
+    |> Seq.map (fun (k,v) -> (XName.Get k, XName.Get v))
+    |> Seq.iter (fun (k,v) -> doc.Descendants k
+                              |> Seq.iter (fun x -> let old = x.Attribute(v).Value
+                                                    x.Attribute(v).Value <- mangleFile old))
+
+    let rewrite = AltCover.RenderToHtml.Action doc
+    test<@ rewrite |> Seq.map fst |> Seq.toList = ["Filter.fs"] @>
+#endif

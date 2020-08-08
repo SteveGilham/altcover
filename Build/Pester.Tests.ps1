@@ -68,7 +68,7 @@ Describe "Invoke-Altcover" {
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "sample2.core.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
@@ -504,6 +504,8 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
+    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
@@ -539,6 +541,8 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
+    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
@@ -615,6 +619,24 @@ Describe "Compress-Branching" {
 	$fail | Should -BeFalse
   }
 }
+
+#Describe "ConvertTo-SourceMap" {
+#  It "finds files from NCover" {
+#    $result = "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" | ConvertTo-SourceMap -OutputFolder "./_Packaging/NCoverSourceMap"
+#
+#    $result.Count | Should -Be 1
+#    $result.Keys | Should -Be @('Tests.fs')
+#
+#    dir "./_Packaging/NCoverSourceMap" | % { $_.Name }  | Should -Be @('Tests.fs.html')
+#  }
+#
+#  It "finds files from OpenCover" {
+#    $result = [xdoc]::Load("./_Reports/AltCoverFSharpTests.xml") | ConvertTo-SourceMap
+#
+#    $result.Count | Should -Be 1
+#    $result.Keys | Should -Be 'Library.fs'
+#  }
+#}
 
 Describe "Write-OpenCoverDerivedState" {
   It "Outputs a document from a file" {

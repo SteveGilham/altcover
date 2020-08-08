@@ -2,6 +2,41 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.1.xxx (Genbu series release 7)
+* Rationalise .net versions to help speed up the build and ease the net5.0 transition
+  * Clear out some corner case differences between .net core and .net framework builds based on old work-arounds for symbol writing for the instrumented files
+  * Build the recorder at `net20` only and use the same assembly everywhere
+  * Move all the core logic from `AltCover.exe/.dll` to `AltCover.Engine.dll`
+  * Unify the three different entry-point assembly instances into the now shim-like `AltCover.exe/.dll`
+  * Build everything against `netstandard2.0` except executable shims and unit tests
+  * Build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
+  * Build the GTK2 visualizer against `net472` for consistency
+  * `net472` debug builds for published libraries are retained purely for FxCop consumption
+
+# 7.1.783  (Genbu series release 6a)
+* [Visualizer-global-tool] 
+  * [BUGFIX] Don't NRE when cancelling a File Open dialog when Avalonia uses its GTK binding (Linux)
+  * Support font selection on Windows natively (monospace fonts only)
+  * On non-Windows platforms, if Tcl/Tk `wish` is present, use that to perform font selection (choose wisely)
+
+# 7.1.782  (Genbu series release 6)
+* [BUGFIX] Don't throw NRE when encountering an interface with a default method implementation
+* Omit interfaces without default method implementations from coverage recording, to match the behaviour of OpenCover (Issue #91)
+* [Visualizer-global-tool] 
+  * Fix the display of branch information on the second and subsequent coverage file loaded in a session
+  * Fix the loading of the most recently accessed files list to prune ones that don't now exist
+  * other minor tidyings
+* [Visualizer-GTK] 
+  * Make this look more like the Avalonia version
+  * Tentative fix for the `About` dialog link-button on non-Windows platforms based partly on the Avalonia code.
+  * Keep the GTK3 build in step, even though it's not packaged for release
+
+# 7.1.780  (Genbu series release 5a)
+* [Visualizer] Rewritten global tool based on the cross-platform AvaloniaUI toolkit (so no need for all the GTK3 set-up, including the `--schemadir[=path]` command-line parameter)
+  * There's no font selection support yet as AvaloniaUI doesn't offer a cross-platform one
+  * The colour scheme differs as there's not yet support for selecting a different background brush for text ranges -- covered = blue text
+  * line numbers are shown, and are coloured according to any sequence point starting that line
+
 # 7.1.778 (Genbu series release 5)
 * [BUGFIX] Address problems revealed in issue #87
   * The collection process now fails gracefully if the XML report is missing or broken

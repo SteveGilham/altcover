@@ -343,7 +343,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1616,7 +1616,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1675,7 +1675,7 @@ module AltCoverRunnerTests =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<TeamCityFormat>.Assembly.GetType("AltCover.EntryPoint")
+          typeof<Marker>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
@@ -1738,7 +1738,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       let saved = (Console.Out, Console.Error)
       Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding
@@ -2882,11 +2882,7 @@ module AltCoverRunnerTests =
 
       use stream =
           Assembly.GetExecutingAssembly()
-#if LEGACY
-                  .GetManifestResourceStream("coverage-04.xsd")
-#else
-                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
-#endif
+                  .GetManifestResourceStream("AltCover.Tests.coverage-04.xsd")
       use reader = new StreamReader(stream)
       use xreader = XmlReader.Create(reader)
       schemas.Add(String.Empty, xreader) |> ignore

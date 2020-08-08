@@ -45,7 +45,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2009,7 +2009,7 @@ module AltCoverTests3 =
       Main.init()
       let options = Main.I.declareOptions()
       let saved = (Console.Out, Console.Error)
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       CommandLine.error <- []
       try
         use stdout = new StringWriter()
@@ -2047,7 +2047,7 @@ module AltCoverTests3 =
     let OutputToReallyNewPlaceIsOK() =
       Main.init()
       let options = Main.I.declareOptions()
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
       try
@@ -2280,7 +2280,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      EntryPoint.toConsole()
+      CommandLine.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2331,19 +2331,31 @@ module AltCoverTests3 =
       Main.init()
       let saved = Console.Out
       try
+        let unique = "ImportModuleIsAsExpected"
+        let here = Assembly.GetExecutingAssembly().Location
+                   |> Path.GetDirectoryName
+                   |> Path.GetDirectoryName
+        let placeholder = Path.Combine(here, unique)
+        let info = Directory.CreateDirectory(placeholder)
+        let psh = Path.Combine(info.FullName, "AltCover.PowerShell.dll")
+        if psh |> File.Exists |> not
+        then use _dummy = File.Create psh
+             ()
+
         use stdout = new StringWriter()
         Console.SetOut stdout
-        EntryPoint.toConsole()
+        CommandLine.toConsole()
         let rc = AltCover.Main.effectiveMain [| "i" |]
         Assert.That(rc, Is.EqualTo 0)
-        let result = stdout.ToString().Replace("\r\n", "\n")
+        let result = stdout.ToString()
+
         let expected = "Import-Module \""
-                       + Path.Combine
-                           (Assembly.GetExecutingAssembly().Location
-                            |> Path.GetDirectoryName, "AltCover.PowerShell.dll") + """"
-"""
-        Assert.That
-          (result.Replace("\r\n", "\n"), Is.EqualTo(expected.Replace("\r\n", "\n")))
+                       + (Path.Combine
+                           (here, unique + "/AltCover.PowerShell.dll")
+                            |> Path.GetFullPath)
+                       + "\"" + Environment.NewLine
+        test <@ result.Equals(expected, StringComparison.Ordinal) @>
+        //Assert.That(result, Is.EqualTo(expected))
       finally
         Console.SetOut saved
 
@@ -2354,7 +2366,7 @@ module AltCoverTests3 =
       try
         use stdout = new StringWriter()
         Console.SetOut stdout
-        EntryPoint.toConsole()
+        CommandLine.toConsole()
         let rc = AltCover.Main.effectiveMain [| "v" |]
         Assert.That(rc, Is.EqualTo 0)
         let result = stdout.ToString().Replace("\r\n", "\n")
@@ -2397,6 +2409,34 @@ module AltCoverTests3 =
       finally
         Console.SetError saved
 
+#if NETCOREAPP3_0
+    [<Test>]
+    let TargetsPathIsAsExpected() =
+      Main.init()
+      let saved = (Console.Out, Console.Error)
+      try
+        use stdout = new StringWriter()
+        use stderr = new StringWriter()
+        Console.SetOut stdout
+        Console.SetError stderr
+        let main =
+          typeof<Marker>.Assembly.GetType("AltCover.EntryPoint")
+            .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
+        let returnCode = main.Invoke(null, [| [| "TargetsPath" |] |])
+        Assert.That(returnCode, Is.EqualTo 0)
+        test<@ stderr.ToString() |> String.IsNullOrEmpty@>
+        let here = Assembly.GetExecutingAssembly().Location
+        let expected =
+          Path.Combine(
+            here |> Path.GetDirectoryName,
+            "../../../build/netstandard2.0/altcover.global.targets")
+          |> Path.GetFullPath
+        test<@ stdout.ToString().Equals(expected.Replace("\\\\", "\\") + Environment.NewLine, StringComparison.Ordinal) @>
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+#endif
+
     [<Test>]
     let ErrorResponseIsAsExpected() =
       Main.init()
@@ -2406,7 +2446,7 @@ module AltCoverTests3 =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<Node>.Assembly.GetType("AltCover.EntryPoint")
+          typeof<Marker>.Assembly.GetType("AltCover.EntryPoint")
             .GetMethod("main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
@@ -2757,7 +2797,6 @@ module AltCoverTests3 =
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
-#if NETCOREAPP2_0
     [<Test>]
     let RunSettingsFailsIfCollectorNotFound() =
       Main.init()
@@ -2843,5 +2882,4 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty,
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
-#endif
   // Recorder.fs => Recorder.Tests

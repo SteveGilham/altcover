@@ -68,3 +68,5 @@ Demo/MultiTest/**/coverage.xml
 *.xss
 TestResults/
 AltCover/Abstract.fs
+Tests.Visualizer/Reports/
+AltCover.Engine/Abstract.fsi
