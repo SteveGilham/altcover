@@ -62,7 +62,11 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/8) an
 
 All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
 
-I am considering retiring the legacy framework/Mono support after the release of .net 5, contingent on having suitable replacements for Framework-only static analysis tools.
+### Possible retirement/obsolescence of support
+
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support will continue after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
+
+tl;dr -- legacy framework/Mono support is not going away any time soon.
 
 ## Building
 

@@ -71,3 +71,4 @@ AltCover/Abstract.fs
 Tests.Visualizer/Reports/
 .fake
 .ionide
+AltCover.Engine/Abstract.fsi

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MCS", "MCS\MCS.fsproj", "{FBAA818A-A049-4149-9032-31C8D244AEA6}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Sample4", "Sample4\Sample4.fsproj", "{607161F1-86BE-471A-9837-3D19BFAAA5FA}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Sample4", "Sample4\Sample4LongForm.fsproj", "{607161F1-86BE-471A-9837-3D19BFAAA5FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

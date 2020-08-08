@@ -68,27 +68,14 @@ open System.Runtime.CompilerServices
 
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
-#if NETSTANDARD2_0
-[<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests")>]
-[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer")>]
-#else
-#if NETCOREAPP2_0
-[<assembly: InternalsVisibleTo("AltCover.Tests")>]
-[<assembly: InternalsVisibleTo("AltCover.Api.Tests")>]
-#else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests2, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests2, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
-#endif
-#endif
 #else
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif

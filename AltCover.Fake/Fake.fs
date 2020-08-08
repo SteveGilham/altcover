@@ -49,7 +49,7 @@ type Command private () =
     let target =
       match toolType with
       | Framework _ -> "AltCover.exe"
-      | _ -> "AltCover.NetCoreApp.dll"
+      | _ -> "AltCover.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
           |> Seq.tryHead with
     | Some path -> path |> Path.GetFullPath

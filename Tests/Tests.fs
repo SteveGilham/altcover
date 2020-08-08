@@ -65,7 +65,7 @@ module AltCoverTests =
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
 #else
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/net20/Sample1.exe")
-    let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net47/Sample4.dll")
+    let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/net472/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/net20/Sample8.exe")
 #endif
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
@@ -136,6 +136,10 @@ module AltCoverTests =
                (fun x ->
                not
                <| (snd x).FullName.StartsWith("Expecto", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+               (fun x ->
+               not
+               <| (snd x).FullName.StartsWith("ICSharp", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                (fun x ->
                not
@@ -849,7 +853,7 @@ module AltCoverTests =
 
       let toolPackages =
         let xml =
-          Path.Combine(SolutionRoot.location, "./Build/dotnet-cli.csproj")
+          Path.Combine(SolutionRoot.location, "./Build/NuGet.csproj")
           |> Path.GetFullPath
           |> XDocument.Load
         xml.Descendants(XName.Get("PackageReference"))
@@ -1215,9 +1219,7 @@ module AltCoverTests =
           Some "FI@11::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
           Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
           Some "Module::F1" //System.Int32 Sample6.Module/F1@18::Invoke(System.Object)
-#if !NETCOREAPP3_0
-//LEGACY
-// F# 4.5.1
+// F# version dependent below
           Some "fetchUrlAsync@25-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@27-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
           Some "fetchUrlAsync@25-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@27-5::Invoke(System.IO.StreamReader)"
           Some "fetchUrlAsync@23-3::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@26-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
@@ -1232,21 +1234,7 @@ module AltCoverTests =
           Some "fetchUrlAsync@21::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-1::Invoke(Microsoft.FSharp.Core.Unit)"
           Some "Module::F2" //"System.Void Sample6.Module/fetchUrlAsync@22::.ctor()"
           Some "Module::F2" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22::Invoke(System.String)"
-#else
-// F# > 4.5.1
-          Some "fetchUrlAsync@25-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@25-4::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)
-          Some "fetchUrlAsync@23-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@23-3::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)
-          Some "fetchUrlAsync@23-2::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@23-2::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)
-          Some "fetchUrlAsync@22-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@22-1::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)
-          Some "fetchUrlAsync@21::Invoke" //System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@21::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)
-          Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@21::.ctor()
-          Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)
-#endif
+
       ]
 
       //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
@@ -2196,8 +2184,8 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportForNCoverWithTopLevel() =
       let path = sample4path
-      let path5 = sample4path.Replace("4", "5").Replace("57", "461").Replace("netcoreapp2.1", "netstandard2.0")
-      let path6 = sample4path.Replace("4", "6").Replace("67", "461").Replace("2.1", "2.0")
+      let path5 = sample4path.Replace("4", "5").Replace("572", "472").Replace("netcoreapp2.1", "netstandard2.0")
+      let path6 = sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
       try
         Main.init()
 
@@ -3138,7 +3126,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      let sample21trad = Path.Combine(SolutionRoot.location, "./Sample21/bin/Debug/net47/Sample21.dll")
+      let sample21trad = Path.Combine(SolutionRoot.location, "./Sample21/bin/Debug/net472/Sample21.dll")
       Assert.That(File.Exists sample21trad, "Test file Sample21 for net47 not built")
       try
         "Program"
@@ -3228,24 +3216,8 @@ module AltCoverTests =
     let ShouldSortFileIds() =
       let visitor, document = OpenCover.reportGenerator()
       let X name = XName.Get(name)
-      // Hack for running while instrumented
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries"))
-           + "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0", "AltCover.dll")
-#if NETCOREAPP2_0
-      let path' =
-        if File.Exists path then path
-        else
-          Path.Combine
-            (where.Substring(0, where.IndexOf("_Binaries"))
-             + "../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0", "AltCover.dll")
-#else
-      let path' = path
-#endif
-      Visitor.visit [ visitor ] (Visitor.I.toSeq (path',[]))
+      let path = Path.Combine(SolutionDir(), "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.Engine.dll")
+      Visitor.visit [ visitor ] (Visitor.I.toSeq (path,[]))
       Assert.That(document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
       Assert.That(document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
       document.Descendants(X "File")

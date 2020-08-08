@@ -1,17 +1,24 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <NetCoreEngine>$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.Engine.dll</NetCoreEngine>
+    <NetStdEngine>$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.Engine.dll</NetStdEngine>
+    <AltCoverEngine Condition="Exists($(NetStdEngine))">$(NetStdEngine)</AltCoverEngine>
+    <AltCoverEngine Condition="Exists($(NetCoreEngine))">$(NetCoreEngine)</AltCoverEngine>
+  </PropertyGroup>
+
   <UsingTask TaskName="AltCover.Prepare"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.Collect"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.PowerShell"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.GetVersion"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.Echo"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.RunSettings"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+        AssemblyFile="$(AltCoverEngine)" />
 
   <PropertyGroup>
     <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
@@ -77,7 +84,7 @@
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
   <Target Name="VSTest">
-    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop"/>
+    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop" />
     <CallTarget Targets="AltCoverVSTestCore" />
   </Target>
 

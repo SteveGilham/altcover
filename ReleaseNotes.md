@@ -2,8 +2,22 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.1.xxx  (Genbu series release 7)
-* [Visualizer-global-tool] Support font selection on Windows
+# 7.1.xxx (Genbu series release 7)
+* Rationalise .net versions to help speed up the build and ease the net5.0 transition
+  * Clear out some corner case differences between .net core and .net framework builds based on old work-arounds for symbol writing for the instrumented files
+  * Build the recorder at `net20` only and use the same assembly everywhere
+  * Move all the core logic from `AltCover.exe/.dll` to `AltCover.Engine.dll`
+  * Unify the three different entry-point assembly instances into the now shim-like `AltCover.exe/.dll`
+  * Build everything against `netstandard2.0` except executable shims and unit tests
+  * Build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
+  * Build the GTK2 visualizer against `net472` for consistency
+  * `net472` debug builds for published libraries are retained purely for FxCop consumption
+
+# 7.1.783  (Genbu series release 6a)
+* [Visualizer-global-tool] 
+  * [BUGFIX] Don't NRE when cancelling a File Open dialog when Avalonia uses its GTK binding (Linux)
+  * Support font selection on Windows natively (monospace fonts only)
+  * On non-Windows platforms, if Tcl/Tk `wish` is present, use that to perform font selection (choose wisely)
 
 # 7.1.782  (Genbu series release 6)
 * [BUGFIX] Don't throw NRE when encountering an interface with a default method implementation

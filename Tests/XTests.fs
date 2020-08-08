@@ -539,51 +539,17 @@ module AltCoverXTests =
 
       test <@ (File.Exists report) @>
       test <@ (File.Exists(report + ".acv")) @>
-      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-      let isNT = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-      let isWindows =
-#if NETCOREAPP2_1
-                        true
-#else
-                        isNT
-#endif
+
       let expected =
         [ "AltCover.Recorder.g.dll"
-#if NETCOREAPP2_1
-#else
           "AltCover.Recorder.g.pdb";
-#endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
           "xunit.runner.reporters.netcoreapp10.dll";
           "xunit.runner.utility.netcoreapp10.dll";
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
-#if NETCOREAPP2_1
-#else
-        |> List.filter (fun f -> isWindows || f = "Sample4.pdb" ||
-                                 f = "Sample1.exe.mdb" ||
-                                 (f.EndsWith("db", StringComparison.Ordinal) |> not))
-#endif
-
       let theFiles =
-        if pdb
-           |> File.Exists
-           |> not
-        then
-          List.concat [ expected
-                        [
-#if NETCOREAPP2_1
-#else
-                            "AltCover.Recorder.g.dll.mdb";
-#endif
-                            "Sample4.dll.mdb" ] ]
-          |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
-          |> List.filter
-               (fun f ->
-               isWindows || f = "Sample4.pdb"
-               || (f.EndsWith("db", StringComparison.Ordinal) |> not))
-          |> List.sortBy (fun f -> f.ToUpperInvariant())
-        else expected |> List.sortBy (fun f -> f.ToUpperInvariant())
+        expected |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       let actualFiles =
         Directory.GetFiles(output)
@@ -700,40 +666,11 @@ module AltCoverXTests =
       test <@ CoverageParameters.keys.Count = 2 @>
 
       test <@ File.Exists report @>
-      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-      let isWindows =
-#if NETCOREAPP2_1
-                        true
-#else
-                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
 
       let theFiles =
-        if File.Exists(pdb) then
           [ "AltCover.Recorder.g.dll";
-#if NETCOREAPP2_1
-#else
             "AltCover.Recorder.g.pdb"
-#endif
             "Sample1.exe"; "Sample1.exe.mdb" ]
-           // See Instrument.WriteAssembly
-#if NETCOREAPP2_1
-#else
-          |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" ||
-                                   (f.EndsWith("db", StringComparison.Ordinal) |> not))
-#endif
-        else
-          [ "AltCover.Recorder.g.dll";
-#if NETCOREAPP2_1
-#else
-            "AltCover.Recorder.g.dll.mdb";
-#endif
-            "Sample1.exe";
-            "Sample1.exe.mdb" ]
-          |> List.filter
-               (fun f ->
-               isWindows || f = "Sample1.exe.mdb"
-               || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 
       let actual =
         Directory.GetFiles(output)
