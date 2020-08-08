@@ -1,4 +1,6 @@
-Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll"
+## TODO -- AltCover => AltCover.Engine
+
+Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
 
 ## clear first
 dir -recurse "./docs/*apidoc.md" | del -force
@@ -275,7 +277,7 @@ The full command line is
 
 $header | Out-File -Encoding UTF8 $mdfile
 
-$resources = [xml](Get-Content "./AltCover/Strings.resx")
+$resources = [xml](Get-Content "./AltCover.Engine/Strings.resx")
 
 $helptext = $resources.root.data | ? { $_.name -eq "HelpText" } | % { $_.value }
 
