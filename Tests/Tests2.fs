@@ -440,10 +440,10 @@ module AltCoverTests2 =
       | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
       match Instrument.I.findProvider ".pdb" false with
       | null -> ()
-      | x -> Assert.Fail("null expected but got " + x.GetType().FullName)
+      | x -> Assert.Fail("null expected for .pdb but got " + x.GetType().FullName)
       match Instrument.I.findProvider ".exe" false with
       | null -> ()
-      | x -> Assert.Fail("null expected but got " + x.GetType().FullName)
+      | x -> Assert.Fail("null expected for non-.pdb but got " + x.GetType().FullName)
 
 #if NETCOREAPP2_0
     type TestAssemblyLoadContext () =
