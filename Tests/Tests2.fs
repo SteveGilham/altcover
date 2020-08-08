@@ -238,12 +238,10 @@ module AltCoverTests2 =
       finally
         CoverageParameters.keys.Clear()
 
-//#if NETCOREAPP2_0
-//    [<Test>]
-//    let MonoCombinationCanBeExercisedOnNetCore() =
-//      let provider = Instrument.I.findProvider "thing.mdb" true
-//      Assert.That (provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
-//#endif
+    [<Test>]
+    let MonoCombinationCanBeExercisedOnNetCore() =
+      let provider = Instrument.I.findProvider "thing.mdb" true
+      Assert.That (provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
 
     [<Test>]
     let GuardShouldDisposeRecordingAssemblyOnException() =

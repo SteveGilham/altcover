@@ -254,7 +254,7 @@ module TestMain =
           Tests.AltCoverTests2.NoKnownTokenIfAssemblyHasNone, "Tests2.NoKnownTokenIfAssemblyHasNone"
           Tests.AltCoverTests2.ForeignTokenIsNotMatchedInIndex, "Tests2.ForeignTokenIsNotMatchedInIndex"
           Tests.AltCoverTests2.FakedUpTokenIsMatchedInIndex, "Tests2.FakedUpTokenIsMatchedInIndex"
-//          Tests.AltCoverTests2.MonoCombinationCanBeExercisedOnNetCore, "Tests2.MonoCombinationCanBeExercisedOnNetCore"
+          Tests.AltCoverTests2.MonoCombinationCanBeExercisedOnNetCore, "Tests2.MonoCombinationCanBeExercisedOnNetCore"
           Tests.AltCoverTests2.GuardShouldDisposeRecordingAssemblyOnException, "Tests2.GuardShouldDisposeRecordingAssemblyOnException"
           Tests.AltCoverTests2.ShouldBeAbleToTellAnAssembly, "Tests2.ShouldBeAbleToTellAnAssembly"
           Tests.AltCoverTests2.ShouldBeAbleToValidateAnAssembly, "Tests2.ShouldBeAbleToValidateAnAssembly"
