@@ -174,7 +174,7 @@ let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
 let xmldoc2cmdletdoc =
-  ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp3.1/XmlDoc2CmdletDoc.dll")
+  ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp2.1/XmlDoc2CmdletDoc.dll")
   |> Path.getFullName
 
 let cliArguments =
@@ -446,9 +446,12 @@ _Target "BuildRelease" (fun _ ->
       ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/System.Management.Automation.dll")
       ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
-    Actions.RunDotnet dotnetOptions xmldoc2cmdletdoc
-      " -strict ./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
-      "documenting cmdlets"
+    let cmdlets = "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
+                  |> Path.getFullName
+    if Environment.isWindows then // the Jolt comment reader library is sadly windows/fullframework bound
+      Actions.RunDotnet dotnetOptions "" 
+        ("--roll-forward Major " + xmldoc2cmdletdoc + " -strict " + cmdlets)
+        "documenting cmdlets"
   with x ->
     printfn "%A" x
     reraise())
