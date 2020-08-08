@@ -262,26 +262,11 @@ module internal Instrument =
         let hook = resolver.GetType().GetMethod("add_ResolveFailure")
         hook.Invoke(resolver, [| hookResolveHandler :> obj |]) |> ignore
 
-    // pdb writing fails with
-    // mono on Windows when writing with
-    // System.NullReferenceException : Object reference not set to an instance of an object.
-    // from deep inside Cecil
-    // mono on non-Windows with
-    // System.DllNotFoundException : ole32.dll
-    //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance
-    // If there are portable .pdbs on mono, those fail to write, too with
-    // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
-    // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-
-    // Mdb writing now fails in .net framework, it throws
-    // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
-    // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-
-    //let internal findProvider pdb write =
-    //  match (pdb, write) with
-    //  | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-    //  | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-    //  | _ -> null
+    let internal findProvider pdb write =
+      match (pdb, write) with
+      | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+      | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+      | _ -> null
 
     //let internal createSymbolWriter pdb isWindows isMono =
     //  match (isWindows, isMono) with
@@ -291,12 +276,6 @@ module internal Instrument =
     //      | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
     //      | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
     //  | _ -> null
-
-    let safeSymbolWriterProvider  pdb //_isWindows _isMono
-      =
-          match pdb with
-          | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-          | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
@@ -320,22 +299,18 @@ module internal Instrument =
       // Once Cecil 0.10 beta6 is taken out of the equation, this works
       // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
       // or for assemblies with embedded .pdb information (on *nix)
+      // 8-AUG-2020
+      //Non-windows embedded symbols => do not write, else
+      //Unhandled exception. System.Runtime.InteropServices.MarshalDirectiveException: Cannot marshal 'parameter #2': Invalid managed/unmanaged type combination (Marshaling to and from COM interface pointers isn't supported).
+      //   at Mono.Cecil.Pdb.SymWriter.CoCreateInstance(Guid& rclsid, Object pUnkOuter, UInt32 dwClsContext, Guid& riid, Object& ppv)
+      //   at Mono.Cecil.Pdb.SymWriter..ctor() in C:/sources/cecil/symbols/pdb/Mono.Cecil.Pdb/SymWriter.cs:line 39
+      //   at Mono.Cecil.Pdb.NativePdbWriterProvider.CreateWriter(ModuleDefinition module, String pdb) in C:/sources/cecil/symbols/pdb/Mono.Cecil.Pdb/PdbHelper.cs:line 81
 
-      // NetStandard
-      //pkey.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
-      //pkey.SymbolWriterProvider <-
-      //  findProvider pdb pkey.WriteSymbols
-
-      //// Framework/Mono
-      //pkey.WriteSymbols <- isWindows
-      //pkey.SymbolWriterProvider <-
-      //  createSymbolWriter pdb isWindows monoRuntime
-
-      pkey.SymbolWriterProvider <-
-        safeSymbolWriterProvider pdb // isWindows monoRuntime
-      pkey.WriteSymbols <- pkey.SymbolWriterProvider.IsNotNull &&
-                             assembly.MainModule.HasSymbols &&
+      let shouldWrite = assembly.MainModule.HasSymbols &&
                              (isWindows || separatePdb)
+      pkey.SymbolWriterProvider <-
+        findProvider pdb shouldWrite
+      pkey.WriteSymbols <- pkey.SymbolWriterProvider.IsNotNull
 
       knownKey assembly.Name
       |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
