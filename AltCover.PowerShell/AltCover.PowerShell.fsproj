@@ -13,7 +13,6 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <XmlDoc2CmdletDocStrict>true</XmlDoc2CmdletDocStrict>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -48,11 +47,6 @@
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0">
       <PrivateAssets Condition="'$(AltCoverGendarme)'!='true'">All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="XmlDoc2CmdletDoc" version="0.2.13" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Debug|net472|Windows_NT'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -67,16 +61,9 @@
     </PackageReference>
   </ItemGroup>
 
-  <Target Name="PreXmlDoc2CmdletDoc" BeforeTargets="XmlDoc2CmdletDoc" Condition="'$(Configuration)|$(TargetFramework)|$(OS)'=='Debug|net472|Windows_NT'">
-    <Copy SourceFiles="@(AltCoverExe)" DestinationFiles="@(AltCoverDll)" />
-  </Target>
-
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.2" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
-    <Exec Command="dotnet xmldocmd $(TargetPath) $(SolutionDir)_Documentation/$(AssemblyName) --visibility public --skip-unbrowsable --clean" />
-  </Target>
 </Project>

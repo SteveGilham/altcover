@@ -173,6 +173,9 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
+let xmldoc2cmdletdoc =
+  ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp2.1/XmlDoc2CmdletDoc.dll")
+  |> Path.getFullName
 
 let cliArguments =
   { MSBuild.CliArguments.Create() with
@@ -415,6 +418,19 @@ _Target "BuildRelease" (fun _ ->
     [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
 
     [ "./AltCover.sln" ] |> Seq.iter dotnetBuildRelease
+
+    // document cmdlets ahead of packaging
+    // TODO -- get version numbers from PoSh project
+    Shell.copyFile 
+      ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/FSharp.Core.dll") 
+      (nugetCache + "/fsharp.core/4.7.2/lib/netstandard2.0/FSharp.Core.dll")
+    Shell.copyFile 
+      ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/System.Management.Automation.dll") 
+      (nugetCache + "/powershellstandard.library/5.1.0/lib/netstandard2.0/System.Management.Automation.dll")
+
+    Actions.RunDotnet dotnetOptions xmldoc2cmdletdoc
+      " -strict ./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
+      "documenting cmdlets"
   with x ->
     printfn "%A" x
     reraise())
@@ -2115,7 +2131,7 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
   let poshHelp =
     Path.getFullName
-      "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll-Help.xml"
+      "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
   if (poshHelp |> File.Exists |> not) && (Environment.isWindows |> not)
   then File.WriteAllText(poshHelp, "DUMMY TEXT")
 
@@ -2474,7 +2490,29 @@ _Target "Unpack" (fun _ ->
   |> Seq.iter (fun nugget ->
     let packdir = Path.GetDirectoryName nugget
     let unpack = Path.getFullName (packdir @@ "Unpack")
-    System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack)))
+    System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
+    
+  // C# style API documentation
+  // TODO -- get version numbers from projects
+
+  let unpacked = "./_Packaging.api/Unpack/lib/netstandard2.0/"
+  Shell.copyFile (unpacked + "Cake.Core.dll") (nugetCache + "/cake.core/0.28.0/lib/netstandard2.0/Cake.Core.dll")
+  Shell.copyFile (unpacked + "Cake.Common.dll") (nugetCache + "/cake.common/0.28.0/lib/netstandard2.0/Cake.Common.dll")
+  Shell.copyFile (unpacked + "System.Management.Automation.dll") 
+    (nugetCache + "/powershellstandard.library/5.1.0/lib/netstandard2.0/System.Management.Automation.dll")
+
+  [ 
+    "AltCover.Cake"
+    "AltCover.DotNet"
+    "AltCover.Engine" // beware static linkage -- maybe copy from debug?
+    "AltCover.PowerShell"
+    "AltCover.Toolkit"
+  ]
+  |> List.iter (fun n ->
+    Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.0/" + n + ".xml")
+    Actions.RunDotnet dotnetOptions "xmldocmd"
+     (unpacked + n + ".dll ./_Documentation/" + n + " --visibility public --skip-unbrowsable --clean")
+     ("documenting " + n)))
 
 _Target "WindowsPowerShell" (fun _ ->
   Directory.ensure "./_Documentation"
