@@ -17,8 +17,7 @@ open BlackFox.CommandLine
 open Mono.Options
 open System.Diagnostics.CodeAnalysis
 
-#if !NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+[<ExcludeFromCodeCoverage>]
 module internal Process =
   type System.Diagnostics.Process with
     // Work around observed unreliability of WaitForExit()
@@ -36,15 +35,14 @@ module internal Process =
         | :? SystemException
         | :? InvalidOperationException
         | :? System.ComponentModel.Win32Exception -> ()
-      if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" && "Mono.Runtime"
-                                                                           |> Type.GetType
-                                                                           |> isNull then // only rely on .net Framework on Windows
+      if "Mono.Runtime"
+         |> Type.GetType
+         |> isNull then
         self.WaitForExit()
       else
         loop()
 
 open Process
-#endif
 
 module internal Zip =
   let internal save (document : XDocument) (report : string) (zip : bool) =
@@ -193,11 +191,7 @@ module internal CommandLine =
       proc.Start() |> ignore
       proc.BeginErrorReadLine()
       proc.BeginOutputReadLine()
-  #if NETSTANDARD2_0
-      proc.WaitForExit()
-  #else
       proc.WaitForExitCustom()
-  #endif
       proc.ExitCode * (!dropReturnCode
                        |> not).ToInt32
 
