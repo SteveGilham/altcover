@@ -305,17 +305,17 @@ module internal Instrument =
     // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
     let internal writeAssembly (assembly : AssemblyDefinition) (path : string) =
       let pkey = Mono.Cecil.WriterParameters()
-      //let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+      let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let pdb =
         ProgramDatabase.getPdbWithFallback assembly
         |> Option.defaultValue "x.pdb"
         |> Path.GetExtension
 
-      //let separatePdb =
-      //  ProgramDatabase.getPdbFromImage assembly
-      //  |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
-      //  |> Option.isSome
+      let separatePdb =
+        ProgramDatabase.getPdbFromImage assembly
+        |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
+        |> Option.isSome
 
       // Once Cecil 0.10 beta6 is taken out of the equation, this works
       // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
@@ -334,7 +334,8 @@ module internal Instrument =
       pkey.SymbolWriterProvider <-
         safeSymbolWriterProvider pdb // isWindows monoRuntime
       pkey.WriteSymbols <- pkey.SymbolWriterProvider.IsNotNull &&
-                             assembly.MainModule.HasSymbols
+                             assembly.MainModule.HasSymbols &&
+                             (isWindows || separatePdb)
 
       knownKey assembly.Name
       |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
