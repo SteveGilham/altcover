@@ -1080,7 +1080,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "UIUnitTestWithAltCoverRunner.xml", // coverage report
         "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
-            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/AltCover.Tests.Visualizer.dll"],
+            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"],
         AltCoverFilterTypeSafe,
         keyfile
       )
@@ -1253,7 +1253,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0",
        Path.getFullName "Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0",
        reports @@ "UITestWithAltCoverCore.xml",
-       "altcover.visualizer.tests.core.fsproj",
+       "AltCover.Visualizer.Tests.fsproj",
        Path.getFullName "Tests.Visualizer",
        AltCoverFilter
      )
@@ -1349,7 +1349,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
        Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0", // testDirectory
        Path.getFullName "Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/netcoreapp3.0", // output
        reports @@ "UITestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "./Tests.Visualizer/altcover.visualizer.tests.core.fsproj"
+       Path.getFullName "./Tests.Visualizer/AltCover.Visualizer.Tests.fsproj"
      )
      (
        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
