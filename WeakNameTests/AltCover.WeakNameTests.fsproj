@@ -8,7 +8,7 @@
     <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\2020.7.21.12091-pre-release\tools\</GendarmeToolDir>
     <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/2020.7.21.12091-pre-release/tools/netcoreapp2.1/any/</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <AssemblyName>AltCover.WeakName.Testing</AssemblyName>
+    <AssemblyName>AltCover.WeakName.Tests</AssemblyName>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
