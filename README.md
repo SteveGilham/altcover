@@ -39,12 +39,6 @@ Back in 2010, the new .net version finally removed the deprecated profiling APIs
 
 Fast forwards to autumn 2017, and I get the chance to dust the project off, with the intention of saying that it worked on Mono, too -- and realise that it's _déja vu_ all over again, because .net core didn't yet have profiler based coverage tools either, and the same approach would work there as well.
 
-### Other notes
-
-1. On old-fashioned .net framework, the `ProcessExit` event handling window of ~2s is sufficient for processing significant bodies of code under test (several 10s of kloc, as observed in production back in the '10-'11 timeframe); under `dotnet test` [the `vstest.console` process imposes a 100ms guillotine](https://github.com/Microsoft/vstest/issues/1900#issuecomment-457488472), even though .net Core imposes no time-limit of its own.  This is about enough time to fill in an NCover report for a program of no more than 1kloc, hence the development of a "write it all promptly to file and post-process" `Runner` mode.  With version 5.3 and above, the `dotnet test` integration now hooks the VSTest in-process data collection, allowing an indefinite window to write collected data from memory, thus removing the file I/O bottleneck. 
-
-2. Under Mono on non-Windows platforms the default values of `--debug:full` or `--debug:pdbonly` generate no symbols from F# projects -- and without symbols, such assemblies cannot be instrumented.  Unlike with C# projects, where the substitution appears to be automatic, to use the necessary `--debug:portable` option involves explicitly hand editing the old-school `.fsproj` file to have `<DebugType>portable</DebugType>`.  
-
 ## Continuous Integration
 
 | | | |
