@@ -1,4 +1,4 @@
-namespace WeakNameTests
+namespace AltCover.Tests
 
 open System
 open System.IO
@@ -24,7 +24,7 @@ module Rocks =
              |> Seq.cast<TypeDefinition>
              |> Seq.toList))
 
-module AltCoverTests =
+module ValidateGendarmeEmulation =
 
   [<Test>]
   let ShouldMatchGendarmeComplexityInAltCover() =

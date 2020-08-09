@@ -38,7 +38,7 @@ test:
     - _Binaries\AltCover.Recorder.Tests\Debug+AnyCPU\net472\AltCover.Recorder.Tests.dll
     - _Binaries\AltCover.Tests\Debug+AnyCPU\net472\AltCover.Tests.dll
     - _Binaries\AltCover.Tests.Visualizer\Debug+AnyCPU\net472\AltCover.Tests.Visualizer.dll
-    - _Binaries\AltCover.WeakName.Tests\Debug+AnyCPU\net472\AltCover.WeakName.Tests.dll
+    - _Binaries\AltCover.ValidateGendarmeEmulation\Debug+AnyCPU\net472\AltCover.ValidateGendarmeEmulation.dll
 artifacts:
 - path: _Packagin*\*.nupkg
   name: NuGet

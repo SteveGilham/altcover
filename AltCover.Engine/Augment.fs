@@ -17,8 +17,7 @@ module Augment =
       with get() =
         self |> isNull |> not
 
-#if !GUI
-#if !WEAKNAME
+#if !(GUI || ValidateGendarmeEmulation)
   type System.String with
     member self.X
       with get() =
@@ -28,7 +27,6 @@ module Augment =
       System.Double.TryParse(self,
                              System.Globalization.NumberStyles.Number,
                              System.Globalization.CultureInfo.InvariantCulture)
-#endif
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 
@@ -56,12 +54,10 @@ module Augment =
     | Choice1Of2 x -> Right x
     | Choice2Of2 x -> Left x
 
-#if !WEAKNAME
-#if !GUI
+#if !(GUI || ValidateGendarmeEmulation)
   let internal doWithStream (create : unit -> 'a) (action : 'a -> unit) =
     use stream = create()
     action stream
-#endif
 #endif
 
 #if !GUI
@@ -69,7 +65,7 @@ module Augment =
     member self.ToInt32
       with get() =
         if self then 1 else 0
-#if !WEAKNAME
+#if !ValidateGendarmeEmulation
   type System.Int32 with
     member self.Increment (b : bool) =
       self + b.ToInt32

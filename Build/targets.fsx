@@ -274,7 +274,7 @@ let uncovered (path : string) =
                    |> Path.GetFileName) numeric
                 numeric))
   |> Seq.toList
-  
+
 let coverageSummary _ =
   let numbers = uncovered "_Reports/_Unit*/Summary.xml"
   if numbers
@@ -331,7 +331,7 @@ _Target "RebuildPaketLock" ignore
 
 _Target "Preparation" ignore
 
-_Target "PreClean" (fun _ -> 
+_Target "PreClean" (fun _ ->
 // dir -Recurse *ssemblyAttributes.cs | % { del -Force $_.FullName }
       !!"**/*ssemblyAttributes.cs"
       |> Seq.map Path.GetFullPath
@@ -435,21 +435,21 @@ _Target "BuildRelease" (fun _ ->
              then (update.Value, version)
              else (incl.Value, version))
       |> Map.ofSeq
-    let packageVersionPart (p : string) = nugetCache + 
+    let packageVersionPart (p : string) = nugetCache +
                                           "/" + p.ToLowerInvariant() + "/" + (packages.Item p) +
                                           "/lib/netstandard2.0/"
 
-    Shell.copyFile 
-      ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/FSharp.Core.dll") 
+    Shell.copyFile
+      ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/FSharp.Core.dll")
       ((packageVersionPart "FSharp.Core") + "FSharp.Core.dll")
-    Shell.copyFile 
+    Shell.copyFile
       ("./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/System.Management.Automation.dll")
       ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
     let cmdlets = "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
                   |> Path.getFullName
     if Environment.isWindows then // the Jolt comment reader library is sadly windows/fullframework bound
-      Actions.RunDotnet dotnetOptions "" 
+      Actions.RunDotnet dotnetOptions ""
         ("--roll-forward Major " + xmldoc2cmdletdoc + " -strict " + cmdlets)
         "documenting cmdlets"
   with x ->
@@ -806,9 +806,12 @@ _Target "UnitTestDotNet" (fun _ ->
 
 _Target "BuildForCoverlet" (fun _ ->
   msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  !!(@"./*Tests/*Tests.fsproj")
-  |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
-                          && s.Contains("Recorder") |> not) // net20
+  let l = !!(@"./*Tests/*Tests.fsproj")
+          |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
+                                  && s.Contains("Recorder") |> not) // net20
+          |> Seq.toList
+
+  ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
@@ -819,9 +822,12 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
+    let l = !!(@"./*Tests/*Tests.fsproj")
+            |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
+            |> Seq.toList
+
     let xml =
-      !!(@"./*Tests/*Tests.fsproj")
-      |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
+      ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
@@ -866,11 +872,12 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
 
 _Target "UnitTestWithOpenCover" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithOpenCover"
-  let testFiles =
-    !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
-    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
-    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
-    |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
+  let testFiles = "./_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ::
+                  (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
+                   |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
+                   |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+                   |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
+                   |> Seq.toList)
 
   let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net472/*Recorder.Tests.dll")
 
@@ -886,7 +893,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.WeakName.Tests]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.ValidateGendarmeEmulation]Alt* +[AltCover.Toolkit]* +[AltCover.DotNet]* -[*]AltCover.Tests.* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -903,7 +910,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover.Recorder]* -[*]ICSharpCode.* -[*]System.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -919,7 +926,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover.Recorder]* -[*]ICSharpCode.* -[*]System.*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -958,7 +965,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
   // net4x tests -- TODO API
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472"
-  let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net472"
+  let weakDir = Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472"
   let Recorder4Dir =
     Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472"
   let apiDir = Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
@@ -973,7 +980,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
            InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir |]
            OutputDirectories =
              [| "./__UnitTestWithAltCover"
-                weakDir @@ "__WeakNameTestWithAltCover"
+                weakDir @@ "__ValidateGendarmeEmulationWithAltCover"
                 Recorder4Dir @@ "__RecorderTestWithAltCover"
                 apiDir @@ "__ApiTestWithAltCover" |]
            StrongNameKey = keyfile
@@ -998,7 +1005,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   try
     [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
-      !!"_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net472/__WeakNameTestWithAltCover/Alt*Test*.dll"
+      !!"_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
       !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
     |> Seq.concat
@@ -1085,13 +1092,13 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         keyfile
       )
       (
-        Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net472",
-        "./__WeakNameTestWithAltCoverRunner",
-        "WeakNameTestWithAltCoverRunner.xml",
-        "./_Reports/WeakNameTestWithAltCoverRunnerReport.xml",
+        Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472",
+        "./__ValidateGendarmeEmulationWithAltCoverRunner",
+        "ValidateGendarmeEmulationWithAltCoverRunner.xml",
+        "./_Reports/ValidateGendarmeEmulationWithAltCoverRunnerReport.xml",
         [ Path.getFullName
-            "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net472/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ],
-        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "WeakNameTest"; TypeSafe.Raw "SolutionRoot" ]}) >> AltCoverFilterXTypeSafe,
+            "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCoverRunner/AltCover.ValidateGendarmeEmulation.dll" ],
+        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "Tests"; TypeSafe.Raw "SolutionRoot" ]}) >> AltCoverFilterXTypeSafe,
         keyfile
       )
       (
@@ -1259,12 +1266,12 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        AltCoverApiFilter // filter
      )
      (
-       Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "WeakNameTests/_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/netcoreapp3.0", // output
-       reports @@ "WeakNameUnitTestWithAltCoverCore.xml", // report
-       "AltCover.WeakNameTests.fsproj", // project
-       Path.getFullName "WeakNameTests", // workingDirectory
-       (fun p -> { p with TypeFilter = [ "<Start"; "Expecto"; "WeakNameTests" ]}) >> AltCoverFilter // filter
+       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml", // report
+       "AltCover.ValidateGendarmeEmulation.fsproj", // project
+       Path.getFullName "ValidateGendarmeEmulations", // workingDirectory
+       (fun p -> { p with TypeFilter = [ "<Start"; "Expecto"; "Tests" ]}) >> AltCoverFilter // filter
      )
    ]
 
@@ -1344,10 +1351,10 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
      (
-       Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "WeakNameTests/_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/netcoreapp3.0", // output
-       reports @@ "WeakNameUnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "WeakNameTests/AltCover.WeakNameTests.fsproj") // project
+       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // testDirectory
+       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // output
+       reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
 
   tests
@@ -1360,7 +1367,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
            ({ Primitive.PrepareOptions.Create() with
                 XmlReport = report
                 OutputDirectories = [| output |]
-                TypeFilter = [ "SolutionRoot"; "Expecto"; "WeakNameTests" ]
+                TypeFilter = [ "SolutionRoot"; "Expecto"; "Tests" ]
                 VisibleBranches = true
                 StrongNameKey = keyfile
                 SingleVisit = true
@@ -2512,7 +2519,7 @@ _Target "Unpack" (fun _ ->
     let packdir = Path.GetDirectoryName nugget
     let unpack = Path.getFullName (packdir @@ "Unpack")
     System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
-    
+
   // C# style API documentation
   let packages =
     let xml =
@@ -2534,7 +2541,7 @@ _Target "Unpack" (fun _ ->
            else (incl.Value, version))
     |> Seq.distinctBy fst
     |> Map.ofSeq
-  let packageVersionPart (p : string) = nugetCache + 
+  let packageVersionPart (p : string) = nugetCache +
                                         "/" + p.ToLowerInvariant() + "/" + (packages.Item p) +
                                         "/lib/netstandard2.0/"
 
@@ -2543,10 +2550,10 @@ _Target "Unpack" (fun _ ->
       ((packageVersionPart "Cake.Core") + "Cake.Core.dll")
   Shell.copyFile (unpacked + "Cake.Common.dll")
       ((packageVersionPart "Cake.Common") + "Cake.Common.dll")
-  Shell.copyFile (unpacked + "System.Management.Automation.dll") 
+  Shell.copyFile (unpacked + "System.Management.Automation.dll")
       ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
-  [ 
+  [
     "AltCover.Cake"
     "AltCover.DotNet"
     "AltCover.Engine" // beware static linkage -- maybe copy from debug?

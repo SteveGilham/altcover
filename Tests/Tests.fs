@@ -2555,7 +2555,7 @@ module AltCoverTests =
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.theReportFormat <- None
 
-    // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
+    // Gendarme.fs (except where I need to compare with the original, which are the ValidateGendarmeEmulation tests)
     [<Test>]
     let ShouldDetectTernary() =
       let where = Assembly.GetExecutingAssembly().Location
