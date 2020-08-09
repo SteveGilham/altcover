@@ -447,6 +447,11 @@ module internal Main =
 
       List.unzip sorted
 
+    let internal isMSBuild (assembly : Assembly option) =
+      assembly
+      |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
+      |> Option.defaultValue false
+
     [<SuppressMessage("Gendarme.Rules.BadPractice",
       "GetEntryAssemblyMayReturnNullRule",
       Justification="That is the whole point of the call.")>]
@@ -454,8 +459,7 @@ module internal Main =
       let dotnetBuild =
         Assembly.GetEntryAssembly() // is null for unit tests
         |> Option.ofObj
-        |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
-        |> Option.defaultValue false
+        |> isMSBuild
 
       let check1 =
         declareOptions()
