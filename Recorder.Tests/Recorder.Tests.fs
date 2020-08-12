@@ -16,7 +16,6 @@ namespace Tests.Recorder.Unknown
 
 open System
 open System.Collections.Generic
-open System.Diagnostics
 open System.IO
 open System.IO.Compression
 open System.Reflection
@@ -26,6 +25,8 @@ open System.Xml
 
 open AltCover.Recorder
 open NUnit.Framework
+
+#nowarn "25" // partial pattern match
 
 module AltCoverTests =
 
@@ -154,12 +155,10 @@ module AltCoverTests =
     Assert.True( Adapter.Null()
                  |> Adapter.untime
                  |> Seq.isEmpty )
-    match Adapter.untime probed |> Seq.toList with
-    | [ probe ] ->
-        Assert.True( probe % 1000L = 0L )
-        Assert.True( probe <= v2 )
-        Assert.True( probe >= (1000L * (v1 / 1000L)) )
-    | _ -> Assert.True( false )
+    let [ probe ] =  Adapter.untime probed |> Seq.toList
+    Assert.True( probe % 1000L = 0L )
+    Assert.True( probe <= v2 )
+    Assert.True( probe >= (1000L * (v1 / 1000L)) )
     Assert.True( Instance.I.callerId() = 0 )
     Instance.Pop()
     Assert.True( Instance.I.callerId() = 0 )
@@ -699,14 +698,13 @@ module AltCoverTests =
                [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
         finally
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Instance.I.isRunner <- false
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
       with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
@@ -764,14 +762,13 @@ module AltCoverTests =
         finally
           Adapter.Reset()
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           File.Delete tag
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
       with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
@@ -823,13 +820,12 @@ module AltCoverTests =
              Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
         finally
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
       with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
@@ -882,13 +878,12 @@ module AltCoverTests =
         finally
           Instance.I.trace <- save
           Instance.supervision <- false
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
       with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 
@@ -929,12 +924,11 @@ module AltCoverTests =
          |> Seq.map (fun x -> x.GetAttribute("visitcount")),
          Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
     finally
-      if File.Exists reportFile then File.Delete reportFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   [<Test>]
   let FlushLeavesExpectedTracesWhenBroken() =
@@ -971,12 +965,11 @@ module AltCoverTests =
         (after.OuterXml,
          Is.EqualTo "<null />")
     finally
-      if File.Exists reportFile then File.Delete reportFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
 #if !NET2
   [<Test>]
@@ -1020,12 +1013,11 @@ module AltCoverTests =
          |> Seq.map (fun x -> x.GetAttribute("visitcount")),
          Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
     finally
-      if File.Exists reportFile then File.Delete reportFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken() =
@@ -1062,14 +1054,13 @@ module AltCoverTests =
         (after.OuterXml,
          Is.EqualTo "<null />")
     finally
-      if File.Exists reportFile then File.Delete reportFile
-      if File.Exists outputFile then File.Delete outputFile
-      if File.Exists zipFile then File.Delete zipFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
+      AltCoverCoreTests.maybeDeleteFile outputFile
+      AltCoverCoreTests.maybeDeleteFile zipFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBrokenInPlace() =
@@ -1103,12 +1094,11 @@ module AltCoverTests =
       let zipInfo = FileInfo(zipFile)
       Assert.That(zipInfo.Length, Is.EqualTo 0)
     finally
-      if File.Exists zipFile then File.Delete zipFile
+      AltCoverCoreTests.maybeDeleteFile zipFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   let ZipFlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
@@ -1167,13 +1157,12 @@ module AltCoverTests =
              Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
         finally
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
       with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
     GetMyMethodName "<="
 #endif

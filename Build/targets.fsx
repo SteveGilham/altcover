@@ -45,11 +45,12 @@ let AltCoverFilter(p : Primitive.PrepareOptions) =
 let AltCoverFilterTypeSafe(p : TypeSafe.PrepareOptions) =
   { p with
       MethodFilter = [TypeSafe.Raw "WaitForExitCustom"] |>  p.MethodFilter.Join
-      AssemblyExcludeFilter = [ TypeSafe.Raw "Tests"] |> p.AssemblyExcludeFilter.Join
+      // AssemblyExcludeFilter = [ TypeSafe.Raw "Tests"] |> p.AssemblyExcludeFilter.Join
       AssemblyFilter = [ @"\.DataCollector"; "Sample" ]
                        |> Seq.map TypeSafe.Raw
                        |> p.AssemblyFilter.Join
       LocalSource = TypeSafe.Set
+      AttributeFilter = [TypeSafe.Raw "EntryPoint"] |>  p.AttributeFilter.Join
       TypeFilter =
         [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode" ]
         |> Seq.map TypeSafe.Raw
@@ -76,13 +77,14 @@ let AltCoverFilterX(p : Primitive.PrepareOptions) =
 let AltCoverFilterXTypeSafe(p : TypeSafe.PrepareOptions) =
   { p with
       MethodFilter = [TypeSafe.Raw "WaitForExitCustom"] |>  p.MethodFilter.Join
-      AssemblyExcludeFilter = [ TypeSafe.Raw "Tests"] |> p.AssemblyExcludeFilter.Join
+      //AssemblyExcludeFilter = [ TypeSafe.Raw "Tests"] |> p.AssemblyExcludeFilter.Join
       AssemblyFilter = [ @"\.DataCollector"; "Sample" ]
                        |> Seq.map TypeSafe.Raw
                        |> p.AssemblyFilter.Join
+      AttributeFilter = [TypeSafe.Raw "EntryPoint"] |>  p.AttributeFilter.Join
       LocalSource = TypeSafe.Set
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Tests"; "Microsoft"; "ICSharpCode" ]
+        [ @"System\."; @"Sample3\.Class2"; (*"Tests";*) "Microsoft"; "ICSharpCode" ]
         |> Seq.map TypeSafe.Raw
         |> p.TypeFilter.Join }
 
@@ -1060,6 +1062,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let reports = Path.getFullName "./_Reports"
   let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
 
+  // Only use 
+  let baseFilter = AltCoverFilterTypeSafe (* >> (fun x ->  { x with AssemblyExcludeFilter = TypeSafe.Filters [] }) *)
+
   let tests =
     [
       (
@@ -1071,7 +1076,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
             "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
           Path.getFullName
             "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/Sample2.dll" ],
-        AltCoverFilterTypeSafe,
+        baseFilter,
         keyfile
       )
       (
@@ -1081,7 +1086,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
             "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"],
-        AltCoverFilterTypeSafe,
+        baseFilter,
         keyfile
       )
       (
@@ -1091,7 +1096,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "./_Reports/ApiTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
             "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCoverRunner/AltCover.Api.Tests.dll" ],
-        AltCoverFilterTypeSafe,
+        baseFilter,
         keyfile
       )
       (
@@ -1101,7 +1106,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "./_Reports/WeakNameTestWithAltCoverRunnerReport.xml",
         [ Path.getFullName
             "_Binaries/AltCover.WeakName.Testing/Debug+AnyCPU/net472/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Testing.dll" ],
-        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "WeakNameTest"; TypeSafe.Raw "SolutionRoot" ]}) >> AltCoverFilterXTypeSafe,
+        // only use // (* >> (fun x ->  { x with AssemblyExcludeFilter = TypeSafe.Filters [] }) *), 
+        (fun x -> { x with TypeFilter = TypeSafe.Filters [ TypeSafe.Raw "SolutionRoot" ]}) >> AltCoverFilterXTypeSafe,
         keyfile
       )
       (
@@ -1111,7 +1117,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "./_Reports/RecorderTestWithAltCoverRunnerReport.xml",
         [ Path.getFullName
             "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
-        AltCoverFilterTypeSafe,
+        baseFilter,
         shadowkeyfile
       )
       (
@@ -1121,7 +1127,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "./_Reports/RecorderTest2WithAltCoverRunnerReport.xml",
         [ Path.getFullName
             "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ],
-        AltCoverFilterTypeSafe,
+        baseFilter,
         shadowkeyfile
       )
     ]

@@ -12,6 +12,8 @@ namespace Tests.Recorder.Unknown
 #endif
 #endif
 
+#nowarn "25" // partial pattern match
+
 open System
 open System.Collections.Generic
 open System.IO
@@ -22,18 +24,44 @@ open NUnit.Framework
 
 //[<TestFixture>]
 module AltCoverCoreTests =
+  let maybeIOException f =
+    try
+      f()
+    with :? IOException -> ()
+
+  let maybeDeleteFile f =
+    if File.Exists f
+    then File.Delete f
+
+  let maybeReraise f g =
+    try
+      f()
+    with _ ->
+      g()
+      reraise()
+
+  [<Test>]
+  let ExcerciseItAll() =
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
+    maybeDeleteFile unique
+    maybeIOException (fun () ->
+      maybeReraise (fun () -> File.Delete unique) ignore
+    )
 
   [<Test>]
   let WillNotConnectSpontaneously() =
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let mutable client = Tracer.Create unique
-    try
-      client <- client.OnStart()
-      Assert.True(client.IsConnected |> not)
-    with _ ->
-      client.Close()
-      reraise()
+    let close = (fun () -> client.Close())
+
+    maybeReraise
+     (fun () ->
+        client <- client.OnStart()
+        Assert.True(client.IsConnected |> not)
+        close())
+      close
 
   [<Test>]
   let ValidTokenWillConnect() =
@@ -53,7 +81,7 @@ module AltCoverCoreTests =
     use formatter = new System.IO.BinaryReader(stream)
 
     let rec sink() =
-      try
+      maybeIOException (fun () ->
         let id = formatter.ReadString()
         let strike = formatter.ReadInt32()
         let tag = formatter.ReadByte() |> int
@@ -105,8 +133,7 @@ module AltCoverCoreTests =
              Adapter.Table t
          | _ -> Adapter.Null())
         |> hits.Add
-        sink()
-      with :? System.IO.IOException -> ()
+        sink())
     sink()
     hits
 
@@ -193,52 +220,52 @@ module AltCoverCoreTests =
                      (expected
                       |> Seq.skip 1
                       |> Seq.head), "unexpected result")
-      match results
+
+      let [ n'; p'; d' ] =
+             results
             |> Seq.head
             |> Adapter.untable
-            |> Seq.toList with
-      | [ n'; p'; d' ] ->
-          let n = n' :?> String
-          let p = p' :?> int
-          let d = d' :?> Dictionary<string, Dictionary<int, PointVisit>>
-          Assert.True( n |> Seq.isEmpty )
-          Assert.True(( p = 0 ))
-          Assert.True(( d.Count = 1 ))
-          Assert.True( d.["name"]
-                       |> Seq.sortBy (fun kv -> kv.Key)
-                       |> Seq.map (fun kv -> kv.Key)
-                       |> Seq.toList =
-                         (t.["name"]
-                          |> Seq.sortBy (fun kv -> kv.Key)
-                          |> Seq.map (fun kv -> kv.Key)
-                          |> Seq.toList) )
-          let left =
-            d.["name"]
-            |> Seq.sortBy (fun kv -> kv.Key)
-            |> Seq.map (fun kv -> kv.Value.Count)
             |> Seq.toList
+      let n = n' :?> String
+      let p = p' :?> int
+      let d = d' :?> Dictionary<string, Dictionary<int, PointVisit>>
+      Assert.True( n |> Seq.isEmpty )
+      Assert.True(( p = 0 ))
+      Assert.True(( d.Count = 1 ))
+      Assert.True( d.["name"]
+                    |> Seq.sortBy (fun kv -> kv.Key)
+                    |> Seq.map (fun kv -> kv.Key)
+                    |> Seq.toList =
+                      (t.["name"]
+                      |> Seq.sortBy (fun kv -> kv.Key)
+                      |> Seq.map (fun kv -> kv.Key)
+                      |> Seq.toList) )
+      let left =
+        d.["name"]
+        |> Seq.sortBy (fun kv -> kv.Key)
+        |> Seq.map (fun kv -> kv.Value.Count)
+        |> Seq.toList
 
-          let right =
-            t.["name"]
-            |> Seq.sortBy (fun kv -> kv.Key)
-            |> Seq.map (fun kv -> kv.Value.Count)
-            |> Seq.toList
+      let right =
+        t.["name"]
+        |> Seq.sortBy (fun kv -> kv.Key)
+        |> Seq.map (fun kv -> kv.Value.Count)
+        |> Seq.toList
 
-          Assert.True(( left = right ))
-          let left2 =
-            d.["name"]
-            |> Seq.sortBy (fun kv -> kv.Key)
-            |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
-            |> Seq.toList
+      Assert.True(( left = right ))
+      let left2 =
+        d.["name"]
+        |> Seq.sortBy (fun kv -> kv.Key)
+        |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
+        |> Seq.toList
 
-          let right2 =
-            t.["name"]
-            |> Seq.sortBy (fun kv -> kv.Key)
-            |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
-            |> Seq.toList
+      let right2 =
+        t.["name"]
+        |> Seq.sortBy (fun kv -> kv.Key)
+        |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
+        |> Seq.toList
 
-          Assert.True(( left2 = right2 ))
-      | _ -> Assert.True( false )
+      Assert.True(( left2 = right2 ))
     finally
       Adapter.VisitsClear()
 
