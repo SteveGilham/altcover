@@ -470,6 +470,13 @@ module AltCoverXTests =
     test <@ subject |> List.isEmpty @>
 
   [<Test>]
+  let ValidateAssemblyOption() =
+    test <@ Assembly.GetExecutingAssembly()
+            |> Some
+            |> Main.I.isMSBuild
+            |> not @>
+
+  [<Test>]
   let ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let here = SolutionDir()

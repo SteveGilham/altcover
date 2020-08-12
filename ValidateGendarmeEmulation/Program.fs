@@ -12,10 +12,10 @@ module TestMain =
   let sync = System.Object()
 
   let regular = [
-          WeakNameTests.AltCoverTests.ShouldMatchGendarmeComplexityInAltCover, "WeakNameTests.ShouldMatchGendarmeComplexityInAltCover"
-          WeakNameTests.AltCoverTests.ShouldMatchGendarmeComplexityInSamples, "WeakNameTests.ShouldMatchGendarmeComplexityInSamples"
-          WeakNameTests.AltCoverTests.ShouldMatchGendarmeComplexityInMonoSamples, "WeakNameTests.ShouldMatchGendarmeComplexityInMonoSamples"
-          WeakNameTests.AltCoverTests.GratuitousCoverage, "WeakNameTests.GratuitousCoverage"
+          AltCover.Tests.ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInAltCover, "ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInAltCover"
+          AltCover.Tests.ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInSamples, "ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInSamples"
+          AltCover.Tests.ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInMonoSamples, "ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInMonoSamples"
+          AltCover.Tests.ValidateGendarmeEmulation.GratuitousCoverage, "ValidateGendarmeEmulation.GratuitousCoverage"
         ]
 
   let specials =
@@ -70,7 +70,7 @@ module TestMain =
 
   [<Tests>]
   let tests =
-    testList "AltCover.WeakName.Tests"
+    testList "AltCover.ValidateGendarmeEmulation"
     <| ((((consistencyCheck, "ConsistencyCheck") :: regular)
         |> List.map (fun (f,name) -> testCase name (fun () -> lock sync f)))
         @ specials)
@@ -78,7 +78,7 @@ module TestMain =
 module Program =
   [<EntryPoint>]
   let main argv =
-    let writeResults = TestResults.writeNUnitSummary ("AltCover.WeakName.TestResults.xml", "AltCover.WeakName.Tests")
+    let writeResults = TestResults.writeNUnitSummary ("AltCover.ValidateGendarmeEmulation.TestResults.xml", "AltCover.ValidateGendarmeEmulation")
     let config = defaultConfig.appendSummaryHandler writeResults
     runTestsWithArgs config argv TestMain.tests
 #endif

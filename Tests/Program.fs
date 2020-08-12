@@ -98,6 +98,7 @@ module TestMain =
           Tests.AltCoverRunnerTests.JunkPayloadShouldReportAsExpected, "Runner.JunkPayloadShouldReportAsExpected"
           Tests.AltCoverRunnerTests.TrackingPayloadShouldReportAsExpected, "Runner.TrackingPayloadShouldReportAsExpected"
           Tests.AltCoverRunnerTests.PointProcessShouldCaptureTimes, "Runner.PointProcessShouldCaptureTimes"
+          Tests.AltCoverRunnerTests.PostprocessShouldHandleNullCase, "Runner.PostprocessShouldHandleNullCase"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverState, "Runner.PostprocessShouldRestoreKnownOpenCoverState"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverStateFromMono, "Runner.PostprocessShouldRestoreKnownOpenCoverStateFromMono"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreDegenerateOpenCoverState, "Runner.PostprocessShouldRestoreDegenerateOpenCoverState"
@@ -432,13 +433,10 @@ module TestMain =
           Tests.AltCoverTests3.EmptyPowerShellIsJustTheDefaults, "Tests3.EmptyPowerShellIsJustTheDefaults"
           Tests.AltCoverTests3.EmptyVersionIsJustTheDefaults, "Tests3.EmptyVersionIsJustTheDefaults"
           Tests.AltCoverTests3.EchoWorks, "Tests3.EchoWorks"
-#if NETCOREAPP2_0
           Tests.AltCoverTests3.RunSettingsFailsIfCollectorNotFound, "Tests3.RunSettingsFailsIfCollectorNotFound"
           Tests.AltCoverTests3.RunSettingsWorksIfOK, "Tests3.RunSettingsWorksIfOK"
           Tests.AltCoverTests3.RunSettingsExtendsOK, "Tests3.RunSettingsExtendsOK"
           Tests.AltCoverTests3.RunSettingsRecoversOK, "Tests3.RunSettingsRecoversOK"
-#else
-#endif
           Tests.AltCoverXTests.CollectOptionsCanBeValidated, "XTests.CollectOptionsCanBeValidated"
           Tests.AltCoverXTests.TypeSafeEmptyThresholdCanBeValidated, "XTests.TypeSafeEmptyThresholdCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectOptionsCanBeValidated, "XTests.TypeSafeCollectOptionsCanBeValidated"
@@ -458,6 +456,7 @@ module TestMain =
           Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency, "XTests.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency"
           Tests.AltCoverXTests.PrepareOptionsCanBeValidatedWithErrors, "XTests.PrepareOptionsCanBeValidatedWithErrors"
           Tests.AltCoverXTests.NullListsAreEmpty, "XTests.NullListsAreEmpty"
+          Tests.AltCoverXTests.ValidateAssemblyOption, "XTests.ValidateAssemblyOption"
           Tests.AltCoverXTests.ADotNetDryRunLooksAsExpected, "XTests.ADotNetDryRunLooksAsExpected"
           Tests.AltCoverXTests.ADryRunLooksAsExpected, "XTests.ADryRunLooksAsExpected"
           Tests.AltCoverXTests.AfterAssemblyCommitsThatAssembly, "XTests.AfterAssemblyCommitsThatAssembly"

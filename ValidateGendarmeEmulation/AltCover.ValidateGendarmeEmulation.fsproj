@@ -8,16 +8,16 @@
     <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\2020.7.21.12091-pre-release\tools\</GendarmeToolDir>
     <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/2020.7.21.12091-pre-release/tools/netcoreapp2.1/any/</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <AssemblyName>AltCover.WeakName.Testing</AssemblyName>
+    <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;WEAKNAME</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DefineConstants>TRACE;WEAKNAME</DefineConstants>
+    <DefineConstants>TRACE;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

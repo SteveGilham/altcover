@@ -83,7 +83,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample17", "Sample17\Sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet", "Build\NuGet.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.WeakNameTests", "WeakNameTests\AltCover.WeakNameTests.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.ValidateGendarmeEmulation", "ValidateGendarmeEmulation\AltCover.ValidateGendarmeEmulation.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample18", "Sample18\Sample18.fsproj", "{8F488261-3FF5-4983-AE1E-17B151507552}"
 EndProject

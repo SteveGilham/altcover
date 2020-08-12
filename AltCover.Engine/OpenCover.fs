@@ -416,6 +416,12 @@ module internal OpenCover =
            summary.SetAttributeValue("minCyclomaticComplexity".X, Math.Min(min, max))
            summary.SetAttributeValue("numClasses".X, classes)
            summary.SetAttributeValue("numMethods".X, methods))
+
+      if head.Descendants("Method".X) |> Seq.isEmpty &&
+         //head.Attributes("skippedDueTo".X) |> Seq.isEmpty &&
+         s.Excluded = Nothing
+      then head.Parent.Remove()
+
       { s with
           Stack =
             if s.Excluded = Nothing then tail else s.Stack

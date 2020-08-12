@@ -35,15 +35,9 @@ In particular, while instrumenting .net core assemblies "just works" with this a
 
 ### Why altcover? -- the back-story of why it was ever a thing
 
-Back in 2010, the new .net version finally removed the deprecated profiling APIs that the free NCover 1.5.x series relied upon.  The first version of AltCover was written to both fill a gap in functionality, and to give me an excuse for a ground-up F# project to work on.  As such, it saw real production use for about a year and a half, until OpenCover reached a point where it could be used for .net4/x64 work (and I could find time to adapt everything downstream that consumed NCover format input).
+Back in 2010, the new .net version finally removed the deprecated profiling APIs that the free NCover 1.5.x series relied upon.  The first version of AltCover was written to both fill a gap in functionality, and to give me an excuse for a ground-up F# project to work on.  As such, it saw real production use for about a year and a half, until [OpenCover](https://github.com/OpenCover/opencover) reached a point where it could be used for .net4/x64 work (and I could find time to adapt everything downstream that consumed NCover format input).
 
 Fast forwards to autumn 2017, and I get the chance to dust the project off, with the intention of saying that it worked on Mono, too -- and realise that it's _déja vu_ all over again, because .net core didn't yet have profiler based coverage tools either, and the same approach would work there as well.
-
-### Other notes
-
-1. On old-fashioned .net framework, the `ProcessExit` event handling window of ~2s is sufficient for processing significant bodies of code under test (several 10s of kloc, as observed in production back in the '10-'11 timeframe); under `dotnet test` [the `vstest.console` process imposes a 100ms guillotine](https://github.com/Microsoft/vstest/issues/1900#issuecomment-457488472), even though .net Core imposes no time-limit of its own.  This is about enough time to fill in an NCover report for a program of no more than 1kloc, hence the development of a "write it all promptly to file and post-process" `Runner` mode.  With version 5.3 and above, the `dotnet test` integration now hooks the VSTest in-process data collection, allowing an indefinite window to write collected data from memory, thus removing the file I/O bottleneck. 
-
-2. Under Mono on non-Windows platforms the default values of `--debug:full` or `--debug:pdbonly` generate no symbols from F# projects -- and without symbols, such assemblies cannot be instrumented.  Unlike with C# projects, where the substitution appears to be automatic, to use the necessary `--debug:portable` option involves explicitly hand editing the old-school `.fsproj` file to have `<DebugType>portable</DebugType>`.  
 
 ## Continuous Integration
 
@@ -64,9 +58,9 @@ All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; 
 
 ### Possible retirement/obsolescence of support
 
-Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support will continue after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
-
 tl;dr -- legacy framework/Mono support is not going away any time soon.
+
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support will continue after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
 
 ## Building
 
@@ -77,21 +71,19 @@ tl;dr -- legacy framework/Mono support is not going away any time soon.
 It is assumed that the following are available
 
 .net core SDK 3.1.301 (`dotnet`) -- try https://www.microsoft.com/net/download  
-PowerShell Core 7.0.1 or later (`pwsh`) -- try https://github.com/powershell/powershell  
+PowerShell Core 7.0.3 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
 The build may target netstandard2.0 or netcoreapp2.x, but does not need any pre-3.1 runtimes to be installed.
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.6.2 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2019 (Community Edition) v16.7 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will many failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.
 
-In preparation for the .net 5 unification, on Windows, the default full build uses new-style projects under `altcover.core.sln` with a few test/helper old-style projects built from `MCS.sln`; and the build for release only needs these.
-
 #### *nix
 
-It is assumed that `mono` (version 6.8.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+It is assumed that `mono` (version 6.10.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 
@@ -110,7 +102,7 @@ If there's a passing build on the CI servers for this commit, then it's likely t
 
 ### Unit Tests
 
-The tests in the `AltCover.Test` project are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
+The tests in the `AltCover.Test` project are broadly ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
 ## Thanks to
 

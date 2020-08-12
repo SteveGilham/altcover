@@ -2174,6 +2174,25 @@ module AltCoverRunnerTests =
            """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times><TrackedMethodRefs><TrackedMethodRef uid="17" vc="1" /><TrackedMethodRef uid="42" vc="1" /></TrackedMethodRefs></root>""")
 
     [<Test>]
+    let PostprocessShouldHandleNullCase() =
+      let minimal = """<?xml version="1.0" encoding="utf-8"?>
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+</CoverageSession>"""
+      let after = XmlDocument()
+      use reader= new StringReader(minimal)
+      after.Load(reader)
+      let empty = Dictionary<string, Dictionary<int, PointVisit>>()
+      Runner.J.postProcess empty ReportFormat.OpenCover after
+      let summary = after.DocumentElement.SelectNodes("//Summary")
+                    |> Seq.cast<XmlElement>
+                    |> Seq.toList
+
+      test <@ summary |> Seq.length = 1 @>
+      let attr = (summary |> Seq.head).GetAttribute("minCrapScore")
+      test <@ attr = "0" @>
+
+    [<Test>]
     let PostprocessShouldRestoreKnownOpenCoverState() =
       Runner.init()
       Counter.measureTime <- DateTime.ParseExact

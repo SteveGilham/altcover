@@ -511,8 +511,9 @@ module internal Visitor =
       then Exemption.Automatic
       else exemption
 
+    // actually all vestigial classes now the first line is commented out
     let internal stripInterfaces (t:TypeDefinition) =
-      t.BaseType.IsNotNull ||
+      // t.BaseType.IsNotNull ||
       t.Methods |> Seq.exists (fun m -> m.IsAbstract |> not)
 
     let private visitModule (x : ModuleDefinition) included (buildSequence : Node -> seq<Node>) =
