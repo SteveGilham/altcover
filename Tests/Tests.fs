@@ -60,6 +60,12 @@ module AltCoverTests =
     let SolutionDir() =
       SolutionRoot.location
 
+#if NETCOREAPP2_0
+    let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0")
+#else
+    let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net47")
+#endif
+
     let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 #if NETCOREAPP2_0
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
@@ -102,13 +108,8 @@ module AltCoverTests =
       let where = Assembly.GetExecutingAssembly().Location
       let pdb = Path.ChangeExtension(where, ".pdb")
       if File.Exists(pdb) then
-#if NETCOREAPP2_0
-        let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
-#else
-        let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
-#endif
         let files =
-          Directory.GetFiles(Path.Combine(SolutionDir(), dir))
+          Directory.GetFiles(dir)
           |> Seq.filter
                (fun x ->
                x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -252,12 +253,7 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGetPdbWithFallback() =
-#if NETCOREAPP2_0
-      let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
-#else
-      let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
-#endif
-      Directory.GetFiles(Path.Combine(SolutionDir(), dir))
+      Directory.GetFiles(dir)
       |> Seq.filter
            (fun x ->
            x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -366,10 +362,7 @@ module AltCoverTests =
       let where = Assembly.GetExecutingAssembly().Location
       let pdb = Path.ChangeExtension(where, ".pdb")
       if File.Exists(pdb) then
-        // Hack for running while instrumented
-        let files =
-          Directory.GetFiles(Path.GetDirectoryName(where) + Hack())
-        files
+        Directory.GetFiles(dir)
         |> Seq.filter
              (fun x ->
              x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -381,7 +374,6 @@ module AltCoverTests =
              (fun x ->
              not
              <| x.FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
-#if COVERLET
         |> Seq.filter
              (fun x ->
              not <| x.FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
@@ -390,7 +382,6 @@ module AltCoverTests =
              not
              <| x.FullName.StartsWith
                   ("AltCover.Recorder", StringComparison.OrdinalIgnoreCase))
-#endif
         |> Seq.filter
              (fun x ->
              x.FullName.EndsWith
@@ -401,8 +392,6 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGetSymbolsFromEmbeddedPdb() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let here = where |> Path.GetDirectoryName
       let target = sample8path
       let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
       AltCover.ProgramDatabase.readSymbols image
@@ -410,10 +399,7 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldNotGetSymbolsWhenNoPdb() =
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
-      let files = Directory.GetFiles(Path.GetDirectoryName(where) + Hack())
-      files
+      Directory.GetFiles(dir)
       |> Seq.filter
            (fun x ->
            x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -647,8 +633,7 @@ module AltCoverTests =
     [<Test>]
     let Sample3Class1IsCSharpAutoproperty() =
       let sample3 =
-        Path.Combine
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
       def.MainModule.Types
       |> Seq.filter (fun t -> t.Name = "Class1")
@@ -660,7 +645,7 @@ module AltCoverTests =
     let Sample3Class2IsNotCSharpAutoproperty() =
       let sample3 =
         Path.Combine
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+          (dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
       def.MainModule.Types
       |> Seq.filter (fun t -> t.Name = "Class2")
@@ -801,9 +786,8 @@ module AltCoverTests =
     let ValidateAutomaticExemption() =
       try
         CoverageParameters.showGenerated := true
-        let where = Assembly.GetExecutingAssembly().Location
         let path =
-          Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
+          Path.Combine(dir, "Sample4.dll")
         use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let items =
           def.MainModule.GetAllTypes()
@@ -1038,7 +1022,7 @@ module AltCoverTests =
     let CSharpNestedMethods() =
       let sample3 =
         Path.Combine
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample5.dll")
+          (dir, "Sample5.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
 
       let methods =
@@ -1163,7 +1147,7 @@ module AltCoverTests =
     let FSharpNestedMethods() =
       let sample3 =
         Path.Combine
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample6.dll")
+          (dir, "Sample6.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
 
       let methods =
@@ -1379,7 +1363,7 @@ module AltCoverTests =
     let Sample3Class1PropertyIsNotSignificant() =
       let sample3 =
         Path.Combine
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+          (dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
       def.MainModule.Types
       |> Seq.filter (fun t -> t.Name = "Class1")
@@ -1391,7 +1375,7 @@ module AltCoverTests =
     let Sample3Class2IPropertyIsSignificant() =
       let sample3 =
         Path.Combine
-          (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+          (dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
       def.MainModule.Types
       |> Seq.filter (fun t -> t.Name = "Class2")
@@ -1464,9 +1448,8 @@ module AltCoverTests =
 
     [<Test>]
     let BranchPointsAreComputedForSwitch() =
-      let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample16.dll")
+        Path.Combine(dir, "Sample16.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       let method =
@@ -1525,9 +1508,8 @@ module AltCoverTests =
 
     [<Test>]
     let BranchPointsAreComputedForMatch() =
-      let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample17.dll")
+        Path.Combine(dir, "Sample17.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       let method =
@@ -1803,9 +1785,8 @@ module AltCoverTests =
 
     [<Test>]
     let TrackingDetectsTests() =
-      let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
+        Path.Combine(dir, "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       try
@@ -1827,9 +1808,8 @@ module AltCoverTests =
 
     [<Test>]
     let TrackingDetectsExpectedTests() =
-      let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
+        Path.Combine(dir, "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       try
@@ -1854,7 +1834,7 @@ module AltCoverTests =
     let TrackingDetectsTestsByFullType() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
+        Path.Combine(dir, "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       try
@@ -1879,7 +1859,7 @@ module AltCoverTests =
     let TrackingDetectsMethods() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
+        Path.Combine(dir, "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       try
@@ -1921,7 +1901,7 @@ module AltCoverTests =
     let TypeNamesAreExtracted() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let names =
@@ -1936,7 +1916,7 @@ module AltCoverTests =
     let FullTypeNamesAreExtracted() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let names =
@@ -1953,7 +1933,7 @@ module AltCoverTests =
     let TypeRefNamesAreExtracted() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let names =
@@ -1971,7 +1951,7 @@ module AltCoverTests =
     let FullTypeRefNamesAreExtracted() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let names =
@@ -1994,7 +1974,7 @@ module AltCoverTests =
     let MethodNamesAreExtracted() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let names =
@@ -2016,7 +1996,7 @@ module AltCoverTests =
     let FullMethodNamesAreExtracted() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample3.dll")
+        Path.Combine(dir, "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let names =
