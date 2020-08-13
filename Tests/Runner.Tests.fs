@@ -21,6 +21,8 @@ type Assert = NUnit.Framework.Assert
 type Does = NUnit.Framework.Does
 type Is = NUnit.Framework.Is
 
+#nowarn "25" // partial pattern match
+
 #if NETCOREAPP2_1
 [<AttributeUsage(AttributeTargets.Method)>]
 type TestAttribute() = class
@@ -49,6 +51,37 @@ module AltCoverUsage =
 
 module AltCoverRunnerTests =
     // fs
+    let maybeIOException f =
+      try
+        f()
+      with :? IOException -> ()
+
+    let maybeDeleteFile f =
+      if File.Exists f
+      then File.Delete f
+
+    let maybeReraise f g =
+      try
+        f()
+      with _ ->
+        g()
+        reraise()
+
+    let maybe a b c =
+      if a
+      then b
+      else c
+
+    [<Test>]
+    let ExcerciseItAll() =
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
+      maybeDeleteFile unique
+      maybeIOException (fun () ->
+        maybeReraise (fun () -> File.Delete unique) ignore
+      )
+      test <@ (maybe true 1 2) = 1 @>
+      test <@ (maybe false 1 2) = 2 @>
 
     [<Test>]
     let MaxTimeFirst () =
@@ -247,12 +280,10 @@ module AltCoverRunnerTests =
            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
            Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
       finally
-        if File.Exists reportFile then File.Delete reportFile
+        maybeDeleteFile reportFile
         Console.SetOut saved
         Directory.SetCurrentDirectory(here)
-        try
-          Directory.Delete(unique)
-        with :? IOException -> ()
+        maybeIOException (fun () -> Directory.Delete(unique))
 
     [<Test>]
     let FlushLeavesExpectedTracesWhenDiverted() =
@@ -297,12 +328,10 @@ module AltCoverRunnerTests =
            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
            Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
       finally
-        if File.Exists reportFile then File.Delete reportFile
+        maybeDeleteFile reportFile
         Console.SetOut saved
         Directory.SetCurrentDirectory(here)
-        try
-          Directory.Delete(unique)
-        with :? IOException -> ()
+        maybeIOException (fun () -> Directory.Delete(unique))
 
     // Runner.fs and CommandLine.fs
     [<Test>]
@@ -351,18 +380,19 @@ module AltCoverRunnerTests =
         use stdout =
           { new StringWriter() with
               member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
 
         use stderr =
           { new StringWriter() with
               member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
 
         Console.SetOut stdout
         Console.SetError stderr
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let exe, args =
-          if nonWindows then ("mono", "\"" + program + "\"")
-          else (program, String.Empty)
+          maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
 
         let r =
           CommandLine.I.launch exe args
@@ -372,8 +402,8 @@ module AltCoverRunnerTests =
         let result = stdout.ToString()
 
         let quote =
-          if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\""
-          else String.Empty
+          maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+            "\"" String.Empty
 
         let expected =
           "Command line : '" + quote + exe + quote + " " + args + "\'"
@@ -490,7 +520,6 @@ module AltCoverRunnerTests =
       let options = Runner.declareOptions()
       let parse = CommandLine.parseCommandLine [| "/@thisIsNotAnOption" |] options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
@@ -502,7 +531,6 @@ module AltCoverRunnerTests =
       let input = [| "--"; "/@thisIsNotAnOption"; "this should be OK" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(x, Is.EquivalentTo(input |> Seq.skip 1))
         Assert.That(y, Is.SameAs options)
@@ -514,10 +542,8 @@ module AltCoverRunnerTests =
       let input = [| "--?" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) -> Assert.That(y, Is.SameAs options)
       match CommandLine.processHelpOption parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "HelpText")
         Assert.That(y, Is.SameAs options)
@@ -526,7 +552,6 @@ module AltCoverRunnerTests =
         Runner.executable := None
         match CommandLine.parseCommandLine [| "/x"; "x" |] options
               |> CommandLine.processHelpOption with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty))
@@ -542,12 +567,10 @@ module AltCoverRunnerTests =
 
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
       match CommandLine.processHelpOption parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
@@ -556,7 +579,6 @@ module AltCoverRunnerTests =
         Runner.executable := None
         match CommandLine.parseCommandLine [| "/x"; "x" |] options
               |> CommandLine.processHelpOption with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty))
@@ -572,12 +594,10 @@ module AltCoverRunnerTests =
           let input = [| "-x"; unique |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Left _ -> Assert.Fail()
           | Right(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
           match !Runner.executable with
-          | None -> Assert.Fail()
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
         finally
           Runner.executable := None)
@@ -599,7 +619,6 @@ module AltCoverRunnerTests =
 
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -618,7 +637,6 @@ module AltCoverRunnerTests =
           let input = [| "-x"; blank |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -635,12 +653,10 @@ module AltCoverRunnerTests =
         let input = [| "-w"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.workingDirectory with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo unique)
       finally
         Runner.workingDirectory <- None
@@ -660,7 +676,6 @@ module AltCoverRunnerTests =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -678,7 +693,6 @@ module AltCoverRunnerTests =
         let input = [| "-w"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -694,7 +708,6 @@ module AltCoverRunnerTests =
         let input = [| "-w" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -711,12 +724,10 @@ module AltCoverRunnerTests =
         let input = [| "-r"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.recordingDirectory with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo unique)
       finally
         Runner.recordingDirectory <- None
@@ -736,7 +747,6 @@ module AltCoverRunnerTests =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -754,7 +764,6 @@ module AltCoverRunnerTests =
         let input = [| "-r"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -770,7 +779,6 @@ module AltCoverRunnerTests =
         let input = [| "-r" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -786,7 +794,6 @@ module AltCoverRunnerTests =
         let input = [| "--collect" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -803,7 +810,6 @@ module AltCoverRunnerTests =
         let input = [| "--collect"; "--collect" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -823,12 +829,10 @@ module AltCoverRunnerTests =
           let input = [| "-l"; unique |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Left _ -> Assert.Fail()
           | Right(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
           match !LCov.path with
-          | None -> Assert.Fail()
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
@@ -853,7 +857,6 @@ module AltCoverRunnerTests =
 
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -874,7 +877,6 @@ module AltCoverRunnerTests =
           let input = [| "-l"; blank |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -891,12 +893,10 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "57" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.threshold with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo {
                                                 Statements = 57uy
                                                 Branches = 0uy
@@ -917,12 +917,10 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "M57C42S16B7AM14AC101" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.threshold with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo {
                                                 Statements = 16uy
                                                 Branches = 7uy
@@ -943,12 +941,10 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "M100C255S100B100AM100AC255" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.threshold with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo {
                                                 Statements = 100uy
                                                 Branches = 100uy
@@ -969,12 +965,10 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "M0C0S0B0AM0AC0" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.threshold with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo {
                                                 Statements = 0uy
                                                 Branches = 0uy
@@ -995,7 +989,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "23"; "/t"; "42" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1012,7 +1005,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "-111" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1028,7 +1020,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "S" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1044,7 +1035,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "X666" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1060,7 +1050,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "S101" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1076,7 +1065,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "M101" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1092,7 +1080,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "B101" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1108,7 +1095,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "C256" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1124,7 +1110,6 @@ module AltCoverRunnerTests =
         let input = [| "-t"; "  " |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1140,7 +1125,6 @@ module AltCoverRunnerTests =
         let input = [| "-t" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1159,12 +1143,10 @@ module AltCoverRunnerTests =
           let input = [| "-c"; unique |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Left _ -> Assert.Fail()
           | Right(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
           match !Cobertura.path with
-          | None -> Assert.Fail()
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
@@ -1189,7 +1171,6 @@ module AltCoverRunnerTests =
 
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -1210,7 +1191,6 @@ module AltCoverRunnerTests =
           let input = [| "-c"; blank |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -1228,12 +1208,10 @@ module AltCoverRunnerTests =
         let input = [| "-o"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match Runner.output with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
       finally
         Runner.output <- None
@@ -1255,7 +1233,6 @@ module AltCoverRunnerTests =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1273,7 +1250,6 @@ module AltCoverRunnerTests =
         let input = [| "-o"; blank |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1289,7 +1265,6 @@ module AltCoverRunnerTests =
         let input = [| "--dropReturnCode" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1306,7 +1281,6 @@ module AltCoverRunnerTests =
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1363,18 +1337,11 @@ module AltCoverRunnerTests =
           let input = [| "--teamcity" + a |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Left _ -> Assert.Fail()
           | Right(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
           match Runner.summaryFormat with
-          | x when v = x ->
-#if NETCOREAPP2_0
-            ()
-#else
-            Assert.Pass()
-#endif
-          | _ -> Assert.Fail(sprintf "%A %A => %A" a v Runner.summaryFormat) ))
+          | x when v = x -> ()))
 
     [<Test>]
     let ParsingMultipleTCGivesFailure() =
@@ -1385,7 +1352,6 @@ module AltCoverRunnerTests =
         let input = [| "--teamcity"; "--teamcity" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1401,7 +1367,6 @@ module AltCoverRunnerTests =
         let input = [| "--teamcity:junk" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError"))
@@ -1415,7 +1380,6 @@ module AltCoverRunnerTests =
           let options = Runner.declareOptions()
           let parse = Runner.J.requireExe(Right([], options))
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -1435,7 +1399,6 @@ module AltCoverRunnerTests =
             Assert.That(z, Is.SameAs options)
             Assert.That(x, Is.EqualTo "xxx")
             Assert.That(y, Is.EquivalentTo [ "b" ])
-          | _ -> Assert.Fail()
         finally
           Runner.executable := None)
 
@@ -1450,7 +1413,6 @@ module AltCoverRunnerTests =
           let parse = Runner.J.requireExe(Right([ "a"; "b" ], options))
           match parse with
           | Right([], z) -> Assert.That(z, Is.SameAs options)
-          | _ -> Assert.Fail()
         finally
           Runner.collect := false
           Runner.executable := None)
@@ -1465,7 +1427,6 @@ module AltCoverRunnerTests =
           let options = Runner.declareOptions()
           let parse = Runner.J.requireExe(Right([ "b" ], options))
           match parse with
-          | Right _ -> Assert.Fail()
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
@@ -1485,7 +1446,6 @@ module AltCoverRunnerTests =
         | Right _ ->
           Assert.That(parse, Is.SameAs input)
           Assert.That(Option.isSome Runner.workingDirectory)
-        | _ -> Assert.Fail()
       finally
         Runner.workingDirectory <- None
 
@@ -1501,7 +1461,6 @@ module AltCoverRunnerTests =
         | Right _ ->
           Assert.That(parse, Is.SameAs input)
           Assert.That(Runner.workingDirectory, Is.EqualTo(Some "ShouldAcceptWorker"))
-        | _ -> Assert.Fail()
       finally
         Runner.workingDirectory <- None
 
@@ -1514,7 +1473,6 @@ module AltCoverRunnerTests =
         let input = (Right([], options))
         let parse = Runner.J.requireRecorder input
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1524,22 +1482,13 @@ module AltCoverRunnerTests =
     [<Test>]
     let ShouldRequireRecorderDll() =
       Runner.init()
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
       try
-        let where = Assembly.GetExecutingAssembly().Location
-        let path =
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-
-        let path' =
-          if Directory.Exists path then path
-          else
-            Path.Combine
-              (where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-        Runner.recordingDirectory <- Some path'
+        Runner.recordingDirectory <- Some path
         let options = Runner.declareOptions()
         let input = (Right([], options))
         let parse = Runner.J.requireRecorder input
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1568,7 +1517,6 @@ module AltCoverRunnerTests =
         let parse = Runner.J.requireRecorder input
         match parse with
         | Right _ -> Assert.That(parse, Is.SameAs input)
-        | _ -> Assert.Fail()
       finally
         Runner.recordingDirectory <- None
 
@@ -1589,8 +1537,7 @@ module AltCoverRunnerTests =
 #if NETCOREAPP2_0
           [ "dotnet"; path ]
 #else
-          if nonWindows then [ "mono"; path ]
-          else [ path ]
+          maybe nonWindows [ "mono"; path ] [ path ]
 #endif
 
       let r = CommandLine.processTrailingArguments args <| DirectoryInfo(where)
@@ -1624,10 +1571,12 @@ module AltCoverRunnerTests =
         use stdout =
           { new StringWriter() with
               member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
 
         use stderr =
           { new StringWriter() with
               member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
 
         Console.SetOut stdout
         Console.SetError stderr
@@ -1647,8 +1596,8 @@ module AltCoverRunnerTests =
         let result = stdout.ToString()
 
         let quote =
-          if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\""
-          else String.Empty
+          maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+            "\"" String.Empty
 
         let expected =
           "Command line : '" + quote + args.Head + quote + " "
@@ -1747,10 +1696,12 @@ module AltCoverRunnerTests =
         use stdout =
           { new StringWriter() with
               member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
 
         use stderr =
           { new StringWriter() with
               member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
 
         Console.SetOut stdout
         Console.SetError stderr
@@ -1770,8 +1721,8 @@ module AltCoverRunnerTests =
         let result = stdout.ToString()
 
         let quote =
-          if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\""
-          else String.Empty
+          maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+           "\"" String.Empty
 
         let expected =
           "Command line : '" + quote + args.Head + quote + " "
@@ -1845,13 +1796,11 @@ module AltCoverRunnerTests =
            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
            Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
       finally
-        if File.Exists reportFile then File.Delete reportFile
-        if File.Exists junkfile then File.Delete junkfile
+        maybeDeleteFile reportFile
+        maybeDeleteFile junkfile
         Console.SetOut saved
         Directory.SetCurrentDirectory(here)
-        try
-          Directory.Delete(unique)
-        with :? IOException -> ()
+        maybeIOException (fun () -> Directory.Delete(unique))
 
     [<Test>]
     let ZipWriteLeavesExpectedTraces() =
@@ -1929,12 +1878,10 @@ module AltCoverRunnerTests =
       finally
         Assert.That(junkfile |> File.Exists |> not)
         Assert.That(junkfile2 |> File.Exists |> not)
-        if File.Exists reportFile then File.Delete reportFile
+        maybeDeleteFile reportFile
         Console.SetOut saved
         Directory.SetCurrentDirectory(here)
-        try
-          Directory.Delete(unique)
-        with :? IOException -> ()
+        maybeIOException (fun () -> Directory.Delete(unique))
 
     [<Test>]
     let NullPayloadShouldReportNothing() =
@@ -1992,7 +1939,7 @@ module AltCoverRunnerTests =
       Assert.That (counts.["c"].[3].Count, Is.EqualTo 1)
       Assert.That (counts.["c"].[3].Tracks, Is.Empty)
 
-      if File.Exists(unique + ".acv") then File.Delete(unique + ".acv")
+      maybeDeleteFile (unique + ".acv")
 
     [<Test>]
     let CollectShouldReportAsExpected() =
@@ -2111,7 +2058,8 @@ module AltCoverRunnerTests =
                                                                                       formatter.Write(Tag.Both |> byte)
                                                                                       formatter.Write(b.Time)
                                                                                       formatter.Write(b.Call)
-                                                                                    | _ -> tx |> (sprintf "%A") |> Assert.Fail)
+                                                                                    //| _ -> tx |> (sprintf "%A") |> Assert.Fail
+                                                             )
                                                              formatter.Write(Tag.Null |> byte)))
                  formatter.Write String.Empty
                x)
@@ -2488,7 +2436,7 @@ module AltCoverRunnerTests =
       let result = PostProcess.lookUpVisitsByToken key visits
       match (result.Count, result.Tracks |> Seq.toList) with
       | (0L, []) -> ()
-      | _ -> Assert.Fail(sprintf "%A" result)
+//      | _ -> Assert.Fail(sprintf "%A" result)
 
     [<Test>]
     let EmptyNCoverGeneratesExpectedSummary() =
