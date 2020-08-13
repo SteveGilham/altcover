@@ -15,6 +15,8 @@ open Mono.Cecil.Rocks
 open N
 open Swensen.Unquote
 
+#nowarn "25"
+
 [<NUnit.Framework.IncludeExcludeAttribute>]
 type ProxyObject() =
   inherit MarshalByRefObject()
@@ -77,18 +79,6 @@ module AltCoverTests =
 
     let private FF(a,b,c) = { Scope = a; Regex = b; Sense = c }
 
-    // Hack for running while instrumented
-    let Hack() =
-      let where = Assembly.GetExecutingAssembly().Location
-
-      let dir =
-        where
-        |> Path.GetDirectoryName
-        |> Path.GetFileName
-      match dir.IndexOf "__" with
-      | 0 -> "/.."
-      | _ -> String.Empty
-
     // Augment.fs
     [<Test>]
     let ZeroIsNotVisited() =
@@ -112,9 +102,13 @@ module AltCoverTests =
       let where = Assembly.GetExecutingAssembly().Location
       let pdb = Path.ChangeExtension(where, ".pdb")
       if File.Exists(pdb) then
-        // Hack for running while instrumented
+#if NETCOREAPP2_0
+        let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
+#else
+        let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
+#endif
         let files =
-          Directory.GetFiles(Path.GetDirectoryName(where) + Hack())
+          Directory.GetFiles(Path.Combine(SolutionDir(), dir))
           |> Seq.filter
                (fun x ->
                x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -212,7 +206,6 @@ module AltCoverTests =
              (fun x ->
              let pdb = AltCover.ProgramDatabase.getPdbFromImage(snd x)
              match pdb with
-             | None -> Assert.Fail("No .pdb for " + (fst x))
              | Some name ->
                let probe = Path.ChangeExtension((fst x), ".pdb")
                let file = FileInfo(probe)
@@ -238,8 +231,6 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGetNoMdbFromMonoImage() =
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
       let path = Path.GetDirectoryName monoSample1path
       let files =
         Directory.GetFiles(path)
@@ -261,10 +252,12 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGetPdbWithFallback() =
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
-      let files = Directory.GetFiles(Path.GetDirectoryName(where) + Hack())
-      files
+#if NETCOREAPP2_0
+      let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
+#else
+      let dir = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
+#endif
+      Directory.GetFiles(Path.Combine(SolutionDir(), dir))
       |> Seq.filter
            (fun x ->
            x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -294,18 +287,9 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGetForeignPdbWithFallback() =
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
-      let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "packages")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../packages")
-#else
-      let path' = path
-#endif
+      let path = Path.Combine(SolutionDir(), "packages")
       // Looking for the Mono.Options symbols
-      let files = Directory.GetFiles(path', "*.pdb", SearchOption.AllDirectories)
+      let files = Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
       files
       |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
       |> Seq.iter (fun p ->
@@ -322,19 +306,11 @@ module AltCoverTests =
     [<Test>]
     let ShouldGetForeignPdbWithFallbackWhenNotColocated() =
       try
-        // Hack for running while instrumented
         let where = Assembly.GetExecutingAssembly().Location
         let path =
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "packages")
-#if NETCOREAPP2_0
-        let path' =
-          if Directory.Exists path then path
-          else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../packages")
-#else
-        let path' = path
-#endif
+          Path.Combine(SolutionDir(), "packages")
         // Looking for the Mono.Options symbols
-        let files = Directory.GetFiles(path', "*.pdb", SearchOption.AllDirectories)
+        let files = Directory.GetFiles(path, "*.pdb", SearchOption.AllDirectories)
         files
         |> Seq.filter (fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
         |> Seq.iter (fun p ->
@@ -364,8 +340,6 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGetMdbWithFallback() =
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
       let path = Path.GetDirectoryName monoSample1path
       let files = Directory.GetFiles(path)
       files
@@ -853,7 +827,7 @@ module AltCoverTests =
 
       let toolPackages =
         let xml =
-          Path.Combine(SolutionRoot.location, "./Build/NuGet.csproj")
+          Path.Combine(SolutionDir(), "./Build/NuGet.csproj")
           |> Path.GetFullPath
           |> XDocument.Load
         xml.Descendants(XName.Get("PackageReference"))
@@ -864,7 +838,7 @@ module AltCoverTests =
 
       let libPackages =
         let xml =
-          Path.Combine(SolutionRoot.location, "./MCS/packages.config")
+          Path.Combine(SolutionDir(), "./MCS/packages.config")
           |> Path.GetFullPath
           |> XDocument.Load
         xml.Descendants(XName.Get("package"))
@@ -875,11 +849,11 @@ module AltCoverTests =
 
       CoverageParameters.local := false
       CoverageParameters.nameFilters.Clear()
-      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.4.5.2/lib/net45") // stable retro version
-      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil." +
+      let fscore = Path.Combine(SolutionDir(), "packages/FSharp.Core.4.5.2/lib/net45") // stable retro version
+      let mono = Path.Combine(SolutionDir(), "packages/Mono.Cecil." +
                                                       (libPackages.Item "mono.cecil") +
                                                       "/lib/net40")
-      let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/" +
+      let nuget = Path.Combine(SolutionDir(), "packages/nuget.commandline/" +
                                                       (toolPackages.Item "nuget.commandline") +
                                                       "/tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
@@ -1709,9 +1683,6 @@ module AltCoverTests =
         let def =
           match Seq.head deeper with
           | Node.Assembly(def', Inspections.Instrument, []) -> def'
-          | _ ->
-            Assert.Fail()
-            null
 
         let assembly = Node.Assembly(def, Inspections.Instrument, [])
 
@@ -1748,9 +1719,6 @@ module AltCoverTests =
         let def =
           match Seq.head deeper with
           | Node.Assembly(def', Inspections.Ignore, []) -> def'
-          | _ ->
-            Assert.Fail()
-            null
 
         let assembly = Node.Assembly(def, Inspections.Ignore, [])
 
@@ -1819,9 +1787,6 @@ module AltCoverTests =
         let def =
           match accumulator.[1] with
           | Node.Assembly(def', Inspections.Instrument, ux) -> def'
-          | _ ->
-            Assert.Fail()
-            null
 
         let assembly = Node.Assembly(def, Inspections.Instrument, ux)
 
@@ -2558,18 +2523,9 @@ module AltCoverTests =
     // Gendarme.fs (except where I need to compare with the original, which are the ValidateGendarmeEmulation tests)
     [<Test>]
     let ShouldDetectTernary() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path0 =
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries"))
-           + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
-
       let path =
-        if File.Exists path0 then path0
-        else
-          Path.Combine
-            (where.Substring(0, where.IndexOf("_Binaries"))
-             + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+        Path.Combine(SolutionDir(),
+                       "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0/Sample3.dll")
 
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
@@ -2595,18 +2551,9 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldDetectSwitchNesting() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path0 =
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries"))
-           + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
-
       let path =
-        if File.Exists path0 then path0
-        else
-          Path.Combine
-            (where.Substring(0, where.IndexOf("_Binaries"))
-             + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+        Path.Combine(SolutionDir(),
+                       "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0/Sample3.dll")
 
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
@@ -3126,7 +3073,8 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      let sample21trad = Path.Combine(SolutionRoot.location, "./Sample21/bin/Debug/net472/Sample21.dll")
+      let sample21trad = Path.Combine(SolutionDir(),
+                                       "./Sample21/bin/Debug/net472/Sample21.dll")
       Assert.That(File.Exists sample21trad, "Test file Sample21 for net47 not built")
       try
         "Program"
@@ -3163,7 +3111,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      let sample21 = Path.Combine(SolutionRoot.location, "./Sample21/bin/Debug/netcoreapp3.0/Sample21.dll")
+      let sample21 = Path.Combine(SolutionDir(), "./Sample21/bin/Debug/netcoreapp3.0/Sample21.dll")
       Assert.That(File.Exists sample21, "Test file Sample21 for netcoreapp3.0 not built")
       try
         "Program"
