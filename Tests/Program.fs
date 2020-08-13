@@ -12,6 +12,7 @@ module TestMain =
   let sync = System.Object()
 
   let regular = [
+          Tests.AltCoverRunnerTests.ExerciseItAll, "Runner.ExerciseItAll"
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
@@ -242,6 +243,7 @@ module TestMain =
           Tests.AltCoverTests.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
           Tests.AltCoverTests.PositiveIsVisited, "Tests.PositiveIsVisited"
           Tests.AltCoverTests.NegativesSpray,  "Tests.NegativesSpray"
+          Tests.AltCoverTests2.SelfTest, "Tests2.SelfTest"
           Tests.AltCoverTests2.ShouldBeAbleToGetTheVisitReportMethod, "Tests2.ShouldBeAbleToGetTheVisitReportMethod"
           Tests.AltCoverTests2.ShouldBeAbleToClearTheStrongNameKey, "Tests2.ShouldBeAbleToClearTheStrongNameKey"
           Tests.AltCoverTests2.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible, "Tests2.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible"

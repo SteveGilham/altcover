@@ -12,6 +12,8 @@ open Mono.Options
 open Mono.Cecil.Cil
 open Swensen.Unquote
 
+#nowarn "25"
+
 module AltCoverTests3 =
 #if NETCOREAPP2_0
     let monoSample1 = "../_Mono/Sample1"
@@ -24,18 +26,9 @@ module AltCoverTests3 =
     [<Test>]
     let ShouldLaunchWithExpectedOutput() =
       Main.init()
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+        Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -50,18 +43,21 @@ module AltCoverTests3 =
         use stdout =
           { new StringWriter() with
               member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
 
         use stderr =
           { new StringWriter() with
               member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
 
         Console.SetOut stdout
         Console.SetError stderr
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let exe, args =
-          if nonWindows then ("mono", "\"" + program + "\"")
-          else (program, String.Empty)
+          AltCoverRunnerTests.maybe nonWindows
+            ("mono", "\"" + program + "\"")
+            (program, String.Empty)
 
         let r =
           CommandLine.I.launch exe args
@@ -71,8 +67,9 @@ module AltCoverTests3 =
         let result = stdout.ToString()
 
         let quote =
-          if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\""
-          else String.Empty
+          AltCoverRunnerTests.maybe
+           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+           "\"" String.Empty
 
         let expected =
           "Command line : '" + quote + exe + quote + " " + args + "\'"
@@ -194,7 +191,6 @@ module AltCoverTests3 =
       let options = Main.I.declareOptions()
       let parse = CommandLine.parseCommandLine [| "/@thisIsNotAnOption" |] options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
@@ -207,7 +203,6 @@ module AltCoverTests3 =
         CommandLine.parseCommandLine
           [| "/@thisIsNotAnOption"; "--"; "this should be OK" |] options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
@@ -219,7 +214,6 @@ module AltCoverTests3 =
       let input = [| "--"; "/@thisIsNotAnOption"; "this should be OK" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(x, Is.EquivalentTo(input |> Seq.skip 1))
         Assert.That(y, Is.SameAs options)
@@ -231,17 +225,14 @@ module AltCoverTests3 =
       let input = [| "--?" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) -> Assert.That(y, Is.SameAs options)
       match CommandLine.processHelpOption parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "HelpText")
         Assert.That(y, Is.SameAs options)
       // a "not sticky" test
       match CommandLine.parseCommandLine [| "/t"; "x" |] options
             |> CommandLine.processHelpOption with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
@@ -257,19 +248,16 @@ module AltCoverTests3 =
 
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
       match CommandLine.processHelpOption parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
       // a "not sticky" test
       match CommandLine.parseCommandLine [| "/t"; "x" |] options
             |> CommandLine.processHelpOption with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
@@ -283,7 +271,6 @@ module AltCoverTests3 =
         let input = [| "-a"; "1;a"; "--a"; "2"; "/a"; "3"; "-a=4"; "--a=5"; "/a=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -324,7 +311,6 @@ module AltCoverTests3 =
                          "/" + key + "=6" |]
           let parse = CommandLine.parseCommandLine input options
           match parse with
-          | Left _ -> Assert.Fail(key)
           | Right(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
@@ -349,7 +335,6 @@ module AltCoverTests3 =
         let input = [| "-m"; "1"; "--m"; "2;b;c"; "/m"; "3"; "-m=4"; "--m=5"; "/m=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -379,7 +364,6 @@ module AltCoverTests3 =
         let input = [| "-t"; "1"; "--t"; "2"; "/t"; "3;x;y;z"; "-t=4"; "--t=5"; "/t=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -410,7 +394,6 @@ module AltCoverTests3 =
         let input = [| "-s"; "?1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -443,7 +426,6 @@ module AltCoverTests3 =
         let input = [| "-s"; "1\u0001a"; "--s"; "\u0000d"; "/s"; "3"; "-s=4;;p;q"; "--s=5"; "/s=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -473,7 +455,6 @@ module AltCoverTests3 =
         let input = [| "-e"; "1"; "--e"; "2"; "/e"; "3"; "-e=4;p;q"; "--e=5"; "/e=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -503,7 +484,6 @@ module AltCoverTests3 =
         let input = [| "-f"; "1"; "--f"; "2"; "/f"; "3"; "-f=4"; "--f=5;m;n"; "/f=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -533,7 +513,6 @@ module AltCoverTests3 =
         let input = [| "-p"; "1"; "--p"; "2"; "/p"; "3"; "-p=4"; "--p=5;m;n"; "/p=6" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -566,12 +545,10 @@ module AltCoverTests3 =
         let input = [| "-x"; path |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match CoverageParameters.theReportPath with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
       finally
         CoverageParameters.theReportPath <- None
@@ -592,7 +569,6 @@ module AltCoverTests3 =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -614,7 +590,6 @@ module AltCoverTests3 =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -631,7 +606,6 @@ module AltCoverTests3 =
         let input = [| "-x" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -648,7 +622,6 @@ module AltCoverTests3 =
         let input = [| "-x"; " " |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -665,13 +638,11 @@ module AltCoverTests3 =
         let input = [| "-i"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match CoverageParameters.theInputDirectories |> Seq.toList with
         | [ x ] -> Assert.That(x, Is.EqualTo unique)
-        | _ -> Assert.Fail()
       finally
         CoverageParameters.theInputDirectories.Clear()
 
@@ -693,8 +664,8 @@ module AltCoverTests3 =
         let parse = CommandLine.parseCommandLine input options
         let pcom a b = Path.Combine(b,a) |> Path.GetFullPath
         match parse with
-        | Left _ -> Assert.Fail()
-        | _ -> CoverageParameters.inputDirectories() |> Seq.toList
+        | Right _ ->
+               CoverageParameters.inputDirectories() |> Seq.toList
                |> List.zip ([ "."; ".." ] |> List.map Path.GetFullPath)
                |> List.iter Assert.AreEqual
                CoverageParameters.outputDirectories() |> Seq.toList
@@ -722,7 +693,6 @@ module AltCoverTests3 =
         let input = [| "-i"; here; "-i"; here |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -741,7 +711,6 @@ module AltCoverTests3 =
         let input = [| "-i"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -757,7 +726,6 @@ module AltCoverTests3 =
         let input = [| "-i" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -774,13 +742,11 @@ module AltCoverTests3 =
         let input = [| "-o"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match CoverageParameters.outputDirectories() |> Seq.toList with
         | [ x ] -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
-        | _ -> Assert.Fail()
       finally
         CoverageParameters.theOutputDirectories.Clear()
 
@@ -794,7 +760,6 @@ module AltCoverTests3 =
         let input = [| "-o"; unique; "-o"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -823,8 +788,8 @@ module AltCoverTests3 =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
-        | _ -> Assert.That (CoverageParameters.theOutputDirectories, Is.EquivalentTo outs)
+        | Right _ ->
+               Assert.That (CoverageParameters.theOutputDirectories, Is.EquivalentTo outs)
                Assert.That (CoverageParameters.outputDirectories(), Is.EquivalentTo (outs |> Seq.take 1))
       finally
         CoverageParameters.theOutputDirectories.Clear()
@@ -843,7 +808,6 @@ module AltCoverTests3 =
 
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -859,7 +823,6 @@ module AltCoverTests3 =
         let input = [| "-o" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -875,7 +838,6 @@ module AltCoverTests3 =
         let input = [| "-o"; " " |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -892,13 +854,11 @@ module AltCoverTests3 =
         let Symbol = [| "-y"; unique |]
         let parse = CommandLine.parseCommandLine Symbol options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match ProgramDatabase.symbolFolders.Count with
         | 1 -> Assert.That(ProgramDatabase.symbolFolders, Is.EquivalentTo [ unique ])
-        | _ -> Assert.Fail()
       finally
         ProgramDatabase.symbolFolders.Clear()
 
@@ -917,7 +877,6 @@ module AltCoverTests3 =
 
         let parse = CommandLine.parseCommandLine Symbol options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -926,7 +885,6 @@ module AltCoverTests3 =
           Assert.That
             (ProgramDatabase.symbolFolders,
              Is.EquivalentTo(Symbol |> Seq.filter (fun x -> x.Length > 2)))
-        | _ -> Assert.Fail()
       finally
         ProgramDatabase.symbolFolders.Clear()
 
@@ -940,7 +898,6 @@ module AltCoverTests3 =
         let Symbol = [| "-y"; unique |]
         let parse = CommandLine.parseCommandLine Symbol options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -956,7 +913,6 @@ module AltCoverTests3 =
         let Symbol = [| "-y" |]
         let parse = CommandLine.parseCommandLine Symbol options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -974,7 +930,6 @@ module AltCoverTests3 =
         let input = [| "-d"; here; "/d"; next |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -987,20 +942,19 @@ module AltCoverTests3 =
       finally
         Instrument.resolutionTable.Clear()
 
-    let ParsingNoDependencyGivesFailure() =
-      Main.init()
-      try
-        Instrument.resolutionTable.Clear()
-        let options = Main.I.declareOptions()
-        let input = [| "-d" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Right _ -> Assert.Fail()
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        Instrument.resolutionTable.Clear()
+    //let ParsingNoDependencyGivesFailure() =
+    //  Main.init()
+    //  try
+    //    Instrument.resolutionTable.Clear()
+    //    let options = Main.I.declareOptions()
+    //    let input = [| "-d" |]
+    //    let parse = CommandLine.parseCommandLine input options
+    //    match parse with
+    //    | Left(x, y) ->
+    //      Assert.That(y, Is.SameAs options)
+    //      Assert.That(x, Is.EqualTo "UsageError")
+    //  finally
+    //    Instrument.resolutionTable.Clear()
 
     [<Test>]
     let ParsingBadDependencyGivesFailure() =
@@ -1012,7 +966,6 @@ module AltCoverTests3 =
         let input = [| "-d"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1030,7 +983,6 @@ module AltCoverTests3 =
         let input = [| "-d"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1048,11 +1000,9 @@ module AltCoverTests3 =
         let input = [| "-sn"; Path.Combine(SolutionRoot.location, "Build/Infrastructure.snk") |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right (x, y) -> Assert.That (y, Is.SameAs options)
                           Assert.That (x, Is.Empty)
         match CoverageParameters.defaultStrongNameKey with
-        | None -> Assert.Fail()
         | Some x -> let token = x
                                 |> KeyStore.tokenOfKey
                                 |> List.map (fun x -> x.ToString("x2"))
@@ -1073,7 +1023,6 @@ module AltCoverTests3 =
                        "/sn"; Path.Combine(path, "Build/Recorder.snk") |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
                          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--strongNameKey : specify this only once")
@@ -1092,7 +1041,6 @@ module AltCoverTests3 =
         let input = [| "-sn"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
       finally
@@ -1110,7 +1058,6 @@ module AltCoverTests3 =
         let input = [| "-sn"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
       finally
@@ -1127,7 +1074,6 @@ module AltCoverTests3 =
         let input = [| "-sn" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
       finally
@@ -1146,7 +1092,6 @@ module AltCoverTests3 =
                        "/k"; Path.Combine(path, "Build/Recorder.snk") |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right (x, y) -> Assert.That (y, Is.SameAs options)
                           Assert.That (x, Is.Empty)
         let expected = CoverageParameters.keys.Keys
@@ -1169,7 +1114,6 @@ module AltCoverTests3 =
         let input = [| "-k" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
       finally
@@ -1187,7 +1131,6 @@ module AltCoverTests3 =
         let input = [| "-k"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
       finally
@@ -1205,7 +1148,6 @@ module AltCoverTests3 =
         let input = [| "-k"; unique |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
       finally
@@ -1221,7 +1163,6 @@ module AltCoverTests3 =
         let input = [| "--localSource" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1238,7 +1179,6 @@ module AltCoverTests3 =
         let input = [| "-l"; "--localSource" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1255,7 +1195,6 @@ module AltCoverTests3 =
         let input = [| "--visibleBranches" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1272,7 +1211,6 @@ module AltCoverTests3 =
         let input = [| "-v"; "--visibleBranches" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1287,7 +1225,6 @@ module AltCoverTests3 =
       let input = [| "--showstatic" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
@@ -1300,7 +1237,6 @@ module AltCoverTests3 =
       let input = [| "--showstatic:+" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
@@ -1313,7 +1249,6 @@ module AltCoverTests3 =
       let input = [| "--showstatic:++" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
@@ -1326,7 +1261,6 @@ module AltCoverTests3 =
       let input = [| "--showstatic=-" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Left _ -> Assert.Fail()
       | Right(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.Empty)
@@ -1339,7 +1273,6 @@ module AltCoverTests3 =
       let input = [| "--showstatic:++"; "--showstatic:-" |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
@@ -1354,7 +1287,6 @@ module AltCoverTests3 =
       let input = [| "--showstatic:" + tag  |]
       let parse = CommandLine.parseCommandLine input options
       match parse with
-      | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
@@ -1370,7 +1302,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "5" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1389,7 +1320,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "٣" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1409,7 +1339,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "3"; "/c"; "5" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1430,7 +1359,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "3"; "/c"; "x"; "--callContext"; "Hello, World!" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1451,7 +1379,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "9" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1471,7 +1398,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "99" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1489,7 +1415,6 @@ module AltCoverTests3 =
         let input = [| "-c"; " " |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1508,7 +1433,6 @@ module AltCoverTests3 =
         let input = [| "-c"; "3"; "/c"; "x"; "--callContext"; "Hello, World!" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1526,12 +1450,10 @@ module AltCoverTests3 =
         let input = [| "--reportFormat"; "ncover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match CoverageParameters.theReportFormat with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.NCover)
       finally
         CoverageParameters.theReportFormat <- None
@@ -1545,12 +1467,10 @@ module AltCoverTests3 =
         let input = [| "--reportFormat"; "any" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         match CoverageParameters.theReportFormat with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
@@ -1564,7 +1484,6 @@ module AltCoverTests3 =
         let input = [| "--reportFormat=opencover"; "--reportFormat=ncover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1581,7 +1500,6 @@ module AltCoverTests3 =
         let input = [| "--inplace" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1598,7 +1516,6 @@ module AltCoverTests3 =
         let input = [| "--inplace"; "--inplace" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1615,7 +1532,6 @@ module AltCoverTests3 =
         let input = [| "--save" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1632,7 +1548,6 @@ module AltCoverTests3 =
         let input = [| "--save"; "--save" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1649,7 +1564,6 @@ module AltCoverTests3 =
         let input = [| "--single" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1666,7 +1580,6 @@ module AltCoverTests3 =
         let input = [| "--single"; "--single" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1684,7 +1597,6 @@ module AltCoverTests3 =
         let input = [| "--single" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1701,18 +1613,11 @@ module AltCoverTests3 =
         let input = [| "--linecover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.LineOnly)
-        match CoverageParameters.theReportFormat with
-#if NETCOREAPP2_0
-        | None -> ()
-#else
-        | None -> Assert.Pass()
-#endif
-        | Some x -> Assert.Fail()
+        Assert.That(CoverageParameters.theReportFormat |> Option.isNone)
       finally
         CoverageParameters.coverstyle <- CoverStyle.All
 
@@ -1726,13 +1631,11 @@ module AltCoverTests3 =
         let input = [| "--linecover"; "--reportFormat=opencover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.LineOnly)
         match CoverageParameters.theReportFormat with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
@@ -1748,13 +1651,11 @@ module AltCoverTests3 =
         let input = [| "--reportFormat=opencover"; "--linecover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.LineOnly)
         match CoverageParameters.theReportFormat with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
@@ -1769,7 +1670,6 @@ module AltCoverTests3 =
         let input = [| "--linecover"; "--linecover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1786,7 +1686,6 @@ module AltCoverTests3 =
         let input = [| "--linecover"; "--branchcover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1802,19 +1701,11 @@ module AltCoverTests3 =
         let input = [| "--branchcover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
-        match CoverageParameters.theReportFormat with
-        | None ->
-#if NETCOREAPP2_0
-          ()
-#else
-          Assert.Pass()
-#endif
-        | Some x -> Assert.Fail()
+        Assert.That(CoverageParameters.theReportFormat |> Option.isNone)
       finally
         CoverageParameters.coverstyle <- CoverStyle.All
 
@@ -1828,13 +1719,11 @@ module AltCoverTests3 =
         let input = [| "--branchcover"; "--reportFormat=opencover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
         match CoverageParameters.theReportFormat with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.theReportFormat <- None
@@ -1850,13 +1739,11 @@ module AltCoverTests3 =
         let input = [| "--reportFormat=opencover"; "--branchcover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
         Assert.That(CoverageParameters.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
         match CoverageParameters.theReportFormat with
-        | None -> Assert.Fail()
         | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.OpenCover)
       finally
         CoverageParameters.coverstyle <- CoverStyle.All
@@ -1871,7 +1758,6 @@ module AltCoverTests3 =
         let input = [| "--branchcover"; "--branchcover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1888,7 +1774,6 @@ module AltCoverTests3 =
         let input = [| "--branchcover"; "--linecover" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1904,7 +1789,6 @@ module AltCoverTests3 =
         let input = [| "--dropReturnCode" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1921,7 +1805,6 @@ module AltCoverTests3 =
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1937,7 +1820,6 @@ module AltCoverTests3 =
         let input = [| "--defer" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
@@ -1954,7 +1836,6 @@ module AltCoverTests3 =
         let input = [| "--defer"; "--defer" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -1969,7 +1850,6 @@ module AltCoverTests3 =
       let arg = (Guid.NewGuid().ToString(), Main.I.declareOptions())
       let fail = Left arg
       match Main.I.processOutputLocation fail with
-      | Right _ -> Assert.Fail()
       | Left x -> Assert.That(x, Is.SameAs arg)
 
     [<Test>]
@@ -1990,7 +1870,6 @@ module AltCoverTests3 =
         let arg = ([], options)
         let fail = Right arg
         match Main.I.processOutputLocation fail with
-        | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
@@ -2025,7 +1904,6 @@ module AltCoverTests3 =
         let arg = (rest, options)
         let ok = Right arg
         match Main.I.processOutputLocation ok with
-        | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
           y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
@@ -2067,7 +1945,6 @@ module AltCoverTests3 =
         let ok = Right arg
         Assert.That(Directory.Exists there, Is.False)
         match Main.I.processOutputLocation ok with
-        | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
           y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
@@ -2105,7 +1982,6 @@ module AltCoverTests3 =
         let arg = (rest, options)
         let ok = Right arg
         match Main.I.processOutputLocation ok with
-        | Right _ -> Assert.Fail()
         | Left _ ->
           Assert.That(stdout.ToString(), Is.Empty)
           Assert.That(stderr.ToString(), Is.Empty)
@@ -2142,7 +2018,6 @@ module AltCoverTests3 =
         let ok = Right arg
         Assert.That(Directory.Exists there, Is.False)
         match Main.I.processOutputLocation ok with
-        | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
           y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
@@ -2212,9 +2087,10 @@ module AltCoverTests3 =
          |> Type.GetType).IsNotNull
       // because mono symbol-writing is broken, work around trying to
       // examine the instrumented files in a self-test run.
-      let here = if monoRuntime
-                 then Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
-                 else Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let original = Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
+      let updated = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let here = AltCoverRunnerTests.maybe monoRuntime original updated
+
       let there = Path.Combine(here, Guid.NewGuid().ToString())
       let toInfo = [ Directory.CreateDirectory there ]
       let fromInfo = [ DirectoryInfo(here) ]
@@ -2285,10 +2161,12 @@ module AltCoverTests3 =
         use stdout =
           { new StringWriter() with
               member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
 
         use stderr =
           { new StringWriter() with
               member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
 
         Console.SetOut stdout
         Console.SetError stderr
@@ -2298,8 +2176,8 @@ module AltCoverTests3 =
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let args =
-          if nonWindows then "mono" :: baseArgs
-          else baseArgs
+          AltCoverRunnerTests.maybe
+            nonWindows ("mono" :: baseArgs) baseArgs
 
         let r = CommandLine.processTrailingArguments args (DirectoryInfo(where))
         Assert.That(r, Is.EqualTo 0)
@@ -2307,8 +2185,8 @@ module AltCoverTests3 =
         let result = stdout.ToString()
 
         let quote =
-          if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\""
-          else String.Empty
+          AltCoverRunnerTests.maybe  (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+           "\"" String.Empty
 
         let expected =
           "Command line : '" + quote + args.Head + quote + " "
@@ -2508,26 +2386,27 @@ module AltCoverTests3 =
 
         test <@ synthetic = helptext @>
 
-        let ac = typeof<AltCover.Abstract.ICollectOptions>.Assembly.Location
-        let eo = Path.Combine (Path.GetDirectoryName ac, "./eo/AltCover.resources.dll")
-        if File.Exists eo
-#if !NETCOREAPP2_0
-          && "Mono.Runtime"
-             |> Type.GetType
-             |> isNull
+#if NETCOREAPP2_0
+        let dir = Path.Combine(SolutionRoot.location,
+                                "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0")
+#else
+        let dir = Path.Combine(SolutionRoot.location,
+                                "_Binaries/AltCover.Engine/Debug+AnyCPU/net472")
 #endif
-        then
-          let resources =
-            System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
-          let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
-          let syntheticeo = "AltCover " +
-                            String.Join(" ", mainHelp).Replace("VALUE", "VALO") +
-                            " [-- ] [...]\naŭ\nAltCover Runner " +
-                            String.Join(" ", runnerHelp).Replace("VALUE", "VALO") +
-                            " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n" +
-                            "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
-                            "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
-          test <@ syntheticeo = helptexteo @>
+
+        let eo = Path.Combine (dir, "./eo/AltCover.Engine.resources.dll")
+
+        let resources =
+          System.Resources.ResourceManager("AltCover.Strings.eo", Assembly.LoadFile eo)
+        let helptexteo = resources.GetString("HelpText").Replace("\r\n", "\n")
+        let syntheticeo = "AltCover " +
+                          String.Join(" ", mainHelp).Replace("VALUE", "VALO") +
+                          " [-- ] [...]\naŭ\nAltCover Runner " +
+                          String.Join(" ", runnerHelp).Replace("VALUE", "VALO") +
+                          " [-- ] [...]\naŭ\nAltCover ImportModule\naŭ\nAltCover Version\n" +
+                          "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
+                          "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
+        test <@ syntheticeo = helptexteo @>
       finally
         Console.SetError saved
 
@@ -2777,10 +2656,12 @@ module AltCoverTests3 =
         use stdout =
           { new StringWriter() with
               member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
 
         use stderr =
           { new StringWriter() with
               member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
 
         Console.SetOut stdout
         Console.SetError stderr

@@ -73,7 +73,7 @@ module AltCoverRunnerTests =
       else c
 
     [<Test>]
-    let ExcerciseItAll() =
+    let ExerciseItAll() =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
       maybeDeleteFile unique

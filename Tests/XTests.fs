@@ -15,22 +15,7 @@ open Swensen.Unquote
 
 module AltCoverXTests =
   let test' x message =
-    try
-      test x
-    with fail ->
-      AssertionFailedException(message + Environment.NewLine + fail.Message, fail)
-      |> raise
-
-  let Hack() =
-    let where = Assembly.GetExecutingAssembly().Location
-
-    let dir =
-      where
-      |> Path.GetDirectoryName
-      |> Path.GetFileName
-    match dir.IndexOf "__" with
-    | 0 -> "/.."
-    | _ -> String.Empty
+    AltCoverTests2.test' x message
 
   let SolutionDir() =
     SolutionRoot.location
@@ -597,7 +582,6 @@ module AltCoverXTests =
 
     let reset =
       match existingDependencies with
-      | None -> Set.empty<string>
       | Some p ->
         (p.Value :?> JObject).Properties()
         |> Seq.map (fun p -> p.Name)
@@ -705,18 +689,11 @@ module AltCoverXTests =
 
   [<Test>]
   let AfterAssemblyCommitsThatAssembly() =
-    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU")
-    let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-
-    let where =
-      if local.IndexOf("_Binaries") > 0 then local
-      else hack
-
-    let path = Path.Combine(where + Hack(), "Sample4.dll")
+    let path = Path.Combine(AltCoverTests.dir, "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
-    let output = Path.Combine(Path.GetDirectoryName(where), unique)
+    let output = Path.Combine(Path.GetDirectoryName(AltCoverTests.dir), unique)
     Directory.CreateDirectory(output) |> ignore
     let saved = CoverageParameters.theOutputDirectories |> Seq.toList
     try
@@ -728,15 +705,14 @@ module AltCoverXTests =
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created@> (created + " not found")
-      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-      if File.Exists pdb then
-        let isWindows =
+
+      let isWindows =
 #if NETCOREAPP2_1
-                        true
+                      true
 #else
-                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+                      System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        test' <@
+      test' <@
                  isWindows
                  |> not
                  || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
@@ -773,18 +749,11 @@ module AltCoverXTests =
 
   [<Test>]
   let FinishCommitsTheRecordingAssembly() =
-    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU")
-    let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-
-    let where =
-      if local.IndexOf("_Binaries") > 0 then local
-      else hack
-
-    let path = Path.Combine(where + Hack(), "Sample4.dll")
+    let path = Path.Combine(AltCoverTests.dir, "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
-    let output = Path.Combine(Path.GetDirectoryName(where), unique)
+    let output = Path.Combine(Path.GetDirectoryName(AltCoverTests.dir), unique)
     Directory.CreateDirectory(output) |> ignore
     let saved = CoverageParameters.theOutputDirectories |> Seq.toList
     try
@@ -795,15 +764,13 @@ module AltCoverXTests =
       test <@ result.RecordingAssembly |> isNull @>
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
-      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-      if File.Exists pdb then
-        let isWindows =
+      let isWindows =
 #if NETCOREAPP2_1
-                        true
+                      true
 #else
-                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+                      System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        test' <@  isWindows |> not ||
+      test' <@  isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
     finally
       CoverageParameters.theOutputDirectories.Clear()
@@ -812,14 +779,7 @@ module AltCoverXTests =
   [<Test>]
   let ShouldDoCoverage() =
     let start = Directory.GetCurrentDirectory()
-    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU")
-    let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-
-    let here =
-      if local.IndexOf("_Binaries") > 0 then local
-      else hack
-
-    let where = Path.Combine(here, Guid.NewGuid().ToString())
+    let where = Path.Combine(AltCoverTests.dir, Guid.NewGuid().ToString())
     Directory.CreateDirectory(where) |> ignore
     Directory.SetCurrentDirectory where
     let create = Path.Combine(where, "AltCover.Recorder.g.dll")
@@ -829,7 +789,7 @@ module AltCoverXTests =
     then
       try
          CoverageParameters.theReportFormat <- Some ReportFormat.NCover
-         let from = Path.Combine(here, "AltCover.Recorder.dll")
+         let from = Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
          let updated = Instrument.I.prepareAssembly from
          Instrument.I.writeAssembly updated create
       finally
@@ -846,6 +806,8 @@ module AltCoverXTests =
       let payload (rest : string list) =
         test <@ rest = [ "test"; "1" ] @>
         255
+
+      test <@ payload [ "test"; "1" ] = 255 @>
 
       let monitor (hits : Dictionary<string, Dictionary<int, PointVisit>>)
           (token : string) _ _ =
