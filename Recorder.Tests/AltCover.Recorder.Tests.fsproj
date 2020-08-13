@@ -27,7 +27,7 @@
     <Compile Include="Adapter.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
   </ItemGroup>
 
   <ItemGroup>
