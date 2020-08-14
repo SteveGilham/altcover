@@ -10,16 +10,6 @@ open System.Xml.Schema
 
 open AltCover
 open Microsoft.FSharp.Reflection
-open Swensen.Unquote
-
-#if NETCOREAPP3_0
-[<AttributeUsage(AttributeTargets.Method)>]
-type TestAttribute() = class
-    inherit Attribute()
-end
-#else
-type TestAttribute = NUnit.Framework.TestAttribute
-#endif
 
 module FSApiTests =
 

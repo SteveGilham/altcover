@@ -516,6 +516,7 @@ module internal Main =
           let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let parent = here |> Path.GetDirectoryName
           Directory.GetDirectories(parent)
+          |> Seq.sort
           |> Seq.collect (fun d -> Directory.GetFiles(d,
                                                       "AltCover.PowerShell.dll",
                                                       SearchOption.TopDirectoryOnly))

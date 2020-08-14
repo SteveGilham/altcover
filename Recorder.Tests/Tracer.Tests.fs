@@ -87,9 +87,9 @@ module AltCoverCoreTests =
         let tag = formatter.ReadByte() |> int
         (id, strike,
          match enum tag with
-         | Tag.Time -> Adapter.Time <| formatter.ReadInt64()
+         //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
          | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
-         | Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
+         //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
          | Tag.Table ->
              Assert.True(( id = String.Empty ))
              Assert.True(( strike = 0 ))
@@ -123,7 +123,7 @@ module AltCoverCoreTests =
                              (Adapter.NewBoth
                                ((formatter.ReadInt64()), (formatter.ReadInt32())))
                            tracking()
-                       | Tag.Table -> Assert.True( false, "No nested tables!!")
+                       //| Tag.Table -> Assert.True( false, "No nested tables!!")
                        | _ -> sequencePoint (pts - 1)
                      tracking()
                    else

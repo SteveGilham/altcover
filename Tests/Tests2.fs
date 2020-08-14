@@ -12,7 +12,6 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Mono.Options
-open Swensen.Unquote
 
 #nowarn "25"
 
@@ -26,12 +25,6 @@ module AltCoverTests2 =
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 
-    let test' x message =
-      try
-        test x
-      with
-      | fail -> AssertionFailedException(message + Environment.NewLine + fail.Message, fail) |> raise
-
     let infrastructureSnk =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
@@ -42,11 +35,6 @@ module AltCoverTests2 =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       StrongNameKeyData.Make(buffer.ToArray())
-
-    [<Test>]
-    let SelfTest() =
-      Assert.Throws<AssertionFailedException>(
-        fun () -> test' <@ false @> "junk") |> ignore
 
     // Instrument.I.fs
     [<Test>]
@@ -483,7 +471,7 @@ module AltCoverTests2 =
             "    " + alter + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
           ]
           Assert.That(traces, Is.EquivalentTo expectedTraces)
-          let expectedSymbols = AltCoverRunnerTests.maybe ("Mono.Runtime" |> Type.GetType).IsNotNull
+          let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType).IsNotNull
                                       ".dll.mdb" ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
@@ -491,7 +479,7 @@ module AltCoverTests2 =
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-          AltCoverRunnerTests.maybe isWindows
+          maybe isWindows
             (Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols))))
             ()
           let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
@@ -678,7 +666,7 @@ module AltCoverTests2 =
 #endif
             proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
             let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
-            AltCoverRunnerTests.maybe isWindows // HACK HACK HACK
+            maybe isWindows // HACK HACK HACK
               (Assert.That (log, Is.EquivalentTo[(unique, 42)])) ()
           finally
 #if NETCOREAPP2_0
@@ -1871,7 +1859,7 @@ module AltCoverTests2 =
     [<Test>]
     let CryptographicExceptionIsTransformed() =
       let unique = Guid.NewGuid().ToString()
-      let raiser = fun x -> AltCoverRunnerTests.maybe x
+      let raiser = fun x -> maybe x
                              (unique |> CryptographicException |> raise)
                              ()
       let arg = fun () -> raiser true

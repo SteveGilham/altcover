@@ -187,6 +187,22 @@ module AltCoverTests =
         Instance.I.trace <- save)
     GetMyMethodName "<="
 
+  let strip before (all:HashSet<String>) =
+        before
+        |> Seq.iter (fun x ->
+             Assert.That(all.Contains x)
+             all.Remove x |> ignore)
+
+  [<Test>]
+  let StripWorks() =
+    let b1 = [ "1" ]
+    let a1 = [ "1"; "2" ]
+    let a1' = HashSet<String>(a1)
+    strip b1 a1'
+    let stripped1 = a1' |> Seq.toList
+    Assert.That(stripped1, Is.EquivalentTo [ "2" ])
+    Assert.Throws<AssertionException>( fun () ->  strip b1 a1') |> ignore
+
   [<Test>]
   let ExceptionLoggedToFile() =
     let path = Instance.ReportFile |> Path.GetFullPath
@@ -196,10 +212,7 @@ module AltCoverTests =
     let after = Directory.GetFiles(where, "*.exn")
     Assert.That(after.Length, Is.GreaterThan before.Length)
     let all = HashSet<String>(after)
-    before
-    |> Seq.iter (fun x ->
-         Assert.That(all.Contains x)
-         all.Remove x |> ignore)
+    strip before all
     Assert.That(all.Count, Is.EqualTo 1)
     let file = all |> Seq.head
     let lines = file |> File.ReadAllLines
@@ -249,6 +262,7 @@ module AltCoverTests =
     Assert.That(exn.Message, Is.EqualTo unique)
 
 #if NETCOREAPP2_0
+
   [<Test>]
   let NullRefShouldBeHandled() =
     GetMyMethodName "=>"
@@ -264,10 +278,8 @@ module AltCoverTests =
         let after = Directory.GetFiles(where, "*.exn")
         Assert.That(after.Length, Is.GreaterThan before.Length)
         let all = HashSet<String>(after)
-        before
-        |> Seq.iter (fun x ->
-             Assert.That(all.Contains x)
-             all.Remove x |> ignore)
+        strip before all
+
         Assert.That(all.Count, Is.EqualTo 1)
         let file = all |> Seq.head
         let lines = file |> File.ReadAllLines
@@ -651,10 +663,37 @@ module AltCoverTests =
         Console.SetOut saved)
     GetMyMethodName "<="
 
+  let trywith<'a when 'a :> exn> f g =
+    try
+      f()
+    with
+    | :? 'a -> g()
+
+  let trywithrelease<'a when 'a :> exn> f =
+    trywith f Instance.I.mutex.ReleaseMutex
+
+  [<Test>]
+  let CanTryWith() =
+    let mutable flag = false
+    let setFlag =  (fun () -> flag <- true)
+    trywith<InvalidOperationException>
+      (fun () -> ())
+      setFlag
+    Assert.That(flag, Is.False)
+
+    trywith<InvalidOperationException>
+      (fun () -> InvalidOperationException() |> raise)
+      setFlag
+    Assert.That(flag, Is.True)
+
+    Instance.I.mutex.WaitOne(1000) |> ignore
+    trywithrelease<InvalidOperationException>
+      (fun () -> InvalidOperationException() |> raise)
+
   let PauseLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -705,13 +744,13 @@ module AltCoverTests =
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException
             (fun () -> Directory.Delete(unique))
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+      ))
     GetMyMethodName "<="
 
   let ResumeLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -769,14 +808,14 @@ module AltCoverTests =
           File.Delete tag
           AltCoverCoreTests.maybeIOException
             (fun () -> Directory.Delete(unique))
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+      ))
     GetMyMethodName "<="
 
   let FlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -826,14 +865,14 @@ module AltCoverTests =
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException
             (fun () -> Directory.Delete(unique))
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+      ))
     GetMyMethodName "<="
 
   [<Test>]
   let SupervisedFlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -884,7 +923,7 @@ module AltCoverTests =
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException
             (fun () -> Directory.Delete(unique))
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+      ))
     GetMyMethodName "<="
 
   [<Test>]
@@ -1104,7 +1143,7 @@ module AltCoverTests =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -1163,7 +1202,7 @@ module AltCoverTests =
           Directory.SetCurrentDirectory(here)
           AltCoverCoreTests.maybeIOException
             (fun () -> Directory.Delete(unique))
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+      ))
     GetMyMethodName "<="
 #endif
 

@@ -10,7 +10,6 @@ open AltCover
 open Microsoft.FSharp.Reflection
 open Mono.Options
 open Mono.Cecil.Cil
-open Swensen.Unquote
 
 #nowarn "25"
 
@@ -55,7 +54,7 @@ module AltCoverTests3 =
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let exe, args =
-          AltCoverRunnerTests.maybe nonWindows
+          maybe nonWindows
             ("mono", "\"" + program + "\"")
             (program, String.Empty)
 
@@ -67,7 +66,7 @@ module AltCoverTests3 =
         let result = stdout.ToString()
 
         let quote =
-          AltCoverRunnerTests.maybe
+          maybe
            (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
            "\"" String.Empty
 
@@ -2089,7 +2088,7 @@ module AltCoverTests3 =
       // examine the instrumented files in a self-test run.
       let original = Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
       let updated = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let here = AltCoverRunnerTests.maybe monoRuntime original updated
+      let here = maybe monoRuntime original updated
 
       let there = Path.Combine(here, Guid.NewGuid().ToString())
       let toInfo = [ Directory.CreateDirectory there ]
@@ -2176,7 +2175,7 @@ module AltCoverTests3 =
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let args =
-          AltCoverRunnerTests.maybe
+          maybe
             nonWindows ("mono" :: baseArgs) baseArgs
 
         let r = CommandLine.processTrailingArguments args (DirectoryInfo(where))
@@ -2185,7 +2184,7 @@ module AltCoverTests3 =
         let result = stdout.ToString()
 
         let quote =
-          AltCoverRunnerTests.maybe  (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+          maybe  (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
            "\"" String.Empty
 
         let expected =
@@ -2209,16 +2208,16 @@ module AltCoverTests3 =
       Main.init()
       let saved = Console.Out
       try
-        let unique = "ImportModuleIsAsExpected"
+        let unique = "__ImportModuleIsAsExpected"
         let here = Assembly.GetExecutingAssembly().Location
                    |> Path.GetDirectoryName
                    |> Path.GetDirectoryName
         let placeholder = Path.Combine(here, unique)
         let info = Directory.CreateDirectory(placeholder)
         let psh = Path.Combine(info.FullName, "AltCover.PowerShell.dll")
-        if psh |> File.Exists |> not
-        then use _dummy = File.Create psh
-             ()
+        maybeDeleteFile psh
+        do use _dummy = File.Create psh
+           ()
 
         use stdout = new StringWriter()
         Console.SetOut stdout

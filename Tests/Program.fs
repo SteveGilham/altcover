@@ -1,18 +1,14 @@
-namespace AltCover.Expecto.Tests
+namespace Tests
 
 #if NETCOREAPP3_0
 open AltCover
 open Expecto
-open Mono.Cecil
-open Mono.Cecil.Cil
-open Mono.Cecil.Rocks
-open Swensen.Unquote
 
-module TestMain =
-  let sync = System.Object()
+module ExpectoMain =
 
   let regular = [
-          Tests.AltCoverRunnerTests.ExerciseItAll, "Runner.ExerciseItAll"
+          Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
+          Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
@@ -243,7 +239,6 @@ module TestMain =
           Tests.AltCoverTests.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
           Tests.AltCoverTests.PositiveIsVisited, "Tests.PositiveIsVisited"
           Tests.AltCoverTests.NegativesSpray,  "Tests.NegativesSpray"
-          Tests.AltCoverTests2.SelfTest, "Tests2.SelfTest"
           Tests.AltCoverTests2.ShouldBeAbleToGetTheVisitReportMethod, "Tests2.ShouldBeAbleToGetTheVisitReportMethod"
           Tests.AltCoverTests2.ShouldBeAbleToClearTheStrongNameKey, "Tests2.ShouldBeAbleToClearTheStrongNameKey"
           Tests.AltCoverTests2.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible, "Tests2.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible"
@@ -473,55 +468,22 @@ module TestMain =
     { 0 .. 31 }
     |> Seq.map (fun i ->
          testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
-         lock sync (fun () ->
+         lock ExpectoTestCommon.sync (fun () ->
            AltCover.Main.init()
            Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
     |> Seq.toList
 
   let consistencyCheck() =
-    let here = System.Reflection.Assembly.GetExecutingAssembly().Location
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(here)
-
-    let testMethods = def.MainModule.GetTypes()
-                      |> Seq.collect (fun t -> t.Methods)
-                      |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
-                      |> Seq.filter (fun m -> m.CustomAttributes |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
-                      |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
-
-    let lookup = def.MainModule.GetAllTypes()
-                 |> Seq.filter (fun t -> t.Methods |> Seq.exists(fun m -> m.Name = "Invoke"))
-                 |> Seq.map (fun t -> (t.FullName.Replace("/","+"), t.Methods |> Seq.find(fun m -> m.Name = "Invoke")))
-                 |> Map.ofSeq
-
-    let calls = regular
-                |> List.map (fst
-                            >> (fun f -> f.GetType().FullName.Replace("/","+"))
-                            >> (fun f -> Map.find f lookup)
-                            >> (fun f -> f.Body.Instructions |> Seq.find (fun i -> i.OpCode = OpCodes.Call))
-                            >> (fun i -> let m = (i.Operand :?> MethodDefinition)
-                                         m.DeclaringType.FullName + "::" + m.Name))
-                |> Set.ofList
-
-    let omitted = testMethods
-                  |> Seq.filter (fun t -> (Set.contains t calls) |> not)
-                  |> Seq.toList
-
-    // cover all but the special cases
-    test <@ omitted = ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"] @>
+    ExpectoTestCommon.consistencyCheck regular ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
 
   [<Tests>]
   let tests =
-    testList "AltCoverTests"
-    <| (((consistencyCheck, "ConsistencyCheck") :: regular
-        |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
-                                                              AltCover.Main.init()
-                                                              AltCover.Runner.init()
-                                                              f())))) @ specials)
+    ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck regular specials
 
-module Program =
-  [<EntryPoint>]
-  let main argv =
+module UnitTestStub =
+  [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
+  let unitTestStub argv =
     let writeResults = TestResults.writeNUnitSummary ("AltCover.TestResults.xml", "AltCover.Tests")
     let config = defaultConfig.appendSummaryHandler writeResults
-    runTestsWithArgs config argv TestMain.tests
+    runTestsWithArgs config argv ExpectoMain.tests
 #endif

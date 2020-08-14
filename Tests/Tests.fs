@@ -13,7 +13,6 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open N
-open Swensen.Unquote
 
 #nowarn "25"
 
@@ -53,8 +52,6 @@ module Extensions =
           else i |> sbyte |> Microsoft.FSharp.Core.LanguagePrimitives.EnumOfValue<sbyte, Exemption>
 
 module AltCoverTests =
-    let SolutionDir() =
-      SolutionRoot.location
 
 #if NETCOREAPP2_0
     let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0")

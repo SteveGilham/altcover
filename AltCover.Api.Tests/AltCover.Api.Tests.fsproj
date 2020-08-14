@@ -37,6 +37,7 @@
     <EmbeddedResource Include="..\Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="FSApiTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

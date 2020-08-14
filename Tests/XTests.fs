@@ -11,14 +11,10 @@ open System.Xml.Linq
 open AltCover
 open Mono.Options
 open Newtonsoft.Json.Linq
-open Swensen.Unquote
+
+#nowarn "25"
 
 module AltCoverXTests =
-  let test' x message =
-    AltCoverTests2.test' x message
-
-  let SolutionDir() =
-    SolutionRoot.location
 
   let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 

@@ -3,7 +3,6 @@ namespace Tests
 
 open System
 open System.Collections.Generic
-open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
 open System.Reflection
@@ -15,22 +14,8 @@ open System.Xml.Schema
 open AltCover
 open Microsoft.FSharp.Reflection
 open Mono.Options
-open Swensen.Unquote
-
-type Assert = NUnit.Framework.Assert
-type Does = NUnit.Framework.Does
-type Is = NUnit.Framework.Is
 
 #nowarn "25" // partial pattern match
-
-#if NETCOREAPP2_1
-[<AttributeUsage(AttributeTargets.Method)>]
-type TestAttribute() = class
-    inherit Attribute()
-end
-#else
-type TestAttribute = NUnit.Framework.TestAttribute
-#endif
 
 module AltCoverUsage =
     let internal usageText =
@@ -51,37 +36,6 @@ module AltCoverUsage =
 
 module AltCoverRunnerTests =
     // fs
-    let maybeIOException f =
-      try
-        f()
-      with :? IOException -> ()
-
-    let maybeDeleteFile f =
-      if File.Exists f
-      then File.Delete f
-
-    let maybeReraise f g =
-      try
-        f()
-      with _ ->
-        g()
-        reraise()
-
-    let maybe a b c =
-      if a
-      then b
-      else c
-
-    [<Test>]
-    let ExerciseItAll() =
-      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-      let unique = Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
-      maybeDeleteFile unique
-      maybeIOException (fun () ->
-        maybeReraise (fun () -> File.Delete unique) ignore
-      )
-      test <@ (maybe true 1 2) = 1 @>
-      test <@ (maybe false 1 2) = 2 @>
 
     [<Test>]
     let MaxTimeFirst () =
