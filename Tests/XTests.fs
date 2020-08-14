@@ -66,8 +66,7 @@ module AltCoverXTests =
                   (a1.Name.ToString() + " : " + r.ToString() + " -> document")
               | "visitcount" ->
                 let expected =
-                  if zero then "0"
-                  else a2.Value
+                  maybe zero "0" a2.Value
                 test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
               | _ ->
                 test' <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
@@ -122,8 +121,7 @@ module AltCoverXTests =
                   (a1.Name.ToString() + " : " + r.ToString() + " -> document")
               | "vc" ->
                 let expected =
-                  if zero then "0"
-                  else a2.Value
+                  maybe zero "0" a2.Value
                 test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
               | _ ->
                 test' <@ a1.Value = a2.Value @>
@@ -463,23 +461,8 @@ module AltCoverXTests =
     let here = SolutionDir()
     let path = Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
     let key0 = Path.Combine(here, "Build/SelfTest.snk")
-#if NETCOREAPP2_1
-    let input =
-      if Directory.Exists path then path
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")),
-           "../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
-
-    let key =
-      if File.Exists key0 then key0
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
-#else
     let input = path
     let key = key0
-#endif
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
     Directory.CreateDirectory unique' |> ignore
@@ -494,6 +477,7 @@ module AltCoverXTests =
     let save2 = (Output.info, Output.error)
     try
       Output.error <- CommandLine.writeErr
+      String.Empty |> Output.error
       Output.info <- CommandLine.writeOut
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -620,6 +604,7 @@ module AltCoverXTests =
     Main.init()
     try
       Output.error <- CommandLine.writeErr
+      String.Empty |> Output.error
       Output.info <- CommandLine.writeOut
       use stdout = new StringWriter()
       use stderr = new StringWriter()

@@ -818,7 +818,7 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = !!(@"./*Tests/*Tests.fsproj")
+    let l = !!(@"./*Tests*/*Tests*.fsproj")
             |> Seq.toList
 
     let xml =

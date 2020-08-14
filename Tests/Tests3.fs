@@ -283,8 +283,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Attribute -> x.Regex.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+                | FilterScope.Attribute -> x.Regex.ToString()), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
@@ -318,8 +317,7 @@ module AltCoverTests3 =
             (CoverageParameters.topLevel
              |> Seq.map (fun x ->
                   match x.Scope with
-                  | scope when scope = value -> x.Regex.ToString()
-                  | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+                  | scope when scope = value -> x.Regex.ToString()), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
           Assert.That
             (CoverageParameters.topLevel |> Seq.forall (fun x -> x.Sense = Exclude))
         finally
@@ -347,8 +345,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Method -> x.Regex.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |] ))
+                | FilterScope.Method -> x.Regex.ToString()), Is.EquivalentTo ([| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
@@ -376,8 +373,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Type -> x.Regex.ToString()
-                | _ -> "*"),
+                | FilterScope.Type -> x.Regex.ToString()),
            Is.EquivalentTo ([| "1"; "2"; "3"; "x"; "y"; "z"; "4"; "5"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
@@ -406,8 +402,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Assembly -> x.Regex.ToString()
-                | _ -> "*"),
+                | FilterScope.Assembly -> x.Regex.ToString()),
            Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]) )
         Assert.That
            (CoverageParameters.nameFilters
@@ -438,8 +433,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Assembly -> x.Regex.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |] ))
+                | FilterScope.Assembly -> x.Regex.ToString()), Is.EquivalentTo ([| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
@@ -467,8 +461,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Module -> x.Regex.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |] ))
+                | FilterScope.Module -> x.Regex.ToString()), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
@@ -496,8 +489,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.File -> x.Regex.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |] ))
+                | FilterScope.File -> x.Regex.ToString()), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
@@ -525,8 +517,7 @@ module AltCoverTests3 =
           (CoverageParameters.nameFilters
            |> Seq.map (fun x ->
                 match x.Scope with
-                | FilterScope.Path -> x.Regex.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |] ))
+                | FilterScope.Path -> x.Regex.ToString()), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |] ))
         Assert.That
           (CoverageParameters.nameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
@@ -2041,42 +2032,61 @@ module AltCoverTests3 =
       Main.init()
       let one = ref false
       let two = ref false
-      Main.I.imageLoadResilient (fun () -> one := true) (fun () -> two := true)
+      let set2 ()  = two := true
+      Main.I.imageLoadResilient (fun () -> one := true) set2
       Assert.That(!one)
       Assert.That(!two, Is.False)
+      set2()
+      Assert.That(!two, Is.True)
 
     [<Test>]
     let ResilientHandlesIOException() =
       Main.init()
       let one = ref false
       let two = ref false
-      Main.I.imageLoadResilient (fun () ->
-        IOException("fail") |> raise
-        one := true) (fun () -> two := true)
+      let set1 f () = 
+        f()
+        one := true
+      let io () = IOException("fail") |> raise
+
+      Main.I.imageLoadResilient (set1 io) (fun () -> two := true)
       Assert.That(!one, Is.False)
       Assert.That(!two)
+      set1 ignore ()
+      Assert.That(!one, Is.True)
+
 
     [<Test>]
     let ResilientHandlesBadImageFormatException() =
       Main.init()
       let one = ref false
       let two = ref false
-      Main.I.imageLoadResilient (fun () ->
-        BadImageFormatException("fail") |> raise
-        one := true) (fun () -> two := true)
+      let set1 f () = 
+        f()
+        one := true
+      let bif () = BadImageFormatException("fail") |> raise
+
+      Main.I.imageLoadResilient (set1 bif) (fun () -> two := true)
       Assert.That(!one, Is.False)
       Assert.That(!two)
+      set1 ignore ()
+      Assert.That(!one, Is.True)
 
     [<Test>]
     let ResilientHandlesArgumentException() =
       Main.init()
       let one = ref false
       let two = ref false
-      Main.I.imageLoadResilient (fun () ->
-        ArgumentException("fail") |> raise
-        one := true) (fun () -> two := true)
+      let set1 f () = 
+        f()
+        one := true
+      let arg () = ArgumentException("fail") |> raise
+
+      Main.I.imageLoadResilient (set1 arg) (fun () -> two := true)
       Assert.That(!one, Is.False)
       Assert.That(!two)
+      set1 ignore ()
+      Assert.That(!one, Is.True)
 
     [<Test>]
     let PreparingNewPlaceShouldCopyEverything() =
@@ -2133,19 +2143,9 @@ module AltCoverTests3 =
 
     [<Test>]
     let ShouldProcessTrailingArguments() =
-      // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-
-      let path' =
-        if Directory.Exists path then path
-        else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionDir(), "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -2427,7 +2427,9 @@ module AltCoverTests3 =
       Main.init()
       Assert.That(AltCover.LoggingOptions.ActionAdapter null, Is.Not.Null)
       (AltCover.LoggingOptions.ActionAdapter null) "23"
-      Assert.That(AltCover.LoggingOptions.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      let ignoreAction = new Action<String>(ignore)
+      ignoreAction.Invoke("ignoreAction")
+      Assert.That(AltCover.LoggingOptions.ActionAdapter(ignoreAction), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
       (AltCover.LoggingOptions.ActionAdapter(new Action<String>(f))) "42"
@@ -2438,6 +2440,16 @@ module AltCoverTests3 =
       AltCover.LoggingOptions.Create().Echo "32"
 
       let o = Logging()
+      o.Info <- null
+      o.Warn <- null
+      o.Failure <- null
+      o.Echo <- null
+
+      Assert.That (o.Info, Is.Null)
+      Assert.That (o.Warn, Is.Null)
+      Assert.That (o.Failure, Is.Null)
+      Assert.That (o.Echo, Is.Null)
+
       let p = AltCover.LoggingOptions.Translate o
       Assert.That(p.Warn, Is.Not.Null)
       let p2 = AltCover.LoggingOptions.Abstract o
