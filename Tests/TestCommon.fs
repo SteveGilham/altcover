@@ -33,7 +33,9 @@ module TestCommon =
   let maybeIOException f =
     try
       f()
-    with :? IOException -> ()
+    with 
+    | :? System.UnauthorizedAccessException
+    | :? IOException -> ()
 
   let maybeDeleteFile f =
     if File.Exists f
@@ -76,6 +78,8 @@ module TestCommonTests =
       maybeIOException (fun () ->
         maybeReraise (fun () -> File.Delete unique) ignore
       )
+      maybeIOException (fun () -> System.UnauthorizedAccessException() |> raise )
+
       test <@ (maybe true 1 2) = 1 @>
       test <@ (maybe false 1 2) = 2 @>
       test <@ SolutionDir() |> String.IsNullOrEmpty |> not @>

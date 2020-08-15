@@ -250,11 +250,7 @@ module AltCoverTests2 =
       finally
         Directory.EnumerateFiles
           (Path.GetDirectoryName output, (Path.GetFileNameWithoutExtension output) + ".*")
-        |> Seq.iter (fun f ->
-             try
-               File.Delete f
-             with // occasionally the dll file is locked by another process
-                  :? System.UnauthorizedAccessException | :? IOException -> ())
+        |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     [<Test>]
     let ShouldBeAbleToTellAnAssembly() =
@@ -621,7 +617,7 @@ module AltCoverTests2 =
           Assert.That (newValue.Operand, Is.EqualTo unique)
           Assert.That (newValue.OpCode, Is.EqualTo OpCodes.Ldstr)
           Instrument.I.writeAssembly def outputdll
-          let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
+          let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
                           true
@@ -1396,8 +1392,12 @@ module AltCoverTests2 =
       let token1 = def.Name.PublicKeyToken
       Assert.That(token1, Is.Empty)
       Assert.That(token1, Is.Not.EquivalentTo(token0))
+      let mapping (x:byte) = x.ToString("x2")
+      let smapping = Seq.map mapping
+      Assert.That ([| 0uy |] |> smapping |> Seq.toList, Is.EqualTo [ "00" ])
+
       let token' =
-        String.Join(String.Empty, token1 |> Seq.map (fun x -> x.ToString("x2")))
+        String.Join(String.Empty, token1 |> smapping)
       Assert.That(token', Is.EqualTo String.Empty)
       Assert.That(result.Count, Is.EqualTo 1)
       let key = result.Keys |> Seq.head
@@ -1408,21 +1408,11 @@ module AltCoverTests2 =
 
     [<Test>]
     let UpdateStrongReferencesShouldNotAddASigningKey() =
-      let where = Assembly.GetExecutingAssembly().Location
+      let mdir = Path.Combine(SolutionDir(), "_Mono/Sample1")
       let path =
         Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
-#if NETCOREAPP2_0
-
-      let path' =
-        if File.Exists path then path
-        else
-          Path.Combine
-            (where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
-#else
-      let path' = path
-#endif
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+          (mdir, "Sample1.exe")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
 #if NETCOREAPP2_0
       use stream =
@@ -1798,11 +1788,7 @@ module AltCoverTests2 =
       finally
         Directory.EnumerateFiles
           (Path.GetDirectoryName output, (Path.GetFileNameWithoutExtension output) + ".*")
-        |> Seq.iter (fun f ->
-             try
-               File.Delete f
-             with // occasionally the dll file is locked by another process
-                  :? System.UnauthorizedAccessException | :? IOException -> ())
+        |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     [<Test>]
     let NonFinishShouldNotDisposeNullRecordingAssembly() =
@@ -1835,11 +1821,7 @@ module AltCoverTests2 =
       finally
         Directory.EnumerateFiles
           (Path.GetDirectoryName output, (Path.GetFileNameWithoutExtension output) + ".*")
-        |> Seq.iter (fun f ->
-             try
-               File.Delete f
-             with // occasionally the dll file is locked by another process
-                  :? System.UnauthorizedAccessException | :? IOException -> ())
+        |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     // CommandLine.fs
     [<Test>]
@@ -1880,6 +1862,9 @@ module AltCoverTests2 =
       SetWarn sink
       Output.echo <- ignore
       Output.usage <- ignore
+      Output.echo "echo"
+      Output.usage {Intro = "usage"; Options = OptionSet(); Options2 = OptionSet()}
+
       Assert.That(Output.usage, Is.Not.Null)
       typeof<TeamCityFormat>.Assembly.GetTypes()
       |> Seq.filter
@@ -1897,8 +1882,7 @@ module AltCoverTests2 =
            let p = c0.GetParameters().Length
 
            let o =
-             c0.Invoke(if p = 0 then null
-                       else [| sink |])
+             c0.Invoke(maybe (p = 0) null [| sink |])
 
            let invoke = t.GetMethod("Invoke")
            let param = invoke.GetParameters() |> Seq.head
@@ -1907,6 +1891,13 @@ module AltCoverTests2 =
              if param.ParameterType = typeof<String> then String.Empty :> obj
              else { Intro = String.Empty; Options = OptionSet(); Options2 = OptionSet() } :> obj
            invoke.Invoke(o, [| arg |]) |> ignore)
+
+      SetWarn sink
+      SetError sink |> ignore
+      SetInfo sink |> ignore
+      Output.warn "warn"
+      Output.error "error"
+      Output.info "info"
 
     [<Test>]
     let NoThrowNoErrorLeavesAllOK() =
@@ -1938,9 +1929,21 @@ module AltCoverTests2 =
       let saved = (Output.info, Output.error)
       let err = System.Text.StringBuilder()
       let info = System.Text.StringBuilder()
+      let f1 = fun (s:String) -> info.Append(s).Append("|") |> ignore
+      let f2 = fun (s:String) -> err.Append(s).Append("|") |> ignore
+      f1 "f1"
+      Assert.That(info.ToString(), Is.Not.Empty)
+      info.Clear() |> ignore
+      Assert.That(info.ToString(), Is.Empty)
+
+      f2 "f2"
+      Assert.That(err.ToString(), Is.Not.Empty)
+      err.Clear() |> ignore
+      Assert.That(err.ToString(), Is.Empty)
+
       try
-        Output.info <- (fun s -> info.Append(s).Append("|") |> ignore)
-        Output.error <- (fun s -> err.Append(s).Append("|") |> ignore)
+        Output.info <- f1
+        Output.error <- f2
         let unique = "ArgumentException " + Guid.NewGuid().ToString()
         CommandLine.error <- []
         CommandLine.exceptions <- []
@@ -2011,9 +2014,21 @@ module AltCoverTests2 =
       let saved = (Output.info, Output.error)
       let err = System.Text.StringBuilder()
       let info = System.Text.StringBuilder()
+      let f1 = fun (s:String) -> info.Append(s).Append("|") |> ignore
+      let f2 = fun (s:String) -> err.Append(s).Append("|") |> ignore
+      f1 "f1"
+      Assert.That(info.ToString(), Is.Not.Empty)
+      info.Clear() |> ignore
+      Assert.That(info.ToString(), Is.Empty)
+
+      f2 "f2"
+      Assert.That(err.ToString(), Is.Not.Empty)
+      err.Clear() |> ignore
+      Assert.That(err.ToString(), Is.Empty)
+
       try
-        Output.info <- (fun s -> info.Append(s).Append("|") |> ignore)
-        Output.error <- (fun s -> err.Append(s).Append("|") |> ignore)
+        Output.info <- f1
+        Output.error <- f2
         let unique = "ArgumentException " + Guid.NewGuid().ToString()
         CommandLine.error <- []
         CommandLine.exceptions <- []
@@ -2086,9 +2101,21 @@ module AltCoverTests2 =
       let saved = (Output.info, Output.error)
       let err = System.Text.StringBuilder()
       let info = System.Text.StringBuilder()
+      let f1 = fun (s:String) -> info.Append(s).Append("|") |> ignore
+      let f2 = fun (s:String) -> err.Append(s).Append("|") |> ignore
+      f1 "f1"
+      Assert.That(info.ToString(), Is.Not.Empty)
+      info.Clear() |> ignore
+      Assert.That(info.ToString(), Is.Empty)
+
+      f2 "f2"
+      Assert.That(err.ToString(), Is.Not.Empty)
+      err.Clear() |> ignore
+      Assert.That(err.ToString(), Is.Empty)
+
       try
-        Output.info <- (fun s -> info.Append(s).Append("|") |> ignore)
-        Output.error <- (fun s -> err.Append(s).Append("|") |> ignore)
+        Output.info <- f1
+        Output.error <- f2
         let unique = "IOException " + Guid.NewGuid().ToString()
         CommandLine.error <- []
         CommandLine.exceptions <- []
@@ -2111,9 +2138,21 @@ module AltCoverTests2 =
       let saved = (Output.info, Output.error)
       let err = System.Text.StringBuilder()
       let info = System.Text.StringBuilder()
+      let f1 = fun (s:String) -> info.Append(s).Append("|") |> ignore
+      let f2 = fun (s:String) -> err.Append(s).Append("|") |> ignore
+      f1 "f1"
+      Assert.That(info.ToString(), Is.Not.Empty)
+      info.Clear() |> ignore
+      Assert.That(info.ToString(), Is.Empty)
+
+      f2 "f2"
+      Assert.That(err.ToString(), Is.Not.Empty)
+      err.Clear() |> ignore
+      Assert.That(err.ToString(), Is.Empty)
+
       try
-        Output.info <- (fun s -> info.Append(s).Append("|") |> ignore)
-        Output.error <- (fun s -> err.Append(s).Append("|") |> ignore)
+        Output.info <- f1
+        Output.error <- f2
         let unique = "NotSupportedException " + Guid.NewGuid().ToString()
         CommandLine.error <- []
         CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
@@ -2132,9 +2171,21 @@ module AltCoverTests2 =
       let saved = (Output.info, Output.error)
       let err = System.Text.StringBuilder()
       let info = System.Text.StringBuilder()
+      let f1 = fun (s:String) -> info.Append(s).Append("|") |> ignore
+      let f2 = fun (s:String) -> err.Append(s).Append("|") |> ignore
+      f1 "f1"
+      Assert.That(info.ToString(), Is.Not.Empty)
+      info.Clear() |> ignore
+      Assert.That(info.ToString(), Is.Empty)
+
+      f2 "f2"
+      Assert.That(err.ToString(), Is.Not.Empty)
+      err.Clear() |> ignore
+      Assert.That(err.ToString(), Is.Empty)
+
       try
-        Output.info <- (fun s -> info.Append(s).Append("|") |> ignore)
-        Output.error <- (fun s -> err.Append(s).Append("|") |> ignore)
+        Output.info <- f1
+        Output.error <- f2
         let unique = "SecurityException " + Guid.NewGuid().ToString()
         CommandLine.error <- []
         CommandLine.exceptions <- []
