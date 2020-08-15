@@ -86,7 +86,11 @@ module TestCommonTests =
 #if NETCOREAPP3_0
       Assert.Throws<Expecto.AssertException>(
 #else
+#if (ValidateGendarmeEmulation || GUI)
+      Assert.Throws<NUnit.Framework.AssertionException>(
+#else
       Assert.Throws<Xunit.Sdk.TrueException>(
+#endif
 #endif
         fun  () -> test <@ false @> ) |> ignore
       Assert.Throws<Swensen.Unquote.AssertionFailedException>(
@@ -115,8 +119,16 @@ module ExpectoTestCommon =
                 |> List.map (fst
                             >> (fun f -> f.GetType().FullName.Replace("/","+"))
                             >> (fun f -> Map.find f lookup)
-                            >> (fun f -> f.Body.Instructions |> Seq.find (fun i -> i.OpCode = OpCodes.Call))
-                            >> (fun i -> let m = (i.Operand :?> MethodReference)
+                            >> (fun f -> f.Body.Instructions
+    // Where the test assembly is itself instrumented
+    // we have to allow for calls to AltCover.Recorder.Instance::Visit
+    // or the coverlet equivalent
+    // having been injected into the local function reference
+
+                                         |> Seq.find (fun i -> i.OpCode = OpCodes.Call
+                                                               && i.Operand.GetType().Name.Equals("MethodDefinition", StringComparison.Ordinal))
+                            )
+                            >> (fun i -> let m = (i.Operand :?> MethodDefinition)
                                          m.DeclaringType.FullName + "::" + m.Name))
                 |> Set.ofList
 
@@ -127,11 +139,10 @@ module ExpectoTestCommon =
     // cover all but the special cases
     TestCommon.test <@ omitted = expected @>
 
-  let makeTests name (check:unit -> unit) (regular:((unit -> unit)*string) list) specials =
+  let makeTests name (check:unit -> unit) (regular:((unit -> unit)*string) list) specials pretest =
     testList name
     <| (((check, "ConsistencyCheck") :: regular
         |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
-                                                              AltCover.Main.init()
-                                                              AltCover.Runner.init()
+                                                              pretest()
                                                               f())))) @ specials)
 #endif

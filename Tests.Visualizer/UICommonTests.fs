@@ -1,20 +1,6 @@
 namespace Tests
 
-open System
-open System.IO
-open System.Reflection
-
 open AltCover
-open Swensen.Unquote
-
-#if NETCOREAPP3_0
-[<AttributeUsage(AttributeTargets.Method)>]
-type TestAttribute() = class
-    inherit Attribute()
-end
-#else
-open NUnit.Framework
-#endif
 
 module VisualizerTests =
 

@@ -802,9 +802,8 @@ _Target "UnitTestDotNet" (fun _ ->
 
 _Target "BuildForCoverlet" (fun _ ->
   msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  let l = !!(@"./*Tests/*Tests.fsproj")
-          |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
-                                  && s.Contains("Recorder") |> not) // net20
+  let l = !!(@"./*Tests*/*Tests*.fsproj")
+          |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
           |> Seq.toList
 
   ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)

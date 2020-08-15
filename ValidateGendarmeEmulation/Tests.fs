@@ -1,21 +1,10 @@
-namespace AltCover.Tests
+namespace Tests
 
 open System
 open System.IO
-open System.Reflection
 
 open AltCover
 open Mono.Cecil
-open Swensen.Unquote
-
-#if NETCOREAPP3_0
-[<AttributeUsage(AttributeTargets.Method)>]
-type TestAttribute() = class
-    inherit Attribute()
-end
-#else
-type TestAttribute = NUnit.Framework.TestAttribute
-#endif
 
 module Rocks =
   let rec GetAllTypes(t : TypeDefinition) =

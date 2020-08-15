@@ -479,6 +479,8 @@ module ExpectoMain =
   [<Tests>]
   let tests =
     ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck regular specials
+     (fun () -> AltCover.Main.init()
+                AltCover.Runner.init())
 
 module UnitTestStub =
   [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]

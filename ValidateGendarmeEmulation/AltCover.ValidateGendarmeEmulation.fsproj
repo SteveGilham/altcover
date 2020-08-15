@@ -59,6 +59,7 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Engine\Gendarme.fs" Link="Gendarme.fs" />
+    <Compile Include="..\Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>

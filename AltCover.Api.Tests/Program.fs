@@ -30,12 +30,13 @@ module ExpectoMain =
 
   let specials =
    []
+
   let consistencyCheck() =
     ExpectoTestCommon.consistencyCheck regular []
 
   [<Tests>]
   let tests =
-    ExpectoTestCommon.makeTests "AltCoverApiTests" consistencyCheck regular specials
+    ExpectoTestCommon.makeTests "AltCoverApiTests" consistencyCheck regular specials ignore
 
 module UnitTestStub =
   [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
