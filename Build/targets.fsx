@@ -1106,7 +1106,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "UIUnitTestWithAltCoverRunner.xml", // coverage report
         "./_Reports/UIUnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
-            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"],
+            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll"],
         baseFilter,
         keyfile
       )
