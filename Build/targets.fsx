@@ -911,7 +911,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
             "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-          Register = OpenCover.RegisterType.Path32
+          Register = OpenCover.RegisterType.Path64
           Output = uicoverage
           TimeOut = TimeSpan (0,10,0) })
       (String.Join(" ", uifiles)

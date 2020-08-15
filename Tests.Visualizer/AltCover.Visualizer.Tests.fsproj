@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
-    <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
-
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.Tests.Visualizer</AssemblyName>
