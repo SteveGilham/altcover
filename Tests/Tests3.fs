@@ -2385,6 +2385,7 @@ module AltCoverTests3 =
 
         test <@ synthetic = helptext @>
 
+#if !MONO // Mono won't play nicely with Esperanto placeholder locale
 #if NETCOREAPP2_0
         let dir = Path.Combine(SolutionRoot.location,
                                 "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0")
@@ -2406,6 +2407,7 @@ module AltCoverTests3 =
                           "aŭ, nur por la tutmonda ilo\nAltCover TargetsPath\n\n" +
                           "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
         test <@ syntheticeo = helptexteo @>
+#endif        
       finally
         Console.SetError saved
 
