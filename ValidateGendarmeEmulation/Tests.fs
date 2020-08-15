@@ -22,6 +22,9 @@ module ValidateGendarmeEmulation =
     | Some (n, e, r) -> Some (sprintf "Expected %d got %d in %s" e r n)
     | None -> None
 
+  let seqStringify x =
+    x |> Seq.map stringify
+
   [<Test>]
   let DoSelfTest () =
     test <@ importantItems (1, 2, 3) = Some (1, 2, 3) @>
@@ -52,7 +55,7 @@ module ValidateGendarmeEmulation =
           |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
           |> Seq.concat
           |> Seq.sortBy (fun m -> m.FullName)))
-      |> Seq.map stringify
+      |> seqStringify
       |> Seq.choose id
       |> Seq.toList
     test <@ List.isEmpty failures @>
@@ -80,7 +83,7 @@ module ValidateGendarmeEmulation =
           |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
           |> Seq.concat
           |> Seq.sortBy (fun m -> m.FullName)))
-      |> Seq.map stringify
+      |> seqStringify
       |> Seq.choose id
       |> Seq.toList
     test <@ List.isEmpty failures @>
@@ -109,7 +112,7 @@ module ValidateGendarmeEmulation =
           |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
           |> Seq.concat
           |> Seq.sortBy (fun m -> m.FullName)))
-      |> Seq.map stringify
+      |> seqStringify
       |> Seq.choose id
       |> Seq.toList
     test <@ List.isEmpty failures @>

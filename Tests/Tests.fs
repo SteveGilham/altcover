@@ -2284,6 +2284,10 @@ module AltCoverTests =
         }
         |> CoverageParameters.topLevel.Add
 
+        let seqTrim (s : String seq) =
+          s
+          |> Seq.map (fun n -> n.Trim())
+          
         let visitor9, document9 = Report.reportGenerator()
         Visitor.visit [ visitor9 ] (Visitor.I.toSeq (path5, []))
         let names9 = document9.Descendants(XName.Get "method")
@@ -2296,7 +2300,7 @@ module AltCoverTests =
                     //                           |> Seq.map byte
                     //                           |> Seq.toArray,
                     //                           0))
-                     |> Seq.map (fun n -> n.Trim())
+                     |> seqTrim
                      |> Seq.toList
         test <@ names9 = ["<F1>g__Interior|0_1"] @>
 
