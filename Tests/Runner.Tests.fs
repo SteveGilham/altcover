@@ -777,7 +777,7 @@ module AltCoverRunnerTests =
       lock LCov.path (fun () ->
         try
           LCov.path := None
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           let options = Runner.declareOptions()
           let unique = "some exe"
           let input = [| "-l"; unique |]
@@ -790,7 +790,7 @@ module AltCoverRunnerTests =
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           LCov.path := None)
 
     [<Test>]
@@ -799,7 +799,7 @@ module AltCoverRunnerTests =
       lock LCov.path (fun () ->
         try
           LCov.path := None
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           let options = Runner.declareOptions()
           let unique = Guid.NewGuid().ToString()
 
@@ -816,7 +816,7 @@ module AltCoverRunnerTests =
             Assert.That(x, Is.EqualTo "UsageError")
             Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--lcovReport : specify this only once")
         finally
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           LCov.path := None)
 
     [<Test>]
@@ -825,7 +825,7 @@ module AltCoverRunnerTests =
       lock LCov.path (fun () ->
         try
           LCov.path := None
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           let options = Runner.declareOptions()
           let blank = " "
           let input = [| "-l"; blank |]
@@ -835,7 +835,7 @@ module AltCoverRunnerTests =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           LCov.path := None)
 
     [<Test>]
@@ -1091,7 +1091,7 @@ module AltCoverRunnerTests =
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           let options = Runner.declareOptions()
           let unique = "some exe"
           let input = [| "-c"; unique |]
@@ -1104,7 +1104,7 @@ module AltCoverRunnerTests =
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           Cobertura.path := None)
 
     [<Test>]
@@ -1113,7 +1113,7 @@ module AltCoverRunnerTests =
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           let options = Runner.declareOptions()
           let unique = Guid.NewGuid().ToString()
 
@@ -1130,7 +1130,7 @@ module AltCoverRunnerTests =
             Assert.That(x, Is.EqualTo "UsageError")
             Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--cobertura : specify this only once")
         finally
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           Cobertura.path := None)
 
     [<Test>]
@@ -1139,7 +1139,7 @@ module AltCoverRunnerTests =
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           let options = Runner.declareOptions()
           let blank = " "
           let input = [| "-c"; blank |]
@@ -1149,7 +1149,7 @@ module AltCoverRunnerTests =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.I.summaries <- [ Runner.I.standardSummary ]
+          Runner.I.initSummary()
           Cobertura.path := None)
 
     [<Test>]
@@ -1540,8 +1540,7 @@ module AltCoverRunnerTests =
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let args =
-          if nonWindows then "mono" :: baseArgs
-          else baseArgs
+          maybe nonWindows ("mono" :: baseArgs) baseArgs
 
         let r = CommandLine.processTrailingArguments args <| DirectoryInfo(path)
         Assert.That(r, Is.EqualTo 0)
@@ -1665,8 +1664,7 @@ module AltCoverRunnerTests =
         let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
         let args =
-          if nonWindows then "mono" :: baseArgs
-          else baseArgs
+          maybe nonWindows ("mono" :: baseArgs) baseArgs
 
         let r = Runner.J.getPayload args
         Assert.That(r, Is.EqualTo 0)
@@ -1903,11 +1901,9 @@ module AltCoverRunnerTests =
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
-
-        let r =
-          Runner.J.getMonitor counts unique (fun l ->
+        let processing name (l : String list) = 
             use sink =
-              new DeflateStream(File.OpenWrite(unique + ".0.acv"),
+              new DeflateStream(File.OpenWrite(name + ".0.acv"),
                                 CompressionMode.Compress)
             use formatter = new BinaryWriter(sink)
             l
@@ -1916,7 +1912,15 @@ module AltCoverRunnerTests =
                  formatter.Write i
                  formatter.Write 0uy
                  x)
-            |> List.length) [ "a"; "b"; String.Empty; "c" ]
+            |> List.length
+        let test = Path.Combine(where, Guid.NewGuid().ToString())
+        let dryrun = processing test  [ "a"; "b"; String.Empty; "c" ]
+        Assert.That (dryrun, Is.EqualTo 4)
+        Assert.That(File.Exists(test + ".0.acv"))
+
+        let r =
+          Runner.J.getMonitor counts unique (processing unique) 
+            [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
         let doc = Runner.J.loadReport(unique + ".acv")
@@ -2394,6 +2398,9 @@ module AltCoverRunnerTests =
 
     [<Test>]
     let EmptyNCoverGeneratesExpectedSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let report = XDocument()
       let builder = System.Text.StringBuilder()
@@ -2413,10 +2420,13 @@ module AltCoverRunnerTests =
           let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
           Assert.That(collected, Is.EqualTo expected))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let EmptyNCoverGeneratesExpectedTCSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let report = XDocument()
       let builder = System.Text.StringBuilder()
@@ -2438,10 +2448,13 @@ module AltCoverRunnerTests =
           let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
           Assert.That(collected, Is.EqualTo expected, collected))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let EmptyNCoverGeneratesExpectedSummaries() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let report = XDocument()
       let builder = System.Text.StringBuilder()
@@ -2463,10 +2476,13 @@ module AltCoverRunnerTests =
           let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
           Assert.That(collected, Is.EqualTo expected, collected))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let NCoverShouldGeneratePlausibleSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2498,10 +2514,13 @@ module AltCoverRunnerTests =
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|")
             ))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let EmptyOpenCoverGeneratesExpectedSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
   <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
@@ -2521,10 +2540,13 @@ module AltCoverRunnerTests =
                 + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
                 + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|")))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let EmptyOpenCoverGeneratesExpectedTCSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
   <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
@@ -2548,10 +2570,13 @@ module AltCoverRunnerTests =
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|" +
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|")))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let EmptyOpenCoverGeneratesExpectedSummaries() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
   <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
@@ -2579,10 +2604,13 @@ module AltCoverRunnerTests =
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|" +
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|")))
       finally
-        Output.info <- ignore
+        resetInfo()
 
     [<Test>]
     let OpenCoverShouldGeneratePlausibleSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -2643,7 +2671,7 @@ module AltCoverRunnerTests =
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
                  ))
         finally
-          Output.info <- ignore)
+          resetInfo())
 
     [<Test>]
     let OpenCoverShouldGeneratePlausibleLcov() =

@@ -236,8 +236,7 @@ module AltCoverTests =
            let probe = (fst x) + ".mdb"
            let pdb = AltCover.ProgramDatabase.getPdbFromImage(snd x)
            match pdb with
-           | None -> Assert.That(File.Exists probe, probe + " not found")
-           | Some name -> Assert.Fail("Suddenly, an .mdb for " + (fst x)))
+           | None -> Assert.That(File.Exists probe, probe + " not found"))
 
     [<Test>]
     let ShouldGetPdbWithFallback() =
@@ -283,7 +282,6 @@ module AltCoverTests =
              let pdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
              let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
              match pdb with
-             | None -> Assert.Fail("Not found " + p)
              | Some name -> Assert.That(name, Is.EqualTo normalized)
            with :? BadImageFormatException -> ())
 
@@ -313,7 +311,6 @@ module AltCoverTests =
                let pdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
                let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
                match pdb with
-               | None -> Assert.Fail("Not found " + p)
                | Some name ->
                  Assert.That(name, Is.EqualTo normalized)
                  AltCover.ProgramDatabase.readSymbols def
@@ -336,7 +333,7 @@ module AltCoverTests =
            let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
            let mdb = AltCover.ProgramDatabase.getPdbWithFallback(def)
            match mdb with
-           | None -> Assert.That(File.Exists(x + ".mdb"), Is.Not.True, "No .mdb for " + x)
+//           | None -> Assert.That(File.Exists(x + ".mdb"), Is.Not.True, "No .mdb for " + x)
            | Some name ->
              let probe = x + ".mdb"
              let file = FileInfo(probe)
@@ -664,8 +661,8 @@ module AltCoverTests =
       let indirect3 =
         indirect2
         |> Seq.filter (fun t -> t.HasNestedTypes)
-        |> Seq.collect (fun t -> t.NestedTypes)
-        |> Seq.map (fun t -> t.FullName)
+        // |> Seq.collect (fun t -> t.NestedTypes)
+        // |> Seq.map (fun t -> t.FullName)
         |> Seq.toList
 
       Assert.That
@@ -937,16 +934,14 @@ module AltCoverTests =
         |> List.skip 1
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
-             | _ -> Assert.Fail("branch point expected"))
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
         deeper
         |> List.take 1
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b, Exemption.None)) ->
                Assert.That(n, Is.EqualTo i, "point number")
-               Assert.That(b, Is.True, "flag " + i.ToString())
-             | _ -> Assert.Fail("sequence point expected"))
+               Assert.That(b, Is.True, "flag " + i.ToString()))
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
@@ -988,16 +983,14 @@ module AltCoverTests =
         |> List.skip 1
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
-             | _ -> Assert.Fail("branch point expected"))
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
         deeper
         |> List.take 1
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b, Exemption.Automatic)) ->
                Assert.That(n, Is.EqualTo i, "point number")
-               Assert.That(b, Is.True, "flag " + i.ToString())
-             | _ -> Assert.Fail("sequence point expected"))
+               Assert.That(b, Is.True, "flag " + i.ToString()))
       finally
         CoverageParameters.coalesceBranches := false
         CoverageParameters.nameFilters.Clear()
@@ -1417,16 +1410,14 @@ module AltCoverTests =
         |> List.skip 10
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
-             | _ -> Assert.Fail())
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
         deeper
         |> List.take 10
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b, Exemption.None)) ->
                Assert.That(n, Is.EqualTo i, "point number")
-               Assert.That(b, Is.False, "flag")
-             | _ -> Assert.Fail())
+               Assert.That(b, Is.False, "flag"))
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
@@ -1468,9 +1459,7 @@ module AltCoverTests =
           |> List.mapi (fun i node ->
                match node with
                | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
-                                    Some b
-               | _ -> Assert.Fail("branch point expected")
-                      None)
+                                    Some b)
           |> List.choose id
         deeper
         |> List.take 21
@@ -1478,8 +1467,7 @@ module AltCoverTests =
              match node with
              | (MethodPoint(_, _, n, b, Exemption.Declared)) ->
                Assert.That(n, Is.EqualTo i, "point number")
-               Assert.That(b, Is.True, "flag " + i.ToString())
-             | _ -> Assert.Fail("sequence point expected"))
+               Assert.That(b, Is.True, "flag " + i.ToString()))
 
         Assert.That (
           branches
@@ -1522,16 +1510,14 @@ module AltCoverTests =
         |> List.skip 9
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
-             | _ -> Assert.Fail("branch point expected"))
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
         deeper
         |> List.take 9
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b, Exemption.StaticAnalysis)) ->
                Assert.That(n, Is.EqualTo i, "point number")
-               Assert.That(b, Is.True, "flag " + i.ToString())
-             | _ -> Assert.Fail("sequence point expected"))
+               Assert.That(b, Is.True, "flag " + i.ToString()))
       finally
         CoverageParameters.coalesceBranches := false
         CoverageParameters.nameFilters.Clear()
@@ -1598,8 +1584,7 @@ module AltCoverTests =
           |> Seq.filter Visitor.I.stripInterfaces
           |> Seq.map (fun t ->
                let flag =
-                 if t.Name <> "Program" then Inspections.Instrument
-                 else Inspections.Ignore
+                 maybe (t.Name <> "Program") Inspections.Instrument Inspections.Ignore
 
                let node = Node.Type(t, flag, Exemption.None)
                List.concat [ [ node ]
@@ -2062,8 +2047,7 @@ module AltCoverTests =
                      a1.Name.ToString() + " : " + r.ToString() + " -> document")
                 | "visitcount" ->
                   let expected =
-                    if zero then "0"
-                    else a2.Value
+                    maybe zero "0" a2.Value
                   Assert.That
                     (a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
                 | _ ->
@@ -2123,15 +2107,15 @@ module AltCoverTests =
         Visitor.visit [ visitor1 ] (Visitor.I.toSeq (path, []))
         let names1 = document1.Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
-                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
-                     |> Seq.filter (fun n -> n <> "Main")
-                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
-                                              n.ToCharArray()
-                                              |> Seq.take 4
-                                              |> Seq.rev
-                                              |> Seq.map byte
-                                              |> Seq.toArray,
-                                              0))
+                    //  |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                    //  |> Seq.filter (fun n -> n <> "Main")
+                    //  |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                    //                           n.ToCharArray()
+                    //                           |> Seq.take 4
+                    //                           |> Seq.rev
+                    //                           |> Seq.map byte
+                    //                           |> Seq.toArray,
+                    //                           0))
                      |> Seq.toList
         test <@ List.isEmpty names1 @>
 
@@ -2221,16 +2205,16 @@ module AltCoverTests =
         Visitor.visit [ visitor6 ] (Visitor.I.toSeq (path6, []))
         let names6 = document6.Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
-                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
-                                            mx.Attribute(XName.Get "class").Value))
-                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
-                                                    n.ToCharArray()
-                                                    |> Seq.take 4
-                                                    |> Seq.rev
-                                                    |> Seq.map byte
-                                                    |> Seq.toArray,
-                                                    0))
-                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                    //  |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                    //                         mx.Attribute(XName.Get "class").Value))
+                    //  |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                    //                                 n.ToCharArray()
+                    //                                 |> Seq.take 4
+                    //                                 |> Seq.rev
+                    //                                 |> Seq.map byte
+                    //                                 |> Seq.toArray,
+                    //                                 0))
+                    //  |> Seq.map (fun (n,c) -> c + "." + n.Trim())
                      |> Seq.toList
         test <@ names6 |> List.isEmpty @>
 
@@ -2279,16 +2263,16 @@ module AltCoverTests =
         Visitor.visit [ visitor8 ] (Visitor.I.toSeq (path5, []))
         let names8 = document8.Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
-                     |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
-                                            mx.Attribute(XName.Get "class").Value))
-                     |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
-                                                    n.ToCharArray()
-                                                    |> Seq.take 4
-                                                    |> Seq.rev
-                                                    |> Seq.map byte
-                                                    |> Seq.toArray,
-                                                    0))
-                     |> Seq.map (fun (n,c) -> c + "." + n.Trim())
+                    //  |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
+                    //                         mx.Attribute(XName.Get "class").Value))
+                    //  |> Seq.sortBy (fun (n, _) -> BitConverter.ToInt32(
+                    //                                 n.ToCharArray()
+                    //                                 |> Seq.take 4
+                    //                                 |> Seq.rev
+                    //                                 |> Seq.map byte
+                    //                                 |> Seq.toArray,
+                    //                                 0))
+                    //  |> Seq.map (fun (n,c) -> c + "." + n.Trim())
                      |> Seq.toList
         test <@ names8|> List.isEmpty @>
 
@@ -2305,13 +2289,13 @@ module AltCoverTests =
         let names9 = document9.Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
                      |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value + "    ")
-                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
-                                              n.ToCharArray()
-                                              |> Seq.take 4
-                                              |> Seq.rev
-                                              |> Seq.map byte
-                                              |> Seq.toArray,
-                                              0))
+                    //  |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                    //                           n.ToCharArray()
+                    //                           |> Seq.take 4
+                    //                           |> Seq.rev
+                    //                           |> Seq.map byte
+                    //                           |> Seq.toArray,
+                    //                           0))
                      |> Seq.map (fun n -> n.Trim())
                      |> Seq.toList
         test <@ names9 = ["<F1>g__Interior|0_1"] @>
@@ -2321,15 +2305,15 @@ module AltCoverTests =
         Visitor.visit [ visitor4 ] (Visitor.I.toSeq (path, []))
         let names4 = document4.Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
-                     |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
-                     |> Seq.filter (fun n -> n <> "Main")
-                     |> Seq.sortBy (fun n -> BitConverter.ToInt32(
-                                              n.ToCharArray()
-                                              |> Seq.take 4
-                                              |> Seq.rev
-                                              |> Seq.map byte
-                                              |> Seq.toArray,
-                                              0))
+                    //  |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
+                    //  |> Seq.filter (fun n -> n <> "Main")
+                    //  |> Seq.sortBy (fun n -> BitConverter.ToInt32(
+                    //                           n.ToCharArray()
+                    //                           |> Seq.take 4
+                    //                           |> Seq.rev
+                    //                           |> Seq.map byte
+                    //                           |> Seq.toArray,
+                    //                           0))
                      |> Seq.toList
         test <@ List.isEmpty names4 @>
 
@@ -2636,8 +2620,7 @@ module AltCoverTests =
                      a1.Name.ToString() + " : " + r.ToString() + " -> document")
                 | "vc" ->
                   let expected =
-                    if zero then "0"
-                    else a2.Value
+                    maybe zero "0" a2.Value
                   Assert.That
                     (a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
                 | _ ->
