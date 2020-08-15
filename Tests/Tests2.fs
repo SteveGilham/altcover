@@ -475,9 +475,8 @@ module AltCoverTests2 =
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-          maybe isWindows
-            (Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)), "unexpected symbols"))
-            ()
+          Assert.That((isWindows |> not) ||  // HACK HACK HACK
+                       File.Exists (outputdll.Replace(".dll", expectedSymbols)), "unexpected symbols")
           let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
           let raw2 = Mono.Cecil.AssemblyDefinition.ReadAssembly alter
           Assert.That (raw.MainModule.Mvid, Is.EqualTo raw2.MainModule.Mvid, "unexpected mvid")
@@ -662,8 +661,12 @@ module AltCoverTests2 =
 #endif
             proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
             let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
-            maybe isWindows // HACK HACK HACK
-              (Assert.That (log, Is.EquivalentTo[(unique, 42)], "bad call")) ()
+                      |> Seq.toList
+            
+            let result = maybe isWindows // HACK HACK HACK
+                           log [(unique, 42)]
+            
+            Assert.That (result, Is.EquivalentTo[(unique, 42)], "bad call")
           finally
 #if NETCOREAPP2_0
             alc.Unload()
