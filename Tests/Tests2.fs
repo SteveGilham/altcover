@@ -458,7 +458,7 @@ module AltCoverTests2 =
           CoverageParameters.theReportFormat <- Some AltCover.ReportFormat.OpenCover
           CoverageParameters.theInterval <- Some 1234567890
           CoverageParameters.single <- true
-          Assert.That(CoverageParameters.sampling(), Sampling.Single |> int |> Is.EqualTo)
+          Assert.That(CoverageParameters.sampling(), Sampling.Single |> int |> Is.EqualTo, "Unexpected sampling")
           let prepared = Instrument.I.prepareAssembly path
           let traces = System.Collections.Generic.List<string>()
           Instrument.I.writeAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
@@ -466,7 +466,7 @@ module AltCoverTests2 =
             "    " + outputdll + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
             "    " + alter + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
           ]
-          Assert.That(traces, Is.EquivalentTo expectedTraces)
+          Assert.That(traces, Is.EquivalentTo expectedTraces, "unexpected traces")
           let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType).IsNotNull
                                       ".dll.mdb" ".pdb"
           let isWindows =
@@ -476,15 +476,15 @@ module AltCoverTests2 =
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
           maybe isWindows
-            (Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols))))
+            (Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)), "unexpected symbols"))
             ()
           let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
           let raw2 = Mono.Cecil.AssemblyDefinition.ReadAssembly alter
-          Assert.That (raw.MainModule.Mvid, Is.EqualTo raw2.MainModule.Mvid)
-          Assert.That raw.Name.HasPublicKey
+          Assert.That (raw.MainModule.Mvid, Is.EqualTo raw2.MainModule.Mvid, "unexpected mvid")
+          Assert.That (raw.Name.HasPublicKey, "missing public key")
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
-          Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+          Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"), "wrong token")
 #if NETCOREAPP2_0
           let alc = new TestAssemblyLoadContext()
 #else
@@ -501,13 +501,13 @@ module AltCoverTests2 =
 #endif
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
-            Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
+            Assert.That (report, Is.EqualTo (Path.GetFullPath unique), "report path " + report + " not " + unique)
             let report2 = proxyObject.InvokeMethod("get_CoverageFormat",[||]) :?> System.Int32
-            Assert.That (report2, AltCover.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo)
+            Assert.That (report2, AltCover.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo, "wrong tracking format")
             let report3 = proxyObject.InvokeMethod("get_Timer",[||]) :?> System.Int64
-            Assert.That (report3, 1234567890L |> Is.EqualTo)
+            Assert.That (report3, 1234567890L |> Is.EqualTo, "wrong timer")
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
-            Assert.That (report4, AltCover.Sampling.Single |> int |> Is.EqualTo)
+            Assert.That (report4, AltCover.Sampling.Single |> int |> Is.EqualTo, "wrong outro sampling")
           finally
 #if NETCOREAPP2_0
             alc.Unload()
@@ -614,8 +614,8 @@ module AltCoverTests2 =
           let clazz' = def.MainModule.GetType("Sample3.Class3")
           let func' = clazz'.GetMethods() |> Seq.find (fun x -> x.Name = "Log")
           let newValue = Instrument.I.insertVisit (func.Body.Instructions.[0]) (func.Body.GetILProcessor()) func' unique 42
-          Assert.That (newValue.Operand, Is.EqualTo unique)
-          Assert.That (newValue.OpCode, Is.EqualTo OpCodes.Ldstr)
+          Assert.That (newValue.Operand, Is.EqualTo unique, "bad operand")
+          Assert.That (newValue.OpCode, Is.EqualTo OpCodes.Ldstr, "bad opcode")
           Instrument.I.writeAssembly def outputdll
           let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
           let isWindows =
@@ -624,12 +624,12 @@ module AltCoverTests2 =
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-          if isWindows then Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
+          if isWindows then Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)), "bad symbols")
           let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
-          Assert.That raw.Name.HasPublicKey
+          Assert.That (raw.Name.HasPublicKey, "bad public key")
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
-          Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
+          Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"), "wrong token")
 #if NETCOREAPP2_0
           let alc = new TestAssemblyLoadContext()
           try
@@ -648,9 +648,9 @@ module AltCoverTests2 =
 #endif
             proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
             let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
-            Assert.That (setting, Is.Null)
+            Assert.That (setting, Is.Null, "bad setting")
             let getting = proxyObject.InvokeMethod("get_Property",[||]) :?> int
-            Assert.That (getting, Is.EqualTo 17)
+            Assert.That (getting, Is.EqualTo 17, "bad getting")
             let isWindows =
 #if NETCOREAPP2_0
                             true
@@ -663,7 +663,7 @@ module AltCoverTests2 =
             proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
             let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
             maybe isWindows // HACK HACK HACK
-              (Assert.That (log, Is.EquivalentTo[(unique, 42)])) ()
+              (Assert.That (log, Is.EquivalentTo[(unique, 42)], "bad call")) ()
           finally
 #if NETCOREAPP2_0
             alc.Unload()
