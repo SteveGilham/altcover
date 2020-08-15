@@ -870,14 +870,17 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                   (!!(@"_Binaries/*Test*/Debug+AnyCPU/net472/AltCover*Test*.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+                   |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Tests.Visualizer.dll")
                    |> Seq.toList)
 
-  let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net472/*Recorder.Tests.dll")
-
-  let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
+  let Recorder4Files = !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover*Tests.dll")
+  let RecorderFiles = !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover*Tests.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
   let scoverage = Path.getFullName "_Reports/RecorderTestWithOpenCover.xml"
   let s4coverage = Path.getFullName "_Reports/Recorder4TestWithOpenCover.xml"
+
+  let uifiles = !!(@"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.*.dll")
+  let uicoverage = Path.getFullName "_Reports/UiUnitTestWithOpenCover.xml"
 
   try
     OpenCover.run (fun p ->
@@ -886,7 +889,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Engine]* +[AltCover.ValidateGendarmeEmulation]Alt* +[AltCover.Toolkit]* +[AltCover.UICommon]* +[AltCover.DotNet]* +[*]*Test* -[*]AltCover.SolutionRoot -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.*"
+            "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -896,6 +899,23 @@ _Target "UnitTestWithOpenCover" (fun _ ->
           TimeOut = TimeSpan (0,10,0) })
       (String.Join(" ", testFiles)
        + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
+
+    OpenCover.run (fun p ->
+      { p with
+          WorkingDir = "."
+          ExePath = openCoverConsole
+          TestRunnerExePath = nunitConsole
+          Filter =
+            "+[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[xunit.*]*"
+          MergeByHash = true
+          ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+          OptionalArguments =
+            "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+          Register = OpenCover.RegisterType.Path32
+          Output = uicoverage
+          TimeOut = TimeSpan (0,10,0) })
+      (String.Join(" ", uifiles)
+       + " --result=./_Reports/UiUnitTestWithOpenCoverReport.xml")
 
     OpenCover.run (fun p ->
       { p with
@@ -939,7 +959,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithOpenCover" })
-    [ coverage; scoverage; s4coverage ]
+    [ coverage; scoverage; s4coverage; uicoverage ]
 
   uncovered @"_Reports/_UnitTestWithOpenCove*/Summary.xml"
   |> printfn "%A uncovered lines")
@@ -1084,7 +1104,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472", // test directory
         "./__UnitTestWithAltCoverRunner", // relative output
         "UIUnitTestWithAltCoverRunner.xml", // coverage report
-        "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+        "./_Reports/UIUnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
             "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"],
         baseFilter,
@@ -1190,8 +1210,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
   let xmlreports =
     pester :: (tests
-               |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report)
-               |> List.filter (fun f -> f.Contains("GTKV") |> not))
+               |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report))
 
   ReportGenerator.generateReports (fun p ->
     { p with
