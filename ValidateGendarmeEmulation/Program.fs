@@ -9,6 +9,7 @@ module ExpectoMain =
   let regular = [
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+          Tests.ValidateGendarmeEmulation.DoSelfTest, "ValidateGendarmeEmulation.DoSelfTest"
           Tests.ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInAltCover, "ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInAltCover"
           Tests.ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInSamples, "ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInSamples"
           Tests.ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInMonoSamples, "ValidateGendarmeEmulation.ShouldMatchGendarmeComplexityInMonoSamples"
