@@ -48,7 +48,9 @@ module AltCoverCoreTests =
     maybeIOException (fun () ->
       maybeReraise (fun () -> File.Delete unique) ignore
     )
-    maybeIOException (fun () -> IOException() |> raise )
+    maybeIOException (fun () ->
+      maybeReraise (fun () -> IOException() |> raise) ignore
+    )
 
   [<Test>]
   let WillNotConnectSpontaneously() =

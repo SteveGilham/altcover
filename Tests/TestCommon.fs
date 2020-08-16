@@ -78,7 +78,9 @@ module TestCommonTests =
       maybeIOException (fun () ->
         maybeReraise (fun () -> File.Delete unique) ignore
       )
-      maybeIOException (fun () -> IOException() |> raise )
+      maybeIOException (fun () ->
+        maybeReraise (fun () -> IOException() |> raise) ignore
+      )
       maybeIOException (fun () -> System.UnauthorizedAccessException() |> raise )
 
       test <@ (maybe true 1 2) = 1 @>
