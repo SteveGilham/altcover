@@ -268,6 +268,8 @@ let uncovered (path : string) =
                   (f
                    |> Path.GetDirectoryName
                    |> Path.GetFileName) numeric
+                if numeric > 0 then
+                  printfn "%A" xml
                 numeric))
   |> Seq.toList
 
