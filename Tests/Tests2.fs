@@ -520,16 +520,10 @@ module AltCoverTests2 =
           CoverageParameters.theInterval <- save3
           Directory.EnumerateFiles(Path.GetDirectoryName output,
                                    (Path.GetFileNameWithoutExtension output) + ".*")
-          |> Seq.iter (fun f -> try File.Delete f
-                                with // occasionally the dll file is locked by another process
-                                | :? System.UnauthorizedAccessException
-                                | :? IOException -> ())
+          |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
           Directory.EnumerateFiles(Path.GetDirectoryName alter,
                                    (Path.GetFileNameWithoutExtension alter) + ".*")
-          |> Seq.iter (fun f -> try File.Delete f
-                                with // occasionally the dll file is locked by another process
-                                | :? System.UnauthorizedAccessException
-                                | :? IOException -> ())
+          |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
           Assert.That(CoverageParameters.sampling(), Sampling.All |> int |> Is.EqualTo)
       finally
@@ -589,9 +583,7 @@ module AltCoverTests2 =
           CoverageParameters.theReportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
                                    (Path.GetFileNameWithoutExtension output) + ".*")
-          |> Seq.iter (fun f -> try File.Delete f
-                                with // occasionally the mdb file is locked by another process
-                                | :? IOException -> ())
+          |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
       finally
         CoverageParameters.keys.Clear()
         CoverageParameters.defaultStrongNameKey <- None
@@ -677,10 +669,7 @@ module AltCoverTests2 =
           CoverageParameters.theReportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
                                    (Path.GetFileNameWithoutExtension output) + ".*")
-          |> Seq.iter (fun f -> try File.Delete f
-                                with // occasionally the dll file is locked by another process
-                                | :? System.UnauthorizedAccessException
-                                | :? IOException -> ())
+          |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
       finally
         CoverageParameters.keys.Clear()
 

@@ -722,8 +722,7 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample1.exe")
       test' <@ File.Exists created @> (created + " not found")
       let isDotNet = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-      if isDotNet then
-        test' <@ File.Exists(created + ".mdb") @> (created + ".mdb not found")
+      test' <@ (isDotNet |> not) || File.Exists(created + ".mdb") @> (created + ".mdb not found")
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.AddRange saved
