@@ -1113,7 +1113,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         (fun x -> { x with TypeFilter =
                              TypeSafe.Filters [ TypeSafe.Raw "SolutionRoot" ]}) >>
                              AltCoverFilterXTypeSafe,
-        keyfile
+                             keyfile
       )
       (
         Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472",
