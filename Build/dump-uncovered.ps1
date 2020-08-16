@@ -10,5 +10,8 @@ $files | % {
                $mark = $true
                Write-Host $_
            }
-  if ($mark) { Write-Host $file }
+  if ($mark) { 
+      Write-Host $file
+      Write-Host " " 
+    }
 }
