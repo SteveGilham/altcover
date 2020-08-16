@@ -268,8 +268,8 @@ let uncovered (path : string) =
                   (f
                    |> Path.GetDirectoryName
                    |> Path.GetFileName) numeric
-                if numeric > 0 then
-                  printfn "%A" xml
+                // if numeric > 0 then
+                //   printfn "%A" xml
                 numeric))
   |> Seq.toList
 
@@ -742,7 +742,17 @@ _Target "FxCop" (fun _ ->
     reraise())
 // Unit Test
 
-_Target "UnitTest" coverageSummary
+_Target "UnitTest" (fun _ ->
+
+  printfn "Dump uncovered lines"
+  CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/dump-uncovered.ps1" ]
+  |> CreateProcess.withWorkingDirectory "."
+  |> Proc.run
+  |> (Actions.AssertResult "pwsh")
+
+  coverageSummary())
+
+
 _Target "UncoveredUnitTest" ignore
 
 _Target "JustUnitTest" (fun _ ->
