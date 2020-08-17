@@ -12,23 +12,29 @@ Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
 ### Example
 Driving `dotnet test` in a Fake script
 ```
-open AltCover
 ...
-  let ForceTrue = DotNet.CLIOptions.Force true  
-  let p = { Primitive.PrepareOptions.Create() with CallContext = [| "[Fact]"; "0" |]
-                                                    AssemblyFilter = [| "xunit" |] }
-  let prep = OptionApi.PrepareOptions.Primitive p
-  let c = Primitive.CollectOptions.Create()
-  let collect = OptionApi.CollectOptions.Primitive c
 
-  let setBaseOptions (o : DotNet.Options) =
-    { o with WorkingDirectory = Path.getFullName "./_DotnetTest"
-             Verbosity = Some DotNet.Verbosity.Minimal }
+  let ForceTrue = AltCover.DotNet.CLIOptions.Force true 
+
+  let p =
+    { AltCover.Primitive.PrepareOptions.Create() with
+        CallContext = [| "[Fact]"; "0" |]
+        AssemblyFilter = [| "xunit" |] }
+
+  let prep = AltCover.AltCover.PrepareOptions.Primitive p
+  let c = AltCover.Primitive.CollectOptions.Create()
+  let collect = AltCover.AltCover.CollectOptions.Primitive c
+
+  let setBaseOptions (o: DotNet.Options) =
+    { o with
+        WorkingDirectory = Path.getFullName "./_DotnetTest"
+        Verbosity = Some DotNet.Verbosity.Minimal }
 
   DotNet.test
     (fun to' ->
     { to'.WithCommon(setBaseOptions).WithAltCoverOptions prep collect ForceTrue })
-    "dotnettest.fsproj"
+     "dotnettest.fsproj"
+
 ```
 
 # Cake integration 

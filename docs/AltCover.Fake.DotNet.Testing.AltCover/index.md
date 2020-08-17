@@ -34,35 +34,42 @@ Make one of these
 ```
 open AltCover_Fake.DotNet.Testing
 ...
-    let prep =
-      { AltCover.PrepareOptions.Create() with XmlReport = xaltReport
-                                              OutputDirectory = "./__UnitTestWithAltCover"
-                                              StrongNameKey = keyfile
-                                              OpenCover = false
-                                              InPlace = false
-                                              Save = false }
-      |> AltCoverCommand.Prepare
-    { AltCoverCommand.Options.Create prep with ToolPath = altcover
-                                               ToolType = AltCover.ToolType.Framework
-                                               WorkingDirectory = xtestDirectory }
-    |> AltCoverCommand.run
+  let prep =
+    AltCover.PrepareOptions.Primitive
+      { Primitive.PrepareOptions.Create() with
+           XmlReport = altReport
+           OutputDirectories =
+             [| "./__UnitTestWithAltCover" |]
+           StrongNameKey = keyfile
+           ReportFormat = "NCover"
+           InPlace = false
+           Save = false }
+    |> AltCoverCommand.Prepare
+  { AltCoverCommand.Options.Create prep with
+      ToolPath = altcover
+      ToolType = Fake.DotNet.ToolType.CreateFullFramework()
+      WorkingDirectory = testDirectory }
+  |> AltCoverCommand.run
+
 ```
 
 ### Example
 ```
 open AltCoverFake.DotNet.Testing
 ...
-  let ForceTrue = DotNet.CLIOptions.Force true
-  let p = Primitive.PrepareOptions.Create()
-  let prep = AltCover.PrepareOptions.Primitive p
-  let c = Primitive.CollectOptions.Create()
-  let p1 = { p with CallContext = [ "[Fact]"; "0" ]
-                      AssemblyFilter = [| "xunit" |] }
-  let prep1 = AltCover.PrepareOptions.Primitive p1
-  let collect = AltCover.CollectOptions.Primitive c
-  DotNet.test
-      (fun to' ->
-      (to'.WithAltCoverOptions prep collect ForceTrue)
-      "dotnettest.fsproj"
+  let ForceTrue = AltCover.DotNet.CLIOptions.Force true 
 
+  let p =
+    { AltCover.Primitive.PrepareOptions.Create() with
+        CallContext = [| "[Fact]"; "0" |]
+        AssemblyFilter = [| "xunit" |] }
+
+  let prep = AltCover.AltCover.PrepareOptions.Primitive p
+  let c = AltCover.Primitive.CollectOptions.Create()
+  let collect = AltCover.AltCover.CollectOptions.Primitive c
+
+  let setBaseOptions (o: DotNet.Options) =
+    { o with
+        WorkingDirectory = Path.getFullName "./_DotnetTest"
+        Verbosity = Some DotNet.Verbosity.Minimal }
 ```
