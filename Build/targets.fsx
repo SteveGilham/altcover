@@ -49,7 +49,7 @@ let AltCoverFilterTypeSafe(p : TypeSafe.PrepareOptions) =
                        |> p.AssemblyFilter.Join
       LocalSource = TypeSafe.Set
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode"; "UnitTestStub" ]
+        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode"; "UnitTestStub";  "SolutionRoot" ]
         |> Seq.map TypeSafe.Raw
         |> p.TypeFilter.Join }
 
@@ -78,7 +78,7 @@ let AltCoverFilterXTypeSafe(p : TypeSafe.PrepareOptions) =
                        |> p.AssemblyFilter.Join
       LocalSource = TypeSafe.Set
       TypeFilter =
-        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode"; "UnitTestStub" ]
+        [ @"System\."; @"Sample3\.Class2"; "Microsoft"; "ICSharpCode"; "UnitTestStub";  "SolutionRoot" ]
         |> Seq.map TypeSafe.Raw
         |> p.TypeFilter.Join }
 
@@ -1110,10 +1110,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         [ Path.getFullName
             "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCoverRunner/AltCover.ValidateGendarmeEmulation.dll" ],
         // only use // (* >> (fun x ->  { x with AssemblyExcludeFilter = TypeSafe.Filters [] }) *),
-        (fun x -> { x with TypeFilter =
-                             TypeSafe.Filters [ TypeSafe.Raw "SolutionRoot" ]}) >>
-                             AltCoverFilterXTypeSafe,
-                             keyfile
+        AltCoverFilterXTypeSafe,
+        keyfile
       )
       (
         Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472",
