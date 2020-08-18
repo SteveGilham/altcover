@@ -3749,6 +3749,24 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
     Assert.That(cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
+
+    printfn "Regression test issue 94 ------------------------------------------------"
+    let proj = XDocument.Load "./Sample22/Sample22.xml"
+    let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    proj.Save "./Sample22/Sample22.fsproj"
+
+    let p4 = { p0 with AssemblyFilter = [ "NUnit" ] }
+    let pp4 = AltCover.PrepareOptions.Primitive p4
+    DotNet.test (fun to' ->
+      { ((to'.WithCommon(withWorkingDirectoryVM "Sample22")).WithAltCoverOptions
+          pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
+      |> testWithCLIArguments) ""
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
