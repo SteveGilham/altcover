@@ -12,6 +12,7 @@ Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
 ### Example
 Driving `dotnet test` in a Fake script (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3425-L3454))
 ```
+open AltCover.Fake.DotNet // extension methods
 ...
 
   let ForceTrue = AltCover.DotNet.CLIOptions.Force true 
