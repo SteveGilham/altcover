@@ -10,7 +10,7 @@ Found in `AltCover.Fake.dll`
 Detailed API documentation is [presented here](AltCover.Fake/Fake-fsapidoc).
 
 ### Example
-Driving `dotnet test` in a Fake script
+Driving `dotnet test` in a Fake script (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3425-L3454))
 ```
 ...
 
@@ -21,7 +21,7 @@ Driving `dotnet test` in a Fake script
         CallContext = [| "[Fact]"; "0" |]
         AssemblyFilter = [| "xunit" |] }
 
-  let prep = AltCover.AltCover.PrepareOptions.Primitive p
+  let prepare = AltCover.AltCover.PrepareOptions.Primitive p
   let c = AltCover.Primitive.CollectOptions.Create()
   let collect = AltCover.AltCover.CollectOptions.Primitive c
 
@@ -31,9 +31,9 @@ Driving `dotnet test` in a Fake script
         Verbosity = Some DotNet.Verbosity.Minimal }
 
   DotNet.test
-    (fun to' ->
-    { to'.WithCommon(setBaseOptions).WithAltCoverOptions prep collect ForceTrue })
-     "dotnettest.fsproj"
+    (fun to' -> to'.WithCommon(setBaseOptions).WithAltCoverOptions 
+                            prepare collect ForceTrue)
+    "dotnettest.fsproj"
 
 ```
 

@@ -31,8 +31,10 @@ Make one of these
 * [`module AltCoverCommand`](AltCoverCommand-fsapidoc) -- This represents the various `AltCover` operations available, and their execution from a Fake script.
 
 ### Example
+(based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L984-L1004))
 ```
-open AltCover_Fake.DotNet.Testing
+open AltCoverFake.DotNet.DotNet
+open AltCoverFake.DotNet.Testing
 ...
   let prep =
     AltCover.PrepareOptions.Primitive
@@ -54,22 +56,26 @@ open AltCover_Fake.DotNet.Testing
 ```
 
 ### Example
+(based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3578-L3591))
+
 ```
+open AltCoverFake.DotNet.DotNet
 open AltCoverFake.DotNet.Testing
 ...
   let ForceTrue = AltCover.DotNet.CLIOptions.Force true 
 
-  let p =
-    { AltCover.Primitive.PrepareOptions.Create() with
-        CallContext = [| "[Fact]"; "0" |]
-        AssemblyFilter = [| "xunit" |] }
+  let prep = Primitive.PrepareOptions.Create()
+  let coll = Primitive.CollectOptions.Create()
 
-  let prep = AltCover.AltCover.PrepareOptions.Primitive p
-  let c = AltCover.Primitive.CollectOptions.Create()
-  let collect = AltCover.AltCover.CollectOptions.Primitive c
+  let prep1 =
+    { prep with
+           CallContext = [ "[Fact]"; "0" ]
+           AssemblyFilter = [| "xunit" |] }
 
-  let setBaseOptions (o: DotNet.Options) =
-    { o with
-        WorkingDirectory = Path.getFullName "./_DotnetTest"
-        Verbosity = Some DotNet.Verbosity.Minimal }
+  let prepare = AltCover.PrepareOptions.Primitive prep1
+  let collect = AltCover.CollectOptions.Primitive { coll with SummaryFormat = "+B" }
+  DotNet.test (fun to' ->
+    to'.WithAltCoverOptions prepare collect ForceTrue
+    |> testWithCLIArguments) "dotnettest.fsproj"
+
 ```
