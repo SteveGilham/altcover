@@ -9,14 +9,14 @@ let Setup () =
     ()
 
 let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
-  let X name = XName.Get(name)
+  let x name = XName.Get(name)
   let rcount = result |> Seq.length
 
   let expected =
     expected'
     |> Seq.filter (fun (el : XElement) ->
           el.Name.LocalName <> "Module" || expectSkipped || "skippedDueTo"
-                                                            |> X
+                                                            |> x
                                                             |> el.Attributes
                                                             |> Seq.isEmpty)
     |> Seq.toList
