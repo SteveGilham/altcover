@@ -28,6 +28,7 @@ open Fake.Tools.Git
 open FSharpLint.Application
 open FSharpLint.Framework
 open NUnit.Framework
+open Swensen.Unquote
 
 let Copyright = ref String.Empty
 let Version = ref String.Empty
@@ -3967,10 +3968,12 @@ _Target "Issue72" (fun _ ->
          coverageDocument.Descendants(XName.Get("BranchPoint"))
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
-       Assert.That
-         (found,
-          Is.EquivalentTo [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ],
-          sprintf "original: %A" found)
+       test <@ (found, "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first") @> // 3.1.401
+       // [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ] @>
+      //  Assert.That
+      //    (found,
+      //     Is.EquivalentTo [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ],
+      //     sprintf "original: %A" found)
 
     let p1 =
       { Primitive.PrepareOptions.Create() with
@@ -3998,9 +4001,10 @@ _Target "Issue72" (fun _ ->
          coverageDocument.Descendants(XName.Get("BranchPoint"))
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
-       Assert.That
-         (found, Is.EquivalentTo [ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ],
-          sprintf "combined: %A" found)
+       test <@ (found, "second") = ([ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ], "second") @>
+      //  Assert.That
+      //    (found, Is.EquivalentTo [ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ],
+      //     sprintf "combined: %A" found)
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version

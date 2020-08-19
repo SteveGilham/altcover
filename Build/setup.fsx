@@ -95,6 +95,8 @@ nuget BlackFox.VsWhere >= 1.1.0
 nuget FSharpLint.Core >= 0.16.3
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.12.0
+nuget Fuchu >= 1.1.0
+nuget Unquote >= 5.0.0
 nuget YamlDotNet >= 8.1.2 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
