@@ -4,6 +4,7 @@ Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/Alt
 
 ## clear first
 dir -recurse "./docs/*apidoc.md" | del -force
+dir -recurse "./docs/*.fsx.lock" | del -force
 
 ## Documentation
 
