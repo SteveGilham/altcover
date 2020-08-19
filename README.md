@@ -70,7 +70,7 @@ Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstanda
 
 It is assumed that the following are available
 
-.net core SDK 3.1.301 (`dotnet`) -- try https://www.microsoft.com/net/download  
+.net core SDK 3.1.401 (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 7.0.3 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
 The build may target netstandard2.0 or netcoreapp2.x, but does not need any pre-3.1 runtimes to be installed.
