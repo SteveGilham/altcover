@@ -32,6 +32,8 @@ Make one of these
 
 ### Example
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L984-L1004))
+<iframe height="500" width="500" src="https://raw.githubusercontent.com/SteveGilham/altcover/master/docs/AltCover.Fake.DotNet.Testing.AltCover/BuildSample_1.fsx"></iframe>
+
 ```
 open AltCoverFake.DotNet.DotNet
 open AltCoverFake.DotNet.Testing
