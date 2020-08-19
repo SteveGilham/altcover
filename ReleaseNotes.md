@@ -10,7 +10,7 @@ Also
   * Build the recorder at `net20` only and use the same assembly everywhere
   * Move all the core logic from `AltCover.exe/.dll` to `AltCover.Engine.dll`
   * Unify the three different entry-point assembly instances into the now shim-like `AltCover.exe/.dll`
-  * Build everything against `netstandard2.0` except executable shims and unit tests
+  * Build everything against `netstandard2.0` except executable shims and unit tests (tests at `netcoreapp3.0` by default)
   * Build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
   * Build the GTK2 visualizer against `net472` for consistency
   * `net472` debug builds for published libraries are retained purely for FxCop consumption
