@@ -372,6 +372,18 @@ In release 5.3, the writing the collected data has been offloaded to an in-proce
 
 $footer | Out-File -Encoding UTF8 -Append $mdfile
 
+### AltCover.Fake.DotNet.Testing.AltCover/index.md
+
+$lines = Get-Content "./Build/AltCover.Fake.DotNet.Testing.AltCover.md"
+$lines | % {
+  if ($_ -like "!!*") {
+    Get-Content ($_.Substring(2))
+  }
+  else { $_ }
+} | Set-Content "./docs/AltCover.Fake.DotNet.Testing.AltCover/index.md"
+
+##-----------------------------------------
+
 Write-Host "In node.js prompt, 'harp server C:\Users\steve\Documents\GitHub\altcover\docs'"
 
 

@@ -34,46 +34,13 @@ Make one of these
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L984-L1004))
 
 ```
-#r "paket:
-nuget AltCover.Fake >= 7.0 //"
-
-let prep = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive
-             { AltCoverFake.DotNet.Testing.Primitive.PrepareOptions.Create() with
-                           XmlReport = "./__UnitTestWithAltCover.xml"
-                           OutputDirectories =
-                             [| "./__UnitTestWithAltCover" |]
-                           StrongNameKey = "./Build/Infrastructure.snk"
-                           ReportFormat = "NCover"
-                           InPlace = false
-                           Save = false }
-           |> AltCoverFake.DotNet.Testing.AltCoverCommand.Prepare
-{ AltCoverFake.DotNet.Testing.AltCoverCommand.Options.Create prep with
-              ToolPath = "altcover"
-              ToolType = Fake.DotNet.ToolType.CreateFullFramework()
-              WorkingDirectory = "./__UnitTestWithAltCover" }
-|> AltCoverFake.DotNet.Testing.AltCoverCommand.run
+!!.//AltCover.Fake.DotNet.Testing.AltCover/BuildSample_1.fsx
 ```
 
 ### Example
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3578-L3591))
 
 ```
-#r "paket:
-nuget Fake.DotNet.Cli >= 5.20.3
-nuget AltCover.Fake >= 7.0 //"
-
-let ForceTrue = AltCoverFake.DotNet.Testing.DotNet.CLIOptions.Force true 
-
-let prep = AltCoverFake.DotNet.Testing.Primitive.PrepareOptions.Create()
-let coll = AltCoverFake.DotNet.Testing.Primitive.CollectOptions.Create()
-
-let prep1 = { prep with CallContext = [ "[Fact]"; "0" ]
-                        AssemblyFilter = [| "xunit" |] }
-
-let prepare = AltCoverFake.DotNet.Testing.AltCover.PrepareOptions.Primitive prep1
-let collect = AltCoverFake.DotNet.Testing.AltCover.CollectOptions.Primitive { coll with SummaryFormat = "+B" }
-
-open AltCoverFake.DotNet.DotNet // extension method WithAltCoverOptions
-Fake.DotNet.DotNet.test (fun to' -> to'.WithAltCoverOptions prepare collect ForceTrue) "dotnettest.fsproj"
+!!.//AltCover.Fake.DotNet.Testing.AltCover/BuildSample_2.fsx
 
 ```

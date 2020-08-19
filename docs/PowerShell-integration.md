@@ -160,8 +160,8 @@ Compress-Branching [-InputFile] <string> [[-OutputFile] <string>] [-WithinSequen
 DESCRIPTION
 
 Takes output from the OpenCover program, and adjust from OpenCover's liberal idea of significant branches towards
-AltCover's more restricted approach -- chose either or both of `-SameSpan` to unify branches that go from the same
-start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and
+AltCover's more restricted approach -- chose either or both of `-SameSpan` to unify branches that go from the
+same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and
 `-WithinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of
 lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807
 being instances of this).
@@ -389,9 +389,9 @@ ConvertTo-BarChart [-InputFile] <string> [[-OutputFile] <string>] [<CommonParame
 ```
 DESCRIPTION
 
-The report produced is based on the old NCover 1.5.8 XSLT, for both NCover and OpenCover coverage format data. The
-input is as a file name or an `XDocument` from the pipeline, the output is to the pipeline as an `XDocument`, and,
-optionally, to a file.
+The report produced is based on the old NCover 1.5.8 XSLT, for both NCover and OpenCover coverage format data.
+The input is as a file name or an `XDocument` from the pipeline, the output is to the pipeline as an `XDocument`,
+and, optionally, to a file.
 
 
 PARAMETERS
@@ -1038,8 +1038,8 @@ One or more of minimum acceptable statement (S), branch (B) or method (M)/altern
 percentage (integer, 1 to 100) or maximum acceptable CRAP/alternative CRAP score (C/AC followed by integer, 1
 to 255) e.g. M80AM70C40AC100B50. If the value starts with a number, a leading S is assumed. If any threshold
 is specified more than once, the last instance is assumed -- so 25S50 counts as S50. Zero/absent values are
-ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the
-process is the largest abs(threshold - actual) rounded up to the nearest integer.
+ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of
+the process is the largest abs(threshold - actual) rounded up to the nearest integer.
 
 ```
 Required?                    false
@@ -1273,8 +1273,8 @@ Accept wildcard characters?  false
 #### `-CallContext <string[]>` 
 Tracking either times of visits in ticks or designated method calls leading to the visits.
 
-A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of
-the system clock information available through DateTime.UtcNow
+A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy
+of the system clock information available through DateTime.UtcNow
 
 A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so
 [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against
