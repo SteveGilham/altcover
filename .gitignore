@@ -74,5 +74,4 @@ Tests.Visualizer/Reports/
 AltCover.Engine/Abstract.fsi
 Sample22/Sample22.fsproj
 Sample22/coverage.xml
-docs/AltCover.Fake.DotNet.Testing.AltCover/buildsample_1.fsx.lock
-docs/AltCover.Fake.DotNet.Testing.AltCover/buildsample_2.fsx.lock
+buildsample*.fsx.lock
