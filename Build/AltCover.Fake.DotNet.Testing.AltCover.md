@@ -34,13 +34,13 @@ Make one of these
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L984-L1004))
 
 ```
-!!.//AltCover.Fake.DotNet.Testing.AltCover/BuildSample_1.fsx
+!!./docs/AltCover.Fake.DotNet.Testing.AltCover/BuildSample_1.fsx
 ```
 
 ### Example
 (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/master/Build/targets.fsx#L3578-L3591))
 
 ```
-!!.//AltCover.Fake.DotNet.Testing.AltCover/BuildSample_2.fsx
+!!./docs/AltCover.Fake.DotNet.Testing.AltCover/BuildSample_2.fsx
 
 ```
