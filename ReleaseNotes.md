@@ -3,6 +3,8 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.1.xxx (Genbu series release 7)
+* As well as interfaces, hide other types with no non-abstract methods (e.g. plain enums) in the coverage
+Also
 * Rationalise .net versions to help speed up the build and ease the net5.0 transition
   * Clear out some corner case differences between .net core and .net framework builds based on old work-arounds for symbol writing for the instrumented files
   * Build the recorder at `net20` only and use the same assembly everywhere
@@ -12,6 +14,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
   * Build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
   * Build the GTK2 visualizer against `net472` for consistency
   * `net472` debug builds for published libraries are retained purely for FxCop consumption
+* Collect coverage from unit tests at build time too
 
 # 7.1.783  (Genbu series release 6a)
 * [Visualizer-global-tool] 
