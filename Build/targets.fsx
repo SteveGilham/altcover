@@ -656,7 +656,35 @@ _Target "FxCop" (fun _ ->
     standardRules
   ]
 
-  [ (
+// TODO -- "dotnet publish -c Debug --no-build -f netstandard2.0 /p:AltCoverGendarme=true" each project
+// then look in the publish directory
+// Currently get
+//"Unable to cast object of type 'Microsoft.FxCop.Sdk.ClassNode' to type 'Microsoft.FxCop.Sdk.DelegateNode'."
+//"   at Microsoft.FxCop.Sdk.SystemTypes.Initialize(Boolean doNotLockFile, Boolean getDebugInfo, AssemblyReferenceResolver resolver)
+//at Microsoft.FxCop.Sdk.TargetPlatform.ResetCci2(String platformAssembliesLocation, Boolean doNotLockFile, Boolean getDebugInfo, ICollection`1 referenceAssemblies, ICollection`1 assemblyReferenceDirectories, AssemblyReferenceResolver resolver)
+//at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.ResetCci(String platformAssembliesLocation)
+//at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.CanLoadTargetFile(TargetFile target)
+//at Microsoft.FxCop.Common.EngineManager.LoadTargets(TargetFile target, Boolean resetCounts, String loadEngine)"
+
+  [
+    "./AltCover.Cake/AltCover.Cake.csproj"
+  ]
+  |> List.iter (fun p ->
+      DotNet.publish (fun options ->
+        { options with
+            MSBuildParams = { options.MSBuildParams with Properties = ("AltCoverGendarme", "true") :: options.MSBuildParams.Properties }
+            NoBuild = true
+            Configuration = DotNet.BuildConfiguration.Debug
+            Framework = Some "netstandard2.0" }) p)
+  [
+    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+       ],
+     [],
+     List.concat [
+        defaultCSharpRules
+        cantStrongName // can't strongname this as Cake isn't strongnamed
+      ])
+    (
      (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
       then
         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
@@ -676,13 +704,6 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
-       ],
-     [],
-     List.concat [
-        defaultCSharpRules
-        cantStrongName // can't strongname this as Cake isn't strongnamed
-      ])
     ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
        "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"],
      [],
@@ -709,6 +730,8 @@ _Target "FxCop" (fun _ ->
   ]
   |> Seq.iter (fun (files, types, ruleset) ->
        try
+         printfn "%A" fxcop
+         printfn "%A" files
          files
          |> FxCop.run
               { FxCop.Params.Create() with
