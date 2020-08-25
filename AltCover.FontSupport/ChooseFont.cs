@@ -329,7 +329,7 @@ namespace AltCover.FontSupport
       var core = encoded;
 
       // discard variations
-      var at = core.IndexOf('@');
+      var at = core.IndexOf("@", StringComparison.Ordinal);
       if (at >= 0)
         core = core.Substring(0, at);
 
@@ -480,7 +480,7 @@ namespace AltCover.FontSupport
 
       // Family list, just want the first one
       core = core.TrimEnd(' ', ',');
-      end = core.IndexOf(',');
+      end = core.IndexOf(",", StringComparison.Ordinal);
       if (end >= 0)
         core = core.Substring(0, end);
 
@@ -501,7 +501,7 @@ namespace AltCover.FontSupport
       var core = encoded;
       core = core.TrimEnd();
 
-      var curly = core.IndexOf('}');
+      var curly = core.IndexOf("}", StringComparison.Ordinal);
       if (curly > 0)
       {
         decode.faceName = core.Substring(1, curly - 1);
@@ -509,7 +509,7 @@ namespace AltCover.FontSupport
       }
       else
       {
-        var space = core.IndexOf(' ');
+        var space = core.IndexOf(" ", StringComparison.Ordinal);
         if (space < 0)
           return false;
         decode.faceName = core.Substring(0, space);
