@@ -103,7 +103,7 @@ let dotnetOptions (o : DotNet.Options) =
 
 let fxcop =
   if Environment.isWindows then
-    let expect = "./packages/fxcop/FxCopCmd.exe" |> Path.getFullName
+    let expect = "./packages/fxcop/FixCop.exe" |> Path.getFullName
     if File.Exists expect then Some expect else None
   else
     None
@@ -659,45 +659,45 @@ _Target "FxCop" (fun _ ->
   [ (
      (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
       then
-        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
-          "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
+        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
+          "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ]
       else // HACK HACK HACK
-        [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
+        [ "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.exe"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
-    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
+    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
       [],
       List.concat [
         defaultRules
         cantStrongName  // can't strongname this as Fake isn't strongnamed
       ])
-    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net472/AltCover.Cake.dll"
+    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll"
        ],
      [],
      List.concat [
         defaultCSharpRules
         cantStrongName // can't strongname this as Cake isn't strongnamed
       ])
-    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net472/AltCover.Toolkit.dll"
-       "_Binaries/AltCover.DotNet/Debug+AnyCPU/net472/AltCover.DotNet.dll"],
+    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ],
+    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ],
      [],
       defaultRules)
-    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net472/AltCover.UICommon.dll"
-       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
+    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.exe"],
      [],
      defaultRules)
     ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
-    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
+    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
      [],
       List.concat [
         defaultRules
@@ -712,6 +712,7 @@ _Target "FxCop" (fun _ ->
          files
          |> FxCop.run
               { FxCop.Params.Create() with
+                  PlatformDirectory = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\3.1.7"
                   WorkingDirectory = "."
                   ToolPath = Option.get fxcop
                   UseGAC = true
@@ -726,7 +727,7 @@ _Target "FxCop" (fun _ ->
          reraise())
 
   try
-    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
+    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
     |> FxCop.run
          { FxCop.Params.Create() with
              WorkingDirectory = "."

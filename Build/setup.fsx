@@ -58,6 +58,9 @@ let nuget =
 
 let dixon =
   ("./packages/" + (packageVersion "AltCode.Dixon") + "/Rules") |> Path.getFullName
+  
+let fixcop =
+  "./Build/FixCop" |> Path.getFullName
 
 let fxcop =
   if Environment.isWindows then
@@ -141,9 +144,12 @@ _Target "FxCop" (fun _ ->
          // printfn "%A" destination
          destination
          |> File.Exists
-         |> not
+         |> not && (f
+                    |> Path.GetFileNameWithoutExtension).Equals("SecurityTransparencyRules", 
+                                                                StringComparison.Ordinal) |> not
 
        Shell.copyDir target fx (check target prefix)
+       Shell.copyDir target fixcop (fun _ -> true)
 
        let rules = target @@ "Rules"
        Shell.copyDir rules dixon (fun _ -> true)))
