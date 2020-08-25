@@ -668,6 +668,15 @@ _Target "FxCop" (fun _ ->
 
   [
     "./AltCover.Cake/AltCover.Cake.csproj"
+    "./AltCover.DataCollector/AltCover.DataCollector.csproj"
+    "./AltCover.DotNet/AltCover.DotNet.fsproj"
+    "./AltCover.Engine/AltCover.Engine.fsproj"
+    "./AltCover.Fake/AltCover.Fake.fsproj"
+    "./AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj"
+    "./AltCover.FontSupport/AltCover.FontSupport.csproj"
+    "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+    "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
+    "./AltCover.UICommon/AltCover.UICommon.fsproj"
   ]
   |> List.iter (fun p ->
       DotNet.publish (fun options ->
@@ -677,6 +686,27 @@ _Target "FxCop" (fun _ ->
             Configuration = DotNet.BuildConfiguration.Debug
             Framework = Some "netstandard2.0" }) p)
   [
+    (
+     (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
+      then
+        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/publish/AltCover.FontSupport.dll"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ]
+      else // HACK HACK HACK
+        [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ]),
+      [],
+      standardRules)
+    ([ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
+      [],
+      standardRules)
+    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.dll" ],
+      [],
+      List.concat [
+        defaultRules
+        cantStrongName  // can't strongname this as Fake isn't strongnamed
+      ])
+    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+     [],
+     defaultRules)
     ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
        ],
      [],
@@ -684,41 +714,23 @@ _Target "FxCop" (fun _ ->
         defaultCSharpRules
         cantStrongName // can't strongname this as Cake isn't strongnamed
       ])
-    (
-     (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
-      then
-        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
-          "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ]
-      else // HACK HACK HACK
-        [ "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ]), // TODO netcore support
-      [],
-      standardRules)
-    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
-      [],
-      List.concat [
-        defaultRules
-        cantStrongName  // can't strongname this as Fake isn't strongnamed
-      ])
-    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/publish/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/publish/AltCover.DotNet.dll"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
-       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ],
+    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ],
      [],
       defaultRules)
-    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
-       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.exe"],
+    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/publish/AltCover.UICommon.dll"],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
      [],
      defaultRules)
     ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
-    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
+    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
      [],
       List.concat [
         defaultRules
@@ -750,7 +762,7 @@ _Target "FxCop" (fun _ ->
          reraise())
 
   try
-    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
+    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ]
     |> FxCop.run
          { FxCop.Params.Create() with
              WorkingDirectory = "."
