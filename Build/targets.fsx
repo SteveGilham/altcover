@@ -677,6 +677,7 @@ _Target "FxCop" (fun _ ->
     "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
     "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
     "./AltCover.UICommon/AltCover.UICommon.fsproj"
+    // TODO Avalonia
   ]
   |> List.iter (fun p ->
       DotNet.publish (fun options ->
@@ -685,6 +686,45 @@ _Target "FxCop" (fun _ ->
             NoBuild = true
             Configuration = DotNet.BuildConfiguration.Debug
             Framework = Some "netstandard2.0" }) p)
+
+  [ "./AltCover.Visualizer/AltCover.Visualizer.fsproj" ]
+  |> List.iter (fun p ->
+      DotNet.publish (fun options ->
+        { options with
+            MSBuildParams = { options.MSBuildParams with Properties = ("AltCoverGendarme", "true") :: options.MSBuildParams.Properties }
+            NoBuild = true
+            Configuration = DotNet.BuildConfiguration.Debug
+            Framework = Some "netcoreapp2.1" }) p)
+
+  [
+    ([ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
+      [],
+      standardRules)
+    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
+     [],
+       "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
+  ]
+  |> Seq.iter (fun (files, types, ruleset) ->
+       try
+         files
+         |> FxCop.run
+              { FxCop.Params.Create() with
+                  WorkingDirectory = "."
+                  ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FxCopCmd.exe"
+                  UseGAC = true
+                  Verbose = false
+                  ReportFileName = "_Reports/FxCopReport.xml"
+                  Types = types
+                  Rules = ruleset
+                  FailOnError = FxCop.ErrorLevel.Warning
+                  IgnoreGeneratedCode = true }
+       with _ ->
+         dumpSuppressions "_Reports/FxCopReport.xml"
+         reraise())
+
   [
     (
      (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
@@ -693,9 +733,6 @@ _Target "FxCop" (fun _ ->
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ]
       else // HACK HACK HACK
         [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ]),
-      [],
-      standardRules)
-    ([ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.dll" ],
@@ -724,12 +761,9 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/publish/AltCover.UICommon.dll"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
+    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
-     [],
-       "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
     ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
      [],
       List.concat [
