@@ -687,7 +687,10 @@ _Target "FxCop" (fun _ ->
             Configuration = DotNet.BuildConfiguration.Debug
             Framework = Some "netstandard2.0" }) p)
 
-  [ "./AltCover.Visualizer/AltCover.Visualizer.fsproj" ]
+  [
+    "./AltCover.Visualizer/AltCover.Visualizer.fsproj"
+    "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
+    ]
   |> List.iter (fun p ->
       DotNet.publish (fun options ->
         { options with
@@ -706,6 +709,27 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
+// Do not load at .netstd2.0
+    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net472/AltCover.Cake.dll"
+       ],
+     [],
+     List.concat [
+        defaultCSharpRules
+        cantStrongName // can't strongname this as Cake isn't strongnamed
+      ])
+// Currently throws at .netstd2.0
+    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
+     [],
+      List.concat [
+        defaultRules
+        [
+          "-Microsoft.Naming#CA1703"   // spelling in resources
+          "-Microsoft.Performance#CA1810"  // Static module initializers in $Type classes
+        ]
+      ])
   ]
   |> Seq.iter (fun (files, types, ruleset) ->
        try
@@ -741,16 +765,6 @@ _Target "FxCop" (fun _ ->
         defaultRules
         cantStrongName  // can't strongname this as Fake isn't strongnamed
       ])
-    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
-       ],
-     [],
-     List.concat [
-        defaultCSharpRules
-        cantStrongName // can't strongname this as Cake isn't strongnamed
-      ])
     ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/publish/AltCover.Toolkit.dll"
        "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/publish/AltCover.DotNet.dll"],
      [],
@@ -761,18 +775,33 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/publish/AltCover.UICommon.dll"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
-     [],
-      List.concat [
-        defaultRules
-        [
-          "-Microsoft.Naming#CA1703"   // spelling in resources
-          "-Microsoft.Performance#CA1810"  // Static module initializers in $Type classes
-        ]
-      ])
+    // // Currently throws
+    //([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
+    // [],
+    //  List.concat [
+    //    defaultRules
+    //    [
+    //      "-Microsoft.Naming#CA1703"   // spelling in resources
+    //      "-Microsoft.Performance#CA1810"  // Static module initializers in $Type classes
+    //    ]
+    //  ])
+      // Current Unloadables
+    //([
+    //    "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
+    //    "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
+    //  ],
+    // [],
+    // defaultRules)
+    //([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+    // [],
+    // defaultRules)
+    //([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+    //   ],
+    // [],
+    // List.concat [
+    //    defaultCSharpRules
+    //    cantStrongName // can't strongname this as Cake isn't strongnamed
+    //  ])
   ]
   |> Seq.iter (fun (files, types, ruleset) ->
        try
@@ -799,6 +828,7 @@ _Target "FxCop" (fun _ ->
     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ]
     |> FxCop.run
          { FxCop.Params.Create() with
+             PlatformDirectory = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\3.1.7"
              WorkingDirectory = "."
              ToolPath = Option.get fxcop
              UseGAC = true
@@ -822,7 +852,6 @@ _Target "UnitTest" (fun _ ->
   |> (Actions.AssertResult "pwsh")
 
   coverageSummary())
-
 
 _Target "UncoveredUnitTest" ignore
 
