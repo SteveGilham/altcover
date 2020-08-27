@@ -571,7 +571,16 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
 _Target "FxCop" (fun _ ->
   Directory.ensure "./_Reports"
-  msbuildRelease "./FixCop/FixCop.fsproj"
+  MSBuild.build (fun p ->
+    { p with
+        Verbosity = Some MSBuildVerbosity.Normal
+        ConsoleLogParameters = []
+        DistributedLoggers = None
+        DisableInternalBinLog = true
+        Properties =
+          [ "Configuration", "Release"
+            "Platform", "x86" // important!!
+            "DebugSymbols", "True" ] }) "./FixCop/FixCop.fsproj"
 
   let dumpSuppressions (report : String) =
     let x = XDocument.Load report
