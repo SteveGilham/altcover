@@ -178,7 +178,7 @@ module OpenCover =
     m.Descendants(XName.Get "MethodPoint")
     |> Seq.tryHead
     |> Option.iter (fun x -> let a = x.Attributes()
-                                     |> Seq.filter (fun s -> s.Name.ToString().Contains("{") |> not)
+                                     |> Seq.filter (fun s -> s.Name.ToString().IndexOf("{", StringComparison.Ordinal) < 0)
                                      |> Seq.cast<obj>
                                      |> Seq.toArray
                              x.RemoveAttributes()

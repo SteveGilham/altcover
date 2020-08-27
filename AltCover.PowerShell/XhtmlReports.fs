@@ -47,6 +47,8 @@ type ConvertToBarChartCommand() =
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
+  [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+     Justification="String.Replace doesn't have a comparison overload at net472/netstandard2.0, and the use case is not relevant anyway")>]
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try

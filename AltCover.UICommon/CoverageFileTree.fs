@@ -47,10 +47,10 @@ module CoverageFileTree =
         let fullname = x.Navigator.GetAttribute("fullname", String.Empty)
 
         let args =
-          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf('(') > 0 then
+          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf("(", StringComparison.Ordinal) > 0 then
             String.Empty
           else
-            let bracket = fullname.IndexOf('(')
+            let bracket = fullname.IndexOf("(",StringComparison.Ordinal)
             if bracket < 0 then String.Empty else fullname.Substring(bracket)
 
         let displayname = x.Name + args
@@ -142,8 +142,11 @@ module CoverageFileTree =
       |> Set.ofSeq
 
     let modularize =
+      let contains (s:String) c =
+        s.IndexOf(c, StringComparison.Ordinal) >= 0
+
       classnames
-      |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
+      |> Seq.filter (fun cn -> contains cn "+" || contains cn "/")
       |> Seq.map
            (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
       |> Seq.distinct
@@ -206,6 +209,8 @@ module CoverageFileTree =
 
     methods |> Seq.iter (applyToModel model)
 
+  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+         Justification="Where it all comes together")>]
   let DoSelected (environment:CoverageModelDisplay<'TModel, 'TRow, 'TIcon>) index =
       let current = environment.GetFileInfo index
       match CoverageFile.LoadCoverageFile current with

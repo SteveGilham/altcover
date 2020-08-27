@@ -135,7 +135,7 @@ module CoverageFormats =
          m.SetAttribute("class", c.Replace('/', '+'))
          let name = m.Attribute(XName.Get "name").Value
          let lead = name.Substring(name.LastIndexOf("::", StringComparison.Ordinal) + 2)
-         m.SetAttribute("name", lead.Substring(0, lead.IndexOf('('))))
+         m.SetAttribute("name", lead.Substring(0, lead.IndexOf("(", StringComparison.Ordinal))))
 
     rewrite.Descendants(XName.Get "module")
     |> Seq.iter (fun m ->
