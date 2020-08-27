@@ -12,10 +12,12 @@ module internal Augment =
 module Augment =
 #endif
 
+#if !ValidateGendarmeEmulation
   [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
     Justification="Preferred overload, no comparison exists in netstd2.0/net472")>]
   let internal charIndexOf (name:string) (token:char) =
     name.IndexOf(token)
+#endif
 
   type System.Object with
     member self.IsNotNull
