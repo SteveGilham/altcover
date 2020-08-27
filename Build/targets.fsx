@@ -841,7 +841,7 @@ _Target "FxCop" (fun _ ->
          { FxCop.Params.Create() with
              PlatformDirectory = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\3.1.7"
              WorkingDirectory = "."
-             ToolPath = Option.get fxcop
+             ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
              UseGAC = true
              Verbose = false
              ReportFileName = "_Reports/FxCopReport.xml"
