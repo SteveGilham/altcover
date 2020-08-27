@@ -693,7 +693,7 @@ module internal Visitor =
         |> Seq.length
 
       if mname.StartsWith("<", StringComparison.Ordinal) &&
-         mname.IndexOf("|", StringComparison.Ordinal) > 0 then
+         charIndexOf mname '|' > 0 then
         let index = (indexOfMatchingClosingAngleBracket mname) - 1
         cSharpContainingMethod mname t index (methodCallsMethod m)
       else
@@ -717,7 +717,7 @@ module internal Visitor =
                 (mx.FullName <> m.FullName)
                 && (methodCallsMethod m mx || methodConstructsType t mx
                     || methodLoadsMethod m mx))
-        else if n.IndexOf("@", StringComparison.Ordinal) >= 0 then
+        else if charIndexOf n '@' >= 0 then
           let tx =
             if n.EndsWith("T", StringComparison.Ordinal) then
               match t.Methods

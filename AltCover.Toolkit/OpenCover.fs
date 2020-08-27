@@ -173,12 +173,12 @@ module OpenCover =
     // Fix offset, sc, ec in <MethodPoint />
     let debugInfo = methodDef
                     |> Option.map (fun md -> md.DebugInformation)
-                    |> Option.filter (fun dbg -> dbg |> isNull |> not)
+                    |> Option.filter (isNull >> not)
 
     m.Descendants(XName.Get "MethodPoint")
     |> Seq.tryHead
     |> Option.iter (fun x -> let a = x.Attributes()
-                                     |> Seq.filter (fun s -> s.Name.ToString().IndexOf("{", StringComparison.Ordinal) < 0)
+                                     |> Seq.filter (fun s -> charIndexOf (s.Name.ToString()) '{' < 0)
                                      |> Seq.cast<obj>
                                      |> Seq.toArray
                              x.RemoveAttributes()

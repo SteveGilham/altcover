@@ -47,10 +47,10 @@ module CoverageFileTree =
         let fullname = x.Navigator.GetAttribute("fullname", String.Empty)
 
         let args =
-          if String.IsNullOrEmpty(fullname) || x.Name.IndexOf("(", StringComparison.Ordinal) > 0 then
+          if String.IsNullOrEmpty(fullname) || charIndexOf x.Name '(' > 0 then
             String.Empty
           else
-            let bracket = fullname.IndexOf("(",StringComparison.Ordinal)
+            let bracket =  charIndexOf fullname '('
             if bracket < 0 then String.Empty else fullname.Substring(bracket)
 
         let displayname = x.Name + args

@@ -89,7 +89,7 @@ module DotNet =
              (result,
               (if f.Name <> "Common@" then f.GetValue self else common))
 
-  let internal ExtractParameters (o : DotNet.TestOptions) =
+  let internal extractParameters (o : DotNet.TestOptions) =
     let t = o.Common.GetType()
     let p = t.GetProperty("CustomParams")
     p.GetValue(o.Common, null) :?> string Option
@@ -111,10 +111,10 @@ module DotNet =
 
       let common = optionsConstructor.Invoke(args)
       let extended =
-        match self |> ExtractParameters with
+        match self |> extractParameters with
         | None -> Some options
-        | Some thing -> Some(thing + " " + options)      
-      
+        | Some thing -> Some(thing + " " + options)
+
       self.Common.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (setCustomParams common extended self.Common)
       let testOptionsConstructor = self.GetType().GetConstructors().[0]
