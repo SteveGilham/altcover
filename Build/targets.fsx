@@ -103,7 +103,7 @@ let dotnetOptions (o : DotNet.Options) =
 
 let fxcop =
   if Environment.isWindows then
-    let expect = "./packages/fxcop/FixCop.exe" |> Path.getFullName
+    let expect = "./packages/fxcop/FxCopCmd.exe" |> Path.getFullName
     if File.Exists expect then Some expect else None
   else
     None
@@ -397,7 +397,8 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
+  [ "./FixCop/FixCop.fsproj" // not in solution
+    "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
@@ -570,6 +571,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
 _Target "FxCop" (fun _ ->
   Directory.ensure "./_Reports"
+  msbuildRelease "./FixCop/FixCop.fsproj"
 
   let dumpSuppressions (report : String) =
     let x = XDocument.Load report
@@ -737,7 +739,7 @@ _Target "FxCop" (fun _ ->
          |> FxCop.run
               { FxCop.Params.Create() with
                   WorkingDirectory = "."
-                  ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FxCopCmd.exe"
+                  ToolPath = Option.get fxcop
                   UseGAC = true
                   Verbose = false
                   ReportFileName = "_Reports/FxCopReport.xml"
@@ -812,7 +814,7 @@ _Target "FxCop" (fun _ ->
               { FxCop.Params.Create() with
                   PlatformDirectory = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\3.1.7"
                   WorkingDirectory = "."
-                  ToolPath = Option.get fxcop
+                  ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
                   UseGAC = true
                   Verbose = false
                   ReportFileName = "_Reports/FxCopReport.xml"
