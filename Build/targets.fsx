@@ -776,12 +776,8 @@ _Target "FxCop" (fun _ ->
 
   [
     (
-     (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
-      then
-        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/publish/AltCover.FontSupport.dll"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ]
-      else // HACK HACK HACK
-        [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ]),
+     [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/publish/AltCover.FontSupport.dll"
+       "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ],
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.dll" ],
