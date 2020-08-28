@@ -415,6 +415,8 @@ module internal Visitor =
 
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "F# inlined code")>]
+    [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+            Justification="No suitable overload in netstandard2.0/net472")>]
     let internal locateMatch file dict =
       let find = findClosestMatch file dict
 
@@ -690,7 +692,8 @@ module internal Visitor =
              nesting > 0)
         |> Seq.length
 
-      if mname.StartsWith("<", StringComparison.Ordinal) && mname.IndexOf('|') > 0 then
+      if mname.StartsWith("<", StringComparison.Ordinal) &&
+         charIndexOf mname '|' > 0 then
         let index = (indexOfMatchingClosingAngleBracket mname) - 1
         cSharpContainingMethod mname t index (methodCallsMethod m)
       else
@@ -714,7 +717,7 @@ module internal Visitor =
                 (mx.FullName <> m.FullName)
                 && (methodCallsMethod m mx || methodConstructsType t mx
                     || methodLoadsMethod m mx))
-        else if n.IndexOf('@') >= 0 then
+        else if charIndexOf n '@' >= 0 then
           let tx =
             if n.EndsWith("T", StringComparison.Ordinal) then
               match t.Methods

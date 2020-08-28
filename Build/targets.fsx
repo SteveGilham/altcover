@@ -397,7 +397,8 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
+  [ "./FixCop/FixCop.fsproj" // not in solution
+    "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
@@ -570,6 +571,30 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
 _Target "FxCop" (fun _ ->
   Directory.ensure "./_Reports"
+  let runtimelist = CreateProcess.fromRawCommandLine "dotnet" "--list-runtimes"
+                    |> CreateProcess.redirectOutput
+                    |> Proc.run
+
+  let runtime = runtimelist.Result.Output.Split('\n')      
+                |> Seq.filter (fun s -> s.Contains "Microsoft.NETCore.App 3.1." )
+                |> Seq.last
+
+  let rtpath = runtime.Trim().Replace("]", "").Split('[') |> Seq.last 
+  printfn "runtime path = %s" rtpath
+  let rtver = runtime.Split(' ').[1]
+  printfn "runtime version = %s" rtver
+  let pathformpath = rtpath @@ rtver
+
+  MSBuild.build (fun p ->
+    { p with
+        Verbosity = Some MSBuildVerbosity.Normal
+        ConsoleLogParameters = []
+        DistributedLoggers = None
+        DisableInternalBinLog = true
+        Properties =
+          [ "Configuration", "Release"
+            "Platform", "x86" // important!!
+            "DebugSymbols", "True" ] }) "./FixCop/FixCop.fsproj"
 
   let dumpSuppressions (report : String) =
     let x = XDocument.Load report
@@ -656,23 +681,60 @@ _Target "FxCop" (fun _ ->
     standardRules
   ]
 
-  [ (
-     (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
-      then
-        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
-          "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
-      else // HACK HACK HACK
-        [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
+// TODO -- "dotnet publish -c Debug --no-build -f netstandard2.0 /p:AltCoverGendarme=true" each project
+// then look in the publish directory
+// Currently get
+//"Unable to cast object of type 'Microsoft.FxCop.Sdk.ClassNode' to type 'Microsoft.FxCop.Sdk.DelegateNode'."
+//"   at Microsoft.FxCop.Sdk.SystemTypes.Initialize(Boolean doNotLockFile, Boolean getDebugInfo, AssemblyReferenceResolver resolver)
+//at Microsoft.FxCop.Sdk.TargetPlatform.ResetCci2(String platformAssembliesLocation, Boolean doNotLockFile, Boolean getDebugInfo, ICollection`1 referenceAssemblies, ICollection`1 assemblyReferenceDirectories, AssemblyReferenceResolver resolver)
+//at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.ResetCci(String platformAssembliesLocation)
+//at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.CanLoadTargetFile(TargetFile target)
+//at Microsoft.FxCop.Common.EngineManager.LoadTargets(TargetFile target, Boolean resetCounts, String loadEngine)"
+
+  [
+    "./AltCover.Cake/AltCover.Cake.csproj"
+    "./AltCover.DataCollector/AltCover.DataCollector.csproj"
+    "./AltCover.DotNet/AltCover.DotNet.fsproj"
+    "./AltCover.Engine/AltCover.Engine.fsproj"
+    "./AltCover.Fake/AltCover.Fake.fsproj"
+    "./AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj"
+    "./AltCover.FontSupport/AltCover.FontSupport.csproj"
+    "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
+    "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
+    "./AltCover.UICommon/AltCover.UICommon.fsproj"
+    // TODO Avalonia
+  ]
+  |> List.iter (fun p ->
+      DotNet.publish (fun options ->
+        { options with
+            MSBuildParams = { options.MSBuildParams with Properties = ("AltCoverGendarme", "true") :: options.MSBuildParams.Properties }
+            NoBuild = true
+            Configuration = DotNet.BuildConfiguration.Debug
+            Framework = Some "netstandard2.0" }) p)
+
+  [
+    "./AltCover.Visualizer/AltCover.Visualizer.fsproj"
+    "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
+    ]
+  |> List.iter (fun p ->
+      DotNet.publish (fun options ->
+        { options with
+            MSBuildParams = { options.MSBuildParams with Properties = ("AltCoverGendarme", "true") :: options.MSBuildParams.Properties }
+            NoBuild = true
+            Configuration = DotNet.BuildConfiguration.Debug
+            Framework = Some "netcoreapp2.1" }) p)
+
+  [
+    ([ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
       [],
       standardRules)
-    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
-      [],
-      List.concat [
-        defaultRules
-        cantStrongName  // can't strongname this as Fake isn't strongnamed
-      ])
+    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
+     [],
+       "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
+// Do not load at .netstd2.0
     ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [],
      defaultRules)
@@ -683,20 +745,7 @@ _Target "FxCop" (fun _ ->
         defaultCSharpRules
         cantStrongName // can't strongname this as Cake isn't strongnamed
       ])
-    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net472/AltCover.Toolkit.dll"
-       "_Binaries/AltCover.DotNet/Debug+AnyCPU/net472/AltCover.DotNet.dll"],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ],
-     [],
-      defaultRules)
-    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net472/AltCover.UICommon.dll"
-       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
-     [],
-       "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
+// Currently throws at .netstd2.0
     ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
      [],
       List.concat [
@@ -725,12 +774,84 @@ _Target "FxCop" (fun _ ->
          dumpSuppressions "_Reports/FxCopReport.xml"
          reraise())
 
+  [
+    (
+     [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/publish/AltCover.FontSupport.dll"
+       "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ],
+      [],
+      standardRules)
+    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.dll" ],
+      [],
+      List.concat [
+        defaultRules
+        cantStrongName  // can't strongname this as Fake isn't strongnamed
+      ])
+    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/publish/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/publish/AltCover.DotNet.dll"],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ],
+     [],
+      defaultRules)
+    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/publish/AltCover.UICommon.dll"],
+     [],
+     defaultRules)
+    // // Currently throws
+    //([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
+    // [],
+    //  List.concat [
+    //    defaultRules
+    //    [
+    //      "-Microsoft.Naming#CA1703"   // spelling in resources
+    //      "-Microsoft.Performance#CA1810"  // Static module initializers in $Type classes
+    //    ]
+    //  ])
+      // Current Unloadables
+    //([
+    //    "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
+    //    "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
+    //  ],
+    // [],
+    // defaultRules)
+    //([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+    // [],
+    // defaultRules)
+    //([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+    //   ],
+    // [],
+    // List.concat [
+    //    defaultCSharpRules
+    //    cantStrongName // can't strongname this as Cake isn't strongnamed
+    //  ])
+  ]
+  |> Seq.iter (fun (files, types, ruleset) ->
+       try
+         printfn "%A" fxcop
+         printfn "%A" files
+         files
+         |> FxCop.run
+              { FxCop.Params.Create() with
+                  PlatformDirectory = pathformpath
+                  WorkingDirectory = "."
+                  ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
+                  UseGAC = true
+                  Verbose = false
+                  ReportFileName = "_Reports/FxCopReport.xml"
+                  Types = types
+                  Rules = ruleset
+                  FailOnError = FxCop.ErrorLevel.Warning
+                  IgnoreGeneratedCode = true }
+       with _ ->
+         dumpSuppressions "_Reports/FxCopReport.xml"
+         reraise())
+
   try
-    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
+    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ]
     |> FxCop.run
          { FxCop.Params.Create() with
+             PlatformDirectory = pathformpath
              WorkingDirectory = "."
-             ToolPath = Option.get fxcop
+             ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
              UseGAC = true
              Verbose = false
              ReportFileName = "_Reports/FxCopReport.xml"
@@ -752,7 +873,6 @@ _Target "UnitTest" (fun _ ->
   |> (Actions.AssertResult "pwsh")
 
   coverageSummary())
-
 
 _Target "UncoveredUnitTest" ignore
 
@@ -3968,8 +4088,8 @@ _Target "Issue72" (fun _ ->
          coverageDocument.Descendants(XName.Get("BranchPoint"))
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
-       test <@ (found, "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first") @> // 3.1.401
-       // [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ] @>
+       test <@ (found, "first") = // (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first") @> // 3.1.401
+                                  ([ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ], "first") @> // 3.1.301
       //  Assert.That
       //    (found,
       //     Is.EquivalentTo [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ],

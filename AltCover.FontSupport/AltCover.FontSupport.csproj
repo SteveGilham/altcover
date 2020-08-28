@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <RootNamespace>AltCover.FontSupport</RootNamespace>
     <AssemblyName>AltCover.FontSupport</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

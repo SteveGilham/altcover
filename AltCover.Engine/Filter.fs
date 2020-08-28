@@ -225,3 +225,13 @@ module internal Filter =
         |> Seq.exists
             (fun x ->
               x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
+
+[<assembly: SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+            Scope="member", Target="AltCover.Filter+I+isFSharpAutoProperty@174.#Invoke(Mono.Cecil.Cil.Instruction)",
+            MessageId="System.String.Replace(System.String,System.String)",
+            Justification="No suitable overload in netstandard2.0/net472")>]
+[<assembly: SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+            Scope="member", Target="AltCover.Filter+I+isFSharpAutoProperty@182-2.#Invoke(Mono.Cecil.Cil.Instruction)",
+            MessageId="System.String.Replace(System.String,System.String)",
+            Justification="No suitable overload in netstandard2.0/net472")>]
+()
