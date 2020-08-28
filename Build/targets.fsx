@@ -571,6 +571,20 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
 _Target "FxCop" (fun _ ->
   Directory.ensure "./_Reports"
+  let runtimelist = CreateProcess.fromRawCommandLine "dotnet" "--list-runtimes"
+                    |> CreateProcess.redirectOutput
+                    |> Proc.run
+
+  let runtime = runtimelist.Result.Output.Split('\n')      
+                |> Seq.filter (fun s -> s.Contains "Microsoft.NETCore.App 3.1." )
+                |> Seq.last
+
+  let rtpath = runtime.Trim().Replace("]", "").Split('[') |> Seq.last 
+  printfn "runtime path = %s" rtpath
+  let rtver = runtime.Split(' ').[1]
+  printfn "runtime version = %s" rtver
+  let pathformpath = rtpath @@ rtver
+
   MSBuild.build (fun p ->
     { p with
         Verbosity = Some MSBuildVerbosity.Normal
@@ -821,7 +835,7 @@ _Target "FxCop" (fun _ ->
          files
          |> FxCop.run
               { FxCop.Params.Create() with
-                  PlatformDirectory = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\3.1.7"
+                  PlatformDirectory = pathformpath
                   WorkingDirectory = "."
                   ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
                   UseGAC = true
@@ -839,7 +853,7 @@ _Target "FxCop" (fun _ ->
     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ]
     |> FxCop.run
          { FxCop.Params.Create() with
-             PlatformDirectory = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\3.1.7"
+             PlatformDirectory = pathformpath
              WorkingDirectory = "."
              ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
              UseGAC = true
