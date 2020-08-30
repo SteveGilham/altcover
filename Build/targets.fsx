@@ -797,7 +797,14 @@ _Target "FxCop" (fun _ ->
      [],
      defaultRules)
     // // Currently throws
-    //([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
+
+// System.NullReferenceException: Object reference not set to an instance of an object.
+//    at Microsoft.VisualStudio.CodeAnalysis.Phoenix.Utilities.AttributeSymbolExtensions.GetNamedArguments[TArg](AttributeSymbol attribute, String namedArgument, Boolean namedArgumentIsProperty, TArg& value)
+//    at Microsoft.FxCop.Engines.Phoenix.INodeWrappers.PhxTypeWrapper.GetDebuggerDisplayTypeArgumentValue()
+
+//    at Phoenix.CodeAnalysis.DataflowRules.DisposeObjectsBeforeLosingScope.AnalyzeFunction(FunctionUnit functionUnit, WarningEmitter warningEmitter, PathSensitiveAnalysisResult pathSensitiveAnalysisResult, NeedsDisposeAnalysisResult needsDisposeResult)
+
+    // ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
     // [],
     //  List.concat [
     //    defaultRules
@@ -807,13 +814,28 @@ _Target "FxCop" (fun _ ->
     //    ]
     //  ])
       // Current Unloadables
-    //([
-    //    "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
-    //    "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
-    //  ],
-    // [],
-    // defaultRules)
-    //([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+    ([
+  // 2x
+  //  <InnerType>Microsoft.FxCop.Sdk.InvalidMetadataException</InnerType>
+  //  <InnerExceptionMessage>The following error was encountered while reading module 'AltCover.Visualizer': Assembly reference cannot be resolved: System.Runtime, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a.</InnerExceptionMessage>
+  //  <InnerStackTrace>   at Microsoft.FxCop.Sdk.Reader.HandleError(ModuleNode mod, String errorMessage)
+  //  at Microsoft.FxCop.Sdk.Reader.GetAssemblyFromReference(AssemblyReference assemblyReference)
+  //  at Microsoft.FxCop.Sdk.AssemblyReference.get_Assembly()
+      //  "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
+      //  "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
+     ],
+    [],
+    defaultRules)
+
+// 2x 
+//  <InnerExceptionMessage>Unable to cast object of type 'Microsoft.FxCop.Sdk.ClassNode' to type 'Microsoft.FxCop.Sdk.DelegateNode'.</InnerExceptionMessage>
+//    <InnerStackTrace>   at Microsoft.FxCop.Sdk.SystemTypes.Initialize(Boolean doNotLockFile, Boolean getDebugInfo, AssemblyReferenceResolver resolver)
+//    at Microsoft.FxCop.Sdk.TargetPlatform.ResetCci2(String platformAssembliesLocation, Boolean doNotLockFile, Boolean getDebugInfo, ICollection`1 referenceAssemblies, ICollection`1 assemblyReferenceDirectories, AssemblyReferenceResolver resolver)
+//    at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.ResetCci(String platformAssembliesLocation)
+//    at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.CanLoadTargetFile(TargetFile target)
+//    at Microsoft.FxCop.Common.EngineManager.LoadTargets(TargetFile target, Boolean resetCounts, String loadEngine)</InnerStackTrace>
+
+    // ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
     // [],
     // defaultRules)
     //([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
