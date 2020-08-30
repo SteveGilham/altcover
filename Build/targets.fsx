@@ -814,7 +814,7 @@ _Target "FxCop" (fun _ ->
     //    ]
     //  ])
       // Current Unloadables
-    ([
+    // ([
   // 2x
   //  <InnerType>Microsoft.FxCop.Sdk.InvalidMetadataException</InnerType>
   //  <InnerExceptionMessage>The following error was encountered while reading module 'AltCover.Visualizer': Assembly reference cannot be resolved: System.Runtime, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a.</InnerExceptionMessage>
@@ -823,9 +823,9 @@ _Target "FxCop" (fun _ ->
   //  at Microsoft.FxCop.Sdk.AssemblyReference.get_Assembly()
       //  "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
       //  "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
-     ],
-    [],
-    defaultRules)
+    //  ],
+    // [],
+    // defaultRules)
 
 // 2x 
 //  <InnerExceptionMessage>Unable to cast object of type 'Microsoft.FxCop.Sdk.ClassNode' to type 'Microsoft.FxCop.Sdk.DelegateNode'.</InnerExceptionMessage>
