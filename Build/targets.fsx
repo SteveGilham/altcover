@@ -4110,8 +4110,8 @@ _Target "Issue72" (fun _ ->
          coverageDocument.Descendants(XName.Get("BranchPoint"))
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
-       test <@ (found, "first") = // (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first") @> // 3.1.401
-                                  ([ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ], "first") @> // 3.1.301
+       test <@ (found, "first") = (["1"; "4"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5"], "first") @> // 3.1.401
+       // [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ] @>
       //  Assert.That
       //    (found,
       //     Is.EquivalentTo [ "1"; "4"; "4"; "0"; "3"; "1"; "2"; "1"; "1"; "1"; "5"; "5" ],
