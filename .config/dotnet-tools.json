@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-reportgenerator-globaltool": {
-      "version": "4.6.4",
+      "version": "4.7.1",
       "commands": [
         "reportgenerator"
       ]
@@ -15,7 +15,7 @@
       ]
     },
     "xmldocmd": {
-      "version": "2.1.0",
+      "version": "2.3.0",
       "commands": [
         "xmldocmd"
       ]
