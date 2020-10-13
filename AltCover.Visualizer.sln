@@ -36,11 +36,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-cli.csproj", "{1EF1ED60-3D8B-446C-BC70-397009F794DA}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.UICommon", "AltCover.UICommon\AltCover.UICommon.fsproj", "{D3383B16-5069-4E9C-9A86-920FA408E925}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.FontSupport", "AltCover.FontSupport\AltCover.FontSupport.csproj", "{660BB1CF-D777-4C8F-8145-84A6A497C91E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet", "Build\NuGet.csproj", "{7E26A341-127C-4A51-A12B-E8D03F0B9BE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,8 +59,6 @@ Global
 		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EF1ED60-3D8B-446C-BC70-397009F794DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EF1ED60-3D8B-446C-BC70-397009F794DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3383B16-5069-4E9C-9A86-920FA408E925}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D3383B16-5069-4E9C-9A86-920FA408E925}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3383B16-5069-4E9C-9A86-920FA408E925}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,12 +67,14 @@ Global
 		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E26A341-127C-4A51-A12B-E8D03F0B9BE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E26A341-127C-4A51-A12B-E8D03F0B9BE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{1EF1ED60-3D8B-446C-BC70-397009F794DA} = {97367D43-64EF-48E1-B6B4-D951C783E6E1}
+		{7E26A341-127C-4A51-A12B-E8D03F0B9BE5} = {97367D43-64EF-48E1-B6B4-D951C783E6E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6FB9BBB1-003A-4CBC-A45E-EC9A2CBEC828}

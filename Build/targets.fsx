@@ -753,7 +753,6 @@ _Target "UnitTest" (fun _ ->
 
   coverageSummary())
 
-
 _Target "UncoveredUnitTest" ignore
 
 _Target "JustUnitTest" (fun _ ->
@@ -788,9 +787,8 @@ _Target "JustUnitTest" (fun _ ->
 _Target "BuildForUnitTestDotNet" (fun _ ->
   msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
 
-  !!(@"./*Tests/*Tests.fsproj")
-  |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
-                          && s.Contains("Recorder") |> not) // net20
+  !!(@"./*Test*/*Tests.fsproj")
+  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
@@ -801,7 +799,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    !!(@"./*Tests/*Tests.fsproj")
+    !!(@"./*Test*/*Tests.fsproj")
     |> Seq.iter
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
