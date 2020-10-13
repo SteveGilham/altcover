@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.DotNet</RootNamespace>
     <AssemblyName>AltCover.DotNet</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

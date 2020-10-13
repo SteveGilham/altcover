@@ -141,9 +141,7 @@ _Target "FxCop" (fun _ ->
          // printfn "%A" destination
          destination
          |> File.Exists
-         |> not && (f
-                    |> Path.GetFileNameWithoutExtension).Equals("SecurityTransparencyRules", 
-                                                                StringComparison.Ordinal) |> not
+         |> not
 
        Shell.copyDir target fx (check target prefix)
 
