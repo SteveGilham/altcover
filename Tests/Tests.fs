@@ -878,6 +878,46 @@ module AltCoverTests =
       Assert.That(find, Is.EqualTo (Some (pp1, String.Empty)))
 
     [<Test>]
+    let DebugBuildTernaryTestInContext() =
+      let sample23 =
+        Path.Combine(dir, "Sample23.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample23)
+      let symbols23 = Path.ChangeExtension(sample23, ".pdb")
+
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, symbols23)
+      def.MainModule.ReadSymbols(rr)
+
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Tests")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Ternary")
+        |> Seq.head
+      Visitor.visit [] [] // cheat reset
+      try
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
+        let deeper =
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 5)
+        deeper
+        |> List.skip 3
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
+        deeper
+        |> List.take 3
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b, Exemption.None)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString()))
+      finally
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
+
+    [<Test>]
     let ReleaseBuildTernaryTest() =
       let nop = Instruction.Create(OpCodes.Nop)
       let ret = Instruction.Create(OpCodes.Ret)
@@ -2287,7 +2327,7 @@ module AltCoverTests =
         let seqTrim (s : String seq) =
           s
           |> Seq.map (fun n -> n.Trim())
-          
+
         let visitor9, document9 = Report.reportGenerator()
         Visitor.visit [ visitor9 ] (Visitor.I.toSeq (path5, []))
         let names9 = document9.Descendants(XName.Get "method")
