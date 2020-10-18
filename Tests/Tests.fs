@@ -878,6 +878,54 @@ module AltCoverTests =
       Assert.That(find, Is.EqualTo (Some (pp1, String.Empty)))
 
     [<Test>]
+    let AsyncTestInContext() =
+      let sample23 =
+        Path.Combine(dir, "Sample23.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample23)
+      let symbols23 = Path.ChangeExtension(sample23, ".pdb")
+
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, symbols23)
+      def.MainModule.ReadSymbols(rr)
+
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "<DoSomething>d__0")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "MoveNext")
+        |> Seq.head
+
+      method.Body.Instructions
+      |> Seq.iter (fun i ->
+        let sp = method.DebugInformation.GetSequencePoint(i)
+                 |> Option.ofObj
+                 |> Option.map (fun s -> s.StartLine)
+        printfn "%A %A" i sp)
+
+      Visitor.visit [] [] // cheat reset
+      try
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+        CoverageParameters.nameFilters.Clear()
+        let deeper =
+          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 8)
+        deeper
+        |> List.skip 8
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
+        deeper
+        |> List.take 8
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b, Exemption.None)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString()))
+      finally
+        CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
+
+    [<Test>]
     let DebugBuildTernaryTestInContext() =
       let sample23 =
         Path.Combine(dir, "Sample23.dll")
