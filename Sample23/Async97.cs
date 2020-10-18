@@ -9,7 +9,7 @@ namespace Sample23
 {
   public class Async97
   {
-    public async Task<object> DoSomething(byte[] buffer, String file)
+    public async Task<object> DoSomething(byte[] buffer, string file)
     {
       try
       {

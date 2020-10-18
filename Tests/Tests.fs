@@ -890,9 +890,9 @@ module AltCoverTests =
 
       let method =
         (def.MainModule.GetAllTypes()
-         |> Seq.filter (fun t -> t.Name = "Tests")
+         |> Seq.filter (fun t -> t.Name = "Strings")
          |> Seq.head).Methods
-        |> Seq.filter (fun m -> m.Name = "Ternary")
+        |> Seq.filter (fun m -> m.Name = "BRB")
         |> Seq.head
       Visitor.visit [] [] // cheat reset
       try
