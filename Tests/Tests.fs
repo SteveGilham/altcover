@@ -900,14 +900,14 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
-        Assert.That(deeper.Length, Is.EqualTo 5)
+        Assert.That(deeper.Length, Is.EqualTo 3)
         deeper
-        |> List.skip 3
+        |> List.skip 1
         |> List.iteri (fun i node ->
              match node with
              | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
         deeper
-        |> List.take 3
+        |> List.take 1
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b, Exemption.None)) ->
