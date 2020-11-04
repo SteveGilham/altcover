@@ -397,7 +397,7 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
+  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
