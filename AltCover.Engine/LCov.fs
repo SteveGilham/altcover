@@ -42,7 +42,6 @@ module internal LCov =
       //   is stored in the following format:
       //
       //     TN:<test name>
-      writer.WriteLine "TN:"
       match format with
       | ReportFormat.NCover ->
           report.Descendants("method".X)
@@ -58,6 +57,7 @@ module internal LCov =
                 // containing filename and coverage data:
                 //
                 //  SF:<absolute path to the source file>
+                writer.WriteLine "TN:"
                 writer.WriteLine("SF:" + f)
                 let fullname (m : XElement) =
                   let fna = m.Attribute("fullname".X)
