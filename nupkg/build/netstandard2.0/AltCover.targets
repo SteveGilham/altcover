@@ -48,8 +48,18 @@
       <AltCoverShowStatic Condition="'$(AltCoverShowStatic' != '+' AND '$(AltCoverShowStatic' != '++'">-</AltCoverShowStatic>
       <AltCoverReportFormat Condition="'$(AltCoverReportFormat)' == ''">OpenCover</AltCoverReportFormat>
     </PropertyGroup>
+
     <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
+
+    <ItemGroup>
+      <AltCoverXmlOutput2 Include="$(AltCoverXmlReport)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <AltCoverXmlReport Condition="'$(AltCoverXmlReportByProject)' != ''">%(AltCoverXmlOutput2.RootDir)/%(AltCoverXmlOutput2.Directory)/%(AltCoverXmlOutput2.Filename).$(ProjectName)%(AltCoverXmlOutput2.Extension)</AltCoverXmlReport>
+    </PropertyGroup>
+
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories="@(OutputDirectory)"
@@ -84,7 +94,7 @@
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
   <Target Name="VSTest">
-    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop" />
+    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop"/>
     <CallTarget Targets="AltCoverVSTestCore" />
   </Target>
 
