@@ -3917,7 +3917,7 @@ _Target "Issue67" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue72" (fun _ ->
+_Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.com/SteveGilham/altcover/issues/72
   try
     Directory.ensure "./Sample16/Test/_Issue72"
     Shell.cleanDir ("./Sample16/Test/_Issue72")
