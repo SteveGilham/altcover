@@ -3921,14 +3921,19 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
   try
     Directory.ensure "./Sample16/Test/_Issue72"
     Shell.cleanDir ("./Sample16/Test/_Issue72")
+    Directory.ensure "./Sample16/Test/_Issue72b"
+    Shell.cleanDir ("./Sample16/Test/_Issue72b")
 
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./Sample16/Test/_Issue72/NuGet.config"
+    config.Save "./Sample16/Test/_Issue72b/NuGet.config"
 
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.json")
+    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.cs")
+    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.json")
 
     let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
 
@@ -3939,13 +3944,14 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     csproj.Save "./Sample16/Test/_Issue72/Test.csproj"
+    csproj.Save "./Sample16/Test/_Issue72b/Test2.csproj"
 
     let p0 =
       { Primitive.PrepareOptions.Create() with
           LocalSource = true
           VisibleBranches = false
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./original.xml" }
+          XmlReport = "./original.$(ProjectName).xml" }
 
     let pp0 = AltCover.PrepareOptions.Primitive p0
     let c0 = Primitive.CollectOptions.Create()
@@ -3958,7 +3964,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open,
+         new FileStream("./Sample16/Test/_Issue72/original.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -3978,7 +3984,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
           LocalSource = true
           VisibleBranches = true
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./combined.xml" }
+          XmlReport = "./combined.$(ProjectName).xml" }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
     let c0 = Primitive.CollectOptions.Create()
@@ -3991,7 +3997,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open,
+         new FileStream("./Sample16/Test/_Issue72/combined.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -4003,6 +4009,19 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
       //  Assert.That
       //    (found, Is.EquivalentTo [ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ],
       //     sprintf "combined: %A" found)
+
+    // Issue 98 optest
+    printfn "----------------------------- issue 98  ----------------------------------------"
+    Shell.cleanDir ("./Sample16/Test/_Intermediate")
+    let psln = AltCover.PrepareOptions.Primitive {p0 with XmlReport = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test") with
+            Configuration = DotNet.BuildConfiguration.Debug
+            NoBuild = false }).WithAltCoverOptions psln cc0 ForceTrue)
+        .WithAltCoverImportModule().WithAltCoverGetVersion()
+      |> testWithCLIArguments) "Issue72.sln"
+    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test.xml") @>
+    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test2.xml") @>
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version

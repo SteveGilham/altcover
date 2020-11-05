@@ -20,46 +20,6 @@
   <UsingTask TaskName="AltCover.RunSettings"
         AssemblyFile="$(AltCoverEngine)" />
 
-  <UsingTask TaskName="MakeSubstitutions"
-              TaskFactory="RoslynCodeTaskFactory"
-              AssemblyFile="$(MSBuildBinPath)\Microsoft.Build.Tasks.Core.dll">
-      <ParameterGroup>
-          <Raw ParameterType="System.String" Required="true" />
-          <Expanded ParameterType="System.String" Output="true" />
-      </ParameterGroup>
-      <Task>
-          <Using Namespace="System" />
-          <Code Type="Fragment" Language="C#">
-            <![CDATA[
-            var task = this.GetType().BaseType.AssemblyQualifiedName;
-            Log.LogMessageFromText($"Task: '{task}'", MessageImportance.High);
-            Log.LogMessage(MessageImportance.High, "Hello from an inline task created by Roslyn!");
-            Log.LogMessageFromText($"Raw: '{Raw}'", MessageImportance.High);
-            var projectFile = BuildEngine.ProjectFileOfTaskNode;
-            Log.LogMessageFromText($"projectFile: '{projectFile}'", MessageImportance.High);
-            var where = BuildEngine.GetType().AssemblyQualifiedName;
-            Log.LogMessageFromText($"BuildEngine: '{where}'", MessageImportance.High);
-            foreach(var p in BuildEngine.GetType().GetProperties())
-            {
-               Log.LogMessageFromText($"{p.Name}: '{p.PropertyType.FullName}'", MessageImportance.High);
-            }
-
-            //var buildEngine = new Microsoft.Build.Evaluation.Engine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory());
-            //var project = new Microsoft.Build.Evaluation.Project(buildEngine);
-            //Log.LogMessageFromText($"project: '{project}'", MessageImportance.High);
-            //project.Load(projectFile);
-            //foreach(var o in project.EvaluatedProperties)
-            //{
-              // Use properties
-              //Log.LogMessageFromText($"eval: '{o}'", MessageImportance.High);
-            //}
-            Expanded = Raw.ToUpperInvariant();
-            Log.LogMessageFromText($"Expanded: '{Expanded}'", MessageImportance.High);
-          ]]>
-          </Code>
-      </Task>
-  </UsingTask>        
-
   <PropertyGroup>
     <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
     <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
@@ -82,6 +42,10 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <AltCoverDollarChar>$</AltCoverDollarChar>
+      <AltCoverProjectName>$(AltCoverDollarChar)(ProjectName)</AltCoverProjectName>
+      <AltCoverSolutionDir>$(AltCoverDollarChar)(SolutionDir)</AltCoverSolutionDir>
+      <AltCoverNewGuid>$(AltCoverDollarChar)([System.Guid]::NewGuid())</AltCoverNewGuid>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework).xml</AltCoverXmlReport>
@@ -89,29 +53,14 @@
       <AltCoverReportFormat Condition="'$(AltCoverReportFormat)' == ''">OpenCover</AltCoverReportFormat>
     </PropertyGroup>
 
-    <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
-    <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
-
-    <Message Importance="High" Text="ProjectName: $(ProjectName)" />
-    <Message Importance="High" Text="AltCoverXmlReport before: $(AltCoverXmlReport)" />
-    <Message Importance="High" Text="AltCoverXmlReportByProject: $(AltCoverXmlReportByProject)" />
-
-    <ItemGroup>
-      <AltCoverXmlOutput2 Include="$(AltCoverXmlReport)" />
-    </ItemGroup>
-
     <PropertyGroup>
-      <AltCoverXmlReport Condition="'$(AltCoverXmlReportByProject)' != ''">%(AltCoverXmlOutput2.RootDir)/%(AltCoverXmlOutput2.Directory)/%(AltCoverXmlOutput2.Filename).$(ProjectName)%(AltCoverXmlOutput2.Extension)</AltCoverXmlReport>
+      <AltCoverXmlReport1>$(AltCoverXmlReport.Replace($(AltCoverProjectName),$(ProjectName)).Replace($(AltCoverNewGuid),$([System.Guid]::NewGuid().ToString())))</AltCoverXmlReport1>
+      <AltCoverXmlReport2 Condition="'$(SolutionDir)' == ''">$(AltCoverXmlReport1.Replace($(AltCoverSolutionDir),'')</AltCoverXmlReport2>
+      <AltCoverXmlReport2 Condition="'$(SolutionDir)' != ''">$(AltCoverXmlReport1.Replace($(AltCoverSolutionDir),$(SolutionDir)))</AltCoverXmlReport2>
     </PropertyGroup>
 
-    <Message Importance="High" Text="AltCoverXmlReport after: $(AltCoverXmlReport)" />
-
-    <MakeSubstitutions Raw="$(AltCoverXmlReport)">
-        <Output TaskParameter="Expanded" PropertyName="AltCoverXmlReport" />
-    </MakeSubstitutions>
-
-    <Message Importance="High" Text="AltCoverXmlReport after substitution: $(AltCoverXmlReport)" />
-
+    <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
+    <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories="@(OutputDirectory)"
@@ -119,7 +68,7 @@
       Dependencies="$(AltCoverDependencyList.Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"
       StrongNameKey="$(AltCoverStrongNameKey)"
-      XmlReport="$(AltCoverXmlReport)"
+      XmlReport="$(AltCoverXmlReport2)"
       FileFilter="$(AltCoverFileFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
@@ -146,7 +95,7 @@
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
   <Target Name="VSTest">
-    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop"/>
+    <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop" />
     <CallTarget Targets="AltCoverVSTestCore" />
   </Target>
 
