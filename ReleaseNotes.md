@@ -4,7 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 7.1.xxx (Genbu series release 7)
 * As well as interfaces, hide other types with no non-abstract methods (e.g. plain enums) in the coverage
-* For `dotnet test ... /p:AltCoverXmlReport=...` , if the file name contains one of the following literals substitute in the actual values for
+* For `dotnet test ... /p:AltCoverXmlReport=...` , if the file name contains one of the following literals
   * $(ProjectName)  
   * $(SolutionDir)  
   * $([System.Guid]::NewGuid())  
