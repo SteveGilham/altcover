@@ -783,8 +783,6 @@ module internal Runner =
 
     let internal postProcess (counts : Dictionary<string, Dictionary<int, PointVisit>>)
         format (document : XmlDocument) =
-      if counts.ContainsKey Track.Entry || counts.ContainsKey Track.Exit
-      then () // TODO -- to silence Gendarme
       PostProcess.action "sl" counts format (XmlAbstraction.XmlDoc document)
 
     let internal point (pt : XmlElement) items outername innername attribute =

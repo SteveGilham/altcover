@@ -172,6 +172,22 @@ module internal PostProcess =
     | null -> (false, Unchecked.defaultof<'b>)
     | _ -> d.TryGetValue key
 
+  let internal fillTrackedVisits
+      (document : XmlAbstraction)
+      (tracks : Dictionary<int, PointVisit>)
+      (attribute : string) =
+      document.RootElement.GetElementsByTagName "TrackedMethod"
+      |> Seq.iter (fun xel ->
+        let (ok, index) = xel.GetAttribute("uid") |> Int32.TryParse
+        if ok && tracks.ContainsKey index
+        then
+          let times = tracks.[index].Tracks
+                      |> Seq.map (fun t -> match t with
+                                           | Time tx -> sprintf "%A" tx
+                                           | _ -> String.Empty) // never happens
+                      |> Seq.filter (fun s -> s.Length > 0)
+          xel.SetAttribute attribute <| String.Join(";", times))
+
   let internal action
       orderAttr
       (counts : Dictionary<string, Dictionary<int, PointVisit>>)
@@ -180,6 +196,11 @@ module internal PostProcess =
     match format with
     | ReportFormat.OpenCoverWithTracking
     | ReportFormat.OpenCover ->
+        if counts.ContainsKey Track.Entry
+        then fillTrackedVisits document counts.[Track.Entry] "entry"
+        if counts.ContainsKey Track.Exit
+        then fillTrackedVisits document counts.[Track.Exit] "exit"
+
         let scoreToString raw =
           (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
 
