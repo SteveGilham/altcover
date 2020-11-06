@@ -128,6 +128,8 @@ module AltCoverTests =
   [<Test>]
   let PayloadGeneratedIsAsExpected() =
     try
+      Instance.I.isRunner <- false
+      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
       Assert.True( Instance.I.callerId() = 0 )
       Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
       Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
@@ -145,6 +147,7 @@ module AltCoverTests =
       Assert.True(( Adapter.PayloadSelector true = (Adapter.Call 4321) ))
     finally
       Instance.Pop()
+      Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
     let expected2 = Adapter.Time 1311693406324658000L
@@ -162,6 +165,75 @@ module AltCoverTests =
     Assert.True( Instance.I.callerId() = 0 )
     Instance.Pop()
     Assert.True( Instance.I.callerId() = 0 )
+
+  [<Test>]
+  let PayloadWithEntryExitGeneratedIsAsExpected() =
+    try
+      Instance.I.isRunner <- true
+      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+      Adapter.VisitsClear()
+
+      Assert.True( Instance.I.callerId() = 0 )
+      Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
+      Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
+      Instance.Push 4321
+      Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
+      Assert.True( Adapter.PayloadSelector true = (Adapter.Call 4321) )
+      try
+        Instance.Push 6789
+        // 0x1234123412341234 == 1311693406324658740
+        let result = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+        let expected = Adapter.NewBoth(1311693406324658000L, 6789)
+        Assert.True(( result = expected ))
+      finally
+        Instance.Pop()
+      Assert.True(( Adapter.PayloadSelector true = (Adapter.Call 4321) ))
+    finally
+      Instance.Pop()
+      Instance.I.isRunner <- false
+      Instance.CoverageFormat <- ReportFormat.NCover
+
+    let result2 = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+    let expected2 = Adapter.Time 1311693406324658000L
+    Assert.True(( result2 = expected2 ))
+    let v1 = DateTime.UtcNow.Ticks
+    let probed = Adapter.PayloadControl(1000L, true)
+    let v2 = DateTime.UtcNow.Ticks
+    Assert.True( Adapter.Null()
+                 |> Adapter.untime
+                 |> Seq.isEmpty )
+    let [ probe ] =  Adapter.untime probed |> Seq.toList
+    Assert.True( probe % 1000L = 0L )
+    Assert.True( probe <= v2 )
+    Assert.True( probe >= (1000L * (v1 / 1000L)) )
+    Assert.True( Instance.I.callerId() = 0 )
+    Instance.Pop()
+    Assert.True( Instance.I.callerId() = 0 )
+    Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [Track.Entry; Track.Exit])
+    Assert.That(Instance.I.visits.[Track.Entry].Keys, Is.EquivalentTo [4321; 6789])
+    Assert.That(Instance.I.visits.[Track.Exit].Keys, Is.EquivalentTo [4321; 6789])
+    let a = Instance.I.visits.[Track.Entry].[4321]
+    Assert.That (a.Count, Is.EqualTo 0L)
+    Assert.That (a.Tracks |> Seq.length, Is.EqualTo 1)
+    let b = Instance.I.visits.[Track.Entry].[6789]
+    Assert.That (b.Count, Is.EqualTo 0L)
+    Assert.That (b.Tracks |> Seq.length, Is.EqualTo 1)
+    let c = Instance.I.visits.[Track.Exit].[6789]
+    Assert.That (c.Count, Is.EqualTo 0L)
+    Assert.That (c.Tracks |> Seq.length, Is.EqualTo 1)
+    let d = Instance.I.visits.[Track.Exit].[4321]
+    Assert.That (d.Count, Is.EqualTo 0L)
+    Assert.That (d.Tracks |> Seq.length, Is.EqualTo 1)
+
+    let a2 = a.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    let b2 = b.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    Assert.That (b2 >= a2)
+    let c2 = c.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    Assert.That (c2 >= b2)
+    let d2 = d.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    Assert.That (d2 >= c2, sprintf "%A >= %A" d2 c2)
+
+    Adapter.VisitsClear()
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously() =

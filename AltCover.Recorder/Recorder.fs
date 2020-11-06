@@ -133,11 +133,13 @@ module Instance =
       //let s = sprintf "push %d -> %A" x self.caller
       //System.Diagnostics.Debug.WriteLine(s)
       member self.Pop() =
-        self.caller <-
+        let (stack, head) =
           match self.caller with
           | []
-          | [ 0 ] -> [ 0 ]
-          | _ :: xs -> xs
+          | [ 0 ] ->([ 0 ], None)
+          | h :: xs -> (xs, Some h)
+        self.caller <- stack
+        head
 
       //let s = sprintf "pop -> %A"self.caller
       //System.Diagnostics.Debug.WriteLine(s)
@@ -355,8 +357,17 @@ module Instance =
           then I.payloadSelector I.isOpenCoverRunner
           else Null) moduleId hitPointId
 
+  // The moduleId strings are not the hash or guids normally found there
   let Push caller = I.push caller
-  let Pop() = I.pop()
+                    if CoverageFormat = ReportFormat.OpenCoverWithTracking &&
+                       I.isOpenCoverRunner()
+                    then I.visitSelection (Time DateTime.UtcNow.Ticks) Track.Entry caller
+  let Pop() = let caller = I.pop()
+              if CoverageFormat = ReportFormat.OpenCoverWithTracking &&
+                I.isOpenCoverRunner() &&
+                caller.IsSome
+              then I.visitSelection (Time DateTime.UtcNow.Ticks) Track.Exit caller.Value
+
   // Used by the datacollector
   let FlushFinish() = I.flushAll ProcessExit
 
