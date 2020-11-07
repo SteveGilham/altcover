@@ -183,10 +183,12 @@ module internal PostProcess =
         then
           let times = tracks.[index].Tracks
                       |> Seq.map (fun t -> match t with
-                                           | Time tx -> sprintf "%A" tx
+                                           | Time tx -> sprintf "%d" tx
                                            | _ -> String.Empty) // never happens
                       |> Seq.filter (fun s -> s.Length > 0)
-          xel.SetAttribute attribute <| String.Join(";", times))
+          let attrVal = String.Join(";", times)
+          if attrVal.Length > 0
+          then xel.SetAttribute attribute attrVal)
 
   let internal action
       orderAttr
