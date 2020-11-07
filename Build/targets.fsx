@@ -3261,6 +3261,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
+  let before = Actions.ticksNow()
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
@@ -3297,7 +3298,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
       ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
-  Actions.CheckSample4Visits x)
+  Actions.CheckSample4Visits before x)
 
 _Target "MSBuildTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -3306,12 +3307,13 @@ _Target "MSBuildTest" (fun _ ->
   let x = Path.getFullName "./_Reports/MSBuildTest.xml"
 
   // Run
+  let before = Actions.ticksNow()
   Shell.cleanDir (sample @@ "_Binaries")
   DotNet.msbuild (fun opt ->
     opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample }))
     (build @@ "msbuildtest.proj")
   printfn "Checking samples4 output"
-  Actions.CheckSample4 x
+  Actions.CheckSample4 before x
 
   // touch-test framework
   let unpack =
@@ -3331,6 +3333,7 @@ _Target "MSBuildTest" (fun _ ->
             "DebugSymbols", "True" ] }) "./Sample4/Sample4LongForm.fsproj")
 
 _Target "ApiUse" (fun _ ->
+  let before = Actions.ticksNow()
   try
     Directory.ensure "./_ApiUse"
     Shell.cleanDir ("./_ApiUse")
@@ -3524,7 +3527,7 @@ group NetcoreBuild
       "running fake script returned with a non-zero exit code"
 
     let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.netcoreapp2.1.xml"
-    Actions.CheckSample4 x
+    Actions.CheckSample4 before x
   finally
     [ "altcover"; "altcover.api"; "altcover.fake" ]
     |> List.iter (fun f ->
@@ -3574,6 +3577,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     )
 
     printfn "Simple positive case ------------------------------------------------"
+    let before = Actions.ticksNow()
     let p0 = Primitive.PrepareOptions.Create()
     let c0 = Primitive.CollectOptions.Create()
 
@@ -3590,7 +3594,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       |> testWithCLIArguments) "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
-    Actions.CheckSample4 x
+    Actions.CheckSample4 before x
 
     printfn "optest failing instrumentation ------------------------------------------------"
 
@@ -4068,6 +4072,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     |> List.iter (AltCoverCommand.Options.Create
                   >> AltCoverCommand.run)
 
+    let before = Actions.ticksNow()
+
     Actions.Run("altcover", ".", ["TargetsPath"]) "altcover target"
     let prep =
       AltCover.PrepareOptions.Primitive
@@ -4095,7 +4101,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
       |> AltCoverCommand.Collect
     { AltCoverCommand.Options.Create collect with WorkingDirectory = working } |> AltCoverCommand.run
 
-    Actions.CheckSample4Visits x
+    Actions.CheckSample4Visits before x
     let command =
       """$ImportModule = (altcover ImportModule | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ImportModule; ConvertTo-BarChart -?"""
     CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
