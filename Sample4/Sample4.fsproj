@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <UsingTask TaskName="AltCover.Prepare"
-             Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')"
-             AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll" />
+  <UsingTask TaskName="AltCover.Prepare" Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')" AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
@@ -50,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(MSBuildTest)' == 'true'">
