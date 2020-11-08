@@ -164,7 +164,7 @@ type internal KeyRecord =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SequenceType =
   | Genuine
-  | FakeAfterReturn
+  | FakeAtReturn
 
 [<RequireQualifiedAccess>]
 module internal KeyStore =
@@ -780,7 +780,7 @@ module internal Visitor =
     let internal fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
       match seq with
       | null ->
-          if genuine = FakeAfterReturn && instruction.IsNotNull
+          if genuine = FakeAtReturn && instruction.IsNotNull
              && instruction.OpCode = OpCodes.Ret then
             SequencePoint(instruction, Document(null))
           else
@@ -792,7 +792,7 @@ module internal Visitor =
       instructions
       |> Seq.map (fun i ->
            let seq = dbg.GetSequencePoint i
-           fakeSequencePoint genuine seq i.Previous)
+           fakeSequencePoint genuine seq i)
       |> Seq.tryFind isSequencePoint
 
     let internal findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
@@ -832,7 +832,7 @@ module internal Visitor =
           if isNull state || finish = state.Previous then None else Some(state, state.Next))
           start
         |> Seq.toList
-      findEffectiveSequencePoint FakeAfterReturn dbg range
+      findEffectiveSequencePoint FakeAtReturn dbg range
 
     let rec internal lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
       let n = i.Next

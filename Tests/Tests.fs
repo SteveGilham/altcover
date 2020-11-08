@@ -885,18 +885,18 @@ module AltCoverTests =
 
       // transparent
       Assert.That(Visitor.I.fakeSequencePoint Genuine seq nop, Is.SameAs seq)
-      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn seq nop, Is.SameAs seq)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAtReturn seq nop, Is.SameAs seq)
 
       Assert.That(Visitor.I.fakeSequencePoint Genuine null null, Is.Null)
-      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn null null, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAtReturn null null, Is.Null)
 
       Assert.That(Visitor.I.fakeSequencePoint Genuine null nop, Is.Null)
-      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn null nop, Is.Null)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAtReturn null nop, Is.Null)
 
       Assert.That(Visitor.I.fakeSequencePoint Genuine null ret, Is.Null)
 
       // One fake-out
-      Assert.That(Visitor.I.fakeSequencePoint FakeAfterReturn null ret, Is.Not.Null)
+      Assert.That(Visitor.I.fakeSequencePoint FakeAtReturn null ret, Is.Not.Null)
 
     [<Test>]
     let ReleaseBuildTernaryTestInContext() =
