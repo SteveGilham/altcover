@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 7.1.xxx (Genbu series release 7)
 * [BUGFIX] Make LCov tracefile output follow what is actually generated, and not just what the `man` page says
+* Handle the subtly different IL in `public int string Ternary(bool select) => !select ? Left : Right;` in the same way as `public int Ternary (bool select, int left, int right) { return select ? left : right; }` and show the branch.
 * For  <TrackedMethod /> records, add `entry` and `exit` attributes as semicolon separated lists of the UTC times in ticks at which the method was entered and returns
 * As well as interfaces, hide other types with no non-abstract methods (e.g. plain enums) in the coverage
 * For `dotnet test ... /p:AltCoverXmlReport=...` , if the value contains one of the following literals
