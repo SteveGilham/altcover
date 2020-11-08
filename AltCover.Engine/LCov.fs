@@ -36,6 +36,25 @@ module internal LCov =
     let internal multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
       multiSort lineOfMethod l
 
+  // from a real sample e.g. https://pastebin.com/588FggQg
+  (*
+TN:
+SF:...
+FNF:0
+FNH:0
+DA:5,59
+LF:1
+LH:1
+BRF:0
+BRH:0
+end_of_record
+TN:
+SF:...
+FN:4,(anonymous_0)
+...
+  *)
+  // it looks like TN: records precede every SF: record
+
   // from e.g. https://manpages.debian.org/unstable/lcov/geninfo.1.en.html
   // Following is a quick description of the tracefile format as used by 
   // genhtml, geninfo and lcov.
