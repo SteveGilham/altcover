@@ -43,7 +43,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="NUnit" Version="3.12.0" Condition="'$(TargetFramework)' != 'net20'" />
     <!-- last net2.0 support here -->
     <PackageReference Include="NUnit" Version="3.11.0" Condition="'$(TargetFramework)' == 'net20'" />
@@ -70,8 +70,8 @@
 
   <ItemGroup>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
   </ItemGroup>
 
@@ -86,5 +86,4 @@
       <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
-
 </Project>

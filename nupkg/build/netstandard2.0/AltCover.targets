@@ -42,12 +42,23 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <AltCoverDollarChar>$</AltCoverDollarChar>
+      <AltCoverProjectName>$(AltCoverDollarChar)(ProjectName)</AltCoverProjectName>
+      <AltCoverSolutionDir>$(AltCoverDollarChar)(SolutionDir)</AltCoverSolutionDir>
+      <AltCoverNewGuid>$(AltCoverDollarChar)([System.Guid]::NewGuid())</AltCoverNewGuid>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework).xml</AltCoverXmlReport>
       <AltCoverShowStatic Condition="'$(AltCoverShowStatic' != '+' AND '$(AltCoverShowStatic' != '++'">-</AltCoverShowStatic>
       <AltCoverReportFormat Condition="'$(AltCoverReportFormat)' == ''">OpenCover</AltCoverReportFormat>
     </PropertyGroup>
+
+    <PropertyGroup>
+      <AltCoverXmlReport1>$(AltCoverXmlReport.Replace($(AltCoverProjectName),$(ProjectName)).Replace($(AltCoverNewGuid),$([System.Guid]::NewGuid().ToString())))</AltCoverXmlReport1>
+      <AltCoverXmlReport2 Condition="'$(SolutionDir)' == ''">$(AltCoverXmlReport1.Replace($(AltCoverSolutionDir),'')</AltCoverXmlReport2>
+      <AltCoverXmlReport2 Condition="'$(SolutionDir)' != ''">$(AltCoverXmlReport1.Replace($(AltCoverSolutionDir),$(SolutionDir)))</AltCoverXmlReport2>
+    </PropertyGroup>
+
     <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
@@ -57,7 +68,7 @@
       Dependencies="$(AltCoverDependencyList.Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"
       StrongNameKey="$(AltCoverStrongNameKey)"
-      XmlReport="$(AltCoverXmlReport)"
+      XmlReport="$(AltCoverXmlReport2)"
       FileFilter="$(AltCoverFileFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"

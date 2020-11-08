@@ -1901,7 +1901,7 @@ module AltCoverRunnerTests =
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
-        let processing name (l : String list) = 
+        let processing name (l : String list) =
             use sink =
               new DeflateStream(File.OpenWrite(name + ".0.acv"),
                                 CompressionMode.Compress)
@@ -1919,7 +1919,7 @@ module AltCoverRunnerTests =
         Assert.That(File.Exists(test + ".0.acv"))
 
         let r =
-          Runner.J.getMonitor counts unique (processing unique) 
+          Runner.J.getMonitor counts unique (processing unique)
             [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
@@ -2097,6 +2097,76 @@ module AltCoverRunnerTests =
       test <@ summary |> Seq.length = 1 @>
       let attr = (summary |> Seq.head).GetAttribute("minCrapScore")
       test <@ attr = "0" @>
+
+    [<Test>]
+    let PostprocessShouldHandleEntryAndExitTimes() =
+      let minimal = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+  <Modules>
+    <Module hash="3C-49-7E-1B-01-1F-9C-44-DA-C1-13-A1-A8-48-DB-6C-2A-0B-DE-2F">
+      <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+      <ModulePath>Sample4.dll</ModulePath>
+      <ModuleTime>2020-11-07T13:49:28.5801620Z</ModuleTime>
+      <ModuleName>Sample4</ModuleName>
+      <Files />
+      <Classes />
+      <TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+      </TrackedMethods>
+    </Module>
+  </Modules>
+</CoverageSession>"""
+      let after = XmlDocument()
+      use reader= new StringReader(minimal)
+      after.Load(reader)
+      let epoch = DateTime(2020, 11, 7)
+      let ticks = epoch.Ticks // = 637403040000000000
+      let v1 = PointVisit.Create()
+      v1.Track (Time (ticks + 10L))
+      v1.Track (Call 23)
+      v1.Track (Time (ticks + 20L))
+      let v2 = PointVisit.Create()
+      v2.Track (Time (ticks + 11L))
+      let v3 = PointVisit.Create()
+      v3.Track (Time (ticks + 30L))
+      let v4 = PointVisit.Create()
+      v4.Track (Call 42)
+
+      let entries = Dictionary<int, PointVisit>()
+      entries.Add(1, v1)
+      entries.Add(2, v3)
+      let exits = Dictionary<int, PointVisit>()
+      exits.Add(1, v2)
+      exits.Add(2, v4)
+
+      let counts = Dictionary<string, Dictionary<int, PointVisit>>()
+      counts.Add(Track.Entry, entries)
+      counts.Add(Track.Exit, exits)
+      Runner.J.postProcess counts ReportFormat.OpenCover after
+      let processed = after.DocumentElement.OuterXml.Replace("\r\n","\n")
+
+      let expected = """<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+<Modules>
+<Module hash="3C-49-7E-1B-01-1F-9C-44-DA-C1-13-A1-A8-48-DB-6C-2A-0B-DE-2F">
+<Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+<ModulePath>Sample4.dll</ModulePath>
+<ModuleTime>2020-11-07T13:49:28.5801620Z</ModuleTime>
+<ModuleName>Sample4</ModuleName>
+<Files />
+<Classes />
+<TrackedMethods>
+<TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" entry="637403040000000010;637403040000000020" exit="637403040000000011" />
+<TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" entry="637403040000000030" />
+</TrackedMethods>
+</Module>
+</Modules>
+</CoverageSession>"""
+
+      Assert.That (processed, Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
+      test <@ processed = expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
 
     [<Test>]
     let PostprocessShouldRestoreKnownOpenCoverState() =

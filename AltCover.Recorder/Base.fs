@@ -57,6 +57,9 @@ type internal Track =
   | Call of int
   | Both of Pair
   | Table of Dictionary<string, Dictionary<int, PointVisit>>
+  with
+  static member internal Entry = "\u2611" // BALLOT BOX WITH CHECK
+  static member internal Exit = "\u2612" // BALLOT BOX WITH X
 and [<NoComparison>]
     [<ExcludeFromCodeCoverage>]
     internal PointVisit =

@@ -397,8 +397,7 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./FixCop/FixCop.fsproj" // not in solution
-    "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
+  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
@@ -571,30 +570,6 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
 _Target "FxCop" (fun _ ->
   Directory.ensure "./_Reports"
-  let runtimelist = CreateProcess.fromRawCommandLine "dotnet" "--list-runtimes"
-                    |> CreateProcess.redirectOutput
-                    |> Proc.run
-
-  let runtime = runtimelist.Result.Output.Split('\n')      
-                |> Seq.filter (fun s -> s.Contains "Microsoft.NETCore.App 3.1." )
-                |> Seq.last
-
-  let rtpath = runtime.Trim().Replace("]", "").Split('[') |> Seq.last 
-  printfn "runtime path = %s" rtpath
-  let rtver = runtime.Split(' ').[1]
-  printfn "runtime version = %s" rtver
-  let pathformpath = rtpath @@ rtver
-
-  MSBuild.build (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Normal
-        ConsoleLogParameters = []
-        DistributedLoggers = None
-        DisableInternalBinLog = true
-        Properties =
-          [ "Configuration", "Release"
-            "Platform", "x86" // important!!
-            "DebugSymbols", "True" ] }) "./FixCop/FixCop.fsproj"
 
   let dumpSuppressions (report : String) =
     let x = XDocument.Load report
@@ -681,60 +656,23 @@ _Target "FxCop" (fun _ ->
     standardRules
   ]
 
-// TODO -- "dotnet publish -c Debug --no-build -f netstandard2.0 /p:AltCoverGendarme=true" each project
-// then look in the publish directory
-// Currently get
-//"Unable to cast object of type 'Microsoft.FxCop.Sdk.ClassNode' to type 'Microsoft.FxCop.Sdk.DelegateNode'."
-//"   at Microsoft.FxCop.Sdk.SystemTypes.Initialize(Boolean doNotLockFile, Boolean getDebugInfo, AssemblyReferenceResolver resolver)
-//at Microsoft.FxCop.Sdk.TargetPlatform.ResetCci2(String platformAssembliesLocation, Boolean doNotLockFile, Boolean getDebugInfo, ICollection`1 referenceAssemblies, ICollection`1 assemblyReferenceDirectories, AssemblyReferenceResolver resolver)
-//at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.ResetCci(String platformAssembliesLocation)
-//at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.CanLoadTargetFile(TargetFile target)
-//at Microsoft.FxCop.Common.EngineManager.LoadTargets(TargetFile target, Boolean resetCounts, String loadEngine)"
-
-  [
-    "./AltCover.Cake/AltCover.Cake.csproj"
-    "./AltCover.DataCollector/AltCover.DataCollector.csproj"
-    "./AltCover.DotNet/AltCover.DotNet.fsproj"
-    "./AltCover.Engine/AltCover.Engine.fsproj"
-    "./AltCover.Fake/AltCover.Fake.fsproj"
-    "./AltCover.Fake.DotNet.Testing.AltCover/AltCover.Fake.DotNet.Testing.AltCover.fsproj"
-    "./AltCover.FontSupport/AltCover.FontSupport.csproj"
-    "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
-    "./AltCover.Toolkit/AltCover.Toolkit.fsproj"
-    "./AltCover.UICommon/AltCover.UICommon.fsproj"
-    // TODO Avalonia
-  ]
-  |> List.iter (fun p ->
-      DotNet.publish (fun options ->
-        { options with
-            MSBuildParams = { options.MSBuildParams with Properties = ("AltCoverGendarme", "true") :: options.MSBuildParams.Properties }
-            NoBuild = true
-            Configuration = DotNet.BuildConfiguration.Debug
-            Framework = Some "netstandard2.0" }) p)
-
-  [
-    "./AltCover.Visualizer/AltCover.Visualizer.fsproj"
-    "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
-    ]
-  |> List.iter (fun p ->
-      DotNet.publish (fun options ->
-        { options with
-            MSBuildParams = { options.MSBuildParams with Properties = ("AltCoverGendarme", "true") :: options.MSBuildParams.Properties }
-            NoBuild = true
-            Configuration = DotNet.BuildConfiguration.Debug
-            Framework = Some "netcoreapp2.1" }) p)
-
-  [
-    ([ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ],
+  [ (
+     (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION")
+      then
+        [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
+          "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
+      else // HACK HACK HACK
+        [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
-    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
-     [],
-       "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
-// Do not load at .netstd2.0
+    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
+      [],
+      List.concat [
+        defaultRules
+        cantStrongName  // can't strongname this as Fake isn't strongnamed
+      ])
     ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [],
      defaultRules)
@@ -745,7 +683,20 @@ _Target "FxCop" (fun _ ->
         defaultCSharpRules
         cantStrongName // can't strongname this as Cake isn't strongnamed
       ])
-// Currently throws at .netstd2.0
+    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net472/AltCover.Toolkit.dll"
+       "_Binaries/AltCover.DotNet/Debug+AnyCPU/net472/AltCover.DotNet.dll"],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ],
+     [],
+      defaultRules)
+    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net472/AltCover.UICommon.dll"
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
+     [],
+     defaultRules)
+    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
+     [],
+       "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
     ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
      [],
       List.concat [
@@ -774,106 +725,12 @@ _Target "FxCop" (fun _ ->
          dumpSuppressions "_Reports/FxCopReport.xml"
          reraise())
 
-  [
-    (
-     [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/publish/AltCover.FontSupport.dll"
-       "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/publish/AltCover.DataCollector.dll" ],
-      [],
-      standardRules)
-    ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.dll" ],
-      [],
-      List.concat [
-        defaultRules
-        cantStrongName  // can't strongname this as Fake isn't strongnamed
-      ])
-    ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/publish/AltCover.Toolkit.dll"
-       "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/publish/AltCover.DotNet.dll"],
-     [],
-     defaultRules)
-    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ],
-     [],
-      defaultRules)
-    ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/publish/AltCover.UICommon.dll"],
-     [],
-     defaultRules)
-    // // Currently throws
-
-// System.NullReferenceException: Object reference not set to an instance of an object.
-//    at Microsoft.VisualStudio.CodeAnalysis.Phoenix.Utilities.AttributeSymbolExtensions.GetNamedArguments[TArg](AttributeSymbol attribute, String namedArgument, Boolean namedArgumentIsProperty, TArg& value)
-//    at Microsoft.FxCop.Engines.Phoenix.INodeWrappers.PhxTypeWrapper.GetDebuggerDisplayTypeArgumentValue()
-
-//    at Phoenix.CodeAnalysis.DataflowRules.DisposeObjectsBeforeLosingScope.AnalyzeFunction(FunctionUnit functionUnit, WarningEmitter warningEmitter, PathSensitiveAnalysisResult pathSensitiveAnalysisResult, NeedsDisposeAnalysisResult needsDisposeResult)
-
-    // ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/publish/AltCover.Engine.dll" ],
-    // [],
-    //  List.concat [
-    //    defaultRules
-    //    [
-    //      "-Microsoft.Naming#CA1703"   // spelling in resources
-    //      "-Microsoft.Performance#CA1810"  // Static module initializers in $Type classes
-    //    ]
-    //  ])
-      // Current Unloadables
-    // ([
-  // 2x
-  //  <InnerType>Microsoft.FxCop.Sdk.InvalidMetadataException</InnerType>
-  //  <InnerExceptionMessage>The following error was encountered while reading module 'AltCover.Visualizer': Assembly reference cannot be resolved: System.Runtime, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a.</InnerExceptionMessage>
-  //  <InnerStackTrace>   at Microsoft.FxCop.Sdk.Reader.HandleError(ModuleNode mod, String errorMessage)
-  //  at Microsoft.FxCop.Sdk.Reader.GetAssemblyFromReference(AssemblyReference assemblyReference)
-  //  at Microsoft.FxCop.Sdk.AssemblyReference.get_Assembly()
-      //  "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
-      //  "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll"
-    //  ],
-    // [],
-    // defaultRules)
-
-// 2x 
-//  <InnerExceptionMessage>Unable to cast object of type 'Microsoft.FxCop.Sdk.ClassNode' to type 'Microsoft.FxCop.Sdk.DelegateNode'.</InnerExceptionMessage>
-//    <InnerStackTrace>   at Microsoft.FxCop.Sdk.SystemTypes.Initialize(Boolean doNotLockFile, Boolean getDebugInfo, AssemblyReferenceResolver resolver)
-//    at Microsoft.FxCop.Sdk.TargetPlatform.ResetCci2(String platformAssembliesLocation, Boolean doNotLockFile, Boolean getDebugInfo, ICollection`1 referenceAssemblies, ICollection`1 assemblyReferenceDirectories, AssemblyReferenceResolver resolver)
-//    at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.ResetCci(String platformAssembliesLocation)
-//    at Microsoft.FxCop.Engines.Introspection.IntrospectionAnalysisEngine.CanLoadTargetFile(TargetFile target)
-//    at Microsoft.FxCop.Common.EngineManager.LoadTargets(TargetFile target, Boolean resetCounts, String loadEngine)</InnerStackTrace>
-
-    // ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
-    // [],
-    // defaultRules)
-    //([ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
-    //   ],
-    // [],
-    // List.concat [
-    //    defaultCSharpRules
-    //    cantStrongName // can't strongname this as Cake isn't strongnamed
-    //  ])
-  ]
-  |> Seq.iter (fun (files, types, ruleset) ->
-       try
-         printfn "%A" fxcop
-         printfn "%A" files
-         files
-         |> FxCop.run
-              { FxCop.Params.Create() with
-                  PlatformDirectory = pathformpath
-                  WorkingDirectory = "."
-                  ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
-                  UseGAC = true
-                  Verbose = false
-                  ReportFileName = "_Reports/FxCopReport.xml"
-                  Types = types
-                  Rules = ruleset
-                  FailOnError = FxCop.ErrorLevel.Warning
-                  IgnoreGeneratedCode = true }
-       with _ ->
-         dumpSuppressions "_Reports/FxCopReport.xml"
-         reraise())
-
   try
-    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll" ]
+    [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
     |> FxCop.run
          { FxCop.Params.Create() with
-             PlatformDirectory = pathformpath
              WorkingDirectory = "."
-             ToolPath = ((Option.get fxcop) |> Path.GetDirectoryName) @@ "FixCop.exe"
+             ToolPath = Option.get fxcop
              UseGAC = true
              Verbose = false
              ReportFileName = "_Reports/FxCopReport.xml"
@@ -930,9 +787,8 @@ _Target "JustUnitTest" (fun _ ->
 _Target "BuildForUnitTestDotNet" (fun _ ->
   msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
 
-  !!(@"./*Tests/*Tests.fsproj")
-  |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
-                          && s.Contains("Recorder") |> not) // net20
+  !!(@"./*Test*/*Tests.fsproj")
+  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
@@ -943,7 +799,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    !!(@"./*Tests/*Tests.fsproj")
+    !!(@"./*Test*/*Tests.fsproj")
     |> Seq.iter
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
@@ -3405,6 +3261,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
+  let before = Actions.ticksNow()
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
@@ -3441,7 +3298,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
       ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
-  Actions.CheckSample4Visits x)
+  Actions.CheckSample4Visits before x)
 
 _Target "MSBuildTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -3450,12 +3307,13 @@ _Target "MSBuildTest" (fun _ ->
   let x = Path.getFullName "./_Reports/MSBuildTest.xml"
 
   // Run
+  let before = Actions.ticksNow()
   Shell.cleanDir (sample @@ "_Binaries")
   DotNet.msbuild (fun opt ->
     opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample }))
     (build @@ "msbuildtest.proj")
   printfn "Checking samples4 output"
-  Actions.CheckSample4 x
+  Actions.CheckSample4 before x
 
   // touch-test framework
   let unpack =
@@ -3475,6 +3333,7 @@ _Target "MSBuildTest" (fun _ ->
             "DebugSymbols", "True" ] }) "./Sample4/Sample4LongForm.fsproj")
 
 _Target "ApiUse" (fun _ ->
+  let before = Actions.ticksNow()
   try
     Directory.ensure "./_ApiUse"
     Shell.cleanDir ("./_ApiUse")
@@ -3668,7 +3527,7 @@ group NetcoreBuild
       "running fake script returned with a non-zero exit code"
 
     let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.netcoreapp2.1.xml"
-    Actions.CheckSample4 x
+    Actions.CheckSample4 before x
   finally
     [ "altcover"; "altcover.api"; "altcover.fake" ]
     |> List.iter (fun f ->
@@ -3718,6 +3577,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     )
 
     printfn "Simple positive case ------------------------------------------------"
+    let before = Actions.ticksNow()
     let p0 = Primitive.PrepareOptions.Create()
     let c0 = Primitive.CollectOptions.Create()
 
@@ -3734,7 +3594,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       |> testWithCLIArguments) "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
-    Actions.CheckSample4 x
+    Actions.CheckSample4 before x
 
     printfn "optest failing instrumentation ------------------------------------------------"
 
@@ -4061,18 +3921,23 @@ _Target "Issue67" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue72" (fun _ ->
+_Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.com/SteveGilham/altcover/issues/72
   try
     Directory.ensure "./Sample16/Test/_Issue72"
     Shell.cleanDir ("./Sample16/Test/_Issue72")
+    Directory.ensure "./Sample16/Test/_Issue72b"
+    Shell.cleanDir ("./Sample16/Test/_Issue72b")
 
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./Sample16/Test/_Issue72/NuGet.config"
+    config.Save "./Sample16/Test/_Issue72b/NuGet.config"
 
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.json")
+    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.cs")
+    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.json")
 
     let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
 
@@ -4083,13 +3948,14 @@ _Target "Issue72" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     csproj.Save "./Sample16/Test/_Issue72/Test.csproj"
+    csproj.Save "./Sample16/Test/_Issue72b/Test2.csproj"
 
     let p0 =
       { Primitive.PrepareOptions.Create() with
           LocalSource = true
           VisibleBranches = false
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./original.xml" }
+          XmlReport = "./original.$(ProjectName).xml" }
 
     let pp0 = AltCover.PrepareOptions.Primitive p0
     let c0 = Primitive.CollectOptions.Create()
@@ -4102,7 +3968,7 @@ _Target "Issue72" (fun _ ->
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open,
+         new FileStream("./Sample16/Test/_Issue72/original.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -4122,7 +3988,7 @@ _Target "Issue72" (fun _ ->
           LocalSource = true
           VisibleBranches = true
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./combined.xml" }
+          XmlReport = "./combined.$(ProjectName).xml" }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
     let c0 = Primitive.CollectOptions.Create()
@@ -4135,7 +4001,7 @@ _Target "Issue72" (fun _ ->
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open,
+         new FileStream("./Sample16/Test/_Issue72/combined.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -4147,6 +4013,19 @@ _Target "Issue72" (fun _ ->
       //  Assert.That
       //    (found, Is.EquivalentTo [ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ],
       //     sprintf "combined: %A" found)
+
+    // Issue 98 optest
+    printfn "----------------------------- issue 98  ----------------------------------------"
+    Shell.cleanDir ("./Sample16/Test/_Intermediate")
+    let psln = AltCover.PrepareOptions.Primitive {p0 with XmlReport = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test") with
+            Configuration = DotNet.BuildConfiguration.Debug
+            NoBuild = false }).WithAltCoverOptions psln cc0 ForceTrue)
+        .WithAltCoverImportModule().WithAltCoverGetVersion()
+      |> testWithCLIArguments) "Issue72.sln"
+    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test.xml") @>
+    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test2.xml") @>
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -4193,6 +4072,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     |> List.iter (AltCoverCommand.Options.Create
                   >> AltCoverCommand.run)
 
+    let before = Actions.ticksNow()
+
     Actions.Run("altcover", ".", ["TargetsPath"]) "altcover target"
     let prep =
       AltCover.PrepareOptions.Primitive
@@ -4220,7 +4101,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
       |> AltCoverCommand.Collect
     { AltCoverCommand.Options.Create collect with WorkingDirectory = working } |> AltCoverCommand.run
 
-    Actions.CheckSample4Visits x
+    Actions.CheckSample4Visits before x
     let command =
       """$ImportModule = (altcover ImportModule | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ImportModule; ConvertTo-BarChart -?"""
     CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]

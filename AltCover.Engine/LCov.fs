@@ -36,12 +36,33 @@ module internal LCov =
     let internal multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
       multiSort lineOfMethod l
 
+  // from a real sample e.g. https://pastebin.com/588FggQg
+  (*
+TN:
+SF:...
+FNF:0
+FNH:0
+DA:5,59
+LF:1
+LH:1
+BRF:0
+BRH:0
+end_of_record
+TN:
+SF:...
+FN:4,(anonymous_0)
+...
+  *)
+  // it looks like TN: records precede every SF: record
+
+  // from e.g. https://manpages.debian.org/unstable/lcov/geninfo.1.en.html
+  // Following is a quick description of the tracefile format as used by 
+  // genhtml, geninfo and lcov.
+
+  // A tracefile is made up of several human-readable lines of text, divided into sections.   
+
   let internal convertReport (report : XDocument) (format : ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-      //If available, a tracefile begins with the testname which
-      //   is stored in the following format:
-      //
-      //     TN:<test name>
       match format with
       | ReportFormat.NCover ->
           report.Descendants("method".X)
@@ -53,6 +74,11 @@ module internal LCov =
                 (m.Descendants("seqpnt".X) |> Seq.head).Attribute("document".X).Value)
           |> I.multiSortByNameAndStartLine
           |> Seq.iter (fun (f, methods) ->
+                //If available, a tracefile begins with the testname which
+                //   is stored in the following format:
+                //
+                // TN:<test name>
+                writer.WriteLine "TN:"
                 // For each source file referenced in the .da file,  there  is  a  section
                 // containing filename and coverage data:
                 //
@@ -140,13 +166,18 @@ module internal LCov =
                 //
                 // end_of_record
                 writer.WriteLine "end_of_record")
-      | _ ->
-          // For each source file referenced in the .da file,  there  is  a  section
-          // containing filename and coverage data:
-          //
-          //  SF:<absolute path to the source file>
+      | _ ->  // ReportFormat.OpenCover, ReportFormat.OpenCoverWithTracking
           report.Descendants("File".X)
           |> Seq.iter (fun f ->
+                //If available, a tracefile begins with the testname which
+                //   is stored in the following format:
+                //
+                // TN:<test name>
+                writer.WriteLine "TN:"
+                // For each source file referenced in the .da file,  there  is  a  section
+                // containing filename and coverage data:
+                //
+                //  SF:<absolute path to the source file>
                 writer.WriteLine("SF:" + f.Attribute("fullPath".X).Value)
                 let uid = f.Attribute("uid".X).Value
                 let p = f.Parent.Parent

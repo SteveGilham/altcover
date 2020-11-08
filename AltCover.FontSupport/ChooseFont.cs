@@ -179,7 +179,7 @@ namespace AltCover.FontSupport
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int options; //flags
 
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification="Queen's English, m80")]
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "Queen's English, m80")]
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int colours;
 
@@ -204,7 +204,7 @@ namespace AltCover.FontSupport
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public short fontType;
 
-    private short alignmentDummy;
+    private readonly short alignmentDummy;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int minSize;
@@ -345,13 +345,12 @@ namespace AltCover.FontSupport
 
       // look for a size
       var end = core.LastIndexOfAny(new char[] { ' ', ',' });
-      var sized = false;
       if (end >= 0)
       {
         var size = core.Substring(end + 1).TrimEnd();
         if (size.EndsWith("px", StringComparison.Ordinal))
           size = size.Substring(0, size.Length - 2);
-        sized = Int32.TryParse(size, out int fontsize);
+        var sized = Int32.TryParse(size, out int fontsize);
         if (sized)
         {
           decode.height = fontsize;
