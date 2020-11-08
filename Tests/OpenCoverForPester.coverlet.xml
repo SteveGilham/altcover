@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Summary numSequencePoints="37" visitedSequencePoints="5" numBranchPoints="72" visitedBranchPoints="16" sequenceCoverage="13.51" branchCoverage="26.67" maxCyclomaticComplexity="83" minCyclomaticComplexity="83" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="17" minCrapScore="1" maxCrapScore="184.23" />
+  <Summary numSequencePoints="37" visitedSequencePoints="5" numBranchPoints="60" visitedBranchPoints="14" sequenceCoverage="13.51" branchCoverage="29.17" maxCyclomaticComplexity="71" minCyclomaticComplexity="71" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="17" minCrapScore="1" maxCrapScore="26.15" />
   <Modules>
     <Module hash="02-55-A2-63-30-39-8E-48-AF-26-31-70-D2-6E-38-A7-CB-61-C7-E9">
-      <Summary numSequencePoints="0" visitedSequencePoints="5" numBranchPoints="0" visitedBranchPoints="16" sequenceCoverage="13.51" branchCoverage="26.67" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="4" numClasses="0" visitedMethods="7" numMethods="0" minCrapScore="1" maxCrapScore="184.23" />
+      <Summary numSequencePoints="0" visitedSequencePoints="5" numBranchPoints="0" visitedBranchPoints="14" sequenceCoverage="13.51" branchCoverage="29.17" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="4" numClasses="0" visitedMethods="7" numMethods="0" minCrapScore="1" maxCrapScore="26.15" />
       <ModulePath>Sample18.dll</ModulePath>
       <ModuleTime>2020-03-28T12:20:44</ModuleTime>
       <ModuleName>Sample18</ModuleName>
@@ -131,7 +131,7 @@
           </Methods>
         </Class>
         <Class>
-          <Summary numSequencePoints="8" visitedSequencePoints="1" numBranchPoints="38" visitedBranchPoints="4" sequenceCoverage="12.5" branchCoverage="20" maxCyclomaticComplexity="21" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="3" minCrapScore="2" maxCrapScore="184.23" />
+          <Summary numSequencePoints="8" visitedSequencePoints="1" numBranchPoints="26" visitedBranchPoints="2" sequenceCoverage="12.5" branchCoverage="25" maxCyclomaticComplexity="21" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="3" minCrapScore="2" maxCrapScore="19.47" />
           <FullName>Tests.DU/MyUnion</FullName>
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="2">
@@ -145,37 +145,25 @@
               <BranchPoints />
               <MethodPoint xsi:type="SequencePoint" vc="0" uspid="26" ordinal="0" offset="0" sc="3" sl="26" ec="17" el="26" bec="0" bev="0" fileid="1" />
             </Method>
-            <Method visited="true" cyclomaticComplexity="17" nPathComplexity="320" sequenceCoverage="16.67" branchCoverage="22.22" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="184.23">
-              <Summary numSequencePoints="6" visitedSequencePoints="1" numBranchPoints="17" visitedBranchPoints="4" sequenceCoverage="16.67" branchCoverage="22.22" maxCyclomaticComplexity="17" minCyclomaticComplexity="17" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="184.23" maxCrapScore="184.23" />
+            <Method visited="true" cyclomaticComplexity="5" nPathComplexity="5" sequenceCoverage="16.67" branchCoverage="33.33" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="19.47">
+              <Summary numSequencePoints="6" visitedSequencePoints="1" numBranchPoints="5" visitedBranchPoints="2" sequenceCoverage="16.67" branchCoverage="33.33" maxCyclomaticComplexity="5" minCyclomaticComplexity="5" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="19.47" maxCrapScore="19.47" />
               <MetadataToken>100663322</MetadataToken>
               <Name>Tests.DU/MyUnion Tests.DU/MyUnion::AsBar()</Name>
               <FileRef uid="1" />
               <SequencePoints>
                 <SequencePoint vc="0" uspid="34" ordinal="0" offset="0" sl="34" sc="9" el="34" ec="24" bec="5" bev="1" fileid="1" />
-                <SequencePoint vc="1" uspid="35" ordinal="1" offset="57" sl="35" sc="9" el="35" ec="33" bec="4" bev="2" fileid="1" />
-                <SequencePoint vc="0" uspid="36" ordinal="2" offset="158" sl="36" sc="9" el="36" ec="33" bec="4" bev="0" fileid="1" />
-                <SequencePoint vc="0" uspid="37" ordinal="3" offset="260" sl="37" sc="9" el="37" ec="33" bec="4" bev="0" fileid="1" />
-                <SequencePoint vc="0" uspid="39" ordinal="4" offset="342" sl="39" sc="9" el="39" ec="20" bec="0" bev="0" fileid="1" />
-                <SequencePoint vc="0" uspid="40" ordinal="5" offset="346" sl="40" sc="7" el="40" ec="27" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="35" ordinal="1" offset="54" sl="35" sc="9" el="35" ec="33" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="36" ordinal="2" offset="108" sl="36" sc="9" el="36" ec="33" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="37" ordinal="3" offset="154" sl="37" sc="9" el="37" ec="33" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="39" ordinal="4" offset="183" sl="39" sc="9" el="39" ec="20" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="40" ordinal="5" offset="187" sl="40" sc="7" el="40" ec="27" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints>
-                <BranchPoint vc="1" uspid="34" ordinal="1" path="1" offset="8" offsetend="43" sl="34" fileid="1" />
-                <BranchPoint vc="1" uspid="35" ordinal="5" path="0" offset="71" offsetend="73" sl="35" fileid="1" />
-                <BranchPoint vc="0" uspid="35" ordinal="6" path="1" offset="71" offsetend="90" sl="35" fileid="1" />
-                <BranchPoint vc="1" uspid="35" ordinal="7" path="0" offset="84" offsetend="98" sl="35" fileid="1" />
-                <BranchPoint vc="0" uspid="35" ordinal="8" path="1" offset="84" offsetend="118" sl="35" fileid="1" />
-                <BranchPoint vc="0" uspid="34" ordinal="3" path="3" offset="8" offsetend="141" sl="34" fileid="1" />
-                <BranchPoint vc="0" uspid="36" ordinal="9" path="0" offset="173" offsetend="175" sl="36" fileid="1" />
-                <BranchPoint vc="0" uspid="36" ordinal="10" path="1" offset="173" offsetend="192" sl="36" fileid="1" />
-                <BranchPoint vc="0" uspid="36" ordinal="11" path="0" offset="186" offsetend="200" sl="36" fileid="1" />
-                <BranchPoint vc="0" uspid="36" ordinal="12" path="1" offset="186" offsetend="220" sl="36" fileid="1" />
-                <BranchPoint vc="0" uspid="34" ordinal="4" path="4" offset="8" offsetend="243" sl="34" fileid="1" />
-                <BranchPoint vc="0" uspid="37" ordinal="13" path="0" offset="275" offsetend="277" sl="37" fileid="1" />
-                <BranchPoint vc="0" uspid="37" ordinal="14" path="1" offset="275" offsetend="294" sl="37" fileid="1" />
-                <BranchPoint vc="0" uspid="37" ordinal="15" path="0" offset="288" offsetend="302" sl="37" fileid="1" />
-                <BranchPoint vc="0" uspid="37" ordinal="16" path="1" offset="288" offsetend="322" sl="37" fileid="1" />
-                <BranchPoint vc="0" uspid="34" ordinal="0" path="0" offset="8" offsetend="342" sl="34" fileid="1" />
-                <BranchPoint vc="0" uspid="34" ordinal="2" path="2" offset="8" offsetend="342" sl="34" fileid="1" />
+                <BranchPoint vc="1" uspid="34" ordinal="1" path="1" offset="8" offsetend="40" sl="34" fileid="1" />
+                <BranchPoint vc="0" uspid="34" ordinal="3" path="3" offset="8" offsetend="91" sl="34" fileid="1" />
+                <BranchPoint vc="0" uspid="34" ordinal="4" path="4" offset="8" offsetend="137" sl="34" fileid="1" />
+                <BranchPoint vc="0" uspid="34" ordinal="0" path="0" offset="8" offsetend="183" sl="34" fileid="1" />
+                <BranchPoint vc="0" uspid="34" ordinal="2" path="2" offset="8" offsetend="183" sl="34" fileid="1" />
               </BranchPoints>
               <MethodPoint xsi:type="SequencePoint" vc="0" uspid="34" ordinal="0" offset="0" sc="9" sl="34" ec="24" el="34" bec="5" bev="1" fileid="1" />
             </Method>

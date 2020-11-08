@@ -397,7 +397,7 @@ module SolutionRoot =
     if File.Exists(path) then File.ReadAllText(path) else String.Empty
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
-  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen
+  [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
@@ -3261,6 +3261,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
+  let before = Actions.ticksNow()
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
@@ -3297,7 +3298,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
       ToolType = dotnetAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
-  Actions.CheckSample4Visits x)
+  Actions.CheckSample4Visits before x)
 
 _Target "MSBuildTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -3306,12 +3307,13 @@ _Target "MSBuildTest" (fun _ ->
   let x = Path.getFullName "./_Reports/MSBuildTest.xml"
 
   // Run
+  let before = Actions.ticksNow()
   Shell.cleanDir (sample @@ "_Binaries")
   DotNet.msbuild (fun opt ->
     opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample }))
     (build @@ "msbuildtest.proj")
   printfn "Checking samples4 output"
-  Actions.CheckSample4 x
+  Actions.CheckSample4 before x
 
   // touch-test framework
   let unpack =
@@ -3331,6 +3333,7 @@ _Target "MSBuildTest" (fun _ ->
             "DebugSymbols", "True" ] }) "./Sample4/Sample4LongForm.fsproj")
 
 _Target "ApiUse" (fun _ ->
+  let before = Actions.ticksNow()
   try
     Directory.ensure "./_ApiUse"
     Shell.cleanDir ("./_ApiUse")
@@ -3524,7 +3527,7 @@ group NetcoreBuild
       "running fake script returned with a non-zero exit code"
 
     let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.netcoreapp2.1.xml"
-    Actions.CheckSample4 x
+    Actions.CheckSample4 before x
   finally
     [ "altcover"; "altcover.api"; "altcover.fake" ]
     |> List.iter (fun f ->
@@ -3574,6 +3577,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     )
 
     printfn "Simple positive case ------------------------------------------------"
+    let before = Actions.ticksNow()
     let p0 = Primitive.PrepareOptions.Create()
     let c0 = Primitive.CollectOptions.Create()
 
@@ -3590,7 +3594,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       |> testWithCLIArguments) "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
-    Actions.CheckSample4 x
+    Actions.CheckSample4 before x
 
     printfn "optest failing instrumentation ------------------------------------------------"
 
@@ -3917,18 +3921,23 @@ _Target "Issue67" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue72" (fun _ ->
+_Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.com/SteveGilham/altcover/issues/72
   try
     Directory.ensure "./Sample16/Test/_Issue72"
     Shell.cleanDir ("./Sample16/Test/_Issue72")
+    Directory.ensure "./Sample16/Test/_Issue72b"
+    Shell.cleanDir ("./Sample16/Test/_Issue72b")
 
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./Sample16/Test/_Issue72/NuGet.config"
+    config.Save "./Sample16/Test/_Issue72b/NuGet.config"
 
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.json")
+    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.cs")
+    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.json")
 
     let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
 
@@ -3939,13 +3948,14 @@ _Target "Issue72" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     csproj.Save "./Sample16/Test/_Issue72/Test.csproj"
+    csproj.Save "./Sample16/Test/_Issue72b/Test2.csproj"
 
     let p0 =
       { Primitive.PrepareOptions.Create() with
           LocalSource = true
           VisibleBranches = false
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./original.xml" }
+          XmlReport = "./original.$(ProjectName).xml" }
 
     let pp0 = AltCover.PrepareOptions.Primitive p0
     let c0 = Primitive.CollectOptions.Create()
@@ -3958,7 +3968,7 @@ _Target "Issue72" (fun _ ->
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open,
+         new FileStream("./Sample16/Test/_Issue72/original.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -3978,7 +3988,7 @@ _Target "Issue72" (fun _ ->
           LocalSource = true
           VisibleBranches = true
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./combined.xml" }
+          XmlReport = "./combined.$(ProjectName).xml" }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
     let c0 = Primitive.CollectOptions.Create()
@@ -3991,7 +4001,7 @@ _Target "Issue72" (fun _ ->
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open,
+         new FileStream("./Sample16/Test/_Issue72/combined.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -4003,6 +4013,19 @@ _Target "Issue72" (fun _ ->
       //  Assert.That
       //    (found, Is.EquivalentTo [ "1"; "4"; "1"; "1"; "1"; "1"; "5"; "5" ],
       //     sprintf "combined: %A" found)
+
+    // Issue 98 optest
+    printfn "----------------------------- issue 98  ----------------------------------------"
+    Shell.cleanDir ("./Sample16/Test/_Intermediate")
+    let psln = AltCover.PrepareOptions.Primitive {p0 with XmlReport = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test") with
+            Configuration = DotNet.BuildConfiguration.Debug
+            NoBuild = false }).WithAltCoverOptions psln cc0 ForceTrue)
+        .WithAltCoverImportModule().WithAltCoverGetVersion()
+      |> testWithCLIArguments) "Issue72.sln"
+    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test.xml") @>
+    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test2.xml") @>
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -4049,6 +4072,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     |> List.iter (AltCoverCommand.Options.Create
                   >> AltCoverCommand.run)
 
+    let before = Actions.ticksNow()
+
     Actions.Run("altcover", ".", ["TargetsPath"]) "altcover target"
     let prep =
       AltCover.PrepareOptions.Primitive
@@ -4076,7 +4101,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
       |> AltCoverCommand.Collect
     { AltCoverCommand.Options.Create collect with WorkingDirectory = working } |> AltCoverCommand.run
 
-    Actions.CheckSample4Visits x
+    Actions.CheckSample4Visits before x
     let command =
       """$ImportModule = (altcover ImportModule | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ImportModule; ConvertTo-BarChart -?"""
     CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]

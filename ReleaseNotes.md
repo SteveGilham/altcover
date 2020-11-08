@@ -3,7 +3,15 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.1.xxx (Genbu series release 7)
+* [BUGFIX] Make LCov tracefile output follow what is actually generated, and not just what the `man` page says
+* For  <TrackedMethod /> records, add `entry` and `exit` attributes as semicolon separated lists of the UTC times in ticks at which the method was entered and returns
 * As well as interfaces, hide other types with no non-abstract methods (e.g. plain enums) in the coverage
+* For `dotnet test ... /p:AltCoverXmlReport=...` , if the value contains one of the following literals
+  * $(ProjectName)  
+  * $(SolutionDir)  
+  * $([System.Guid]::NewGuid())  
+  then substitute in the actual values of those build parameters where they haven't already been replaced by MSBuild.
+  Example: Using `/p:AltCoverXmlReport=$(SolutionDir)/_Reports/solution.$(ProjectName).xml` with `dotnet test` of a solution to place distinctly named report files in a common folder.
 Also
 * Rationalise .net versions to help speed up the build and ease the net5.0 transition
   * Clear out some corner case differences between .net core and .net framework builds based on old work-arounds for symbol writing for the instrumented files
