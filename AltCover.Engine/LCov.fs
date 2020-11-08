@@ -83,6 +83,7 @@ FN:4,(anonymous_0)
                 // containing filename and coverage data:
                 //
                 //  SF:<absolute path to the source file>
+                writer.WriteLine "TN:"
                 writer.WriteLine("SF:" + f)
                 let fullname (m : XElement) =
                   let fna = m.Attribute("fullname".X)
