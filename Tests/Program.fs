@@ -165,6 +165,7 @@ module ExpectoMain =
           Tests.AltCoverTests.ValidateAutomaticExemption, "Tests.ValidateAutomaticExemption"
           Tests.AltCoverTests.DetectLocalSource, "Tests.DetectLocalSource"
           Tests.AltCoverTests.LocateMatchShouldChooseLongerWildCardPath, "Tests.LocateMatchShouldChooseLongerWildCardPath"
+          Tests.AltCoverTests.DebugBuildTernaryTestInContext, "Tests.DebugBuildTernaryTestInContext"
           Tests.AltCoverTests.ReleaseBuildTernaryTest, "Tests.ReleaseBuildTernaryTest"
           Tests.AltCoverTests.ReleaseBuildTernaryTestInContext, "Tests.ReleaseBuildTernaryTestInContext"
           Tests.AltCoverTests.ReleaseBuildTernaryTestInContextWithCoalescence, "Tests.ReleaseBuildTernaryTestInContextWithCoalescence"
