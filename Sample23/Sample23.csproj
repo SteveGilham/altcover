@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net472;netcoreapp2.1</TargetFrameworks>
@@ -7,6 +7,10 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="_Intermediate\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.12.0" />
