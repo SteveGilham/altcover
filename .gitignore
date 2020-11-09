@@ -69,3 +69,9 @@ Demo/MultiTest/**/coverage.xml
 TestResults/
 AltCover/Abstract.fs
 Tests.Visualizer/Reports/
+.fake
+.ionide
+AltCover.Engine/Abstract.fsi
+Sample22/Sample22.fsproj
+Sample22/coverage.xml
+buildsample*.fsx.lock

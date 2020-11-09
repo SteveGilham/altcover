@@ -1,7 +1,10 @@
-Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll"
+## TODO -- AltCover => AltCover.Engine
+
+Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
 
 ## clear first
 dir -recurse "./docs/*apidoc.md" | del -force
+dir -recurse "./docs/*.fsx.lock" | del -force
 
 ## Documentation
 
@@ -275,7 +278,7 @@ The full command line is
 
 $header | Out-File -Encoding UTF8 $mdfile
 
-$resources = [xml](Get-Content "./AltCover/Strings.resx")
+$resources = [xml](Get-Content "./AltCover.Engine/Strings.resx")
 
 $helptext = $resources.root.data | ? { $_.name -eq "HelpText" } | % { $_.value }
 
@@ -370,7 +373,35 @@ In release 5.3, the writing the collected data has been offloaded to an in-proce
 
 $footer | Out-File -Encoding UTF8 -Append $mdfile
 
+### docs/AltCover.Fake.DotNet.Testing.AltCover/index.md
+
+$lines = Get-Content "./Build/AltCover.Fake.DotNet.Testing.AltCover.md"
+$lines | % {
+  if ($_ -like "!!*") {
+    Get-Content ($_.Substring(2))
+  }
+  else { $_ }
+} | Set-Content "./docs/AltCover.Fake.DotNet.Testing.AltCover/index.md"
+
+### docs/Fake-and-Cake-integration.md
+
+$lines = Get-Content "./Build/Fake-and-Cake-integration.md"
+$lines | % {
+  if ($_ -like "!!*") {
+    Get-Content ($_.Substring(2))
+  }
+  else { $_ }
+} | Set-Content "./docs/Fake-and-Cake-integration.md"
+
+
+##-----------------------------------------
+
 Write-Host "In node.js prompt, 'harp server C:\Users\steve\Documents\GitHub\altcover\docs'"
+Write-Host ""
+Write-Host "Touch test examples like"
+Write-Host "dotnet fake run .\docs\AltCover.Fake.DotNet.Testing.AltCover\BuildSample_1.fsx"
+Write-Host "dotnet fake run .\docs\AltCover.Fake.DotNet.Testing.AltCover\BuildSample_2.fsx"
+Write-Host "dotnet fake run .\docs\BuildSample_1.fsx"
 
 
 

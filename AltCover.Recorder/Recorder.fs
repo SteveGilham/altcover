@@ -35,10 +35,10 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Naming", "UseCorrectCasingRule",
       Justification = "Code rewritten")>]
   let
@@ -68,7 +68,7 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Token = "AltCover"
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Access by reflection in the data collector")>]
   let mutable internal supervision =
@@ -133,11 +133,13 @@ module Instance =
       //let s = sprintf "push %d -> %A" x self.caller
       //System.Diagnostics.Debug.WriteLine(s)
       member self.Pop() =
-        self.caller <-
+        let (stack, head) =
           match self.caller with
           | []
-          | [ 0 ] -> [ 0 ]
-          | _ :: xs -> xs
+          | [ 0 ] ->([ 0 ], None)
+          | h :: xs -> (xs, Some h)
+        self.caller <- stack
+        head
 
       //let s = sprintf "pop -> %A"self.caller
       //System.Diagnostics.Debug.WriteLine(s)
@@ -223,10 +225,9 @@ module Instance =
         if counts.Count > 0 then clear()
         trace.OnVisit counts moduleId hitPointId context)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
-                                                      "CA2202:DisposeObjectsBeforeLosingScope",
-                                                      Justification =
-                                                        "Damned if you do, damned if you don't Dispose()")>]
+    [<SuppressMessage("Microsoft.Usage",
+                      "CA2202:DisposeObjectsBeforeLosingScope",
+                      Justification = "Damned if you do, damned if you don't Dispose()")>]
     let internal logException moduleId hitPointId context x =
       let text =
         [| sprintf "ModuleId = %A" moduleId
@@ -356,19 +357,26 @@ module Instance =
           then I.payloadSelector I.isOpenCoverRunner
           else Null) moduleId hitPointId
 
+  // The moduleId strings are not the hash or guids normally found there
   let Push caller = I.push caller
-  let Pop() = I.pop()
+                    if CoverageFormat = ReportFormat.OpenCoverWithTracking &&
+                       I.isOpenCoverRunner()
+                    then I.visitSelection (Time DateTime.UtcNow.Ticks) Track.Entry caller
+  let Pop() = let caller = I.pop()
+              if CoverageFormat = ReportFormat.OpenCoverWithTracking &&
+                I.isOpenCoverRunner() &&
+                caller.IsSome
+              then I.visitSelection (Time DateTime.UtcNow.Ticks) Track.Exit caller.Value
+
   // Used by the datacollector
   let FlushFinish() = I.flushAll ProcessExit
 
-#if SHADOW
 [<assembly: SuppressMessage("Microsoft.Performance",
   "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
-  Target="<StartupCode$AltCover-Shadow>.$Base.#.cctor()",
+  Target="<StartupCode$AltCover-Recorder>.$Base.#.cctor()",
   Justification="Compiler generated")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
   "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
-  Target="<StartupCode$AltCover-Shadow>.$Recorder.#.cctor()",
+  Target="<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
   Justification="Compiler generated")>]
 ()
-#endif

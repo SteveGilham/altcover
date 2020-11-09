@@ -49,7 +49,7 @@ type Command private () =
     let target =
       match toolType with
       | Framework _ -> "AltCover.exe"
-      | _ -> "AltCover.NetCoreApp.dll"
+      | _ -> "AltCover.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
           |> Seq.tryHead with
     | Some path -> path |> Path.GetFullPath
@@ -89,6 +89,11 @@ module DotNet =
              (result,
               (if f.Name <> "Common@" then f.GetValue self else common))
 
+  let internal extractParameters (o : DotNet.TestOptions) =
+    let t = o.Common.GetType()
+    let p = t.GetProperty("CustomParams")
+    p.GetValue(o.Common, null) :?> string Option
+
   type DotNet.TestOptions with
 
     // NOTE: the MSBuildParams member of TestOptions did not exist in Fake 5.0.0
@@ -96,12 +101,6 @@ module DotNet =
     [<SuppressMessage("Microsoft.Usage", "CA2208",
       Justification="Inlined calls to ArgumentNullException")>]
     member private self.ExtendCustomParams options =
-      let custom = self.Common.CustomParams
-
-      let extended =
-        match custom with
-        | None -> Some options
-        | Some thing -> Some(thing + " " + options)
 
       // the constructors are version dependent
       let optionsConstructor = self.Common.GetType().GetConstructors().[0]
@@ -111,6 +110,11 @@ module DotNet =
         |> Array.map activate
 
       let common = optionsConstructor.Invoke(args)
+      let extended =
+        match self |> extractParameters with
+        | None -> Some options
+        | Some thing -> Some(thing + " " + options)
+
       self.Common.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (setCustomParams common extended self.Common)
       let testOptionsConstructor = self.GetType().GetConstructors().[0]

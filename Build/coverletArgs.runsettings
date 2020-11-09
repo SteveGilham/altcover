@@ -4,8 +4,8 @@
     <DataCollectors>
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
-          <Format>opencover</Format>          
-          <Exclude>[*]*Uncoverlet,[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*,[*]*Tests.*</Exclude>
+          <Format>opencover</Format>
+          <Exclude>[*]*Uncoverlet,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*,[*]*UnitTestStub</Exclude>
           <Include />
           <ExcludeByAttribute>CompilerGenerated</ExcludeByAttribute>
           <ExcludeByFile />

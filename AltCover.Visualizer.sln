@@ -1,0 +1,82 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29324.140
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Avalonia", "AltCover.Avalonia\AltCover.Avalonia.fsproj", "{48032486-334E-4D3A-B6B6-4E3165A33FBD}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer", "AltCover.Visualizer\AltCover.Visualizer.fsproj", "{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer.Tests", "Tests.Visualizer\AltCover.Visualizer.Tests.fsproj", "{93D327EE-100B-4837-A0CA-499ADEEADCD2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
+	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
+		Build\actions.fsx = Build\actions.fsx
+		Build\AddStrongName.fsx = Build\AddStrongName.fsx
+		Build\AltCover.nuspec = Build\AltCover.nuspec
+		nupkg\build\netstandard2.0\AltCover.props = nupkg\build\netstandard2.0\AltCover.props
+		nupkg\build\netstandard2.0\AltCover.targets = nupkg\build\netstandard2.0\AltCover.targets
+		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
+		appveyor.yml = appveyor.yml
+		Build\build.fsx = Build\build.fsx
+		Build\common-rules.xml = Build\common-rules.xml
+		.config\dotnet-tools.json = .config\dotnet-tools.json
+		Build\get-token.fsx = Build\get-token.fsx
+		global.json = global.json
+		Build\Infrastructure.snk = Build\Infrastructure.snk
+		Build\msbuildtest.proj = Build\msbuildtest.proj
+		Build\pester.ps1 = Build\pester.ps1
+		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
+		Build\powershell.ps1 = Build\powershell.ps1
+		Build\Recorder.snk = Build\Recorder.snk
+		ReleaseNotes.md = ReleaseNotes.md
+		Build\SelfTest.snk = Build\SelfTest.snk
+		Build\setup.fsx = Build\setup.fsx
+		Build\targets.fsx = Build\targets.fsx
+	EndProjectSection
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.UICommon", "AltCover.UICommon\AltCover.UICommon.fsproj", "{D3383B16-5069-4E9C-9A86-920FA408E925}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.FontSupport", "AltCover.FontSupport\AltCover.FontSupport.csproj", "{660BB1CF-D777-4C8F-8145-84A6A497C91E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet", "Build\NuGet.csproj", "{7E26A341-127C-4A51-A12B-E8D03F0B9BE5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48032486-334E-4D3A-B6B6-4E3165A33FBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48032486-334E-4D3A-B6B6-4E3165A33FBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48032486-334E-4D3A-B6B6-4E3165A33FBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48032486-334E-4D3A-B6B6-4E3165A33FBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93D327EE-100B-4837-A0CA-499ADEEADCD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3383B16-5069-4E9C-9A86-920FA408E925}.Release|Any CPU.Build.0 = Release|Any CPU
+		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{660BB1CF-D777-4C8F-8145-84A6A497C91E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E26A341-127C-4A51-A12B-E8D03F0B9BE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E26A341-127C-4A51-A12B-E8D03F0B9BE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7E26A341-127C-4A51-A12B-E8D03F0B9BE5} = {97367D43-64EF-48E1-B6B4-D951C783E6E1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6FB9BBB1-003A-4CBC-A45E-EC9A2CBEC828}
+	EndGlobalSection
+EndGlobal
