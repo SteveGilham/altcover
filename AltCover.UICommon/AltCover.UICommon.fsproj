@@ -1,34 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.UICommon</RootNamespace>
     <AssemblyName>AltCover.UICommon</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-    <Name>AltCover.UICommon</Name>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-    <!-- https://github.com/dotnet/sdk/issues/987 -->
-    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net45'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
-    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">NETCOREAPP2_1</GlobalDefineConstants -->
     <GlobalDefineConstants>GUI</GlobalDefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
-    <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
-    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -75,8 +72,8 @@
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersionLite.fs" Link="AssemblyVersionLite.fs" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover\Exemption.fs" Link="Exemption.fs" />
-    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
+    <Compile Include="..\AltCover.Engine\Exemption.fs" Link="Exemption.fs" />
+    <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />
     <Compile Include="Resource.fs" />
@@ -93,7 +90,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" Condition="'$(TargetFramework)' != 'net45'" />
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
   </ItemGroup>
 </Project>

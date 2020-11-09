@@ -16,7 +16,6 @@ namespace Tests.Recorder.Unknown
 
 open System
 open System.Collections.Generic
-open System.Diagnostics
 open System.IO
 open System.IO.Compression
 open System.Reflection
@@ -26,6 +25,8 @@ open System.Xml
 
 open AltCover.Recorder
 open NUnit.Framework
+
+#nowarn "25" // partial pattern match
 
 module AltCoverTests =
 
@@ -100,12 +101,12 @@ module AltCoverTests =
 
         let key = " "
         Instance.I.recording <- false
-        Instance.Visit("key", 17)
+        Instance.Visit "key" 17
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit(key, 23)
+        Instance.Visit key 23
         Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-        Instance.Visit(key, 23)
+        Instance.Visit key 23
         Assert.True( Adapter.VisitsSeq()
                      |> Seq.length = 1 )
         Assert.True( Adapter.VisitsEntrySeq key
@@ -121,12 +122,14 @@ module AltCoverTests =
   [<Test>]
   let JunkUspidGivesNegativeIndex() =
     let key = " "
-    let index = Counter.I.findIndexFromUspid(0, key)
+    let index = Counter.I.findIndexFromUspid 0 key
     Assert.True( index < 0 )
 
   [<Test>]
   let PayloadGeneratedIsAsExpected() =
     try
+      Instance.I.isRunner <- false
+      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
       Assert.True( Instance.I.callerId() = 0 )
       Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
       Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
@@ -144,6 +147,7 @@ module AltCoverTests =
       Assert.True(( Adapter.PayloadSelector true = (Adapter.Call 4321) ))
     finally
       Instance.Pop()
+      Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
     let expected2 = Adapter.Time 1311693406324658000L
@@ -154,15 +158,82 @@ module AltCoverTests =
     Assert.True( Adapter.Null()
                  |> Adapter.untime
                  |> Seq.isEmpty )
-    match Adapter.untime probed |> Seq.toList with
-    | [ probe ] ->
-        Assert.True( probe % 1000L = 0L )
-        Assert.True( probe <= v2 )
-        Assert.True( probe >= (1000L * (v1 / 1000L)) )
-    | _ -> Assert.True( false )
+    let [ probe ] =  Adapter.untime probed |> Seq.toList
+    Assert.True( probe % 1000L = 0L )
+    Assert.True( probe <= v2 )
+    Assert.True( probe >= (1000L * (v1 / 1000L)) )
     Assert.True( Instance.I.callerId() = 0 )
     Instance.Pop()
     Assert.True( Instance.I.callerId() = 0 )
+
+  [<Test>]
+  let PayloadWithEntryExitGeneratedIsAsExpected() =
+    try
+      Instance.I.isRunner <- true
+      Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
+      Adapter.VisitsClear()
+
+      Assert.True( Instance.I.callerId() = 0 )
+      Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
+      Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
+      Instance.Push 4321
+      Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
+      Assert.True( Adapter.PayloadSelector true = (Adapter.Call 4321) )
+      try
+        Instance.Push 6789
+        // 0x1234123412341234 == 1311693406324658740
+        let result = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+        let expected = Adapter.NewBoth(1311693406324658000L, 6789)
+        Assert.True(( result = expected ))
+      finally
+        Instance.Pop()
+      Assert.True(( Adapter.PayloadSelector true = (Adapter.Call 4321) ))
+    finally
+      Instance.Pop()
+      Instance.I.isRunner <- false
+      Instance.CoverageFormat <- ReportFormat.NCover
+
+    let result2 = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+    let expected2 = Adapter.Time 1311693406324658000L
+    Assert.True(( result2 = expected2 ))
+    let v1 = DateTime.UtcNow.Ticks
+    let probed = Adapter.PayloadControl(1000L, true)
+    let v2 = DateTime.UtcNow.Ticks
+    Assert.True( Adapter.Null()
+                 |> Adapter.untime
+                 |> Seq.isEmpty )
+    let [ probe ] =  Adapter.untime probed |> Seq.toList
+    Assert.True( probe % 1000L = 0L )
+    Assert.True( probe <= v2 )
+    Assert.True( probe >= (1000L * (v1 / 1000L)) )
+    Assert.True( Instance.I.callerId() = 0 )
+    Instance.Pop()
+    Assert.True( Instance.I.callerId() = 0 )
+    Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [Track.Entry; Track.Exit])
+    Assert.That(Instance.I.visits.[Track.Entry].Keys, Is.EquivalentTo [4321; 6789])
+    Assert.That(Instance.I.visits.[Track.Exit].Keys, Is.EquivalentTo [4321; 6789])
+    let a = Instance.I.visits.[Track.Entry].[4321]
+    Assert.That (a.Count, Is.EqualTo 0L)
+    Assert.That (a.Tracks |> Seq.length, Is.EqualTo 1)
+    let b = Instance.I.visits.[Track.Entry].[6789]
+    Assert.That (b.Count, Is.EqualTo 0L)
+    Assert.That (b.Tracks |> Seq.length, Is.EqualTo 1)
+    let c = Instance.I.visits.[Track.Exit].[6789]
+    Assert.That (c.Count, Is.EqualTo 0L)
+    Assert.That (c.Tracks |> Seq.length, Is.EqualTo 1)
+    let d = Instance.I.visits.[Track.Exit].[4321]
+    Assert.That (d.Count, Is.EqualTo 0L)
+    Assert.That (d.Tracks |> Seq.length, Is.EqualTo 1)
+
+    let a2 = a.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    let b2 = b.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    Assert.That (b2 >= a2)
+    let c2 = c.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    Assert.That (c2 >= b2)
+    let d2 = d.Tracks |> Seq.head |> Adapter.untime |> Seq.head
+    Assert.That (d2 >= c2, sprintf "%A >= %A" d2 c2)
+
+    Adapter.VisitsClear()
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously() =
@@ -174,7 +245,7 @@ module AltCoverTests =
         Instance.I.visits.Clear()
         Instance.I.trace <- Adapter.MakeNullTrace null
         let key = " "
-        Instance.I.visitSelection((Adapter.Null()), key, 23)
+        Instance.I.visitSelection (Adapter.Null()) key 23
         Assert.That
           (Instance.I.visits.Count, Is.EqualTo 1,
            "A visit that should have happened, didn't")
@@ -188,19 +259,32 @@ module AltCoverTests =
         Instance.I.trace <- save)
     GetMyMethodName "<="
 
+  let strip before (all:HashSet<String>) =
+        before
+        |> Seq.iter (fun x ->
+             Assert.That(all.Contains x)
+             all.Remove x |> ignore)
+
+  [<Test>]
+  let StripWorks() =
+    let b1 = [ "1" ]
+    let a1 = [ "1"; "2" ]
+    let a1' = HashSet<String>(a1)
+    strip b1 a1'
+    let stripped1 = a1' |> Seq.toList
+    Assert.That(stripped1, Is.EquivalentTo [ "2" ])
+    Assert.Throws<AssertionException>( fun () ->  strip b1 a1') |> ignore
+
   [<Test>]
   let ExceptionLoggedToFile() =
     let path = Instance.ReportFile |> Path.GetFullPath
     let where = path |> Path.GetDirectoryName
     let before = Directory.GetFiles(where, "*.exn")
-    Instance.I.logException("a", "b", "c", "ex")
+    Instance.I.logException "a" "b" "c" "ex"
     let after = Directory.GetFiles(where, "*.exn")
     Assert.That(after.Length, Is.GreaterThan before.Length)
     let all = HashSet<String>(after)
-    before
-    |> Seq.iter (fun x ->
-         Assert.That(all.Contains x)
-         all.Remove x |> ignore)
+    strip before all
     Assert.That(all.Count, Is.EqualTo 1)
     let file = all |> Seq.head
     let lines = file |> File.ReadAllLines
@@ -250,6 +334,7 @@ module AltCoverTests =
     Assert.That(exn.Message, Is.EqualTo unique)
 
 #if NETCOREAPP2_0
+
   [<Test>]
   let NullRefShouldBeHandled() =
     GetMyMethodName "=>"
@@ -261,14 +346,12 @@ module AltCoverTests =
         let path = Instance.ReportFile |> Path.GetFullPath
         let where = path |> Path.GetDirectoryName
         let before = Directory.GetFiles(where, "*.exn")
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
         let after = Directory.GetFiles(where, "*.exn")
         Assert.That(after.Length, Is.GreaterThan before.Length)
         let all = HashSet<String>(after)
-        before
-        |> Seq.iter (fun x ->
-             Assert.That(all.Contains x)
-             all.Remove x |> ignore)
+        strip before all
+
         Assert.That(all.Count, Is.EqualTo 1)
         let file = all |> Seq.head
         let lines = file |> File.ReadAllLines
@@ -294,8 +377,8 @@ module AltCoverTests =
       try
         Instance.I.visits.Clear()
         let key = " "
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl("key", 42, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl "key" 42 (Adapter.Null())
         Assert.That(Instance.I.visits.Count, Is.EqualTo 2)
       finally
         Instance.I.visits.Clear())
@@ -308,8 +391,8 @@ module AltCoverTests =
       try
         Instance.I.visits.Clear()
         let key = " "
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl(key, 42, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl key 42 (Adapter.Null())
         Assert.That(Instance.I.visits.Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
       finally
@@ -324,8 +407,8 @@ module AltCoverTests =
       try
         Instance.I.visits.Clear()
         let key = " "
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl key 23 (Adapter.Null())
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
       finally
@@ -341,8 +424,8 @@ module AltCoverTests =
         Instance.I.visits.Clear()
         let key = " "
         let payload = Adapter.Time DateTime.UtcNow.Ticks
-        Instance.I.visitImpl(key, 23, (Adapter.Null()))
-        Instance.I.visitImpl(key, 23, payload)
+        Instance.I.visitImpl key 23 (Adapter.Null())
+        Instance.I.visitImpl key 23 payload
         Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
       finally
@@ -652,10 +735,37 @@ module AltCoverTests =
         Console.SetOut saved)
     GetMyMethodName "<="
 
+  let trywith<'a when 'a :> exn> f g =
+    try
+      f()
+    with
+    | :? 'a -> g()
+
+  let trywithrelease<'a when 'a :> exn> f =
+    trywith f Instance.I.mutex.ReleaseMutex
+
+  [<Test>]
+  let CanTryWith() =
+    let mutable flag = false
+    let setFlag =  (fun () -> flag <- true)
+    trywith<InvalidOperationException>
+      (fun () -> ())
+      setFlag
+    Assert.That(flag, Is.False)
+
+    trywith<InvalidOperationException>
+      (fun () -> InvalidOperationException() |> raise)
+      setFlag
+    Assert.That(flag, Is.True)
+
+    Instance.I.mutex.WaitOne(1000) |> ignore
+    trywithrelease<InvalidOperationException>
+      (fun () -> InvalidOperationException() |> raise)
+
   let PauseLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -699,21 +809,20 @@ module AltCoverTests =
                [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
         finally
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Instance.I.isRunner <- false
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
+      ))
     GetMyMethodName "<="
 
   let ResumeLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -764,22 +873,21 @@ module AltCoverTests =
         finally
           Adapter.Reset()
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
           File.Delete tag
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
+      ))
     GetMyMethodName "<="
 
   let FlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -823,21 +931,20 @@ module AltCoverTests =
              Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
         finally
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
+      ))
     GetMyMethodName "<="
 
   [<Test>]
   let SupervisedFlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -882,14 +989,13 @@ module AltCoverTests =
         finally
           Instance.I.trace <- save
           Instance.supervision <- false
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
+      ))
     GetMyMethodName "<="
 
   [<Test>]
@@ -929,12 +1035,11 @@ module AltCoverTests =
          |> Seq.map (fun x -> x.GetAttribute("visitcount")),
          Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
     finally
-      if File.Exists reportFile then File.Delete reportFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   [<Test>]
   let FlushLeavesExpectedTracesWhenBroken() =
@@ -971,12 +1076,11 @@ module AltCoverTests =
         (after.OuterXml,
          Is.EqualTo "<null />")
     finally
-      if File.Exists reportFile then File.Delete reportFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
 #if !NET2
   [<Test>]
@@ -1020,12 +1124,11 @@ module AltCoverTests =
          |> Seq.map (fun x -> x.GetAttribute("visitcount")),
          Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
     finally
-      if File.Exists reportFile then File.Delete reportFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBroken() =
@@ -1062,14 +1165,13 @@ module AltCoverTests =
         (after.OuterXml,
          Is.EqualTo "<null />")
     finally
-      if File.Exists reportFile then File.Delete reportFile
-      if File.Exists outputFile then File.Delete outputFile
-      if File.Exists zipFile then File.Delete zipFile
+      AltCoverCoreTests.maybeDeleteFile reportFile
+      AltCoverCoreTests.maybeDeleteFile outputFile
+      AltCoverCoreTests.maybeDeleteFile zipFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenBrokenInPlace() =
@@ -1103,18 +1205,17 @@ module AltCoverTests =
       let zipInfo = FileInfo(zipFile)
       Assert.That(zipInfo.Length, Is.EqualTo 0)
     finally
-      if File.Exists zipFile then File.Delete zipFile
+      AltCoverCoreTests.maybeDeleteFile zipFile
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      try
-        Directory.Delete(unique)
-      with :? IOException -> ()
+      AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
 
   let ZipFlushLeavesExpectedTraces() =
     GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
       Instance.I.isRunner <- false
-      try
+      trywithrelease (fun () ->
         let saved = Console.Out
         let here = Directory.GetCurrentDirectory()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -1167,14 +1268,13 @@ module AltCoverTests =
              Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
         finally
           Instance.I.trace <- save
-          if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+          AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
           Adapter.VisitsClear()
           Console.SetOut saved
           Directory.SetCurrentDirectory(here)
-          try
-            Directory.Delete(unique)
-          with :? IOException -> ()
-      with :? AbandonedMutexException -> Instance.I.mutex.ReleaseMutex())
+          AltCoverCoreTests.maybeIOException
+            (fun () -> Directory.Delete(unique))
+      ))
     GetMyMethodName "<="
 #endif
 
@@ -1182,6 +1282,8 @@ module AltCoverTests =
   // run only once in Framework mode to avoid contention
   [<Test>]
   let MailboxFunctionsAsExpected() =
+    let dummy = AltCover.Recorder.ExcludeFromCodeCoverageAttribute()
+    Assert.That(dummy, Is.Not.Null)
     RealIdShouldIncrementCount()
     PauseLeavesExpectedTraces()
     ResumeLeavesExpectedTraces()

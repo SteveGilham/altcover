@@ -1,11 +1,7 @@
 #if RUNNER
 namespace AltCover
 #else
-#if AVALONIA
-namespace AltCover
-#else
 namespace AltCover.Recorder
-#endif
 #endif
 
 open System
@@ -20,10 +16,15 @@ type internal ReportFormat =
   | OpenCover = 1
   | OpenCoverWithTracking = 2
 
-#if !AVALONIA
-
 #if !RUNNER
 open ICSharpCode.SharpZipLib.Zip
+[<AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)>]
+[<Sealed>]
+[<SuppressMessage("Gendarme.Rules.Performance",
+  "AvoidUninstantiatedInternalClassesRule",
+  Justification="Looks like a bug, not detecting its use")>]
+type internal ExcludeFromCodeCoverageAttribute() =
+  inherit Attribute()
 #endif
 
 type internal Sampling =
@@ -32,7 +33,7 @@ type internal Sampling =
 
 // TODO isolate where
 #if RUNNER
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+[<SuppressMessage("Gendarme.Rules.Performance",
   "AvoidUninstantiatedInternalClassesRule",
   Justification="Used as pattern match and compiled away")>]
 #endif
@@ -43,20 +44,12 @@ type internal Tag =
   | Both = 3
   | Table = 4
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+[<ExcludeFromCodeCoverage>]
 [<NoComparison>]
 type internal Pair =
   { Time : int64; Call : int }
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+[<ExcludeFromCodeCoverage>]
 [<NoComparison>]
 type internal Track =
   | Null
@@ -64,12 +57,11 @@ type internal Track =
   | Call of int
   | Both of Pair
   | Table of Dictionary<string, Dictionary<int, PointVisit>>
+  with
+  static member internal Entry = "\u2611" // BALLOT BOX WITH CHECK
+  static member internal Exit = "\u2612" // BALLOT BOX WITH X
 and [<NoComparison>]
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+    [<ExcludeFromCodeCoverage>]
     internal PointVisit =
     {
       mutable Count : int64
@@ -168,12 +160,23 @@ module internal Counter =
       then t1
       else t2
 
+    [<SuppressMessage("Gendarme.Rules.Correctness",
+     "EnsureLocalDisposalRule",
+     Justification="Not an IDisposeable at net2.0")>]
+    let
+#if !DEBUG
+         inline
+#endif
+                  internal selectNodes (node:XmlNode) name =
+      node.SelectNodes(name)
+      |> Seq.cast<XmlNode>
+
     // // <summary>
     // // Save sequence point hit counts to xml report file
     // // </summary>
     // // <param name="hitCounts">The coverage results to incorporate</param>
     // // <param name="coverageFile">The coverage file to update as a stream</param>
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+    [<SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule",
      Justification="Most of this gets curried away")>]
     let internal updateReport (postProcess : XmlDocument -> unit)
@@ -209,12 +212,7 @@ module internal Counter =
 
       let (m, i, m', s, v) = xmlByFormat format
 
-  #if NET2
-      let
-  #else
-      use
-  #endif
-         moduleNodes = coverageDocument.SelectNodes(m)
+      let moduleNodes = selectNodes coverageDocument m
       moduleNodes
       |> Seq.cast<XmlElement>
       |> Seq.map (fun el -> el.GetAttribute(i), el)
@@ -225,23 +223,13 @@ module internal Counter =
            // affectedModule.Descendants(XName.Get("seqpnt"))
            // Get the methods, then flip their
            // contents before concatenating
-  #if NET2
-           let
-  #else
-           use
-  #endif
-               nn = affectedModule.SelectNodes(m')
+           let nn = selectNodes affectedModule m'
            nn
            |> Seq.cast<XmlElement>
            |> Seq.collect (fun (method : XmlElement) ->
                 s
                 |> Seq.collect (fun (name, flag) ->
-  #if NET2
-                     let
-  #else
-                     use
-  #endif
-                         nodes = method.SelectNodes(name)
+                     let nodes = selectNodes method name
                      nodes
                      |> Seq.cast<XmlElement>
                      |> Seq.map (fun x -> (x, flag))
@@ -306,7 +294,7 @@ module internal Counter =
                             )))
       hitcount
 #endif
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+    [<SuppressMessage("Gendarme.Rules.Smells",
      "AvoidLongParameterListsRule",
      Justification="Most of this gets curried away")>]
     let doFlush postProcess pointProcess own counts format coverageFile outputFile =
@@ -335,7 +323,7 @@ module internal Counter =
            1L
 #endif
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+  [<SuppressMessage("Gendarme.Rules.Smells",
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
   [<SuppressMessage("Microsoft.Reliability",
@@ -380,6 +368,7 @@ module internal Counter =
           new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096,
                           FileOptions.SequentialScan) :> Stream
       try
+        ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
         let zip = new ZipFile(container)
         try
           let entryName = report |> Path.GetFileName
@@ -403,4 +392,3 @@ module internal Counter =
                            I.doFlush postProcess pointProcess own counts format reader target
 
 #endif // !RUNNER
-#endif // !AVALONIA

@@ -3,12 +3,18 @@
 #if NETSTANDARD2_0
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
 open System.Xml
 open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.XPath
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces",
+  Scope="type", Target="AltCover.Configuration",
+  Justification="No conflict here")>]
+()
 
 module Configuration =
 
@@ -17,11 +23,13 @@ module Configuration =
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
       "Gendarme.Rules.Exceptions",
       "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
       Justification = "need to exhaustively list the espected ones"
   )>]
+  [<SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
+    Justification="ditto, ditto")>]
   let private ensureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
@@ -51,6 +59,8 @@ module Configuration =
         printfn "%A" x
         (file, defaultDocument())
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Dir is a well known abbrev, and 's' is OK")>]
   let SaveSchemaDir (s : string) =
     let file, config = ensureFile()
 
@@ -85,11 +95,13 @@ module Configuration =
   let ReadFont() =
     let _, config = ensureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace 10"
+    | [] -> "Monospace Normal 10"
     | x :: _ -> x.FirstNode.ToString()
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Compiler generated, also Dir is a well known abbrev")>]
   let ReadSchemaDir() =
-    let file, config = ensureFile()
+    let _, config = ensureFile()
 
     let node =
       config.XPathSelectElements("AltCover.Visualizer")
@@ -125,6 +137,8 @@ module Configuration =
     |> Seq.iter (fun path -> inject.Add(XElement(XName.Get "RecentlyOpened", path)))
     config.Save file
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Compiler generated")>]
   let ReadCoverageFiles sink =
     let _, config = ensureFile()
 
@@ -134,6 +148,8 @@ module Configuration =
     |> Seq.toList
     |> sink
 
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Compiler generated")>]
   let SaveGeometry location size =
     let file, config = ensureFile()
     config.XPathSelectElements("//Geometry")

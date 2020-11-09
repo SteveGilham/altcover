@@ -177,6 +177,9 @@
                               <xs:attribute name="token" type="xs:integer" use="required" />
                               <xs:attribute name="name" type="xs:string" use="required" />
                               <xs:attribute name="strategy" type="xs:string" use="required" />
+                              <xs:attribute name="entry" type="xs:string" use="optional" />
+                              <xs:attribute name="exit" type="xs:string" use="optional" />
+                              <xs:anyAttribute processContents="skip" />
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>

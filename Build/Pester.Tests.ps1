@@ -68,7 +68,7 @@ Describe "Invoke-Altcover" {
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "sample2.core.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)

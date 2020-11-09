@@ -1,0 +1,127 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
+    <RootNamespace>AltCover</RootNamespace>
+    <AssemblyName>AltCover.Engine</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
+    <!-- https://github.com/dotnet/sdk/issues/987 -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <!-- If static linking, fix up in the Unpack documentation stage!!-->
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>52</NoWarn>
+    <Tailcalls>true</Tailcalls>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+    <!-- OtherFlags>- -keyfile:$(SolutionDir)Build\Infrastructure.snk - -staticlink:Manatee.Json</OtherFlags -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Exemption.fs" />
+    <Compile Include="Augment.fs" />
+    <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
+    <Compile Include="ProgramDatabase.fs" />
+    <Compile Include="Filter.fs" />
+    <Compile Include="Visitor.fs" />
+    <Compile Include="Naming.fs" />
+    <Compile Include="Report.fs" />
+    <Compile Include="Gendarme.fs" />
+    <Compile Include="OpenCover.fs" />
+    <Compile Include="CommandLine.fs" />
+    <Compile Include="Instrument.fs" />
+    <Compile Include="LCov.fs" />
+    <Compile Include="Cobertura.fs" />
+    <Compile Include="PostProcess.fs" />
+    <Compile Include="Runner.fs" />
+    <Compile Include="Main.fs" />
+    <Compile Include="Abstract.fsi" />
+    <Compile Include="Abstract.fs" />
+    <Compile Include="Primitive.fsi" />
+    <Compile Include="Primitive.fs" />
+    <Compile Include="TypeSafe.fsi" />
+    <Compile Include="TypeSafe.fs" />
+    <Compile Include="AltCover.fsi" />
+    <Compile Include="AltCover.fs" />
+    <Compile Include="Args.fs" />
+    <Compile Include="TaskIO.fs" />
+    <Compile Include="WhatIfExtension.fsi" />
+    <Compile Include="WhatIfExtension.fs" />
+    <Compile Include="Command.fsi" />
+    <Compile Include="Command.fs" />
+    <Compile Include="Tasks.fsi" />
+    <Compile Include="Tasks.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Build\Recorder.snk">
+      <Link>Recorder.snk</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="System.ValueTuple" />
+    <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
+    <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
+    <PackageReference Include="Manatee.Json" Version="13.0.3" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Mono.Options">
+      <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="AltCover.Recorder">
+      <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
+    </Reference>
+    <Reference Include="BlackFox.CommandLine">
+      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AbstractFsi Include="$(ProjectDir)Abstract.fsi" />
+    <AbstractFs Include="$(ProjectDir)Abstract.fs" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Copy SourceFiles="@(AbstractFsi)" DestinationFiles="@(AbstractFs)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

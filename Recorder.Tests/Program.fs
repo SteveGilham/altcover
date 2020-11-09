@@ -12,6 +12,6 @@ namespace Tests.Recorder.Unknown
 #endif
 #endif
 
-module Program =
+module UnitTestStub =
   [<EntryPoint>]
   let main _ = 0

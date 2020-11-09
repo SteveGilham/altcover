@@ -45,7 +45,7 @@ let rest =
 // The meat of the script starts here ---------------------------------
 // load files
 let stream = new FileStream(!keyName, FileMode.Open, FileAccess.Read)
-let key = new StrongNameKeyPair(stream)
+let key = StrongNameKeyPair(stream)
 let definition = AssemblyDefinition.ReadAssembly(!assemblyName)
 
 // Do what CorFlags /32BIT+ /Force does if required
