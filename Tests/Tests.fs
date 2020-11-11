@@ -3116,7 +3116,7 @@ module AltCoverTests =
         let classes = document.Descendants(XName.Get "FullName")
                       |> Seq.filter (fun x -> x.Parent.Attribute(XName.Get "skippedDueTo") |> isNull)
                       |> Seq.map (fun x -> x.Value)
-                      |> Seq.filter (fun n -> n |> Seq.head |> Char.IsLetterOrDigit)
+                      |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
                       |> Seq.sort
                       |> Seq.toList
 
