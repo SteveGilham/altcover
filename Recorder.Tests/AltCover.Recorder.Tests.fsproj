@@ -70,18 +70,12 @@
 
   <ItemGroup>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
-    <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
-    <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' != 'net20'" />
     <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
+    <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" Condition="'$(TargetFramework)' == 'net20'" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="System.IO.Compression">
-      <Version>4.3.0</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
     <PackageReference Include="System.IO.Compression">
       <Version>4.3.0</Version>
     </PackageReference>
