@@ -101,6 +101,10 @@ let dotnetOptions (o : DotNet.Options) =
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
+let dotnetOptionsWithRollForwards (o : DotNet.Options) =
+  let env = o.Environment.Add ("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
+  o.WithEnvironment env
+  
 let fxcop =
   if Environment.isWindows then
     let expect = "./packages/fxcop/FxCopCmd.exe" |> Path.getFullName
@@ -2563,7 +2567,7 @@ _Target "Unpack" (fun _ ->
   ]
   |> List.iter (fun n ->
     Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.0/" + n + ".xml")
-    Actions.RunDotnet dotnetOptions "xmldocmd"
+    Actions.RunDotnet (dotnetOptions >> dotnetOptionsWithRollForwards) "xmldocmd"
      (unpacked + n + ".dll ./_Documentation/" + n + " --visibility public --skip-unbrowsable --clean")
      ("documenting " + n)))
 
