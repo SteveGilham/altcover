@@ -182,6 +182,7 @@ let cliArguments =
   { MSBuild.CliArguments.Create() with
       ConsoleLogParameters = []
       DistributedLoggers = None
+      Properties = [("CheckEolTargetFramework", "false")]
       DisableInternalBinLog = true }
 
 let withWorkingDirectoryVM dir o =
@@ -295,6 +296,7 @@ let msbuildRelease proj =
         DisableInternalBinLog = true
         Properties =
           [ "Configuration", "Release"
+            "CheckEolTargetFramework", "false"
             "DebugSymbols", "True" ] }) proj
 
 let msbuildDebug proj =
@@ -306,6 +308,7 @@ let msbuildDebug proj =
         DisableInternalBinLog = true
         Properties =
           [ "Configuration", "Debug"
+            "CheckEolTargetFramework", "false"
             "DebugSymbols", "True" ] }) proj
 
 let dotnetBuildRelease proj =
@@ -410,7 +413,9 @@ module SolutionRoot =
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
        let proj = Path.GetFileName f
-       DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
+       DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM dir)
+                                let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+                                { tmp with MSBuildParams = mparams} ) proj))
 
 // Basic compilation
 
@@ -2462,11 +2467,13 @@ _Target "PrepareDotNetBuild" (fun _ ->
     { options with
         OutputPath = Some publish
         Configuration = DotNet.BuildConfiguration.Release
+        MSBuildParams = { options.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: options.MSBuildParams.Properties}
         Framework = Some "netcoreapp2.0" }) netcoresource
   DotNet.publish (fun options ->
     { options with
         OutputPath = Some(publish + ".visualizer")
         Configuration = DotNet.BuildConfiguration.Release
+        MSBuildParams = { options.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: options.MSBuildParams.Properties}
         Framework = Some "netcoreapp2.1" })
     (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
@@ -3314,7 +3321,9 @@ _Target "MSBuildTest" (fun _ ->
   let before = Actions.ticksNow()
   Shell.cleanDir (sample @@ "_Binaries")
   DotNet.msbuild (fun opt ->
-    opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample }))
+    let tmp = opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample })
+    let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+    { tmp with MSBuildParams = mparams})
     (build @@ "msbuildtest.proj")
   printfn "Checking samples4 output"
   Actions.CheckSample4 before x
@@ -3333,6 +3342,7 @@ _Target "MSBuildTest" (fun _ ->
         Properties =
           [ "Configuration", "Debug"
             "MSBuildTest", "true"
+            "CheckEolTargetFramework", "false"
             "AltCoverPath", unpack.Replace('\\', '/')
             "DebugSymbols", "True" ] }) "./Sample4/Sample4LongForm.fsproj")
 
@@ -3452,6 +3462,7 @@ _Target "DoIt"
     { MSBuild.CliArguments.Create() with
         ConsoleLogParameters = []
         DistributedLoggers = None
+        Properties = [("CheckEolTargetFramework", "false")]
         DisableInternalBinLog = true }
 
   DotNet.test
@@ -3797,11 +3808,14 @@ _Target "Issue20" (fun _ ->
 
     DotNet.restore
       (fun o ->
-        o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")) ""
+        let tmp = o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")
+        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+        { tmp with MSBuildParams = mparams}) ""
     DotNet.restore
       (fun o ->
-        o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests"))
-      ""
+        let tmp = o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests")
+        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+        { tmp with MSBuildParams = mparams}) ""
 
     // would like to assert "succeeds with warnings"
     let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
@@ -3858,7 +3872,9 @@ _Target "Issue23" (fun _ ->
     csproj.Save "./_Issue23/sample9.csproj"
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
     Shell.copy "./_Issue23" (!!"./Sample9/*.json")
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue23")) ""
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue23")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+                             { tmp with MSBuildParams = mparams}) ""
 
     let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
     let pp0 = AltCover.PrepareOptions.Primitive p0
@@ -3897,7 +3913,9 @@ _Target "Issue67" (fun _ ->
     csproj.Save "./_Issue67/sample9.csproj"
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
     Shell.copy "./_Issue67" (!!"./Sample9/*.json")
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue67")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+                             { tmp with MSBuildParams = mparams}) ""
 
     let p0 =
       { Primitive.PrepareOptions.Create() with
