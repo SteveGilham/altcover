@@ -2115,6 +2115,8 @@ module AltCoverTests3 =
            |> Seq.map fst
            |> Seq.filter
                 (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not)
+           |> Seq.filter // flaky in altcoverrunner
+                (fun f -> (f |> Path.GetFileName).StartsWith("Sample23", StringComparison.OrdinalIgnoreCase) |> not)
            |> Seq.filter
                 (fun f -> (f |> Path.GetFileName).StartsWith("xunit.", StringComparison.OrdinalIgnoreCase) |> not)
            |> Seq.filter
@@ -2128,6 +2130,8 @@ module AltCoverTests3 =
                    f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
                    || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
               |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
+              |> Seq.filter // flaky in altcoverrunner
+                   (fun f -> (f |> Path.GetFileName).StartsWith("Sample23", StringComparison.OrdinalIgnoreCase) |> not)
               |> Seq.filter
                    (fun f ->
                    File.Exists(Path.ChangeExtension(f, ".pdb")) ||
