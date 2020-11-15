@@ -13,7 +13,7 @@ nuget:
 install:
   - cinst gtksharp
   # SDK version fix
-  - cinst dotnetcore-sdk --version 5.0.100
+  #   - cinst dotnetcore-sdk --version 5.0.100
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
