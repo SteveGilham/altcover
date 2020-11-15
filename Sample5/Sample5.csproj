@@ -29,4 +29,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="_Intermediate\**" />
+  </ItemGroup>
 </Project>

@@ -514,12 +514,9 @@ module internal Main =
           Runner.doCoverage arguments (declareOptions())
       | Select "ImportModule" _ ->
           let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-          let parent = here |> Path.GetDirectoryName
-          Directory.GetDirectories(parent)
-          |> Seq.sort
-          |> Seq.collect (fun d -> Directory.GetFiles(d,
-                                                      "AltCover.PowerShell.dll",
-                                                      SearchOption.TopDirectoryOnly))
+          ["../netcoreapp2.0"; "../netstandard2.0"; "../any" ]
+          |> Seq.map (fun d -> Path.GetFullPath(Path.Combine(Path.Combine (here, d), "AltCover.PowerShell.dll")))
+          |> Seq.filter File.Exists
           |> Seq.tryHead
           |> Option.map (sprintf "Import-Module %A")
           |> Option.iter Output.info

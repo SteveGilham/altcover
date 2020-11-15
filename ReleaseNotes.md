@@ -2,6 +2,13 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.1.xxx (Genbu series release =8)
+* Build with net5.0 SDK (modulo work-round for https://github.com/dotnet/fsharp/issues/10442) in net5-only environments
+  * Still build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
+  * Still build the GTK2 visualizer against `net472` for consistency
+  * Still build the recorder at `net20` only and use the same assembly everywhere (see F# compiler issue noted above)
+  * Still build unit tests uniformly against `netcoreapp3.0` because uniformity is simpler and Mono 6.12/MSbuild interprets a `net5.0` TFM as .Net *Framework* 5.0 and bleats about missing reference assemblies
+
 # 7.1.795 (Genbu series release 7)
 * [BUGFIX] Make LCov tracefile output follow what is actually generated, and not just what the `man` page says
 * As well as interfaces, hide other types with no non-abstract methods (e.g. plain enums) in the coverage
