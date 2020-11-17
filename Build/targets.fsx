@@ -104,7 +104,7 @@ let dotnetOptions (o : DotNet.Options) =
 let dotnetOptionsWithRollForwards (o : DotNet.Options) =
   let env = o.Environment.Add ("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
   o.WithEnvironment env
-  
+
 let fxcop =
   if Environment.isWindows then
     let expect = "./packages/fxcop/FxCopCmd.exe" |> Path.getFullName
@@ -414,7 +414,7 @@ module SolutionRoot =
        let dir = Path.GetDirectoryName f
        let proj = Path.GetFileName f
        DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM dir)
-                                let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+                                let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
                                 { tmp with MSBuildParams = mparams} ) proj))
 
 // Basic compilation
@@ -423,9 +423,9 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
+    [ "./AltCover.Recorder.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // net20; mono
 
-    [ "./AltCover.sln" ] |> Seq.iter dotnetBuildRelease
+    [ "./AltCover.sln"; "./AltCover.Visualizer.sln" ] |> Seq.iter dotnetBuildRelease
 
     // document cmdlets ahead of packaging
     let packages =
@@ -476,9 +476,9 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
+  [ "./AltCover.Recorder.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // net20; mono
 
-  [ "./AltCover.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
+  [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
 
@@ -3322,7 +3322,7 @@ _Target "MSBuildTest" (fun _ ->
   Shell.cleanDir (sample @@ "_Binaries")
   DotNet.msbuild (fun opt ->
     let tmp = opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample })
-    let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+    let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
     { tmp with MSBuildParams = mparams})
     (build @@ "msbuildtest.proj")
   printfn "Checking samples4 output"
@@ -3809,12 +3809,12 @@ _Target "Issue20" (fun _ ->
     DotNet.restore
       (fun o ->
         let tmp = o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")
-        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
         { tmp with MSBuildParams = mparams}) ""
     DotNet.restore
       (fun o ->
         let tmp = o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests")
-        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
         { tmp with MSBuildParams = mparams}) ""
 
     // would like to assert "succeeds with warnings"
@@ -3873,7 +3873,7 @@ _Target "Issue23" (fun _ ->
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
     Shell.copy "./_Issue23" (!!"./Sample9/*.json")
     DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue23")
-                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
                              { tmp with MSBuildParams = mparams}) ""
 
     let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
@@ -3914,7 +3914,7 @@ _Target "Issue67" (fun _ ->
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
     Shell.copy "./_Issue67" (!!"./Sample9/*.json")
     DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue67")
-                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties} 
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
                              { tmp with MSBuildParams = mparams}) ""
 
     let p0 =
