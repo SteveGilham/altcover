@@ -295,17 +295,17 @@ let coverageSummary _ =
 let msbuildRelease overrider proj =
   let (q, args) =
     MSBuild.buildArgs (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Normal
-        ConsoleLogParameters = []
-        DistributedLoggers = None
-        DisableInternalBinLog = true
+      { p with
+          Verbosity = Some MSBuildVerbosity.Normal
+          ConsoleLogParameters = []
+          DistributedLoggers = None
+          DisableInternalBinLog = true
           ToolPath = if Option.isSome overrider
                      then "dotnet \"" + overrider.Value + "\""
                      else p.ToolPath
-        Properties =
-          [ "Configuration", "Release"
-            "CheckEolTargetFramework", "false"
+          Properties =
+            [ "Configuration", "Release"
+              "CheckEolTargetFramework", "false"
               "DebugSymbols", "True" ] })
   let cmd =  (if Option.isSome overrider
               then "\"" + overrider.Value + "\" "
@@ -318,17 +318,17 @@ let msbuildRelease overrider proj =
 let msbuildDebug overrider proj =
   let (q, args) =
     MSBuild.buildArgs (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Normal
-        ConsoleLogParameters = []
-        DistributedLoggers = None
-        DisableInternalBinLog = true
+      { p with
+          Verbosity = Some MSBuildVerbosity.Normal
+          ConsoleLogParameters = []
+          DistributedLoggers = None
+          DisableInternalBinLog = true
           ToolPath = if Option.isSome overrider
                      then "dotnet \"" + overrider.Value + "\""
                      else p.ToolPath
-        Properties =
-          [ "Configuration", "Debug"
-            "CheckEolTargetFramework", "false"
+          Properties =
+            [ "Configuration", "Debug"
+              "CheckEolTargetFramework", "false"
               "DebugSymbols", "True" ] })
   let cmd =  (if Option.isSome overrider
               then "\"" + overrider.Value + "\" "
@@ -378,12 +378,16 @@ _Target "Clean" (fun _ ->
 _Target "SetVersion" (fun _ ->
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
+  let github = Environment.environVar "GITHUB_RUN_NUMBER"
+  
   let version = Actions.GetVersionFromYaml()
 
   let ci =
     if String.IsNullOrWhiteSpace appveyor then
       if String.IsNullOrWhiteSpace travis
-      then String.Empty
+      then if String.IsNullOrWhiteSpace github
+              then String.Empty
+              else version.Replace("{build}", github + "-github")
       else version.Replace("{build}", travis + "-travis")
     else
       appveyor
