@@ -101,6 +101,11 @@ let dotnetOptions (o : DotNet.Options) =
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
+let dotnetVersion = DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
+printfn "Using dotnet version %s" dotnetVersion
+let MSBuildPath = dotnetPath
+                  |> Option.map (fun f -> Path.Combine(Path.GetDirectoryName f, "sdk/"+ dotnetVersion + "/MSBuild.dll"))
+
 let dotnetOptionsWithRollForwards (o : DotNet.Options) =
   let env = o.Environment.Add ("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
   o.WithEnvironment env
@@ -287,29 +292,51 @@ let coverageSummary _ =
      || !misses > 1
   then Assert.Fail("Coverage is too low")
 
-let msbuildRelease proj =
-  MSBuild.build (fun p ->
+let msbuildRelease overrider proj =
+  let (q, args) =
+    MSBuild.buildArgs (fun p ->
     { p with
         Verbosity = Some MSBuildVerbosity.Normal
         ConsoleLogParameters = []
         DistributedLoggers = None
         DisableInternalBinLog = true
+          ToolPath = if Option.isSome overrider
+                     then "dotnet \"" + overrider.Value + "\""
+                     else p.ToolPath
         Properties =
           [ "Configuration", "Release"
             "CheckEolTargetFramework", "false"
-            "DebugSymbols", "True" ] }) proj
+              "DebugSymbols", "True" ] })
+  let cmd =  (if Option.isSome overrider
+              then "\"" + overrider.Value + "\" "
+              else "") + args + " " + proj
+  let exe = if Option.isSome overrider then dotnetPath.Value else q.ToolPath
+  CreateProcess.fromRawCommandLine exe cmd
+  |> Proc.run
+  |> (fun p -> Assert.That(p.ExitCode, Is.EqualTo 0))
 
-let msbuildDebug proj =
-  MSBuild.build (fun p ->
+let msbuildDebug overrider proj =
+  let (q, args) =
+    MSBuild.buildArgs (fun p ->
     { p with
         Verbosity = Some MSBuildVerbosity.Normal
         ConsoleLogParameters = []
         DistributedLoggers = None
         DisableInternalBinLog = true
+          ToolPath = if Option.isSome overrider
+                     then "dotnet \"" + overrider.Value + "\""
+                     else p.ToolPath
         Properties =
           [ "Configuration", "Debug"
             "CheckEolTargetFramework", "false"
-            "DebugSymbols", "True" ] }) proj
+              "DebugSymbols", "True" ] })
+  let cmd =  (if Option.isSome overrider
+              then "\"" + overrider.Value + "\" "
+              else "") + args + " " + proj
+  let exe = if Option.isSome overrider then dotnetPath.Value else q.ToolPath
+  CreateProcess.fromRawCommandLine exe cmd
+  |> Proc.run
+  |> (fun p -> Assert.That(p.ExitCode, Is.EqualTo 0))
 
 let dotnetBuildRelease proj =
   DotNet.build (fun p ->
@@ -423,8 +450,8 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./AltCover.Recorder.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // net20; mono
-
+    [  "MCS.sln" ] |> Seq.iter (msbuildRelease None) // mono
+    [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
     [ "./AltCover.sln"; "./AltCover.Visualizer.sln" ] |> Seq.iter dotnetBuildRelease
 
     // document cmdlets ahead of packaging
@@ -476,8 +503,8 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./AltCover.Recorder.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // net20; mono
-
+  [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
+  [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildDebug MSBuildPath) // net20
   [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
@@ -795,7 +822,7 @@ _Target "JustUnitTest" (fun _ ->
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
-  msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
 
   !!(@"./*Test*/*Tests.fsproj")
   |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
@@ -822,7 +849,7 @@ _Target "UnitTestDotNet" (fun _ ->
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   let l = !!(@"./*Tests/*Tests.fsproj")
           |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
                                   && s.Contains("Recorder") |> not) // net20
