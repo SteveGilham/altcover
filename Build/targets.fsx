@@ -722,6 +722,7 @@ _Target "FxCop" (fun _ ->
          |> FxCop.run
               { FxCop.Params.Create() with
                   WorkingDirectory = "."
+                  DependencyDirectories  = ["./ThirdParty/gtk-sharp2"]
                   ToolPath = Option.get fxcop
                   UseGAC = true
                   Verbose = false
