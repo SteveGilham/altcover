@@ -103,8 +103,14 @@ let dotnetOptions (o : DotNet.Options) =
 
 let dotnetVersion = DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
 printfn "Using dotnet version %s" dotnetVersion
-let MSBuildPath = dotnetPath
-                  |> Option.map (fun f -> Path.Combine(Path.GetDirectoryName f, "sdk/"+ dotnetVersion + "/MSBuild.dll"))
+
+let dotnetInfo = DotNet.exec (fun o -> dotnetOptions (o.WithRedirectOutput true)) "" "--info"
+let MSBuildPath = dotnetInfo.Results
+                  |> Seq.filter (fun x -> x.IsError |> not)
+                  |> Seq.map (fun x -> x.Message)
+                  |> Seq.tryFind (fun x -> x.Contains "Base Path:")
+                  |> Option.map (fun x -> Path.Combine(x.Replace("Base Path:", "").TrimStart(), "MSBuild.dll"))
+printfn "MSBuildPath = %A" MSBuildPath
 
 let dotnetOptionsWithRollForwards (o : DotNet.Options) =
   let env = o.Environment.Add ("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
