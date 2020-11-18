@@ -29,7 +29,7 @@ module HandlerCommon =
         let filename = Option.get document
         window.Title <- "AltCover.Visualizer - " + filename
         let info = GetSource(filename)
-        let current = new FileInfo(window.CoverageFiles.Head)
+        let current = FileInfo(window.CoverageFiles.Head)
         if (not <| info.Exists) then
           Messages.MissingSourceThisFileMessage window.ShowMessageOnGuiThread current info
         else if (info.Outdated current.LastWriteTimeUtc) then

@@ -57,10 +57,10 @@ if !cor32plus then
 definition.Name.HasPublicKey <- true
 definition.Name.PublicKey <- key.PublicKey
 
-let pkey = new WriterParameters()
+let pkey = WriterParameters()
 
 pkey.WriteSymbols <- true
-pkey.SymbolWriterProvider <- new PdbWriterProvider()
+pkey.SymbolWriterProvider <- PdbWriterProvider()
 pkey.StrongNameKeyPair <- key
 
 let file = Path.GetFileName(!assemblyName)

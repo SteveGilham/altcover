@@ -225,7 +225,7 @@ module private Gui =
     use openFileDialog = openFileDialogFactory()
     let makeSelection (ofd: System.Windows.Forms.OpenFileDialog) x =
         if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
-          let file = new FileInfo(ofd.FileName)
+          let file = FileInfo(ofd.FileName)
           let dir = file.Directory.FullName
           ofd.InitialDirectory <- dir
 #endif
