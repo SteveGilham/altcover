@@ -298,51 +298,33 @@ let coverageSummary _ =
      || !misses > 1
   then Assert.Fail("Coverage is too low")
 
-let msbuildRelease overrider proj =
-  let (q, args) =
-    MSBuild.buildArgs (fun p ->
+let msbuildCommon (p : MSBuildParams) =
       { p with
           Verbosity = Some MSBuildVerbosity.Normal
           ConsoleLogParameters = []
           DistributedLoggers = None
           DisableInternalBinLog = true
-          ToolPath = if Option.isSome overrider
-                     then "dotnet \"" + overrider.Value + "\""
-                     else p.ToolPath
           Properties =
-            [ "Configuration", "Release"
-              "CheckEolTargetFramework", "false"
-              "DebugSymbols", "True" ] })
-  let cmd =  (if Option.isSome overrider
-              then "\"" + overrider.Value + "\" "
-              else "") + args + " " + proj
-  let exe = if Option.isSome overrider then dotnetPath.Value else q.ToolPath
-  CreateProcess.fromRawCommandLine exe cmd
-  |> Proc.run
-  |> (fun p -> Assert.That(p.ExitCode, Is.EqualTo 0))
+            [ "CheckEolTargetFramework", "false"
+              "DebugSymbols", "True" ] }
+let withDebug (p : MSBuildParams) =
+ { p with Properties = ("Configuration", "Debug") :: p.Properties }
+let withRelease (p : MSBuildParams) =
+ { p with Properties = ("Configuration", "Release") :: p.Properties }
 
-let msbuildDebug overrider proj =
-  let (q, args) =
-    MSBuild.buildArgs (fun p ->
-      { p with
-          Verbosity = Some MSBuildVerbosity.Normal
-          ConsoleLogParameters = []
-          DistributedLoggers = None
-          DisableInternalBinLog = true
-          ToolPath = if Option.isSome overrider
-                     then "dotnet \"" + overrider.Value + "\""
-                     else p.ToolPath
-          Properties =
-            [ "Configuration", "Debug"
-              "CheckEolTargetFramework", "false"
-              "DebugSymbols", "True" ] })
-  let cmd =  (if Option.isSome overrider
-              then "\"" + overrider.Value + "\" "
-              else "") + args + " " + proj
-  let exe = if Option.isSome overrider then dotnetPath.Value else q.ToolPath
-  CreateProcess.fromRawCommandLine exe cmd
-  |> Proc.run
-  |> (fun p -> Assert.That(p.ExitCode, Is.EqualTo 0))
+let doMSBuild config overrider proj =
+  let f = msbuildCommon >> config
+  match overrider with
+  | None -> MSBuild.build f proj
+    // hacky -- maybe BlackFox the append
+  | Some dll -> let (_, args) = MSBuild.buildArgs f
+                CreateProcess.fromRawCommandLine dll (args + " " + proj)
+                |> DotNet.prefixProcess dotnetOptions [dll]
+                |> Proc.run
+                |> fun p -> Assert.That(p.ExitCode, Is.EqualTo 0)
+
+let msbuildRelease = doMSBuild withRelease
+let msbuildDebug = doMSBuild withDebug
 
 let dotnetBuildRelease proj =
   DotNet.build (fun p ->
