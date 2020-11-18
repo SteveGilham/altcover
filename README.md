@@ -73,7 +73,7 @@ It is assumed that the following are available
 .net core SDK 5.0.100 or later 5.x version (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 7.1.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
-The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `netcoreapp3.0` for unit tests, but does not need any pre-5.0 runtimes to be installed (roll-forward policies are in place).
+The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net5.0` for unit tests, but does not need any pre-5.0 runtimes to be installed (roll-forward policies are in place).
 
 #### Windows
 

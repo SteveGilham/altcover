@@ -235,7 +235,7 @@ let defaultTestOptions fwk common (o : DotNet.TestOptions) =
   { o.WithCommon
       ((fun o2 -> { o2 with Verbosity = Some DotNet.Verbosity.Normal }) >> common) with
       NoBuild = true
-      Framework = fwk // Some "netcoreapp3.0"
+      Framework = fwk // Some "net5.0"
       Configuration = DotNet.BuildConfiguration.Debug }
 
 let defaultDotNetTestCommandLine fwk project =
@@ -251,7 +251,7 @@ let coverletTestOptions (o : DotNet.TestOptions) =
   { o.WithCommon dotnetOptions with
       Configuration = DotNet.BuildConfiguration.Debug
       NoBuild = true
-      Framework = Some "netcoreapp3.0"
+      Framework = Some "net5.0"
       Settings = Some "./Build/coverletArgs.runsettings" }
   |> testWithCLIArguments
 
@@ -385,7 +385,7 @@ _Target "SetVersion" (fun _ ->
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
   let github = Environment.environVar "GITHUB_RUN_NUMBER"
-  
+
   let version = Actions.GetVersionFromYaml()
 
   let ci =
@@ -595,7 +595,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 //    ("./Build/common-rules.xml", // Avalonia generated code breaks everything
 //     [ "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
 //    ("./Build/common-rules.xml",
-//     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/netcoreapp3.0/AltCover.Visualizer.dll" ])
+//     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
        "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
@@ -840,7 +840,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
-             Framework = Some "netcoreapp3.0" }
+             Framework = Some "net5.0" }
          |> buildWithCLIArguments)))
 
 _Target "UnitTestDotNet" (fun _ ->
@@ -851,7 +851,7 @@ _Target "UnitTestDotNet" (fun _ ->
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
-               Framework = Some "netcoreapp3.0"
+               Framework = Some "net5.0"
                NoBuild = true }
            |> testWithCLIArguments))
   with x ->
@@ -870,7 +870,7 @@ _Target "BuildForCoverlet" (fun _ ->
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
-             Framework = Some "netcoreapp3.0" }
+             Framework = Some "net5.0" }
          |> buildWithCLIArguments)))
 
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
@@ -1290,32 +1290,32 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCore.xml", // report
        "AltCover.Tests.fsproj", // project
        Path.getFullName "Tests", // workingDirectory
        AltCoverFilter >> (fun p -> { p with AssemblyExcludeFilter = [ "?^AltCover$" ]}) // filter
      )
      (
-       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
-       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
+       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
        reports @@ "RecorderTestWithAltCoverCore.xml",
        "AltCover.Recorder.Tests.fsproj",
        Path.getFullName "Recorder.Tests",
        AltCoverFilterG
      )
      (
-       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
        "AltCover.Api.Tests.fsproj", // project
        Path.getFullName "AltCover.Api.Tests", // workingDirectory
        AltCoverApiFilter // filter
      )
      (
-       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml", // report
        "AltCover.ValidateGendarmeEmulation.fsproj", // project
        Path.getFullName "ValidateGendarmeEmulations", // workingDirectory
@@ -1350,7 +1350,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
          |> DotNet.test (fun p ->
               { p.WithCommon(withWorkingDirectoryVM workingDirectory) with
                   Configuration = DotNet.BuildConfiguration.Debug
-                  Framework = Some "netcoreapp3.0"
+                  Framework = Some "net5.0"
                   NoBuild = true }
               |> testWithCLIArguments)
        with x ->
@@ -1382,25 +1382,25 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./Tests/AltCover.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
-       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
+       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
      (
-       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
@@ -1431,7 +1431,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
        printfn "Unit test the instrumented code %s" testproject
        let (dotnetexe, args) =
-         defaultDotNetTestCommandLine (Some "netcoreapp3.0") testproject
+         defaultDotNetTestCommandLine (Some "net5.0") testproject
 
        let collect =
          AltCover.CollectOptions.Primitive
@@ -3062,8 +3062,8 @@ _Target "OpenCoverForPester" (fun _ ->
   Directory.ensure reportDir
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
-  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
-  let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
+  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/net5.0"
+  let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net5.0"
 
   Shell.cleanDir o
 
@@ -3088,7 +3088,7 @@ _Target "OpenCoverForPester" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample = Path.getFullName "./Sample18/Sample18.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") sample
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample
 
   // Run
   let collect =
@@ -3119,10 +3119,10 @@ _Target "OpenCoverForPester" (fun _ ->
   let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
   let target = reportDir @@ "OpenCoverForPester.coverlet.xml"
   Shell.copyFile target covxml
-  let binary = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.dll"
+  let binary = here @@ "_Binaries/Sample18/Debug+AnyCPU/net5.0/Sample18.dll"
   let binaryTarget = reportDir @@ "Sample18.dll"
   Shell.copyFile binaryTarget binary
-  let binary2 = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.pdb"
+  let binary2 = here @@ "_Binaries/Sample18/Debug+AnyCPU/net5.0/Sample18.pdb"
   let binary2Target = reportDir @@ "Sample18.pdb"
   Shell.copyFile binary2Target binary2)
 

@@ -1,4 +1,4 @@
-#if NETCOREAPP2_0
+#if NET5_0
 namespace Tests.Recorder.Core
 #else
 #if NET4
@@ -333,7 +333,7 @@ module AltCoverTests =
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
-#if NETCOREAPP2_0
+#if NET5_0
 
   [<Test>]
   let NullRefShouldBeHandled() =
