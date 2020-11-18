@@ -14,7 +14,7 @@ open Mono.Cecil.Cil
 #nowarn "25"
 
 module AltCoverTests3 =
-#if NETCOREAPP2_0
+#if NET5_0
     let monoSample1 = "../_Mono/Sample1"
 #else
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
@@ -2289,7 +2289,7 @@ module AltCoverTests3 =
       finally
         Console.SetError saved
 
-#if NETCOREAPP3_0
+#if  NET5_0
     [<Test>]
     let TargetsPathIsAsExpected() =
       Main.init()
@@ -2389,7 +2389,7 @@ module AltCoverTests3 =
         test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale
-#if NETCOREAPP2_0
+#if NET5_0
         let dir = Path.Combine(SolutionRoot.location,
                                 "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0")
 #else

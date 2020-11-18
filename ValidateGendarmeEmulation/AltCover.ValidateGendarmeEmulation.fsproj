@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <NuGetCache Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)\.nuget\packages</NuGetCache>
     <NuGetCache Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.nuget/packages</NuGetCache>

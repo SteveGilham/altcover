@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Reflection
 
-#if NETCOREAPP3_0
+#if  NET5_0
 open AltCover
 open Expecto
 open Mono.Cecil
@@ -16,7 +16,7 @@ type Assert = NUnit.Framework.Assert
 type Does = NUnit.Framework.Does
 type Is = NUnit.Framework.Is
 
-#if NETCOREAPP3_0
+#if  NET5_0
 [<System.AttributeUsage(AttributeTargets.Method)>]
 type TestAttribute() = class
     inherit Attribute()
@@ -33,7 +33,7 @@ module TestCommon =
   let maybeIOException f =
     try
       f()
-    with 
+    with
     | :? System.UnauthorizedAccessException
     | :? IOException -> ()
 
@@ -92,7 +92,7 @@ module TestCommonTests =
     [<Test>]
     let SelfTest() =
       test <@ true @>
-#if NETCOREAPP3_0
+#if  NET5_0
       Assert.Throws<Expecto.AssertException>(
 #else
 #if (ValidateGendarmeEmulation || GUI)
@@ -105,7 +105,7 @@ module TestCommonTests =
       Assert.Throws<Swensen.Unquote.AssertionFailedException>(
         fun () -> test' <@ false @> "junk") |> ignore
 
-#if NETCOREAPP3_0
+#if  NET5_0
 module ExpectoTestCommon =
   let sync = System.Object()
 

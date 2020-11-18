@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472;net20</TargetFrameworks>
+    <TargetFrameworks>net5.0;net472;net20</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'netcoreapp3.0'">NETCOREAPP2_0</ExtraDefines>
+    <ExtraDefines Condition="'$(TargetFramework)' == 'net5.0'">NETCOREAPP2_0</ExtraDefines>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net472'">NET4</ExtraDefines>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
@@ -27,7 +27,7 @@
     <Compile Include="Adapter.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Recorder.Tests.fs" />
-    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
+    <Compile Include="Program.fs" Condition="'$(TargetFramework)' == 'net5.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,7 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net5.0'" />
     <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' != 'net20'" />
     <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />

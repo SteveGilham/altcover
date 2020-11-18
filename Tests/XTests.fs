@@ -359,7 +359,7 @@ module AltCoverXTests =
                                               Keys = [| input |] }
 
     let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
-#if NETCOREAPP2_1
+#if NET5_0
     ()
 #else
     test <@ scan.Length = 0 @>
@@ -378,7 +378,7 @@ module AltCoverXTests =
                                                  [| TypeSafe.FilePath input |] }
 
     let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
-#if NETCOREAPP2_1
+#if NET5_0
     ()
 #else
     test <@ scan.Length = 0 @>
@@ -688,7 +688,7 @@ module AltCoverXTests =
       test' <@ File.Exists created@> (created + " not found")
 
       let isWindows =
-#if NETCOREAPP2_1
+#if NET5_0
                       true
 #else
                       System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -745,7 +745,7 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
       let isWindows =
-#if NETCOREAPP2_1
+#if NET5_0
                       true
 #else
                       System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
