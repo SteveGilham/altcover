@@ -102,7 +102,6 @@ let dotnetOptions (o : DotNet.Options) =
   | None -> o
 
 let dotnetVersion = DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
-let dotnetInfo = DotNet.info (fun o -> o.WithCommon dotnetOptions)
 printfn "Using dotnet version %s" dotnetVersion
 
 let dotnetInfo = DotNet.exec (fun o -> dotnetOptions (o.WithRedirectOutput true)) "" "--info"
