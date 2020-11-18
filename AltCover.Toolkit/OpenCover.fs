@@ -301,7 +301,7 @@ module OpenCover =
 
   let CompressBranching (document : XDocument) withinSequencePoint sameSpan =
     // Validate
-    let xmlDocument = new XDocument(document)
+    let xmlDocument = XDocument(document)
     let schemas = XmlUtilities.loadSchema AltCover.ReportFormat.OpenCover
     xmlDocument.Validate(schemas, null)
     // Get all the methods

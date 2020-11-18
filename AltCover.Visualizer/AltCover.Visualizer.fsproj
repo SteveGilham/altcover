@@ -14,7 +14,7 @@
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <!-- https://github.com/dotnet/sdk/issues/987 -->
-    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <!-- AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths -->
     <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net472'">NETCOREAPP2_1</GlobalDefineConstants -->
     <GlobalDefineConstants>GUI</GlobalDefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
@@ -64,19 +64,24 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="gdk-sharp">
-      <Private>False</Private>
+      <HintPath>..\ThirdParty\gtk-sharp2\gdk-sharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="glade-sharp">
-      <Private>False</Private>
+      <HintPath>..\ThirdParty\gtk-sharp2\glade-sharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="glib-sharp">
-      <Private>False</Private>
+      <HintPath>..\ThirdParty\gtk-sharp2\glib-sharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="gtk-sharp">
-      <Private>False</Private>
+      <HintPath>..\ThirdParty\gtk-sharp2\gtk-sharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="pango-sharp">
-      <Private>False</Private>
+      <HintPath>..\ThirdParty\gtk-sharp2\pango-sharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>

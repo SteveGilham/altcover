@@ -2,6 +2,7 @@ namespace Tests
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Linq
 open System.Reflection
@@ -2378,6 +2379,12 @@ module AltCoverTests =
                               test <@ sx |> Seq.length = 1 @>)
       finally
         CoverageParameters.methodPoint := false
+
+    [<Test>]
+    let LocateMatchFallsBackOK() =
+      let file = Assembly.GetExecutingAssembly().Location
+      let empty = Dictionary<string, string>()
+      test <@ Visitor.I.locateMatch file empty = file @>
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithSourceLink() =
