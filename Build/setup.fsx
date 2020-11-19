@@ -20,6 +20,7 @@ open Fake.DotNet
 open Fake.DotNet.NuGet.Restore
 open Fake.IO
 open Fake.IO.FileSystemOperators
+open Fake.IO.Globbing.Operators
 
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
@@ -94,6 +95,8 @@ nuget BlackFox.VsWhere >= 1.1.0
 nuget FSharpLint.Core >= 0.16.3
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.12.0
+nuget Fuchu >= 1.1.0
+nuget Unquote >= 5.0.0
 nuget YamlDotNet >= 8.1.2 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
@@ -135,7 +138,7 @@ _Target "FxCop" (fun _ ->
 
        let check t pf (f : string) =
          let destination = t @@ (f.Substring pf)
-         printfn "%A" destination
+         // printfn "%A" destination
          destination
          |> File.Exists
          |> not
@@ -145,8 +148,24 @@ _Target "FxCop" (fun _ ->
        let rules = target @@ "Rules"
        Shell.copyDir rules dixon (fun _ -> true)))
 
-// Restore the NuGet packages used by the build and the Framework version
+// Set up the Visuailzer test data
+_Target "AttachReports" ( fun _ ->
+  let tr = "./Tests.Visualizer/Reports"
+  Directory.ensure tr
+  Shell.cleanDir tr
 
+  let sample20 = "./Sample20" |> Path.getFullName
+
+  (!!"./Sample20/Reports/*")  
+  |> Seq.iter (fun f ->
+    let name = f |> Path.GetFileName
+    let text = f |> File.ReadAllText
+    let report = tr @@ name
+    File.WriteAllText (report, text.Replace(@"C:\temp\", sample20 + "/"))
+  )
+)
+
+// Restore the NuGet packages used by the build and the Framework version
 _Target "Preparation" (fun _ -> RestoreMSSolutionPackages restore "./MCS.sln")
 
 let defaultTarget() =
@@ -155,5 +174,8 @@ let defaultTarget() =
 
 "FxCop"
 =?> ("Preparation", Environment.isWindows)
+
+"AttachReports"
+==> "Preparation"
 
 Target.runOrDefault <| defaultTarget()

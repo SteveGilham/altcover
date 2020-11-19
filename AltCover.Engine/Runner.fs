@@ -459,10 +459,12 @@ module internal Runner =
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
 
+    let internal initSummary() =
+      summaries <- [ standardSummary ]
+
   // "Public"
   let internal declareOptions() =
-    I.summaries <- []
-    I.summaries <- I.standardSummary :: I.summaries
+    I.initSummary()
     [ ("r|recorderDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--recorderDirectory" x then

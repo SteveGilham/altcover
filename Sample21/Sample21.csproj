@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework netcoreapp3.0 /p:AltCover="true" /p:AltCoverForce=true -->
+  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework net5.0 /p:AltCover="true" /p:AltCoverForce=true -->
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <LangVersion Condition="'$(TargetFramework)' != 'net472'">8.0</LangVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,5 +24,4 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
 </Project>

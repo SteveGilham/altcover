@@ -12,6 +12,7 @@ open Fake.IO.Globbing.Operators
 
 open HeyRed.MarkdownSharp
 open NUnit.Framework
+open Swensen.Unquote
 open YamlDotNet.RepresentationModel
 
 open AltCoverFake.DotNet.Testing
@@ -439,7 +440,10 @@ a:hover {color: #ecc;}
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
        Check4Content coverageDocument
 
-  let Check4Visits(coverageDocument : XDocument) =
+  let ticksNow () = let now = System.DateTime.UtcNow
+                    now.Ticks
+
+  let Check4Visits before (coverageDocument : XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
@@ -459,12 +463,24 @@ a:hover {color: #ecc;}
            sp.Descendants(XName.Get("Time"))
            |> Seq.sumBy (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
          Assert.That(vc, Is.EqualTo vx, sp.Value))
-    let tracked = """<TrackedMethods>
-        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+    let trackedFormat = """<TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" entry="{0}" exit="{1}" />
+        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" entry="{2}" exit="{3}" />
       </TrackedMethods>"""
     coverageDocument.Descendants(XName.Get("TrackedMethods"))
     |> Seq.iter (fun x ->
+         // entry and exit times need to be tested
+         let times = x.Descendants(XName.Get("TrackedMethod"))
+                     |> Seq.map(fun m -> (m.Attribute(XName.Get("uid")).Value, m.Attribute(XName.Get("entry")).Value, m.Attribute(XName.Get("exit")).Value))
+                     |> Seq.sortBy(fun (u,_ , _) -> Int32.Parse u)
+                     |> Seq.collect(fun (_, entry, exit) -> let first = entry.TrimEnd('L') |> Int64.Parse
+                                                            let second = exit.TrimEnd('L') |> Int64.Parse
+                                                            test <@ before <= first @>
+                                                            test <@ first <= second @>
+                                                            test <@ second <= ticksNow() @>
+                                                            [entry; exit])
+                     |> Seq.toArray
+         let tracked = String.Format(trackedFormat, times.[0], times.[1], times.[2], times.[3])
          Assert.That
            (x.ToString().Replace("\r\n", "\n"),
             Is.EqualTo <| tracked.Replace("\r\n", "\n")))
@@ -490,17 +506,17 @@ a:hover {color: #ecc;}
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ])
     printfn "TrackRefs OK"
 
-  let CheckSample4Visits x =
+  let CheckSample4Visits before x =
     do use coverageFile =
          new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-       Check4Visits coverageDocument
+       Check4Visits before coverageDocument
 
-  let CheckSample4 x =
+  let CheckSample4 before x =
     do use coverageFile =
          new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
        Check4Content coverageDocument
-       Check4Visits coverageDocument
+       Check4Visits before coverageDocument

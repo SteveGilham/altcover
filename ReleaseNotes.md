@@ -2,16 +2,35 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.1.xxx (Genbu series release 7)
+# 7.1.xxx (Genbu series release =8)
+* Build with net5.0 SDK (modulo work-round for https://github.com/dotnet/fsharp/issues/10442) in net5-only environments
+  * Still build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
+  * Still build the GTK2 visualizer against `net472` for consistency
+  * Still build the recorder at `net20` only and use the same assembly everywhere (see F# compiler issue noted above)
+  * Still build unit tests uniformly against `netcoreapp3.0` because uniformity is simpler and Mono 6.12/MSbuild interprets a `net5.0` TFM as .Net *Framework* 5.0 and bleats about missing reference assemblies
+
+# 7.1.795 (Genbu series release 7)
+* [BUGFIX] Make LCov tracefile output follow what is actually generated, and not just what the `man` page says
+* As well as interfaces, hide other types with no non-abstract methods (e.g. plain enums) in the coverage
+* Show the branch in `public int string Ternary(bool select) => !select ? Left : Right;` just like it is shown in `public int Ternary (bool select, int left, int right) { return select ? left : right; }`.
+* For  <TrackedMethod /> records, add `entry` and `exit` attributes as semicolon separated lists of the UTC times in ticks at which the method was entered and returns
+* For `dotnet test ... /p:AltCoverXmlReport=...` , if the value for the report file path contains one of the following literals
+  * $(ProjectName)  
+  * $(SolutionDir)  
+  * $([System.Guid]::NewGuid())  
+  then substitute in the actual values of those build parameters where they haven't already been replaced by MSBuild.
+  Example: Using `/p:AltCoverXmlReport=$(SolutionDir)/_Reports/solution.$(ProjectName).xml` with `dotnet test` of a solution to place distinctly named report files in a common folder.
+Also
 * Rationalise .net versions to help speed up the build and ease the net5.0 transition
   * Clear out some corner case differences between .net core and .net framework builds based on old work-arounds for symbol writing for the instrumented files
   * Build the recorder at `net20` only and use the same assembly everywhere
   * Move all the core logic from `AltCover.exe/.dll` to `AltCover.Engine.dll`
   * Unify the three different entry-point assembly instances into the now shim-like `AltCover.exe/.dll`
-  * Build everything against `netstandard2.0` except executable shims and unit tests
+  * Build everything against `netstandard2.0` except executable shims and unit tests (tests at `netcoreapp3.0` by default)
   * Build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
   * Build the GTK2 visualizer against `net472` for consistency
   * `net472` debug builds for published libraries are retained purely for FxCop consumption
+* Collect coverage from unit tests at build time too
 
 # 7.1.783  (Genbu series release 6a)
 * [Visualizer-global-tool] 

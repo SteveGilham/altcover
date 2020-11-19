@@ -258,6 +258,8 @@ module internal CommandLine =
         |> SecurityException
         |> raise
 
+    [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+                      Justification="No suitable overload in netstandard2.0/net472")>]
     let internal stripNulls (x : String) =
       let descape (s : string) = s.Replace(char 0, ';')
 

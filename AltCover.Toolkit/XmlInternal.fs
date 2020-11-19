@@ -23,7 +23,7 @@ module internal XmlExtensions =
 [<RequireQualifiedAccess>]
 module internal XmlUtilities =
   let internal loadSchema(format : AltCover.ReportFormat) =
-    let schemas = new XmlSchemaSet()
+    let schemas = XmlSchemaSet()
     let here = Assembly.GetExecutingAssembly()
 
     let resource =
@@ -39,7 +39,7 @@ module internal XmlUtilities =
     schemas
 
   let internal loadTransform(name : string) =
-    let transform = new XslCompiledTransform()
+    let transform = XslCompiledTransform()
     let here = Assembly.GetExecutingAssembly()
     let prefix = here.GetName().Name
     use stream = here.GetManifestResourceStream(prefix + ".xsl." + name + ".xsl")

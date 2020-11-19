@@ -10,20 +10,8 @@ open System.Xml.Schema
 
 open AltCover
 open Microsoft.FSharp.Reflection
-open Swensen.Unquote
-
-#if NETCOREAPP3_0
-[<AttributeUsage(AttributeTargets.Method)>]
-type TestAttribute() = class
-    inherit Attribute()
-end
-#else
-type TestAttribute = NUnit.Framework.TestAttribute
-#endif
 
 module FSApiTests =
-  let SolutionDir() =
-    SolutionRoot.location
 
   [<Test>]
   let FormatFromCoverletMeetsSpec() =
@@ -117,7 +105,7 @@ module FSApiTests =
             |> not
           then setAttribute el "crapScore" "0")
     OpenCover.PostProcess after BranchOrdinal.Offset
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(after.ToString(),
 //        NUnit.Framework.Is.EqualTo(before.ToString()))
 //#endif
@@ -349,7 +337,7 @@ module FSApiTests =
                             |> List.sort
 
     // not input and output directories
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
 //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", prepareFragments))
@@ -372,7 +360,7 @@ module FSApiTests =
                             |> List.sort
 
     // not recorder directory
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
 //                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", collectFragments))
@@ -395,7 +383,7 @@ module FSApiTests =
                             |> List.sort
 
     // ignore Is<CaseName> and Tag
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
 //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", optionsFragments))
@@ -474,10 +462,13 @@ module FSApiTests =
     let summary = merge.Descendants(XName.Get "Summary") |> Seq.head
     test <@ summary.ToString() = """<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />""" @>
 
+#if SOURCEMAP
+  let SolutionDir() =
+    SolutionRoot.location
+
   let internal mangleFile (f:String) =
     f.Replace(@"C:\Users\steve\Documents\GitHub\altcover", SolutionRoot.location).Replace('\\', Path.DirectorySeparatorChar)
 
-#if SOURCEMAP
   [<Test>]
   let NCoverFindsFiles() =
     use stream =

@@ -94,16 +94,21 @@ module CoverageFormats =
               let xpath =
                 ".//SequencePoint[@sl='" + sl + "' and @sc='" + sc + "' and @el='" + el
                 + "' and @ec='" + ec + "' and @fileid='" + uid + "']"
-              let sp = Extensions.XPathSelectElement(target, xpath)
-              let v = parse <| sp.Attribute(XName.Get "vc").Value
-              let visits = (max 0 v) + (max 0 vc)
-              sp.Attribute(XName.Get "vc").Value <- visits.ToString
-                                                      (System.Globalization.CultureInfo.InvariantCulture)))
+              xpath
+              |> target.XPathSelectElement
+              |> Option.ofObj
+              |> Option.iter (fun sp ->
+                let v = parse <| sp.Attribute(XName.Get "vc").Value
+                let visits = (max 0 v) + (max 0 vc)
+                sp.Attribute(XName.Get "vc").Value <- visits.ToString
+                                                      (System.Globalization.CultureInfo.InvariantCulture))))
 
-    rewrite.Descendants(XName.Get "Class")
-    |> Seq.filter (fun c -> c.Descendants(XName.Get "Method") |> Seq.isEmpty)
-    |> Seq.toList // reify before making changes
-    |> Seq.iter (fun c -> c.Remove())
+    // This is done at generation time now
+    // There is no filtering done here
+    // rewrite.Descendants(XName.Get "Class")
+    // |> Seq.filter (fun c -> c.Descendants(XName.Get "Method") |> Seq.isEmpty)
+    // |> Seq.toList // reify before making changes
+    // |> Seq.iter (fun c -> c.Remove())
 
     let dec = rewrite.Declaration
     dec.Encoding <- "utf-8"
@@ -130,7 +135,7 @@ module CoverageFormats =
          m.SetAttribute("class", c.Replace('/', '+'))
          let name = m.Attribute(XName.Get "name").Value
          let lead = name.Substring(name.LastIndexOf("::", StringComparison.Ordinal) + 2)
-         m.SetAttribute("name", lead.Substring(0, lead.IndexOf('('))))
+         m.SetAttribute("name", lead.Substring(0, charIndexOf lead '(')))
 
     rewrite.Descendants(XName.Get "module")
     |> Seq.iter (fun m ->

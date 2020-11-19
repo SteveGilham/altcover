@@ -25,4 +25,7 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="_Intermediate\**" />
+  </ItemGroup>
 </Project>

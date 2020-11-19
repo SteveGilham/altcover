@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="'$(TargetFramework)' != 'net472'">Exe</OutputType>
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
+    <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
   </PropertyGroup>
@@ -15,8 +16,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants Condition="'$(TargetFramework)' != 'net472'">TRACE;NETCOREAPP2_0;NETCOREAPP2_1;</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'net472'">TRACE</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'net472'">TRACE;NETCOREAPP2_0;NETCOREAPP2_1</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net472'">TRACE;$(ExtraDefines)</DefineConstants>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -28,6 +29,7 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="TestCommon.fs" />
     <Compile Include="Runner.Tests.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Tests2.fs" />
@@ -69,7 +71,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Expecto" Version="9.0.0" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
@@ -83,7 +85,7 @@
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net472'">
@@ -102,6 +104,7 @@
     <ProjectReference Include="..\Sample17\Sample17.fsproj" />
     <ProjectReference Include="..\Sample1\Sample1.csproj" Condition="'$(TargetFramework)' != 'net472'" />
     <ProjectReference Include="..\Sample21\Sample21.csproj" />
+    <ProjectReference Include="..\Sample23\Sample23.csproj" />
     <ProjectReference Include="..\Sample2\Sample2.fsproj" />
     <ProjectReference Include="..\Sample3\Sample3.csproj" />
     <ProjectReference Include="..\Sample4\Sample4.fsproj" />
@@ -118,8 +121,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" />
-    <PackageReference Include="System.Security.Permissions" Version="4.7.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

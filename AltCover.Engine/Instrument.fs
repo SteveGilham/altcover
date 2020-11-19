@@ -16,6 +16,12 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
+[<assembly: SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+            Scope="member", Target="<StartupCode$AltCover-Engine>.$Instrument.#.cctor()",
+            MessageId="System.String.Replace(System.String,System.String)",
+            Justification="No suitable overload in netstandard2.0/net472")>]
+()
+
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal RecorderRefs =
   { Visit : MethodReference
@@ -408,6 +414,8 @@ module internal Instrument =
              assemblyReferenceSubstitutions.[original] <- updated)
       assemblyReferenceSubstitutions
 
+    [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+            Justification="No suitable overload in netstandard2.0/net472")>]
     let internal injectJSON (json:String) =
       //let o = JObject.Parse json
       let o = JsonValue.Parse json

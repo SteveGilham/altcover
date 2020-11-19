@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Engine</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -87,7 +88,7 @@
     <PackageReference Include="System.ValueTuple" />
     <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
     <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
-    <PackageReference Include="Manatee.Json" Version="13.0.2" />
+    <PackageReference Include="Manatee.Json" Version="13.0.3" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
@@ -110,7 +111,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.2" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

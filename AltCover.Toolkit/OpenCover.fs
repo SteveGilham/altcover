@@ -173,12 +173,12 @@ module OpenCover =
     // Fix offset, sc, ec in <MethodPoint />
     let debugInfo = methodDef
                     |> Option.map (fun md -> md.DebugInformation)
-                    |> Option.filter (fun dbg -> dbg |> isNull |> not)
+                    |> Option.filter (isNull >> not)
 
     m.Descendants(XName.Get "MethodPoint")
     |> Seq.tryHead
     |> Option.iter (fun x -> let a = x.Attributes()
-                                     |> Seq.filter (fun s -> s.Name.ToString().Contains("{") |> not)
+                                     |> Seq.filter (fun s -> charIndexOf (s.Name.ToString()) '{' < 0)
                                      |> Seq.cast<obj>
                                      |> Seq.toArray
                              x.RemoveAttributes()
@@ -301,7 +301,7 @@ module OpenCover =
 
   let CompressBranching (document : XDocument) withinSequencePoint sameSpan =
     // Validate
-    let xmlDocument = new XDocument(document)
+    let xmlDocument = XDocument(document)
     let schemas = XmlUtilities.loadSchema AltCover.ReportFormat.OpenCover
     xmlDocument.Validate(schemas, null)
     // Get all the methods

@@ -164,7 +164,7 @@ type internal KeyRecord =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SequenceType =
   | Genuine
-  | FakeAfterReturn
+  | FakeAtReturn
 
 [<RequireQualifiedAccess>]
 module internal KeyStore =
@@ -388,8 +388,8 @@ module internal Visitor =
         String.Empty
       else
         let ender = ensureEndsWith <| Path.DirectorySeparatorChar.ToString()
-        let uri = new Uri(ender relativeTo)
-        Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString())
+        let uri = Uri(ender relativeTo)
+        Uri.UnescapeDataString(uri.MakeRelativeUri(Uri(path)).ToString())
            .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
     let internal exists(url : Uri) =
@@ -415,6 +415,8 @@ module internal Visitor =
 
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
                       Justification = "F# inlined code")>]
+    [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+            Justification="No suitable overload in netstandard2.0/net472")>]
     let internal locateMatch file dict =
       let find = findClosestMatch file dict
 
@@ -511,8 +513,9 @@ module internal Visitor =
       then Exemption.Automatic
       else exemption
 
+    // actually all vestigial classes now the first line is commented out
     let internal stripInterfaces (t:TypeDefinition) =
-      t.BaseType.IsNotNull ||
+      // t.BaseType.IsNotNull ||
       t.Methods |> Seq.exists (fun m -> m.IsAbstract |> not)
 
     let private visitModule (x : ModuleDefinition) included (buildSequence : Node -> seq<Node>) =
@@ -689,7 +692,8 @@ module internal Visitor =
              nesting > 0)
         |> Seq.length
 
-      if mname.StartsWith("<", StringComparison.Ordinal) && mname.IndexOf('|') > 0 then
+      if mname.StartsWith("<", StringComparison.Ordinal) &&
+         charIndexOf mname '|' > 0 then
         let index = (indexOfMatchingClosingAngleBracket mname) - 1
         cSharpContainingMethod mname t index (methodCallsMethod m)
       else
@@ -713,7 +717,7 @@ module internal Visitor =
                 (mx.FullName <> m.FullName)
                 && (methodCallsMethod m mx || methodConstructsType t mx
                     || methodLoadsMethod m mx))
-        else if n.IndexOf('@') >= 0 then
+        else if charIndexOf n '@' >= 0 then
           let tx =
             if n.EndsWith("T", StringComparison.Ordinal) then
               match t.Methods
@@ -776,7 +780,7 @@ module internal Visitor =
     let internal fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
       match seq with
       | null ->
-          if genuine = FakeAfterReturn && instruction.IsNotNull
+          if genuine = FakeAtReturn && instruction.IsNotNull
              && instruction.OpCode = OpCodes.Ret then
             SequencePoint(instruction, Document(null))
           else
@@ -788,7 +792,7 @@ module internal Visitor =
       instructions
       |> Seq.map (fun i ->
            let seq = dbg.GetSequencePoint i
-           fakeSequencePoint genuine seq i.Previous)
+           fakeSequencePoint genuine seq i)
       |> Seq.tryFind isSequencePoint
 
     let internal findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
@@ -828,7 +832,7 @@ module internal Visitor =
           if isNull state || finish = state.Previous then None else Some(state, state.Next))
           start
         |> Seq.toList
-      findEffectiveSequencePoint FakeAfterReturn dbg range
+      findEffectiveSequencePoint FakeAtReturn dbg range
 
     let rec internal lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
       let n = i.Next

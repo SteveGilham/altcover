@@ -61,7 +61,9 @@ type Tracer =
     try
       this.Stream.Flush()
       this.Formatter.Close()
-    with :? ObjectDisposedException -> ()
+    with
+    | :? ObjectDisposedException
+    | :? NullReferenceException -> ()
 
   member private this.PushContext context =
     match context with

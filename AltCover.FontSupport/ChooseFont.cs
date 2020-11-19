@@ -179,6 +179,7 @@ namespace AltCover.FontSupport
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int options; //flags
 
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "Queen's English, m80")]
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int colours;
 
@@ -203,7 +204,7 @@ namespace AltCover.FontSupport
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public short fontType;
 
-    private short alignmentDummy;
+    private readonly short alignmentDummy;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int minSize;
@@ -318,6 +319,13 @@ namespace AltCover.FontSupport
       height = 10;
     }
 
+    [SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
+      Justification = "Preferred overload, no comparison exists in netstd2.0/net472")]
+    private static int CharIndexOf(string name, char token)
+    {
+      return name.IndexOf(token);
+    }
+
     // Pango-style text
     [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods",
       Justification = "validate local variable ''(*decode)'', which was reassigned from parameter 'decode', before using it -- u wot m8!?")]
@@ -329,7 +337,7 @@ namespace AltCover.FontSupport
       var core = encoded;
 
       // discard variations
-      var at = core.IndexOf('@');
+      var at = CharIndexOf(core, '@');
       if (at >= 0)
         core = core.Substring(0, at);
 
@@ -337,13 +345,12 @@ namespace AltCover.FontSupport
 
       // look for a size
       var end = core.LastIndexOfAny(new char[] { ' ', ',' });
-      var sized = false;
       if (end >= 0)
       {
         var size = core.Substring(end + 1).TrimEnd();
         if (size.EndsWith("px", StringComparison.Ordinal))
           size = size.Substring(0, size.Length - 2);
-        sized = Int32.TryParse(size, out int fontsize);
+        var sized = Int32.TryParse(size, out int fontsize);
         if (sized)
         {
           decode.height = fontsize;
@@ -480,7 +487,7 @@ namespace AltCover.FontSupport
 
       // Family list, just want the first one
       core = core.TrimEnd(' ', ',');
-      end = core.IndexOf(',');
+      end = CharIndexOf(core, ',');
       if (end >= 0)
         core = core.Substring(0, end);
 
@@ -501,7 +508,7 @@ namespace AltCover.FontSupport
       var core = encoded;
       core = core.TrimEnd();
 
-      var curly = core.IndexOf('}');
+      var curly = CharIndexOf(core, '}');
       if (curly > 0)
       {
         decode.faceName = core.Substring(1, curly - 1);
@@ -509,7 +516,7 @@ namespace AltCover.FontSupport
       }
       else
       {
-        var space = core.IndexOf(' ');
+        var space = CharIndexOf(core, ' ');
         if (space < 0)
           return false;
         decode.faceName = core.Substring(0, space);

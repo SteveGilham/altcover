@@ -447,6 +447,11 @@ module internal Main =
 
       List.unzip sorted
 
+    let internal isMSBuild (assembly : Assembly option) =
+      assembly
+      |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
+      |> Option.defaultValue false
+
     [<SuppressMessage("Gendarme.Rules.BadPractice",
       "GetEntryAssemblyMayReturnNullRule",
       Justification="That is the whole point of the call.")>]
@@ -454,8 +459,7 @@ module internal Main =
       let dotnetBuild =
         Assembly.GetEntryAssembly() // is null for unit tests
         |> Option.ofObj
-        |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
-        |> Option.defaultValue false
+        |> isMSBuild
 
       let check1 =
         declareOptions()
@@ -510,11 +514,9 @@ module internal Main =
           Runner.doCoverage arguments (declareOptions())
       | Select "ImportModule" _ ->
           let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-          let parent = here |> Path.GetDirectoryName
-          Directory.GetDirectories(parent)
-          |> Seq.collect (fun d -> Directory.GetFiles(d,
-                                                      "AltCover.PowerShell.dll",
-                                                      SearchOption.TopDirectoryOnly))
+          ["../netcoreapp2.0"; "../netstandard2.0"; "../any" ]
+          |> Seq.map (fun d -> Path.GetFullPath(Path.Combine(Path.Combine (here, d), "AltCover.PowerShell.dll")))
+          |> Seq.filter File.Exists
           |> Seq.tryHead
           |> Option.map (sprintf "Import-Module %A")
           |> Option.iter Output.info

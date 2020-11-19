@@ -1,17 +1,14 @@
-namespace AltCover.Expecto.Tests
+namespace Tests
 
-#if NETCOREAPP3_0
+#if  NET5_0
 open AltCover
 open Expecto
-open Mono.Cecil
-open Mono.Cecil.Cil
-open Mono.Cecil.Rocks
-open Swensen.Unquote
 
-module TestMain =
-  let sync = System.Object()
+module ExpectoMain =
 
   let regular = [
+          Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
+          Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
@@ -98,6 +95,8 @@ module TestMain =
           Tests.AltCoverRunnerTests.JunkPayloadShouldReportAsExpected, "Runner.JunkPayloadShouldReportAsExpected"
           Tests.AltCoverRunnerTests.TrackingPayloadShouldReportAsExpected, "Runner.TrackingPayloadShouldReportAsExpected"
           Tests.AltCoverRunnerTests.PointProcessShouldCaptureTimes, "Runner.PointProcessShouldCaptureTimes"
+          Tests.AltCoverRunnerTests.PostprocessShouldHandleNullCase, "Runner.PostprocessShouldHandleNullCase"
+          Tests.AltCoverRunnerTests.PostprocessShouldHandleEntryAndExitTimes, "RunnerTests.PostprocessShouldHandleEntryAndExitTimes"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverState, "Runner.PostprocessShouldRestoreKnownOpenCoverState"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverStateFromMono, "Runner.PostprocessShouldRestoreKnownOpenCoverStateFromMono"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreDegenerateOpenCoverState, "Runner.PostprocessShouldRestoreDegenerateOpenCoverState"
@@ -166,6 +165,8 @@ module TestMain =
           Tests.AltCoverTests.ValidateAutomaticExemption, "Tests.ValidateAutomaticExemption"
           Tests.AltCoverTests.DetectLocalSource, "Tests.DetectLocalSource"
           Tests.AltCoverTests.LocateMatchShouldChooseLongerWildCardPath, "Tests.LocateMatchShouldChooseLongerWildCardPath"
+          Tests.AltCoverTests.LocateMatchFallsBackOK, "Tests.LocateMatchFallsBackOK"
+          Tests.AltCoverTests.DebugBuildTernaryTestInContext, "Tests.DebugBuildTernaryTestInContext"
           Tests.AltCoverTests.ReleaseBuildTernaryTest, "Tests.ReleaseBuildTernaryTest"
           Tests.AltCoverTests.ReleaseBuildTernaryTestInContext, "Tests.ReleaseBuildTernaryTestInContext"
           Tests.AltCoverTests.ReleaseBuildTernaryTestInContextWithCoalescence, "Tests.ReleaseBuildTernaryTestInContextWithCoalescence"
@@ -432,13 +433,10 @@ module TestMain =
           Tests.AltCoverTests3.EmptyPowerShellIsJustTheDefaults, "Tests3.EmptyPowerShellIsJustTheDefaults"
           Tests.AltCoverTests3.EmptyVersionIsJustTheDefaults, "Tests3.EmptyVersionIsJustTheDefaults"
           Tests.AltCoverTests3.EchoWorks, "Tests3.EchoWorks"
-#if NETCOREAPP2_0
           Tests.AltCoverTests3.RunSettingsFailsIfCollectorNotFound, "Tests3.RunSettingsFailsIfCollectorNotFound"
           Tests.AltCoverTests3.RunSettingsWorksIfOK, "Tests3.RunSettingsWorksIfOK"
           Tests.AltCoverTests3.RunSettingsExtendsOK, "Tests3.RunSettingsExtendsOK"
           Tests.AltCoverTests3.RunSettingsRecoversOK, "Tests3.RunSettingsRecoversOK"
-#else
-#endif
           Tests.AltCoverXTests.CollectOptionsCanBeValidated, "XTests.CollectOptionsCanBeValidated"
           Tests.AltCoverXTests.TypeSafeEmptyThresholdCanBeValidated, "XTests.TypeSafeEmptyThresholdCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectOptionsCanBeValidated, "XTests.TypeSafeCollectOptionsCanBeValidated"
@@ -458,6 +456,7 @@ module TestMain =
           Tests.AltCoverXTests.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency, "XTests.TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency"
           Tests.AltCoverXTests.PrepareOptionsCanBeValidatedWithErrors, "XTests.PrepareOptionsCanBeValidatedWithErrors"
           Tests.AltCoverXTests.NullListsAreEmpty, "XTests.NullListsAreEmpty"
+          Tests.AltCoverXTests.ValidateAssemblyOption, "XTests.ValidateAssemblyOption"
           Tests.AltCoverXTests.ADotNetDryRunLooksAsExpected, "XTests.ADotNetDryRunLooksAsExpected"
           Tests.AltCoverXTests.ADryRunLooksAsExpected, "XTests.ADryRunLooksAsExpected"
           Tests.AltCoverXTests.AfterAssemblyCommitsThatAssembly, "XTests.AfterAssemblyCommitsThatAssembly"
@@ -472,55 +471,24 @@ module TestMain =
     { 0 .. 31 }
     |> Seq.map (fun i ->
          testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
-         lock sync (fun () ->
+         lock ExpectoTestCommon.sync (fun () ->
            AltCover.Main.init()
            Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
     |> Seq.toList
 
   let consistencyCheck() =
-    let here = System.Reflection.Assembly.GetExecutingAssembly().Location
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(here)
-
-    let testMethods = def.MainModule.GetTypes()
-                      |> Seq.collect (fun t -> t.Methods)
-                      |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
-                      |> Seq.filter (fun m -> m.CustomAttributes |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
-                      |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
-
-    let lookup = def.MainModule.GetAllTypes()
-                 |> Seq.filter (fun t -> t.Methods |> Seq.exists(fun m -> m.Name = "Invoke"))
-                 |> Seq.map (fun t -> (t.FullName.Replace("/","+"), t.Methods |> Seq.find(fun m -> m.Name = "Invoke")))
-                 |> Map.ofSeq
-
-    let calls = regular
-                |> List.map (fst
-                            >> (fun f -> f.GetType().FullName.Replace("/","+"))
-                            >> (fun f -> Map.find f lookup)
-                            >> (fun f -> f.Body.Instructions |> Seq.find (fun i -> i.OpCode = OpCodes.Call))
-                            >> (fun i -> let m = (i.Operand :?> MethodDefinition)
-                                         m.DeclaringType.FullName + "::" + m.Name))
-                |> Set.ofList
-
-    let omitted = testMethods
-                  |> Seq.filter (fun t -> (Set.contains t calls) |> not)
-                  |> Seq.toList
-
-    // cover all but the special cases
-    test <@ omitted = ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"] @>
+    ExpectoTestCommon.consistencyCheck regular ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
 
   [<Tests>]
   let tests =
-    testList "AltCoverTests"
-    <| (((consistencyCheck, "ConsistencyCheck") :: regular
-        |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
-                                                              AltCover.Main.init()
-                                                              AltCover.Runner.init()
-                                                              f())))) @ specials)
+    ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck regular specials
+     (fun () -> AltCover.Main.init()
+                AltCover.Runner.init())
 
-module Program =
-  [<EntryPoint>]
-  let main argv =
+module UnitTestStub =
+  [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
+  let unitTestStub argv =
     let writeResults = TestResults.writeNUnitSummary ("AltCover.TestResults.xml", "AltCover.Tests")
     let config = defaultConfig.appendSummaryHandler writeResults
-    runTestsWithArgs config argv TestMain.tests
+    runTestsWithArgs config argv ExpectoMain.tests
 #endif

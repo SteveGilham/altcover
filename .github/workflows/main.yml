@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+    - develop/github/*
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.100'       
+    - name: Tools
+      run: dotnet tool restore
+    - name: Setup
+      run: dotnet fake run ./Build/setup.fsx
+    - name: Build
+      run: dotnet fake run ./Build/build.fsx
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.100'         
+    - name: Tools
+      run: dotnet tool restore
+    - name: Setup
+      run: dotnet fake run ./Build/setup.fsx
+    - name: Build
+      run: dotnet fake run ./Build/build.fsx  

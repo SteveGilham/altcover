@@ -1,4 +1,4 @@
-#if NETCOREAPP2_0
+#if NET5_0
 namespace Tests.Recorder.Core
 #else
 #if NET4
@@ -12,6 +12,6 @@ namespace Tests.Recorder.Unknown
 #endif
 #endif
 
-module Program =
+module UnitTestStub =
   [<EntryPoint>]
   let main _ = 0
