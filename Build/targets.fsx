@@ -434,7 +434,13 @@ module SolutionRoot =
        let proj = Path.GetFileName f
        DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM dir)
                                 let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
-                                { tmp with MSBuildParams = mparams} ) proj))
+                                { tmp with MSBuildParams = mparams} ) proj)
+  do
+    let xml = XDocument.Load(".\AltCover.Recorder\Strings.resx")
+    use resw = new System.Resources.ResourceWriter(".\AltCover.Recorder\Strings.resources")
+    xml.Descendants(XName.Get "data")
+    |> Seq.iter(fun d -> resw.AddResource(d.Attribute(XName.Get "name").Value, d.Value))
+    resw.Close()  )
 
 // Basic compilation
 
