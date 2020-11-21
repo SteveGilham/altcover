@@ -2,7 +2,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.1.xxx (Genbu series release =8)
+# 7.1.xxx (Genbu series release 8)
+* Restore application icons, even if they only show in the `.exe `forms (lost in 7.1.795 if not before)
 * Build with net5.0 SDK (modulo work-round for https://github.com/dotnet/fsharp/issues/10442) in net5-only environments
   * Still build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
   * Still build the GTK2 visualizer against `net472` for consistency
