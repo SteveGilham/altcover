@@ -1935,15 +1935,19 @@ module AltCoverRunnerTests =
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
-      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      let formatter = System.Runtime.Serialization.DataContractSerializer(
+                        typeof< Tuple<String, Int32, AltCover.Track, DateTime> >)
 
       let r =
         Runner.J.getMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
+          let settings = XmlWriterSettings()
+          settings.ConformanceLevel <- System.Xml.ConformanceLevel.Auto
+          use pipe = XmlWriter.Create(sink, settings)
           l
           |> List.mapi (fun i x ->
-               formatter.Serialize(sink, (x, i, Null, DateTime.UtcNow))
+               formatter.WriteObject(pipe, (x, i, Null, DateTime.UtcNow))
                x)
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
