@@ -439,7 +439,10 @@ module SolutionRoot =
     let xml = XDocument.Load("./AltCover.Recorder/Strings.resx")
     use resw = new System.Resources.ResourceWriter("./AltCover.Recorder/Strings.resources")
     xml.Descendants(XName.Get "data")
-    |> Seq.iter(fun d -> resw.AddResource(d.Attribute(XName.Get "name").Value, d.Value))
+    |> Seq.iter(fun d -> let key = d.Attribute(XName.Get "name").Value
+                         let value = d.Descendants(XName.Get "value")
+                                     |> Seq.head
+                         resw.AddResource(key, value.Value))
     resw.Close()  )
 
 // Basic compilation
