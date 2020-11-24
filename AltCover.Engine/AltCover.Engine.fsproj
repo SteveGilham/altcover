@@ -48,6 +48,7 @@
     <Compile Include="Gendarme.fs" />
     <Compile Include="OpenCover.fs" />
     <Compile Include="CommandLine.fs" />
+    <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="LCov.fs" />
     <Compile Include="Cobertura.fs" />

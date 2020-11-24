@@ -684,7 +684,6 @@ module AltCoverTests2 =
       let proc = main.Body.GetILProcessor()
       let newValue = proc.Create(OpCodes.Ldc_I4, 23)
       let other = main.Body.Instructions.[1]
-      let subject = Instrument.I.SubstituteInstruction(oldValue, newValue)
       let handler = ExceptionHandler(ExceptionHandlerType())
       handler.FilterStart <- if selection &&& 1 = 1 then oldValue
                              else other
@@ -696,7 +695,7 @@ module AltCoverTests2 =
                           else other
       handler.TryEnd <- if selection &&& 16 = 16 then oldValue
                         else other
-      subject.SubstituteExceptionBoundary handler
+      CecilExtension.substituteExceptionBoundary oldValue newValue handler
       Assert.That(handler.FilterStart,
                   Is.EqualTo(if selection &&& 1 = 1 then newValue
                              else other))
@@ -735,9 +734,7 @@ module AltCoverTests2 =
            | :? Instruction -> true
            | _ -> false)
       |> Seq.iter (fun i ->
-           let subject =
-             Instrument.I.SubstituteInstruction(i.Operand :?> Instruction, newValue)
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand (i.Operand :?> Instruction) newValue i
            Assert.That(i.Operand, Is.EqualTo newValue))
 
     [<Test>]
@@ -762,9 +759,8 @@ module AltCoverTests2 =
            | :? Instruction -> true
            | _ -> false)
       |> Seq.iter (fun i ->
-           let subject = Instrument.I.SubstituteInstruction(i, newValue)
            let before = i.Operand
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand i newValue i
            Assert.That(i.Operand, Is.SameAs before))
 
     // work around weird compiler error with array indexing
@@ -799,10 +795,9 @@ module AltCoverTests2 =
       |> Seq.collect
            (fun i -> i.Operand :?> Instruction [] |> Seq.mapi (fun o t -> (i, o, t)))
       |> Seq.iter (fun (i, o, t) ->
-           let subject = Instrument.I.SubstituteInstruction(t, newValue)
            Assert.That(AsIArray i.Operand o, (Is.SameAs t))
            Assert.That(t, Is.Not.EqualTo newValue)
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand t newValue i
            let t' = AsIArray i.Operand
            Assert.That(t' o, Is.EqualTo newValue))
 
@@ -829,9 +824,8 @@ module AltCoverTests2 =
            | _ -> false)
       |> Seq.iter
            (fun i ->
-           let subject = Instrument.I.SubstituteInstruction(i, newValue)
            let before = (i.Operand :?> Instruction []) |> Seq.toList
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand i newValue i
            Seq.zip (i.Operand :?> Instruction []) before
            |> Seq.iter (fun (after, before) -> Assert.That(after, Is.SameAs before)))
 
@@ -860,9 +854,8 @@ module AltCoverTests2 =
       |> Seq.collect
            (fun i -> main.Body.Instructions |> Seq.map (fun other -> (i, other)))
       |> Seq.iter (fun (i, other) ->
-           let subject = Instrument.I.SubstituteInstruction(other, newValue)
            let before = i.Operand
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand other newValue i
            Assert.That(i.Operand, Is.SameAs before))
 
     [<Test>]

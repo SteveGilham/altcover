@@ -325,44 +325,6 @@ module internal Instrument =
       finally
         Directory.SetCurrentDirectory(here)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-       "VariableNamesShouldNotMatchFieldNamesRule",
-       Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" );
-      AutoSerializable(false); Sealed>]
-    type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
-      // Adjust the IL for exception handling
-      // param name="handler">The exception handler</param>
-      // param name="oldBoundary">The uninstrumented location</param>
-      // param name="newBoundary">Where it has moved to</param>
-      member this.SubstituteExceptionBoundary(handler : ExceptionHandler) =
-        if handler.FilterStart = oldValue then handler.FilterStart <- newValue
-        if handler.HandlerEnd = oldValue then handler.HandlerEnd <- newValue
-        if handler.HandlerStart = oldValue then handler.HandlerStart <- newValue
-        if handler.TryEnd = oldValue then handler.TryEnd <- newValue
-        if handler.TryStart = oldValue then handler.TryStart <- newValue
-
-      // Adjust the IL to substitute an opcode
-      // param name="instruction">Instruction being processed</param>
-      // param name="oldOperand">Type we are looking for</param>
-      // param name="newOperand">Type to replace it with</param>
-      member this.SubstituteInstructionOperand(instruction : Instruction) =
-        // Performance reasons - only 3 types of operators have operands of Instruction types
-        // instruction.Operand getter - is rather slow to execute it for every operator
-        match instruction.OpCode.OperandType with
-        | OperandType.InlineBrTarget
-        | OperandType.ShortInlineBrTarget ->
-            if instruction.Operand = (oldValue :> Object) then
-              instruction.Operand <- newValue
-        // At this point instruction.Operand will be either Operand != oldOperand
-        // or instruction.Operand will be of type Instruction[]
-        // (in other words - it will be a switch operator's operand)
-        | OperandType.InlineSwitch ->
-            let operands = instruction.Operand :?> Instruction array
-            operands
-            |> Array.iteri
-                 (fun i x -> if x = oldValue then Array.set operands i newValue)
-        | _ -> ()
-
     let internal insertVisit (instruction : Instruction) (methodWorker : ILProcessor)
         (recordingMethodRef : MethodReference) (moduleId : string) (point : int) =
       let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
@@ -571,9 +533,8 @@ module internal Instrument =
 
     let private updateBranchReferences (body : MethodBody) instruction injected =
       // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
-      let subs = SubstituteInstruction(instruction, injected)
-      body.Instructions |> Seq.iter subs.SubstituteInstructionOperand
-      body.ExceptionHandlers |> Seq.iter subs.SubstituteExceptionBoundary
+      body.Instructions |> Seq.iter (substituteInstructionOperand instruction injected)
+      body.ExceptionHandlers |> Seq.iter (substituteExceptionBoundary instruction injected)
 
     let private visitMethodPoint (state : InstrumentContext) instruction point included =
       if included then
@@ -693,47 +654,26 @@ module internal Instrument =
       |> Option.iter (fun (n, _) ->
            let body =
              [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
-           let instructions = body.Instructions
            let methodWorker = body.GetILProcessor()
-           let nop = methodWorker.Create(OpCodes.Nop)
+           removeTailInstructions methodWorker
+           let endFinally = encapsulateWithTryFinally methodWorker
 
-           let rets =
-             instructions
-             |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
-             |> Seq.toList
+           bulkInsertBefore
+             methodWorker
+             endFinally
+             [| methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop) |]
+             true
+           |> ignore
 
-           let tailcalls =
-             instructions
-             |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
-             |> Seq.toList
-
-           let tail = instructions |> Seq.last
-           let popper = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)
-           methodWorker.InsertAfter(tail, popper)
-           let enfin = methodWorker.Create(OpCodes.Endfinally)
-           methodWorker.InsertAfter(popper, enfin)
-           let ret = methodWorker.Create(OpCodes.Ret)
-           methodWorker.InsertAfter(enfin, ret)
-           rets
-           |> Seq.iter (fun i ->
-                let leave = methodWorker.Create(OpCodes.Leave, ret)
-                updateBranchReferences body i leave
-                methodWorker.Replace(i, leave))
-           tailcalls
-           |> Seq.iter (fun i ->
-                updateBranchReferences body i i.Next
-                methodWorker.Remove i)
-           let handler = ExceptionHandler(ExceptionHandlerType.Finally)
-           handler.TryStart <- instructions |> Seq.head
-           handler.TryEnd <- popper
-           handler.HandlerStart <- popper
-           handler.HandlerEnd <- ret
-           body.ExceptionHandlers.Add handler
-           let pushMethodCall =
-             methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
-           let instrLoadId = methodWorker.Create(OpCodes.Ldc_I4, n)
-           methodWorker.InsertBefore(handler.TryStart, pushMethodCall)
-           methodWorker.InsertBefore(pushMethodCall, instrLoadId))
+           bulkInsertBefore
+             methodWorker
+             (methodWorker.Body.Instructions |> Seq.head)
+             [|
+              methodWorker.Create(OpCodes.Ldc_I4, n)
+              methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
+             |]
+             true
+           |> ignore)
 
     let private visitAfterMethod state m (included : Inspections) track =
       if included.IsInstrumented then
