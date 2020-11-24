@@ -86,7 +86,7 @@ module internal CecilExtension =
           |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
           |> Seq.iter (fun i -> i.OpCode <- OpCodes.Leave
                                 i.Operand <- newReturnInstruction)
-          newReturnInstruction
+          (newReturnInstruction, methodDefinition.ReturnType, [])
       else
         // this is the new part that AltCover didn't have before
         // i.e. handling non-void methods
@@ -98,13 +98,17 @@ module internal CecilExtension =
           let newReturnInstruction = ilProcessor.Create(OpCodes.Ret)
           ilProcessor.Append(newReturnInstruction)
 
-          instructions
-          |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
-          |> Seq.iter (fun i -> i.OpCode <- OpCodes.Leave
-                                i.Operand <- loadResultInstruction
-                                bulkInsertBefore ilProcessor i [| ilProcessor.Create(OpCodes.Stloc, returnVariable) |] true
-                                |> ignore)
-          loadResultInstruction
+          (loadResultInstruction, methodDefinition.ReturnType,
+            instructions
+            |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
+            |> Seq.map (fun i -> i.OpCode <- OpCodes.Leave
+                                 i.Operand <- loadResultInstruction
+                                 bulkInsertBefore 
+                                  ilProcessor 
+                                  i 
+                                  [| ilProcessor.Create(OpCodes.Stloc, returnVariable) |]
+                                  true)
+            |> Seq.toList)
 
   let private findFirstInstruction (body:MethodBody) =
     body.Instructions |> Seq.head
@@ -112,7 +116,7 @@ module internal CecilExtension =
   let encapsulateWithTryFinally (ilProcessor : ILProcessor) =
     let body = ilProcessor.Body
     let firstInstruction = findFirstInstruction body
-    let newReturn = replaceReturnsByLeave ilProcessor
+    let (newReturn, methodType, stlocs) = replaceReturnsByLeave ilProcessor
 
     let endFinally = Instruction.Create(OpCodes.Endfinally)
     ilProcessor.InsertBefore(newReturn, endFinally)
@@ -130,7 +134,7 @@ module internal CecilExtension =
     handler.HandlerStart <- finallyStart
     handler.HandlerEnd <- newReturn
     body.ExceptionHandlers.Add(handler)
-    endFinally
+    (endFinally, methodType, stlocs)
 
   let removeTailInstructions (ilProcessor : ILProcessor) =
     ilProcessor.Body.Instructions

@@ -656,7 +656,7 @@ module internal Instrument =
              [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
            let methodWorker = body.GetILProcessor()
            removeTailInstructions methodWorker
-           let endFinally = encapsulateWithTryFinally methodWorker
+           let (endFinally, _, _) = encapsulateWithTryFinally methodWorker
 
            bulkInsertBefore
              methodWorker
