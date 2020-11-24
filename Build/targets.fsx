@@ -1582,7 +1582,7 @@ _Target "AsyncAwaitTests" (fun _ ->
   Directory.ensure "./_Reports"
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
-  let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTests.xml")
+  let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")
   let sampleRoot =
     Path.getFullName "Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
 

@@ -274,6 +274,7 @@ module ExpectoMain =
           Tests.AltCoverTests2.ShouldNotSubstituteOtherOperand, "Tests2.ShouldNotSubstituteOtherOperand"
           Tests.AltCoverTests2.ShouldBeAbleToTrackAMethod, "Tests2.ShouldBeAbleToTrackAMethod"
           Tests.AltCoverTests2.ShouldBeAbleToTrackAMethodWithTailCalls, "Tests2.ShouldBeAbleToTrackAMethodWithTailCalls"
+          Tests.AltCoverTests2.ShouldBeAbleToTrackAMethodWithNonVoidReturn, "Tests2.ShouldBeAbleToTrackAMethodWithNonVoidReturn"
           Tests.AltCoverTests2.ShouldBeAbleToInstrumentASwitchForNCover, "Tests2.ShouldBeAbleToInstrumentASwitchForNCover"
           Tests.AltCoverTests2.ShouldNotChangeAnUntrackedMethod, "Tests2.ShouldNotChangeAnUntrackedMethod"
           Tests.AltCoverTests2.SwitchBranchesShouldInstrumentByPushingDown, "Tests2.SwitchBranchesShouldInstrumentByPushingDown"

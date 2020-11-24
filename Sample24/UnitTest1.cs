@@ -21,6 +21,11 @@ namespace NUnitTestProject1
     {
       // simulate long calculation
       await Task.Delay(100).ConfigureAwait(false);
+      return AddSynch(x, y);
+    }
+
+    public int AddSynch(int x, int y)
+    {
       return x + y;
     }
   }
