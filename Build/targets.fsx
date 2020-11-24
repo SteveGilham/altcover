@@ -1578,6 +1578,57 @@ _Target "FSharpTests" (fun _ ->
       WorkingDirectory = "Sample7" }
   |> AltCoverCommand.run)
 
+_Target "AsyncAwaitTests" (fun _ ->
+  Directory.ensure "./_Reports"
+  let altcover =
+    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+  let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTests.xml")
+  let sampleRoot =
+    Path.getFullName "Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
+
+  // Test the --inplace operation
+  Shell.cleanDir sampleRoot
+  "Sample24.csproj"
+  |> DotNet.test (fun o ->
+       { o.WithCommon(withWorkingDirectoryVM "Sample24") with
+           Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
+
+  // instrument
+  let prep =
+    AltCover.PrepareOptions.Primitive
+      ({ Primitive.PrepareOptions.Create() with
+           XmlReport = simpleReport
+           CallContext = [ "[Test]" ]
+           AssemblyFilter = [ "Adapter" ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           InPlace = true
+           ReportFormat = "OpenCover"
+           Save = false })
+    |> AltCoverCommand.Prepare
+  { AltCoverCommand.Options.Create prep with
+      ToolPath = altcover
+      ToolType = dotnetAltcover
+      WorkingDirectory = sampleRoot }
+  |> AltCoverCommand.run
+
+  printfn "Execute the instrumented tests"
+
+  let sample7 = Path.getFullName "./Sample24/Sample24.csproj"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine None sample7
+
+  let collect =
+    AltCover.CollectOptions.Primitive
+      { Primitive.CollectOptions.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = sampleRoot
+          CommandLine = args }
+    |> AltCoverCommand.Collect
+  { AltCoverCommand.Options.Create collect with
+      ToolPath = altcover
+      ToolType = dotnetAltcover
+      WorkingDirectory = "Sample24" }
+  |> AltCoverCommand.run)
+
 _Target "FSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let altcover =
@@ -4291,6 +4342,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTests"
+==> "OperationalTest"
+
+"Compilation"
+==> "AsyncAwaitTests"
 ==> "OperationalTest"
 
 //"Compilation"
