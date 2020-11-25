@@ -38,10 +38,21 @@ type internal AsyncSupport =
     TaskType : TypeDefinition
     Task1Type : TypeDefinition
     Wait : MethodDefinition }
+  member self.Close() =
+   self.TaskAssembly
+   |> Option.ofObj
+   |> Option.iter (fun a -> a.Dispose())
+  static member Create() =
+    {
+      TaskAssembly = null
+      TaskType = null
+      Task1Type = null
+      Wait = null
+    }
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
     Justification = "Disposed on exit")>]
-  static member Build() =
+  static member Update() =
     let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
               |> AssemblyDefinition.ReadAssembly
     let task = def.MainModule.GetType("System.Threading.Tasks.Task")
@@ -54,8 +65,8 @@ type internal AsyncSupport =
       TaskType = task
       Task1Type = task1
       Wait = wait
-    }               
-   
+    }
+
 // State object passed from visit to visit
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal InstrumentContext =
@@ -74,8 +85,8 @@ type internal InstrumentContext =
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
       MethodBody = null
-      MethodWorker = null
-      AsyncSupport = AsyncSupport.Build() } // to save fetching repeatedly
+      MethodWorker = null // to save fetching repeatedly
+      AsyncSupport = AsyncSupport.Create() } // also a signal once initialised
 
 // Module to handle instrumentation visitor
 module internal Instrument =
@@ -616,25 +627,41 @@ module internal Instrument =
                       |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
-        (state.AsyncSupport.TaskAssembly :> IDisposable).Dispose()
+        state.AsyncSupport.Close()
       { state with RecordingAssembly = null
                    AsyncSupport = { state.AsyncSupport with TaskAssembly = null}}
 
     let internal doTrack state (m : MethodDefinition) (included:Inspections)
                                (track : (int * string) option) =
       track
-      |> Option.iter (fun (n, _) ->
+      |> Option.fold (fun (s:InstrumentContext) (n, _)  ->
            let body =
              [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
            let methodWorker = body.GetILProcessor()
            removeTailInstructions methodWorker
            let (endFinally, rtype, leave) = encapsulateWithTryFinally methodWorker
 
+           bulkInsertBefore
+             methodWorker
+             endFinally
+             [methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)]
+             true
+           |> ignore
+
+           bulkInsertBefore
+             methodWorker
+             (methodWorker.Body.Instructions |> Seq.head)
+             [
+              methodWorker.Create(OpCodes.Ldc_I4, n)
+              methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
+             ]
+             true
+           |> ignore
+
            let e = rtype.GetElementType().FullName
-           let s = state.AsyncSupport
            if [
-                s.TaskType.FullName
-                s.Task1Type.FullName
+               "System.Threading.Tasks.Task"
+               "System.Threading.Tasks.Task`1"
               ] |> Seq.exists (fun n -> n = e)
            then
             if m.CustomAttributes // could improve this
@@ -660,6 +687,10 @@ module internal Instrument =
               // if defname |> refs.Contains |> not
               // then refs.Add defname
 
+              let newstate = if state.AsyncSupport.TaskAssembly |> isNull
+                             then { state with AsyncSupport = AsyncSupport.Update() }
+                             else state
+
               let injectWait ilp (i:Instruction) =
                 bulkInsertBefore
                   ilp
@@ -667,30 +698,17 @@ module internal Instrument =
                   [
                     ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
                     ilp.Create(OpCodes.Ldc_I4, 65535)
-                    ilp.Create(OpCodes.Call, s.Wait)
+                    ilp.Create(OpCodes.Call, newstate.AsyncSupport.Wait
+                                             |> m.DeclaringType.Module.ImportReference)
                     ilp.Create(OpCodes.Pop)
                   ]
                   true
 
               leave
               |> Seq.iter ((injectWait methodWorker) >> ignore)
-
-           bulkInsertBefore
-             methodWorker
-             endFinally
-             [| methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop) |]
-             true
-           |> ignore
-
-           bulkInsertBefore
-             methodWorker
-             (methodWorker.Body.Instructions |> Seq.head)
-             [|
-              methodWorker.Create(OpCodes.Ldc_I4, n)
-              methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
-             |]
-             true
-           |> ignore)
+              newstate
+            else state
+           else state) state
 
     let private visitAfterMethod state m (included : Inspections) track =
       if included.IsInstrumented then
@@ -700,7 +718,6 @@ module internal Instrument =
         // changes "long" conditional operators to their short representation where possible
         body.OptimizeMacros()
       doTrack state m included track
-      state
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -755,7 +772,7 @@ module internal Instrument =
                |> isNull
                |> not
             then (state.RecordingAssembly :> IDisposable).Dispose()
-                 (state.AsyncSupport.TaskAssembly :> IDisposable).Dispose()
+                 state.AsyncSupport.Close()
         reraise()
 
     let internal instrumentationVisitor (state : InstrumentContext) (node : Node) =
@@ -769,6 +786,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@624.#Invoke(System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@637.#Invoke(System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
