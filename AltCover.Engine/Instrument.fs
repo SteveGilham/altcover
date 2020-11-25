@@ -345,13 +345,15 @@ module internal Instrument =
 
     let internal insertVisit (instruction : Instruction) (methodWorker : ILProcessor)
         (recordingMethodRef : MethodReference) (moduleId : string) (point : int) =
-      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
-      let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
-      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point)
-      methodWorker.InsertBefore(instruction, instrLoadModuleId)
-      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId)
-      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
-      instrLoadModuleId
+      bulkInsertBefore
+        methodWorker
+        instruction
+        [
+          methodWorker.Create(OpCodes.Ldstr, moduleId)
+          methodWorker.Create(OpCodes.Ldc_I4, point)
+          methodWorker.Create(OpCodes.Call, recordingMethodRef)
+        ]
+        true
 
     // Determine new names for input strong-named assemblies; if we have a key and
     // the assembly was already strong-named then give it the new key token, otherwise
