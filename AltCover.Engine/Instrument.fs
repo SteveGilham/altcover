@@ -689,7 +689,7 @@ module internal Instrument =
 
               let newstate = if state.AsyncSupport.TaskAssembly |> isNull
                              then { state with AsyncSupport = AsyncSupport.Update() }
-                             else state
+                             else state // <<==
 
               let injectWait ilp (i:Instruction) =
                 bulkInsertBefore
@@ -707,7 +707,7 @@ module internal Instrument =
               leave
               |> Seq.iter ((injectWait methodWorker) >> ignore)
               newstate
-            else state
+            else state // <<==
            else state) state
 
     let private visitAfterMethod state m (included : Inspections) track =
