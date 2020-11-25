@@ -32,6 +32,30 @@ type internal RecorderRefs =
       Push = null
       Pop = null }
 
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal AsyncSupport =
+  { TaskAssembly : AssemblyDefinition
+    TaskType : TypeDefinition
+    Task1Type : TypeDefinition
+    Wait : MethodDefinition }
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+    Justification = "Disposed on exit")>]
+  static member Build() =
+    let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
+              |> AssemblyDefinition.ReadAssembly
+    let task = def.MainModule.GetType("System.Threading.Tasks.Task")
+    let task1 = def.MainModule.GetType("System.Threading.Tasks.Task`1")
+    let wait = task.Methods
+               |> Seq.filter (fun f -> f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
+               |> Seq.head
+    {
+      TaskAssembly = def
+      TaskType = task
+      Task1Type = task1
+      Wait = wait
+    }               
+   
 // State object passed from visit to visit
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal InstrumentContext =
@@ -41,7 +65,8 @@ type internal InstrumentContext =
     RecordingMethod : MethodDefinition list // initialised once
     RecordingMethodRef : RecorderRefs // updated each module
     MethodBody : MethodBody
-    MethodWorker : ILProcessor }
+    MethodWorker : ILProcessor
+    AsyncSupport : AsyncSupport }
   static member Build assemblies =
     { InstrumentedAssemblies = assemblies
       ModuleId = String.Empty
@@ -49,7 +74,8 @@ type internal InstrumentContext =
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
       MethodBody = null
-      MethodWorker = null } // to save fetching repeatedly
+      MethodWorker = null
+      AsyncSupport = AsyncSupport.Build() } // to save fetching repeatedly
 
 // Module to handle instrumentation visitor
 module internal Instrument =
@@ -61,10 +87,6 @@ module internal Instrument =
   [<SuppressMessage("Microsoft.Maintainability", "CA1506",
                     Justification = "partitioned into closures")>]
   module internal I =
-
-    //let monoRuntime =
-    //  ("Mono.Runtime"
-    //  |> Type.GetType).IsNotNull
 
     let dependencies =
       (resources.GetString "frameworkDependencies").Replace("version", version)
@@ -293,10 +315,6 @@ module internal Instrument =
         |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
         |> Option.isSome
 
-      // Once Cecil 0.10 beta6 is taken out of the equation, this works
-      // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
-      // or for assemblies with embedded .pdb information (on *nix)
-      // 8-AUG-2020
       //Non-windows embedded symbols => do not write, else
       //Unhandled exception. System.Runtime.InteropServices.MarshalDirectiveException: Cannot marshal 'parameter #2': Invalid managed/unmanaged type combination (Marshaling to and from COM interface pointers isn't supported).
       //   at Mono.Cecil.Pdb.SymWriter.CoCreateInstance(Guid& rclsid, Object pUnkOuter, UInt32 dwClsContext, Guid& riid, Object& ppv)
@@ -379,37 +397,18 @@ module internal Instrument =
     [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
             Justification="No suitable overload in netstandard2.0/net472")>]
     let internal injectJSON (json:String) =
-      //let o = JObject.Parse json
       let o = JsonValue.Parse json
       let oo = o.Object
-      //let x = StringComparison.Ordinal
       let x = StringComparison.Ordinal
-      //let target =
-      //  ((o.Property("runtimeTarget", x)).Value :?> JObject).Property("name", x)
-      //    .Value.ToString()
       let target = oo.["runtimeTarget"].Object.["name"].String
-      //let targets =
-      //  (o.Properties() |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
       let targets = (oo |> Seq.find(fun kv -> kv.Key = "targets")).Value.Object
-      //let targeted =
-      //  (targets.Properties() |> Seq.find (fun p -> p.Name = target)).Value :?> JObject
       let targeted =
         (targets |> Seq.find (fun p -> p.Key = target)).Value.Object
-      //let app = (targeted.PropertyValues() |> Seq.head) :?> JObject
       let app = (targeted.Values |> Seq.head).Object
 
-      //let existingDependencies =
-      //  app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
       let existingDependencies =
         app |> Seq.tryFind (fun p -> p.Key = "dependencies")
 
-      //let prior =
-      //  match existingDependencies with
-      //  | None -> Set.empty<string>
-      //  | Some p ->
-      //      (p.Value :?> JObject).Properties()
-      //      |> Seq.map (fun p -> p.Name)
-      //      |> Set.ofSeq
       let prior =
         match existingDependencies with
         | None -> Set.empty<string>
@@ -418,9 +417,6 @@ module internal Instrument =
             |> Seq.map (fun p -> p.Key)
             |> Set.ofSeq
 
-      //let rawDependencies =
-      //  (JObject.Parse dependencies).Properties()
-      //  |> Seq.find (fun p -> p.Name = "dependencies")
       let rawDependencies =
         (JsonValue.Parse dependencies).Object
         |> Seq.find (fun p -> p.Key = "dependencies")
@@ -436,15 +432,6 @@ module internal Instrument =
         |> Seq.concat
         |> Seq.iter (fun l -> jsonObject.Add(l.Key, l.Value))
 
-      //match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
-      //| None -> app.AddFirst(rawDependencies)
-      //| Some p ->
-      //    (rawDependencies.Value :?> JObject).Properties()
-      //    |> Seq.filter (fun r ->
-      //         prior
-      //         |> Set.contains r.Name
-      //         |> not)
-      //    |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
       match app |> Seq.tryFind (fun p -> p.Key = "dependencies") with
       | None ->  app
                  |> addFirst [rawDependencies]
@@ -456,14 +443,6 @@ module internal Instrument =
                |> not)
           |> Seq.iter (fun r -> (p.Value.Object).Add(r.Key, r.Value))
 
-      //let rt = JObject.Parse runtime
-      //rt.Properties()
-      //|> Seq.filter (fun r ->
-      //     prior
-      //     |> Set.contains (r.Name.Split('/') |> Seq.head)
-      //     |> not
-      //     && targeted.ContainsKey(r.Name) |> not)
-      //|> Seq.iter (fun r -> targeted.Add(r))
       (JsonValue.Parse runtime).Object
       |> Seq.filter (fun r ->
            prior
@@ -472,19 +451,9 @@ module internal Instrument =
            && targeted.ContainsKey(r.Key) |> not)
       |> Seq.iter (fun r -> targeted.Add(r.Key, r.Value))
 
-      //let libraries =
-      //  (o.Properties() |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
       let libraries =
         (oo |> Seq.find (fun p -> p.Key = "libraries")).Value.Object
 
-      //(JObject.Parse newLibraries).Properties()
-      //|> Seq.filter (fun r ->
-      //     prior
-      //     |> Set.contains (r.Name.Split('/') |> Seq.head)
-      //     |> not
-      //     && libraries.ContainsKey(r.Name) |> not)
-      //|> Seq.rev
-      //|> Seq.iter (libraries.AddFirst)
       let newlibs = (JsonValue.Parse newLibraries).Object
                     |> Seq.filter (fun r -> prior
                                             |> Set.contains (r.Key.Split('/') |> Seq.head)
@@ -495,7 +464,6 @@ module internal Instrument =
       libraries
       |> addFirst newlibs
 
-      //o.ToString()
       o.GetIndentedString().Replace("\t\t", "  ").Replace("\t", "  ").Replace(" :", ":")
 
     let private visitModule (state : InstrumentContext) (m : ModuleDefinition) included =
@@ -646,7 +614,9 @@ module internal Instrument =
                       |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
-      { state with RecordingAssembly = null }
+        (state.AsyncSupport.TaskAssembly :> IDisposable).Dispose()
+      { state with RecordingAssembly = null
+                   AsyncSupport = { state.AsyncSupport with TaskAssembly = null}}
 
     let internal doTrack state (m : MethodDefinition) (included:Inspections)
                                (track : (int * string) option) =
@@ -658,19 +628,11 @@ module internal Instrument =
            removeTailInstructions methodWorker
            let (endFinally, rtype, leave) = encapsulateWithTryFinally methodWorker
 
-           use def = typeof<System.Threading.Tasks.Task>.Assembly.Location
-                     |> AssemblyDefinition.ReadAssembly
-           let task = def.MainModule.GetType("System.Threading.Tasks.Task")
-           let task1 = def.MainModule.GetType("System.Threading.Tasks.Task`1")
-           let wait =
-              task.Methods
-              |> Seq.filter (fun f -> f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
-              |> Seq.head
-
            let e = rtype.GetElementType().FullName
+           let s = state.AsyncSupport
            if [
-                task.FullName
-                task1.FullName
+                s.TaskType.FullName
+                s.Task1Type.FullName
               ] |> Seq.exists (fun n -> n = e)
            then
             if m.CustomAttributes // could improve this
@@ -691,6 +653,11 @@ module internal Instrument =
               //+IL_0050: pop
               // ahead of the leave opcode
 
+              // let refs = m.DeclaringType.Module.AssemblyReferences
+
+              // if defname |> refs.Contains |> not
+              // then refs.Add defname
+
               let injectWait ilp (i:Instruction) =
                 bulkInsertBefore
                   ilp
@@ -698,7 +665,7 @@ module internal Instrument =
                   [
                     ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
                     ilp.Create(OpCodes.Ldc_I4, 65535)
-                    ilp.Create(OpCodes.Call, wait)
+                    ilp.Create(OpCodes.Call, s.Wait)
                     ilp.Create(OpCodes.Pop)
                   ]
                   true
@@ -786,6 +753,7 @@ module internal Instrument =
                |> isNull
                |> not
             then (state.RecordingAssembly :> IDisposable).Dispose()
+                 (state.AsyncSupport.TaskAssembly :> IDisposable).Dispose()
         reraise()
 
     let internal instrumentationVisitor (state : InstrumentContext) (node : Node) =
@@ -799,6 +767,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@654.#Invoke(System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@624.#Invoke(System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
