@@ -675,6 +675,16 @@ module internal Instrument =
              true
            |> ignore)
 
+           // if async methd insert
+           //+IL_0045: ldloc.1 <= whatever
+           //  and either
+           //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+           //  or
+           //+IL_0046: ldc.i4 65535
+           //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
+           //+IL_0050: pop
+           // ahead of the leave opcode
+
     let private visitAfterMethod state m (included : Inspections) track =
       if included.IsInstrumented then
         let body = state.MethodBody

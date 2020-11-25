@@ -1016,6 +1016,60 @@ module AltCoverTests2 =
       Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
 
     [<Test>]
+    let ShouldBeAbleToTrackAnAsyncMethod() =
+#if NET5_0
+      let shift = String.Empty
+#else
+      let shift = "/../net5.0"
+#endif
+      let rpath =
+        Path.Combine
+          (AltCoverTests.dir + shift,
+           "AltCover.Recorder.dll")
+
+      let sample24 = Path.Combine(Assembly.GetExecutingAssembly().Location
+                                  |> Path.GetDirectoryName, "Sample24.dll")
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
+      let rdef = Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      let recorder = AltCover.Instrument.I.recordingMethod rdef
+      let target =
+        def.MainModule.GetType("NUnitTestProject1.Tests").Methods
+        |> Seq.find (fun m -> m.Name = "AddAsync")
+      let raw = AltCover.InstrumentContext.Build([])
+
+      let state =
+        { raw with RecordingMethodRef =
+                     { raw.RecordingMethodRef with Visit = null
+                                                   Push = recorder.[1]
+                                                   Pop = recorder.[2] } }
+
+      let countBefore = target.Body.Instructions.Count
+
+      let tailsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+        |> Seq.length
+
+      let nopsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+
+      let handlersBefore = target.Body.ExceptionHandlers.Count
+      AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That  // Adding the resturn value, too
+        (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9 + 4))
+      Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+      let nopsAfter =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+        // add 2 extra nop now and replace rather than remove .tails
+      Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
+
+    [<Test>]
     let ShouldBeAbleToInstrumentASwitchForNCover() =
 #if NET5_0
       let shift = String.Empty
