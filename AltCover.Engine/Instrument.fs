@@ -656,7 +656,55 @@ module internal Instrument =
              [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
            let methodWorker = body.GetILProcessor()
            removeTailInstructions methodWorker
-           let (endFinally, _, _) = encapsulateWithTryFinally methodWorker
+           let (endFinally, rtype, leave) = encapsulateWithTryFinally methodWorker
+
+           use def = typeof<System.Threading.Tasks.Task>.Assembly.Location
+                     |> AssemblyDefinition.ReadAssembly
+           let task = def.MainModule.GetType("System.Threading.Tasks.Task")
+           let task1 = def.MainModule.GetType("System.Threading.Tasks.Task`1")
+           let wait =
+              task.Methods
+              |> Seq.filter (fun f -> f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
+              |> Seq.head
+
+           let e = rtype.GetElementType().FullName
+           if [
+                task.FullName
+                task1.FullName
+              ] |> Seq.exists (fun n -> n = e)
+           then
+            if m.CustomAttributes // could improve this
+               |> Seq.exists (fun a -> a.AttributeType.FullName = "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+            then
+              // the instruction list is
+              // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
+              // IL_0000: stloc V_1 <<== This one
+              // IL_0045: leave IL_0000
+
+              // Want to insert
+              //+IL_0045: ldloc V_xx <<== whatever
+              //  and either
+              //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+              //  or
+              //+IL_0046: ldc.i4 65535
+              //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
+              //+IL_0050: pop
+              // ahead of the leave opcode
+
+              let injectWait ilp (i:Instruction) =
+                bulkInsertBefore
+                  ilp
+                  i.Next
+                  [
+                    ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                    ilp.Create(OpCodes.Ldc_I4, 65535)
+                    ilp.Create(OpCodes.Call, wait)
+                    ilp.Create(OpCodes.Pop)
+                  ]
+                  true
+
+              leave
+              |> Seq.iter ((injectWait methodWorker) >> ignore)
 
            bulkInsertBefore
              methodWorker
@@ -674,16 +722,6 @@ module internal Instrument =
              |]
              true
            |> ignore)
-
-           // if async methd insert
-           //+IL_0045: ldloc.1 <= whatever
-           //  and either
-           //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
-           //  or
-           //+IL_0046: ldc.i4 65535
-           //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
-           //+IL_0050: pop
-           // ahead of the leave opcode
 
     let private visitAfterMethod state m (included : Inspections) track =
       if included.IsInstrumented then
@@ -759,3 +797,8 @@ module internal Instrument =
   // returns>Stateful visitor function</returns>
   let internal instrumentGenerator(assemblies : string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
+
+[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@654.#Invoke(System.Tuple`2<System.Int32,System.String>)",
+  Justification="Nice idea if you can manage it")>]
+()

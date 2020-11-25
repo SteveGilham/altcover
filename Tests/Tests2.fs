@@ -1004,7 +1004,7 @@ module AltCoverTests2 =
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
       AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
-      Assert.That  // Adding the resturn value, too
+      Assert.That  // Adding the return value, too
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
 
@@ -1058,7 +1058,7 @@ module AltCoverTests2 =
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
       AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
-      Assert.That  // Adding the resturn value, too
+      Assert.That  // Adding the return value, too
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9 + 4))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
 
