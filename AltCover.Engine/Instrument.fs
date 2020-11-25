@@ -37,22 +37,17 @@ type internal AsyncSupport =
   { TaskAssembly : AssemblyDefinition
     TaskType : TypeDefinition
     Task1Type : TypeDefinition
-    Wait : MethodDefinition }
+    Wait : MethodDefinition
+    LocalWait : MethodReference }
   member self.Close() =
    self.TaskAssembly
    |> Option.ofObj
    |> Option.iter (fun a -> a.Dispose())
-  static member Create() =
-    {
-      TaskAssembly = null
-      TaskType = null
-      Task1Type = null
-      Wait = null
-    }
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
     Justification = "Disposed on exit")>]
-  static member Update() =
+  static member Update(m:IMemberDefinition) =
+    // TODO -- get version of assembly being used by m
     let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
               |> AssemblyDefinition.ReadAssembly
     let task = def.MainModule.GetType("System.Threading.Tasks.Task")
@@ -65,6 +60,7 @@ type internal AsyncSupport =
       TaskType = task
       Task1Type = task1
       Wait = wait
+      LocalWait = wait |> m.DeclaringType.Module.ImportReference
     }
 
 // State object passed from visit to visit
@@ -77,7 +73,7 @@ type internal InstrumentContext =
     RecordingMethodRef : RecorderRefs // updated each module
     MethodBody : MethodBody
     MethodWorker : ILProcessor
-    AsyncSupport : AsyncSupport }
+    AsyncSupport : AsyncSupport option }
   static member Build assemblies =
     { InstrumentedAssemblies = assemblies
       ModuleId = String.Empty
@@ -86,7 +82,7 @@ type internal InstrumentContext =
       RecordingMethodRef = RecorderRefs.Build()
       MethodBody = null
       MethodWorker = null // to save fetching repeatedly
-      AsyncSupport = AsyncSupport.Create() } // also a signal once initialised
+      AsyncSupport = None } // also a signal once initialised
 
 // Module to handle instrumentation visitor
 module internal Instrument =
@@ -494,7 +490,12 @@ module internal Instrument =
                   { Visit = refs.[0]
                     Push = refs.[1]
                     Pop = refs.[2] }
-                RecordingMethod = recordingMethod }
+                RecordingMethod = recordingMethod
+                // TODO -- get version of Threading assembly being used by m
+                AsyncSupport = state.AsyncSupport
+                               |> Option.map (fun a -> { a with LocalWait =
+                                                                  a.Wait |> m.ImportReference })
+            }
         | _ -> state
       { restate with
           ModuleId =
@@ -610,6 +611,7 @@ module internal Instrument =
 
     let private finishVisit(state : InstrumentContext) =
       try
+        // TODO update for async if required
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
         writeAssemblies (state.RecordingAssembly) recorderFileName
           (CoverageParameters.instrumentDirectories()) ignore
@@ -627,14 +629,14 @@ module internal Instrument =
                       |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
-        state.AsyncSupport.Close()
+        state.AsyncSupport |> Option.iter (fun a -> a.Close())
       { state with RecordingAssembly = null
-                   AsyncSupport = { state.AsyncSupport with TaskAssembly = null}}
+                   AsyncSupport = None}
 
     let internal doTrack state (m : MethodDefinition) (included:Inspections)
                                (track : (int * string) option) =
       track
-      |> Option.fold (fun (s:InstrumentContext) (n, _)  ->
+      |> Option.fold (fun (s:InstrumentContext) (n, _)  -> // this line for FxCop
            let body =
              [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
            let methodWorker = body.GetILProcessor()
@@ -659,14 +661,24 @@ module internal Instrument =
            |> ignore
 
            let e = rtype.GetElementType().FullName
-           if [
-               "System.Threading.Tasks.Task"
-               "System.Threading.Tasks.Task`1"
-              ] |> Seq.exists (fun n -> n = e)
+           let isTaskType () = [
+                                  "System.Threading.Tasks.Task"
+                                  "System.Threading.Tasks.Task`1"
+                               ] |> Seq.exists (fun n -> n = e)
+           let isStateMachine () = m.CustomAttributes // could improve this
+                                   |> Seq.exists (fun a -> a.AttributeType.FullName =
+                                                               "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+           let asyncChecks =
+             [
+               isTaskType
+               isStateMachine
+             ]
+
+           if asyncChecks
+              |> Seq.fold (fun p f -> if p // confuse gendarme  : TODO better?
+                                      then f()
+                                      else p) true
            then
-            if m.CustomAttributes // could improve this
-               |> Seq.exists (fun a -> a.AttributeType.FullName = "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
-            then
               // the instruction list is
               // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
               // IL_0000: stloc V_1 <<== This one
@@ -679,17 +691,12 @@ module internal Instrument =
               //  or
               //+IL_0046: ldc.i4 65535
               //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
-              //+IL_0050: pop
+              //+IL_0050: pop                    // = discard the return value
               // ahead of the leave opcode
 
-              // let refs = m.DeclaringType.Module.AssemblyReferences
-
-              // if defname |> refs.Contains |> not
-              // then refs.Add defname
-
-              let newstate = if state.AsyncSupport.TaskAssembly |> isNull
-                             then { state with AsyncSupport = AsyncSupport.Update() }
-                             else state // <<==
+              let newstate = { state with AsyncSupport = Some
+                                            (Option.defaultWith (fun () -> AsyncSupport.Update m)
+                                              state.AsyncSupport) }
 
               let injectWait ilp (i:Instruction) =
                 bulkInsertBefore
@@ -698,8 +705,8 @@ module internal Instrument =
                   [
                     ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
                     ilp.Create(OpCodes.Ldc_I4, 65535)
-                    ilp.Create(OpCodes.Call, newstate.AsyncSupport.Wait
-                                             |> m.DeclaringType.Module.ImportReference)
+                    ilp.Create(OpCodes.Callvirt,
+                               newstate.AsyncSupport.Value.LocalWait)
                     ilp.Create(OpCodes.Pop)
                   ]
                   true
@@ -707,7 +714,6 @@ module internal Instrument =
               leave
               |> Seq.iter ((injectWait methodWorker) >> ignore)
               newstate
-            else state // <<==
            else state) state
 
     let private visitAfterMethod state m (included : Inspections) track =
@@ -772,7 +778,7 @@ module internal Instrument =
                |> isNull
                |> not
             then (state.RecordingAssembly :> IDisposable).Dispose()
-                 state.AsyncSupport.Close()
+                 state.AsyncSupport |> Option.iter (fun a -> a.Close())
         reraise()
 
     let internal instrumentationVisitor (state : InstrumentContext) (node : Node) =
@@ -786,6 +792,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@637.#Invoke(System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@639.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()

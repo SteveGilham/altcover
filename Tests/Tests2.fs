@@ -892,7 +892,8 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That
         (recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
       Assert.That
@@ -949,7 +950,8 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
@@ -1003,7 +1005,8 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That  // Adding the return value, too
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
@@ -1057,7 +1060,8 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isSome)
       Assert.That  // Adding the return value, too
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9 + 4))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
@@ -1167,7 +1171,8 @@ module AltCoverTests2 =
       let state = AltCover.InstrumentContext.Build([])
       let countBefore = recorder.Head.Body.Instructions.Count
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track None
+      let state2 = AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track None
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That(recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
       Assert.That(recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
 
