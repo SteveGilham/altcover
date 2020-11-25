@@ -98,7 +98,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover", "AltCover\AltCov
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample23", "Sample23\Sample23.csproj", "{C5548F5A-AED5-45C5-8E27-71E38647B87D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample24", "Sample24\Sample24.csproj", "{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample24", "Sample24\Sample24.csproj", "{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -271,7 +271,6 @@ Global
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Debug|x86.Build.0 = Debug|Any CPU
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
