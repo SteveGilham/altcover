@@ -34,9 +34,7 @@ type internal RecorderRefs =
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AsyncSupport =
-  { TaskAssembly : AssemblyDefinition
-    TaskType : TypeDefinition
-    Task1Type : TypeDefinition
+  { TaskAssembly : AssemblyDefinition // kept for context
     Wait : MethodDefinition
     LocalWait : MethodReference }
   static member private DisposeAssemblyDefinition (def:IDisposable) =
@@ -53,14 +51,11 @@ type internal AsyncSupport =
     let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
               |> AssemblyDefinition.ReadAssembly
     let task = def.MainModule.GetType("System.Threading.Tasks.Task")
-    let task1 = def.MainModule.GetType("System.Threading.Tasks.Task`1")
     let wait = task.Methods
                |> Seq.filter (fun f -> f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
                |> Seq.head
     {
       TaskAssembly = def
-      TaskType = task
-      Task1Type = task1
       Wait = wait
       LocalWait = wait |> m.DeclaringType.Module.ImportReference
     }
@@ -797,6 +792,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@646.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@641.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()

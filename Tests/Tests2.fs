@@ -1803,16 +1803,31 @@ module AltCoverTests2 =
         let state' =
           { state with RecordingAssembly = def'
                        RecordingMethod = [ visit; visit; visit ]
-                       RecordingMethodRef = r }
+                       RecordingMethodRef = r
+                       AsyncSupport = visit |> AsyncSupport.Update |> Some
+          }
+
+        let async = state'.AsyncSupport.Value
+        let waitBefore = async.Wait
+        // let localBefore = async.LocalWait
 
         let result = Instrument.I.instrumentationVisitor state' visited
-        let ref'' = def.MainModule.ImportReference visit
+
+        let asyncAfter = result.AsyncSupport.Value
+
+        // let ref'' = def.MainModule.ImportReference visit
+        // let localExpect = def.MainModule.ImportReference waitBefore
         Assert.That(result.RecordingMethodRef.Visit.Module, Is.EqualTo(def.MainModule))
+        Assert.That(async.LocalWait.Module, Is.Not.EqualTo(def.MainModule))
+        Assert.That(asyncAfter.LocalWait.Module, Is.SameAs(def.MainModule))
+        Assert.That(asyncAfter.Wait, Is.SameAs(waitBefore))
         Assert.That(string result.RecordingMethodRef, Is.EqualTo(string r))
         Assert.That({ result with RecordingMethodRef = RecorderRefs.Build() },
                     Is.EqualTo { state' with ModuleId = def.MainModule.Mvid.ToString()
                                              RecordingMethod = [ visit; visit; visit ]
-                                             RecordingMethodRef = RecorderRefs.Build() })
+                                             RecordingMethodRef = RecorderRefs.Build()
+                                             AsyncSupport = Some asyncAfter
+                    })
       finally
         CoverageParameters.theReportFormat <- None
 
