@@ -757,6 +757,45 @@ module AltCoverXTests =
       CoverageParameters.theOutputDirectories.AddRange saved
 
   [<Test>]
+  let FinishCommitsTheAsyncRecordingAssembly() =
+    let path = Path.Combine(AltCoverTests.dir, "Sample4.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.readSymbols def
+
+    let md = def.MainModule.Types
+              |> Seq.filter (fun t -> t.FullName = "Tests.M")
+              |> Seq.collect (fun t -> t.Methods)
+              |> Seq.filter (fun m -> m.Name = "makeThing")
+              |> Seq.head
+    let support = AsyncSupport.Update md
+
+    let unique = Guid.NewGuid().ToString()
+    let output = Path.Combine(Path.GetDirectoryName(AltCoverTests.dir), unique)
+    Directory.CreateDirectory(output) |> ignore
+    let saved = CoverageParameters.theOutputDirectories |> Seq.toList
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+      let input = { InstrumentContext.Build [] with RecordingAssembly = def
+                                                    AsyncSupport = Some support }
+      let result = Instrument.I.instrumentationVisitor input Finish
+      test <@ result.RecordingAssembly |> isNull @>
+      test <@ result.AsyncSupport |> Option.isNone @>
+      let created = Path.Combine(output, "Sample4.dll")
+      test' <@ File.Exists created @> (created + " not found")
+      let isWindows =
+#if NET5_0
+                      true
+#else
+                      System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+      test' <@  isWindows |> not ||
+                     File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
   let ShouldDoCoverage() =
     let start = Directory.GetCurrentDirectory()
     let where = Path.Combine(AltCoverTests.dir, Guid.NewGuid().ToString())

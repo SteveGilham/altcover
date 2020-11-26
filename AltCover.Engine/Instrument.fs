@@ -39,10 +39,12 @@ type internal AsyncSupport =
     Task1Type : TypeDefinition
     Wait : MethodDefinition
     LocalWait : MethodReference }
+  static member private DisposeAssemblyDefinition (def:IDisposable) =
+    def.Dispose()
   member self.Close() =
    self.TaskAssembly
    |> Option.ofObj
-   |> Option.iter (fun a -> a.Dispose())
+   |> Option.iter AsyncSupport.DisposeAssemblyDefinition
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
     Justification = "Disposed on exit")>]
@@ -795,6 +797,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@644.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@646.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()

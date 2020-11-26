@@ -1913,6 +1913,39 @@ module AltCoverTests2 =
         |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     [<Test>]
+    let NonFinishShouldDisposeThreadingAssembly() =
+      let path =
+        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let prepared = AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.readSymbols prepared
+
+      let md = prepared.MainModule.Types
+               |> Seq.filter (fun t -> t.FullName = "Sample3.Class3")
+               |> Seq.collect (fun t -> t.Methods)
+               |> Seq.filter (fun m -> m.Name = "Log")
+               |> Seq.head
+      let support = AsyncSupport.Update md
+
+      let state = { InstrumentContext.Build [] with RecordingAssembly = prepared
+                                                    AsyncSupport = Some support }
+      Assert.Throws<InvalidOperationException>
+        (fun () ->
+        Instrument.I.instrumentationVisitorWrapper
+          (fun _ _ -> InvalidOperationException("Bang") |> raise) state AfterType
+        |> ignore) |> ignore
+
+      Assert.That(support.TaskAssembly.FullName, Is.Not.Null) // nothing to raise an object disposed exception with
+      let output = Path.GetTempFileName()
+      let outputdll = output + ".dll"
+      try
+        Assert.Throws<ArgumentException>
+          (fun () -> Instrument.I.writeAssembly prepared outputdll) |> ignore
+      finally
+        Directory.EnumerateFiles
+          (Path.GetDirectoryName output, (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
+
+    [<Test>]
     let NonFinishShouldNotDisposeNullRecordingAssembly() =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")

@@ -20,3 +20,16 @@ also
 	)
         
 Runtime from  v2.0.50727 to v4.0.30319
+
+==============
+
+AsyncSupport.Close() testing
+
+-ve 	AltCover.Tests.dll!Tests.AltCoverTests2.NonFinishShouldDisposeRecordingAssembly@1901.Invoke() Line 1902	F#
+ +ve	AltCover.Tests.dll!Tests.AltCoverXTests.FinishCommitsTheRecordingAssembly() Line 743	F#
+
+
+incidental
+ 	AltCover.Tests.dll!Tests.AltCoverXTests.ADotNetDryRunLooksAsExpected() Line 491	F#
+ 	AltCover.Tests.dll!Tests.AltCoverXTests.ADryRunLooksAsExpected() Line 617	F#
+
