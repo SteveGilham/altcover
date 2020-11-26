@@ -114,8 +114,13 @@ module Instance =
       "UseCorrectSuffixRule", Justification="It's the program call stack");
       Sealed; AutoSerializable(false)>]
     type private CallStack =
+      // default backwards compatible
       [<ThreadStatic; DefaultValue>]
       static val mutable private instance : Option<CallStack>
+      // wanted to inject
+      //[<DefaultValue>]
+      //static val mutable private instance : Option<System.Threading.AsyncLocal<CallStack>>
+
       val mutable private caller : int list
       private new(x : int) = { caller = [ x ] }
 
@@ -124,9 +129,17 @@ module Instance =
           Justification = "TODO -- fix this Gendarme bug")>]
       static member Instance =
         match CallStack.instance with
+        // default backwards compatible
         | None -> CallStack.instance <- Some(CallStack(0))
+        // wanted to inject
+        //| None -> let cs = System.Threading.AsyncLocal<CallStack>()
+        //          cs.Value <- CallStack(0)
+        //          CallStack.instance <- Some(cs)
         | _ -> ()
+        // default backwards compatible
         CallStack.instance.Value
+        // wanted to inject
+        //CallStack.instance.Value.Value
 
       member self.Push x = self.caller <- x :: self.caller
 
