@@ -1,0 +1,9 @@
+IL diffs
+
+static field instance type
+static method get_instance  return type and field load type
+static method set_instance  arg type and field store type
+static property type as above
+static method Instance - replace bodily
+
+Check the type type reference in member Pop()
