@@ -6,4 +6,17 @@ static method set_instance  arg type and field store type
 static property type as above
 static method Instance - replace bodily
 
-Check the type type reference in member Pop()
+Check the type reference in member Pop()
+
+also
+
+[assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
+	.custom instance void [mscorlib]System.Runtime.Versioning.TargetFrameworkAttribute::.ctor(string) = (
+		01 00 1a 2e 4e 45 54 46 72 61 6d 65 77 6f 72 6b
+		2c 56 65 72 73 69 6f 6e 3d 76 34 2e 36 01 00 54
+		0e 14 46 72 61 6d 65 77 6f 72 6b 44 69 73 70 6c
+		61 79 4e 61 6d 65 12 2e 4e 45 54 20 46 72 61 6d
+		65 77 6f 72 6b 20 34 2e 36
+	)
+        
+Runtime from  v2.0.50727 to v4.0.30319
