@@ -47,7 +47,7 @@ type internal AsyncSupport =
     "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
     Justification = "Disposed on exit")>]
   static member Update(m:IMemberDefinition) =
-    // TODO -- get version of assembly being used by m
+    // Maybe get version of assembly being used by m?  Probably not important
     let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
               |> AssemblyDefinition.ReadAssembly
     let task = def.MainModule.GetType("System.Threading.Tasks.Task")
@@ -491,7 +491,6 @@ module internal Instrument =
                     Push = refs.[1]
                     Pop = refs.[2] }
                 RecordingMethod = recordingMethod
-                // TODO -- get version of Threading assembly being used by m
                 AsyncSupport = state.AsyncSupport
                                |> Option.map (fun a -> { a with LocalWait =
                                                                   a.Wait |> m.ImportReference })
@@ -633,6 +632,12 @@ module internal Instrument =
       { state with RecordingAssembly = null
                    AsyncSupport = None}
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.BadRecursiveInvocationRule", "BadRecursiveInvocationRule",
+      Justification = "False positive")>]
+    let private invokePredicate (f:unit -> bool) =
+      f()
+
     let internal doTrack state (m : MethodDefinition) (included:Inspections)
                                (track : (int * string) option) =
       track
@@ -675,9 +680,7 @@ module internal Instrument =
              ]
 
            if asyncChecks
-              |> Seq.fold (fun p f -> if p // confuse gendarme  : TODO better?
-                                      then f()
-                                      else p) true
+              |> Seq.forall invokePredicate
            then
               // the instruction list is
               // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
@@ -792,6 +795,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@639.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@644.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
