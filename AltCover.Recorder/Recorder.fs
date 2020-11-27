@@ -107,48 +107,40 @@ module Instance =
 
     let internal synchronize = Object()
 
+    [<Sealed>]
+    type private Callers() =
+      member val private Caller : int list = [] with get, set
+      member self.Push x = self.Caller <- x :: self.Caller
+      member private self.Peek() =
+          match self.Caller with
+          | [] ->([], None)
+          | h :: xs -> (xs, Some h)
+      member self.Pop() =
+        let (stack, head) = self.Peek()
+        self.Caller <- stack
+        head
+      member self.CallerId() = self.Peek() |> snd
+
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
     [<SuppressMessage("Gendarme.Rules.Naming",
       "UseCorrectSuffixRule", Justification="It's the program call stack");
-      Sealed; AutoSerializable(false)>]
+      AbstractClass; Sealed; AutoSerializable(false)>] // Abstract + Sealed = static
     type private CallStack =
-      [<ThreadStatic; DefaultValue>]
-      static val mutable private instance : Option<CallStack>
-      val mutable private caller : int list
-      private new(x : int) = { caller = [ x ] }
+      // Option chosen for the default value
+      [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
+      static val mutable private instance : Option<Callers>
 
+      // Per thread initialization of [ThreadStatic] => no race conditions here
       [<System.Diagnostics.CodeAnalysis.SuppressMessage(
           "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
           Justification = "TODO -- fix this Gendarme bug")>]
       static member Instance =
         match CallStack.instance with
-        | None -> CallStack.instance <- Some(CallStack(0))
+        | None -> CallStack.instance <- Some(Callers())
         | _ -> ()
         CallStack.instance.Value
-
-      member self.Push x = self.caller <- x :: self.caller
-
-      //let s = sprintf "push %d -> %A" x self.caller
-      //System.Diagnostics.Debug.WriteLine(s)
-      member self.Pop() =
-        let (stack, head) =
-          match self.caller with
-          | []
-          | [ 0 ] ->([ 0 ], None)
-          | h :: xs -> (xs, Some h)
-        self.caller <- stack
-        head
-
-      //let s = sprintf "pop -> %A"self.caller
-      //System.Diagnostics.Debug.WriteLine(s)
-      member self.CallerId() = Seq.head self.caller
-
-    (*let x = Seq.head self.caller
-                                let s = sprintf "peek %d" x
-                                System.Diagnostics.Debug.WriteLine(s)
-                                x*)
 
     let internal callerId() = CallStack.Instance.CallerId()
     let internal push x = CallStack.Instance.Push x
@@ -302,13 +294,13 @@ module Instance =
     let internal payloadSelection clock frequency wantPayload =
       if wantPayload() then
         match (frequency(), callerId()) with
-        | (0L, 0) -> Null
-        | (t, 0) -> Time(t * (clock() / t))
-        | (0L, n) -> Call n
+        | (0L, None) -> Null
+        | (t, None) -> Time(t * (clock() / t))
+        | (0L, n) -> Call n.Value
         | (t, n) ->
             Both
               { Time = t * (clock() / t)
-                Call = n }
+                Call = n.Value }
       else
         Null
 
