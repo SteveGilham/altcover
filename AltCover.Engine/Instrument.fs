@@ -605,30 +605,6 @@ module internal Instrument =
               CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
            File.Copy(first, pathn, true))
 
-    let private finishVisit(state : InstrumentContext) =
-      try
-        // TODO update for async if required
-        let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
-        writeAssemblies (state.RecordingAssembly) recorderFileName
-          (CoverageParameters.instrumentDirectories()) ignore
-
-        CoverageParameters.instrumentDirectories()
-        |> Seq.iter (fun instrument ->
-
-             Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
-             |> Seq.iter (fun f ->
-
-                  File.WriteAllText
-                    (f,
-                     (f
-                      |> File.ReadAllText
-                      |> injectJSON))))
-      finally
-        (state.RecordingAssembly :> IDisposable).Dispose()
-        state.AsyncSupport |> Option.iter (fun a -> a.Close())
-      { state with RecordingAssembly = null
-                   AsyncSupport = None}
-
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.BadRecursiveInvocationRule", "BadRecursiveInvocationRule",
       Justification = "False positive")>]
@@ -742,6 +718,44 @@ module internal Instrument =
       let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
       { state with RecordingAssembly = recordingAssembly }
 
+    // needs to be testable separately
+    let internal rewriteToAsync (c:TypeDefinition) =
+      c.FullName
+      |> NotImplementedException
+      |> raise
+
+    let private rewriteCallStack (recorder:AssemblyDefinition) _ =
+      recorder.MainModule.GetAllTypes()
+      |> Seq.tryFind (fun c -> c.Name = "CallStack")
+      |> Option.iter rewriteToAsync
+
+    let private finishVisit(state : InstrumentContext) =
+      try
+        state.AsyncSupport
+        |> Option.iter (rewriteCallStack state.RecordingAssembly)
+
+        // TODO update for async if required
+        let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
+        writeAssemblies (state.RecordingAssembly) recorderFileName
+          (CoverageParameters.instrumentDirectories()) ignore
+
+        CoverageParameters.instrumentDirectories()
+        |> Seq.iter (fun instrument ->
+
+             Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
+             |> Seq.iter (fun f ->
+
+                  File.WriteAllText
+                    (f,
+                     (f
+                      |> File.ReadAllText
+                      |> injectJSON))))
+      finally
+        (state.RecordingAssembly :> IDisposable).Dispose()
+        state.AsyncSupport |> Option.iter (fun a -> a.Close())
+      { state with RecordingAssembly = null
+                   AsyncSupport = None}
+
     // Perform visitor operations
     // param name="state">Contextual information for the visit</param>
     // param name="node">The node being visited</param>
@@ -792,6 +806,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@641.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@617.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
