@@ -15,15 +15,15 @@ module ThreadLevel =
       [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
       static val mutable private instance : Option<int list>
 
+      static member private Update l =
+        CallTrack.instance <- Some l
+
       // Per thread initialization of [ThreadStatic] => no race conditions here
       static member Instance =
         match CallTrack.instance with
         | None -> CallTrack.Update []
         | _ -> ()
         CallTrack.instance.Value
-
-      static member private Update l =
-        CallTrack.instance <- Some l
 
       static member Peek () =
         match CallTrack.Instance with
@@ -59,32 +59,35 @@ module AsyncLevel =
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
+    // [<Sealed; AbstractClass>] = static class not required
     module CallTrack =
       // Option chosen for the default value
+      // [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
       let instance = AsyncLocal<Option<int list>>()
 
-      let private update l =
-        instance.Value <- Some l
+      let private Update l =
+        instance.Value <- Some l //.Value
 
+      // no race conditions here
       let Instance () =
-        match instance.Value with
-        | None -> instance.Value <- Some([])
+        match instance.Value with  //.Value
+        | None -> Update []
         | _ -> ()
-        instance.Value.Value
+        instance.Value.Value //.Value
 
-      let peek ()  =
+      let Peek () =
         match Instance() with
         | [] ->([], None)
         | h :: xs -> (xs, Some h)
 
       let Push x =
-        update (x :: Instance())
+        Update (x :: Instance())
       let Pop () =
-        let (stack, head) = peek()
-        update stack
+        let (stack, head) =  Peek()
+        Update stack
         head
 
-    let internal callerId() = CallTrack.peek() |> snd
+    let internal callerId() = CallTrack.Peek() |> snd
     let internal push x = CallTrack.Push x
     let internal pop() = CallTrack.Pop()
 

@@ -116,15 +116,15 @@ module Instance =
       [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
       static val mutable private instance : Option<int list>
 
+      static member private Update l =
+        CallTrack.instance <- Some l
+
       // Per thread initialization of [ThreadStatic] => no race conditions here
       static member Instance =
         match CallTrack.instance with
         | None -> CallTrack.Update []
         | _ -> ()
         CallTrack.instance.Value
-
-      static member private Update l =
-        CallTrack.instance <- Some l
 
       static member Peek () =
         match CallTrack.Instance with
