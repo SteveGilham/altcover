@@ -1613,8 +1613,8 @@ _Target "AsyncAwaitTests" (fun _ ->
 
   printfn "Execute the instrumented tests"
 
-  let sample7 = Path.getFullName "./Sample24/Sample24.csproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine None sample7
+  let sample24 = Path.getFullName "./Sample24/Sample24.csproj"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine None sample24
 
   let collect =
     AltCover.CollectOptions.Primitive
@@ -1627,7 +1627,19 @@ _Target "AsyncAwaitTests" (fun _ ->
       ToolPath = altcover
       ToolType = dotnetAltcover
       WorkingDirectory = "Sample24" }
-  |> AltCoverCommand.run)
+  |> AltCoverCommand.run
+
+  let coverageDocument = XDocument.Load(XmlReader.Create(simpleReport))
+
+  coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+  |> Seq.toList
+  |> Seq.iter (fun tmr -> let spts = tmr.Parent.Parent.Parent
+                          let sptcount = spts.Descendants(XName.Get("SequencePoint")) 
+                                         |> Seq.length
+                          let tmrcount = spts.Descendants(XName.Get("TrackedMethodRef"))
+                                         |> Seq.length
+                          let name = spts.Parent.Descendants(XName.Get("Name")) |> Seq.head
+                          Assert.That (tmrcount, Is.EqualTo sptcount, name.Value) ) )
 
 _Target "FSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
