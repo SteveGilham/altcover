@@ -9,7 +9,8 @@ module ThreadLevel =
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
-    type CallTrack =
+    [<Sealed; AbstractClass>] // = static class
+    type private CallTrack =
       // Option chosen for the default value
       [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
       static val mutable private instance : Option<int list>
