@@ -1,15 +1,46 @@
 IL diffs
 
-static field instance type
- + remove [ThreadStatic]
- + Reconsider what the type should be -- what can we auto-initialize & get rid of the Option which is breaing half the burden of AsyncLocal already?
-static method get_instance  return type and field load type
-static method set_instance  arg type and field store type
-static property type as above
+class : 
+* remove serializable  tag
+* remove Sealed & AbstractClass attributes
+* compilation mapping value fro 01 00 03 00 00 00 00 00 to 01 00 07 00 00 00 00 00
 
-static method Instance - replace bodily
+field 
+* remove attributes
+* type becomes AsyncLocal<previous type>
+* add initonly tag
+* static construction instance@66 
+.method private specialname rtspecialname static 
+	void .cctor () cil managed 
+{
+	IL_0014: newobj instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::.ctor()
+	IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> '<StartupCode$SoakTest1>.$Program'::instance@66
+	IL_001e: ret
+} 
 
-Check the type reference in member Pop()
+get_instance 
+* type becomes AsyncLocal<previous type>
+
+set_instance
+* remove 
+
+Update
+* replace content
+
+get_Instance
+* replace content
+
+Peek
+? unchanged
+
+Push
+* replace content
+
+Pop
+* replace content 
+
+Properties
+* remove set_instance
 
 also
 
