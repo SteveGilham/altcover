@@ -107,44 +107,40 @@ module Instance =
 
     let internal synchronize = Object()
 
-    [<Sealed>]
-    type private Callers() =
-      member val private Caller : int list = [] with get, set
-      member self.Push x = self.Caller <- x :: self.Caller
-      member private self.Peek() =
-          match self.Caller with
-          | [] ->([], None)
-          | h :: xs -> (xs, Some h)
-      member self.Pop() =
-        let (stack, head) = self.Peek()
-        self.Caller <- stack
-        head
-      member self.CallerId() = self.Peek() |> snd
-
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
-    [<SuppressMessage("Gendarme.Rules.Naming",
-      "UseCorrectSuffixRule", Justification="It's the program call stack");
-      AbstractClass; Sealed; AutoSerializable(false)>] // Abstract + Sealed = static
-    type private CallStack =
+    [<Sealed; AbstractClass>] // = static class
+    type private CallTrack =
       // Option chosen for the default value
       [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
-      static val mutable private instance : Option<Callers>
+      static val mutable private instance : Option<int list>
 
       // Per thread initialization of [ThreadStatic] => no race conditions here
-      [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-          "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-          Justification = "TODO -- fix this Gendarme bug")>]
       static member Instance =
-        match CallStack.instance with
-        | None -> CallStack.instance <- Some(Callers())
+        match CallTrack.instance with
+        | None -> CallTrack.Update []
         | _ -> ()
-        CallStack.instance.Value
+        CallTrack.instance.Value
 
-    let internal callerId() = CallStack.Instance.CallerId()
-    let internal push x = CallStack.Instance.Push x
-    let internal pop() = CallStack.Instance.Pop()
+      static member private Update l =
+        CallTrack.instance <- Some l
+
+      static member Peek () =
+        match CallTrack.Instance with
+        | [] ->([], None)
+        | h :: xs -> (xs, Some h)
+
+      static member Push x =
+        CallTrack.Update (x :: CallTrack.Instance)
+      static member Pop () =
+        let (stack, head) =  CallTrack.Peek()
+        CallTrack.Update stack
+        head
+
+    let internal callerId() = CallTrack.Peek() |> snd
+    let internal push x = CallTrack.Push x
+    let internal pop() = CallTrack.Pop()
 
     /// <summary>
     /// Serialize access to the report file across AppDomains for the classic mode

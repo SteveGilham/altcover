@@ -9,48 +9,48 @@ module ThreadLevel =
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
-    type CallStack =
+    type CallTrack =
       // Option chosen for the default value
       [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
       static val mutable private instance : Option<int list>
 
       // Per thread initialization of [ThreadStatic] => no race conditions here
       static member Instance =
-        match CallStack.instance with
-        | None -> CallStack.update []
+        match CallTrack.instance with
+        | None -> CallTrack.Update []
         | _ -> ()
-        CallStack.instance.Value
+        CallTrack.instance.Value
 
-      static member private update l =
-        CallStack.instance <- Some l
+      static member private Update l =
+        CallTrack.instance <- Some l
 
-      static member peek () =
-        match CallStack.Instance with
+      static member Peek () =
+        match CallTrack.Instance with
         | [] ->([], None)
         | h :: xs -> (xs, Some h)
 
       static member Push x =
-        CallStack.update (x :: CallStack.Instance)
+        CallTrack.Update (x :: CallTrack.Instance)
       static member Pop () =
-        let (stack, head) =  CallStack.peek()
-        CallStack.update stack
+        let (stack, head) =  CallTrack.Peek()
+        CallTrack.Update stack
         head
 
-    let internal callerId() = CallStack.peek() |> snd
-    let internal push x = CallStack.Push x
-    let internal pop() = CallStack.Pop()
+    let internal callerId() = CallTrack.Peek() |> snd
+    let internal push x = CallTrack.Push x
+    let internal pop() = CallTrack.Pop()
 
     let rec stack1 i =
       let here = Thread.CurrentThread.GetHashCode()
       try
         push i
-        lock (synchronize) (fun _ -> printfn "push on %A state = %A" here CallStack.Instance)
+        lock (synchronize) (fun _ -> printfn "push on %A state = %A" here CallTrack.Instance)
         Thread.Yield() |> ignore
         if i < 10
         then stack1 (i + 1)
       finally
         pop () |> ignore
-        lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here CallStack.Instance)
+        lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here CallTrack.Instance)
 
 module AsyncLevel =
     let internal synchronize = Object()
@@ -58,7 +58,7 @@ module AsyncLevel =
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
-    module CallStack =
+    module CallTrack =
       // Option chosen for the default value
       let instance = AsyncLocal<Option<int list>>()
 
@@ -83,21 +83,21 @@ module AsyncLevel =
         update stack
         head
 
-    let internal callerId() = CallStack.peek() |> snd
-    let internal push x = CallStack.Push x
-    let internal pop() = CallStack.Pop()
+    let internal callerId() = CallTrack.peek() |> snd
+    let internal push x = CallTrack.Push x
+    let internal pop() = CallTrack.Pop()
 
     let rec stack1 i =
       let here = Thread.CurrentThread.GetHashCode()
       try
         push i
-        lock (synchronize) (fun _ -> printfn "push on %A state = %A" here <| CallStack.Instance())
+        lock (synchronize) (fun _ -> printfn "push on %A state = %A" here <| CallTrack.Instance())
         Thread.Yield() |> ignore
         if i < 10
         then stack1 (i + 1)
       finally
         pop () |> ignore
-        lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here <| CallStack.Instance())
+        lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here <| CallTrack.Instance())
 
 [<EntryPoint>]
 let main argv =
