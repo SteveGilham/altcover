@@ -733,7 +733,7 @@ module internal Instrument =
 
     let private rewriteCallStack (recorder:AssemblyDefinition) _ =
       recorder.MainModule.GetAllTypes()
-      |> Seq.tryFind (fun c -> c.Name = "CallStack")
+      |> Seq.tryFind (fun c -> c.Name = "CallTrack")
       |> Option.iter rewriteToAsync
 
     let private finishVisit(state : InstrumentContext) =
