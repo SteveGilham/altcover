@@ -110,62 +110,36 @@ module Instance =
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
-    [<SuppressMessage("Gendarme.Rules.Naming",
-      "UseCorrectSuffixRule", Justification="It's the program call stack");
-      Sealed; AutoSerializable(false)>]
-    type private CallStack =
-      // default backwards compatible
-      [<ThreadStatic; DefaultValue>]
-      static val mutable private instance : Option<CallStack>
-      // wanted to inject
-      //[<DefaultValue>]
-      //static val mutable private instance : Option<System.Threading.AsyncLocal<CallStack>>
+    [<Sealed; AbstractClass>] // = static class
+    type private CallTrack =
+      // Option chosen for the default value
+      [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
+      static val mutable private instance : Option<int list>
 
-      val mutable private caller : int list
-      private new(x : int) = { caller = [ x ] }
+      static member private Update l =
+        CallTrack.instance <- Some l
 
-      [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-          "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-          Justification = "TODO -- fix this Gendarme bug")>]
       static member Instance =
-        match CallStack.instance with
-        // default backwards compatible
-        | None -> CallStack.instance <- Some(CallStack(0))
-        // wanted to inject
-        //| None -> let cs = System.Threading.AsyncLocal<CallStack>()
-        //          cs.Value <- CallStack(0)
-        //          CallStack.instance <- Some(cs)
+        match CallTrack.instance with
+        | None -> CallTrack.Update []
         | _ -> ()
-        // default backwards compatible
-        CallStack.instance.Value
-        // wanted to inject
-        //CallStack.instance.Value.Value
+        CallTrack.instance.Value
 
-      member self.Push x = self.caller <- x :: self.caller
+      static member Peek () =
+        match CallTrack.Instance with
+        | [] ->([], None)
+        | h :: xs -> (xs, Some h)
 
-      //let s = sprintf "push %d -> %A" x self.caller
-      //System.Diagnostics.Debug.WriteLine(s)
-      member self.Pop() =
-        let (stack, head) =
-          match self.caller with
-          | []
-          | [ 0 ] ->([ 0 ], None)
-          | h :: xs -> (xs, Some h)
-        self.caller <- stack
+      static member Push x =
+        CallTrack.Update (x :: CallTrack.Instance)
+      static member Pop () =
+        let (stack, head) =  CallTrack.Peek()
+        CallTrack.Update stack
         head
 
-      //let s = sprintf "pop -> %A"self.caller
-      //System.Diagnostics.Debug.WriteLine(s)
-      member self.CallerId() = Seq.head self.caller
-
-    (*let x = Seq.head self.caller
-                                let s = sprintf "peek %d" x
-                                System.Diagnostics.Debug.WriteLine(s)
-                                x*)
-
-    let internal callerId() = CallStack.Instance.CallerId()
-    let internal push x = CallStack.Instance.Push x
-    let internal pop() = CallStack.Instance.Pop()
+    let internal callerId() = CallTrack.Peek() |> snd
+    let internal push x = CallTrack.Push x
+    let internal pop() = CallTrack.Pop()
 
     /// <summary>
     /// Serialize access to the report file across AppDomains for the classic mode
@@ -315,13 +289,13 @@ module Instance =
     let internal payloadSelection clock frequency wantPayload =
       if wantPayload() then
         match (frequency(), callerId()) with
-        | (0L, 0) -> Null
-        | (t, 0) -> Time(t * (clock() / t))
-        | (0L, n) -> Call n
+        | (0L, None) -> Null
+        | (t, None) -> Time(t * (clock() / t))
+        | (0L, n) -> Call n.Value
         | (t, n) ->
             Both
               { Time = t * (clock() / t)
-                Call = n }
+                Call = n.Value }
       else
         Null
 
