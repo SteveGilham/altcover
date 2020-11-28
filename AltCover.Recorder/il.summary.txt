@@ -34,10 +34,16 @@ Peek
 ? unchanged
 
 Push
-* replace content
+* replace content from debug
 
 Pop
-* replace content 
+* replace last 4 instructions w/content  from debug
+		IL_0015: call void Path/To/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+		IL_001a: nop
+		IL_001b: ldloc.2
+		IL_001c: ret
+
+
 
 Properties
 * remove set_instance
