@@ -69,19 +69,19 @@ module AsyncLevel =
         instance.Value <- Some l //.Value
 
       // no race conditions here
-      let Instance () =
+      let mutable Instance =
         match instance.Value with  //.Value
         | None -> Update []
         | _ -> ()
         instance.Value.Value //.Value
 
       let Peek () =
-        match Instance() with
+        match Instance with
         | [] ->([], None)
         | h :: xs -> (xs, Some h)
 
       let Push x =
-        Update (x :: Instance())
+        Update (x :: Instance)
       let Pop () =
         let (stack, head) =  Peek()
         Update stack
@@ -95,13 +95,13 @@ module AsyncLevel =
       let here = Thread.CurrentThread.GetHashCode()
       try
         push i
-        lock (synchronize) (fun _ -> printfn "push on %A state = %A" here <| CallTrack.Instance())
+        lock (synchronize) (fun _ -> printfn "push on %A state = %A" here <| CallTrack.Instance)
         Thread.Yield() |> ignore
         if i < 10
         then stack1 (i + 1)
       finally
         pop () |> ignore
-        lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here <| CallTrack.Instance())
+        lock (synchronize) (fun _ -> printfn "pop on %A state = %A" here <| CallTrack.Instance)
 
 [<EntryPoint>]
 let main argv =

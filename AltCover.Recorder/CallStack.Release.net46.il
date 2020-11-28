@@ -32,43 +32,35 @@
 		IL_0010: ret
 	} // end of method CallTrack::Update
 
-	.method public static 
-		class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Instance () cil managed 
+	.method public specialname static 
+		class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> get_Instance () cil managed 
 	{
 		// Method begins at RVA 0x2274
-		// Code size 57 (0x39)
-		.maxstack 4
-		.locals init (
-			[0] class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>
-		)
+		// Code size 6 (0x6)
+		.maxstack 8
 
-		IL_0000: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
-		IL_0005: callvirt instance !0 class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::get_Value()
-		IL_000a: brtrue.s IL_0025
+		IL_0000: ldsfld class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> '<StartupCode$SoakTest1>.$Program'::Instance@72
+		IL_0005: ret
+	} // end of method CallTrack::get_Instance
 
-		IL_000c: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
-		IL_0011: stloc.0
-		IL_0012: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
-		IL_0017: ldloc.0
-		IL_0018: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
-		IL_001d: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
-		IL_0022: nop
-		IL_0023: br.s IL_0027
+	.method public specialname static 
+		void set_Instance (
+			class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> 'value'
+		) cil managed 
+	{
+		// Method begins at RVA 0x227c
+		// Code size 7 (0x7)
+		.maxstack 8
 
-		IL_0025: nop
-		IL_0026: nop
-
-		IL_0027: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
-		IL_002c: callvirt instance !0 class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::get_Value()
-		IL_0031: tail.
-		IL_0033: callvirt instance !0 class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::get_Value()
-		IL_0038: ret
-	} // end of method CallTrack::Instance
+		IL_0000: ldarg.0
+		IL_0001: stsfld class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> '<StartupCode$SoakTest1>.$Program'::Instance@72
+		IL_0006: ret
+	} // end of method CallTrack::set_Instance
 
 	.method public static 
 		class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>> Peek () cil managed 
 	{
-		// Method begins at RVA 0x22bc
+		// Method begins at RVA 0x2284
 		// Code size 55 (0x37)
 		.maxstack 4
 		.locals init (
@@ -78,7 +70,7 @@
 			[3] int32 h
 		)
 
-		IL_0000: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::Instance()
+		IL_0000: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::get_Instance()
 		IL_0005: stloc.0
 		IL_0006: ldloc.0
 		IL_0007: call instance class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_TailOrNull()
@@ -109,7 +101,7 @@
 			int32 x
 		) cil managed 
 	{
-		// Method begins at RVA 0x2300
+		// Method begins at RVA 0x22c8
 		// Code size 29 (0x1d)
 		.maxstack 4
 		.locals init (
@@ -117,7 +109,7 @@
 		)
 
 		IL_0000: ldarg.0
-		IL_0001: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::Instance()
+		IL_0001: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::get_Instance()
 		IL_0006: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::Cons(!0, class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0>)
 		IL_000b: stloc.0
 		IL_000c: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
@@ -130,7 +122,7 @@
 	.method public static 
 		class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32> Pop () cil managed 
 	{
-		// Method begins at RVA 0x232c
+		// Method begins at RVA 0x22f4
 		// Code size 38 (0x26)
 		.maxstack 4
 		.locals init (
@@ -162,6 +154,14 @@
 			01 00 09 00 00 00 00 00
 		)
 		.get class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
+	}
+	.property class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Instance()
+	{
+		.custom instance void [FSharp.Core]Microsoft.FSharp.Core.CompilationMappingAttribute::.ctor(valuetype [FSharp.Core]Microsoft.FSharp.Core.SourceConstructFlags) = (
+			01 00 09 00 00 00 00 00
+		)
+		.get class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::get_Instance()
+		.set void Program/AsyncLevel/CallTrack::set_Instance(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
 	}
 
 } // end of class CallTrack

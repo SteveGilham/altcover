@@ -28,7 +28,7 @@ Update
 * replace content
 
 get_Instance
-* replace content
+* replace content using previous version /don't add set_Instance
 
 Peek
 ? unchanged
@@ -41,6 +41,11 @@ Pop
 
 Properties
 * remove set_instance
+* both have 
+		.custom instance void [FSharp.Core]Microsoft.FSharp.Core.CompilationMappingAttribute::.ctor(valuetype [FSharp.Core]Microsoft.FSharp.Core.SourceConstructFlags) = (
+			01 00 09 00 00 00 00 00
+		)
+
 
 also
 
