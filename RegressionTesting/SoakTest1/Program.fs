@@ -65,7 +65,7 @@ module AsyncLevel =
       // [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
       let instance = AsyncLocal<Option<int list>>()
 
-      let private Update l =
+      let private Update l = // fsharplint:disable-line NonPublicValuesNames
         instance.Value <- Some l //.Value
 
       // no race conditions here

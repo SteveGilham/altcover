@@ -719,10 +719,17 @@ module internal Instrument =
       { state with RecordingAssembly = recordingAssembly }
 
     // needs to be testable separately
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+      Justification = "AvoidSpeculativeGenerality too")>]
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Dixon.Design", "Dx0002:ReraiseCorrectlyRule",
+      Justification="Work in progress; also Dixon false positive")>]
     let internal rewriteToAsync (c:TypeDefinition) =
       c.FullName
       |> NotImplementedException
       |> raise
+      ()
 
     let private rewriteCallStack (recorder:AssemblyDefinition) _ =
       recorder.MainModule.GetAllTypes()
