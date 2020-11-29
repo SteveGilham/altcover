@@ -28,31 +28,88 @@ Update
 
 get_Instance
 * replace content using previous version /don't add set_Instance
+before
+	IL_0000: ldsfld class [mscorlib]System.Threading.AsyncLocal`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Core.FSharpOption`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Collections.FSharpList`1<int32>>> AltCover.Recorder.Instance/I/CallTrack::instance@
+	IL_0005: brtrue.s IL_001b
+
+	IL_0007: call class Microsoft.FSharp.Collections.FSharpList`1<!0> class Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
+	IL_000c: stloc.0
+	IL_000d: ldloc.0
+	IL_000e: call class Microsoft.FSharp.Core.FSharpOption`1<!0> class Microsoft.FSharp.Core.FSharpOption`1<class Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
+	IL_0013: call void AltCover.Recorder.Instance/I/CallTrack::.cctor()
+	IL_0018: nop
+	IL_0019: br.s IL_001d
+
+	IL_001b: nop
+	IL_001c: nop
+
+	IL_001d: ldsfld class [mscorlib]System.Threading.AsyncLocal`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Core.FSharpOption`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Collections.FSharpList`1<int32>>> AltCover.Recorder.Instance/I/CallTrack::instance@
+	IL_0022: tail.
+	IL_0024: callvirt instance !0 class Microsoft.FSharp.Core.FSharpOption`1<class Microsoft.FSharp.Collections.FSharpList`1<int32>>::get_Value()
+	IL_0029: ret
+after
+		IL_0000: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
++		IL_0005: callvirt instance !0 class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::get_Value()
+		IL_000a: brtrue.s IL_0025 =>
+
+		IL_000c: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
+		IL_0011: stloc.0
++		IL_0012: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
+		IL_0017: ldloc.0
+		IL_0018: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
++		IL_001d: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
+x		IL_0022: nop
+x		IL_0023: br.s IL_0027
+
+x		IL_0025: nop
+x		IL_0026: nop
+
+=>		IL_0027: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
++		IL_002c: callvirt instance !0 class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::get_Value()
+		IL_0031: tail.
+		IL_0033: callvirt instance !0 class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::get_Value()
+		IL_0038: ret
+
+
 
 Peek
 + ? unchanged
 
 Push
 * replace content from debug
+		IL_0000: ldarg.0
+		IL_0001: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::get_Instance()
+		IL_0006: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::Cons(!0, class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0>)
+		IL_000b: call void Program/AsyncLevel/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+		IL_0010: nop
+		IL_0011: ret
+
 
 Pop
-* replace last 4 instructions w/content  from debug
-		IL_0015: call void Path/To/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
-		IL_001a: nop
-		IL_001b: ldloc.2
-		IL_001c: ret
-
+* replace last 2 instructions w/content  from debug
+before
+	IL_0014: ldloc.1
+>	IL_0015: call class Microsoft.FSharp.Core.FSharpOption`1<!0> class Microsoft.FSharp.Core.FSharpOption`1<class Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
+>	IL_001a: call void AltCover.Recorder.Instance/I/CallTrack::.cctor()
+	IL_001f: ldloc.2
+	IL_0020: ret
+after
+	IL_0014: ldloc.1
+>	IL_0015: call void Program/AsyncLevel/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+	IL_001a: nop
+	IL_001b: ldloc.2
+	IL_001c: ret
 
 
 Properties
-* remove set_instance
++ * remove set_instance
 * both have 
 		.custom instance void [FSharp.Core]Microsoft.FSharp.Core.CompilationMappingAttribute::.ctor(valuetype [FSharp.Core]Microsoft.FSharp.Core.SourceConstructFlags) = (
 			01 00 09 00 00 00 00 00
 		)
 
 
-also
+also maybe??
 
 [assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
 	.custom instance void [mscorlib]System.Runtime.Versioning.TargetFrameworkAttribute::.ctor(string) = (
