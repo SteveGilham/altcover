@@ -1,14 +1,15 @@
 IL diffs
 
 class : 
-* remove serializable  tag
-* remove Sealed & AbstractClass attributes
-* compilation mapping value fro 01 00 03 00 00 00 00 00 to 01 00 07 00 00 00 00 00
+x* remove serializable  tag
++* remove Sealed & AbstractClass attributes
+x* compilation mapping value fro 01 00 03 00 00 00 00 00 to 01 00 07 00 00 00 00 00
 
 field 
-* remove attributes
-* type becomes AsyncLocal<previous type>
-* add initonly tag
++* remove attributes
++* type becomes AsyncLocal<previous type>
++* add initonly tag
+
 * static construction instance@66 
 .method private specialname rtspecialname static 
 	void .cctor () cil managed 

@@ -731,6 +731,24 @@ module internal Instrument =
       (c:TypeDefinition) =
       recorder.Runtime <- TargetRuntime.Net_4_0
 
+      c.CustomAttributes.Clear()
+      c.IsSerializable <- false
+
+      let asyncType = tasking.MainModule.GetAllTypes()
+                      |> Seq.find (fun t -> t.GetElementType().FullName =
+                                               "System.Threading.AsyncLocal`1")
+      let instance = c.Fields
+                     |> Seq.find (fun f -> f.Name = "instance@")
+
+      instance.CustomAttributes.Clear()
+
+      let fieldType = GenericInstanceType(asyncType)
+      fieldType.GenericArguments.Add instance.FieldType
+      instance.FieldType <- fieldType
+                            |> recorder.ImportReference
+      instance.IsInitOnly <- true
+      ()
+
     let private rewriteCallStack (recorder:AssemblyDefinition) (a:AsyncSupport) =
       let m = recorder.MainModule
       m.GetAllTypes()
