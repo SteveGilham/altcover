@@ -727,38 +727,120 @@ module internal Instrument =
       Justification="Work in progress; also Dixon false positive")>]
     let internal rewriteToAsync
       (recorder:ModuleDefinition)
-      (tasking:AssemblyDefinition)
+      (asyncType:TypeDefinition)
       (c:TypeDefinition) =
+      // Assembly
       recorder.Runtime <- TargetRuntime.Net_4_0
 
+      // Type
       c.CustomAttributes.Clear()
       c.IsSerializable <- false
 
-      let asyncType = tasking.MainModule.GetAllTypes()
-                      |> Seq.find (fun t -> t.GetElementType().FullName =
-                                               "System.Threading.AsyncLocal`1")
+      // Field
       let instance = c.Fields
                      |> Seq.find (fun f -> f.Name = "instance@")
 
       instance.CustomAttributes.Clear()
 
+      let intermediateType = instance.FieldType
       let fieldType = GenericInstanceType(asyncType)
-      fieldType.GenericArguments.Add instance.FieldType
+      fieldType.GenericArguments.Add intermediateType
       instance.FieldType <- fieldType
                             |> recorder.ImportReference
       instance.IsInitOnly <- true
+      instance.IsPrivate <- true
+
+      // set_instance -> static constructor
+      let init = c.GetMethods()
+                 |> Seq.find (fun f -> f.Name = "set_instance")
+      init.IsPrivate <- true
+      init.IsRuntimeSpecialName <- true
+      init.Parameters.Clear()
+      init.Name <- ".cctor"
+      init.IsSetter <- false
+      init.CustomAttributes.Clear()
+      let ibody = init.Body
+      let iops = ibody.Instructions
+      let iilp = ibody.GetILProcessor()
+      iops
+      |> Seq.takeWhile (fun i -> i.OpCode <> OpCodes.Ret)
+      |> Seq.toList
+      |> Seq.iter iilp.Remove
+
+      let makelist = fieldType.Resolve().GetConstructors()
+                     |> Seq.find (fun c -> c.Parameters |> Seq.isEmpty)
+                     |> recorder.ImportReference
+
+      bulkInsertBefore iilp (iops |> Seq.head) // only one left
+                       [
+//IL_0014: newobj instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::.ctor()
+                        iilp.Create(OpCodes.Newobj, makelist)
+//IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> '<StartupCode$SoakTest1>.$Program'::instance@66
+                        iilp.Create(OpCodes.Stsfld, instance)
+                       ]
+                       false |> ignore
+
+      // get_instance -> change return type
+      let get = c.GetMethods()
+                 |> Seq.find (fun f -> f.Name = "get_instance")
+      get.MethodReturnType.ReturnType <- instance.FieldType
+      get.CustomAttributes.Clear()
+
+      // disconnect the property from the constructor
+      let inst = c.Properties
+                 |> Seq.find (fun f -> f.Name = "instance")
+      inst.SetMethod <- null
+      inst.CustomAttributes.Clear()
+
+      // Update -- replace content
+      let update = c.GetMethods()
+                   |> Seq.find (fun f -> f.Name = "Update")
+      let ubody = update.Body
+      let uilp = ubody.GetILProcessor()
+      let uins = ubody.Instructions
+
+      let makesome = uins
+                     |> Seq.find (fun i -> i.OpCode = OpCodes.Call)
+
+      uins
+      |> Seq.takeWhile (fun i -> i.OpCode <> OpCodes.Ret)
+      |> Seq.toList
+      |> Seq.iter uilp.Remove
+
+      bulkInsertBefore uilp (uins |> Seq.head) // only one left
+                       [
+//IL_0000: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
+                          uilp.Create(OpCodes.Call, get)
+//IL_0005: ldarg.0
+                          uilp.Create(OpCodes.Ldarg_0)
+//IL_0006: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
+                          makesome
+//IL_000b: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
+                          uilp.Create(OpCodes.Callvirt, asyncType.GetMethods()
+                                                        |> Seq.find (fun m -> m.Name = "set_Value")
+                                                        |> recorder.ImportReference
+                          )
+
+                       ]
+                       false |> ignore
+
       ()
 
-    let private rewriteCallStack (recorder:AssemblyDefinition) (a:AsyncSupport) =
+    let private rewriteCallStack (asyncType:TypeDefinition) (recorder:AssemblyDefinition) (a:AsyncSupport) =
       let m = recorder.MainModule
       m.GetAllTypes()
       |> Seq.tryFind (fun c -> c.Name = "CallTrack")
-      |> Option.iter (rewriteToAsync m a.TaskAssembly)
+      |> Option.iter (rewriteToAsync m asyncType)
 
     let private finishVisit(state : InstrumentContext) =
       try
+        // this type needs to be in scope while we write the recorder
+        let asyncType = state.AsyncSupport
+                        |> Option.map (fun asx -> asx.TaskAssembly.MainModule.GetAllTypes()
+                                                  |> Seq.find (fun t -> t.GetElementType().FullName =
+                                                                         "System.Threading.AsyncLocal`1"))
         state.AsyncSupport
-        |> Option.iter (rewriteCallStack state.RecordingAssembly)
+        |> Option.iter (rewriteCallStack asyncType.Value state.RecordingAssembly)
 
         // TODO update for async if required
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"

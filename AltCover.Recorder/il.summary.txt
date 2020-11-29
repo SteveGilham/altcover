@@ -3,36 +3,34 @@ IL diffs
 class : 
 x* remove serializable  tag
 +* remove Sealed & AbstractClass attributes
-x* compilation mapping value fro 01 00 03 00 00 00 00 00 to 01 00 07 00 00 00 00 00
+x* compilation mapping value from 01 00 03 00 00 00 00 00 to 01 00 07 00 00 00 00 00
 
 field 
 +* remove attributes
 +* type becomes AsyncLocal<previous type>
 +* add initonly tag
 
-* static construction instance@66 
+set_instance
++ * turn into static construction instance@
 .method private specialname rtspecialname static 
 	void .cctor () cil managed 
 {
 	IL_0014: newobj instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::.ctor()
-	IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> '<StartupCode$SoakTest1>.$Program'::instance@66
+	IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> instance@
 	IL_001e: ret
 } 
 
 get_instance 
-* type becomes AsyncLocal<previous type>
-
-set_instance
-* remove 
++ * type becomes AsyncLocal<previous type>
 
 Update
-* replace content
++ * replace content
 
 get_Instance
 * replace content using previous version /don't add set_Instance
 
 Peek
-? unchanged
++ ? unchanged
 
 Push
 * replace content from debug
