@@ -754,10 +754,13 @@ module internal Instrument =
       instance.CustomAttributes.Clear()
 
       let intermediateType = instance.FieldType
+      let import (m:MethodDefinition) =
+        recorder.ImportReference(m, intermediateType)
+
       let fieldType = GenericInstanceType(asyncType)
       fieldType.GenericArguments.Add intermediateType
-      instance.FieldType <- fieldType
-                            |> recorder.ImportReference
+      recorder.ImportReference(asyncType) |> ignore
+      instance.FieldType <- recorder.ImportReference(fieldType, intermediateType)
       instance.IsInitOnly <- true
       instance.IsPrivate <- true
 
@@ -780,12 +783,11 @@ module internal Instrument =
 
       let makelist = fieldType.Resolve().GetConstructors()
                      |> Seq.find (fun c -> c.Parameters |> Seq.isEmpty)
-                     |> recorder.ImportReference
 
       bulkInsertBefore iilp (iops |> Seq.head) // only one left
                        [
 //IL_0014: newobj instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::.ctor()
-                        iilp.Create(OpCodes.Newobj, makelist)
+                        iilp.Create(OpCodes.Newobj, makelist |> import)
 //IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> '<StartupCode$SoakTest1>.$Program'::instance@66
                         iilp.Create(OpCodes.Stsfld, instance)
                        ]
@@ -829,9 +831,7 @@ module internal Instrument =
 //IL_000b: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
                           uilp.Create(OpCodes.Callvirt, asyncType.GetMethods()
                                                         |> Seq.find (fun m -> m.Name = "set_Value")
-                                                        |> recorder.ImportReference
-                          )
-
+                                                        |> import)
                        ]
                        false |> ignore
 
