@@ -124,6 +124,30 @@ Runtime from  v2.0.50727 to v4.0.30319
 
 MainModule.Runtime <- TargetRuntime.Net_4_0
 
+// Referenced assemblies (in metadata order):
+// mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Found in Assembly List
+
+// System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Found in Assembly List
+
+// System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Found in Assembly List
+
+// System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Loading from: C:\WINDOWS\Microsoft.NET\assembly\GAC_MSIL\System.Numerics\v4.0_4.0.0.0__b77a5c561934e089\System.Numerics.dll
+
+// System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Loading from: C:\WINDOWS\Microsoft.NET\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll
+
+
+
+
 ==============
 
 AsyncSupport.Close() testing
