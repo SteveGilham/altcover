@@ -10,6 +10,7 @@ open System.Xml.Linq
 
 open AltCover
 open Mono.Options
+open Mono.Cecil.Rocks
 open Newtonsoft.Json.Linq
 
 #nowarn "25"
@@ -758,18 +759,19 @@ module AltCoverXTests =
 
   [<Test>]
   let FinishCommitsTheAsyncRecordingAssembly() =
-    let path = Path.Combine(AltCoverTests.dir, "Sample4.dll")
+    let path = Path.Combine(SolutionDir(),
+                            "_Binaries/AltCover.Recorder/Release+AnyCPU/net20/AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.readSymbols def
 
-    let md = def.MainModule.Types
-              |> Seq.filter (fun t -> t.FullName = "Tests.M")
+    let md = def.MainModule.GetAllTypes()
+              |> Seq.filter (fun t -> t.Name = "CallTrack")
               |> Seq.collect (fun t -> t.Methods)
-              |> Seq.filter (fun m -> m.Name = "makeThing")
+              |> Seq.filter (fun m -> m.Name = "Update")
               |> Seq.head
     let support = AsyncSupport.Update md
 
-    let unique = Guid.NewGuid().ToString()
+    let unique = "FinishCommitsTheAsyncRecordingAssembly" //Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(AltCoverTests.dir), unique)
     Directory.CreateDirectory(output) |> ignore
     let saved = CoverageParameters.theOutputDirectories |> Seq.toList
@@ -781,7 +783,7 @@ module AltCoverXTests =
       let result = Instrument.I.instrumentationVisitor input Finish
       test <@ result.RecordingAssembly |> isNull @>
       test <@ result.AsyncSupport |> Option.isNone @>
-      let created = Path.Combine(output, "Sample4.dll")
+      let created = Path.Combine(output, "AltCover.Recorder.dll")
       test' <@ File.Exists created @> (created + " not found")
       let isWindows =
 #if NET5_0
