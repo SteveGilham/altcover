@@ -732,15 +732,17 @@ module internal Instrument =
       // Assembly
       recorder.Runtime <- TargetRuntime.Net_4_0
       let refs = recorder.AssemblyReferences
-      let reflist = refs |> Seq.toList
-
       refs.Clear()
-      reflist
-      |> Seq.iter (fun r -> r.Version <- Version(4,0,0,0))
 
-      //(asyncType.Module.Assembly.Name :> AssemblyNameReference) ::
-      reflist
-      |> Seq.distinctBy (fun r -> r.FullName)
+      // from Commit: dbbda877f4cd91635a2f46dd2581955d83aaa650 [dbbda87] develop/async-transient
+      [
+       "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+       "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+       "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+       "System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+       "System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+      ]
+      |> List.map AssemblyNameReference.Parse
       |> Seq.iter refs.Add
 
       // Type
