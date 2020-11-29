@@ -725,16 +725,17 @@ module internal Instrument =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Dixon.Design", "Dx0002:ReraiseCorrectlyRule",
       Justification="Work in progress; also Dixon false positive")>]
-    let internal rewriteToAsync (c:TypeDefinition) =
-      c.FullName
-      |> NotImplementedException
-      |> raise
-      ()
+    let internal rewriteToAsync
+      (recorder:ModuleDefinition)
+      (tasking:AssemblyDefinition)
+      (c:TypeDefinition) =
+      recorder.Runtime <- TargetRuntime.Net_4_0
 
-    let private rewriteCallStack (recorder:AssemblyDefinition) _ =
-      recorder.MainModule.GetAllTypes()
+    let private rewriteCallStack (recorder:AssemblyDefinition) (a:AsyncSupport) =
+      let m = recorder.MainModule
+      m.GetAllTypes()
       |> Seq.tryFind (fun c -> c.Name = "CallTrack")
-      |> Option.iter rewriteToAsync
+      |> Option.iter (rewriteToAsync m a.TaskAssembly)
 
     let private finishVisit(state : InstrumentContext) =
       try
