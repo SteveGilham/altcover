@@ -734,13 +734,25 @@ module internal Instrument =
       let refs = recorder.AssemblyReferences
       refs.Clear()
 
-      // from Commit: dbbda877f4cd91635a2f46dd2581955d83aaa650 [dbbda87] develop/async-transient
+      let blob = [|
+          0x01uy; 0x00uy; 0x19uy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x53uy; 0x74uy; 0x61uy; 0x6euy; 0x64uy; 0x61uy; 0x72uy; 0x64uy; 0x2cuy;
+          0x56uy; 0x65uy; 0x72uy; 0x73uy; 0x69uy; 0x6fuy; 0x6euy; 0x3duy; 0x76uy; 0x32uy; 0x2euy; 0x30uy; 0x01uy; 0x00uy; 0x54uy; 0x0euy;
+          0x14uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x44uy; 0x69uy; 0x73uy; 0x70uy; 0x6cuy; 0x61uy;
+          0x79uy; 0x4euy; 0x61uy; 0x6duy; 0x65uy; 0x00uy;
+      |]
+
+      // [assembly: TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName = "")]
+      // System.Runtime.Versioning.TargetFrameworkAttribute
+      let ar = recorder.ImportReference typeof<System.Runtime.Versioning.TargetFrameworkAttribute>
+      let cons = ar.Resolve().GetConstructors() |> Seq.head |> recorder.ImportReference
+      recorder.Assembly.CustomAttributes.Insert(0, CustomAttribute(cons, blob))
+
+      // from Commit: dbbda877f4cd91635a2f46dd2581955d83aaa650 [dbbda87] develop/async-transient with netstandard.20
       [
-       "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-       "System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-       "System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-       "System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-       "System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+        "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+        "netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51"
+        "System.Runtime, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
+        "System.Threading, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
       ]
       |> List.map AssemblyNameReference.Parse
       |> Seq.iter refs.Add

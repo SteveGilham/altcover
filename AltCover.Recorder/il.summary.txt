@@ -124,6 +124,7 @@ Runtime from  v2.0.50727 to v4.0.30319
 
 MainModule.Runtime <- TargetRuntime.Net_4_0
 
+[assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
 // Referenced assemblies (in metadata order):
 // mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
 	// Assembly reference loading information:
@@ -145,6 +146,14 @@ MainModule.Runtime <- TargetRuntime.Net_4_0
 	// Assembly reference loading information:
 	// Info: Success - Loading from: C:\WINDOWS\Microsoft.NET\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll
 
+[assembly: TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName = "")]
+// mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Loading from: C:\Program Files\dotnet\shared\Microsoft.NETCore.App\2.1.13\mscorlib.dll
+
+// netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51 (unresolved)
+// System.Runtime, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a (unresolved)
+// System.Threading, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a (unresolved)
 
 
 
