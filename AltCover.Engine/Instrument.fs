@@ -731,6 +731,17 @@ module internal Instrument =
       (c:TypeDefinition) =
       // Assembly
       recorder.Runtime <- TargetRuntime.Net_4_0
+      let refs = recorder.AssemblyReferences
+      let reflist = refs |> Seq.toList
+
+      refs.Clear()
+      reflist
+      |> Seq.iter (fun r -> r.Version <- Version(4,0,0,0))
+
+      //(asyncType.Module.Assembly.Name :> AssemblyNameReference) ::
+      reflist
+      |> Seq.distinctBy (fun r -> r.FullName)
+      |> Seq.iter refs.Add
 
       // Type
       c.CustomAttributes.Clear()
