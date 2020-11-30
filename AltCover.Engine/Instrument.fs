@@ -721,12 +721,18 @@ module internal Instrument =
       let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
       { state with RecordingAssembly = recordingAssembly }
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+           "EnsureLocalDisposalRule",
+           Justification="Return confusing Gendarme -- TODO")>]
+    let private loadClr4AssemblyFromResources (stream:Stream) =
+      AssemblyDefinition.ReadAssembly(stream)
+      |> prepareAssemblyDefinition
+
     let private finishVisit(state : InstrumentContext) =
       try
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Recorder.dll")
         let clr4 = state.AsyncSupport
-                   |> Option.map (fun _ -> AssemblyDefinition.ReadAssembly(stream)
-                                           |> prepareAssemblyDefinition)
+                   |> Option.map (fun _ -> loadClr4AssemblyFromResources stream)
 
         let recorder = Option.defaultValue state.RecordingAssembly clr4
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
@@ -800,6 +806,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@617.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@620.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
