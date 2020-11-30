@@ -10,7 +10,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * Build with net5.0 SDK (modulo work-round for https://github.com/dotnet/fsharp/issues/10442) in net5-only environments
   * Still build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
   * Still build the GTK2 visualizer against `net472` for consistency
-  * Still build the recorder at `net20` only and use the same assembly everywhere (see F# compiler issue noted above) except where a `net46` version is substituted for tracking through `async` calls
+  * Still build the recorder at `net20` and use that assembly everywhere (see F# compiler issue noted above) except where a `net46` version is substituted for tracking through `async` calls
   * Move unit tests to `net5.0`, as they are not public API
 
 # 7.1.795 (Genbu series release 7)
