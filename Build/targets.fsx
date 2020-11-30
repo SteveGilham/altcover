@@ -425,6 +425,7 @@ module SolutionRoot =
 
   [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+    "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
@@ -824,6 +825,7 @@ _Target "JustUnitTest" (fun _ ->
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
   !!(@"./*Test*/*Tests.fsproj")
   |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
@@ -851,6 +853,7 @@ _Target "UnitTestDotNet" (fun _ ->
 
 _Target "BuildForCoverlet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
   let l = !!(@"./*Tests/*Tests.fsproj")
           |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
                                   && s.Contains("Recorder") |> not) // net20
@@ -1389,6 +1392,11 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
        Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
+     (
+       Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net5.0",
+       Path.getFullName "Recorder2.Tests/_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net5.0",
+       reports @@ "Recorder2TestWithAltCoverCoreRunner.xml",
+       Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
      (
        Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
        Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
