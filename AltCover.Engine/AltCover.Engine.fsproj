@@ -74,6 +74,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="$(SolutionDir)_Binaries\AltCover.Clr4\$(Configuration)+$(Platform)\net46\AltCover.Clr4.dll">
+      <Link>AltCover.Clr4.dll</Link>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
