@@ -722,40 +722,12 @@ module internal Instrument =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Dixon.Design", "Dx0002:ReraiseCorrectlyRule",
-      Justification="Work in progress; also Dixon false positive")>]
     let internal rewriteToAsync
       (recorder:ModuleDefinition)
-      (asyncType:TypeDefinition)
+      (asyncType:TypeDefinition) //TODO
       (c:TypeDefinition) =
       // Assembly
       recorder.Runtime <- TargetRuntime.Net_4_0
-      let refs = recorder.AssemblyReferences
-      refs.Clear()
-
-      let blob = [|
-          0x01uy; 0x00uy; 0x19uy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x53uy; 0x74uy; 0x61uy; 0x6euy; 0x64uy; 0x61uy; 0x72uy; 0x64uy; 0x2cuy;
-          0x56uy; 0x65uy; 0x72uy; 0x73uy; 0x69uy; 0x6fuy; 0x6euy; 0x3duy; 0x76uy; 0x32uy; 0x2euy; 0x30uy; 0x01uy; 0x00uy; 0x54uy; 0x0euy;
-          0x14uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x44uy; 0x69uy; 0x73uy; 0x70uy; 0x6cuy; 0x61uy;
-          0x79uy; 0x4euy; 0x61uy; 0x6duy; 0x65uy; 0x00uy;
-      |]
-
-      // [assembly: TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName = "")]
-      // System.Runtime.Versioning.TargetFrameworkAttribute
-      let ar = recorder.ImportReference typeof<System.Runtime.Versioning.TargetFrameworkAttribute>
-      let cons = ar.Resolve().GetConstructors() |> Seq.head |> recorder.ImportReference
-      recorder.Assembly.CustomAttributes.Insert(0, CustomAttribute(cons, blob))
-
-      // from Commit: dbbda877f4cd91635a2f46dd2581955d83aaa650 [dbbda87] develop/async-transient with netstandard.20
-      [
-        "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-        "netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51"
-        "System.Runtime, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
-        "System.Threading, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
-      ]
-      |> List.map AssemblyNameReference.Parse
-      |> Seq.iter refs.Add
 
       // Type
       c.CustomAttributes.Clear()
@@ -768,13 +740,10 @@ module internal Instrument =
       instance.CustomAttributes.Clear()
 
       let intermediateType = instance.FieldType
-      let import (m:MethodDefinition) =
-        recorder.ImportReference(m, intermediateType)
-
       let fieldType = GenericInstanceType(asyncType)
       fieldType.GenericArguments.Add intermediateType
-      recorder.ImportReference(asyncType) |> ignore
-      instance.FieldType <- recorder.ImportReference(fieldType, intermediateType)
+      instance.FieldType <- fieldType
+                            |> recorder.ImportReference
       instance.IsInitOnly <- true
       instance.IsPrivate <- true
 
@@ -797,11 +766,12 @@ module internal Instrument =
 
       let makelist = fieldType.Resolve().GetConstructors()
                      |> Seq.find (fun c -> c.Parameters |> Seq.isEmpty)
+                     |> recorder.ImportReference
 
       bulkInsertBefore iilp (iops |> Seq.head) // only one left
                        [
 //IL_0014: newobj instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::.ctor()
-                        iilp.Create(OpCodes.Newobj, makelist |> import)
+                        iilp.Create(OpCodes.Newobj, makelist)
 //IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> '<StartupCode$SoakTest1>.$Program'::instance@66
                         iilp.Create(OpCodes.Stsfld, instance)
                        ]
@@ -845,11 +815,36 @@ module internal Instrument =
 //IL_000b: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
                           uilp.Create(OpCodes.Callvirt, asyncType.GetMethods()
                                                         |> Seq.find (fun m -> m.Name = "set_Value")
-                                                        |> import)
+                                                        |> recorder.ImportReference
+                          )
+
                        ]
                        false |> ignore
 
-      ()
+      // finally, more Assembly
+      // [assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
+      let blob = [|
+          0x01uy; 0x00uy; 0x1auy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy;
+          0x2cuy; 0x56uy; 0x65uy; 0x72uy; 0x73uy; 0x69uy; 0x6fuy; 0x6euy; 0x3duy; 0x76uy; 0x34uy; 0x2euy; 0x36uy; 0x01uy; 0x00uy; 0x54uy;
+          0x0euy; 0x14uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x44uy; 0x69uy; 0x73uy; 0x70uy; 0x6cuy;
+          0x61uy; 0x79uy; 0x4euy; 0x61uy; 0x6duy; 0x65uy; 0x12uy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x20uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy;
+          0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x20uy; 0x34uy; 0x2euy; 0x36uy;
+      |]
+
+      // System.Runtime.Versioning.TargetFrameworkAttribute
+      let ar = recorder.ImportReference typeof<System.Runtime.Versioning.TargetFrameworkAttribute>
+      let cons = ar.Resolve().GetConstructors() |> Seq.head |> recorder.ImportReference
+      recorder.Assembly.CustomAttributes.Insert(0, CustomAttribute(cons, blob))
+
+      let v2 = Version(2,0,0,0)
+      let v4 = Version(4,0,0,0)
+      let overstock = recorder.AssemblyReferences
+                      |> Seq.filter (fun r -> let discard = r.Version <> v2
+                                              r.Version <- v4
+                                              discard)
+                      |> Seq.toList
+      overstock
+      |> List.iter (recorder.AssemblyReferences.Remove >> ignore)
 
     let private rewriteCallStack (asyncType:TypeDefinition) (recorder:AssemblyDefinition) (a:AsyncSupport) =
       let m = recorder.MainModule
