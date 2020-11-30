@@ -196,6 +196,11 @@ module TypeSafe =
       B
     | RPlus
     | BPlus
+    | C
+    | CPlus
+    | N
+    | NPlus
+    | Plus
     member self.AsString() =
       match self with
       | Default -> String.Empty
@@ -203,6 +208,11 @@ module TypeSafe =
       | R -> "R"
       | BPlus -> "+B"
       | RPlus -> "+R"
+      | C -> "C"
+      | CPlus -> "C+"
+      | N -> "N"
+      | NPlus -> "N+"
+      | Plus -> "+"
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type StaticFormat =

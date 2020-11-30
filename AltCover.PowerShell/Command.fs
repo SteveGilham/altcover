@@ -11,9 +11,9 @@ open AltCover
 /// </summary>
 type Summary =
   /// <summary>
-  /// <para type="description">OpenCover format</para>
+  /// <para type="description">OpenCover format with CRAP score</para>
   /// </summary>
-  | Default = 0
+  | Default = 0 //CPlus
   /// <summary>
   /// <para type="description">TeamCity with R for bRanch</para>
   /// </summary>
@@ -32,6 +32,28 @@ type Summary =
   /// <para type="description">OpenCover plus TeamCity with B for Block representing branch coverage</para>
   /// </summary>
   | BPlus = 4
+  /// <summary>
+  /// <para type="description">Change Risk Anti-Patterns score</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "R is what is expected")>]
+    C = 5
+  /// <summary>
+  /// <para type="description">OpenCover + Change Risk Anti-Patterns score</para>
+  /// </summary>
+  | CPlus = 6
+  /// <summary>
+  /// <para type="description">No summary</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "R is what is expected")>]
+    N = 7
+  /// <summary>
+  /// <para type="description">OpenCover classic only</para>
+  /// </summary>
+  | NPlus = 8
+  /// <summary>
+  /// <para type="description">OpenCover classic only</para>
+  /// </summary>
+  | Plus = 8
 
 /// <summary>
 /// <para type="description">Values for the Invoke-AltCover -ShowStatic option</para>

@@ -380,6 +380,26 @@ namespace AltCoverFake.DotNet.Testing
       /// TeamCity `Block` style + OpenCover style
       ///</summary>
       | BPlus (* B + default *)
+      /// <summary>
+      /// <para type="description">Change Risk Anti-Patterns score</para>
+      /// </summary>
+      | C
+      /// <summary>
+      /// <para type="description">OpenCover + Change Risk Anti-Patterns score</para>
+      /// </summary>
+      | CPlus
+      /// <summary>
+      /// <para type="description">No summary</para>
+      /// </summary>
+      | N
+      /// <summary>
+      /// <para type="description">OpenCover classic only</para>
+      /// </summary>
+      | NPlus
+      /// <summary>
+      /// <para type="description">OpenCover classic only</para>
+      /// </summary>
+      | Plus
       with
         ///<summary>
         /// Returns the string to use in the command line
