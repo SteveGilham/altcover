@@ -724,7 +724,7 @@ module internal Instrument =
       Justification = "AvoidSpeculativeGenerality too")>]
     let internal rewriteToAsync
       (recorder:ModuleDefinition)
-      (asyncType:TypeDefinition) //TODO
+      (clr4:ModuleDefinition) //TODO
       (c:TypeDefinition) =
       // Assembly
       recorder.Runtime <- TargetRuntime.Net_4_0
@@ -736,14 +736,17 @@ module internal Instrument =
       // Field
       let instance = c.Fields
                      |> Seq.find (fun f -> f.Name = "instance@")
-
       instance.CustomAttributes.Clear()
+
+      let asyncClass = clr4.GetTypes()
+                       |> Seq.find (fun c -> c.GetElementType().Name = "Class1`1")
+      let asyncReturn = asyncClass.Methods
+                        |> Seq.find (fun c -> c.Name = "Instance")
+      let asyncType = asyncReturn.MethodReturnType.ReturnType
 
       let intermediateType = instance.FieldType
       let fieldType = GenericInstanceType(asyncType)
       fieldType.GenericArguments.Add intermediateType
-      instance.FieldType <- fieldType
-                            |> recorder.ImportReference
       instance.IsInitOnly <- true
       instance.IsPrivate <- true
 
@@ -813,54 +816,55 @@ module internal Instrument =
 //IL_0006: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
                           makesome
 //IL_000b: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
-                          uilp.Create(OpCodes.Callvirt, asyncType.GetMethods()
-                                                        |> Seq.find (fun m -> m.Name = "set_Value")
-                                                        |> recorder.ImportReference
-                          )
+                          //uilp.Create(OpCodes.Callvirt, asyncType.GetMethods()
+                          //                              |> Seq.find (fun m -> m.Name = "set_Value")
+                          //                              |> recorder.ImportReference
+                          //)
 
                        ]
                        false |> ignore
 
-      // finally, more Assembly
-      // [assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
-      let blob = [|
-          0x01uy; 0x00uy; 0x1auy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy;
-          0x2cuy; 0x56uy; 0x65uy; 0x72uy; 0x73uy; 0x69uy; 0x6fuy; 0x6euy; 0x3duy; 0x76uy; 0x34uy; 0x2euy; 0x36uy; 0x01uy; 0x00uy; 0x54uy;
-          0x0euy; 0x14uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x44uy; 0x69uy; 0x73uy; 0x70uy; 0x6cuy;
-          0x61uy; 0x79uy; 0x4euy; 0x61uy; 0x6duy; 0x65uy; 0x12uy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x20uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy;
-          0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x20uy; 0x34uy; 0x2euy; 0x36uy;
-      |]
+      //// finally, more Assembly
+      //// [assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
+      //let blob = [|
+      //    0x01uy; 0x00uy; 0x1auy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy;
+      //    0x2cuy; 0x56uy; 0x65uy; 0x72uy; 0x73uy; 0x69uy; 0x6fuy; 0x6euy; 0x3duy; 0x76uy; 0x34uy; 0x2euy; 0x36uy; 0x01uy; 0x00uy; 0x54uy;
+      //    0x0euy; 0x14uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy; 0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x44uy; 0x69uy; 0x73uy; 0x70uy; 0x6cuy;
+      //    0x61uy; 0x79uy; 0x4euy; 0x61uy; 0x6duy; 0x65uy; 0x12uy; 0x2euy; 0x4euy; 0x45uy; 0x54uy; 0x20uy; 0x46uy; 0x72uy; 0x61uy; 0x6duy;
+      //    0x65uy; 0x77uy; 0x6fuy; 0x72uy; 0x6buy; 0x20uy; 0x34uy; 0x2euy; 0x36uy;
+      //|]
 
-      // System.Runtime.Versioning.TargetFrameworkAttribute
-      let ar = recorder.ImportReference typeof<System.Runtime.Versioning.TargetFrameworkAttribute>
-      let cons = ar.Resolve().GetConstructors() |> Seq.head |> recorder.ImportReference
-      recorder.Assembly.CustomAttributes.Insert(0, CustomAttribute(cons, blob))
+      //// System.Runtime.Versioning.TargetFrameworkAttribute
+      //let ar = recorder.ImportReference typeof<System.Runtime.Versioning.TargetFrameworkAttribute>
+      //let cons = ar.Resolve().GetConstructors() |> Seq.head |> recorder.ImportReference
+      //recorder.Assembly.CustomAttributes.Insert(0, CustomAttribute(cons, blob))
 
-      let v2 = Version(2,0,0,0)
-      let v4 = Version(4,0,0,0)
-      let overstock = recorder.AssemblyReferences
-                      |> Seq.filter (fun r -> let discard = r.Version <> v2
-                                              r.Version <- v4
-                                              discard)
-                      |> Seq.toList
-      overstock
-      |> List.iter (recorder.AssemblyReferences.Remove >> ignore)
+      //let v2 = Version(2,0,0,0)
+      //let v4 = Version(4,0,0,0)
+      //let overstock = recorder.AssemblyReferences
+      //                |> Seq.filter (fun r -> let discard = r.Version <> v2
+      //                                        r.Version <- v4
+      //                                        discard)
+      //                |> Seq.toList
+      //overstock
+      //|> List.iter (recorder.AssemblyReferences.Remove >> ignore)
+      ()
 
-    let private rewriteCallStack (asyncType:TypeDefinition) (recorder:AssemblyDefinition) (a:AsyncSupport) =
+    let private rewriteCallStack (clr4:AssemblyDefinition) (recorder:AssemblyDefinition) (a:AsyncSupport) =
       let m = recorder.MainModule
       m.GetAllTypes()
       |> Seq.tryFind (fun c -> c.Name = "CallTrack")
-      |> Option.iter (rewriteToAsync m asyncType)
+      |> Option.iter (rewriteToAsync m clr4.MainModule)
 
     let private finishVisit(state : InstrumentContext) =
       try
         // this type needs to be in scope while we write the recorder
-        let asyncType = state.AsyncSupport
-                        |> Option.map (fun asx -> asx.TaskAssembly.MainModule.GetAllTypes()
-                                                  |> Seq.find (fun t -> t.GetElementType().FullName =
-                                                                         "System.Threading.AsyncLocal`1"))
+        let clr4 = state.AsyncSupport
+                   |> Option.map (fun _ -> use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Clr4.dll")
+                                           AssemblyDefinition.ReadAssembly(stream))
+
         state.AsyncSupport
-        |> Option.iter (rewriteCallStack asyncType.Value state.RecordingAssembly)
+        |> Option.iter (rewriteCallStack clr4.Value state.RecordingAssembly)
 
         // TODO update for async if required
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
