@@ -3,14 +3,14 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.1.xxx (Genbu series release 8)
-* Restore application icons, even if they only show in the `.exe `forms (lost in 7.1.795 if not before)
-* Add `AltCover` prefix to MSBuild property names `NetCoreEngine`, `NetStdEngine` (global), `InputDirectory` and `OutputDirectory` (target-scoped) in the injected `.targets` file for `dotnet test` integration.
 * [BUGFIX] Don't produce invalid IL when `--callContext` indicates a method with a non-`void` return (issue #105, and probably #26 too)
+* [BUGFIX] Restore application icons, even if they only show in the `.exe `forms (lost in 7.1.795 if not before)
+* [BUGFIX] Add `AltCover` prefix to MSBuild property names `NetCoreEngine`, `NetStdEngine` (global), `InputDirectory` and `OutputDirectory` (target-scoped) in the injected `.targets` file for `dotnet test` integration.
 * When `--callContext` indicates an `async` method, then track all calls within the same async flow, and not just in the direct same-thread call stack. **Note** other out-of-thread calls (`Thread.Start`, `Parallel.Invoke`, explict Async-named method invocation, ...) are not tracked.
 * Build with net5.0 SDK (modulo work-round for https://github.com/dotnet/fsharp/issues/10442) in net5-only environments
   * Still build `AltCover.exe/.dll` against `net472` for framework support, `netcoreapp2.1` for the global tool and `netcoreapp2.0` for everywhere else
   * Still build the GTK2 visualizer against `net472` for consistency
-  * Still build the recorder at `net20` only and use the same assembly everywhere (see F# compiler issue noted above)
+  * Still build the recorder at `net20` only and use the same assembly everywhere (see F# compiler issue noted above) except where a `net46` version is substituted for tracking through `async` calls
   * Move unit tests to `net5.0`, as they are not public API
 
 # 7.1.795 (Genbu series release 7)
