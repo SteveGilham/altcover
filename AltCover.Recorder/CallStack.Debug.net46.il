@@ -8,7 +8,7 @@
 	.method public specialname static 
 		class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> get_instance () cil managed 
 	{
-		// Method begins at RVA 0x2258
+		// Method begins at RVA 0x22b4
 		// Code size 6 (0x6)
 		.maxstack 8
 
@@ -21,7 +21,7 @@
 			class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> l
 		) cil managed 
 	{
-		// Method begins at RVA 0x2260
+		// Method begins at RVA 0x22bc
 		// Code size 17 (0x11)
 		.maxstack 8
 
@@ -35,7 +35,7 @@
 	.method public specialname static 
 		class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> get_Instance () cil managed 
 	{
-		// Method begins at RVA 0x2274
+		// Method begins at RVA 0x22d0
 		// Code size 6 (0x6)
 		.maxstack 8
 
@@ -48,7 +48,7 @@
 			class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> 'value'
 		) cil managed 
 	{
-		// Method begins at RVA 0x227c
+		// Method begins at RVA 0x22d8
 		// Code size 7 (0x7)
 		.maxstack 8
 
@@ -60,8 +60,8 @@
 	.method public static 
 		class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>> Peek () cil managed 
 	{
-		// Method begins at RVA 0x2284
-		// Code size 55 (0x37)
+		// Method begins at RVA 0x22e0
+		// Code size 57 (0x39)
 		.maxstack 4
 		.locals init (
 			[0] class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>,
@@ -74,26 +74,28 @@
 		IL_0005: stloc.0
 		IL_0006: ldloc.0
 		IL_0007: call instance class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_TailOrNull()
-		IL_000c: brfalse.s IL_002b
+		IL_000c: brfalse.s IL_0010
 
-		IL_000e: ldloc.0
-		IL_000f: stloc.1
-		IL_0010: ldloc.1
-		IL_0011: call instance class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_TailOrNull()
-		IL_0016: stloc.2
-		IL_0017: ldloc.1
-		IL_0018: call instance !0 class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_HeadOrDefault()
-		IL_001d: stloc.3
-		IL_001e: ldloc.2
-		IL_001f: ldloc.3
-		IL_0020: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>::Some(!0)
-		IL_0025: newobj instance void class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>>::.ctor(!0, !1)
-		IL_002a: ret
+		IL_000e: br.s IL_001c
 
-		IL_002b: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
-		IL_0030: ldnull
-		IL_0031: newobj instance void class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>>::.ctor(!0, !1)
-		IL_0036: ret
+		IL_0010: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
+		IL_0015: ldnull
+		IL_0016: newobj instance void class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>>::.ctor(!0, !1)
+		IL_001b: ret
+
+		IL_001c: ldloc.0
+		IL_001d: stloc.1
+		IL_001e: ldloc.1
+		IL_001f: call instance class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_TailOrNull()
+		IL_0024: stloc.2
+		IL_0025: ldloc.1
+		IL_0026: call instance !0 class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_HeadOrDefault()
+		IL_002b: stloc.3
+		IL_002c: ldloc.2
+		IL_002d: ldloc.3
+		IL_002e: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>::Some(!0)
+		IL_0033: newobj instance void class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>>::.ctor(!0, !1)
+		IL_0038: ret
 	} // end of method CallTrack::Peek
 
 	.method public static 
@@ -101,30 +103,24 @@
 			int32 x
 		) cil managed 
 	{
-		// Method begins at RVA 0x22c8
-		// Code size 29 (0x1d)
-		.maxstack 4
-		.locals init (
-			[0] class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>
-		)
+		// Method begins at RVA 0x2328
+		// Code size 18 (0x12)
+		.maxstack 8
 
 		IL_0000: ldarg.0
 		IL_0001: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::get_Instance()
 		IL_0006: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::Cons(!0, class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0>)
-		IL_000b: stloc.0
-		IL_000c: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
-		IL_0011: ldloc.0
-		IL_0012: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
-		IL_0017: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
-		IL_001c: ret
+		IL_000b: call void Program/AsyncLevel/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+		IL_0010: nop
+		IL_0011: ret
 	} // end of method CallTrack::Push
 
 	.method public static 
 		class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32> Pop () cil managed 
 	{
-		// Method begins at RVA 0x22f4
-		// Code size 38 (0x26)
-		.maxstack 4
+		// Method begins at RVA 0x233c
+		// Code size 29 (0x1d)
+		.maxstack 3
 		.locals init (
 			[0] class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>>,
 			[1] class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> stack,
@@ -139,12 +135,11 @@
 		IL_000d: ldloc.0
 		IL_000e: call instance !1 class [System.Runtime]System.Tuple`2<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>>::get_Item2()
 		IL_0013: stloc.2
-		IL_0014: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
-		IL_0019: ldloc.1
-		IL_001a: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
-		IL_001f: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
-		IL_0024: ldloc.2
-		IL_0025: ret
+		IL_0014: ldloc.1
+		IL_0015: call void Program/AsyncLevel/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+		IL_001a: nop
+		IL_001b: ldloc.2
+		IL_001c: ret
 	} // end of method CallTrack::Pop
 
 	// Properties

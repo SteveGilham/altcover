@@ -1,17 +1,115 @@
 IL diffs
 
-static field instance type
- + remove [ThreadStatic]
- + Reconsider what the type should be -- what can we auto-initialize & get rid of the Option which is breaing half the burden of AsyncLocal already?
-static method get_instance  return type and field load type
-static method set_instance  arg type and field store type
-static property type as above
+class : 
+x* remove serializable  tag
++* remove Sealed & AbstractClass attributes
+x* compilation mapping value from 01 00 03 00 00 00 00 00 to 01 00 07 00 00 00 00 00
 
-static method Instance - replace bodily
+field 
++* remove attributes
++* type becomes AsyncLocal<previous type>
++* add initonly tag
 
-Check the type reference in member Pop()
+set_instance
++ * turn into static construction instance@
+.method private specialname rtspecialname static 
+	void .cctor () cil managed 
+{
+	IL_0014: newobj instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::.ctor()
+	IL_0019: stsfld class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> instance@
+	IL_001e: ret
+} 
 
-also
+get_instance 
++ * type becomes AsyncLocal<previous type>
+
+Update
++ * replace content
+
+get_Instance
+* replace content using previous version /don't add set_Instance
+before
+	IL_0000: ldsfld class [mscorlib]System.Threading.AsyncLocal`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Core.FSharpOption`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Collections.FSharpList`1<int32>>> AltCover.Recorder.Instance/I/CallTrack::instance@
+	IL_0005: brtrue.s IL_001b
+
+	IL_0007: call class Microsoft.FSharp.Collections.FSharpList`1<!0> class Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
+	IL_000c: stloc.0
+	IL_000d: ldloc.0
+	IL_000e: call class Microsoft.FSharp.Core.FSharpOption`1<!0> class Microsoft.FSharp.Core.FSharpOption`1<class Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
+	IL_0013: call void AltCover.Recorder.Instance/I/CallTrack::.cctor()
+	IL_0018: nop
+	IL_0019: br.s IL_001d
+
+	IL_001b: nop
+	IL_001c: nop
+
+	IL_001d: ldsfld class [mscorlib]System.Threading.AsyncLocal`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Core.FSharpOption`1<class [AltCover.Recorder.dll]Microsoft.FSharp.Collections.FSharpList`1<int32>>> AltCover.Recorder.Instance/I/CallTrack::instance@
+	IL_0022: tail.
+	IL_0024: callvirt instance !0 class Microsoft.FSharp.Core.FSharpOption`1<class Microsoft.FSharp.Collections.FSharpList`1<int32>>::get_Value()
+	IL_0029: ret
+after
+		IL_0000: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
++		IL_0005: callvirt instance !0 class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::get_Value()
+		IL_000a: brtrue.s IL_0025 =>
+
+		IL_000c: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::get_Empty()
+		IL_0011: stloc.0
++		IL_0012: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
+		IL_0017: ldloc.0
+		IL_0018: call class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<!0> class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
++		IL_001d: callvirt instance void class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::set_Value(!0)
+x		IL_0022: nop
+x		IL_0023: br.s IL_0027
+
+x		IL_0025: nop
+x		IL_0026: nop
+
+=>		IL_0027: call class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>> Program/AsyncLevel/CallTrack::get_instance()
++		IL_002c: callvirt instance !0 class [System.Threading]System.Threading.AsyncLocal`1<class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>>::get_Value()
+		IL_0031: tail.
+		IL_0033: callvirt instance !0 class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>>::get_Value()
+		IL_0038: ret
+
+
+
+Peek
++ ? unchanged
+
+Push
+* replace content from debug
+		IL_0000: ldarg.0
+		IL_0001: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32> Program/AsyncLevel/CallTrack::get_Instance()
+		IL_0006: call class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0> class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>::Cons(!0, class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<!0>)
+		IL_000b: call void Program/AsyncLevel/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+		IL_0010: nop
+		IL_0011: ret
+
+
+Pop
+* replace last 2 instructions w/content  from debug
+before
+	IL_0014: ldloc.1
+>	IL_0015: call class Microsoft.FSharp.Core.FSharpOption`1<!0> class Microsoft.FSharp.Core.FSharpOption`1<class Microsoft.FSharp.Collections.FSharpList`1<int32>>::Some(!0)
+>	IL_001a: call void AltCover.Recorder.Instance/I/CallTrack::.cctor()
+	IL_001f: ldloc.2
+	IL_0020: ret
+after
+	IL_0014: ldloc.1
+>	IL_0015: call void Program/AsyncLevel/CallTrack::Update(class [FSharp.Core]Microsoft.FSharp.Collections.FSharpList`1<int32>)
+	IL_001a: nop
+	IL_001b: ldloc.2
+	IL_001c: ret
+
+
+Properties
++ * remove set_instance
+* both have 
+		.custom instance void [FSharp.Core]Microsoft.FSharp.Core.CompilationMappingAttribute::.ctor(valuetype [FSharp.Core]Microsoft.FSharp.Core.SourceConstructFlags) = (
+			01 00 09 00 00 00 00 00
+		)
+
+
+also maybe??
 
 [assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
 	.custom instance void [mscorlib]System.Runtime.Versioning.TargetFrameworkAttribute::.ctor(string) = (
@@ -25,6 +123,39 @@ also
 Runtime from  v2.0.50727 to v4.0.30319
 
 MainModule.Runtime <- TargetRuntime.Net_4_0
+
+[assembly: TargetFramework(".NETFramework,Version=v4.6", FrameworkDisplayName = ".NET Framework 4.6")]
+// Referenced assemblies (in metadata order):
+// mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Found in Assembly List
+
+// System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Found in Assembly List
+
+// System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Found in Assembly List
+
+// System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Loading from: C:\WINDOWS\Microsoft.NET\assembly\GAC_MSIL\System.Numerics\v4.0_4.0.0.0__b77a5c561934e089\System.Numerics.dll
+
+// System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Loading from: C:\WINDOWS\Microsoft.NET\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll
+
+[assembly: TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName = "")]
+// mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+	// Assembly reference loading information:
+	// Info: Success - Loading from: C:\Program Files\dotnet\shared\Microsoft.NETCore.App\2.1.13\mscorlib.dll
+
+// netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51 (unresolved)
+// System.Runtime, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a (unresolved)
+// System.Threading, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a (unresolved)
+
+
 
 ==============
 
