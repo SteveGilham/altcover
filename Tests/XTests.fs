@@ -783,14 +783,6 @@ module AltCoverXTests =
       test <@ result.AsyncSupport |> Option.isNone @>
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
-      let isWindows =
-#if NET5_0
-                      true
-#else
-                      System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
-      test' <@  isWindows |> not ||
-                     File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.AddRange saved

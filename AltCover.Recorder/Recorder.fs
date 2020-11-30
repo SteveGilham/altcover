@@ -107,6 +107,38 @@ module Instance =
 
     let internal synchronize = Object()
 
+#if NET46
+    /// <summary>
+    /// Gets or sets the current test method
+    /// </summary>
+    // [<Sealed; AbstractClass>] = static class not required
+    module CallTrack =
+      // Option chosen for the default value
+      // [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
+      let instance = System.Threading.AsyncLocal<Option<int list>>()
+
+      let private Update l = // fsharplint:disable-line NonPublicValuesNames
+        instance.Value <- Some l //.Value
+
+      // no race conditions here
+      let Instance () =
+        match instance.Value with  //.Value
+        | None -> Update []
+        | _ -> ()
+        instance.Value.Value //.Value
+
+      let Peek () =
+        match Instance() with
+        | [] ->([], None)
+        | h :: xs -> (xs, Some h)
+
+      let Push x =
+        Update (x :: Instance())
+      let Pop () =
+        let (stack, head) =  Peek()
+        Update stack
+        head
+#else
     /// <summary>
     /// Gets or sets the current test method
     /// </summary>
@@ -136,6 +168,7 @@ module Instance =
         let (stack, head) =  CallTrack.Peek()
         CallTrack.Update stack
         head
+#endif
 
     let internal callerId() = CallTrack.Peek() |> snd
     let internal push x = CallTrack.Push x

@@ -452,7 +452,6 @@ _Target "Compilation" ignore
 _Target "BuildRelease" (fun _ ->
   try
     [  "MCS.sln" ] |> Seq.iter (msbuildRelease None) // mono
-    [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
     [ "./AltCover.sln"; "./AltCover.Visualizer.sln" ] |> Seq.iter dotnetBuildRelease
 
     // document cmdlets ahead of packaging
@@ -506,6 +505,7 @@ _Target "BuildDebug" (fun _ ->
 
   [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
   [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildDebug MSBuildPath) // net20
+  [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
   [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
@@ -1634,7 +1634,7 @@ _Target "AsyncAwaitTests" (fun _ ->
   coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
   |> Seq.toList
   |> Seq.iter (fun tmr -> let spts = tmr.Parent.Parent.Parent
-                          let sptcount = spts.Descendants(XName.Get("SequencePoint")) 
+                          let sptcount = spts.Descendants(XName.Get("SequencePoint"))
                                          |> Seq.length
                           let tmrcount = spts.Descendants(XName.Get("TrackedMethodRef"))
                                          |> Seq.length

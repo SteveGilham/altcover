@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net20</TargetFramework>
+    <TargetFrameworks>net20;net46</TargetFrameworks>
     <AssemblyName>AltCover.Recorder</AssemblyName>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -35,8 +35,8 @@
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
     <EmbeddedResource Include="Strings.resources">
-        <!-- -do "resgen .\Strings.resx"  -->
-        <LogicalName>AltCover.Recorder.Strings.resources</LogicalName>
+      <!-- -do "resgen .\Strings.resx"  -->
+      <LogicalName>AltCover.Recorder.Strings.resources</LogicalName>
     </EmbeddedResource>
     <None Include="Strings.resx" />
   </ItemGroup>
@@ -47,7 +47,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" Condition="'$(TargetFramework)' == 'net20'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net46" Version="1.0.0" Condition="'$(TargetFramework)' == 'net46'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

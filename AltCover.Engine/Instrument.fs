@@ -176,11 +176,7 @@ module internal Instrument =
 
     // Create the new assembly that will record visits, based on the prototype.
     // returns>A representation of the assembly used to record all coverage visits.</returns>
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-           "EnsureLocalDisposalRule",
-           Justification="Return confusing Gendarme -- TODO")>]
-    let internal prepareAssembly(location : string) =
-      let definition = AssemblyDefinition.ReadAssembly(location)
+    let internal prepareAssemblyDefinition(definition : AssemblyDefinition) =
       guard definition (fun () ->  // set the timer interval in ticks
 
         //if monoRuntime |> not then
@@ -234,6 +230,13 @@ module internal Instrument =
              worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
              worker.InsertBefore(head, worker.Create(OpCodes.Ret))
              initialBody |> Seq.iter worker.Remove))
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+           "EnsureLocalDisposalRule",
+           Justification="Return confusing Gendarme -- TODO")>]
+    let internal prepareAssembly(location : string) =
+      let definition = AssemblyDefinition.ReadAssembly(location)
+      prepareAssemblyDefinition definition
 
     let private nugetCache =
       Path.Combine
@@ -718,32 +721,16 @@ module internal Instrument =
       let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
       { state with RecordingAssembly = recordingAssembly }
 
-    // needs to be testable separately
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-      Justification = "AvoidSpeculativeGenerality too")>]
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Dixon.Design", "Dx0002:ReraiseCorrectlyRule",
-      Justification="Work in progress; also Dixon false positive")>]
-    let internal rewriteToAsync (c:TypeDefinition) =
-      c.FullName
-      |> NotImplementedException
-      |> raise
-      ()
-
-    let private rewriteCallStack (recorder:AssemblyDefinition) _ =
-      recorder.MainModule.GetAllTypes()
-      |> Seq.tryFind (fun c -> c.Name = "CallStack")
-      |> Option.iter rewriteToAsync
-
     let private finishVisit(state : InstrumentContext) =
       try
-        state.AsyncSupport
-        |> Option.iter (rewriteCallStack state.RecordingAssembly)
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Recorder.dll")
+        let clr4 = state.AsyncSupport
+                   |> Option.map (fun _ -> AssemblyDefinition.ReadAssembly(stream)
+                                           |> prepareAssemblyDefinition)
 
-        // TODO update for async if required
+        let recorder = Option.defaultValue state.RecordingAssembly clr4
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
-        writeAssemblies (state.RecordingAssembly) recorderFileName
+        writeAssemblies recorder recorderFileName
           (CoverageParameters.instrumentDirectories()) ignore
 
         CoverageParameters.instrumentDirectories()
