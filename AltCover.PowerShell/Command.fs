@@ -32,6 +32,8 @@ type Summary =
   /// <para type="description">OpenCover plus TeamCity with B for Block representing branch coverage</para>
   /// </summary>
   | BPlus = 4
+
+  // TODO --------------------------------------
   /// <summary>
   /// <para type="description">Change Risk Anti-Patterns score</para>
   /// </summary>
@@ -509,12 +511,12 @@ type InvokeAltCoverCommand() =
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val SummaryFormat : Summary = Summary.Default with get, set
+  member val SummaryFormat : Summary array = [| Summary.Default |] with get, set
 
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
-    let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
+    let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |] //TODO
     AltCover.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
@@ -525,7 +527,9 @@ type InvokeAltCoverCommand() =
         OutputFile = self.OutputFile
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
-        SummaryFormat = formats.[self.SummaryFormat |> int] }
+        SummaryFormat = String.Join(String.Empty,
+                                    self.SummaryFormat
+                                    |> Seq.map (fun f -> formats.[ f|> int]))}
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]

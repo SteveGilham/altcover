@@ -196,6 +196,11 @@ module TypeSafe =
       B
     | RPlus
     | BPlus
+
+  // TODO --------------------------------------
+
+    | Many of SummaryFormat seq
+
     | C
     | CPlus
     | N
@@ -208,6 +213,7 @@ module TypeSafe =
       | R -> "R"
       | BPlus -> "+B"
       | RPlus -> "+R"
+      | Many s -> String.Join(String.Empty, s |> Seq.map (fun x -> x.AsString()))
       | C -> "C"
       | CPlus -> "C+"
       | N -> "N"

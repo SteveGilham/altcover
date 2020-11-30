@@ -380,6 +380,13 @@ namespace AltCoverFake.DotNet.Testing
       /// TeamCity `Block` style + OpenCover style
       ///</summary>
       | BPlus (* B + default *)
+
+  // TODO --------------------------------------
+      /// <summary>
+      /// <para type="description">Change Risk Anti-Patterns score</para>
+      /// </summary>
+      | Many of SummaryFormat seq
+
       /// <summary>
       /// <para type="description">Change Risk Anti-Patterns score</para>
       /// </summary>
