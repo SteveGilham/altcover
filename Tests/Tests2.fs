@@ -2036,7 +2036,7 @@ module AltCoverTests2 =
       Output.usage {Intro = "usage"; Options = OptionSet(); Options2 = OptionSet()}
 
       Assert.That(Output.usage, Is.Not.Null)
-      typeof<TeamCityFormat>.Assembly.GetTypes()
+      typeof<SummaryFormat>.Assembly.GetTypes()
       |> Seq.filter
            (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
