@@ -505,7 +505,9 @@ type InvokeAltCoverCommand() =
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
-  member val SummaryFormat : Summary array = [| Summary.Default |] with get, set
+  [<SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays",
+      Justification="Same as above.")>]
+  member val SummaryFormat : Summary array = [| |] with get, set
 
   member val private Fail : String list = [] with get, set
 
