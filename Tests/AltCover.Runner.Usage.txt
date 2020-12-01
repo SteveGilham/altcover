@@ -46,7 +46,8 @@
                                items
                                'O' = Classic OpenCover format
                                'C' = Change Risk Anti-Pattern score
-                               '+' is the same as "OC"
+                               '+' is the same as "OC" (special case - "+" by
+                               itself is the same as 'BOC')
                                If the option is present, but has no value, this
                                is the same as 'B'
                                If the option is not present, then the default

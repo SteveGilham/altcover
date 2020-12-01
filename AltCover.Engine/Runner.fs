@@ -37,7 +37,10 @@ type internal SummaryFormat =
       | Many l -> l
       | f -> [f]
   static member Factory (s:string) =
-    let expanded = s.Replace("+", "OC").ToUpperInvariant()
+    let expanded = match s with
+                   | x when String.IsNullOrWhiteSpace x -> "B"
+                   | "+" -> "BOC"
+                   | _ -> s.Replace("+", "OC").ToUpperInvariant()
     try
       expanded
       |> Seq.distinct
@@ -241,18 +244,12 @@ module internal Runner =
 
       emitSummary()
 
-      let crap = summaryFormat = Default ||
-                 l |> Seq.contains C
-      let ifcrap s =
-        if crap then Some s
-        else None
-
-      [Some (makepc vpoints points.Length)
-       Some "0" // branches
-       Some (makepc vmethods methods.Length)
-       Some (makepc vmethods methods.Length)
-       ifcrap "0" // crap
-       ifcrap "0"] // altcrap
+      [ (makepc vpoints points.Length)
+        "0" // branches
+        (makepc vmethods methods.Length)
+        (makepc vmethods methods.Length)
+        "0" // crap
+        "0"] // altcrap
 
     [<SuppressMessage(
       "Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
@@ -276,10 +273,10 @@ module internal Runner =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal altSummary go (report : XDocument) =
+    let internal altSummary go extra (report : XDocument) =
       "Alternative"
       |> CommandLine.resources.GetString
-      |> if go then write else ignore
+      |> if go || extra then write else ignore
 
       let classes =
         report.Descendants("Class".X)
@@ -335,7 +332,7 @@ module internal Runner =
       if go then writeSummary "AltVM" vm nm pm
 
       let acv = if nm > 0
-                then emitAltCrapScore go methods
+                then emitAltCrapScore extra methods
                 else "0.0"
 
       (amv, acv)
@@ -390,12 +387,15 @@ module internal Runner =
                       |> Option.map (fun a -> a.Value)
                       |> Option.defaultValue "0.0"
 
-      if crap.IsNotNull then
-        CommandLine.Format.Local("maxCrap", crapvalue)
-        |> write
-      write String.Empty
+      let extra = summaryFormat = Default ||
+                  l |> Seq.contains C
+      if extra then
+        if crap.IsNotNull then
+          CommandLine.Format.Local("maxCrap", crapvalue)
+          |> write
+      if go || extra then write String.Empty
 
-      let (altmcovered, altcrapvalue) = altSummary go report
+      let (altmcovered, altcrapvalue) = altSummary go extra report
 
       if l |> Seq.contains B ||
          l |> Seq.contains R then
@@ -417,18 +417,12 @@ module internal Runner =
             writeTC totalTC tag nb
             writeTC coverTC tag vb)
 
-      let crap = summaryFormat = Default ||
-                 l |> Seq.contains C
-      let ifcrap s =
-        if crap then Some s
-        else None
-
-      [Some covered
-       Some bcovered
-       Some mcovered
-       Some altmcovered
-       ifcrap crapvalue
-       ifcrap altcrapvalue]
+      [covered
+       bcovered
+       mcovered
+       altmcovered
+       crapvalue
+       altcrapvalue]
 
     [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
       Justification="Inlined library code")>]
@@ -447,7 +441,7 @@ module internal Runner =
         match threshold with
         | None -> [ best ]
         | Some t -> let found = covered
-                                |> List.map (fun d -> d.Value.InvariantParseDouble())
+                                |> List.map (fun d -> d.InvariantParseDouble())
                     let ceil (f:float) (value : float) =
                       if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
                     let sink _ : int option = None

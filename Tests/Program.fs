@@ -111,6 +111,7 @@ module ExpectoMain =
           Tests.AltCoverRunnerTests.EmptyOpenCoverGeneratesExpectedTCSummary, "Runner.EmptyOpenCoverGeneratesExpectedTCSummary"
           Tests.AltCoverRunnerTests.EmptyOpenCoverGeneratesExpectedSummaries, "Runner.EmptyOpenCoverGeneratesExpectedSummaries"
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleSummary, "Runner.OpenCoverShouldGeneratePlausibleSummary"
+          Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausiblePartialSummary, "Runner.OpenCoverShouldGeneratePlausiblePartialSummary"
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleLcov, "Runner.OpenCoverShouldGeneratePlausibleLcov"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcov, "Runner.NCoverShouldGeneratePlausibleLcov"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcovWithMissingFullName, "Runner.NCoverShouldGeneratePlausibleLcovWithMissingFullName"

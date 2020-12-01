@@ -1246,18 +1246,18 @@ module AltCoverRunnerTests =
     let ParsingTCString() =
       Runner.init()
       [
-        (String.Empty, Default)
-        ("+", Many [ O; C])
-        ("+b", Many [ O; C; B])
-        ("+B", Many [ O; C; B])
-        ("b+", Many [ B; O; C])
-        ("B+", Many [ B; O; C])
+        (String.Empty, Many [B])
+        ("+", Many ([ B; O; C] |> List.rev))
+        ("+b", Many ([ O; C; B] |> List.rev))
+        ("+B", Many ([ O; C; B] |> List.rev))
+        ("b+", Many ([ B; O; C] |> List.rev))
+        ("B+", Many ([ B; O; C] |> List.rev))
         ("b", Many [B])
         ("B", Many [B])
-        ("+r", Many [ O; C; R])
-        ("+R", Many [ O; C; R])
-        ("r+", Many [ R; O; C])
-        ("R+", Many [ R; O; C])
+        ("+r", Many ([ O; C; R] |> List.rev))
+        ("+R", Many ([ O; C; R] |> List.rev))
+        ("r+", Many ([ R; O; C] |> List.rev))
+        ("R+", Many ([ R; O; C] |> List.rev))
         ("r", Many[R])
         ("R", Many[R])
         ("O", Many [O])
@@ -1273,18 +1273,18 @@ module AltCoverRunnerTests =
     let ParsingTCGivesTC() =
       Runner.init()
       [
-        (String.Empty, Default)
-        (":+", Many [ O; C])
-        (":+b", Many [ O; C; B])
-        (":+B", Many [ O; C; B])
-        (":b+", Many [ B; O; C])
-        (":B+", Many [ B; O; C])
+        (String.Empty, B)
+        (":+", Many ([ B; O; C] |> List.rev))
+        (":+b", Many ([ O; C; B] |> List.rev))
+        (":+B", Many ([ O; C; B] |> List.rev))
+        (":b+", Many ([ B; O; C] |> List.rev))
+        (":B+", Many ([ B; O; C] |> List.rev))
         (":b", Many [B])
         (":B", Many [B])
-        (":+r", Many [ O; C; R])
-        (":+R", Many [ O; C; R])
-        (":r+", Many [ R; O; C])
-        (":R+", Many [ R; O; C])
+        (":+r", Many ([ O; C; R] |> List.rev))
+        (":+R", Many ([ O; C; R] |> List.rev))
+        (":r+", Many ([ R; O; C] |> List.rev))
+        (":R+", Many ([ R; O; C] |> List.rev))
         (":r", Many[R])
         (":R", Many[R])
         (":O", Many [O])
@@ -2750,6 +2750,87 @@ module AltCoverRunnerTests =
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
                  ))
+        finally
+          resetInfo())
+
+    [<Test>]
+    let OpenCoverShouldGeneratePlausiblePartialSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let summary = [
+        Many [ C ]
+        Many [ B; O; C]
+        Many [ B; O]
+        Many [ B; R]
+        Many [ B; R; O]
+        N
+      ]
+
+      summary |>
+      List.iter (fun summary ->
+        try
+          lock Runner.summaryFormat (fun () ->
+            Runner.summaryFormat <- summary
+            let l = SummaryFormat.ToList summary
+            let builder = System.Text.StringBuilder()
+            Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+            let r =
+              try
+                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+              finally
+                Runner.threshold <- None
+            let elementO =
+              if l |> List.contains O
+              then "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+                    + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|"
+              else String.Empty
+            let elementC =
+              if l |> List.contains C
+              then "Maximum CRAP score 2.11|"
+              else String.Empty
+            let elementOC = if l |> List.contains O || l |> List.contains C
+                            then "|==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                            else String.Empty
+            let elementAltO =
+              if l |> List.contains O
+              then "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+              else String.Empty
+            let elementAltC =
+              if l |> List.contains C
+              then "Alternative maximum CRAP score 2.11|"
+              else String.Empty
+            let elementBR =
+              if l |> List.contains B || l |> List.contains R
+              then "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+              else String.Empty
+            let elementB =
+              if l |> List.contains B
+              then "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|"
+              else String.Empty
+            let elementR =
+              if l |> List.contains R
+              then "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='2']|"
+              else String.Empty
+
+            Assert.That (builder.ToString(),
+               Is.EqualTo
+                 (elementO
+                  + elementC
+                  + elementOC
+                  + elementAltO
+                  + elementAltC
+                  + elementBR
+                  + elementB
+                  + elementR
+                 ), sprintf "%A" summary))
         finally
           resetInfo())
 

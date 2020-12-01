@@ -385,7 +385,7 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
 'R' = TeamCity-formato, kun branĉoj kiel b&#x200B;Ranch eroj
 'O' = Klasika OpenCover-formato
 'C' = Ŝanĝo-Kontraŭ-Ŝablona (CRAP) poentaro
-'+' samas al "OC"
+'+' samas al "OC" (speciala kazo - "+" per si mem samas al 'BOC')
 Se la opcio ĉeestas, sed havas neniun valoron, tio estas la sama kiel 'B'
 Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   </data>
