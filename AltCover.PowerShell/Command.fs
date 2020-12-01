@@ -11,9 +11,24 @@ open AltCover
 /// </summary>
 type Summary =
   /// <summary>
-  /// <para type="description">OpenCover format with CRAP score</para>
+  /// <para type="description">OpenCover format with CRAP score, equivalent to (O, C) if no other values given </para>
   /// </summary>
-  | Default = 0 //CPlus
+  | Default = 0
+  /// <summary>
+  /// <para type="description">No summary, overriding any other value given</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "N is what is expected")>]
+    N = 5
+  /// <summary>
+  /// <para type="description">OpenCover classic summary only</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "O is what is expected")>]
+    O = 6
+  /// <summary>
+  /// <para type="description">Change Risk Anti-Patterns score only</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "C is what is expected")>]
+    C = 7
   /// <summary>
   /// <para type="description">TeamCity with R for bRanch</para>
   /// </summary>
@@ -25,37 +40,13 @@ type Summary =
   | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "B is what is expected")>]
     B = 2
   /// <summary>
-  /// <para type="description">OpenCover plus TeamCity with R for bRanch</para>
+  /// <para type="description">OpenCover plus CRAP score plus TeamCity with R for bRanch, equivalent to (B, O, C)</para>
   /// </summary>
   | RPlus = 3
   /// <summary>
-  /// <para type="description">OpenCover plus TeamCity with B for Block representing branch coverage</para>
+  /// <para type="description">OpenCover plus CRAP score plus TeamCity with B for Block representing branch coverage, equivalent to (R, O, C)</para>
   /// </summary>
   | BPlus = 4
-
-  // TODO --------------------------------------
-  /// <summary>
-  /// <para type="description">Change Risk Anti-Patterns score</para>
-  /// </summary>
-  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "R is what is expected")>]
-    C = 5
-  /// <summary>
-  /// <para type="description">OpenCover + Change Risk Anti-Patterns score</para>
-  /// </summary>
-  | CPlus = 6
-  /// <summary>
-  /// <para type="description">No summary</para>
-  /// </summary>
-  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "R is what is expected")>]
-    N = 7
-  /// <summary>
-  /// <para type="description">OpenCover classic only</para>
-  /// </summary>
-  | NPlus = 8
-  /// <summary>
-  /// <para type="description">OpenCover classic only</para>
-  /// </summary>
-  | Plus = 8
 
 /// <summary>
 /// <para type="description">Values for the Invoke-AltCover -ShowStatic option</para>
@@ -511,12 +502,20 @@ type InvokeAltCoverCommand() =
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
   member val SummaryFormat : Summary array = [| Summary.Default |] with get, set
 
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
-    let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |] //TODO
+    let formats = [| String.Empty; "R"; "B"; "ROC"; "BOC"; "N"; "O"; "C" |]
+    let formatString = String.Join(String.Empty,self.SummaryFormat
+                                                |> Seq.map (fun f -> formats.[ f|> int]))
+                       |> Seq.distinct
+                       |> Seq.toArray
+
     AltCover.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
@@ -527,9 +526,7 @@ type InvokeAltCoverCommand() =
         OutputFile = self.OutputFile
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
-        SummaryFormat = String.Join(String.Empty,
-                                    self.SummaryFormat
-                                    |> Seq.map (fun f -> formats.[ f|> int]))}
+        SummaryFormat = String(formatString)}
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
