@@ -20,8 +20,9 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>    
-  </PropertyGroup>
+    <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
+    <RollForward>Major</RollForward>
+</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>

@@ -5,6 +5,7 @@
     <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <LangVersion Condition="'$(TargetFramework)' != 'net472'">8.0</LangVersion>
     <IsPackable>false</IsPackable>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
