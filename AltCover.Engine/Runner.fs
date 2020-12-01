@@ -540,7 +540,7 @@ module internal Runner =
                |> Path.GetFullPath
                |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
-      ("teamcity:",
+      ("summary|teamcity:",
        (fun x ->
          if summaryFormat = Default then
            summaryFormat <-

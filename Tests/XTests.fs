@@ -176,16 +176,18 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test
       <@ instance
-         |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
+         |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--summary:BOC" ] @>
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --teamcity:+B" @>
+    test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =
     let inputs =
-      [ TypeSafe.Default; TypeSafe.B; TypeSafe.BPlus; TypeSafe.R; TypeSafe.RPlus ]
-    let expected = [ String.Empty; "B"; "+B"; "R"; "+R" ]
+      [ TypeSafe.Default; TypeSafe.B; TypeSafe.BPlus; TypeSafe.R; TypeSafe.RPlus
+        TypeSafe.C; TypeSafe.N; TypeSafe.O; TypeSafe.Many [ TypeSafe.BPlus; TypeSafe.R; TypeSafe.O ]]
+    let expected = [ String.Empty; "B"; "BOC"; "R"; "ROC"
+                     "C"; "N"; "O"; "BOCR" ]
     inputs
     |> List.map (fun i -> i.AsString())
     |> List.zip expected

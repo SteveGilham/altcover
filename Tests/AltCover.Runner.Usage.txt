@@ -34,9 +34,21 @@
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
-      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary.  No value,
-                               or the value 'B' means TeamCity Block format, 'R'
-                                is bRanch format; add a '+' to include the
-                               OpenCover style summary as well.
+      --summary, --teamcity[=VALUE]
+                             Optional: Defines the format of any summary; an
+                               optional string value consisting of the tokens :
+                               
+                               'N' = No summary at all, regardless of other
+                               values
+                               'B' = TeamCity format, with branches as Block
+                               items
+                               'R' = TeamCity format, with branches as bRanch
+                               items
+                               'O' = Classic OpenCover format
+                               'C' = Change Risk Anti-Pattern score
+                               '+' is the same as "OC"
+                               If the option is present, but has no value, this
+                               is the same as 'B'
+                               If the option is not present, then the default
+                               is 'OC'.
   -?, --help, -h             Prints out the options.
