@@ -172,6 +172,13 @@ module internal Runner =
       let line = String.Format(CultureInfo.InvariantCulture, template, what, value)
       write line
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Library method inlined")>]
+    let internal contains o l =
+      l |> Seq.contains o
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
@@ -228,13 +235,13 @@ module internal Runner =
       let l = SummaryFormat.ToList summaryFormat
       let emitSummary() =
         if summaryFormat = Default ||
-           l |> Seq.contains O then
+           l |> contains O then
           summarise vclasses classes.Length "VisitedClasses"
           summarise vmethods methods.Length "VisitedMethods"
           summarise vpoints points.Length "VisitedPoints"
 
-        if l |> Seq.contains B ||
-           l |> Seq.contains R then
+        if l |> contains B ||
+           l |> contains R then
           writeTC totalTC "C" classes.Length
           writeTC coverTC "C" vclasses
           writeTC totalTC "M" methods.Length
@@ -337,6 +344,12 @@ module internal Runner =
 
       (amv, acv)
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability", "AvoidComplexMethodsRule",
+      Justification="TODO: refactor even more")>]
     let internal openCoverSummary(report : XDocument) =
       let summary = report.Descendants("Summary".X) |> Seq.head
 
