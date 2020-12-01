@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.1.xxx (Genbu series release 8)
+# 7.2.xxx (Genbu series release 8)
 * [BUGFIX] Don't produce invalid IL when `--callContext` indicates a method with a non-`void` return (issue #105, and probably #26 too)
 * [BUGFIX] Restore application icons, even if they only show in the `.exe `forms (lost in 7.1.795 if not before)
 * [BUGFIX] Add `AltCover` prefix to MSBuild property names `NetCoreEngine`, `NetStdEngine` (global), `InputDirectory` and `OutputDirectory` (target-scoped) in the injected `.targets` file for `dotnet test` integration.
