@@ -10,7 +10,11 @@ public static class Tags
 | --- | --- |
 | const [B](TypeSafe.SummaryFormat.Tags/B-apidoc) |  |
 | const [BPlus](TypeSafe.SummaryFormat.Tags/BPlus-apidoc) |  |
+| const [C](TypeSafe.SummaryFormat.Tags/C-apidoc) |  |
 | const [Default](TypeSafe.SummaryFormat.Tags/Default-apidoc) |  |
+| const [Many](TypeSafe.SummaryFormat.Tags/Many-apidoc) |  |
+| const [N](TypeSafe.SummaryFormat.Tags/N-apidoc) |  |
+| const [O](TypeSafe.SummaryFormat.Tags/O-apidoc) |  |
 | const [R](TypeSafe.SummaryFormat.Tags/R-apidoc) |  |
 | const [RPlus](TypeSafe.SummaryFormat.Tags/RPlus-apidoc) |  |
 

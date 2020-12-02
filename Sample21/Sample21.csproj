@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework netcoreapp3.0 /p:AltCover="true" /p:AltCoverForce=true -->
+  <!-- ampersand "C:\Program Files\dotnet\dotnet.EXE"  test "C:\Users\steve\Documents\GitHub\altcover\Sample21\Sample21.csproj" - -configuration Debug - -framework net5.0 /p:AltCover="true" /p:AltCoverForce=true -->
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <LangVersion Condition="'$(TargetFramework)' != 'net472'">8.0</LangVersion>
     <IsPackable>false</IsPackable>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>

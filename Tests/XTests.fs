@@ -176,16 +176,18 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test
       <@ instance
-         |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--teamcity:+B" ] @>
+         |> Args.collect = [ "Runner"; "-x"; "dotnet"; "-t"; "S23B16M7C3"; "--summary:BOC" ] @>
     let validate = instance.WhatIf(false)
     test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
-    test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --teamcity:+B" @>
+    test <@ validate.ToString() = "altcover Runner -x dotnet -t S23B16M7C3 --summary:BOC" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =
     let inputs =
-      [ TypeSafe.Default; TypeSafe.B; TypeSafe.BPlus; TypeSafe.R; TypeSafe.RPlus ]
-    let expected = [ String.Empty; "B"; "+B"; "R"; "+R" ]
+      [ TypeSafe.Default; TypeSafe.B; TypeSafe.BPlus; TypeSafe.R; TypeSafe.RPlus
+        TypeSafe.C; TypeSafe.N; TypeSafe.O; TypeSafe.Many [ TypeSafe.BPlus; TypeSafe.R; TypeSafe.O ]]
+    let expected = [ String.Empty; "B"; "BOC"; "R"; "ROC"
+                     "C"; "N"; "O"; "BOCR" ]
     inputs
     |> List.map (fun i -> i.AsString())
     |> List.zip expected
@@ -359,7 +361,7 @@ module AltCoverXTests =
                                               Keys = [| input |] }
 
     let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
-#if NETCOREAPP2_1
+#if NET5_0
     ()
 #else
     test <@ scan.Length = 0 @>
@@ -378,7 +380,7 @@ module AltCoverXTests =
                                                  [| TypeSafe.FilePath input |] }
 
     let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
-#if NETCOREAPP2_1
+#if NET5_0
     ()
 #else
     test <@ scan.Length = 0 @>
@@ -688,7 +690,7 @@ module AltCoverXTests =
       test' <@ File.Exists created@> (created + " not found")
 
       let isWindows =
-#if NETCOREAPP2_1
+#if NET5_0
                       true
 #else
                       System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -745,13 +747,44 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
       let isWindows =
-#if NETCOREAPP2_1
+#if NET5_0
                       true
 #else
                       System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
       test' <@  isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
+    finally
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.AddRange saved
+
+  [<Test>]
+  let FinishCommitsTheAsyncRecordingAssembly() =
+    let path = Path.Combine(AltCoverTests.dir, "Sample4.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.readSymbols def
+
+    let md = def.MainModule.Types
+              |> Seq.filter (fun t -> t.FullName = "Tests.M")
+              |> Seq.collect (fun t -> t.Methods)
+              |> Seq.filter (fun m -> m.Name = "makeThing")
+              |> Seq.head
+    let support = AsyncSupport.Update md
+
+    let unique = Guid.NewGuid().ToString()
+    let output = Path.Combine(Path.GetDirectoryName(AltCoverTests.dir), unique)
+    Directory.CreateDirectory(output) |> ignore
+    let saved = CoverageParameters.theOutputDirectories |> Seq.toList
+    try
+      CoverageParameters.theOutputDirectories.Clear()
+      CoverageParameters.theOutputDirectories.Add output
+      let input = { InstrumentContext.Build [] with RecordingAssembly = def
+                                                    AsyncSupport = Some support }
+      let result = Instrument.I.instrumentationVisitor input Finish
+      test <@ result.RecordingAssembly |> isNull @>
+      test <@ result.AsyncSupport |> Option.isNone @>
+      let created = Path.Combine(output, "Sample4.dll")
+      test' <@ File.Exists created @> (created + " not found")
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.AddRange saved

@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>Sample4</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

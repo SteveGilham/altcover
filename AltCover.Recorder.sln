@@ -34,6 +34,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Recorder2.Tests", "Recorder2.Tests\AltCover.Recorder2.Tests.fsproj", "{25BF9131-91CD-41CA-87F7-041E40426B5C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A} = {85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +52,9 @@ Global
 		{7F197884-A015-4D01-9543-AF0837A4BE33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F197884-A015-4D01-9543-AF0837A4BE33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F197884-A015-4D01-9543-AF0837A4BE33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

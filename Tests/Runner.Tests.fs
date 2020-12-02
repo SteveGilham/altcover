@@ -1246,23 +1246,26 @@ module AltCoverRunnerTests =
     let ParsingTCString() =
       Runner.init()
       [
-        (String.Empty, Default)
-        ("+", BPlus)
-        ("+b", BPlus)
-        ("+B", BPlus)
-        ("b+", BPlus)
-        ("B+", BPlus)
-        ("b",B)
-        ("B", B)
-        ("+r", RPlus)
-        ("+R", RPlus)
-        ("r+", RPlus)
-        ("R+", RPlus)
-        ("r", R)
-        ("R", R)
+        (String.Empty, Many [B])
+        ("+", Many ([ B; O; C] |> List.rev))
+        ("+b", Many ([ O; C; B] |> List.rev))
+        ("+B", Many ([ O; C; B] |> List.rev))
+        ("b+", Many ([ B; O; C] |> List.rev))
+        ("B+", Many ([ B; O; C] |> List.rev))
+        ("b", Many [B])
+        ("B", Many [B])
+        ("+r", Many ([ O; C; R] |> List.rev))
+        ("+R", Many ([ O; C; R] |> List.rev))
+        ("r+", Many ([ R; O; C] |> List.rev))
+        ("R+", Many ([ R; O; C] |> List.rev))
+        ("r", Many[R])
+        ("R", Many[R])
+        ("O", Many [O])
+        ("CCC", Many [C])
+        ("OCRNBOC", N)
         ("true", Default)
        ]
-       |> List.iter (fun (x,y) -> Assert.That (TeamCityFormat.Factory x,
+       |> List.iter (fun (x,y) -> Assert.That (SummaryFormat.Factory x,
                                                Is.EqualTo y,
                                                x))
 
@@ -1271,19 +1274,22 @@ module AltCoverRunnerTests =
       Runner.init()
       [
         (String.Empty, B)
-        (":+", BPlus)
-        (":+b", BPlus)
-        (":+B", BPlus)
-        (":b+", BPlus)
-        (":B+", BPlus)
-        (":b",B)
-        (":B", B)
-        (":+r", RPlus)
-        (":+R", RPlus)
-        (":r+", RPlus)
-        (":R+", RPlus)
-        (":r", R)
-        (":R", R) ]
+        (":+", Many ([ B; O; C] |> List.rev))
+        (":+b", Many ([ O; C; B] |> List.rev))
+        (":+B", Many ([ O; C; B] |> List.rev))
+        (":b+", Many ([ B; O; C] |> List.rev))
+        (":B+", Many ([ B; O; C] |> List.rev))
+        (":b", Many [B])
+        (":B", Many [B])
+        (":+r", Many ([ O; C; R] |> List.rev))
+        (":+R", Many ([ O; C; R] |> List.rev))
+        (":r+", Many ([ R; O; C] |> List.rev))
+        (":R+", Many ([ R; O; C] |> List.rev))
+        (":r", Many[R])
+        (":R", Many[R])
+        (":O", Many [O])
+        (":CCC", Many [C])
+        (":OCRNBOC", N) ]
       |> List.iter (fun (a, v) ->
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Default
@@ -1309,7 +1315,7 @@ module AltCoverRunnerTests =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
-          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--teamcity : specify this only once"))
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--summary : specify this only once"))
 
     [<Test>]
     let ParsingBadTCGivesFailure() =
@@ -1479,7 +1485,7 @@ module AltCoverRunnerTests =
       Runner.init()
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-#if NETCOREAPP2_0
+#if NET5_0
       let path = Path.Combine(SolutionRoot.location, "_Binaries/Sample12/Debug+AnyCPU/netcoreapp2.0/Sample12.dll")
 #else
       let path = Path.Combine(where, "Sample12.exe")
@@ -1488,7 +1494,7 @@ module AltCoverRunnerTests =
       let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
       let args =
-#if NETCOREAPP2_0
+#if NET5_0
           [ "dotnet"; path ]
 #else
           maybe nonWindows [ "mono"; path ] [ path ]
@@ -1935,15 +1941,19 @@ module AltCoverRunnerTests =
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
-      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      let formatter = System.Runtime.Serialization.DataContractSerializer(
+                        typeof< Tuple<String, Int32, AltCover.Track, DateTime> >)
 
       let r =
         Runner.J.getMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
+          let settings = XmlWriterSettings()
+          settings.ConformanceLevel <- System.Xml.ConformanceLevel.Auto
+          use pipe = XmlWriter.Create(sink, settings)
           l
           |> List.mapi (fun i x ->
-               formatter.Serialize(sink, (x, i, Null, DateTime.UtcNow))
+               formatter.WriteObject(pipe, (x, i, Null, DateTime.UtcNow))
                x)
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
@@ -2449,7 +2459,7 @@ module AltCoverRunnerTests =
             then setAttribute el "crapScore" "0")
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       PostProcess.action "offset" counts ReportFormat.OpenCover (XmlAbstraction.XDoc after)
-  #if !NETCOREAPP3_0
+  #if ! NET5_0
       NUnit.Framework.Assert.That(after.ToString(),
           NUnit.Framework.Is.EqualTo(before.ToString()))
   #endif
@@ -2531,7 +2541,7 @@ module AltCoverRunnerTests =
       Runner.summary.Clear() |> ignore
       try
         lock Runner.summaryFormat (fun () ->
-          Runner.summaryFormat <- BPlus
+          Runner.summaryFormat <- Many [ B; O; C]
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report ReportFormat.NCover 0
@@ -2562,7 +2572,7 @@ module AltCoverRunnerTests =
       let builder = System.Text.StringBuilder()
       try
         lock Runner.summaryFormat (fun () ->
-          Runner.summaryFormat <- RPlus
+          Runner.summaryFormat <- Many [ R; O; C]
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r =
             try
@@ -2654,7 +2664,7 @@ module AltCoverRunnerTests =
       let builder = System.Text.StringBuilder()
       try
         lock Runner.summaryFormat (fun () ->
-          Runner.summaryFormat <- RPlus
+          Runner.summaryFormat <- Many [ R; O; C]
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
@@ -2719,7 +2729,7 @@ module AltCoverRunnerTests =
       |> List.iter (fun (threshold, expected) ->
         try
           lock Runner.summaryFormat (fun () ->
-            Runner.summaryFormat <- BPlus
+            Runner.summaryFormat <- Many [ B; O; C]
             let builder = System.Text.StringBuilder()
             Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
             let r =
@@ -2740,6 +2750,87 @@ module AltCoverRunnerTests =
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
                   + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
                  ))
+        finally
+          resetInfo())
+
+    [<Test>]
+    let OpenCoverShouldGeneratePlausiblePartialSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let summary = [
+        Many [ C ]
+        Many [ B; O; C]
+        Many [ B; O]
+        Many [ B; R]
+        Many [ B; R; O]
+        N
+      ]
+
+      summary |>
+      List.iter (fun summary ->
+        try
+          lock Runner.summaryFormat (fun () ->
+            Runner.summaryFormat <- summary
+            let l = SummaryFormat.ToList summary
+            let builder = System.Text.StringBuilder()
+            Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+            let r =
+              try
+                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+              finally
+                Runner.threshold <- None
+            let elementO =
+              if l |> List.contains O
+              then "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+                    + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)|"
+              else String.Empty
+            let elementC =
+              if l |> List.contains C
+              then "Maximum CRAP score 2.11|"
+              else String.Empty
+            let elementOC = if l |> List.contains O || l |> List.contains C
+                            then "|==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                            else String.Empty
+            let elementAltO =
+              if l |> List.contains O
+              then "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+              else String.Empty
+            let elementAltC =
+              if l |> List.contains C
+              then "Alternative maximum CRAP score 2.11|"
+              else String.Empty
+            let elementBR =
+              if l |> List.contains B || l |> List.contains R
+              then "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+              else String.Empty
+            let elementB =
+              if l |> List.contains B
+              then "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|"
+              else String.Empty
+            let elementR =
+              if l |> List.contains R
+              then "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='2']|"
+              else String.Empty
+
+            Assert.That (builder.ToString(),
+               Is.EqualTo
+                 (elementO
+                  + elementC
+                  + elementOC
+                  + elementAltO
+                  + elementAltC
+                  + elementBR
+                  + elementB
+                  + elementR
+                 ), sprintf "%A" summary))
         finally
           resetInfo())
 
@@ -2948,7 +3039,7 @@ module AltCoverRunnerTests =
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.0.0.0""",
                          "version=\""
-                         + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
         Validate result
       finally
@@ -2992,7 +3083,7 @@ module AltCoverRunnerTests =
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.5.0.0""",
                          "version=\""
-                         + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
         Validate result
       finally
@@ -3032,7 +3123,7 @@ module AltCoverRunnerTests =
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.0.0.0""",
                          "version=\""
-                         + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected,
            result)
