@@ -493,6 +493,7 @@ module internal Visitor =
              Assembly(x, included, targets)
 
            path
+           |> Path.GetFullPath
            |> (AssemblyDefinition.ReadAssembly
                >> makeInspection
                >> buildSequence))

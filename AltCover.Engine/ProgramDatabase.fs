@@ -2,6 +2,7 @@ namespace AltCover
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 
 open Mono.Cecil
@@ -13,6 +14,13 @@ open Mono.Cecil.Pdb
 module internal ProgramDatabase =
   // "Public" "field"
   let internal symbolFolders = List<String>()
+
+  [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
+    Justification = "As opposed to 'ofObj' that is")>]
+  let internal optionOfString s =
+    if String.IsNullOrWhiteSpace s
+    then None
+    else Some s
 
   // Implementation details
   module private I =
@@ -62,10 +70,15 @@ module internal ProgramDatabase =
     | None ->
         let foldername = Path.GetDirectoryName assembly.MainModule.FileName
         let filename = Path.GetFileName assembly.MainModule.FileName
-        foldername :: (Seq.toList symbolFolders)
-        |> Seq.map (I.getSymbolsByFolder filename)
-        |> Seq.choose id
-        |> Seq.tryFind (fun _ -> true)
+                       |> optionOfString
+        filename
+        |> Option.map (fun fn ->
+          foldername :: (Seq.toList symbolFolders)
+          |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+          |> Seq.map (I.getSymbolsByFolder fn)
+          |> Seq.choose id
+          |> Seq.tryFind (fun _ -> true))
+        |> Option.flatten
     | pdbpath -> pdbpath
 
   // Ensure that we read symbols from the .pdb path we discovered.

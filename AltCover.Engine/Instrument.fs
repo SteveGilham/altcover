@@ -49,6 +49,7 @@ type internal AsyncSupport =
   static member Update(m:IMemberDefinition) =
     // Maybe get version of assembly being used by m?  Probably not important
     let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
+              |> Path.GetFullPath
               |> AssemblyDefinition.ReadAssembly
     let task = def.MainModule.GetType("System.Threading.Tasks.Task")
     let wait = task.Methods
@@ -235,7 +236,9 @@ module internal Instrument =
            "EnsureLocalDisposalRule",
            Justification="Return confusing Gendarme -- TODO")>]
     let internal prepareAssembly(location : string) =
-      let definition = AssemblyDefinition.ReadAssembly(location)
+      let definition = location
+                       |> Path.GetFullPath
+                       |> AssemblyDefinition.ReadAssembly
       prepareAssemblyDefinition definition
 
     let private nugetCache =
@@ -285,7 +288,9 @@ module internal Instrument =
               (System.Globalization.CultureInfo.CurrentCulture,
                CommandLine.resources.GetString "resolved", y.ToString(), x)
             |> (Output.warnOn true)
-            let a = AssemblyDefinition.ReadAssembly x
+            let a = x
+                    |> Path.GetFullPath
+                    |> AssemblyDefinition.ReadAssembly
             resolutionTable.[name] <- a
             a
 
@@ -806,6 +811,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@620.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@625.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
