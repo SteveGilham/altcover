@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
@@ -11,6 +11,7 @@
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -85,7 +86,7 @@
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net472'">
@@ -105,6 +106,7 @@
     <ProjectReference Include="..\Sample1\Sample1.csproj" Condition="'$(TargetFramework)' != 'net472'" />
     <ProjectReference Include="..\Sample21\Sample21.csproj" />
     <ProjectReference Include="..\Sample23\Sample23.csproj" />
+    <ProjectReference Include="..\Sample24\Sample24.csproj" />
     <ProjectReference Include="..\Sample2\Sample2.fsproj" />
     <ProjectReference Include="..\Sample3\Sample3.csproj" />
     <ProjectReference Include="..\Sample4\Sample4.fsproj" />
@@ -122,7 +124,7 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />
-    <PackageReference Include="System.Security.Permissions" Version="4.7.0" />
+    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

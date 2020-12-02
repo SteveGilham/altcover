@@ -185,9 +185,18 @@ module TypeSafe =
           |> Seq.map (fun a -> a.AsString())
           |> Seq.toList
 
-  [<ExcludeFromCodeCoverage; NoComparison>]
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type SummaryFormat =
     | Default
+    | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Consistent notation")>]
+      N
+    | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Consistent notation")>]
+      O
+    | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Consistent notation")>]
+      C
     | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification="TeamCity notation")>]
       R
@@ -196,13 +205,22 @@ module TypeSafe =
       B
     | RPlus
     | BPlus
+    | Many of SummaryFormat seq
     member self.AsString() =
       match self with
       | Default -> String.Empty
+      | N -> "N"
+      | O -> "O"
+      | C -> "C"
       | B -> "B"
       | R -> "R"
-      | BPlus -> "+B"
-      | RPlus -> "+R"
+      | BPlus -> "BOC"
+      | RPlus -> "ROC"
+      | Many s ->
+        let raw = String.Join(String.Empty, s |> Seq.map (fun x -> x.AsString()))
+                  |> Seq.distinct
+                  |> Seq.toArray
+        String(raw)
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type StaticFormat =
@@ -337,6 +355,9 @@ module TypeSafe =
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="member", Target="AltCover.TypeSafe+Flag+Tags.#Flag", MessageId="Flag", Justification="It's a flag, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#B", MessageId="B", Justification="TeamCity notation")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#R", MessageId="R", Justification="TeamCity notation")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#N", MessageId="N", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#O", MessageId="O", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#C", MessageId="C", Justification="Consistent naming")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", Scope="member", Target="AltCover.TypeSafe+Flag.#AsBool()", MessageId="bool",
   Justification="But ToString() and AsString() are OK??")>]
 #else
@@ -352,6 +373,9 @@ module TypeSafe =
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+Flag+Tags.#Flag", MessageId="Flag", Justification="It's a flag, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#B", MessageId="B", Justification="TeamCity notation")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#R", MessageId="R", Justification="TeamCity notation")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#N", MessageId="N", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#O", MessageId="O", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#C", MessageId="C", Justification="Consistent naming")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+Flag.#AsBool()", MessageId="bool",
   Justification="But ToString() and AsString() are OK??")>]
 #endif

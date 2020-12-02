@@ -10,7 +10,7 @@ The full command line is
 ```
 AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/teamcity[=VALUE]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
@@ -174,11 +174,24 @@ or
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
-      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary.  No value,
-                               or the value 'B' means TeamCity Block format, 'R'
-                                is bRanch format; add a '+' to include the
-                               OpenCover style summary as well.
+      --summary, --teamcity[=VALUE]
+                             Optional: Defines the format of any summary; an
+                               optional string value consisting of the tokens :
+                               
+                               'N' = No summary at all, regardless of other
+                               values
+                               'B' = TeamCity format, with branches as Block
+                               items
+                               'R' = TeamCity format, with branches as bRanch
+                               items
+                               'O' = Classic OpenCover format
+                               'C' = Change Risk Anti-Pattern score
+                               '+' is the same as "OC" (special case - "+" by
+                               itself is the same as 'BOC')
+                               If the option is present, but has no value, this
+                               is the same as 'B'
+                               If the option is not present, then the default
+                               is 'OC'.
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.
 ```

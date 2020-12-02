@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <NetCoreEngine>$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.Engine.dll</NetCoreEngine>
-    <NetStdEngine>$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.Engine.dll</NetStdEngine>
-    <AltCoverEngine Condition="Exists($(NetStdEngine))">$(NetStdEngine)</AltCoverEngine>
-    <AltCoverEngine Condition="Exists($(NetCoreEngine))">$(NetCoreEngine)</AltCoverEngine>
+    <AltCoverNetCoreEngine>$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.Engine.dll</AltCoverNetCoreEngine>
+    <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
+    <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
+    <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
   </PropertyGroup>
 
   <UsingTask TaskName="AltCover.Prepare"
@@ -37,8 +37,8 @@
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
       <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
-      <InputDirectory Include="$(TargetDir)" />
-      <OutputDirectory Include="$(TargetDir)__Saved" />
+      <AltCoverInputDirectory Include="$(TargetDir)" />
+      <AltCoverOutputDirectory Include="$(TargetDir)__Saved" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -62,8 +62,8 @@
     <AltCover.PowerShell Condition="'$(AltCoverImportModule)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
-      InputDirectories="@(InputDirectory)"
-      OutputDirectories="@(OutputDirectory)"
+      InputDirectories="@(AltCoverInputDirectory)"
+      OutputDirectories="@(AltCoverOutputDirectory)"
       SymbolDirectories="$(AltCoverSymbolDirectories.Split('|'))"
       Dependencies="$(AltCoverDependencyList.Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"

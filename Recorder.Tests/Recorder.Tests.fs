@@ -1,4 +1,4 @@
-#if NETCOREAPP2_0
+#if NET5_0
 namespace Tests.Recorder.Core
 #else
 #if NET4
@@ -130,7 +130,7 @@ module AltCoverTests =
     try
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-      Assert.True( Instance.I.callerId() = 0 )
+      Assert.True( Instance.I.callerId()|> Option.isNone )
       Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
       Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
       Instance.Push 4321
@@ -162,9 +162,9 @@ module AltCoverTests =
     Assert.True( probe % 1000L = 0L )
     Assert.True( probe <= v2 )
     Assert.True( probe >= (1000L * (v1 / 1000L)) )
-    Assert.True( Instance.I.callerId() = 0 )
+    Assert.True( Instance.I.callerId() |> Option.isNone )
     Instance.Pop()
-    Assert.True( Instance.I.callerId() = 0 )
+    Assert.True( Instance.I.callerId() |> Option.isNone )
 
   [<Test>]
   let PayloadWithEntryExitGeneratedIsAsExpected() =
@@ -173,7 +173,7 @@ module AltCoverTests =
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
       Adapter.VisitsClear()
 
-      Assert.True( Instance.I.callerId() = 0 )
+      Assert.True( Instance.I.callerId() |> Option.isNone )
       Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
       Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
       Instance.Push 4321
@@ -206,9 +206,9 @@ module AltCoverTests =
     Assert.True( probe % 1000L = 0L )
     Assert.True( probe <= v2 )
     Assert.True( probe >= (1000L * (v1 / 1000L)) )
-    Assert.True( Instance.I.callerId() = 0 )
+    Assert.True( Instance.I.callerId() |> Option.isNone )
     Instance.Pop()
-    Assert.True( Instance.I.callerId() = 0 )
+    Assert.True( Instance.I.callerId() |> Option.isNone )
     Assert.That(Instance.I.visits.Keys, Is.EquivalentTo [Track.Entry; Track.Exit])
     Assert.That(Instance.I.visits.[Track.Entry].Keys, Is.EquivalentTo [4321; 6789])
     Assert.That(Instance.I.visits.[Track.Exit].Keys, Is.EquivalentTo [4321; 6789])
@@ -333,7 +333,7 @@ module AltCoverTests =
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
-#if NETCOREAPP2_0
+#if NET5_0
 
   [<Test>]
   let NullRefShouldBeHandled() =

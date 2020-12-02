@@ -2,6 +2,7 @@ namespace Tests
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Linq
 open System.Reflection
@@ -23,12 +24,12 @@ type ProxyObject() =
   member val Type : Type option = None with get, set
   member val Object = null with get, set
 
-#if NETCOREAPP2_0
+#if NET5_0
   member val Context : System.Runtime.Loader.AssemblyLoadContext = null with get, set
 #endif
 
   member this.InstantiateObject(assemblyPath : string, typeName : string, args : obj []) =
-#if NETCOREAPP2_0
+#if NET5_0
     let assembly = this.Context.LoadFromAssemblyPath(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
 #else
     let assembly = Assembly.LoadFrom(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
@@ -53,14 +54,14 @@ module Extensions =
 
 module AltCoverTests =
 
-#if NETCOREAPP2_0
-    let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0")
+#if NET5_0
+    let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0")
 #else
     let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
 #endif
 
     let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_0
+#if NET5_0
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
     let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
@@ -116,7 +117,7 @@ module AltCoverTests =
               (fun x ->
               not
               <| (snd x).FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
-#if NETCOREAPP2_0
+#if NET5_0
         |> Seq.filter
               (fun x ->
               not
@@ -677,7 +678,7 @@ module AltCoverTests =
 
       let expected =
         [ ".ctor"; ".ctor"; "Invoke"; "as_bar"; "bytes"; "get_MyBar"
-#if NETCOREAPP2_1
+#if NET5_0
           "main"
 #endif
           "makeThing"
@@ -1282,7 +1283,7 @@ module AltCoverTests =
     [<Test>]
     let KeyHasExpectedRecord() =
       let pair = ProvideKeyPair()
-#if NETCOREAPP2_0
+#if NET5_0
 #else
       let computed = pair.PublicKey
       let definitive = StrongNameKeyPair(pair.Blob |> List.toArray).PublicKey
@@ -2380,6 +2381,12 @@ module AltCoverTests =
         CoverageParameters.methodPoint := false
 
     [<Test>]
+    let LocateMatchFallsBackOK() =
+      let file = Assembly.GetExecutingAssembly().Location
+      let empty = Dictionary<string, string>()
+      test <@ Visitor.I.locateMatch file empty = file @>
+
+    [<Test>]
     let ShouldGenerateExpectedXmlReportWithSourceLink() =
       let visitor, document = Report.reportGenerator()
       // Hack for running while instrumented
@@ -3103,8 +3110,8 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      let sample21 = Path.Combine(SolutionDir(), "./Sample21/bin/Debug/netcoreapp3.0/Sample21.dll")
-      Assert.That(File.Exists sample21, "Test file Sample21 for netcoreapp3.0 not built")
+      let sample21 = Path.Combine(SolutionDir(), "./Sample21/bin/Debug/net5.0/Sample21.dll")
+      Assert.That(File.Exists sample21, "Test file Sample21 for net5.0 not built")
       try
         "Program"
         |> (Regex
@@ -3116,7 +3123,7 @@ module AltCoverTests =
         let classes = document.Descendants(XName.Get "FullName")
                       |> Seq.filter (fun x -> x.Parent.Attribute(XName.Get "skippedDueTo") |> isNull)
                       |> Seq.map (fun x -> x.Value)
-                      |> Seq.filter (fun n -> n |> Seq.head |> Char.IsLetterOrDigit)
+                      |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
                       |> Seq.sort
                       |> Seq.toList
 

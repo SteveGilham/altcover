@@ -50,7 +50,7 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverLcovReport=`"path to lcov format result"
 * `/p:AltCoverCobertura=`"path to cobertura format result"
 * `/p:AltCoverThreshold=`"coverage threshold required"
-* `/p:AltCoverSummaryFormat=[+][B|R]` to opt for a TeamCity summary with either `B` or `R` for branch coverage accordingly, with the OpenCover format summary also present if `+` is given
+* `/p:AltCoverSummaryFormat=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
 * `/p:AltCoverShowSummary=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
 * `/p:AltCoverForce=true|false` to force delete any left-over `__Saved` folders from previous runs
 * `/p:AltCoverFailFast=true|false` to skip coverage collection if the unit tests fail

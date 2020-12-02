@@ -29,8 +29,8 @@ module Transformer =
     use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
     use stylesheet =
       XmlReader.Create(str)
-    let xmlTransform = new XslCompiledTransform()
-    xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
+    let xmlTransform = XslCompiledTransform()
+    xmlTransform.Load(stylesheet, XsltSettings(false, true), null)
     xmlTransform
 
   let internal transformFromOtherCover (document : XNode) (path : string) =
@@ -51,7 +51,7 @@ module Transformer =
   // PartCover to NCover style sheet
   let internal convertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
-    let schemas = new XmlSchemaSet()
+    let schemas = XmlSchemaSet()
     use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
                                        .GetManifestResourceStream("AltCover.UICommon.OpenCover.xsd"))
     use ocreader = XmlReader.Create(sr1)
@@ -69,7 +69,7 @@ module Transformer =
           let report = transformFromOpenCover document
           let fixedup = helper CoverageTool.OpenCover document report
           // Consistency check our XSLT
-          let schemas2 = new XmlSchemaSet()
+          let schemas2 = XmlSchemaSet()
           schemas2.Add
             (String.Empty, ncreader)
           |> ignore

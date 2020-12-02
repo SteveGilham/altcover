@@ -1,6 +1,6 @@
 namespace Tests
 
-#if NETCOREAPP3_0
+#if  NET5_0
 open AltCover
 open Expecto
 
@@ -111,6 +111,7 @@ module ExpectoMain =
           Tests.AltCoverRunnerTests.EmptyOpenCoverGeneratesExpectedTCSummary, "Runner.EmptyOpenCoverGeneratesExpectedTCSummary"
           Tests.AltCoverRunnerTests.EmptyOpenCoverGeneratesExpectedSummaries, "Runner.EmptyOpenCoverGeneratesExpectedSummaries"
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleSummary, "Runner.OpenCoverShouldGeneratePlausibleSummary"
+          Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausiblePartialSummary, "Runner.OpenCoverShouldGeneratePlausiblePartialSummary"
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleLcov, "Runner.OpenCoverShouldGeneratePlausibleLcov"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcov, "Runner.NCoverShouldGeneratePlausibleLcov"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcovWithMissingFullName, "Runner.NCoverShouldGeneratePlausibleLcovWithMissingFullName"
@@ -165,6 +166,7 @@ module ExpectoMain =
           Tests.AltCoverTests.ValidateAutomaticExemption, "Tests.ValidateAutomaticExemption"
           Tests.AltCoverTests.DetectLocalSource, "Tests.DetectLocalSource"
           Tests.AltCoverTests.LocateMatchShouldChooseLongerWildCardPath, "Tests.LocateMatchShouldChooseLongerWildCardPath"
+          Tests.AltCoverTests.LocateMatchFallsBackOK, "Tests.LocateMatchFallsBackOK"
           Tests.AltCoverTests.DebugBuildTernaryTestInContext, "Tests.DebugBuildTernaryTestInContext"
           Tests.AltCoverTests.ReleaseBuildTernaryTest, "Tests.ReleaseBuildTernaryTest"
           Tests.AltCoverTests.ReleaseBuildTernaryTestInContext, "Tests.ReleaseBuildTernaryTestInContext"
@@ -273,6 +275,8 @@ module ExpectoMain =
           Tests.AltCoverTests2.ShouldNotSubstituteOtherOperand, "Tests2.ShouldNotSubstituteOtherOperand"
           Tests.AltCoverTests2.ShouldBeAbleToTrackAMethod, "Tests2.ShouldBeAbleToTrackAMethod"
           Tests.AltCoverTests2.ShouldBeAbleToTrackAMethodWithTailCalls, "Tests2.ShouldBeAbleToTrackAMethodWithTailCalls"
+          Tests.AltCoverTests2.ShouldBeAbleToTrackAMethodWithNonVoidReturn, "Tests2.ShouldBeAbleToTrackAMethodWithNonVoidReturn"
+          Tests.AltCoverTests2.ShouldBeAbleToTrackAnAsyncMethod, "Tests2.ShouldBeAbleToTrackAnAsyncMethod"
           Tests.AltCoverTests2.ShouldBeAbleToInstrumentASwitchForNCover, "Tests2.ShouldBeAbleToInstrumentASwitchForNCover"
           Tests.AltCoverTests2.ShouldNotChangeAnUntrackedMethod, "Tests2.ShouldNotChangeAnUntrackedMethod"
           Tests.AltCoverTests2.SwitchBranchesShouldInstrumentByPushingDown, "Tests2.SwitchBranchesShouldInstrumentByPushingDown"
@@ -303,6 +307,7 @@ module ExpectoMain =
           Tests.AltCoverTests2.JSONInjectionTransformsDependencyFileAsExpected, "Tests2.JSONInjectionTransformsDependencyFileAsExpected"
           Tests.AltCoverTests2.JSONInjectionIsIdempotent, "Tests2.JSONInjectionIsIdempotent"
           Tests.AltCoverTests2.NonFinishShouldDisposeRecordingAssembly, "Tests2.NonFinishShouldDisposeRecordingAssembly"
+          Tests.AltCoverTests2.NonFinishShouldDisposeThreadingAssembly, "Tests2.NonFinishShouldDisposeThreadingAssembly"
           Tests.AltCoverTests2.NonFinishShouldNotDisposeNullRecordingAssembly, "Tests2.NonFinishShouldNotDisposeNullRecordingAssembly"
           Tests.AltCoverTests2.FinishShouldLeaveRecordingAssembly, "Tests2.FinishShouldLeaveRecordingAssembly"
           Tests.AltCoverTests2.StrongNameKeyCanBeValidatedExceptOnNetCore, "Tests2.StrongNameKeyCanBeValidatedExceptOnNetCore"
@@ -461,6 +466,7 @@ module ExpectoMain =
           Tests.AltCoverXTests.AfterAssemblyCommitsThatAssembly, "XTests.AfterAssemblyCommitsThatAssembly"
           Tests.AltCoverXTests.AfterAssemblyCommitsThatAssemblyForMono, "XTests.AfterAssemblyCommitsThatAssemblyForMono"
           Tests.AltCoverXTests.FinishCommitsTheRecordingAssembly, "XTests.FinishCommitsTheRecordingAssembly"
+          Tests.AltCoverXTests.FinishCommitsTheAsyncRecordingAssembly, "XTests.FinishCommitsTheAsyncRecordingAssembly"
           Tests.AltCoverXTests.ShouldDoCoverage, "XTests.ShouldDoCoverage"
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMono, "XTests.ShouldGenerateExpectedXmlReportFromMono"
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle, "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle"

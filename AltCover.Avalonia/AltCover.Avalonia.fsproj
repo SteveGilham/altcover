@@ -15,6 +15,9 @@
     <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <UseStandardResourceNames>True</UseStandardResourceNames>
+    <Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -58,7 +61,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Options" Version="6.6.0.161" />
-    <PackageReference Include="System.Reactive.Core" Version="4.4.1" />
+    <PackageReference Include="System.Reactive.Core" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
