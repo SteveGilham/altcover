@@ -363,35 +363,35 @@ namespace AltCoverFake.DotNet.Testing
       /// <summary>
       /// <para type="description">OpenCover format with CRAP score, equivalent to Many [O; C] if no other values given </para>
       /// </summary>
-      | Default
+      | Default  (* O + C *)
       /// <summary>
       /// <para type="description">No summary, overriding any other value given</para>
       /// </summary>
-      | N
+      | N (* No summary -- overrides all other choices *)
       /// <summary>
       /// <para type="description">OpenCover classic summary only</para>
       /// </summary>
-      | O
+      | O  (* OpenCover style *)
       /// <summary>
       /// <para type="description">Change Risk Anti-Patterns score only</para>
       /// </summary>
-      | C
+      | C  (* Change Risk Anti-Pattern score *)
       /// <summary>
       /// <para type="description">TeamCity with R for bRanch</para>
       /// </summary>
-      | R
+      | R  (* TeamCity bRanch only *)
       /// <summary>
       /// <para type="description">TeamCity with B for Block representing branch coverage</para>
       /// </summary>
-      | B
+      | B  (* TeamCity Block only *)
       /// <summary>
       /// <para type="description">OpenCover plus CRAP score plus TeamCity with R for bRanch, equivalent to Many [B; O; C]</para>
       /// </summary>
-      | RPlus
+      | RPlus (* R + O + C *)
       /// <summary>
       /// <para type="description">OpenCover plus CRAP score plus TeamCity with B for Block representing branch coverage, equivalent to Many [R; O; C]</para>
       /// </summary>
-      | BPlus
+      | BPlus (* B + O + C *)
       /// <summary>
       /// <para type="description">Aggregation of the above</para>
       /// </summary>

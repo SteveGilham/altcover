@@ -3,7 +3,7 @@
 Selects summary format
 
 ```csharp
-public Summary SummaryFormat { get; set; }
+public Summary[] SummaryFormat { get; set; }
 ```
 
 ## See Also

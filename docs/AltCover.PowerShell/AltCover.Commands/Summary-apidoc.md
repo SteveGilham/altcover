@@ -10,11 +10,14 @@ public enum Summary
 
 | name | value | description |
 | --- | --- | --- |
-| Default | `0` | OpenCover format |
+| Default | `0` | OpenCover format with CRAP score, equivalent to (O, C) if no other values given |
+| N | `5` | No summary, overriding any other value given |
+| O | `6` | OpenCover classic summary only |
+| C | `7` | Change Risk Anti-Patterns score only |
 | R | `1` | TeamCity with R for bRanch |
 | B | `2` | TeamCity with B for Block representing branch coverage |
-| RPlus | `3` | OpenCover plus TeamCity with R for bRanch |
-| BPlus | `4` | OpenCover plus TeamCity with B for Block representing branch coverage |
+| RPlus | `3` | OpenCover plus CRAP score plus TeamCity with R for bRanch, equivalent to (B, O, C) |
+| BPlus | `4` | OpenCover plus CRAP score plus TeamCity with B for Block representing branch coverage, equivalent to (R, O, C) |
 
 ## See Also
 

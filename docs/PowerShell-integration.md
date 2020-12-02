@@ -941,8 +941,8 @@ SYNTAX
 ```
 Invoke-AltCover [-Runner] <SwitchParameter> -RecorderDirectory <string> [-Cobertura <string>] [-CommandLine
 <string[]>] [-DropReturnCode <SwitchParameter>] [-Executable <string>] [-LcovReport <string>] [-OutputFile
-<string>] [-SummaryFormat {Default | R | B | RPlus | BPlus}] [-Threshold <string>] [-WorkingDirectory <string>]
-[<CommonParameters>]
+<string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}] [-Threshold <string>] [-WorkingDirectory
+<string>] [<CommonParameters>]
 
 Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>] [-AttributeFilter <string[]>]
 [-AttributeTopLevel <string[]>] [-BranchCover <SwitchParameter>] [-CallContext <string[]>] [-CommandLine
@@ -1475,15 +1475,15 @@ Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
 
-#### `-SummaryFormat <Summary>` 
+#### `-SummaryFormat <Summary[]>` 
 Selects summary format
 
-Possible values: Default, R, B, RPlus, BPlus
+Possible values: Default, N, O, C, R, B, RPlus, BPlus
 
 ```
 Required?                    false
 Position?                    named
-Default value                Default
+Default value
 Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
