@@ -101,6 +101,21 @@ let dotnetOptions (o : DotNet.Options) =
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
+let dotnetVersion = DotNet.getVersion (fun o -> o.WithCommon dotnetOptions)
+printfn "Using dotnet version %s" dotnetVersion
+
+let dotnetInfo = DotNet.exec (fun o -> dotnetOptions (o.WithRedirectOutput true)) "" "--info"
+let MSBuildPath = dotnetInfo.Results
+                  |> Seq.filter (fun x -> x.IsError |> not)
+                  |> Seq.map (fun x -> x.Message)
+                  |> Seq.tryFind (fun x -> x.Contains "Base Path:")
+                  |> Option.map (fun x -> Path.Combine(x.Replace("Base Path:", "").TrimStart(), "MSBuild.dll"))
+printfn "MSBuildPath = %A" MSBuildPath
+
+let dotnetOptionsWithRollForwards (o : DotNet.Options) =
+  let env = o.Environment.Add ("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2")
+  o.WithEnvironment env
+
 let fxcop =
   if Environment.isWindows then
     let expect = "./packages/fxcop/FxCopCmd.exe" |> Path.getFullName
@@ -178,6 +193,7 @@ let cliArguments =
   { MSBuild.CliArguments.Create() with
       ConsoleLogParameters = []
       DistributedLoggers = None
+      Properties = [("CheckEolTargetFramework", "false")]
       DisableInternalBinLog = true }
 
 let withWorkingDirectoryVM dir o =
@@ -219,7 +235,7 @@ let defaultTestOptions fwk common (o : DotNet.TestOptions) =
   { o.WithCommon
       ((fun o2 -> { o2 with Verbosity = Some DotNet.Verbosity.Normal }) >> common) with
       NoBuild = true
-      Framework = fwk // Some "netcoreapp3.0"
+      Framework = fwk // Some "net5.0"
       Configuration = DotNet.BuildConfiguration.Debug }
 
 let defaultDotNetTestCommandLine fwk project =
@@ -235,7 +251,7 @@ let coverletTestOptions (o : DotNet.TestOptions) =
   { o.WithCommon dotnetOptions with
       Configuration = DotNet.BuildConfiguration.Debug
       NoBuild = true
-      Framework = Some "netcoreapp3.0"
+      Framework = Some "net5.0"
       Settings = Some "./Build/coverletArgs.runsettings" }
   |> testWithCLIArguments
 
@@ -282,27 +298,33 @@ let coverageSummary _ =
      || !misses > 1
   then Assert.Fail("Coverage is too low")
 
-let msbuildRelease proj =
-  MSBuild.build (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Normal
-        ConsoleLogParameters = []
-        DistributedLoggers = None
-        DisableInternalBinLog = true
-        Properties =
-          [ "Configuration", "Release"
-            "DebugSymbols", "True" ] }) proj
+let msbuildCommon (p : MSBuildParams) =
+      { p with
+          Verbosity = Some MSBuildVerbosity.Normal
+          ConsoleLogParameters = []
+          DistributedLoggers = None
+          DisableInternalBinLog = true
+          Properties =
+            [ "CheckEolTargetFramework", "false"
+              "DebugSymbols", "True" ] }
+let withDebug (p : MSBuildParams) =
+ { p with Properties = ("Configuration", "Debug") :: p.Properties }
+let withRelease (p : MSBuildParams) =
+ { p with Properties = ("Configuration", "Release") :: p.Properties }
 
-let msbuildDebug proj =
-  MSBuild.build (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Normal
-        ConsoleLogParameters = []
-        DistributedLoggers = None
-        DisableInternalBinLog = true
-        Properties =
-          [ "Configuration", "Debug"
-            "DebugSymbols", "True" ] }) proj
+let doMSBuild config overrider proj =
+  let f = msbuildCommon >> config
+  match overrider with
+  | None -> MSBuild.build f proj
+    // hacky -- maybe BlackFox the append
+  | Some dll -> let (_, args) = MSBuild.buildArgs f
+                CreateProcess.fromRawCommandLine dll (args + " " + proj)
+                |> DotNet.prefixProcess dotnetOptions [dll]
+                |> Proc.run
+                |> fun p -> Assert.That(p.ExitCode, Is.EqualTo 0)
+
+let msbuildRelease = doMSBuild withRelease
+let msbuildDebug = doMSBuild withDebug
 
 let dotnetBuildRelease proj =
   DotNet.build (fun p ->
@@ -344,12 +366,16 @@ _Target "Clean" (fun _ ->
 _Target "SetVersion" (fun _ ->
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
+  let github = Environment.environVar "GITHUB_RUN_NUMBER"
+
   let version = Actions.GetVersionFromYaml()
 
   let ci =
     if String.IsNullOrWhiteSpace appveyor then
       if String.IsNullOrWhiteSpace travis
-      then String.Empty
+      then if String.IsNullOrWhiteSpace github
+              then String.Empty
+              else version.Replace("{build}", github + "-github")
       else version.Replace("{build}", travis + "-travis")
     else
       appveyor
@@ -399,6 +425,7 @@ module SolutionRoot =
 
   [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
     "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+    "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
@@ -406,7 +433,18 @@ module SolutionRoot =
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
        let proj = Path.GetFileName f
-       DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
+       DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM dir)
+                                let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                                { tmp with MSBuildParams = mparams} ) proj)
+  do
+    let xml = XDocument.Load("./AltCover.Recorder/Strings.resx")
+    use resw = new System.Resources.ResourceWriter("./AltCover.Recorder/Strings.resources")
+    xml.Descendants(XName.Get "data")
+    |> Seq.iter(fun d -> let key = d.Attribute(XName.Get "name").Value
+                         let value = d.Descendants(XName.Get "value")
+                                     |> Seq.head
+                         resw.AddResource(key, value.Value))
+    resw.Close()  )
 
 // Basic compilation
 
@@ -414,9 +452,8 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildRelease // gac+net20; mono
-
-    [ "./AltCover.sln" ] |> Seq.iter dotnetBuildRelease
+    [  "MCS.sln" ] |> Seq.iter (msbuildRelease None) // mono
+    [ "./AltCover.sln"; "./AltCover.Visualizer.sln" ] |> Seq.iter dotnetBuildRelease
 
     // document cmdlets ahead of packaging
     let packages =
@@ -467,9 +504,10 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./AltCover.Recorder.sln"; "./AltCover.Visualizer.sln"; "MCS.sln" ] |> Seq.iter msbuildDebug // gac+net20; mono
-
-  [ "./AltCover.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
+  [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
+  [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildDebug MSBuildPath) // net20
+  [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
+  [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
 
@@ -549,7 +587,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 //    ("./Build/common-rules.xml", // Avalonia generated code breaks everything
 //     [ "_Binaries/AltCover.Visualizer.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
 //    ("./Build/common-rules.xml",
-//     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/netcoreapp3.0/AltCover.Visualizer.dll" ])
+//     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
        "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
@@ -713,6 +751,7 @@ _Target "FxCop" (fun _ ->
          |> FxCop.run
               { FxCop.Params.Create() with
                   WorkingDirectory = "."
+                  DependencyDirectories  = ["./ThirdParty/gtk-sharp2"]
                   ToolPath = Option.get fxcop
                   UseGAC = true
                   Verbose = false
@@ -785,7 +824,8 @@ _Target "JustUnitTest" (fun _ ->
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
-  msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
   !!(@"./*Test*/*Tests.fsproj")
   |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
@@ -793,7 +833,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
-             Framework = Some "netcoreapp3.0" }
+             Framework = Some "net5.0" }
          |> buildWithCLIArguments)))
 
 _Target "UnitTestDotNet" (fun _ ->
@@ -804,7 +844,7 @@ _Target "UnitTestDotNet" (fun _ ->
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
-               Framework = Some "netcoreapp3.0"
+               Framework = Some "net5.0"
                NoBuild = true }
            |> testWithCLIArguments))
   with x ->
@@ -812,7 +852,8 @@ _Target "UnitTestDotNet" (fun _ ->
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  msbuildDebug "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
   let l = !!(@"./*Tests/*Tests.fsproj")
           |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
                                   && s.Contains("Recorder") |> not) // net20
@@ -823,7 +864,7 @@ _Target "BuildForCoverlet" (fun _ ->
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
-             Framework = Some "netcoreapp3.0" }
+             Framework = Some "net5.0" }
          |> buildWithCLIArguments)))
 
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
@@ -1243,32 +1284,32 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCore.xml", // report
        "AltCover.Tests.fsproj", // project
        Path.getFullName "Tests", // workingDirectory
        AltCoverFilter >> (fun p -> { p with AssemblyExcludeFilter = [ "?^AltCover$" ]}) // filter
      )
      (
-       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
-       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
+       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
        reports @@ "RecorderTestWithAltCoverCore.xml",
        "AltCover.Recorder.Tests.fsproj",
        Path.getFullName "Recorder.Tests",
        AltCoverFilterG
      )
      (
-       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "ApiUnitTestWithAltCoverCore.xml", // report
        "AltCover.Api.Tests.fsproj", // project
        Path.getFullName "AltCover.Api.Tests", // workingDirectory
        AltCoverApiFilter // filter
      )
      (
-       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml", // report
        "AltCover.ValidateGendarmeEmulation.fsproj", // project
        Path.getFullName "ValidateGendarmeEmulations", // workingDirectory
@@ -1303,7 +1344,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
          |> DotNet.test (fun p ->
               { p.WithCommon(withWorkingDirectoryVM workingDirectory) with
                   Configuration = DotNet.BuildConfiguration.Debug
-                  Framework = Some "netcoreapp3.0"
+                  Framework = Some "net5.0"
                   NoBuild = true }
               |> testWithCLIArguments)
        with x ->
@@ -1335,25 +1376,30 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./Tests/AltCover.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
-       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0",
+       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
+       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
      (
-       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // testDirectory
-       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/netcoreapp3.0", // output
+       Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net5.0",
+       Path.getFullName "Recorder2.Tests/_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net5.0",
+       reports @@ "Recorder2TestWithAltCoverCoreRunner.xml",
+       Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
+     (
+       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
@@ -1384,7 +1430,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
        printfn "Unit test the instrumented code %s" testproject
        let (dotnetexe, args) =
-         defaultDotNetTestCommandLine (Some "netcoreapp3.0") testproject
+         defaultDotNetTestCommandLine (Some "net5.0") testproject
 
        let collect =
          AltCover.CollectOptions.Primitive
@@ -1539,6 +1585,69 @@ _Target "FSharpTests" (fun _ ->
       ToolType = dotnetAltcover
       WorkingDirectory = "Sample7" }
   |> AltCoverCommand.run)
+
+_Target "AsyncAwaitTests" (fun _ ->
+  Directory.ensure "./_Reports"
+  let altcover =
+    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+  let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")
+  let sampleRoot =
+    Path.getFullName "Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
+
+  // Test the --inplace operation
+  Shell.cleanDir sampleRoot
+  "Sample24.csproj"
+  |> DotNet.test (fun o ->
+       { o.WithCommon(withWorkingDirectoryVM "Sample24") with
+           Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
+
+  // instrument
+  let prep =
+    AltCover.PrepareOptions.Primitive
+      ({ Primitive.PrepareOptions.Create() with
+           XmlReport = simpleReport
+           CallContext = [ "[Test]" ]
+           AssemblyFilter = [ "Adapter" ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           InPlace = true
+           ReportFormat = "OpenCover"
+           Save = false })
+    |> AltCoverCommand.Prepare
+  { AltCoverCommand.Options.Create prep with
+      ToolPath = altcover
+      ToolType = dotnetAltcover
+      WorkingDirectory = sampleRoot }
+  |> AltCoverCommand.run
+
+  printfn "Execute the instrumented tests"
+
+  let sample24 = Path.getFullName "./Sample24/Sample24.csproj"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine None sample24
+
+  let collect =
+    AltCover.CollectOptions.Primitive
+      { Primitive.CollectOptions.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = sampleRoot
+          CommandLine = args }
+    |> AltCoverCommand.Collect
+  { AltCoverCommand.Options.Create collect with
+      ToolPath = altcover
+      ToolType = dotnetAltcover
+      WorkingDirectory = "Sample24" }
+  |> AltCoverCommand.run
+
+  let coverageDocument = XDocument.Load(XmlReader.Create(simpleReport))
+
+  coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+  |> Seq.toList
+  |> Seq.iter (fun tmr -> let spts = tmr.Parent.Parent.Parent
+                          let sptcount = spts.Descendants(XName.Get("SequencePoint"))
+                                         |> Seq.length
+                          let tmrcount = spts.Descendants(XName.Get("TrackedMethodRef"))
+                                         |> Seq.length
+                          let name = spts.Parent.Descendants(XName.Get("Name")) |> Seq.head
+                          Assert.That (tmrcount, Is.EqualTo sptcount, name.Value) ) )
 
 _Target "FSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2458,11 +2567,13 @@ _Target "PrepareDotNetBuild" (fun _ ->
     { options with
         OutputPath = Some publish
         Configuration = DotNet.BuildConfiguration.Release
+        MSBuildParams = { options.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: options.MSBuildParams.Properties}
         Framework = Some "netcoreapp2.0" }) netcoresource
   DotNet.publish (fun options ->
     { options with
         OutputPath = Some(publish + ".visualizer")
         Configuration = DotNet.BuildConfiguration.Release
+        MSBuildParams = { options.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: options.MSBuildParams.Properties}
         Framework = Some "netcoreapp2.1" })
     (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
@@ -2563,7 +2674,7 @@ _Target "Unpack" (fun _ ->
   ]
   |> List.iter (fun n ->
     Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.0/" + n + ".xml")
-    Actions.RunDotnet dotnetOptions "xmldocmd"
+    Actions.RunDotnet (dotnetOptions >> dotnetOptionsWithRollForwards) "xmldocmd"
      (unpacked + n + ".dll ./_Documentation/" + n + " --visibility public --skip-unbrowsable --clean")
      ("documenting " + n)))
 
@@ -3013,8 +3124,8 @@ _Target "OpenCoverForPester" (fun _ ->
   Directory.ensure reportDir
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
-  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
-  let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
+  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/net5.0"
+  let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net5.0"
 
   Shell.cleanDir o
 
@@ -3039,7 +3150,7 @@ _Target "OpenCoverForPester" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample = Path.getFullName "./Sample18/Sample18.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") sample
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample
 
   // Run
   let collect =
@@ -3070,10 +3181,10 @@ _Target "OpenCoverForPester" (fun _ ->
   let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
   let target = reportDir @@ "OpenCoverForPester.coverlet.xml"
   Shell.copyFile target covxml
-  let binary = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.dll"
+  let binary = here @@ "_Binaries/Sample18/Debug+AnyCPU/net5.0/Sample18.dll"
   let binaryTarget = reportDir @@ "Sample18.dll"
   Shell.copyFile binaryTarget binary
-  let binary2 = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.pdb"
+  let binary2 = here @@ "_Binaries/Sample18/Debug+AnyCPU/net5.0/Sample18.pdb"
   let binary2Target = reportDir @@ "Sample18.pdb"
   Shell.copyFile binary2Target binary2)
 
@@ -3310,7 +3421,9 @@ _Target "MSBuildTest" (fun _ ->
   let before = Actions.ticksNow()
   Shell.cleanDir (sample @@ "_Binaries")
   DotNet.msbuild (fun opt ->
-    opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample }))
+    let tmp = opt.WithCommon(fun o' -> { dotnetOptions o' with WorkingDirectory = sample })
+    let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+    { tmp with MSBuildParams = mparams})
     (build @@ "msbuildtest.proj")
   printfn "Checking samples4 output"
   Actions.CheckSample4 before x
@@ -3329,6 +3442,7 @@ _Target "MSBuildTest" (fun _ ->
         Properties =
           [ "Configuration", "Debug"
             "MSBuildTest", "true"
+            "CheckEolTargetFramework", "false"
             "AltCoverPath", unpack.Replace('\\', '/')
             "DebugSymbols", "True" ] }) "./Sample4/Sample4LongForm.fsproj")
 
@@ -3448,6 +3562,7 @@ _Target "DoIt"
     { MSBuild.CliArguments.Create() with
         ConsoleLogParameters = []
         DistributedLoggers = None
+        Properties = [("CheckEolTargetFramework", "false")]
         DisableInternalBinLog = true }
 
   DotNet.test
@@ -3793,11 +3908,14 @@ _Target "Issue20" (fun _ ->
 
     DotNet.restore
       (fun o ->
-        o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")) ""
+        let tmp = o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")
+        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+        { tmp with MSBuildParams = mparams}) ""
     DotNet.restore
       (fun o ->
-        o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests"))
-      ""
+        let tmp = o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests")
+        let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+        { tmp with MSBuildParams = mparams}) ""
 
     // would like to assert "succeeds with warnings"
     let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
@@ -3854,7 +3972,9 @@ _Target "Issue23" (fun _ ->
     csproj.Save "./_Issue23/sample9.csproj"
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
     Shell.copy "./_Issue23" (!!"./Sample9/*.json")
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue23")) ""
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue23")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                             { tmp with MSBuildParams = mparams}) ""
 
     let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
     let pp0 = AltCover.PrepareOptions.Primitive p0
@@ -3893,7 +4013,9 @@ _Target "Issue67" (fun _ ->
     csproj.Save "./_Issue67/sample9.csproj"
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
     Shell.copy "./_Issue67" (!!"./Sample9/*.json")
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue67")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                             { tmp with MSBuildParams = mparams}) ""
 
     let p0 =
       { Primitive.PrepareOptions.Create() with
@@ -4240,6 +4362,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTests"
+==> "OperationalTest"
+
+"Compilation"
+==> "AsyncAwaitTests"
 ==> "OperationalTest"
 
 //"Compilation"

@@ -14,39 +14,46 @@ open Mono.Cecil
 open Mono.Options
 
 [<ExcludeFromCodeCoverage; NoComparison>]
-type internal TeamCityFormat =
+type internal SummaryFormat =
   | Default
+  | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="Consistent notation")>]
+    N
+  | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="Consistent notation")>]
+    O
+  | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+    Justification="Consistent notation")>]
+    C
   | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
     Justification="TeamCity notation")>]
     R
   | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
     Justification="TeamCity notation")>]
     B
-  | RPlus
-  | BPlus
-  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-    Justification="trivial usage")>]
-  static member Factory s =
-    let (|Select|_|) (pattern : String) offered =
-      if offered
-         |> String.IsNullOrWhiteSpace
-         |> not
-         && pattern.Equals
-              (String
-                (offered
-                 |> Seq.sort
-                 |> Seq.toArray), StringComparison.OrdinalIgnoreCase) then
-        Some offered
-      else
-        None
-
-    match s with
-    | Select "B" _ -> B
-    | Select "+" _
-    | Select "+B" _ -> BPlus
-    | Select "R" _ -> R
-    | Select "+R" _ -> RPlus
-    | _ -> Default
+  | Many of SummaryFormat list
+  static member ToList x =
+      match x with
+      | Many l -> l
+      | f -> [f]
+  static member Factory (s:string) =
+    let expanded = match s with
+                   | x when String.IsNullOrWhiteSpace x -> "B"
+                   | "+" -> "BOC"
+                   | _ -> s.Replace("+", "OC").ToUpperInvariant()
+    try
+      expanded
+      |> Seq.distinct
+      |> Seq.fold (fun state c -> match (c,state) with
+                                  | ('N', _)
+                                  | (_,N) -> N
+                                  | ('B', _) -> Many (B :: (SummaryFormat.ToList state))
+                                  | ('R', _) -> Many (R :: (SummaryFormat.ToList state))
+                                  | ('O', _) -> Many (O :: (SummaryFormat.ToList state))
+                                  | ('C', _) -> Many (C :: (SummaryFormat.ToList state))
+                                  | _ -> s |> FormatException |> raise) (Many [])
+    with
+    | :? FormatException -> Default
 
 type internal Threshold =
   {
@@ -125,7 +132,7 @@ module internal Runner =
   let mutable internal threshold : Threshold option = None
   let mutable internal output : Option<string> = None
   let internal summary = StringBuilder()
-  let mutable internal summaryFormat = TeamCityFormat.Default
+  let mutable internal summaryFormat = SummaryFormat.Default
 
   let internal init() =
     CommandLine.error <- []
@@ -164,6 +171,13 @@ module internal Runner =
     let internal writeTC template what value =
       let line = String.Format(CultureInfo.InvariantCulture, template, what, value)
       write line
+
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Library method inlined")>]
+    let internal contains o l =
+      l |> Seq.contains o
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -218,13 +232,16 @@ module internal Runner =
         |> Seq.filter isVisited
         |> Seq.length
 
+      let l = SummaryFormat.ToList summaryFormat
       let emitSummary() =
-        if [ Default; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat) then
+        if summaryFormat = Default ||
+           l |> contains O then
           summarise vclasses classes.Length "VisitedClasses"
           summarise vmethods methods.Length "VisitedMethods"
           summarise vpoints points.Length "VisitedPoints"
 
-        if [ B; R; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat) then
+        if l |> contains B ||
+           l |> contains R then
           writeTC totalTC "C" classes.Length
           writeTC coverTC "C" vclasses
           writeTC totalTC "M" methods.Length
@@ -234,12 +251,12 @@ module internal Runner =
 
       emitSummary()
 
-      [makepc vpoints points.Length
-       "0" // branches
-       makepc vmethods methods.Length
-       makepc vmethods methods.Length
-       "0" // crap
-       "0"] // altcrap
+      [ (makepc vpoints points.Length)
+        "0" // branches
+        (makepc vmethods methods.Length)
+        (makepc vmethods methods.Length)
+        "0" // crap
+        "0"] // altcrap
 
     [<SuppressMessage(
       "Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
@@ -263,10 +280,10 @@ module internal Runner =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let internal altSummary go (report : XDocument) =
+    let internal altSummary go extra (report : XDocument) =
       "Alternative"
       |> CommandLine.resources.GetString
-      |> if go then write else ignore
+      |> if go || extra then write else ignore
 
       let classes =
         report.Descendants("Class".X)
@@ -322,11 +339,17 @@ module internal Runner =
       if go then writeSummary "AltVM" vm nm pm
 
       let acv = if nm > 0
-                then emitAltCrapScore go methods
+                then emitAltCrapScore extra methods
                 else "0.0"
 
       (amv, acv)
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability", "AvoidComplexMethodsRule",
+      Justification="TODO: refactor even more")>]
     let internal openCoverSummary(report : XDocument) =
       let summary = report.Descendants("Summary".X) |> Seq.head
 
@@ -357,7 +380,9 @@ module internal Runner =
         if go then writeSummary key vc nc pc
         (vc, nc, pc)
 
-      let go = [ Default; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat)
+      let l = (SummaryFormat.ToList summaryFormat) |> Seq.distinct
+      let go = summaryFormat = Default ||
+               l |> Seq.contains O
       let (vc, nc, _) =
         summarise go "visitedClasses" "numClasses" None "VisitedClasses"
       let (vm, nm, mcovered) =
@@ -375,28 +400,35 @@ module internal Runner =
                       |> Option.map (fun a -> a.Value)
                       |> Option.defaultValue "0.0"
 
-      if go then
+      let extra = summaryFormat = Default ||
+                  l |> Seq.contains C
+      if extra then
         if crap.IsNotNull then
           CommandLine.Format.Local("maxCrap", crapvalue)
           |> write
-        write String.Empty
+      if go || extra then write String.Empty
 
-      let (altmcovered, altcrapvalue) = altSummary go report
+      let (altmcovered, altcrapvalue) = altSummary go extra report
 
-      if [ B; R; BPlus; RPlus ] |> Seq.exists (fun x -> x = summaryFormat) then
+      if l |> Seq.contains B ||
+         l |> Seq.contains R then
         writeTC totalTC "C" nc
         writeTC coverTC "C" vc
         writeTC totalTC "M" nm
         writeTC coverTC "M" vm
         writeTC totalTC "S" ns
         writeTC coverTC "S" vs
-        let tag =
-          match summaryFormat with
-          | R
-          | RPlus -> "R"
-          | _ -> "B"
-        writeTC totalTC tag nb
-        writeTC coverTC tag vb
+        l
+        |> Seq.iter (fun f ->
+          let tag =
+            match f with
+            | R -> "R"
+            | B -> "B"
+            | _ -> String.Empty
+          if tag |> String.IsNullOrEmpty |>  not
+          then
+            writeTC totalTC tag nb
+            writeTC coverTC tag vb)
 
       [covered
        bcovered
@@ -540,18 +572,18 @@ module internal Runner =
                |> Path.GetFullPath
                |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
-      ("teamcity:",
+      ("summary|teamcity:",
        (fun x ->
          if summaryFormat = Default then
            summaryFormat <-
-             if String.IsNullOrWhiteSpace x then B else TeamCityFormat.Factory x
+             if String.IsNullOrWhiteSpace x then B else SummaryFormat.Factory x
            if summaryFormat = Default then
              CommandLine.error <-
-               CommandLine.Format.Local("InvalidValue", "--teamcity", x)
+               CommandLine.Format.Local("InvalidValue", "--summary", x)
                :: CommandLine.error
          else
            CommandLine.error <-
-             CommandLine.Format.Local("MultiplesNotAllowed", "--teamcity")
+             CommandLine.Format.Local("MultiplesNotAllowed", "--summary")
              :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 

@@ -4,6 +4,7 @@
     <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <AssemblyName>Sample5</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -28,5 +29,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="_Intermediate\**" />
   </ItemGroup>
 </Project>

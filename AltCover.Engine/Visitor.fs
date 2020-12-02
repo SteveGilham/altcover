@@ -388,8 +388,8 @@ module internal Visitor =
         String.Empty
       else
         let ender = ensureEndsWith <| Path.DirectorySeparatorChar.ToString()
-        let uri = new Uri(ender relativeTo)
-        Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString())
+        let uri = Uri(ender relativeTo)
+        Uri.UnescapeDataString(uri.MakeRelativeUri(Uri(path)).ToString())
            .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
     let internal exists(url : Uri) =

@@ -1,4 +1,4 @@
-version: 7.1.{build}
+version: 7.2.{build}
 branches:
   except:
   - /develop.*/
@@ -10,10 +10,9 @@ environment:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
 nuget:
   disable_publish_on_pr: true
-install:
-  - cinst gtksharp
+# install:
   # SDK version fix
-  - cinst dotnetcore-sdk --version 3.1.403
+  #   - cinst dotnet-sdk --version 5.0.100
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'

@@ -16,7 +16,7 @@ open Mono.Options
 #nowarn "25"
 
 module AltCoverTests2 =
-#if NETCOREAPP2_0
+#if NET5_0
     let sample1 = "Sample1.dll"
     let monoSample1 = "../_Mono/Sample1"
 #else
@@ -302,7 +302,7 @@ module AltCoverTests2 =
     let ShouldBeAbleToLocateAReference() =
       let where = Assembly.GetExecutingAssembly().Location
       let here = Path.GetDirectoryName where
-#if NETCOREAPP2_0
+#if NET5_0
       let json = Directory.GetFiles(here, "*.json")
       test' <@ json |> Seq.isEmpty |> not @> "no json"
       json
@@ -429,7 +429,7 @@ module AltCoverTests2 =
       | null -> ()
       //| x -> Assert.Fail("null expected for non-.pdb but got " + x.GetType().FullName)
 
-#if NETCOREAPP2_0
+#if NET5_0
     type TestAssemblyLoadContext () =
       inherit System.Runtime.Loader.AssemblyLoadContext(true)
       override self.Load(name : AssemblyName) =
@@ -470,7 +470,7 @@ module AltCoverTests2 =
           let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType).IsNotNull
                                       ".dll.mdb" ".pdb"
           let isWindows =
-#if NETCOREAPP2_0
+#if NET5_0
                           false // recorder symbols not read here
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -484,7 +484,7 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"), "wrong token")
-#if NETCOREAPP2_0
+#if NET5_0
           let alc = new TestAssemblyLoadContext()
 #else
           let setup = AppDomainSetup()
@@ -492,7 +492,7 @@ module AltCoverTests2 =
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
 #endif
           try
-#if NETCOREAPP2_0
+#if NET5_0
             let proxyObject = ProxyObject()
             proxyObject.Context <- alc
 #else
@@ -508,7 +508,7 @@ module AltCoverTests2 =
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
             Assert.That (report4, AltCover.Sampling.Single |> int |> Is.EqualTo, "wrong outro sampling")
           finally
-#if NETCOREAPP2_0
+#if NET5_0
             alc.Unload()
 #else
             AppDomain.Unload(ad)
@@ -556,7 +556,7 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
-#if NETCOREAPP2_0
+#if NET5_0
           let alc = new TestAssemblyLoadContext()
 #else
           let setup = AppDomainSetup()
@@ -564,7 +564,7 @@ module AltCoverTests2 =
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
 #endif
           try
-#if NETCOREAPP2_0
+#if NET5_0
             let proxyObject = ProxyObject()
             proxyObject.Context <- alc
 #else
@@ -574,7 +574,7 @@ module AltCoverTests2 =
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           finally
-#if NETCOREAPP2_0
+#if NET5_0
             alc.Unload()
 #else
             AppDomain.Unload(ad)
@@ -610,7 +610,7 @@ module AltCoverTests2 =
           Instrument.I.writeAssembly def outputdll
           let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
           let isWindows =
-#if NETCOREAPP2_0
+#if NET5_0
                           true
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -621,7 +621,7 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"), "wrong token")
-#if NETCOREAPP2_0
+#if NET5_0
           let alc = new TestAssemblyLoadContext()
           try
 #else
@@ -631,7 +631,7 @@ module AltCoverTests2 =
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
           try
 #endif
-#if NETCOREAPP2_0
+#if NET5_0
             let proxyObject = ProxyObject()
             proxyObject.Context <- alc
 #else
@@ -643,7 +643,7 @@ module AltCoverTests2 =
             let getting = proxyObject.InvokeMethod("get_Property",[||]) :?> int
             Assert.That (getting, Is.EqualTo 17, "bad getting")
             let isWindows =
-#if NETCOREAPP2_0
+#if NET5_0
                             true
             let proxyObject' = ProxyObject()
             proxyObject'.Context <- alc
@@ -654,13 +654,13 @@ module AltCoverTests2 =
             proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
             let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
                       |> Seq.toList
-            
+
             let result = maybe isWindows // HACK HACK HACK
                            log [(unique, 42)]
-            
+
             Assert.That (result, Is.EquivalentTo[(unique, 42)], "bad call")
           finally
-#if NETCOREAPP2_0
+#if NET5_0
             alc.Unload()
 #else
             AppDomain.Unload(ad)
@@ -684,7 +684,6 @@ module AltCoverTests2 =
       let proc = main.Body.GetILProcessor()
       let newValue = proc.Create(OpCodes.Ldc_I4, 23)
       let other = main.Body.Instructions.[1]
-      let subject = Instrument.I.SubstituteInstruction(oldValue, newValue)
       let handler = ExceptionHandler(ExceptionHandlerType())
       handler.FilterStart <- if selection &&& 1 = 1 then oldValue
                              else other
@@ -696,7 +695,7 @@ module AltCoverTests2 =
                           else other
       handler.TryEnd <- if selection &&& 16 = 16 then oldValue
                         else other
-      subject.SubstituteExceptionBoundary handler
+      CecilExtension.substituteExceptionBoundary oldValue newValue handler
       Assert.That(handler.FilterStart,
                   Is.EqualTo(if selection &&& 1 = 1 then newValue
                              else other))
@@ -735,9 +734,7 @@ module AltCoverTests2 =
            | :? Instruction -> true
            | _ -> false)
       |> Seq.iter (fun i ->
-           let subject =
-             Instrument.I.SubstituteInstruction(i.Operand :?> Instruction, newValue)
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand (i.Operand :?> Instruction) newValue i
            Assert.That(i.Operand, Is.EqualTo newValue))
 
     [<Test>]
@@ -762,9 +759,8 @@ module AltCoverTests2 =
            | :? Instruction -> true
            | _ -> false)
       |> Seq.iter (fun i ->
-           let subject = Instrument.I.SubstituteInstruction(i, newValue)
            let before = i.Operand
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand i newValue i
            Assert.That(i.Operand, Is.SameAs before))
 
     // work around weird compiler error with array indexing
@@ -799,10 +795,9 @@ module AltCoverTests2 =
       |> Seq.collect
            (fun i -> i.Operand :?> Instruction [] |> Seq.mapi (fun o t -> (i, o, t)))
       |> Seq.iter (fun (i, o, t) ->
-           let subject = Instrument.I.SubstituteInstruction(t, newValue)
            Assert.That(AsIArray i.Operand o, (Is.SameAs t))
            Assert.That(t, Is.Not.EqualTo newValue)
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand t newValue i
            let t' = AsIArray i.Operand
            Assert.That(t' o, Is.EqualTo newValue))
 
@@ -829,9 +824,8 @@ module AltCoverTests2 =
            | _ -> false)
       |> Seq.iter
            (fun i ->
-           let subject = Instrument.I.SubstituteInstruction(i, newValue)
            let before = (i.Operand :?> Instruction []) |> Seq.toList
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand i newValue i
            Seq.zip (i.Operand :?> Instruction []) before
            |> Seq.iter (fun (after, before) -> Assert.That(after, Is.SameAs before)))
 
@@ -860,17 +854,16 @@ module AltCoverTests2 =
       |> Seq.collect
            (fun i -> main.Body.Instructions |> Seq.map (fun other -> (i, other)))
       |> Seq.iter (fun (i, other) ->
-           let subject = Instrument.I.SubstituteInstruction(other, newValue)
            let before = i.Operand
-           subject.SubstituteInstructionOperand i
+           CecilExtension.substituteInstructionOperand other newValue i
            Assert.That(i.Operand, Is.SameAs before))
 
     [<Test>]
     let ShouldBeAbleToTrackAMethod() =
-#if NETCOREAPP2_0
+#if NET5_0
       let shift = String.Empty
 #else
-      let shift = "/../netcoreapp3.0"
+      let shift = "/../net5.0"
 #endif
       let path =
         Path.Combine
@@ -893,19 +886,32 @@ module AltCoverTests2 =
         |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
         |> Seq.length
 
+      let nopsBefore =
+        recorder.Head.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That
-        (recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 5 - tailsBefore))
+        (recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
       Assert.That
         (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
 
+      let nopsAfter =
+        recorder.Head.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+        // add 2 extra nop now and replace rather than remove .tails
+      Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
+
     [<Test>]
     let ShouldBeAbleToTrackAMethodWithTailCalls() =
-#if NETCOREAPP2_0
+#if NET5_0
       let shift = String.Empty
 #else
-      let shift = "/../netcoreapp3.0"
+      let shift = "/../net5.0"
 #endif
       let rpath =
         Path.Combine
@@ -938,18 +944,141 @@ module AltCoverTests2 =
         |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
         |> Seq.length
 
+      let nopsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That
-        (target.Body.Instructions.Count, Is.EqualTo(countBefore + 5 - tailsBefore))
+        (target.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+      let nopsAfter =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+        // add 2 extra nop now and replace rather than remove .tails
+      Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
+
+    [<Test>]
+    let ShouldBeAbleToTrackAMethodWithNonVoidReturn() =
+#if NET5_0
+      let shift = String.Empty
+#else
+      let shift = "/../net5.0"
+#endif
+      let rpath =
+        Path.Combine
+          (AltCoverTests.dir + shift,
+           "AltCover.Recorder.dll")
+
+      let sample24 = Path.Combine(Assembly.GetExecutingAssembly().Location
+                                  |> Path.GetDirectoryName, "Sample24.dll")
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
+      let rdef = Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      let recorder = AltCover.Instrument.I.recordingMethod rdef
+      let target =
+        def.MainModule.GetType("NUnitTestProject1.Tests").Methods
+        |> Seq.find (fun m -> m.Name = "AddSynch")
+      let raw = AltCover.InstrumentContext.Build([])
+
+      let state =
+        { raw with RecordingMethodRef =
+                     { raw.RecordingMethodRef with Visit = null
+                                                   Push = recorder.[1]
+                                                   Pop = recorder.[2] } }
+
+      let countBefore = target.Body.Instructions.Count
+
+      let tailsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+        |> Seq.length
+
+      let nopsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+
+      let handlersBefore = target.Body.ExceptionHandlers.Count
+      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isNone)
+      Assert.That  // Adding the return value, too
+        (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9))
+      Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+      let nopsAfter =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+        // add 2 extra nop now and replace rather than remove .tails
+      Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
+
+    [<Test>]
+    let ShouldBeAbleToTrackAnAsyncMethod() =
+#if NET5_0
+      let shift = String.Empty
+#else
+      let shift = "/../net5.0"
+#endif
+      let rpath =
+        Path.Combine
+          (AltCoverTests.dir + shift,
+           "AltCover.Recorder.dll")
+
+      let sample24 = Path.Combine(Assembly.GetExecutingAssembly().Location
+                                  |> Path.GetDirectoryName, "Sample24.dll")
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
+      let rdef = Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      let recorder = AltCover.Instrument.I.recordingMethod rdef
+      let target =
+        def.MainModule.GetType("NUnitTestProject1.Tests").Methods
+        |> Seq.find (fun m -> m.Name = "AddAsync")
+      let raw = AltCover.InstrumentContext.Build([])
+
+      let state =
+        { raw with RecordingMethodRef =
+                     { raw.RecordingMethodRef with Visit = null
+                                                   Push = recorder.[1]
+                                                   Pop = recorder.[2] } }
+
+      let countBefore = target.Body.Instructions.Count
+
+      let tailsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+        |> Seq.length
+
+      let nopsBefore =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+
+      let handlersBefore = target.Body.ExceptionHandlers.Count
+      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      Assert.That (state2.AsyncSupport |> Option.isSome)
+      Assert.That  // Adding the return value, too
+        (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9 + 4))
+      Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+      let nopsAfter =
+        target.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+        |> Seq.length
+        // add 2 extra nop now and replace rather than remove .tails
+      Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
 
     [<Test>]
     let ShouldBeAbleToInstrumentASwitchForNCover() =
-#if NETCOREAPP2_0
+#if NET5_0
       let shift = String.Empty
 #else
-      let shift = "/../netcoreapp3.0"
+      let shift = "/../net5.0"
 #endif
       let rpath =
         Path.Combine
@@ -1020,7 +1149,7 @@ module AltCoverTests2 =
       //IL_0012: switch IL_002b,IL_002d,IL_002b,IL_002d,IL_002b
       //IL_002b: br.s IL_0041
 
-#if NETCOREAPP2_0
+#if NET5_0
       Assert.That(next, Is.GreaterThanOrEqualTo(42).And.LessThanOrEqualTo(46))
       let expected = next
 #else
@@ -1042,7 +1171,8 @@ module AltCoverTests2 =
       let state = AltCover.InstrumentContext.Build([])
       let countBefore = recorder.Head.Body.Instructions.Count
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track None
+      let state2 = AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track None
+      Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That(recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
       Assert.That(recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
 
@@ -1406,7 +1536,7 @@ module AltCoverTests2 =
           (mdir, "Sample1.exe")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
-#if NETCOREAPP2_0
+#if NET5_0
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
 #else
@@ -1475,7 +1605,7 @@ module AltCoverTests2 =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
-#if NETCOREAPP2_0
+#if NET5_0
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
 #else
@@ -1500,7 +1630,7 @@ module AltCoverTests2 =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
-#if NETCOREAPP2_0
+#if NET5_0
       use stream =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
 #else
@@ -1673,16 +1803,31 @@ module AltCoverTests2 =
         let state' =
           { state with RecordingAssembly = def'
                        RecordingMethod = [ visit; visit; visit ]
-                       RecordingMethodRef = r }
+                       RecordingMethodRef = r
+                       AsyncSupport = visit |> AsyncSupport.Update |> Some
+          }
+
+        let async = state'.AsyncSupport.Value
+        let waitBefore = async.Wait
+        // let localBefore = async.LocalWait
 
         let result = Instrument.I.instrumentationVisitor state' visited
-        let ref'' = def.MainModule.ImportReference visit
+
+        let asyncAfter = result.AsyncSupport.Value
+
+        // let ref'' = def.MainModule.ImportReference visit
+        // let localExpect = def.MainModule.ImportReference waitBefore
         Assert.That(result.RecordingMethodRef.Visit.Module, Is.EqualTo(def.MainModule))
+        Assert.That(async.LocalWait.Module, Is.Not.EqualTo(def.MainModule))
+        Assert.That(asyncAfter.LocalWait.Module, Is.SameAs(def.MainModule))
+        Assert.That(asyncAfter.Wait, Is.SameAs(waitBefore))
         Assert.That(string result.RecordingMethodRef, Is.EqualTo(string r))
         Assert.That({ result with RecordingMethodRef = RecorderRefs.Build() },
                     Is.EqualTo { state' with ModuleId = def.MainModule.Mvid.ToString()
                                              RecordingMethod = [ visit; visit; visit ]
-                                             RecordingMethodRef = RecorderRefs.Build() })
+                                             RecordingMethodRef = RecorderRefs.Build()
+                                             AsyncSupport = Some asyncAfter
+                    })
       finally
         CoverageParameters.theReportFormat <- None
 
@@ -1783,6 +1928,39 @@ module AltCoverTests2 =
         |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
 
     [<Test>]
+    let NonFinishShouldDisposeThreadingAssembly() =
+      let path =
+        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+      let prepared = AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.readSymbols prepared
+
+      let md = prepared.MainModule.Types
+               |> Seq.filter (fun t -> t.FullName = "Sample3.Class3")
+               |> Seq.collect (fun t -> t.Methods)
+               |> Seq.filter (fun m -> m.Name = "Log")
+               |> Seq.head
+      let support = AsyncSupport.Update md
+
+      let state = { InstrumentContext.Build [] with RecordingAssembly = prepared
+                                                    AsyncSupport = Some support }
+      Assert.Throws<InvalidOperationException>
+        (fun () ->
+        Instrument.I.instrumentationVisitorWrapper
+          (fun _ _ -> InvalidOperationException("Bang") |> raise) state AfterType
+        |> ignore) |> ignore
+
+      Assert.That(support.TaskAssembly.FullName, Is.Not.Null) // nothing to raise an object disposed exception with
+      let output = Path.GetTempFileName()
+      let outputdll = output + ".dll"
+      try
+        Assert.Throws<ArgumentException>
+          (fun () -> Instrument.I.writeAssembly prepared outputdll) |> ignore
+      finally
+        Directory.EnumerateFiles
+          (Path.GetDirectoryName output, (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> maybeIOException (fun () -> File.Delete f))
+
+    [<Test>]
     let NonFinishShouldNotDisposeNullRecordingAssembly() =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
@@ -1858,7 +2036,7 @@ module AltCoverTests2 =
       Output.usage {Intro = "usage"; Options = OptionSet(); Options2 = OptionSet()}
 
       Assert.That(Output.usage, Is.Not.Null)
-      typeof<TeamCityFormat>.Assembly.GetTypes()
+      typeof<SummaryFormat>.Assembly.GetTypes()
       |> Seq.filter
            (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
@@ -1966,7 +2144,7 @@ module AltCoverTests2 =
           |> Seq.toList
 
         let head = lines' |> List.head
-#if NETCOREAPP2_0
+#if NET5_0
         Assert.That (head.Length, Is.LessThanOrEqualTo 80)
         let lines = let t = lines' |> List.tail
                     (head + List.head t) :: (List.tail t)
@@ -2051,7 +2229,7 @@ module AltCoverTests2 =
           |> Seq.toList
 
         let head = lines' |> List.head
-#if NETCOREAPP2_0
+#if NET5_0
         Assert.That (head.Length, Is.LessThanOrEqualTo 80)
         let lines = let t = lines' |> List.tail
                     (head + List.head t) :: (List.tail t)

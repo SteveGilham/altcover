@@ -105,7 +105,7 @@ module FSApiTests =
             |> not
           then setAttribute el "crapScore" "0")
     OpenCover.PostProcess after BranchOrdinal.Offset
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(after.ToString(),
 //        NUnit.Framework.Is.EqualTo(before.ToString()))
 //#endif
@@ -337,7 +337,7 @@ module FSApiTests =
                             |> List.sort
 
     // not input and output directories
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
 //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", prepareFragments))
@@ -360,7 +360,7 @@ module FSApiTests =
                             |> List.sort
 
     // not recorder directory
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
 //                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", collectFragments))
@@ -383,7 +383,7 @@ module FSApiTests =
                             |> List.sort
 
     // ignore Is<CaseName> and Tag
-//#if !NETCOREAPP3_0
+//#if ! NET5_0
 //    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
 //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", optionsFragments))

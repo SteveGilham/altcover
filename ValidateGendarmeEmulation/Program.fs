@@ -1,6 +1,6 @@
 namespace Tests
 
-#if NETCOREAPP3_0
+#if  NET5_0
 
 open Expecto
 

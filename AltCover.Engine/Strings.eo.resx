@@ -157,7 +157,7 @@ Vidu ankaŭ '--inplace'</value>
   <data name="HelpText" xml:space="preserve">
     <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/teamcity[=VALO]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/summary|teamcity[=VALO]] [--?|help|h] [-- ] [...]
 aŭ
 AltCover ImportModule
 aŭ
@@ -378,8 +378,16 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
   <data name="sourcelink" xml:space="preserve">
     <value>Laŭvola: Montru sourcelink-URLojn prefere ol dosieraj vojoj se ĉeestas.</value>
   </data>
-  <data name="teamcity:" xml:space="preserve">
-    <value>Laŭvola: Montri resumon en la formato TeamCity anstataŭ/same kiel la resumo de OpenCover. Defaŭlta valoro 'B' signifas TeamCity Block-formato, 'R' estas b&#x200B;Ranch-formato; aldonu '+' por inkluzivi ankaŭ la resuman stilon de OpenCover.</value>
+  <data name="summary|teamcity:" xml:space="preserve">
+    <value>Laŭvola: Difinas la formaton de iu resumo; nedeviga ĉeno-valoro konsistanta el la ĵetonoj:
+'N' = Neniu resumo, sendepende de aliaj valoroj
+'B' = TeamCity-formato, kun branĉoj kiel Block eroj
+'R' = TeamCity-formato, kun branĉoj kiel b&#x200B;Ranch eroj
+'O' = Klasika OpenCover-formato
+'C' = Ŝanĝo-Kontraŭ-Ŝablona (CRAP) poentaro
+'+' samas al "OC" (speciala kazo - "+" per si mem samas al 'BOC')
+Se la opcio ĉeestas, sed havas neniun valoron, tio estas la sama kiel 'B'
+Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   </data>
   <data name="defer" xml:space="preserve">
     <value>Laŭvola, transdono de skriba kurant-reĝimaj priraportado ĝis elira procezo.</value>

@@ -125,7 +125,7 @@ module DotNet =
         fromArg, "LcovReport", collect.LcovReport //=`"path to lcov format result"
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
-        fromArg, "SummaryFormat", collect.SummaryFormat //=[+][B|R]` to opt for a TeamCity summary with either `B` or `R` for branch coverage accordingly, with the OpenCover format summary also present if `+` is given
+        fromArg, "SummaryFormat", collect.SummaryFormat //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",

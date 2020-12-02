@@ -11,9 +11,24 @@ open AltCover
 /// </summary>
 type Summary =
   /// <summary>
-  /// <para type="description">OpenCover format</para>
+  /// <para type="description">OpenCover format with CRAP score, equivalent to (O, C) if no other values given </para>
   /// </summary>
   | Default = 0
+  /// <summary>
+  /// <para type="description">No summary, overriding any other value given</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "N is what is expected")>]
+    N = 5
+  /// <summary>
+  /// <para type="description">OpenCover classic summary only</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "O is what is expected")>]
+    O = 6
+  /// <summary>
+  /// <para type="description">Change Risk Anti-Patterns score only</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "C is what is expected")>]
+    C = 7
   /// <summary>
   /// <para type="description">TeamCity with R for bRanch</para>
   /// </summary>
@@ -25,11 +40,11 @@ type Summary =
   | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "B is what is expected")>]
     B = 2
   /// <summary>
-  /// <para type="description">OpenCover plus TeamCity with R for bRanch</para>
+  /// <para type="description">OpenCover plus CRAP score plus TeamCity with R for bRanch, equivalent to (B, O, C)</para>
   /// </summary>
   | RPlus = 3
   /// <summary>
-  /// <para type="description">OpenCover plus TeamCity with B for Block representing branch coverage</para>
+  /// <para type="description">OpenCover plus CRAP score plus TeamCity with B for Block representing branch coverage, equivalent to (R, O, C)</para>
   /// </summary>
   | BPlus = 4
 
@@ -487,12 +502,22 @@ type InvokeAltCoverCommand() =
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val SummaryFormat : Summary = Summary.Default with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays",
+      Justification="Same as above.")>]
+  member val SummaryFormat : Summary array = [| |] with get, set
 
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
-    let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
+    let formats = [| String.Empty; "R"; "B"; "ROC"; "BOC"; "N"; "O"; "C" |]
+    let formatString = String.Join(String.Empty,self.SummaryFormat
+                                                |> Seq.map (fun f -> formats.[ f|> int]))
+                       |> Seq.distinct
+                       |> Seq.toArray
+
     AltCover.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
@@ -503,7 +528,7 @@ type InvokeAltCoverCommand() =
         OutputFile = self.OutputFile
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
-        SummaryFormat = formats.[self.SummaryFormat |> int] }
+        SummaryFormat = String(formatString)}
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]

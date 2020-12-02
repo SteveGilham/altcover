@@ -124,7 +124,7 @@ module internal Args =
       item "-o" args.OutputFile
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      optionalItem "--teamcity" args.SummaryFormat []
+      optionalItem "--summary" args.SummaryFormat []
       trailing ]
 
   let collect(args : Abstract.ICollectOptions) =
