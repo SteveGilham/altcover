@@ -54,7 +54,7 @@
     <None Include="Resource.rc" />
     <None Include="Resource.res" />
   </ItemGroup>
-  
+
     <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>

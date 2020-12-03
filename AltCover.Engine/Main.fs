@@ -63,6 +63,7 @@ module internal Main =
     CoverageParameters.coalesceBranches := false // ddFlag
     CoverageParameters.staticFilter <- None
     CoverageParameters.showGenerated := false
+    HashTrace.trace <- Output.warn
 
   let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -379,6 +380,9 @@ module internal Main =
                              ModuleAttributes.ILOnly) then
                       CommandLine.Format.Local("instrumenting", fullName)
                       |> Output.info
+                      fullName
+                      |> HashTrace.formatFilePath
+                      |> HashTrace.trace
                       { Path = [ fullName ]
                         Name = def.Name.Name
                         Refs =

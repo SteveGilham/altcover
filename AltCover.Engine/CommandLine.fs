@@ -437,6 +437,7 @@ module internal CommandLine =
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "An internal API")>]
   let internal toConsole() =
+    Output.warn <- writeErr
     Output.error <- writeErr
     Output.usage <- usageBase
     Output.echo <- writeErr

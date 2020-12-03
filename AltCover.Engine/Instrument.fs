@@ -599,6 +599,9 @@ module internal Instrument =
         (System.Globalization.CultureInfo.CurrentCulture,
          CommandLine.resources.GetString "instrumented", definition, first) |> sink
       writeAssembly definition first
+      first
+      |> HashTrace.formatFilePath
+      |> HashTrace.trace
       targets
       |> Seq.tail
       |> Seq.iter (fun p ->
