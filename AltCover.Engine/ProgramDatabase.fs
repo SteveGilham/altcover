@@ -132,8 +132,11 @@ module internal ProgramDatabase =
                                                                   |> I.getEmbeddedPortablePdbEntry).IsNotNull))
 
   let internal getPdbWithFallback(assembly : AssemblyDefinition) =
+    let an = assembly.Name.Name
+    sprintf "getPdbPath assembly %s or %s" an (HashTrace.formatFilePath an)
+    |> HashTrace.trace
     let n = assembly.MainModule.FileName
-    sprintf "getPdbPath %s or %s" n (HashTrace.formatFilePath n)
+    sprintf "getPdbPath path %s or %s" n (HashTrace.formatFilePath n)
     |> HashTrace.trace
     match getPdbFromImage assembly with
     | None ->
