@@ -13,12 +13,6 @@ module internal HashTrace =
   let mutable internal trace:(string -> unit) = ignore
   let hash = System.Security.Cryptography.SHA256.Create()
 
-  let hashtext (s:String) =
-    s
-    |> System.Text.Encoding.UTF8.GetBytes
-    |> hash.ComputeHash
-    |> Convert.ToBase64String
-
   let format (s : string) =
     if s |> isNull
     then "(null)"
@@ -26,7 +20,10 @@ module internal HashTrace =
          then "(empty)"
          else if String.IsNullOrWhiteSpace s
               then "(whitespace)"
-              else hashtext s
+              else s
+                   |> System.Text.Encoding.UTF8.GetBytes
+                   |> hash.ComputeHash
+                   |> Convert.ToBase64String
 
   let formatFilePath (s:string) =
     let directory = try
@@ -52,7 +49,7 @@ module internal HashTrace =
                            String.Empty
 
     sprintf "directory = %A filename = %A extension = %A"
-             (hashtext directory) (hashtext file) extension
+             (format directory) (format file) extension
 
   let formatFileName (s:string) =
     let file =      try
@@ -71,7 +68,7 @@ module internal HashTrace =
                            String.Empty
 
     sprintf "filename = %A extension = %A"
-             (hashtext file) extension
+             (format file) extension
 
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
@@ -92,7 +89,7 @@ module internal ProgramDatabase =
       getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |]) :?> ImageDebugHeaderEntry
 
     let internal getSymbolsByFolder fileName folderName =
-      sprintf "getSymbolsByFolder %s with directory %s or %A" (HashTrace.formatFileName fileName) folderName (HashTrace.hashtext folderName)
+      sprintf "getSymbolsByFolder %s with directory %s or %A" (HashTrace.formatFileName fileName) folderName (HashTrace.format folderName)
       |> HashTrace.trace
 
       let name = Path.Combine(folderName, fileName)
@@ -127,7 +124,7 @@ module internal ProgramDatabase =
           |> HashTrace.trace
 
           assembly.Name.Name
-          |> HashTrace.hashtext
+          |> HashTrace.format
           |> (sprintf "Emedded symbols would be %s.pdb or %s.pdb" assembly.Name.Name)
           |> HashTrace.trace
 
