@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.2.80x (Genbu series release 9)
+* [BUGFIX] Don't `ArgumentNullException` when running the `--callContext` for `async` feature off the build machine
+
 # 7.2.800 (Genbu series release 8)
 * [BUGFIX] Don't produce invalid IL when `--callContext` indicates a method with a non-`void` return (issue #105, and probably #26 too)
 * [BUGFIX] Restore application icons, even if they only show in the `.exe `forms (lost in 7.1.795 if not before)

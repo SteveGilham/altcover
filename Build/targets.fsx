@@ -1588,6 +1588,8 @@ _Target "FSharpTests" (fun _ ->
 
 _Target "AsyncAwaitTests" (fun _ ->
   Directory.ensure "./_Reports"
+  // Provoke this sub-issue : https://github.com/SteveGilham/altcover/issues/105#issuecomment-737203810
+  // seen in 7.2.800, fixed in commit 93325bb645dcbfaf01b996fc99576ef4501f41b8
   "./_Intermediate/AltCover.Recorder/Debug+AnyCPU/net46/AltCover.Recorder.pdb"
   |> Path.getFullName |> File.delete
   "./_Intermediate/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.pdb"
