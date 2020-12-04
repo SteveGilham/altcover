@@ -1588,6 +1588,10 @@ _Target "FSharpTests" (fun _ ->
 
 _Target "AsyncAwaitTests" (fun _ ->
   Directory.ensure "./_Reports"
+  "./_Intermediate/AltCover.Recorder/Debug+AnyCPU/net46/AltCover.Recorder.pdb"
+  |> Path.getFullName |> File.delete
+  "./_Intermediate/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.pdb"
+  |> Path.getFullName |> File.delete
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")
