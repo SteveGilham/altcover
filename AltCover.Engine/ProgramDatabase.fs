@@ -59,7 +59,9 @@ module internal ProgramDatabase =
 
   let internal getPdbWithFallback(assembly : AssemblyDefinition) =
     match getPdbFromImage assembly with
-    | None ->
+    | None when assembly.MainModule.FileName
+                |> String.IsNullOrWhiteSpace
+                |> not -> // i.e. assemblies read from disk only
         let foldername = Path.GetDirectoryName assembly.MainModule.FileName
         let filename = Path.GetFileName assembly.MainModule.FileName
         foldername :: (Seq.toList symbolFolders)
