@@ -98,12 +98,6 @@ module AltCoverTests =
 
     // ProgramDatabase.fs
     [<Test>]
-    let ShouldGetNontrivialStrings () =
-      test <@ [String.Empty; "            "; "\r\n\t"; "Hello"]
-              |> List.map (ProgramDatabase.optionOfString) =
-                [ None; None; None; Some "Hello"] @>
-
-    [<Test>]
     let ShouldGetPdbFromImage() =
       let files =
         Directory.GetFiles(dir)

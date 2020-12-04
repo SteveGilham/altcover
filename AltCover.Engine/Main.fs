@@ -138,9 +138,7 @@ module internal Main =
 
         ("y|symbolDirectory=",
          (fun x ->
-           if CommandLine.validateDirectory "--symbolDirectory" x &&
-              x |> String.IsNullOrWhiteSpace |> not
-           then
+           if CommandLine.validateDirectory "--symbolDirectory" x then
              ProgramDatabase.symbolFolders.Add x))
         ("d|dependency=",
          (fun x ->
@@ -152,10 +150,7 @@ module internal Main =
 
              let name, ok = CommandLine.validateAssembly "--dependency" path
              if ok then
-               Instrument.resolutionTable.[name] <-
-                path
-                |> Path.GetFullPath
-                |> AssemblyDefinition.ReadAssembly)
+               Instrument.resolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
              () false))
 
         ("k|key=",
@@ -374,7 +369,6 @@ module internal Main =
              sourceInfo.GetFiles()
              |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
                   let fullName = info.FullName
-                                 |> Path.GetFullPath
                   imageLoadResilient (fun () ->
                     use stream = File.OpenRead(fullName)
                     use def = AssemblyDefinition.ReadAssembly(stream)

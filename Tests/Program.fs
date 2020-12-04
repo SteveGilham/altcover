@@ -122,7 +122,6 @@ module ExpectoMain =
           Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported, "Runner.ThresholdViolationShouldBeReported"
           Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
           Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
-          Tests.AltCoverTests.ShouldGetNontrivialStrings, "Tests.ShouldGetNontrivialStrings"
           Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
           Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage, "Tests.ShouldGetEmbeddedPdbFromImage"
           Tests.AltCoverTests.ShouldGetNoMdbFromMonoImage, "Tests.ShouldGetNoMdbFromMonoImage"
