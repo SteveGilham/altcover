@@ -54,8 +54,8 @@ module internal ProgramDatabase =
           |> System.Text.Encoding.UTF8.GetString)
     |> Option.filter (fun s -> s.Length > 0)
     |> Option.filter (fun s ->
-          File.Exists s || (s = (assembly.Name.Name + ".pdb") && (assembly
-                                                                  |> I.getEmbeddedPortablePdbEntry).IsNotNull))
+          File.Exists s || ((s |> Path.GetDirectoryName |> String.IsNullOrEmpty) &&
+                            (assembly |> I.getEmbeddedPortablePdbEntry).IsNotNull))
 
   let internal getPdbWithFallback(assembly : AssemblyDefinition) =
     match getPdbFromImage assembly with
