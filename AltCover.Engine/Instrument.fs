@@ -179,8 +179,10 @@ module internal Instrument =
     let internal prepareAssemblyDefinition(definition : AssemblyDefinition) =
       guard definition (fun () ->  // set the timer interval in ticks
 
-        //if monoRuntime |> not then
-        ProgramDatabase.readSymbols definition
+        if definition.MainModule.FileName
+           |> String.IsNullOrWhiteSpace
+           |> not // the net46 in-memory assembly
+        then ProgramDatabase.readSymbols definition
 
         definition.Name.Name <- (extractName definition) + ".g"
 
@@ -806,6 +808,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@620.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@622.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
