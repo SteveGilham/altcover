@@ -721,20 +721,37 @@ module internal Instrument =
       let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
       { state with RecordingAssembly = recordingAssembly }
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-           "EnsureLocalDisposalRule",
-           Justification="Return confusing Gendarme -- TODO")>]
-    let private loadClr4AssemblyFromResources (stream:Stream) =
-      AssemblyDefinition.ReadAssembly(stream)
-      |> prepareAssemblyDefinition
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+      Justification = "Return value disposed by caller")>]
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+      Justification = "Return value disposed by caller")>]
+    let private loadClr4AssemblyFromResources _ =
+      use cstream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Recorder.bin")
+      use dstream = new System.IO.Compression.DeflateStream(cstream, System.IO.Compression.CompressionMode.Decompress)
+
+      let temp = Array.zeroCreate<byte> 4096
+      let stream = new MemoryStream()
+      let mutable chunk = dstream.Read(temp, 0, 4096)
+
+      while chunk > 0 do
+         stream.Write(temp, 0, chunk)
+         chunk <- dstream.Read(temp, 0, 4096)
+      stream.Position <- 0L
+
+      (stream, AssemblyDefinition.ReadAssembly(stream)
+               |> prepareAssemblyDefinition)
 
     let private finishVisit(state : InstrumentContext) =
       try
-        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Recorder.dll")
         let clr4 = state.AsyncSupport
-                   |> Option.map (fun _ -> loadClr4AssemblyFromResources stream)
+                   |> Option.map loadClr4AssemblyFromResources
+        let clr4Recorder = (clr4 |> Option.map snd)
 
-        let recorder = Option.defaultValue state.RecordingAssembly clr4
+        use maybeStream = Option.defaultValue null (clr4 |> Option.map fst)
+        use maybeAssembly = Option.defaultValue null clr4Recorder
+        let recorder = Option.defaultValue state.RecordingAssembly clr4Recorder
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
         writeAssemblies recorder recorderFileName
           (CoverageParameters.instrumentDirectories()) ignore

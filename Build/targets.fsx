@@ -507,6 +507,14 @@ _Target "BuildDebug" (fun _ ->
   [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
   [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildDebug MSBuildPath) // net20
   [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
+  let payload = "./_Binaries/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.dll" |> Path.getFullName
+  let payload2 = "./_Binaries/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.bin" |> Path.getFullName
+  do
+    use fs = File.OpenWrite payload2
+    use s = new System.IO.Compression.DeflateStream(fs, System.IO.Compression.CompressionMode.Compress)
+    let blob = File.ReadAllBytes payload
+    s.Write(blob, 0, blob.Length)
+    
   [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))

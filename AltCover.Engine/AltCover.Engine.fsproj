@@ -77,8 +77,8 @@
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(SolutionDir)_Binaries\AltCover.Recorder\Release+AnyCPU\net46\AltCover.Recorder.dll">
-      <Link>AltCover.Recorder.dll</Link>
+    <EmbeddedResource Include="$(SolutionDir)_Binaries\AltCover.Recorder\Release+AnyCPU\net46\AltCover.Recorder.bin">
+      <Link>AltCover.Recorder.bin</Link>
     </EmbeddedResource>
   </ItemGroup>
 
