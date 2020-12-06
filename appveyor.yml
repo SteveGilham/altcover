@@ -8,8 +8,8 @@ clone_depth: 2
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
-  COVERALLS_REPO_TOKEN_DEC2020:
-    secure: sU5H5yaJLCQnrQh2qrADmH2eWgKJa+GQnP2aN2P8dTwHTfhpYRN8W2XGnSmLiKNu    
+#  COVERALLS_API_TOKEN_DEC2020:
+#    secure: sU5H5yaJLCQnrQh2qrADmH2eWgKJa+GQnP2aN2P8dTwHTfhpYRN8W2XGnSmLiKNu    
 nuget:
   disable_publish_on_pr: true
 # install:
