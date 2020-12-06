@@ -41,9 +41,9 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 ## Continuous Integration
 
-| | | |
-| --- | --- | --- | 
-| **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
+| | | | |
+| --- | --- | --- | --- | 
+| **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)| <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)|
 | **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) |
 
 ## Usage
@@ -60,7 +60,7 @@ All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; 
 
 tl;dr -- legacy framework/Mono support is not going away any time soon.
 
-Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support will continue after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
 
 ## Building
 
