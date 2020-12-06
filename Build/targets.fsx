@@ -341,24 +341,19 @@ let commitHash = Information.getCurrentSHA1 (".")
 let infoV = Information.showName "." commitHash
 printfn "Build at %A" infoV
 
-let hash = System.Security.Cryptography.SHA256.Create()
+// let hash = System.Security.Cryptography.SHA256.Create()
 
-let formatSecret (s : string) =
-  if s |> isNull
-  then "(null)"
-  else if String.IsNullOrEmpty s
-       then "(empty)"
-       else if String.IsNullOrWhiteSpace s
-            then "(whitespace)"
-            else s
-                 |> System.Text.Encoding.UTF8.GetBytes
-                 |> hash.ComputeHash
-                 |> Convert.ToBase64String
-
-"COVERALLS_REPO_TOKEN"
-|> Environment.environVar     
-|> formatSecret
-|> (printfn "COVERALLS_REPO_TOKEN-hash = %A") 
+// let formatSecret (s : string) =
+//   if s |> isNull
+//   then "(null)"
+//   else if String.IsNullOrEmpty s
+//        then "(empty)"
+//        else if String.IsNullOrWhiteSpace s
+//             then "(whitespace)"
+//             else s
+//                  |> System.Text.Encoding.UTF8.GetBytes
+//                  |> hash.ComputeHash
+//                  |> Convert.ToBase64String
 
 //----------------------------------------------------------------
 
