@@ -1278,7 +1278,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
        "GITHUB_RUN_NUMBER" 
      ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)   
   then
-    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage "--debug" ])
+    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
       "Coveralls upload failed")
 
 _Target "UnitTestWithAltCoverCore" (fun _ ->
