@@ -1271,7 +1271,12 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
     |> Path.getFullName
 
-  if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
+  if Environment.isWindows &&
+     [ 
+       "APPVEYOR_BUILD_NUMBER"
+       "GITHUB_RUN_NUMBER" 
+     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)   
+  then
     Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage ])
       "Coveralls upload failed")
 
