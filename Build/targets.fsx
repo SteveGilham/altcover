@@ -339,6 +339,7 @@ let dotnetBuildDebug proj =
 // Information.getCurrentHash()
 let commitHash = Information.getCurrentSHA1 (".")
 let infoV = Information.showName "." commitHash
+printfn "Build at %A" infoV
 
 //----------------------------------------------------------------
 
