@@ -83,39 +83,12 @@ type internal InstrumentContext =
 
 // Module to handle instrumentation visitor
 module internal Instrument =
-  let private resources =
-    ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
   [<SuppressMessage("Microsoft.Maintainability", "CA1506",
                     Justification = "partitioned into closures")>]
   module internal I =
-
-    let dependencies = version |> sprintf """
-{
-        "dependencies": {
-          "AltCover.Recorder.g": "%s"
-        }
-}"""
-
-    let runtime = version |> sprintf """
-{
-      "AltCover.Recorder.g/%s": {
-        "runtime": {
-          "AltCover.Recorder.g.dll": {}
-        }
-      }
-}"""
-
-    let newLibraries =  version |> sprintf """
-{
-    "AltCover.Recorder.g/%s": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    }
-}"""
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
@@ -442,10 +415,6 @@ module internal Instrument =
             |> Seq.map (fun p -> p.Key)
             |> Set.ofSeq
 
-      let rawDependencies =
-        (JsonValue.Parse dependencies).Object
-        |> Seq.find (fun p -> p.Key = "dependencies")
-
       let addFirst (properties : KeyValuePair<string, JsonValue> seq) (jsonObject:JsonObject)  =
         let existing = jsonObject |> Seq.toList
         jsonObject.Clear()
@@ -457,37 +426,49 @@ module internal Instrument =
         |> Seq.concat
         |> Seq.iter (fun l -> jsonObject.Add(l.Key, l.Value))
 
-      match app |> Seq.tryFind (fun p -> p.Key = "dependencies") with
-      | None ->  app
-                 |> addFirst [rawDependencies]
-      | Some p ->
-          rawDependencies.Value.Object
-          |> Seq.filter (fun r ->
-               prior
-               |> Set.contains r.Key
-               |> not)
-          |> Seq.iter (fun r -> (p.Value.Object).Add(r.Key, r.Value))
+      do
 
-      (JsonValue.Parse runtime).Object
-      |> Seq.filter (fun r ->
-           prior
-           |> Set.contains (r.Key.Split('/') |> Seq.head)
-           |> not
-           && targeted.ContainsKey(r.Key) |> not)
-      |> Seq.iter (fun r -> targeted.Add(r.Key, r.Value))
+        let dependencies = version |> sprintf """{"dependencies": {"AltCover.Recorder.g": "%s"}}"""
+        let updateDependencies () =
+          let rawDependencies =
+            (JsonValue.Parse dependencies).Object
+            |> Seq.find (fun p -> p.Key = "dependencies")
+
+          match app |> Seq.tryFind (fun p -> p.Key = "dependencies") with
+          | None ->  app
+                     |> addFirst [rawDependencies]
+          | Some p ->
+              let recorder = rawDependencies.Value.Object |> Seq.head
+              p.Value.Object.[recorder.Key] <- recorder.Value
+        updateDependencies()
+
+      let stripRecorderRefs (j:JsonObject) =
+        j.Keys
+        |> Seq.filter (fun k -> k.StartsWith("AltCover.Recorder.g/",
+                                              StringComparison.Ordinal))
+        |> Seq.toList
+        |> List.iter (j.Remove >> ignore)
+
+      do
+        let runtime = version |> sprintf """{"AltCover.Recorder.g/%s": {"runtime": { "AltCover.Recorder.g.dll": {}}}}"""
+        let updateRuntime() =
+          let runtimeObject = (JsonValue.Parse runtime).Object
+          stripRecorderRefs targeted
+          let recorder = runtimeObject |> Seq.head
+          targeted.[recorder.Key] <- recorder.Value
+        updateRuntime()
 
       let libraries =
         (oo |> Seq.find (fun p -> p.Key = "libraries")).Value.Object
 
-      let newlibs = (JsonValue.Parse newLibraries).Object
-                    |> Seq.filter (fun r -> prior
-                                            |> Set.contains (r.Key.Split('/') |> Seq.head)
-                                            |> not
-                                            && libraries.ContainsKey(r.Key) |> not)
-                    |> Seq.rev
-
-      libraries
-      |> addFirst newlibs
+      do
+        let newLibraries =  version |> sprintf """{"AltCover.Recorder.g/%s": {"type": "project", "serviceable": false, "sha512": "" }}"""
+        let updateLibraries () =
+          let newlibs = (JsonValue.Parse newLibraries).Object
+          stripRecorderRefs libraries
+          libraries
+          |> addFirst newlibs
+        updateLibraries()
 
       o.GetIndentedString().Replace("\t\t", "  ").Replace("\t", "  ").Replace(" :", ":")
 
@@ -822,6 +803,6 @@ module internal Instrument =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
 
 [<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@620.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
+  Scope="member", Target="AltCover.Instrument+I+doTrack@617.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
   Justification="Nice idea if you can manage it")>]
 ()
