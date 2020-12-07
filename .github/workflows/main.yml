@@ -5,6 +5,7 @@ on:
     branches:
     - master
     - develop/github/*
+    - develop/travis/consume-latest-nuget
   pull_request:
     branches:
     - master
