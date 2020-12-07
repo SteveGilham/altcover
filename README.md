@@ -23,7 +23,6 @@ For Mono, .net framework and .net core, except as noted
 ### NuGet Packages
 * [![Nuget](https://buildstats.info/nuget/AltCover) General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the `dotnet test` API with FAKE and CAKE integration and the AvaloniaUI visualizer
 * [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the visualizer in all forms
-* [![Nuget](https://buildstats.info/nuget/altcover.dotnet) dotnet CLI tool install](https://www.nuget.org/packages/AltCover.dotnet) -- **Obsolete**  -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/Avalonia Visualizer as a global tool
 * [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.18.1 or later), only in this package
@@ -41,10 +40,10 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 ## Continuous Integration
 
-| | | |
-| --- | --- | --- | 
-| **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
-| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) |
+| | | | |
+| --- | --- | --- | --- | 
+| **Build** | <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)| <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)  ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
+| **Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) | <sup>AppVeyor</sup> [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)
 
 ## Usage
 
@@ -60,7 +59,7 @@ All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; 
 
 tl;dr -- legacy framework/Mono support is not going away any time soon.
 
-Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support will continue after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
 
 ## Building
 

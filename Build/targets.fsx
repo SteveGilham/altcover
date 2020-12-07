@@ -339,6 +339,21 @@ let dotnetBuildDebug proj =
 // Information.getCurrentHash()
 let commitHash = Information.getCurrentSHA1 (".")
 let infoV = Information.showName "." commitHash
+printfn "Build at %A" infoV
+
+// let hash = System.Security.Cryptography.SHA256.Create()
+
+// let formatSecret (s : string) =
+//   if s |> isNull
+//   then "(null)"
+//   else if String.IsNullOrEmpty s
+//        then "(empty)"
+//        else if String.IsNullOrWhiteSpace s
+//             then "(whitespace)"
+//             else s
+//                  |> System.Text.Encoding.UTF8.GetBytes
+//                  |> hash.ComputeHash
+//                  |> Convert.ToBase64String
 
 //----------------------------------------------------------------
 
@@ -1271,8 +1286,13 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
     |> Path.getFullName
 
-  if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
-    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage ])
+  if Environment.isWindows &&
+     [ 
+       "APPVEYOR_BUILD_NUMBER"
+       "GITHUB_RUN_NUMBER" 
+     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)   
+  then
+    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
       "Coveralls upload failed")
 
 _Target "UnitTestWithAltCoverCore" (fun _ ->
@@ -1588,6 +1608,12 @@ _Target "FSharpTests" (fun _ ->
 
 _Target "AsyncAwaitTests" (fun _ ->
   Directory.ensure "./_Reports"
+  // Provoke this sub-issue : https://github.com/SteveGilham/altcover/issues/105#issuecomment-737203810
+  // seen in 7.2.800, fixed in commit 93325bb645dcbfaf01b996fc99576ef4501f41b8
+  "./_Intermediate/AltCover.Recorder/Debug+AnyCPU/net46/AltCover.Recorder.pdb"
+  |> Path.getFullName |> File.delete
+  "./_Intermediate/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.pdb"
+  |> Path.getFullName |> File.delete
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")

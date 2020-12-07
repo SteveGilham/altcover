@@ -1862,7 +1862,9 @@ module AltCoverTests2 =
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
-      let result = Instrument.I.injectJSON <| reader.ReadToEnd()
+      let result = reader.ReadToEnd()
+                   |> Instrument.I.injectJSON
+                   // |> Instrument.I.injectJSON
       use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader' = new StreamReader(stream')
       let expected = reader'.ReadToEnd()
@@ -1881,7 +1883,11 @@ module AltCoverTests2 =
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
-      let result = Instrument.I.injectJSON <| reader.ReadToEnd()
+
+      let result = reader.ReadToEnd()
+                   |> Instrument.I.injectJSON
+                   //|> Instrument.I.injectJSON
+
       use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader' = new StreamReader(stream')
       let expected = reader'.ReadToEnd()
@@ -1900,10 +1906,16 @@ module AltCoverTests2 =
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader = new StreamReader(stream)
       let expected = reader.ReadToEnd()
-      let result = Instrument.I.injectJSON <| expected
+      let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
+
+      let result = expected
+                   |> Instrument.I.injectJSON
+                   |> Instrument.I.injectJSON
       let r = result.Replace("\r\n", "\n")
       Assert.That
-        (r, Is.EqualTo(expected.Replace("\r\n", "\n")), r)
+        (r, Is.EqualTo(expected.Replace("\r\n", "\n")
+                               .Replace("1.4.0.0", version)
+        ), r)
 
     [<Test>]
     let NonFinishShouldDisposeRecordingAssembly() =

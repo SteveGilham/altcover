@@ -5,6 +5,7 @@
     <AssemblyName>Sample6</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

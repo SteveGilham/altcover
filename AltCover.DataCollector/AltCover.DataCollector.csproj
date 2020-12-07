@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
@@ -12,16 +12,11 @@
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(SolutionDir)\Build\Infrastructure.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>1701;1702;NU1603</NoWarn>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
@@ -31,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
