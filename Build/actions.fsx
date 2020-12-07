@@ -142,7 +142,8 @@ do ()"""
     let ystream = new YamlStream()
     ystream.Load(yreader)
     let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
-    string mapping.Children.[YamlScalarNode("version")]
+    (mapping.Children :> System.Collections.Generic.IDictionary<YamlNode, YamlNode>).[YamlScalarNode("version")]
+    |> string  
 
   let LocalVersion appveyor (version : string) =
     let now = DateTimeOffset.UtcNow

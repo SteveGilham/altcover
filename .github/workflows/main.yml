@@ -14,6 +14,8 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.100'       
@@ -22,6 +24,8 @@ jobs:
     - name: Setup
       run: dotnet fake run ./Build/setup.fsx
     - name: Build
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: dotnet fake run ./Build/build.fsx
     - uses: actions/upload-artifact@v2
       with:

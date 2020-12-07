@@ -27,7 +27,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
