@@ -92,14 +92,30 @@ module internal Instrument =
                     Justification = "partitioned into closures")>]
   module internal I =
 
-    let dependencies =
-      (resources.GetString "frameworkDependencies").Replace("version", version)
-    let runtime =
-      (resources.GetString "frameworkRuntime")
-        .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-    let newLibraries =
-      (resources.GetString "frameworkLibraries")
-        .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
+    let dependencies = version |> sprintf """
+{
+        "dependencies": {
+          "AltCover.Recorder.g": "%s"
+        }
+}"""
+
+    let runtime = version |> sprintf """
+{
+      "AltCover.Recorder.g/%s": {
+        "runtime": {
+          "AltCover.Recorder.g.dll": {}
+        }
+      }
+}"""
+
+    let newLibraries =  version |> sprintf """
+{
+    "AltCover.Recorder.g/%s": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+}"""
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
