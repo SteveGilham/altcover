@@ -22,7 +22,8 @@
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
     <RollForward>Major</RollForward>
-</PropertyGroup>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
@@ -54,8 +55,8 @@
     <None Include="Resource.rc" />
     <None Include="Resource.res" />
   </ItemGroup>
-  
-    <ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

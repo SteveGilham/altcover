@@ -59,7 +59,9 @@ Describe "Invoke-Altcover" {
         $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w = ""
-        Invoke-AltCover -Runner -RecorderDirectory $o -WarningVariable w
+        $format = @([AltCover.Commands.Summary]::O, [AltCover.Commands.Summary]::C)
+
+        Invoke-AltCover -Runner -RecorderDirectory $o -SummaryFormat $format -WarningVariable w
         $xm = [xml](Get-Content $x)
 
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
