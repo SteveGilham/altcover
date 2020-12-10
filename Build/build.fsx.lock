@@ -2,9 +2,9 @@ STORAGE: NONE
 RESTRICTION: == netstandard2.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    AltCode.Fake.DotNet.Gendarme (5.18.1.24)
-      Fake.Core.Environment (>= 5.18.1)
-      Fake.DotNet.Cli (>= 5.18.1)
+    AltCode.Fake.DotNet.Gendarme (5.19.1.28)
+      Fake.Core.Environment (>= 5.19.1)
+      Fake.DotNet.Cli (>= 5.19.1)
       FSharp.Core (>= 4.7)
       System.Collections.Immutable (>= 1.6)
     BlackFox.CommandLine (1.0)
@@ -316,7 +316,7 @@ NUGET
     System.Security.AccessControl (5.0)
       System.Security.Principal.Windows (>= 5.0)
     System.Security.Cryptography.Cng (5.0)
-    System.Security.Cryptography.Pkcs (5.0)
+    System.Security.Cryptography.Pkcs (5.0.1)
       System.Buffers (>= 4.5.1)
       System.Formats.Asn1 (>= 5.0)
       System.Memory (>= 4.5.4)
