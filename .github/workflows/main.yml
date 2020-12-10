@@ -35,7 +35,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: failure()
       with:
-          name: reportwin
+          name: reports.windows
           path: _Reports
   linux:
     runs-on: ubuntu-latest
@@ -53,5 +53,5 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: failure()
       with:
-          name: reportnix
+          name: reports.linux
           path: _Reports
