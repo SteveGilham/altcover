@@ -108,6 +108,7 @@ type Prepare() =
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
   member val ExposeReturnCode = true with get, set
+  member val Verbosity = System.Diagnostics.TraceLevel.Info with get, set
 
   member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
@@ -154,7 +155,8 @@ type Prepare() =
           LocalSource = self.LocalSource
           VisibleBranches = self.VisibleBranches
           ShowStatic = self.ShowStatic
-          ShowGenerated = self.ShowGenerated }
+          ShowGenerated = self.ShowGenerated
+          Verbosity = self.Verbosity }
 
     Command.Prepare task log = 0
 
@@ -187,6 +189,7 @@ type Collect() =
   member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
   member val ExposeReturnCode = true with get, set
+  member val Verbosity = System.Diagnostics.TraceLevel.Info with get, set
 
   [<Output>]
   [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
@@ -219,7 +222,8 @@ type Collect() =
           OutputFile = self.OutputFile
           CommandLine = self.CommandLine
           ExposeReturnCode = self.ExposeReturnCode
-          SummaryFormat = self.SummaryFormat }
+          SummaryFormat = self.SummaryFormat
+          Verbosity = self.Verbosity }
 
     Command.Collect task log = 0
 

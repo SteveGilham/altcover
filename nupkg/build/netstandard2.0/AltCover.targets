@@ -21,6 +21,7 @@
         AssemblyFile="$(AltCoverEngine)" />
 
   <PropertyGroup>
+    <AltCoverVerbosity Condition="'$(AltCoverVerbosity)' == ''">Info</AltCoverVerbosity>
     <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
     <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
   </PropertyGroup>
@@ -90,7 +91,8 @@
       LocalSource="$(AltCoverLocalSource)"
       VisibleBranches="$(AltCoverVisibleBranches)"
       ShowStatic="$(AltCoverShowStatic)"
-      ShowGenerated="$(AltCoverShowGenerated)" />
+      ShowGenerated="$(AltCoverShowGenerated)"
+      Verbosity="$(AltCoverVerbosity)" />
   </Target>
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
@@ -146,7 +148,8 @@
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
       Cobertura="$(AltCoverCobertura)"
-      SummaryFormat="$(AltCoverSummaryFormat)">
+      SummaryFormat="$(AltCoverSummaryFormat)"
+      Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary" />
     </AltCover.Collect>
     <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)" Condition="$(AltCoverShowSummary) != ''" />

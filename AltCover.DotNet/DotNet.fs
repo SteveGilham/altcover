@@ -7,6 +7,7 @@ namespace AltCoverFake.DotNet.Testing
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
+open System.Diagnostics
 
 [<RequireQualifiedAccess>]
 module DotNet =
@@ -77,6 +78,7 @@ module DotNet =
 
     let private fromList name (s : String seq) = (listArg name s, s.Any())
     let internal fromArg name s = (arg name s, isSet s)
+    let internal fromValue name (s:obj) (b:bool) = (arg name <| s.ToString(), b)
     let internal join(l : string seq) = String.Join(" ", l)
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
@@ -107,6 +109,13 @@ module DotNet =
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
+    let internal toPrepareFromValueArgumentList (prepare : Abstract.IPrepareOptions) :
+       ((string -> obj -> bool -> string*bool) * string * obj * bool) list =
+      [
+        // poss s <> Info
+        fromValue, "Verbosity", prepare.Verbosity :> obj, true //=`"Levels of output -- Info (default), Warning, Error, or Off"
+      ]
+
     let internal toPrepareArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
@@ -126,6 +135,13 @@ module DotNet =
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
         fromArg, "SummaryFormat", collect.SummaryFormat //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
+      ]
+
+    let internal toCollectFromValueArgumentList (collect : Abstract.ICollectOptions)  :
+       ((string -> obj -> bool -> string*bool) * string * obj * bool) list =
+      [
+        // poss s <> Info
+        fromValue, "Verbosity", collect.Verbosity :> obj, true //=`"Levels of output -- Info (default), Warning, Error, or Off"
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
@@ -165,10 +181,16 @@ module DotNet =
       prepare
       |> I.toPrepareArgArgumentList
       |> List.map(fun (f,n,a,x) -> (f n a,x))
+      prepare
+      |> I.toPrepareFromValueArgumentList
+      |> List.map(fun (f,n,a,b) -> f n a b)
 
       collect
       |> I.toCollectFromArgArgumentList
       |> List.map(fun (f,n,a) -> f n a)
+      collect
+      |> I.toCollectFromValueArgumentList
+      |> List.map(fun (f,n,a,b) -> f n a b)
 
       options
       |> I.toCLIOptionsFromArgArgumentList

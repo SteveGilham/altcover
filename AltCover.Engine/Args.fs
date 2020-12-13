@@ -95,6 +95,16 @@ module internal Args =
     |> flagItems
     |> List.collect (fun (a, b) -> flag a b)
 
+  let internal countItems (args : Abstract.IPrepareOptions) =
+    [
+      ("-q", 2 - (int args.Verbosity))
+    ]
+
+  let internal counts(args : Abstract.IPrepareOptions) =
+    args
+    |> countItems
+    |> List.collect (fun (a, b) -> {0..b} |> Seq.map (fun _ -> a) |> Seq.toList)
+
   let prepare(args : Abstract.IPrepareOptions) =
     let argsList = args.CommandLine |> Seq.toList
 
@@ -102,7 +112,7 @@ module internal Args =
       if List.isEmpty argsList then [] else "--" :: argsList
 
     let parameters =
-      [ itemLists; items; optItems; flags ] |> List.collect (fun f -> f args)
+      [ itemLists; items; optItems; flags; counts ] |> List.collect (fun f -> f args)
 
     [ parameters; trailing ] |> List.concat
 
@@ -113,6 +123,16 @@ module internal Args =
       if List.isEmpty argsList then [] else "--" :: argsList
 
     let exe = args.Executable
+
+    let countItems (args : Abstract.ICollectOptions) =
+      [
+        ("-q", 2 - (int args.Verbosity))
+      ]
+
+    let counts(args : Abstract.ICollectOptions) =
+      args
+      |> countItems
+      |> List.collect (fun (a, b) -> {0..b} |> Seq.map (fun _ -> a) |> Seq.toList)
 
     [ [ "Runner" ]
       item "-r" args.RecorderDirectory
@@ -125,6 +145,7 @@ module internal Args =
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       optionalItem "--summary" args.SummaryFormat []
+      counts args
       trailing ]
 
   let collect(args : Abstract.ICollectOptions) =

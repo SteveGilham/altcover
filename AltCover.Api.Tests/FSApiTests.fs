@@ -307,7 +307,7 @@ module FSApiTests =
     let force = DotNet.CLIOptions.Force true
     let fail = DotNet.CLIOptions.Fail true
     let summary = DotNet.CLIOptions.Summary "R"
-    let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
+    let combined = DotNet.CLIOptions.Many [ force; fail; summary ]
 
     let pprep = Primitive.PrepareOptions.Create()
     let prep = AltCover.PrepareOptions.Primitive pprep
@@ -331,6 +331,7 @@ module FSApiTests =
                        |> Seq.toList
 
     let prepareFragments = [DotNet.I.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            DotNet.I.toPrepareFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             DotNet.I.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
                             DotNet.I.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
                             |> List.collect (fun f -> f prep)
@@ -353,6 +354,7 @@ module FSApiTests =
                        |> Seq.toList
 
     let collectFragments = [//DotNet.I.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            DotNet.I.toCollectFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             DotNet.I.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
                             //DotNet.I.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]

@@ -382,7 +382,7 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
     <value>Laŭvola: Difinas la formaton de iu resumo; nedeviga ĉeno-valoro konsistanta el la ĵetonoj:
 'N' = Neniu resumo, sendepende de aliaj valoroj
 'B' = TeamCity-formato, kun branĉoj kiel Block eroj
-'R' = TeamCity-formato, kun branĉoj kiel b&#x200B;Ranch eroj
+'R' = TeamCity-formato, kun branĉoj kiel b​Ranch eroj
 'O' = Klasika OpenCover-formato
 'C' = Ŝanĝo-Kontraŭ-Ŝablona (CRAP) poentaro
 '+' samas al "OC" (speciala kazo - "+" per si mem samas al 'BOC')
@@ -451,5 +451,8 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   </data>
   <data name="maxCrap" xml:space="preserve">
     <value>Maksimuma CRAP poentaro {0}</value>
+  </data>
+  <data name="q" xml:space="preserve">
+    <value>Laŭvola, multnombra: Kvieta reĝimo - unufoje por malŝalti informajn mesaĝojn, dufoje por malŝalti ankaŭ avertojn, tri (aŭ pli) fojojn por malŝalti ĉiujn mesaĝojn.</value>
   </data>
 </root>

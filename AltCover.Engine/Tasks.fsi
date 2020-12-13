@@ -165,6 +165,10 @@ type Prepare =
     /// Corresponds to command line option ` --showGenerated`
     ///</summary>
     member ShowGenerated : bool with get, set
+    ///<summary>
+    /// Corresponds to command line option ` -q`
+    ///</summary>
+    member Verbosity : System.Diagnostics.TraceLevel with get, set
   end
 // ```
 // ## Task `AltCover.Collect`
@@ -231,6 +235,10 @@ type Collect =
     /// Corresponds to command line option `--teamcity[=VALUE]`
     ///</summary>
     member SummaryFormat : string with get, set
+    ///<summary>
+    /// Corresponds to command line option ` -q`
+    ///</summary>
+    member Verbosity : System.Diagnostics.TraceLevel with get, set
   end
 // ```
 // ## Task `AltCover.PowerShell`

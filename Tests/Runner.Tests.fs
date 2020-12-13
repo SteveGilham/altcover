@@ -371,7 +371,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 10
+      let optionCount = 11
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort

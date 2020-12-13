@@ -509,6 +509,15 @@ type InvokeAltCoverCommand() =
       Justification="Same as above.")>]
   member val SummaryFormat : Summary array = [| |] with get, set
 
+  /// <summary>
+  /// <para type="description">Selects output level of the command</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Verbosity = System.Diagnostics.TraceLevel.Info with get, set
+
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
@@ -528,7 +537,8 @@ type InvokeAltCoverCommand() =
         OutputFile = self.OutputFile
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
-        SummaryFormat = String(formatString)}
+        SummaryFormat = String(formatString)
+        Verbosity = self.Verbosity }
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
@@ -566,7 +576,8 @@ type InvokeAltCoverCommand() =
         LocalSource = self.LocalSource.IsPresent
         VisibleBranches = self.VisibleBranches.IsPresent
         ShowStatic = showStatic.[self.ShowStatic |> int]
-        ShowGenerated = self.ShowGenerated.IsPresent }
+        ShowGenerated = self.ShowGenerated.IsPresent
+        Verbosity = self.Verbosity  }
 
   member private self.Log() =
     AltCover.LoggingOptions.Primitive

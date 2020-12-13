@@ -119,6 +119,12 @@ module AltCover =
       | Abstract a -> a.SummaryFormat
       | TypeSafe t -> t.SummaryFormat.AsString()
 
+    member self.Verbosity =
+      match self with
+      | Primitive p -> p.Verbosity
+      | Abstract a -> a.Verbosity
+      | TypeSafe t -> t.Verbosity
+
     interface Abstract.ICollectOptions with
       member self.RecorderDirectory = self.RecorderDirectory
       member self.WorkingDirectory = self.WorkingDirectory
@@ -130,6 +136,7 @@ module AltCover =
       member self.CommandLine = self.CommandLine
       member self.ExposeReturnCode = self.ExposeReturnCode
       member self.SummaryFormat = self.SummaryFormat
+      member self.Verbosity = self.Verbosity
 
 #if RUNNER
     member self.Validate afterPreparation =
@@ -390,6 +397,12 @@ module AltCover =
       | Abstract a -> a.ShowGenerated
       | TypeSafe t -> t.ShowGenerated.AsBool()
 
+    member self.Verbosity =
+      match self with
+      | Primitive p -> p.Verbosity
+      | Abstract a -> a.Verbosity
+      | TypeSafe t -> t.Verbosity
+
     interface Abstract.IPrepareOptions with
       member self.InputDirectories = self.InputDirectories |> PrepareOptions.ToSeq
       member self.OutputDirectories = self.OutputDirectories |> PrepareOptions.ToSeq
@@ -425,6 +438,7 @@ module AltCover =
       member self.VisibleBranches = self.VisibleBranches
       member self.ShowStatic = self.ShowStatic
       member self.ShowGenerated = self.ShowGenerated
+      member self.Verbosity = self.Verbosity
 
 #if RUNNER
     static member private ValidateArray a f key =

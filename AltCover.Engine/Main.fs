@@ -28,6 +28,7 @@ module internal Main =
       None
 
   let internal init() =
+    CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
     CoverageParameters.defer := false // ddflag
@@ -273,6 +274,7 @@ module internal Main =
                CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
+        ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
         ("<>",

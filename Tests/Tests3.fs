@@ -82,7 +82,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      let optionCount = 33
+      let optionCount = 34
 
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
@@ -125,16 +125,20 @@ module AltCoverTests3 =
       let fsapiCases = (typeof<AltCover.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareOptions.Create() |> AltCover.PrepareOptions.Primitive
+      let args = { Primitive.PrepareOptions.Create()
+                           with Verbosity = System.Diagnostics.TraceLevel.Warning }
+                 |> AltCover.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
-                              Args.flagItems >> (List.map fst)]
+                              Args.flagItems >> (List.map fst)
+                              Args.countItems >> (List.map fst)]
                              |> List.collect (fun f -> f args)
+                             |> List.map (fun k -> k.Trim('-'))
                              |> List.sort
       Assert.That(commandFragments |> List.length, Is.EqualTo optionCount,
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
-                  "but got  " + String.Join("; ", typesafeNames))
+                  "but got  " + String.Join("; ", commandFragments))
 
       // Adds "Tag", "IsPrimitive", "IsTypeSafe"
       Assert.That(fsapiNames

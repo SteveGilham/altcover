@@ -119,6 +119,7 @@ module internal Output =
 
 module internal CommandLine =
 
+  let mutable internal verbosity = 0
   let mutable internal help = false
   let mutable internal error : string list = []
   let mutable internal exceptions : Exception list = []
