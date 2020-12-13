@@ -7,7 +7,6 @@ namespace AltCoverFake.DotNet.Testing
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
-open System.Diagnostics
 
 [<RequireQualifiedAccess>]
 module DotNet =
