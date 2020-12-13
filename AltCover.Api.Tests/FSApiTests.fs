@@ -331,7 +331,7 @@ module FSApiTests =
                        |> Seq.toList
 
     let prepareFragments = [DotNet.I.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.I.toPrepareFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
+                            (fun p -> p.Verbosity) >> DotNet.I.toSharedFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             DotNet.I.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
                             DotNet.I.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
                             |> List.collect (fun f -> f prep)
@@ -354,8 +354,8 @@ module FSApiTests =
                        |> Seq.toList
 
     let collectFragments = [//DotNet.I.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
-                            DotNet.I.toCollectFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             DotNet.I.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            (fun c -> c.Verbosity) >> DotNet.I.toSharedFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             //DotNet.I.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]
                             |> List.collect (fun f -> f coll)
