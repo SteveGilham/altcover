@@ -730,14 +730,8 @@ module internal Instrument =
     let private loadClr4AssemblyFromResources _ =
       use cstream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Recorder.bin")
       use dstream = new System.IO.Compression.DeflateStream(cstream, System.IO.Compression.CompressionMode.Decompress)
-
-      let temp = Array.zeroCreate<byte> 4096
       let stream = new MemoryStream()
-      let mutable chunk = dstream.Read(temp, 0, 4096)
-
-      while chunk > 0 do
-         stream.Write(temp, 0, chunk)
-         chunk <- dstream.Read(temp, 0, 4096)
+      dstream.CopyTo stream
       stream.Position <- 0L
 
       (stream, AssemblyDefinition.ReadAssembly(stream)
