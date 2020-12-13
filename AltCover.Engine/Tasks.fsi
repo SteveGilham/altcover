@@ -168,7 +168,7 @@ type Prepare =
     ///<summary>
     /// Corresponds to command line option ` -q`
     ///</summary>
-    member Verbosity : System.Diagnostics.TraceLevel with get, set
+    member Verbosity : string with get, set
   end
 // ```
 // ## Task `AltCover.Collect`
@@ -238,7 +238,7 @@ type Collect =
     ///<summary>
     /// Corresponds to command line option ` -q`
     ///</summary>
-    member Verbosity : System.Diagnostics.TraceLevel with get, set
+    member Verbosity : string with get, set
   end
 // ```
 // ## Task `AltCover.PowerShell`
