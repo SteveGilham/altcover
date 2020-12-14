@@ -2887,7 +2887,7 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
-    let RunSettingsBarfsIfUninitialized() =
+    let RunSettingsThrowsIfUninitialized() =
       Main.init()
       let subject = RunSettings()
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)

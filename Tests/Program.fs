@@ -450,6 +450,7 @@ module ExpectoMain =
           Tests.AltCoverTests3.RunSettingsWorksIfOK, "Tests3.RunSettingsWorksIfOK"
           Tests.AltCoverTests3.RunSettingsExtendsOK, "Tests3.RunSettingsExtendsOK"
           Tests.AltCoverTests3.RunSettingsRecoversOK, "Tests3.RunSettingsRecoversOK"
+          Tests.AltCoverTests3.RunSettingsThrowsIfUninitialized, "Tests3.RunSettingsThrowsIfUninitialized"
           Tests.AltCoverXTests.CollectOptionsCanBeValidated, "XTests.CollectOptionsCanBeValidated"
           Tests.AltCoverXTests.TypeSafeEmptyThresholdCanBeValidated, "XTests.TypeSafeEmptyThresholdCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectOptionsCanBeValidated, "XTests.TypeSafeCollectOptionsCanBeValidated"
