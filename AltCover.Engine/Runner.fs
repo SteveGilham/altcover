@@ -909,6 +909,7 @@ module internal Runner =
             Options2 = options }
         255
     | Right(rest, _) ->
+        CommandLine.applyVerbosity()
         let value =
           CommandLine.doPathOperation (fun () ->
             let pair = J.recorderInstance()

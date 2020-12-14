@@ -2007,7 +2007,39 @@ module AltCoverTests2 =
 
     // CommandLine.fs
     [<Test>]
-    let StrongNameKeyCanBeValidatedExceptOnNetCore() =
+    let VerbosityShouldBeHonoured() =
+      let expected = [
+        [ true; true; true; true; true ]
+        [ false; false; true; true; true ]
+        [ false; false; false; true; true ]
+        [ false; false; false; false; false; ]
+        [ false; false; false; false; false; ]
+      ]
+      try
+        expected
+        |> Seq.iteri (fun verbosity expect  ->
+            CommandLine.toConsole()
+            let saved = [ Output.info :> obj;
+                          Output.echo :> obj;
+                          Output.warn :> obj;
+                          Output.error :> obj;
+                          Output.usage :> obj ]
+            CommandLine.verbosity <- verbosity
+            CommandLine.applyVerbosity()
+
+            test<@ [ Output.info :> obj;
+                     Output.echo :> obj;
+                     Output.warn :> obj;
+                     Output.error :> obj;
+                     Output.usage :> obj ]
+                   |> List.zip saved
+                   |> List.map (fun (a,b) -> Object.ReferenceEquals(a,b)) = expect @> )
+      finally
+        CommandLine.toConsole()
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let StrongNameKeyCanBeValidated() =
       let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
       let (pair, ok) = CommandLine.validateStrongNameKey "key" input
       Assert.That(ok, Is.True, "Strong name is OK")

@@ -308,6 +308,16 @@ module internal CommandLine =
         if help then Left("HelpText", options) else parse
     | fail -> fail
 
+  let internal applyVerbosity () =
+    if verbosity >= 1
+    then Output.info <- ignore
+         Output.echo <- ignore
+    if verbosity >= 2
+    then Output.warn <- ignore
+    if verbosity >= 3
+    then Output.error <- ignore
+         Output.usage <- ignore
+
   let internal reportErrors (tag : string) extend =
     I.conditionalOutput (fun () ->
       tag

@@ -476,6 +476,8 @@ module internal Main =
               Options2 = Runner.declareOptions() }
           255
       | Right(rest, fromInfo, toInfo, targetInfo) ->
+          CommandLine.applyVerbosity()
+
           let report = CoverageParameters.reportPath()
 
           let result =
