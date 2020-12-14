@@ -446,6 +446,7 @@ module ExpectoMain =
           Tests.AltCoverTests3.EmptyPowerShellIsJustTheDefaults, "Tests3.EmptyPowerShellIsJustTheDefaults"
           Tests.AltCoverTests3.EmptyVersionIsJustTheDefaults, "Tests3.EmptyVersionIsJustTheDefaults"
           Tests.AltCoverTests3.EchoWorks, "Tests3.EchoWorks"
+          Tests.AltCoverTests3.EchoFallsSilent, "Tests3.EchoFallsSilent"
           Tests.AltCoverTests3.RunSettingsFailsIfCollectorNotFound, "Tests3.RunSettingsFailsIfCollectorNotFound"
           Tests.AltCoverTests3.RunSettingsWorksIfOK, "Tests3.RunSettingsWorksIfOK"
           Tests.AltCoverTests3.RunSettingsExtendsOK, "Tests3.RunSettingsExtendsOK"

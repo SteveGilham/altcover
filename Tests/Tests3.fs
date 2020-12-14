@@ -2817,12 +2817,48 @@ module AltCoverTests3 =
         Console.SetError(snd saved)
 
     [<Test>]
+    let EchoFallsSilent() =
+      Main.init()
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
+      let before = Console.ForegroundColor
+
+      try
+        use stdout =
+          { new StringWriter() with
+              member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
+
+        use stderr =
+          { new StringWriter() with
+              member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
+
+        Console.SetOut stdout
+        Console.SetError stderr
+
+        let subject = Echo()
+        subject.Verbosity <- "Off"
+        let unique = Guid.NewGuid().ToString()
+        subject.Text <- unique
+        subject.Colour <- "cyan"
+        Assert.That (subject.Execute(), Is.True)
+        Assert.That (Console.ForegroundColor, Is.EqualTo before)
+        Assert.That (stderr.ToString(), Is.Empty)
+        Assert.That (stdout.ToString(), Is.Empty)
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+
+    [<Test>]
     let RunSettingsFailsIfCollectorNotFound() =
       Main.init()
       let subject = RunSettings()
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Guid.NewGuid().ToString()
       dc.SetValue(subject, Guid.NewGuid().ToString())
+      subject.Verbosity <- "Verbose"
       let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
       write.SetValue(subject, Some (fun (s:string) -> ()))
       Assert.That (subject.Execute(), Is.False)
@@ -2907,8 +2943,9 @@ module AltCoverTests3 =
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
-      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
-      write.SetValue(subject, Some (fun (s:string) -> ()))
+      //let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      //write.SetValue(subject, Some (fun (s:string) -> ()))
+      subject.Verbosity <- "Off"
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<Not XML")

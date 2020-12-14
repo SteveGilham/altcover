@@ -2008,6 +2008,9 @@ module AltCoverTests2 =
     // CommandLine.fs
     [<Test>]
     let VerbosityShouldBeHonoured() =
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
       let expected = [
         [ true; true; true; true; true ]
         [ false; false; true; true; true ]
@@ -2019,6 +2022,19 @@ module AltCoverTests2 =
         expected
         |> Seq.iteri (fun verbosity expect  ->
             CommandLine.toConsole()
+            use stdout =
+              { new StringWriter() with
+                  member self.Encoding = e0 }
+            test <@ stdout.Encoding = e0 @>
+
+            use stderr =
+              { new StringWriter() with
+                  member self.Encoding = e1 }
+            test <@ stderr.Encoding = e1 @>
+
+            Console.SetOut stdout
+            Console.SetError stderr
+
             let saved = [ Output.info :> obj;
                           Output.echo :> obj;
                           Output.warn :> obj;
@@ -2026,6 +2042,16 @@ module AltCoverTests2 =
                           Output.usage :> obj ]
             CommandLine.verbosity <- verbosity
             CommandLine.applyVerbosity()
+
+            Output.info "info"
+            Output.echo "echo"
+            Output.warn "warn"
+            Output.error "error"
+            Output.usage { Intro = "intro"
+                           Options = Mono.Options.OptionSet()
+                           Options2  = Mono.Options.OptionSet() }
+            // TODO validate output
+            // HOPE we don't have to do more reflective nonsense
 
             test<@ [ Output.info :> obj;
                      Output.echo :> obj;
@@ -2037,6 +2063,8 @@ module AltCoverTests2 =
       finally
         CommandLine.toConsole()
         CommandLine.verbosity <- 0
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
 
     [<Test>]
     let StrongNameKeyCanBeValidated() =
