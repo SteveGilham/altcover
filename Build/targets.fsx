@@ -379,6 +379,8 @@ _Target "Clean" (fun _ ->
   Actions.Clean())
 
 _Target "SetVersion" (fun _ ->
+
+  // patch gendarme
   let configjson = File.ReadAllText("./.config/dotnet-tools.json")
   let json = Manatee.Json.JsonValue.Parse configjson
   let gendarmeVersion = json.Object.["tools"].Object.["altcode.gendarme-tool"].Object.["version"].String
@@ -394,6 +396,13 @@ _Target "SetVersion" (fun _ ->
            |> Seq.head
   gv.Value <- gendarmeVersion
   project2.Save("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+
+  // patch coveralls.io for github actions
+  let coverallsdll =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.dll")
+    |> Path.getFullName
+
+  Shell.copyFile coverallsdll "./ThirdParty/Coveralls.dll"
 
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
