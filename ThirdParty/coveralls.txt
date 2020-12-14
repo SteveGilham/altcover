@@ -5,4 +5,4 @@ ildasm /all /out=Coveralls.il coveralls\Coveralls.dll
 
 patch get_ServiceJobId() 
 
-ilasm /dll /output=Coveralls.dll Coveralls.il  
+ilasm /dll /pdb /output=Coveralls.dll Coveralls.il

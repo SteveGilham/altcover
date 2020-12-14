@@ -404,6 +404,12 @@ _Target "SetVersion" (fun _ ->
 
   Shell.copyFile coverallsdll "./ThirdParty/Coveralls.dll"
 
+  let coverallspdb =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.pdb")
+    |> Path.getFullName
+
+  Shell.copyFile coverallspdb "./ThirdParty/Coveralls.pdb"
+
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
   let github = Environment.environVar "GITHUB_RUN_NUMBER"
