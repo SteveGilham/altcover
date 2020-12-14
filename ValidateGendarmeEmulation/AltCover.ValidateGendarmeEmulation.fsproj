@@ -5,8 +5,9 @@
     <IsPackable>false</IsPackable>
     <NuGetCache Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)\.nuget\packages</NuGetCache>
     <NuGetCache Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.nuget/packages</NuGetCache>
-    <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\2020.11.13.18423-pre-release\tools\</GendarmeToolDir>
-    <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/2020.11.13.18423-pre-release/tools/netcoreapp2.1/any/</GendarmeToolDir>
+    <GendarmeVersion>2020.12.14.8435-pre-release</GendarmeVersion>
+    <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
+    <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/$(GendarmeVersion)/tools/netcoreapp2.1/any/</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
