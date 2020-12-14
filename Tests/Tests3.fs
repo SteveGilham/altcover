@@ -2823,6 +2823,8 @@ module AltCoverTests3 =
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Guid.NewGuid().ToString()
       dc.SetValue(subject, Guid.NewGuid().ToString())
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       Assert.That (subject.Execute(), Is.False)
       Assert.That (subject.Extended, Is.Empty)
 
@@ -2847,6 +2849,8 @@ module AltCoverTests3 =
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       Assert.That (subject.Execute(), Is.True)
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
@@ -2865,6 +2869,8 @@ module AltCoverTests3 =
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
@@ -2887,6 +2893,8 @@ module AltCoverTests3 =
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<Not XML")

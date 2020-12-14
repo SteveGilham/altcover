@@ -313,6 +313,7 @@ type RunSettings() =
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
   member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member val internal MessageIO : (string -> unit) option = None  with get, set
 
   override self.Execute() =
     let logIt = (self.Verbosity
@@ -321,7 +322,7 @@ type RunSettings() =
     if logIt
     then self.TestSetting
          |> sprintf "Settings Before: %s"
-         |> self.Message
+         |> Option.defaultValue self.Message self.MessageIO
 
     let tempFile = Path.GetTempFileName()
 
@@ -381,5 +382,5 @@ type RunSettings() =
       if logIt
       then self.Extended
            |> sprintf "Settings After: %s"
-           |> self.Message
+           |> Option.defaultValue self.Message self.MessageIO
       File.Delete(tempFile)
