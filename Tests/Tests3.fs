@@ -2887,6 +2887,20 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
+    let RunSettingsBarfsIfUninitialized() =
+      Main.init()
+      let subject = RunSettings()
+      let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
+      let settings = Path.GetTempFileName()
+      File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
+      subject.TestSetting <- settings
+      Assert.Throws<InvalidOperationException>(fun () -> subject.Execute() |> ignore)
+      |> ignore
+
+    [<Test>]
     let RunSettingsRecoversOK() =
       Main.init()
       let subject = RunSettings()

@@ -313,6 +313,10 @@ type RunSettings() =
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
   member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   member val internal MessageIO : (string -> unit) option = None  with get, set
 
   override self.Execute() =
