@@ -1839,6 +1839,51 @@ module AltCoverTests3 =
         CoverageParameters.defer := false
 
     [<Test>]
+    let ParsingQuietWorks() =
+      Main.init()
+      try
+        let options = Main.I.declareOptions()
+        let input = [| "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 1)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingMultiQuietWorks() =
+      Main.init()
+      try
+        let options = Main.I.declareOptions()
+        let input = [| "-q"; "-q"; "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingBatchMultiQuietWorks() =
+      Main.init()
+      try
+        let options = Main.I.declareOptions()
+        let input = [| "-qq" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 2)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
     let OutputLeftPassesThrough() =
       Main.init()
       let arg = (Guid.NewGuid().ToString(), Main.I.declareOptions())
@@ -2494,6 +2539,43 @@ module AltCoverTests3 =
         Output.error <- snd saved
 
     [<Test>]
+    let InstrumentLevelsCanBeSet() =
+      Main.init()
+      let subject = Prepare()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
+      let save = Main.effectiveMain
+      let mutable args = [| "some junk " |]
+      let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      try
+        // subject.ACLog <- Some <| FSApi.Logging.Create()
+        [
+          "Off", [ "-q"; "-q"; "-q"]
+          "Verbose", []
+          "NoneOfTheAbove", []
+          "Info", []
+          "Warning", [ "-q" ]
+          "Error", [ "-q"; "-q"]
+        ]
+        |> List.iter (fun (level,q) ->
+          subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
+          aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+          Main.effectiveMain <- (fun a ->
+          args <- a
+          255)
+          let result = subject.Execute()
+          Assert.That(result, Is.False)
+          Assert.That(args, Is.EquivalentTo ([ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ] @ q ), level)
+        )
+      finally
+        Main.effectiveMain <- save
+        Output.info <- fst saved
+        Output.error <- snd saved
+
+    [<Test>]
     let NonDefaultInstrumentObsoleteIsOK() =
       Main.init()
       let subject = Prepare()
@@ -2574,6 +2656,42 @@ module AltCoverTests3 =
         let result = subject.Execute()
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo [ "Runner"; "--collect" ])
+      finally
+        Main.effectiveMain <- save
+        Output.info <- fst saved
+        Output.error <- snd saved
+
+    [<Test>]
+    let CollectLevelsCanBeSet() =
+      Main.init()
+      let subject = Collect()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
+      let save = Main.effectiveMain
+      let mutable args = [| "some junk " |]
+      let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      try
+        [
+          "Off", [ "-q"; "-q"; "-q"]
+          "Verbose", []
+          "NoneOfTheAbove", []
+          "Info", []
+          "Warning", [ "-q" ]
+          "Error", [ "-q"; "-q"]
+        ]
+        |> List.iter (fun (level,q) ->
+          // subject.ACLog <- Some <| FSApi.Logging.Create()
+          subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
+          aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+          Main.effectiveMain <- (fun a ->
+          args <- a
+          255)
+          let result = subject.Execute()
+          Assert.That(result, Is.False)
+          Assert.That(args, Is.EquivalentTo ([ "Runner"; "--collect" ] @ q), level))
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved

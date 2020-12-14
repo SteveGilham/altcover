@@ -10,6 +10,7 @@ open System.Xml.Schema
 
 open AltCover
 open Microsoft.FSharp.Reflection
+open System.Diagnostics
 
 module FSApiTests =
 
@@ -234,7 +235,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     doc.Descendants()
     |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
-    |> Seq.filter (fun a -> a |> isNull |> not)
+    |> Seq.filter (isNull >> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
     let cob = CoverageFormats.ConvertToCobertura doc
@@ -419,6 +420,18 @@ module FSApiTests =
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+
+    let coll1 = {pcoll with Verbosity = TraceLevel.Verbose }
+                |> AltCover.AltCover.CollectOptions.Primitive
+    test <@ DotNet.ToTestArguments prep coll1 combined =
+      "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+
+    let coll2 = {pcoll with Verbosity = TraceLevel.Warning }
+                |> AltCover.AltCover.CollectOptions.Primitive
+    let prep2 = {pprep with Verbosity = TraceLevel.Error }
+                |> AltCover.AltCover.PrepareOptions.Primitive
+    test <@ DotNet.ToTestArguments prep2 coll2 combined =
+      "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
 
 #if SOURCEMAP
   let SolutionDir() =
