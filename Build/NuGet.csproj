@@ -1,13 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="*.*" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="BlackFox.CommandLine" version="1.0.0" />
     <PackageReference Include="NuGet.CommandLine" version="5.8.0">

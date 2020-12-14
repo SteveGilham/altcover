@@ -1,5 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
@@ -14,14 +14,12 @@
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <RollForward>Major</RollForward>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>TRACE;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="nunit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
@@ -50,7 +48,6 @@
     </Reference>
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
@@ -65,7 +62,6 @@
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
@@ -80,7 +76,6 @@
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.9.2" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

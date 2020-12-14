@@ -94,6 +94,7 @@ nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.1.0
 nuget FSharpLint.Core >= 0.16.3
 nuget Markdown >= 2.2.1
+nuget Manatee.Json >= 13.0.4
 nuget NUnit >= 3.12.0
 nuget Fuchu >= 1.1.0
 nuget Unquote >= 5.0.0
@@ -156,7 +157,7 @@ _Target "AttachReports" ( fun _ ->
 
   let sample20 = "./Sample20" |> Path.getFullName
 
-  (!!"./Sample20/Reports/*")  
+  (!!"./Sample20/Reports/*")
   |> Seq.iter (fun f ->
     let name = f |> Path.GetFileName
     let text = f |> File.ReadAllText

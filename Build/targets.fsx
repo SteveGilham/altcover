@@ -379,6 +379,22 @@ _Target "Clean" (fun _ ->
   Actions.Clean())
 
 _Target "SetVersion" (fun _ ->
+  let configjson = File.ReadAllText("./.config/dotnet-tools.json")
+  let json = Manatee.Json.JsonValue.Parse configjson
+  let gendarmeVersion = json.Object.["tools"].Object.["altcode.gendarme-tool"].Object.["version"].String
+
+  let project1 = XDocument.Load ("./Build/NuGet.csproj")
+  let pr = project1.Descendants(XName.Get "PackageReference")
+           |> Seq.find(fun pr -> pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
+  pr.Attribute(XName.Get "version").Value <- gendarmeVersion
+  project1.Save("./Build/NuGet.csproj")
+
+  let project2 = XDocument.Load ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  let gv = project2.Descendants(XName.Get "GendarmeVersion")
+           |> Seq.head
+  gv.Value <- gendarmeVersion
+  project2.Save("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
   let github = Environment.environVar "GITHUB_RUN_NUMBER"
