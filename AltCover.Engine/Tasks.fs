@@ -274,15 +274,20 @@ type Echo() =
 
   [<Required>]
   member val Text = String.Empty with get, set
+  member val Verbosity = "Info" with get, set
 
   [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
     Justification="Queen's English, m80!")>]
   member val Colour = String.Empty with get, set
+  // member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
     if self.Text
        |> String.IsNullOrWhiteSpace
        |> not
+       && (self.Verbosity
+           |> TaskHelpers.parse
+           |> int) >= int System.Diagnostics.TraceLevel.Info
     then
       let original = Console.ForegroundColor
       try
@@ -297,6 +302,7 @@ type RunSettings() =
   inherit Task(null)
 
   member val TestSetting = String.Empty with get, set
+  member val Verbosity = "Info" with get, set
 
   [<Output>]
   member val Extended = String.Empty with get, set
@@ -306,7 +312,17 @@ type RunSettings() =
       Justification = "Unit test accessor")>]
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
+  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+
   override self.Execute() =
+    let logIt = (self.Verbosity
+                 |> TaskHelpers.parse
+                 |> int) >= int System.Diagnostics.TraceLevel.Info
+    if logIt
+    then self.TestSetting
+         |> sprintf "Settings Before: %s"
+         |> self.Message
+
     let tempFile = Path.GetTempFileName()
 
     try
@@ -362,4 +378,8 @@ type RunSettings() =
 
       result
     finally
+      if logIt
+      then self.Extended
+           |> sprintf "Settings After: %s"
+           |> self.Message
       File.Delete(tempFile)

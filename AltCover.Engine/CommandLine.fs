@@ -411,8 +411,10 @@ module internal CommandLine =
       directory
       |> Directory.Exists
       |> not) (fun () ->
-      Output.info
-      <| Format.Local("CreateFolder", directory)
+      if verbosity < 1 // implement it early here
+      then
+        Output.info
+        <| Format.Local("CreateFolder", directory)
       Directory.CreateDirectory(directory) |> ignore)
 
   let internal validatePath path x =

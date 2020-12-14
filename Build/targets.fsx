@@ -1287,10 +1287,10 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> Path.getFullName
 
   if Environment.isWindows &&
-     [ 
+     [
        "APPVEYOR_BUILD_NUMBER"
-       "GITHUB_RUN_NUMBER" 
-     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)   
+       "GITHUB_RUN_NUMBER"
+     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
   then
     Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
       "Coveralls upload failed")
@@ -3916,7 +3916,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue20" (fun _ ->
+_Target "Issue20" (fun _ -> // plus added verbosity testing
   try
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -3974,6 +3974,18 @@ _Target "Issue20" (fun _ ->
   //                                                                                               MSBuildParams =
   //                                                                                                 cliArguments })
   //  ""
+
+    printfn "**************** And now with silence..."
+
+    let p1 = { p0 with Verbosity = System.Diagnostics.TraceLevel.Error }
+    let pp1 = AltCover.PrepareOptions.Primitive p1
+
+    DotNet.test (fun to' ->
+      ({ to'.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests") with
+           Configuration = DotNet.BuildConfiguration.Debug
+           NoBuild = false }).WithAltCoverOptions pp1 cc0 ForceTrue
+      |> testWithCLIArguments) ""
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder

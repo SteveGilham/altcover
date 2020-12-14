@@ -317,6 +317,8 @@ module internal Main =
           else
             Seq.zip toDirectories fromDirectories
             |> Seq.iter (fun (toDirectory, fromDirectory) ->
+               if CommandLine.verbosity < 1 // implement it early here
+               then
                  if !CoverageParameters.inplace then
                    Output.info
                    <| CommandLine.Format.Local("savingto", toDirectory)

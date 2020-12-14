@@ -111,12 +111,11 @@
   <!-- As per the second part Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
   <Target Name="AltCoverVSTestCore">
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
-    <Message Importance="High" Text="Settings Before: $(VSTestSetting)" />
     <AltCover.RunSettings
-      TestSetting="$(VSTestSetting)">
+      TestSetting="$(VSTestSetting)"
+      Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Extended" PropertyName="VSTestSetting" />
     </AltCover.RunSettings>
-    <Message Importance="High" Text="Settings After: $(VSTestSetting)" />
 
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
       TestFileFullPath="$(TargetPath)"
@@ -152,7 +151,9 @@
       Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary" />
     </AltCover.Collect>
-    <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)" Condition="$(AltCoverShowSummary) != ''" />
+    <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)"
+                   Condition="$(AltCoverShowSummary) != ''"
+                   Verbosity="$(AltCoverVerbosity)" />
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />

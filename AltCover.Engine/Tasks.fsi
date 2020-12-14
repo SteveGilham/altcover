@@ -166,7 +166,7 @@ type Prepare =
     ///</summary>
     member ShowGenerated : bool with get, set
     ///<summary>
-    /// Corresponds to command line option ` -q`
+    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
@@ -236,7 +236,7 @@ type Collect =
     ///</summary>
     member SummaryFormat : string with get, set
     ///<summary>
-    /// Corresponds to command line option ` -q`
+    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
   end
@@ -308,6 +308,10 @@ type Echo =
     ///</summary>
     [<Required>]
     member Text : string with get, set
+    ///<summary>
+    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+    ///</summary>
+    member Verbosity : string with get, set
   end
 // ```
 // ## Task `AltCover.RunSettings`
@@ -340,5 +344,10 @@ type RunSettings =
     /// The current settings file to be extended
     ///</summary>
     member TestSetting : string with get, set
+    ///<summary>
+    /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
+    ///</summary>
+    member Verbosity : string with get, set
   end
+
 // ```
