@@ -2007,7 +2007,72 @@ module AltCoverTests2 =
 
     // CommandLine.fs
     [<Test>]
-    let StrongNameKeyCanBeValidatedExceptOnNetCore() =
+    let VerbosityShouldBeHonoured() =
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
+      let expected = [
+        [ true; true; true; true; true ], "info|warn", "echo|error||or|  ImportModule"
+        [ false; false; true; true; true ], "warn", "error||or|  ImportModule"
+        [ false; false; false; true; true ], String.Empty, "error||or|  ImportModule"
+        [ false; false; false; false; false ], String.Empty, String.Empty
+        [ false; false; false; false; false ], String.Empty, String.Empty
+      ]
+      try
+        expected
+        |> Seq.iteri (fun verbosity (expect, toOut, toErr)  ->
+            CommandLine.toConsole()
+            use stdout =
+              { new StringWriter() with
+                  member self.Encoding = e0 }
+            test <@ stdout.Encoding = e0 @>
+
+            use stderr =
+              { new StringWriter() with
+                  member self.Encoding = e1 }
+            test <@ stderr.Encoding = e1 @>
+
+            Console.SetOut stdout
+            Console.SetError stderr
+
+            let first = [ Output.info :> obj;
+                          Output.echo :> obj;
+                          Output.warn :> obj;
+                          Output.error :> obj;
+                          Output.usage :> obj ]
+            CommandLine.verbosity <- verbosity
+            CommandLine.applyVerbosity()
+
+            Output.info "info"
+            Output.echo "echo"
+            Output.warn "warn"
+            Output.error "error"
+            Output.usage { Intro = "intro"
+                           Options = Mono.Options.OptionSet()
+                           Options2  = Mono.Options.OptionSet() }
+
+            test<@ [ Output.info :> obj;
+                     Output.echo :> obj;
+                     Output.warn :> obj;
+                     Output.error :> obj;
+                     Output.usage :> obj ]
+                   |> List.zip first
+                   |> List.map (fun (a,b) -> Object.ReferenceEquals(a,b)) = expect @>
+
+            test <@ stdout.ToString().Trim().Replace(Environment.NewLine, "|") = toOut @>
+            if toErr.Length = 0
+            then test <@ stderr.ToString().Length = 0 @>
+            else test <@ stderr.ToString().Trim().Replace(Environment.NewLine, "|").StartsWith(toErr, StringComparison.Ordinal) @>
+
+        )
+      finally
+        CommandLine.toConsole()
+        CommandLine.verbosity <- 0
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+
+    [<Test>]
+    let StrongNameKeyCanBeValidated() =
       let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
       let (pair, ok) = CommandLine.validateStrongNameKey "key" input
       Assert.That(ok, Is.True, "Strong name is OK")

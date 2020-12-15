@@ -1,0 +1,8 @@
+Build Coveralls.cs, extract get_ServiceJobId() 
+
+Take local copy of the coveralls assembly from 1.4.2+ to here and do
+ildasm /all /out=Coveralls.il coveralls\Coveralls.dll
+
+patch get_ServiceJobId() 
+
+ilasm /dll /pdb /output=Coveralls.dll Coveralls.il

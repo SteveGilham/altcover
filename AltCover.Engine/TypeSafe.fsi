@@ -500,7 +500,12 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to command line option `--teamcity[=VALUE]`
         ///</summary>
-        SummaryFormat: SummaryFormat }
+        SummaryFormat: SummaryFormat
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        Verbosity : System.Diagnostics.TraceLevel
+      }
       with
         ///<summary>
         /// Returns an instance with all fields empty save `ExposeReturnCode` being `Set`
@@ -662,7 +667,12 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to command line option ` --showGenerated`
         ///</summary>
-        ShowGenerated: Flag }
+        ShowGenerated: Flag
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        Verbosity : System.Diagnostics.TraceLevel
+ }
       with
         ///<summary>
         /// returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set`

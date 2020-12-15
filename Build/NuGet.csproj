@@ -1,15 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="*.*" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="altcover" version="7.2.801" />
+    <PackageReference Include="altcover" version="7.3.802" />
     <PackageReference Include="BlackFox.CommandLine" version="1.0.0" />
     <PackageReference Include="NuGet.CommandLine" version="5.8.0">
       <PrivateAssets>all</PrivateAssets>
@@ -22,7 +20,7 @@
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
     <PackageReference Include="Pester" version="5.1.0" />
     <PackageReference Include="AltCode.Dixon" version="2020.3.16.14542-pre-release" />
-    <PackageReference Include="altcode.gendarme" version="2020.11.13.18423-pre-release" />
+    <PackageReference Include="altcode.gendarme" version="2020.12.14.8435-pre-release" />
     <PackageReference Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
   </ItemGroup>
 </Project>

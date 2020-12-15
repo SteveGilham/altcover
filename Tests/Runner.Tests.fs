@@ -371,7 +371,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 10
+      let optionCount = 11
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort
@@ -1330,6 +1330,51 @@ module AltCoverRunnerTests =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError"))
+
+    [<Test>]
+    let ParsingQuietWorks() =
+      Runner.init()
+      try
+        let options = Runner.declareOptions()
+        let input = [| "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 1)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingMultiQuietWorks() =
+      Runner.init()
+      try
+        let options = Runner.declareOptions()
+        let input = [| "-q"; "-q"; "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingBatchMultiQuietWorks() =
+      Runner.init()
+      try
+        let options = Runner.declareOptions()
+        let input = [| "-qq" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 2)
+      finally
+        CommandLine.verbosity <- 0
 
     [<Test>]
     let ShouldRequireExe() =
