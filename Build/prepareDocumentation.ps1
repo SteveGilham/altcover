@@ -233,7 +233,7 @@ $footer = @"
 
 ## Example
 ``````
-dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAssemblyFilter=NUnit
+dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAssemblyExcludeFilter=NUnit
 ``````
 Chooses a different report name, and excludes the ``NUnit3.TestAdapter`` assembly that comes with its pdb files, and gets instrumented by default.
 "@
