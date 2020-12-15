@@ -5,6 +5,7 @@
     <AltCoverNetStdEngine>$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.Engine.dll</AltCoverNetStdEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
+    <AltCoverSavedDirectory>$(TargetDir)__Saved</AltCoverSavedDirectory>
   </PropertyGroup>
 
   <UsingTask TaskName="AltCover.Prepare"
@@ -22,24 +23,24 @@
 
   <PropertyGroup>
     <AltCoverVerbosity Condition="'$(AltCoverVerbosity)' == ''">Info</AltCoverVerbosity>
-    <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
-    <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
+    <AltCoverPreFlightCheck Condition="Exists('$(AltCoverSavedDirectory)')">Fail</AltCoverPreFlightCheck>
+    <AltCoverPreFlightCheck Condition="!Exists('$(AltCoverSavedDirectory)')">OK</AltCoverPreFlightCheck>
   </PropertyGroup>
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
-    <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'"
-           Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
-    <Warning Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' == 'true'"
-             Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Forcibly deleting it" />
-    <RemoveDir Directories="$(TargetDir)__Saved"
-               Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' == 'true'" />
+    <Error Condition="Exists('$(AltCoverSavedDirectory)') AND '$(AltCoverForce)' != 'true'"
+           Text="Directory '$(AltCoverSavedDirectory)' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
+    <Warning Condition="Exists('$(AltCoverSavedDirectory)') AND '$(AltCoverForce)' == 'true'"
+             Text="Directory '$(AltCoverSavedDirectory)' exists from a previous run.  Forcibly deleting it" />
+    <RemoveDir Directories="$(AltCoverSavedDirectory)"
+               Condition="Exists('$(AltCoverSavedDirectory)') AND '$(AltCoverForce)' == 'true'" />
   </Target>
 
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
       <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
       <AltCoverInputDirectory Include="$(TargetDir)" />
-      <AltCoverOutputDirectory Include="$(TargetDir)__Saved" />
+      <AltCoverOutputDirectory Include="$(AltCoverSavedDirectory)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -157,13 +158,13 @@
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
-      <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
+      <AltCoverSavedFiles Include="$(AltCoverSavedDirectory)/*.*" />
       <AltCoverRunSettings Include="$(TEMP)/*.altcover.runsettings" />
     </ItemGroup>
     <Delete Files="@(AltCoverRunSettings)" />
     <Delete Files="@(AltCoverRecorderGFiles)" />
     <Delete Files="@(AltCoverFSharpFiles)" />
     <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
-    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved')" />
+    <RemoveDir Directories="$(AltCoverSavedDirectory)" Condition="Exists('$(AltCoverSavedDirectory)')" />
   </Target>
 </Project>
