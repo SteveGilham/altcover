@@ -53,6 +53,7 @@ type Prepare =
     member VisibleBranches : bool with get, set
     member ShowStatic : string with get, set
     member ShowGenerated : bool with get, set
+    member Verbosity : string with get, set
   end
 ```
 ## Task `AltCover.Collect`
@@ -76,6 +77,7 @@ type Collect =
     member CommandLine : string array with get, set
     member ExposeReturnCode : bool with get, set
     member SummaryFormat : string with get, set
+    member Verbosity : string with get, set
   end
 ```
 ## Task `AltCover.PowerShell`
@@ -109,6 +111,7 @@ type Echo =
     member Colour : string with get, set
     [<Required>]
     member Text : string with get, set
+    member Verbosity : string with get, set
   end
 ```
 ## Task `AltCover.RunSettings`
@@ -124,5 +127,6 @@ type RunSettings =
     [<Output>]
     member Extended : string with get, set
     member TestSetting : string with get, set
+    member Verbosity : string with get, set
   end
 ```

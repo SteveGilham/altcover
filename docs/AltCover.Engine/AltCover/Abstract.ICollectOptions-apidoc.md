@@ -33,6 +33,7 @@ public interface ICollectOptions
 | [RecorderDirectory](Abstract.ICollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](Abstract.ICollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](Abstract.ICollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [Verbosity](Abstract.ICollectOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [WorkingDirectory](Abstract.ICollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 
 ## See Also
