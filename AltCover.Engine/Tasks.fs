@@ -320,13 +320,14 @@ type RunSettings() =
   member val internal MessageIO : (string -> unit) option = None  with get, set
 
   override self.Execute() =
+    let signal = Option.defaultValue self.Message self.MessageIO
     let logIt = (self.Verbosity
                  |> TaskHelpers.parse
                  |> int) >= int System.Diagnostics.TraceLevel.Info
     if logIt
     then self.TestSetting
          |> sprintf "Settings Before: %s"
-         |> Option.defaultValue self.Message self.MessageIO
+         |> signal
 
     let tempFile = Path.GetTempFileName()
 
@@ -386,5 +387,5 @@ type RunSettings() =
       if logIt
       then self.Extended
            |> sprintf "Settings After: %s"
-           |> Option.defaultValue self.Message self.MessageIO
+           |> signal
       File.Delete(tempFile)

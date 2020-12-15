@@ -454,3 +454,4 @@ module internal CommandLine =
     Output.usage <- usageBase
     Output.echo <- writeErr
     Output.info <- writeOut
+    Output.warn <- writeOut
