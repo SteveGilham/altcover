@@ -41,7 +41,8 @@ module AltCoverCommand =
                      OutputFile = a.OutputFile
                      CommandLine = a.CommandLine
                      ExposeReturnCode = a.ExposeReturnCode
-                     SummaryFormat = a.SummaryFormat }
+                     SummaryFormat = a.SummaryFormat
+                     Verbosity = a.Verbosity}
         AltCover.Primitive copy
 
   let internal setCollectCommandLine (args : string seq) collect =
@@ -59,7 +60,8 @@ module AltCoverCommand =
                      OutputFile = a.OutputFile
                      CommandLine = args |> toSeq
                      ExposeReturnCode = a.ExposeReturnCode
-                     SummaryFormat = a.SummaryFormat }
+                     SummaryFormat = a.SummaryFormat
+                     Verbosity = a.Verbosity }
         AltCover.Primitive copy
       | AltCover.TypeSafe t ->
           AltCover.TypeSafe
@@ -112,7 +114,8 @@ module AltCoverCommand =
             LocalSource = a.LocalSource;
             VisibleBranches = a.VisibleBranches;
             ShowStatic = a.ShowStatic;
-            ShowGenerated = a.ShowGenerated }
+            ShowGenerated = a.ShowGenerated
+            Verbosity = a.Verbosity }
         AltCover.PrepareOptions.Primitive copy
       | AltCover.PrepareOptions.TypeSafe t ->
           AltCover.PrepareOptions.TypeSafe
@@ -269,6 +272,9 @@ module AltCoverCommand =
 
     runCore options withMono
 
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@252T.#monoPath", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@252T.#options", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@212T.#options", Justification="Generated code")>]()
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@255T.#monoPath", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@255T.#options", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@215T.#options", Justification="Generated code")>]()

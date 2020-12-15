@@ -386,12 +386,13 @@ Zero/absent values are ignored. If a coverage result is below threshold, or the 
     <value>Optional: Defines the format of any summary; an optional string value consisting of the tokens : 
 'N' = No summary at all, regardless of other values
 'B' = TeamCity format, with branches as Block items
-'R' = TeamCity format, with branches as b&#x200B;Ranch items
+'R' = TeamCity format, with branches as b​Ranch items
 'O' = Classic OpenCover format
 'C' = Change Risk Anti-Pattern score
 '+' is the same as "OC" (special case - "+" by itself is the same as 'BOC')
 If the option is present, but has no value, this is the same as 'B'
-If the option is not present, then the default is 'OC'.</value>  </data>
+If the option is not present, then the default is 'OC'.</value>
+  </data>
   <data name="defer" xml:space="preserve">
     <value>Optional, defers writing runner-mode coverage data until process exit.</value>
   </data>
@@ -454,5 +455,8 @@ If the option is not present, then the default is 'OC'.</value>  </data>
   </data>
   <data name="maxCrap" xml:space="preserve">
     <value>Maximum CRAP score {0}</value>
+  </data>
+  <data name="q" xml:space="preserve">
+    <value>Optional, multiple: Quiet mode -- once to switch off informational messages, twice to switch off warnings as well, three (or more) times to switch off all messages.</value>
   </data>
 </root>

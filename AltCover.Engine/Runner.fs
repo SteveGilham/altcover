@@ -135,6 +135,7 @@ module internal Runner =
   let mutable internal summaryFormat = SummaryFormat.Default
 
   let internal init() =
+    CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode := false
     recordingDirectory <- None
@@ -585,6 +586,7 @@ module internal Runner =
            CommandLine.error <-
              CommandLine.Format.Local("MultiplesNotAllowed", "--summary")
              :: CommandLine.error))
+      ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -907,6 +909,7 @@ module internal Runner =
             Options2 = options }
         255
     | Right(rest, _) ->
+        CommandLine.applyVerbosity()
         let value =
           CommandLine.doPathOperation (fun () ->
             let pair = J.recorderInstance()

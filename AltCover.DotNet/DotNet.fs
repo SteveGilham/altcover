@@ -77,6 +77,7 @@ module DotNet =
 
     let private fromList name (s : String seq) = (listArg name s, s.Any())
     let internal fromArg name s = (arg name s, isSet s)
+    let internal fromValue name (s:obj) (b:bool) = (arg name <| s.ToString(), b)
     let internal join(l : string seq) = String.Join(" ", l)
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
@@ -128,6 +129,13 @@ module DotNet =
         fromArg, "SummaryFormat", collect.SummaryFormat //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
       ]
 
+    let internal toSharedFromValueArgumentList (verbosity : System.Diagnostics.TraceLevel)  :
+       ((string -> obj -> bool -> string*bool) * string * obj * bool) list =
+      [
+        // poss s <> Info
+        fromValue, "Verbosity", verbosity :> obj, verbosity <> System.Diagnostics.TraceLevel.Info //=`"Levels of output -- Info (default), Warning, Error, or Off"
+      ]
+
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
                        Justification="Internal implementation detail")>]
     let internal toCLIOptionsFromArgArgumentList (options : ICLIOptions) =
@@ -169,6 +177,11 @@ module DotNet =
       collect
       |> I.toCollectFromArgArgumentList
       |> List.map(fun (f,n,a) -> f n a)
+
+      Math.Min(int prepare.Verbosity, int collect.Verbosity)
+      |> enum<System.Diagnostics.TraceLevel>
+      |> I.toSharedFromValueArgumentList
+      |> List.map(fun (f,n,a,b) -> f n a b)
 
       options
       |> I.toCLIOptionsFromArgArgumentList

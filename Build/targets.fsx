@@ -379,6 +379,37 @@ _Target "Clean" (fun _ ->
   Actions.Clean())
 
 _Target "SetVersion" (fun _ ->
+
+  // patch gendarme
+  let configjson = File.ReadAllText("./.config/dotnet-tools.json")
+  let json = Manatee.Json.JsonValue.Parse configjson
+  let gendarmeVersion = json.Object.["tools"].Object.["altcode.gendarme-tool"].Object.["version"].String
+
+  let project1 = XDocument.Load ("./Build/NuGet.csproj")
+  let pr = project1.Descendants(XName.Get "PackageReference")
+           |> Seq.find(fun pr -> pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
+  pr.Attribute(XName.Get "version").Value <- gendarmeVersion
+  project1.Save("./Build/NuGet.csproj")
+
+  let project2 = XDocument.Load ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  let gv = project2.Descendants(XName.Get "GendarmeVersion")
+           |> Seq.head
+  gv.Value <- gendarmeVersion
+  project2.Save("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+
+  // patch coveralls.io for github actions
+  let coverallsdll =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.dll")
+    |> Path.getFullName
+
+  Shell.copyFile coverallsdll "./ThirdParty/Coveralls.dll"
+
+  let coverallspdb =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.pdb")
+    |> Path.getFullName
+
+  Shell.copyFile coverallspdb "./ThirdParty/Coveralls.pdb"
+
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
   let github = Environment.environVar "GITHUB_RUN_NUMBER"
@@ -1287,10 +1318,10 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> Path.getFullName
 
   if Environment.isWindows &&
-     [ 
+     [
        "APPVEYOR_BUILD_NUMBER"
-       "GITHUB_RUN_NUMBER" 
-     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)   
+       "GITHUB_RUN_NUMBER"
+     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
   then
     Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
       "Coveralls upload failed")
@@ -3916,7 +3947,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue20" (fun _ ->
+_Target "Issue20" (fun _ -> // plus added verbosity testing
   try
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -3974,6 +4005,18 @@ _Target "Issue20" (fun _ ->
   //                                                                                               MSBuildParams =
   //                                                                                                 cliArguments })
   //  ""
+
+    printfn "**************** And now with silence..."
+
+    let p1 = { p0 with Verbosity = System.Diagnostics.TraceLevel.Error }
+    let pp1 = AltCover.PrepareOptions.Primitive p1
+
+    DotNet.test (fun to' ->
+      ({ to'.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests") with
+           Configuration = DotNet.BuildConfiguration.Debug
+           NoBuild = false }).WithAltCoverOptions pp1 cc0 ForceTrue
+      |> testWithCLIArguments) ""
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder

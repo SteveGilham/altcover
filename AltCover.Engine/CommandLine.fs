@@ -119,6 +119,7 @@ module internal Output =
 
 module internal CommandLine =
 
+  let mutable internal verbosity = 0
   let mutable internal help = false
   let mutable internal error : string list = []
   let mutable internal exceptions : Exception list = []
@@ -307,6 +308,16 @@ module internal CommandLine =
         if help then Left("HelpText", options) else parse
     | fail -> fail
 
+  let internal applyVerbosity () =
+    if verbosity >= 1
+    then Output.info <- ignore
+         Output.echo <- ignore
+    if verbosity >= 2
+    then Output.warn <- ignore
+    if verbosity >= 3
+    then Output.error <- ignore
+         Output.usage <- ignore
+
   let internal reportErrors (tag : string) extend =
     I.conditionalOutput (fun () ->
       tag
@@ -400,8 +411,10 @@ module internal CommandLine =
       directory
       |> Directory.Exists
       |> not) (fun () ->
-      Output.info
-      <| Format.Local("CreateFolder", directory)
+      if verbosity < 1 // implement it early here
+      then
+        Output.info
+        <| Format.Local("CreateFolder", directory)
       Directory.CreateDirectory(directory) |> ignore)
 
   let internal validatePath path x =
@@ -441,3 +454,4 @@ module internal CommandLine =
     Output.usage <- usageBase
     Output.echo <- writeErr
     Output.info <- writeOut
+    Output.warn <- writeOut

@@ -82,7 +82,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.I.declareOptions()
-      let optionCount = 33
+      let optionCount = 34
 
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
@@ -125,16 +125,20 @@ module AltCoverTests3 =
       let fsapiCases = (typeof<AltCover.PrepareOptions>
                         |> FSharpType.GetUnionCases).Length
 
-      let args = Primitive.PrepareOptions.Create() |> AltCover.PrepareOptions.Primitive
+      let args = { Primitive.PrepareOptions.Create()
+                           with Verbosity = System.Diagnostics.TraceLevel.Warning }
+                 |> AltCover.PrepareOptions.Primitive
       let commandFragments = [Args.listItems >> (List.map fst)
                               Args.plainItems >> (List.map fst)
                               Args.options >> List.map (fun (a,_,_) -> a)
-                              Args.flagItems >> (List.map fst)]
+                              Args.flagItems >> (List.map fst)
+                              Args.countItems >> (List.map fst)]
                              |> List.collect (fun f -> f args)
+                             |> List.map (fun k -> k.Trim('-'))
                              |> List.sort
       Assert.That(commandFragments |> List.length, Is.EqualTo optionCount,
                   "expected " + String.Join("; ", optionNames) + Environment.NewLine +
-                  "but got  " + String.Join("; ", typesafeNames))
+                  "but got  " + String.Join("; ", commandFragments))
 
       // Adds "Tag", "IsPrimitive", "IsTypeSafe"
       Assert.That(fsapiNames
@@ -1835,6 +1839,51 @@ module AltCoverTests3 =
         CoverageParameters.defer := false
 
     [<Test>]
+    let ParsingQuietWorks() =
+      Main.init()
+      try
+        let options = Main.I.declareOptions()
+        let input = [| "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 1)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingMultiQuietWorks() =
+      Main.init()
+      try
+        let options = Main.I.declareOptions()
+        let input = [| "-q"; "-q"; "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingBatchMultiQuietWorks() =
+      Main.init()
+      try
+        let options = Main.I.declareOptions()
+        let input = [| "-qq" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 2)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
     let OutputLeftPassesThrough() =
       Main.init()
       let arg = (Guid.NewGuid().ToString(), Main.I.declareOptions())
@@ -2490,6 +2539,43 @@ module AltCoverTests3 =
         Output.error <- snd saved
 
     [<Test>]
+    let InstrumentLevelsCanBeSet() =
+      Main.init()
+      let subject = Prepare()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
+      let save = Main.effectiveMain
+      let mutable args = [| "some junk " |]
+      let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      try
+        // subject.ACLog <- Some <| FSApi.Logging.Create()
+        [
+          "Off", [ "-q"; "-q"; "-q"]
+          "Verbose", []
+          "NoneOfTheAbove", []
+          "Info", []
+          "Warning", [ "-q" ]
+          "Error", [ "-q"; "-q"]
+        ]
+        |> List.iter (fun (level,q) ->
+          subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
+          aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+          Main.effectiveMain <- (fun a ->
+          args <- a
+          255)
+          let result = subject.Execute()
+          Assert.That(result, Is.False)
+          Assert.That(args, Is.EquivalentTo ([ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ] @ q ), level)
+        )
+      finally
+        Main.effectiveMain <- save
+        Output.info <- fst saved
+        Output.error <- snd saved
+
+    [<Test>]
     let NonDefaultInstrumentObsoleteIsOK() =
       Main.init()
       let subject = Prepare()
@@ -2570,6 +2656,42 @@ module AltCoverTests3 =
         let result = subject.Execute()
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo [ "Runner"; "--collect" ])
+      finally
+        Main.effectiveMain <- save
+        Output.info <- fst saved
+        Output.error <- snd saved
+
+    [<Test>]
+    let CollectLevelsCanBeSet() =
+      Main.init()
+      let subject = Collect()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
+      let save = Main.effectiveMain
+      let mutable args = [| "some junk " |]
+      let saved = (Output.info, Output.error)
+      let aclog = subject.GetType().GetProperty("ACLog", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      try
+        [
+          "Off", [ "-q"; "-q"; "-q"]
+          "Verbose", []
+          "NoneOfTheAbove", []
+          "Info", []
+          "Warning", [ "-q" ]
+          "Error", [ "-q"; "-q"]
+        ]
+        |> List.iter (fun (level,q) ->
+          // subject.ACLog <- Some <| FSApi.Logging.Create()
+          subject.GetType().GetProperty("Verbosity").SetValue(subject, level)
+          aclog.SetValue(subject, Some <| AltCover.LoggingOptions.Create())
+          Main.effectiveMain <- (fun a ->
+          args <- a
+          255)
+          let result = subject.Execute()
+          Assert.That(result, Is.False)
+          Assert.That(args, Is.EquivalentTo ([ "Runner"; "--collect" ] @ q), level))
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2695,12 +2817,50 @@ module AltCoverTests3 =
         Console.SetError(snd saved)
 
     [<Test>]
+    let EchoFallsSilent() =
+      Main.init()
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
+      let before = Console.ForegroundColor
+
+      try
+        use stdout =
+          { new StringWriter() with
+              member self.Encoding = e0 }
+        test <@ stdout.Encoding = e0 @>
+
+        use stderr =
+          { new StringWriter() with
+              member self.Encoding = e1 }
+        test <@ stderr.Encoding = e1 @>
+
+        Console.SetOut stdout
+        Console.SetError stderr
+
+        let subject = Echo()
+        subject.Verbosity <- "Off"
+        let unique = Guid.NewGuid().ToString()
+        subject.Text <- unique
+        subject.Colour <- "cyan"
+        Assert.That (subject.Execute(), Is.True)
+        Assert.That (Console.ForegroundColor, Is.EqualTo before)
+        Assert.That (stderr.ToString(), Is.Empty)
+        Assert.That (stdout.ToString(), Is.Empty)
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+
+    [<Test>]
     let RunSettingsFailsIfCollectorNotFound() =
       Main.init()
       let subject = RunSettings()
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Guid.NewGuid().ToString()
       dc.SetValue(subject, Guid.NewGuid().ToString())
+      subject.Verbosity <- "Verbose"
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       Assert.That (subject.Execute(), Is.False)
       Assert.That (subject.Extended, Is.Empty)
 
@@ -2725,6 +2885,8 @@ module AltCoverTests3 =
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       Assert.That (subject.Execute(), Is.True)
       Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
       let result = subject.Extended
@@ -2743,6 +2905,8 @@ module AltCoverTests3 =
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
+      let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      write.SetValue(subject, Some (fun (s:string) -> ()))
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
@@ -2759,12 +2923,29 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
+    let RunSettingsThrowsIfUninitialized() =
+      Main.init()
+      let subject = RunSettings()
+      let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
+      let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
+      let settings = Path.GetTempFileName()
+      File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
+      subject.TestSetting <- settings
+      Assert.Throws<InvalidOperationException>(fun () -> subject.Execute() |> ignore)
+      |> ignore
+
+    [<Test>]
     let RunSettingsRecoversOK() =
       Main.init()
       let subject = RunSettings()
       let dc = subject.GetType().GetProperty("DataCollector", BindingFlags.Instance ||| BindingFlags.NonPublic)
       // subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       dc.SetValue(subject, Assembly.GetExecutingAssembly().Location)
+      //let write = subject.GetType().GetProperty("MessageIO", BindingFlags.Instance ||| BindingFlags.NonPublic)
+      //write.SetValue(subject, Some (fun (s:string) -> ()))
+      subject.Verbosity <- "Off"
       let assembly = AssemblyName.GetAssemblyName <| Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
       File.WriteAllText(settings, "<Not XML")

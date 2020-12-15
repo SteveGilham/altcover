@@ -28,6 +28,7 @@ module internal Main =
       None
 
   let internal init() =
+    CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
     CoverageParameters.defer := false // ddflag
@@ -273,6 +274,7 @@ module internal Main =
                CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
+        ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
         ("<>",
@@ -315,6 +317,8 @@ module internal Main =
           else
             Seq.zip toDirectories fromDirectories
             |> Seq.iter (fun (toDirectory, fromDirectory) ->
+               if CommandLine.verbosity < 1 // implement it early here
+               then
                  if !CoverageParameters.inplace then
                    Output.info
                    <| CommandLine.Format.Local("savingto", toDirectory)
@@ -474,6 +478,8 @@ module internal Main =
               Options2 = Runner.declareOptions() }
           255
       | Right(rest, fromInfo, toInfo, targetInfo) ->
+          CommandLine.applyVerbosity()
+
           let report = CoverageParameters.reportPath()
 
           let result =
