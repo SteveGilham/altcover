@@ -338,13 +338,13 @@ module FSApiTests =
                             |> List.collect (fun f -> f prep)
                             |> List.sort
 
-    // not input and output directories
+    // not input and output directories or inplace
 //#if ! NET5_0
 //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
 //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", prepareFragments))
 //#endif
-    test <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 2) @>
+    test <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 3) @>
 
     let collect = doc.Descendants()
                   |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Collect")

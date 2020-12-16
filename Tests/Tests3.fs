@@ -171,10 +171,11 @@ module AltCoverTests3 =
                            |> Seq.sort
                            |> Seq.toList
 
-      // dotnet test loses commandline, defer, exposereturncode, inplace, save
-      //                   N/A,         fixed, N/A,              fixed,   fixed
+      // dotnet test loses commandline, defer, exposereturncode, save
+      //                   N/A,         fixed, N/A,              fixed
+      // inplace is explicitly hard-coded
       Assert.That(attributeNames
-                  |> Seq.length, Is.EqualTo (optionCount - 4),
+                  |> Seq.length, Is.EqualTo (optionCount - 3),
                   "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", attributeNames))
 
