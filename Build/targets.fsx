@@ -932,24 +932,29 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
            with x -> eprintf "%A" x
 
            // Can't seem to get this any other way
-           let covxml =
-             (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
-           let doc = covxml |> XDocument.Load
+           let ocovxml =
+             (!!(tr @@ "*/coverage.opencover.xml") |> Seq.tryHead)
+             |> Option.map Path.getFullName
 
-           let key =
-             doc.Descendants(XName.Get "Name")
-             |> Seq.filter
-                  (fun x -> x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
-             |> Seq.toList
-           key |> List.iter (fun x -> x.Parent.Remove())
+           match ocovxml with
+           | None -> l
+           | Some covxml ->
+               let doc = covxml |> XDocument.Load
 
-           let target =
-             (Path.getFullName "./_Reports")
-             @@ ((Path.GetFileNameWithoutExtension f) + ".coverlet.xml")
-           doc.Save target
+               let key =
+                 doc.Descendants(XName.Get "Name")
+                 |> Seq.filter
+                      (fun x -> x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
+                 |> Seq.toList
+               key |> List.iter (fun x -> x.Parent.Remove())
 
-           // Shell.copyFile target covxml
-           target :: l) []
+               let target =
+                 (Path.getFullName "./_Reports")
+                 @@ ((Path.GetFileNameWithoutExtension f) + ".coverlet.xml")
+               doc.Save target
+
+               // Shell.copyFile target covxml
+               target :: l) []
 
     ReportGenerator.generateReports (fun p ->
       { p with
