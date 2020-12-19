@@ -94,11 +94,7 @@ module internal Main =
             "--callContext", x) :: CommandLine.error
       (false, Left None)
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-    Justification="It's perfectly maintainable.")>]
   module internal I =
-    [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-      Justification="It's perfectly maintainable.")>]
     let internal declareOptions() =
       let makeRegex (x : String) =
         x.Replace(char 0, '\\').Replace(char 1, '|')

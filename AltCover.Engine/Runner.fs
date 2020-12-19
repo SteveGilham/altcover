@@ -149,9 +149,6 @@ module internal Runner =
     summaryFormat <- Default
     summary.Clear() |> ignore
 
-  [<SuppressMessage("Microsoft.Maintainability",
-    "CA1506:AvoidExcessiveClassCoupling",
-    Justification="Consolidation point")>]
   module internal I =
 
     let internal write line =
@@ -620,8 +617,6 @@ module internal Runner =
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-    Justification="It's OK, really.")>]
   module internal J =
     let internal requireExe(parse : Either<string * OptionSet, string list * OptionSet>) =
       match parse with

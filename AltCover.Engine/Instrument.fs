@@ -86,8 +86,6 @@ module internal Instrument =
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
-                    Justification = "partitioned into closures")>]
   module internal I =
 
     // Locate the method that must be called to register a code point for coverage visit.
@@ -614,7 +612,7 @@ module internal Instrument =
     let internal doTrack state (m : MethodDefinition) (included:Inspections)
                                (track : (int * string) option) =
       track
-      |> Option.fold (fun (s:InstrumentContext) (n, _)  -> // this line for FxCop
+      |> Option.fold (fun (s:InstrumentContext) (n, _)  ->
            let body =
              [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
            let methodWorker = body.GetILProcessor()
@@ -801,8 +799,3 @@ module internal Instrument =
   // returns>Stateful visitor function</returns>
   let internal instrumentGenerator(assemblies : string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
-
-[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@617.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
-  Justification="Nice idea if you can manage it")>]
-()

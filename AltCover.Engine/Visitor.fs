@@ -365,8 +365,6 @@ module internal Visitor =
     branchNumber <- 0
     sourceLinkDocuments <- None
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
-                    Justification = "partitioned into closures")>]
   module I =
     let private specialCaseFilters =
       [ @"^CompareTo\$cont\@\d+\-?\d$"
@@ -938,8 +936,6 @@ module internal Visitor =
       |> Seq.sortBy
            (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
 
-    [<SuppressMessage("Microsoft.Maintainability", "CA1506",
-                      Justification = "partitioned into closures")>]
     let private extractBranchPoints dbg methodFullName rawInstructions interesting vc =
       let makeDefault i =
         if !CoverageParameters.coalesceBranches then -1 else i

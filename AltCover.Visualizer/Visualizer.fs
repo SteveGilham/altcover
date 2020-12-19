@@ -376,9 +376,6 @@ module private Gui =
   let latch = new Threading.ManualResetEvent false
 #endif
 
-  [<SuppressMessage("Microsoft.Maintainability",
-                    "CA1506:AvoidExcessiveClassCoupling",
-                    Justification = "I see no problem here")>]
   let private onRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let hitFilter (activated : RowActivatedArgs) (path : TreePath) =
       activated.Path.Compare(path) = 0
@@ -657,14 +654,6 @@ module private Gui =
                             Scope="member",
                             Target="<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
                             Justification="Compiler generated")>]
-[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-                            Scope="type",
-                            Target="AltCover.Gui",
-                            Justification="That's the way things are")>]
-[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-                            Scope="member",
-                            Target="AltCover.Gui.#main(System.String[])",
-                            Justification="That's the way things are")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",

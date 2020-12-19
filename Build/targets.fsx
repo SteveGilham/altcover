@@ -718,6 +718,7 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1709" // defer to the Gendarme casing rule for implicit 'a
       "-Microsoft.Naming#CA1715" // defer to the Gendarme naming rule for implicit 'a
       "-Microsoft.Usage#CA2235"  // closures being serializable
+      "-Microsoft.Maintainability#CA1506" // AvoidExcessiveClassCoupling
     ]
 
   let standardRules =

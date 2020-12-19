@@ -77,8 +77,6 @@ module internal OpenCover =
              String.Join
                (" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
-                    Justification = "partitioned into closures")>]
   let internal reportGenerator() =
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure

@@ -30,8 +30,6 @@ module CoverageFormats =
     Justification = "AvoidSpeculativeGenerality too")>]
   [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
     Justification = "AvoidSpeculativeGenerality too")>]
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-     Justification="That's XML + code reuse for you.")>]
   let ConvertFromNCover (document:XDocument) (assemblies : string seq) =
     let reporter, rewrite = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
