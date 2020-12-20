@@ -77,3 +77,6 @@ Sample22/coverage.xml
 buildsample*.fsx.lock
 AltCover.Recorder/Strings.resources
 coverage.xml
+*.ignore.fsproj
+*Tests/NuGet.config
+ValidateGendarmeEmulation/NuGet.config

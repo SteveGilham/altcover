@@ -23,14 +23,11 @@
 
   <PropertyGroup>
     <AltCoverVerbosity Condition="'$(AltCoverVerbosity)' == ''">Info</AltCoverVerbosity>
-    <AltCoverPreFlightCheck Condition="Exists('$(AltCoverInstrumentedDirectory)')">Fail</AltCoverPreFlightCheck>
-    <AltCoverPreFlightCheck Condition="!Exists('$(AltCoverInstrumentedDirectory)')">OK</AltCoverPreFlightCheck>
   </PropertyGroup>
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
-    <Error Condition="Exists('$(AltCoverInstrumentedDirectory)') AND '$(AltCoverForce)' != 'true'"
-           Text="Directory '$(AltCoverInstrumentedDirectory)' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
-    <Warning Condition="Exists('$(AltCoverInstrumentedDirectory)') AND '$(AltCoverForce)' == 'true'"
+    <Message Condition="Exists('$(AltCoverInstrumentedDirectory)') AND '$(AltCoverForce)' == 'true'"
+             Importance="High"
              Text="Directory '$(AltCoverInstrumentedDirectory)' exists from a previous run.  Forcibly deleting it" />
     <RemoveDir Directories="$(AltCoverInstrumentedDirectory)"
                Condition="Exists('$(AltCoverInstrumentedDirectory)') AND '$(AltCoverForce)' == 'true'" />
@@ -118,6 +115,9 @@
       Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Extended" PropertyName="VSTestSetting" />
     </AltCover.RunSettings>
+    <Message Importance="High"
+             Text="Testing $([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))"
+             />
 
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
       TestFileFullPath="$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))"
@@ -135,7 +135,7 @@
       VSTestVerbosity="$(VSTestVerbosity)"
       VSTestCollect="$(VSTestCollect)"
       VSTestBlame="$(VSTestBlame)" />
-    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverPreFlightCheck)' == 'OK' AND '$(AltCoverFailFast)' != 'true' " />
+    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverFailFast)' != 'true' " />
   </Target>
 
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest" Condition="'$(AltCover)' == 'true'">
@@ -157,11 +157,8 @@
                    Condition="$(AltCoverShowSummary) != ''"
                    Verbosity="$(AltCoverVerbosity)" />
     <ItemGroup>
-      <AltCoverInstrumentedFiles Include="$(AltCoverInstrumentedDirectory)/*.*" />
       <AltCoverRunSettings Include="$(TEMP)/*.altcover.runsettings" />
     </ItemGroup>
     <Delete Files="@(AltCoverRunSettings)" />
-    <Delete Files="@(AltCoverInstrumentedFiles)" />
-    <RemoveDir Directories="$(AltCoverInstrumentedDirectory)" Condition="Exists('$(AltCoverInstrumentedDirectory)')" />
   </Target>
 </Project>

@@ -40,35 +40,93 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="AltCover.Usage.txt" />
-    <EmbeddedResource Include="AltCover.Runner.Usage.txt" />
-    <EmbeddedResource Include="coverage-04.xsd" />
-    <EmbeddedResource Include="..\nupkg\build\netstandard2.0\AltCover.targets" Link="AltCover.targets" />
-    <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
-    <EmbeddedResource Include="Sample1WithOpenCover.xml" />
-    <EmbeddedResource Include="Sample1ClassExclusion.xml" />
-    <EmbeddedResource Include="Sample1MethodExclusion.xml" />
-    <EmbeddedResource Include="NCover.lcov" />
-    <EmbeddedResource Include="OpenCover.lcov" />
-    <EmbeddedResource Include="NCover.cobertura" />
-    <EmbeddedResource Include="OpenCover.cobertura" />
-    <EmbeddedResource Include="Sample1WithNCover.xml" />
-    <EmbeddedResource Include="NCoverBugFix.lcov" />
-    <EmbeddedResource Include="NCoverBugFix.cobertura" />
-    <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
-    <EmbeddedResource Include="Sample1.deps.json" />
-    <EmbeddedResource Include="Sample1.deps.after.json" />
-    <EmbeddedResource Include="Sample2.deps.json" />
-    <EmbeddedResource Include="Sample2.deps.after.json" />
-    <EmbeddedResource Include="Sample8.deps.baseline.json" />
-    <EmbeddedResource Include="Sample8.deps.newtonsoft.json" />
-    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
-    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
-    <EmbeddedResource Include="TailCallSample.dl_" />
-    <EmbeddedResource Include="SwitchSample.dl_" />
-    <EmbeddedResource Include="SwitchSample.pd_" />
-    <EmbeddedResource Include="issue37.dl_" />
-    <EmbeddedResource Include="issue37.pd_" />
+    <EmbeddedResource Include="AltCover.Usage.txt">
+      <LogicalName>AltCover.Tests.AltCover.Usage.txt</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AltCover.Runner.Usage.txt">
+      <LogicalName>AltCover.Tests.AltCover.Runner.Usage.txt</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="coverage-04.xsd">
+      <LogicalName>AltCover.Tests.coverage-04.xsd</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\nupkg\build\netstandard2.0\AltCover.targets" Link="AltCover.targets">
+      <LogicalName>AltCover.Tests.AltCover.targets</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HandRolledMonoCoverage.xml">
+      <LogicalName>AltCover.Tests.HandRolledMonoCoverage.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample1WithOpenCover.xml">
+      <LogicalName>AltCover.Tests.Sample1WithOpenCover.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample1ClassExclusion.xml">
+      <LogicalName>AltCover.Tests.Sample1ClassExclusion.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample1MethodExclusion.xml">
+      <LogicalName>AltCover.Tests.Sample1MethodExclusion.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NCover.lcov">
+      <LogicalName>AltCover.Tests.NCover.lcov</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenCover.lcov">
+      <LogicalName>AltCover.Tests.OpenCover.lcov</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NCover.cobertura">
+      <LogicalName>AltCover.Tests.NCover.cobertura</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OpenCover.cobertura">
+      <LogicalName>AltCover.Tests.OpenCover.cobertura</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample1WithNCover.xml">
+      <LogicalName>AltCover.Tests.</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NCoverBugFix.lcov">
+      <LogicalName>AltCover.Tests.Sample1WithNCover.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NCoverBugFix.cobertura">
+      <LogicalName>AltCover.Tests.NCoverBugFix.cobertura</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml">
+      <LogicalName>AltCover.Tests.SimpleCoverage.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample1.deps.json">
+      <LogicalName>AltCover.Tests.Sample1.deps.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample1.deps.after.json">
+      <LogicalName>AltCover.Tests.</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample2.deps.json">
+      <LogicalName>AltCover.Tests.Sample1.deps.after.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample2.deps.after.json">
+      <LogicalName>AltCover.Tests.Sample2.deps.after.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample8.deps.baseline.json">
+      <LogicalName>AltCover.Tests.Sample8.deps.baseline.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sample8.deps.newtonsoft.json">
+      <LogicalName>AltCover.Tests.Sample8.deps.newtonsoft.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk">
+      <LogicalName>AltCover.Tests.Infrastructure.snk</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk">
+      <LogicalName>AltCover.Tests.Recorder.snk</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TailCallSample.dl_">
+      <LogicalName>AltCover.Tests.TailCallSample.dl_</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SwitchSample.dl_">
+      <LogicalName>AltCover.Tests.SwitchSample.dl_</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SwitchSample.pd_">
+      <LogicalName>AltCover.Tests.SwitchSample.pd_</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="issue37.dl_">
+      <LogicalName>AltCover.Tests.issue37.dl_</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="issue37.pd_">
+      <LogicalName>AltCover.Tests.issue37.pd_</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
