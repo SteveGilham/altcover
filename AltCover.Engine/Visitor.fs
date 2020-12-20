@@ -75,26 +75,75 @@ type internal GoTo =
     Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal AssemblyDespatch =
+  {
+    AssemblyPath : string
+    Destinations : string list
+  }
+
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal AssemblyEntry =
+  {
+    Assembly : AssemblyDefinition
+    Inspection : Inspections
+    Destinations : string list
+  }
+
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal ModuleEntry =
+  {
+    Module : ModuleDefinition
+    Inspection : Inspections
+  }
+
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal TypeEntry =
+  {
+    Type : TypeDefinition
+    Inspection : Inspections
+    DefaultVisitCount : Exemption
+  }
+
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal MethodEntry =
+  {
+    Method : MethodDefinition
+    Inspection : Inspections
+    Track : (int * string) option
+    DefaultVisitCount : Exemption
+  }
+
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal StatementEntry =
+  {
+    Instruction: Instruction
+    SeqPnt : SeqPnt option
+    Uid : int
+    Interesting : bool
+    DefaultVisitCount : Exemption
+  }
+
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal Node =
-  | Start of seq<string * string list>
-  | Assembly of AssemblyDefinition * Inspections * string list
-  | Module of ModuleDefinition * Inspections
-  | Type of TypeDefinition * Inspections * Exemption
-  | Method of MethodDefinition * Inspections * (int * string) option * Exemption
-  | MethodPoint of Instruction * SeqPnt option * int * bool * Exemption
+  | Start of seq<AssemblyDespatch>
+  | Assembly of AssemblyEntry
+  | Module of ModuleEntry
+  | Type of TypeEntry
+  | Method of MethodEntry
+  | MethodPoint of StatementEntry
   | BranchPoint of GoTo
-  | AfterMethod of MethodDefinition * Inspections * (int * string) option
+  | AfterMethod of MethodEntry
   | AfterType
   | AfterModule
-  | AfterAssembly of AssemblyDefinition * string list
+  | AfterAssembly of AssemblyEntry
   | Finish
   member this.After() =
     (match this with
      | Start _ -> [ Finish ]
-     | Assembly(a, _, l) -> [ AfterAssembly(a, l) ]
+     | Assembly a -> [ AfterAssembly a ]
      | Module _ -> [ AfterModule ]
      | Type _ -> [ AfterType ]
-     | Method(m, included, track, _) -> [ AfterMethod(m, included, track) ]
+     | Method m -> [ AfterMethod m ]
      | _ -> [])
     |> List.toSeq
 
@@ -467,10 +516,10 @@ module internal Visitor =
       |> Seq.exists (fun f -> f m)
       |> not
 
-    let private startVisit (paths : seq<string * string list>)
+    let private startVisit (paths : seq<AssemblyDespatch>)
         (buildSequence : Node -> seq<Node>) =
       paths
-      |> Seq.collect (fun (path, targets) ->
+      |> Seq.collect (fun path ->
            let makeInspection x =
              x
              |> accumulator.Add
@@ -488,9 +537,11 @@ module internal Visitor =
                                 Inspections.Track
                               else
                                 Inspections.Ignore
-             Assembly(x, included, targets)
+             Assembly { Assembly = x
+                        Inspection = included
+                        Destinations = path.Destinations }
 
-           path
+           path.AssemblyPath
            |> (AssemblyDefinition.ReadAssembly
                >> makeInspection
                >> buildSequence))
@@ -502,8 +553,10 @@ module internal Visitor =
            ((fun x ->
              let interim = updateInspection included x
              Module
-               (x,
-                (if interim = Inspections.Track then Inspections.TrackOnly else interim)))
+               { Module = x
+                 Inspection = if interim = Inspections.Track
+                              then Inspections.TrackOnly
+                              else interim })
             >> buildSequence)
 
     let internal selectAutomatic items exemption =
@@ -516,10 +569,10 @@ module internal Visitor =
       // t.BaseType.IsNotNull ||
       t.Methods |> Seq.exists (fun m -> m.IsAbstract |> not)
 
-    let private visitModule (x : ModuleDefinition) included (buildSequence : Node -> seq<Node>) =
+    let private visitModule (x : ModuleEntry)(buildSequence : Node -> seq<Node>) =
       zeroPoints()
       sourceLinkDocuments <-
-        Some x
+        Some x.Module
         |> Option.filter (fun _ -> !CoverageParameters.sourcelink)
         |> Option.map (fun x ->
              x.CustomDebugInformations
@@ -532,8 +585,8 @@ module internal Visitor =
                                          (fun kv -> kv.Value.String)))
 
       [ x ]
-      |> Seq.takeWhile (fun _ -> included <> Inspections.Ignore)
-      |> Seq.collect (fun x -> x.GetAllTypes()
+      |> Seq.takeWhile (fun _ -> x.Inspection <> Inspections.Ignore)
+      |> Seq.collect (fun x -> x.Module.GetAllTypes()
                                |> Seq.cast<TypeDefinition>
                                |> Seq.filter stripInterfaces)
       |> Seq.collect
@@ -549,14 +602,16 @@ module internal Visitor =
                                 else state.DeclaringType)) t
                |> Seq.toList
 
-             let inclusion = Seq.fold updateInspection included types
+             let inclusion = Seq.fold updateInspection x.Inspection types
 
              let visitcount =
                if !CoverageParameters.showGenerated then
                  selectAutomatic types Exemption.None
                else
                  Exemption.None
-             Type(t, inclusion, visitcount))
+             Type { Type = t
+                    Inspection = inclusion
+                    DefaultVisitCount = visitcount })
             >> buildSequence)
 
     let internal track(m : MethodDefinition) =
@@ -735,8 +790,8 @@ module internal Visitor =
       else if !CoverageParameters.showGenerated then selectAutomatic items exemption
       else exemption
 
-    let private visitType (t : TypeDefinition) included basevc (buildSequence : Node -> seq<Node>) =
-      t.Methods
+    let private visitType (t : TypeEntry) (buildSequence : Node -> seq<Node>) =
+      t.Type.Methods
       |> Seq.cast
       |> Seq.filter (fun (m : MethodDefinition) ->
            not m.IsAbstract && not m.IsRuntime && not m.IsPInvokeImpl && m.HasBody)
@@ -765,10 +820,13 @@ module internal Visitor =
                                           methods |> List.tail |> List.isEmpty)
       |> Seq.collect
            ((fun (m, k, methods) ->
-             let visitcount = selectExemption k methods basevc
+             let visitcount = selectExemption k methods t.DefaultVisitCount
 
-             let inclusion = Seq.fold updateInspection included methods
-             Method(m, inclusion, track m, visitcount))
+             let inclusion = Seq.fold updateInspection t.Inspection methods
+             Method { Method = m
+                      Inspection = inclusion
+                      Track = track m
+                      DefaultVisitCount = visitcount })
             >> buildSequence)
 
     let internal isSequencePoint(s : SequencePoint) =
@@ -996,9 +1054,9 @@ module internal Visitor =
       |> Seq.map BranchPoint
       |> Seq.toList
 
-    let private visitMethod (m : MethodDefinition) (included : Inspections) vc =
-      let rawInstructions = m.Body.Instructions
-      let dbg = m.DebugInformation
+    let private visitMethod (m : MethodEntry) =
+      let rawInstructions = m.Method.Body.Instructions
+      let dbg = m.Method.DebugInformation
 
       let instructions =
         [ rawInstructions |> Seq.cast ]
@@ -1016,7 +1074,7 @@ module internal Visitor =
       let number = instructions.Length
       let point = pointNumber
       pointNumber <- point + number
-      let interesting = included.IsInstrumented
+      let interesting = m.Inspection.IsInstrumented
 
       let wanted i (s : SequencePoint) =
         i && (s.Document.Url.IsIncluded).IsInstrumented
@@ -1034,20 +1092,26 @@ module internal Visitor =
           rawInstructions
           |> Seq.take 1
           |> Seq.map
-               (fun i -> MethodPoint(i, dbg.GetSequencePoint(i)
-                                        |> Option.ofObj
-                                        |> Option.filter (fun _ -> !CoverageParameters.methodPoint)
-                                        |> Option.map SeqPnt.Build,
-                                        m.MetadataToken.ToInt32(), interesting, vc))
+               (fun i -> MethodPoint { Instruction = i
+                                       SeqPnt = dbg.GetSequencePoint(i)
+                                                |> Option.ofObj
+                                                |> Option.filter (fun _ -> !CoverageParameters.methodPoint)
+                                                |> Option.map SeqPnt.Build
+                                       Uid = m.Method.MetadataToken.ToInt32()
+                                       Interesting = interesting
+                                       DefaultVisitCount = m.DefaultVisitCount })
         else
           instructions.OrderByDescending(fun (x : Instruction) -> x.Offset)
           |> Seq.mapi (fun i x ->
                let s = dbg.GetSequencePoint(x)
                MethodPoint
-                 (x,
-                  s
-                  |> SeqPnt.Build
-                  |> Some, i + point, wanted interesting s, vc))
+                 { Instruction = x
+                   SeqPnt = s
+                            |> SeqPnt.Build
+                            |> Some
+                   Uid = i + point
+                   Interesting = wanted interesting s
+                   DefaultVisitCount = m.DefaultVisitCount})
 
       let includeBranches() =
         instructions.Any() && CoverageParameters.reportKind() = ReportFormat.OpenCover
@@ -1062,7 +1126,7 @@ module internal Visitor =
             |> dbg.GetSequencePoint
 
           let branches = wanted interesting spnt
-          extractBranchPoints dbg m.FullName rawInstructions branches vc
+          extractBranchPoints dbg m.Method.FullName rawInstructions branches m.DefaultVisitCount
         else
           []
       branchNumber <- branchNumber + List.length bp
@@ -1072,10 +1136,10 @@ module internal Visitor =
       // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
       match node with
       | Start paths -> startVisit paths sequenceBuilder
-      | Assembly(a, included, _) -> visitAssembly a included sequenceBuilder
-      | Module(x, included) -> visitModule x included sequenceBuilder
-      | Type(t, included, vc) -> visitType t included vc sequenceBuilder
-      | Method(m, included, _, vc) -> visitMethod m included vc
+      | Assembly a -> visitAssembly a.Assembly a.Inspection sequenceBuilder
+      | Module m -> visitModule m sequenceBuilder
+      | Type t -> visitType t sequenceBuilder
+      | Method m -> visitMethod m
       | _ -> Seq.empty<Node>
 
     and internal sequenceBuilder node =
@@ -1089,7 +1153,7 @@ module internal Visitor =
       visitors |> List.map (invoke node)
 
   // "Public" API
-  let internal visit (visitors : seq<Fix<Node>>) (assemblies : seq<string * string list>) =
+  let internal visit (visitors : seq<Fix<Node>>) (assemblies : seq<AssemblyDespatch>) =
     zeroPoints()
     methodNumber <- 0
     try

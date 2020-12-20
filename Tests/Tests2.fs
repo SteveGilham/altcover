@@ -882,7 +882,10 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      let state2 = AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state { Method = recorder.Head
+                                                         Inspection = Inspections.Track
+                                                         Track = Some(42, "hello")
+                                                         DefaultVisitCount = Exemption.None }
       Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That
         (recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
@@ -936,7 +939,10 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state { Method = target
+                                                         Inspection = Inspections.Track
+                                                         Track = Some(42, "hello")
+                                                         DefaultVisitCount = Exemption.None }
       Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 7))
@@ -987,7 +993,10 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state { Method = target
+                                                         Inspection = Inspections.Track
+                                                         Track = Some(42, "hello")
+                                                         DefaultVisitCount = Exemption.None }
       Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That  // Adding the return value, too
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9))
@@ -1038,7 +1047,10 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      let state2 = AltCover.Instrument.I.doTrack state target Inspections.Track <| Some(42, "hello")
+      let state2 = AltCover.Instrument.I.doTrack state  { Method = target
+                                                          Inspection = Inspections.Track
+                                                          Track = Some(42, "hello")
+                                                          DefaultVisitCount = Exemption.None }
       Assert.That (state2.AsyncSupport |> Option.isSome)
       Assert.That  // Adding the return value, too
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 9 + 4))
@@ -1094,7 +1106,10 @@ module AltCoverTests2 =
                     |> Array.map (fun i -> i.Offset)
       Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
 
-      let m = Node.Method (target, Inspections.Instrument, None, Exemption.None)
+      let m = Node.Method { Method = target
+                            Inspection = Inspections.Instrument
+                            Track = None
+                            DefaultVisitCount = Exemption.None }
       let steps = Visitor.I.sequenceBuilder m
 
       Assert.That(steps, Is.Not.Empty)
@@ -1145,7 +1160,10 @@ module AltCoverTests2 =
       let state = AltCover.InstrumentContext.Build([])
       let countBefore = recorder.Head.Body.Instructions.Count
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      let state2 = AltCover.Instrument.I.doTrack state recorder.Head Inspections.Track None
+      let state2 = AltCover.Instrument.I.doTrack state { Method = recorder.Head
+                                                         Inspection = Inspections.Track
+                                                         Track = None
+                                                         DefaultVisitCount = Exemption.None }
       Assert.That (state2.AsyncSupport |> Option.isNone)
       Assert.That(recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
       Assert.That(recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
@@ -1164,7 +1182,10 @@ module AltCoverTests2 =
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
-          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method { Method = method
+                                            Inspection = Inspections.Instrument
+                                            Track = None
+                                            DefaultVisitCount = Exemption.None }
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1222,7 +1243,10 @@ module AltCoverTests2 =
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
-          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method { Method = method
+                                            Inspection = Inspections.Instrument
+                                            Track = None
+                                            DefaultVisitCount = Exemption.None }
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1279,7 +1303,10 @@ module AltCoverTests2 =
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
-          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
+          Visitor.I.deeper <| Node.Method { Method = method
+                                            Inspection = Inspections.Instrument
+                                            Track = None
+                                            DefaultVisitCount = Exemption.None }
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1326,14 +1353,19 @@ module AltCoverTests2 =
     let TypeShouldNotChangeState() =
       let input = InstrumentContext.Build []
       let output =
-        Instrument.I.instrumentationVisitor input (Node.Type(null, Inspections.Ignore, Exemption.None))
+        Instrument.I.instrumentationVisitor input (Node.Type { Type = null
+                                                               Inspection = Inspections.Ignore
+                                                               DefaultVisitCount = Exemption.None })
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
     let ExcludedMethodShouldNotChangeState() =
       let input = InstrumentContext.Build []
       let output =
-        Instrument.I.instrumentationVisitor input (Node.Method(null, Inspections.Ignore, None, Exemption.None))
+        Instrument.I.instrumentationVisitor input (Node.Method { Method = null
+                                                                 Inspection = Inspections.Ignore
+                                                                 Track = None
+                                                                 DefaultVisitCount = Exemption.None })
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
@@ -1353,7 +1385,10 @@ module AltCoverTests2 =
       let input = InstrumentContext.Build []
       let output =
         Instrument.I.instrumentationVisitor input
-          (Node.Method(func, Inspections.Instrument, None, Exemption.None))
+          (Node.Method { Method = func
+                         Inspection = Inspections.Instrument
+                         Track = None
+                         DefaultVisitCount = Exemption.None })
       Assert.That(output.MethodBody, Is.SameAs func.Body)
 
     [<Test>]
@@ -1383,7 +1418,10 @@ module AltCoverTests2 =
       let diff = paired |> List.map (fun (i, j) -> (i, i = j.OpCode))
       let output =
         Instrument.I.instrumentationVisitor input
-          (Node.AfterMethod(func, Inspections.Ignore, None))
+          (Node.AfterMethod { Method = func
+                              Inspection = Inspections.Ignore
+                              Track = None
+                              DefaultVisitCount = Exemption.None })
       Assert.That(output, Is.SameAs input)
       let paired' = Seq.zip diff input.MethodBody.Instructions
       Assert.That(paired' |> Seq.forall (fun ((i, x), j) -> x = (i = j.OpCode)))
@@ -1414,7 +1452,10 @@ module AltCoverTests2 =
       Assert.That(paired |> Seq.exists (fun (i, j) -> i <> j.OpCode))
       let output =
         Instrument.I.instrumentationVisitor input
-          (Node.AfterMethod(func, Inspections.Instrument, None))
+          (Node.AfterMethod { Method = func
+                              Inspection = Inspections.Instrument
+                              Track = None
+                              DefaultVisitCount = Exemption.None })
       Assert.That(output, Is.SameAs input)
       let paired' = Seq.zip opcodes input.MethodBody.Instructions
       Assert.That(paired' |> Seq.forall (fun (i, j) -> i = j.OpCode))
@@ -1582,7 +1623,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspections.Ignore, [])
+      let visited = Node.Assembly { Assembly = def; Inspection = Inspections.Ignore; Destinations = []}
       let result =
         Instrument.I.instrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That(def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
@@ -1602,7 +1643,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspections.Instrument, [])
+      let visited = Node.Assembly { Assembly = def; Inspection = Inspections.Instrument; Destinations = []}
       let result =
         Instrument.I.instrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That
@@ -1616,7 +1657,7 @@ module AltCoverTests2 =
           Path.Combine(AltCoverTests.dir, "Sample2.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         ProgramDatabase.readSymbols def
-        let visited = Node.Module(def.MainModule, Inspections.Ignore)
+        let visited = Node.Module { Module = def.MainModule; Inspection = Inspections.Ignore }
         let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
         let result = Instrument.I.instrumentationVisitor state visited
         Assert.That
@@ -1632,7 +1673,7 @@ module AltCoverTests2 =
           Path.Combine(AltCoverTests.dir, "Sample2.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         ProgramDatabase.readSymbols def
-        let visited = Node.Module(def.MainModule, Inspections.Instrument)
+        let visited = Node.Module { Module = def.MainModule; Inspection = Inspections.Instrument }
         let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
         let path' =
           Path.Combine
@@ -1685,7 +1726,11 @@ module AltCoverTests2 =
         Path.Combine(AltCoverTests.dir, "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
-      let visited = Node.MethodPoint(null, None, 0, false, Exemption.None)
+      let visited = Node.MethodPoint { Instruction = null
+                                       SeqPnt = None
+                                       Uid =  0
+                                       Interesting = false
+                                       DefaultVisitCount = Exemption.None }
       let state = InstrumentContext.Build []
       let result = Instrument.I.instrumentationVisitor state visited
       Assert.That(result, Is.SameAs state)
@@ -1714,7 +1759,11 @@ module AltCoverTests2 =
                         >> not)
         |> Seq.head
 
-      let visited = Node.MethodPoint(target, None, 32767, true, Exemption.None)
+      let visited = Node.MethodPoint { Instruction = target
+                                       SeqPnt = None
+                                       Uid =  32767
+                                       Interesting = true
+                                       DefaultVisitCount = Exemption.None }
       Assert.That(target.Previous, Is.Null)
       let state =
         { (InstrumentContext.Build []) with MethodWorker = proc
@@ -1738,7 +1787,7 @@ module AltCoverTests2 =
           Path.Combine(AltCoverTests.dir, "Sample2.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         ProgramDatabase.readSymbols def
-        let visited = Node.Module(def.MainModule, Inspections.Instrument)
+        let visited = Node.Module { Module = def.MainModule; Inspection = Inspections.Instrument }
         let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
         let path' =
           Path.Combine

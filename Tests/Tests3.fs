@@ -2155,8 +2155,8 @@ module AltCoverTests3 =
            "Simple to-from comparison failed")
         Assert.That
           (x
-           |> Seq.filter (fun (_,l) -> l |> List.exists (fun i -> i = t.FullName))
-           |> Seq.map fst
+           |> Seq.filter (fun l -> l.Destinations |> List.exists (fun i -> i = t.FullName))
+           |> Seq.map (fun x -> x.AssemblyPath)
            |> Seq.filter
                 (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not)
            |> Seq.filter // flaky in altcoverrunner
@@ -2185,7 +2185,7 @@ module AltCoverTests3 =
            "First list mismatch with from files")
         Assert.That(y,
                     Is.EquivalentTo(x
-                                    |> Seq.map (fst >> Path.GetFileNameWithoutExtension)),
+                                    |> Seq.map ((fun x -> x.AssemblyPath) >> Path.GetFileNameWithoutExtension)),
                                     "Second list mismatch"))
 
     [<Test>]

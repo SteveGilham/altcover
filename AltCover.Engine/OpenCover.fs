@@ -105,19 +105,19 @@ module internal OpenCover =
       element.Add(modules)
       { s with Stack = modules :: s.Stack }
 
-    let visitModule (s : OpenCoverContext) (moduleDef : ModuleDefinition)
-                    (included : Inspections) =
-      let instrumented = included.IsInstrumented
+    let visitModule (s : OpenCoverContext) (moduleDef : ModuleEntry) =
+      let def = moduleDef.Module
+      let instrumented = moduleDef.Inspection.IsInstrumented
       let element = XElement("Module".X)
       if not instrumented
       then element.SetAttributeValue("skippedDueTo".X, "Filter")
       else element.Add(summary())
-      element.SetAttributeValue("hash".X, KeyStore.hashFile moduleDef.FileName)
+      element.SetAttributeValue("hash".X, KeyStore.hashFile def.FileName)
       let head = s.Stack |> Seq.head
       head.Add(element)
-      element.Add(XElement("ModulePath".X, moduleDef.FileName |> Path.GetFullPath))
-      element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc moduleDef.FileName))
-      element.Add(XElement("ModuleName".X, moduleDef.Assembly.Name.Name))
+      element.Add(XElement("ModulePath".X, def.FileName |> Path.GetFullPath))
+      element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc def.FileName))
+      element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
       if instrumented then element.Add(XElement("Files".X))
       let classes = XElement("Classes".X)
       element.Add(classes)
@@ -134,17 +134,16 @@ module internal OpenCover =
           ModuleClasses = 0
           ClassCC = [] }
 
-    let visitType (s : OpenCoverContext) (typeDef : TypeDefinition)
-                  (included : Inspections) =
-      let instrumented =  included.IsInstrumented
+    let visitType (s : OpenCoverContext) (typeDef : TypeEntry) =
+      let instrumented =  typeDef.Inspection.IsInstrumented
       let methods = XElement("Methods".X)
-      if included <> Inspections.TrackOnly then
+      if typeDef.Inspection <> Inspections.TrackOnly then
         let element = XElement("Class".X)
         if not instrumented then element.SetAttributeValue("skippedDueTo".X, "Filter")
         let head = s.Stack |> Seq.head
         head.Add(element)
         element.Add(summary())
-        element.Add(XElement("FullName".X, typeDef.FullName))
+        element.Add(XElement("FullName".X, typeDef.Type.FullName))
         element.Add(methods)
       { s with
           Stack =
@@ -232,18 +231,17 @@ module internal OpenCover =
           Index = ref
           MethodSeq = s.MethodSeq + 1 }
 
-    let visitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i included
-        vc =
+    let visitMethodPoint (s : OpenCoverContext) (e:StatementEntry )=
       let element = (s.Stack |> Seq.head).Parent
 
       let attr =
         element.Attribute("skippedDueTo".X)
         |> Option.ofObj
         |> Option.map (fun a -> a.Value)
-      if included && attr = Some "File" then
+      if e.Interesting && attr = Some "File" then
         element.SetAttributeValue("skippedDueTo".X, null)
-      match (included, codeSegment', s.Excluded) with
-      | (true, Some codeSegment, Nothing) -> visitCodeSegment s codeSegment i vc
+      match (e.Interesting, e.SeqPnt, s.Excluded) with
+      | (true, Some codeSegment, Nothing) -> visitCodeSegment s codeSegment e.Uid e.DefaultVisitCount
       | _ -> s
 
     let visitGoTo s branch =
@@ -378,9 +376,9 @@ module internal OpenCover =
             if s.MethodSeq > 0 || s.MethodBr > 0 then 1 else 0
           MethodCC = limitMethodCC (s.MethodSeq + s.MethodBr) s.MethodCC }
 
-    let visitAfterMethod (s : OpenCoverContext) methodDef track included =
-      addTracking s methodDef track
-      if s.Excluded = Nothing && included <> Inspections.TrackOnly then
+    let visitAfterMethod (s : OpenCoverContext) m =
+      addTracking s m.Method m.Track
+      if s.Excluded = Nothing && m.Inspection <> Inspections.TrackOnly then
         let tail, skipped = visitAfterMethodIncluded s
         if skipped |> not then
           updateClassCountsByMethod s tail
@@ -485,14 +483,13 @@ module internal OpenCover =
     let reportVisitor (s : OpenCoverContext) (node : Node) =
       match node with
       | Start _ -> startVisit s
-      | Node.Module(moduleDef, included) -> visitModule s moduleDef included
-      | Node.Type(typeDef, included, _) -> visitType s typeDef included
-      | Node.Method(methodDef, included, _, _) -> visitMethod s methodDef included
-      | MethodPoint(_, codeSegment, i, included, vc) ->
-          visitMethodPoint s codeSegment i included vc
+      | Node.Module m -> visitModule s m
+      | Node.Type t -> visitType s t
+      | Node.Method m -> visitMethod s m.Method m.Inspection
+      | MethodPoint m -> visitMethodPoint s m
       | BranchPoint b -> visitBranchPoint s b
-      | AfterMethod(methodDef, included, track) ->
-          visitAfterMethod s methodDef track included
+      | AfterMethod m ->
+          visitAfterMethod s m
       | AfterType _ -> visitAfterType s
       | AfterModule _ -> visitAfterModule s
       | Finish -> afterAll s

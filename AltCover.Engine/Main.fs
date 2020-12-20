@@ -443,7 +443,7 @@ module internal Main =
              let proto = a.Path.Head
              let targets =
                a.Path |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
-             ((proto, targets), a.Name))
+             ({ AssemblyPath = proto; Destinations = targets}, a.Name))
 
       List.unzip sorted
 
