@@ -55,7 +55,7 @@ module DU =
     test <@ returnBar "s" = Bar "s" @>
     test <@ (Foo 10).as_bar() = Bar "10" @>
 
-#if NETCOREAPP2_1
+#if !NET472
 module Program =
   [<EntryPoint>]
   let main _ = 0

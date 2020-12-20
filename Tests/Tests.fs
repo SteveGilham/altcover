@@ -24,12 +24,12 @@ type ProxyObject() =
   member val Type : Type option = None with get, set
   member val Object = null with get, set
 
-#if NET5_0
+#if !NET472
   member val Context : System.Runtime.Loader.AssemblyLoadContext = null with get, set
 #endif
 
   member this.InstantiateObject(assemblyPath : string, typeName : string, args : obj []) =
-#if NET5_0
+#if !NET472
     let assembly = this.Context.LoadFromAssemblyPath(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
 #else
     let assembly = Assembly.LoadFrom(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
@@ -54,14 +54,14 @@ module Extensions =
 
 module AltCoverTests =
 
-#if NET5_0
+#if !NET472
     let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0")
 #else
     let dir = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
 #endif
 
     let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
-#if NET5_0
+#if !NET472
     let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
     let sample4path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
     let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
@@ -117,7 +117,7 @@ module AltCoverTests =
               (fun x ->
               not
               <| (snd x).FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
-#if NET5_0
+#if !NET472
         |> Seq.filter
               (fun x ->
               not
@@ -678,7 +678,7 @@ module AltCoverTests =
 
       let expected =
         [ ".ctor"; ".ctor"; "Invoke"; "as_bar"; "bytes"; "get_MyBar"
-#if NET5_0
+#if !NET472
           "main"
 #endif
           "makeThing"
@@ -1283,8 +1283,7 @@ module AltCoverTests =
     [<Test>]
     let KeyHasExpectedRecord() =
       let pair = ProvideKeyPair()
-#if NET5_0
-#else
+#if NET472  // Strong-name signing is not supported on this platform.
       let computed = pair.PublicKey
       let definitive = StrongNameKeyPair(pair.Blob |> List.toArray).PublicKey
       Assert.That(computed, Is.EquivalentTo definitive)

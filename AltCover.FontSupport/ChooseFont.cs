@@ -18,10 +18,10 @@ namespace AltCover.FontSupport
   {
     public static IEnumerable<string> Wish()
     {
-#if NETSTANDARD2_0
-      return Fake.Core.ProcessUtils.findFilesOnPath("wish");
-#else
+#if NET472
       return Enumerable.Empty<string>();
+#else
+      return Fake.Core.ProcessUtils.findFilesOnPath("wish");
 #endif
     }
 

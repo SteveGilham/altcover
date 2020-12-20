@@ -16,12 +16,6 @@ open Mono.Options
 #nowarn "25"
 
 module AltCoverTests2 =
-#if NET5_0
-    let sample1 = "Sample1.dll"
-    let monoSample1 = "../_Mono/Sample1"
-#else
-    let sample1 = "Sample1.exe"
-#endif
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 
@@ -302,7 +296,7 @@ module AltCoverTests2 =
     let ShouldBeAbleToLocateAReference() =
       let where = Assembly.GetExecutingAssembly().Location
       let here = Path.GetDirectoryName where
-#if NET5_0
+#if !NET472
       let json = Directory.GetFiles(here, "*.json")
       test' <@ json |> Seq.isEmpty |> not @> "no json"
       json
@@ -429,7 +423,7 @@ module AltCoverTests2 =
       | null -> ()
       //| x -> Assert.Fail("null expected for non-.pdb but got " + x.GetType().FullName)
 
-#if NET5_0
+#if !NET472
     type TestAssemblyLoadContext () =
       inherit System.Runtime.Loader.AssemblyLoadContext(true)
       override self.Load(name : AssemblyName) =
@@ -470,10 +464,10 @@ module AltCoverTests2 =
           let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType).IsNotNull
                                       ".dll.mdb" ".pdb"
           let isWindows =
-#if NET5_0
-                          false // recorder symbols not read here
-#else
+#if NET472
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#else
+                          false // recorder symbols not read here
 #endif
           Assert.That((isWindows |> not) ||  // HACK HACK HACK
                        File.Exists (outputdll.Replace(".dll", expectedSymbols)), "unexpected symbols")
@@ -484,7 +478,7 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"), "wrong token")
-#if NET5_0
+#if !NET472
           let alc = new TestAssemblyLoadContext()
 #else
           let setup = AppDomainSetup()
@@ -492,7 +486,7 @@ module AltCoverTests2 =
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
 #endif
           try
-#if NET5_0
+#if !NET472
             let proxyObject = ProxyObject()
             proxyObject.Context <- alc
 #else
@@ -508,7 +502,7 @@ module AltCoverTests2 =
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
             Assert.That (report4, AltCover.Sampling.Single |> int |> Is.EqualTo, "wrong outro sampling")
           finally
-#if NET5_0
+#if !NET472
             alc.Unload()
 #else
             AppDomain.Unload(ad)
@@ -556,7 +550,7 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
-#if NET5_0
+#if !NET472
           let alc = new TestAssemblyLoadContext()
 #else
           let setup = AppDomainSetup()
@@ -564,7 +558,7 @@ module AltCoverTests2 =
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
 #endif
           try
-#if NET5_0
+#if !NET472
             let proxyObject = ProxyObject()
             proxyObject.Context <- alc
 #else
@@ -574,7 +568,7 @@ module AltCoverTests2 =
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           finally
-#if NET5_0
+#if !NET472
             alc.Unload()
 #else
             AppDomain.Unload(ad)
@@ -610,7 +604,7 @@ module AltCoverTests2 =
           Instrument.I.writeAssembly def outputdll
           let expectedSymbols = maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
           let isWindows =
-#if NET5_0
+#if !NET472
                           true
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -621,7 +615,7 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"), "wrong token")
-#if NET5_0
+#if !NET472
           let alc = new TestAssemblyLoadContext()
           try
 #else
@@ -631,7 +625,7 @@ module AltCoverTests2 =
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
           try
 #endif
-#if NET5_0
+#if !NET472
             let proxyObject = ProxyObject()
             proxyObject.Context <- alc
 #else
@@ -643,7 +637,7 @@ module AltCoverTests2 =
             let getting = proxyObject.InvokeMethod("get_Property",[||]) :?> int
             Assert.That (getting, Is.EqualTo 17, "bad getting")
             let isWindows =
-#if NET5_0
+#if !NET472
                             true
             let proxyObject' = ProxyObject()
             proxyObject'.Context <- alc
@@ -660,7 +654,7 @@ module AltCoverTests2 =
 
             Assert.That (result, Is.EquivalentTo[(unique, 42)], "bad call")
           finally
-#if NET5_0
+#if !NET472
             alc.Unload()
 #else
             AppDomain.Unload(ad)
@@ -860,11 +854,7 @@ module AltCoverTests2 =
 
     [<Test>]
     let ShouldBeAbleToTrackAMethod() =
-#if NET5_0
-      let shift = String.Empty
-#else
       let shift = "/../net5.0"
-#endif
       let path =
         Path.Combine
           (AltCoverTests.dir + shift,
@@ -908,11 +898,7 @@ module AltCoverTests2 =
 
     [<Test>]
     let ShouldBeAbleToTrackAMethodWithTailCalls() =
-#if NET5_0
-      let shift = String.Empty
-#else
       let shift = "/../net5.0"
-#endif
       let rpath =
         Path.Combine
           (AltCoverTests.dir + shift,
@@ -965,11 +951,7 @@ module AltCoverTests2 =
 
     [<Test>]
     let ShouldBeAbleToTrackAMethodWithNonVoidReturn() =
-#if NET5_0
-      let shift = String.Empty
-#else
       let shift = "/../net5.0"
-#endif
       let rpath =
         Path.Combine
           (AltCoverTests.dir + shift,
@@ -1020,11 +1002,7 @@ module AltCoverTests2 =
 
     [<Test>]
     let ShouldBeAbleToTrackAnAsyncMethod() =
-#if NET5_0
-      let shift = String.Empty
-#else
       let shift = "/../net5.0"
-#endif
       let rpath =
         Path.Combine
           (AltCoverTests.dir + shift,
@@ -1075,11 +1053,7 @@ module AltCoverTests2 =
 
     [<Test>]
     let ShouldBeAbleToInstrumentASwitchForNCover() =
-#if NET5_0
-      let shift = String.Empty
-#else
       let shift = "/../net5.0"
-#endif
       let rpath =
         Path.Combine
           (AltCoverTests.dir + shift,
@@ -1149,7 +1123,7 @@ module AltCoverTests2 =
       //IL_0012: switch IL_002b,IL_002d,IL_002b,IL_002d,IL_002b
       //IL_002b: br.s IL_0041
 
-#if NET5_0
+#if !NET472
       Assert.That(next, Is.GreaterThanOrEqualTo(42).And.LessThanOrEqualTo(46))
       let expected = next
 #else
@@ -1341,8 +1315,7 @@ module AltCoverTests2 =
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
-#if COVERLET
-#else
+#if !COVERLET
     [<Test>]
     let StartShouldLoadRecordingAssembly () =
       let def = Instrument.I.instrumentationVisitor (InstrumentContext.Build []) (Start [])
@@ -1536,12 +1509,8 @@ module AltCoverTests2 =
           (mdir, "Sample1.exe")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
-#if NET5_0
-      use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
-#else
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
-#endif
+
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       CoverageParameters.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
@@ -1605,12 +1574,7 @@ module AltCoverTests2 =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
-#if NET5_0
-      use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
-#else
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
-#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       CoverageParameters.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
@@ -1630,12 +1594,7 @@ module AltCoverTests2 =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
-#if NET5_0
-      use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
-#else
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
-#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       CoverageParameters.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
@@ -2221,7 +2180,7 @@ module AltCoverTests2 =
           |> Seq.toList
 
         let head = lines' |> List.head
-#if NET5_0
+#if !NET472
         Assert.That (head.Length, Is.LessThanOrEqualTo 80)
         let lines = let t = lines' |> List.tail
                     (head + List.head t) :: (List.tail t)
@@ -2306,7 +2265,7 @@ module AltCoverTests2 =
           |> Seq.toList
 
         let head = lines' |> List.head
-#if NET5_0
+#if !NET472
         Assert.That (head.Length, Is.LessThanOrEqualTo 80)
         let lines = let t = lines' |> List.tail
                     (head + List.head t) :: (List.tail t)

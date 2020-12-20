@@ -361,11 +361,7 @@ module AltCoverXTests =
                                               Keys = [| input |] }
 
     let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
-#if NET5_0
-    ()
-#else
     test <@ scan.Length = 0 @>
-#endif
 
   [<Test>]
   let TypeSafePrepareOptionsStrongNamesCanBeValidated() =
@@ -380,11 +376,7 @@ module AltCoverXTests =
                                                  [| TypeSafe.FilePath input |] }
 
     let scan = (AltCover.PrepareOptions.TypeSafe subject).Validate()
-#if NET5_0
-    ()
-#else
     test <@ scan.Length = 0 @>
-#endif
 
   [<Test>]
   let PrepareOptionsCanBeValidatedWithNulls() =
@@ -691,10 +683,10 @@ module AltCoverXTests =
       test' <@ File.Exists created@> (created + " not found")
 
       let isWindows =
-#if NET5_0
-                      true
-#else
+#if NET472
                       System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#else
+                      true
 #endif
       test' <@
                  isWindows
@@ -748,10 +740,10 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
       let isWindows =
-#if NET5_0
-                      true
-#else
+#if NET472
                       System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#else
+                      true
 #endif
       test' <@  isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
