@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.3.8xx (Genbu series release 11)
+* Resolve the save directory once and only once -- prevents inconsistent handling of the case where `--output` redirects `$(TargetDir)` pasrt-way through the process
+
 # 7.3.802 (Genbu series release 10)
 * Add a `-q`option for AltCover, given once suppresses informational messages, twice also suppresses warnings and thrice also suppresses errors.  Away from the command line, the option is called `Verbosity`, and is based on `System.Diagnostics.TraceLevel` -- the default level being `Info`, with `Warning`, `Error` and `Off` equivalent to `-q`, `-qq` and `-qqq` respectively.  For the monent `Verbose` is the same as `Info`
 * Other minor build process improvements
