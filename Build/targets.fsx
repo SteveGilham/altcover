@@ -1550,7 +1550,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNet.xml")
   let sampleRoot =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
@@ -1565,7 +1565,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
@@ -1717,9 +1717,9 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport =
     (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNetRunner.xml")
-  let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+  let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
   let instrumented =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   // Instrument the code
   let prep =
@@ -1727,7 +1727,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
            OutputDirectories = [ instrumented ]
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
            ReportFormat = "NCover"
@@ -1743,7 +1743,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
 
   printfn "Execute the instrumented tests"
   let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample2
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample2
 
   let collect =
     AltCover.CollectOptions.Primitive
@@ -1771,7 +1771,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   let simpleReport3 =
     (Path.getFullName "./_Reports/unzip2") @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
   let sampleRoot =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   printfn "Build and test normally"
   Shell.cleanDir sampleRoot
@@ -1785,7 +1785,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
@@ -2968,8 +2968,8 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
-  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
-  let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+  let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   Shell.cleanDir o
 
@@ -2980,7 +2980,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
            XmlReport = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "FSharp" ]
            InPlace = false
            ReportFormat = "NCover"
            Save = false })
@@ -2996,7 +2996,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample2
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample2
 
   // Run
   let collect =
@@ -3018,8 +3018,8 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let s = Path.getFullName "."
   let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
-  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.1"
-  let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.1"
+  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/net5.0"
+  let i = Path.getFullName "_Binaries/Sample2/Debug+x86/net5.0"
 
   Shell.cleanDir o
   try
@@ -3054,7 +3054,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
                XmlReport = x
                OutputDirectories = [ o ]
                InputDirectories = [ i ]
-               AssemblyFilter = [ "Adapter" ]
+               AssemblyFilter = [ "Adapter"; "FSharp" ]
                InPlace = false
                ReportFormat = "NCover"
                Save = false })
@@ -3070,7 +3070,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
 
       // Run
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine86 (Some "netcoreapp2.1") sample2
+        defaultDotNetTestCommandLine86 (Some "net5.0") sample2
 
       let collect =
         AltCover.CollectOptions.Primitive
