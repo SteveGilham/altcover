@@ -365,6 +365,9 @@ printfn "Build at %A" infoV
 let _Target s f =
   Target.description s
   Target.create s f
+  let s2 = "Replay" + s
+  Target.description s2
+  Target.create s2 f
 
 // Preparation
 
