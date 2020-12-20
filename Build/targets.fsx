@@ -279,7 +279,7 @@ let uncovered (path : string) =
             | (false, _) ->
                 printfn "%A" xml
                 Assert.Fail("Could not parse uncovered line value '" + coverage + "'")
-                0
+                (0, f)
             | (_, numeric) ->
                 printfn "%s : %A"
                   (f
@@ -287,15 +287,20 @@ let uncovered (path : string) =
                    |> Path.GetFileName) numeric
                 // if numeric > 0 then
                 //   printfn "%A" xml
-                numeric))
+                (numeric, f)))
   |> Seq.toList
 
 let coverageSummary _ =
   let numbers = uncovered "_Reports/_Unit*/Summary.xml"
   if numbers
-     |> List.tryFind (fun n -> n > 0)
+     |> List.tryFind (fun (n,f) -> if (f
+                                       |> Path.GetDirectoryName
+                                       |> Path.GetFileName) = "_UnitTestWithCoverlet"
+                                   then n > 0 && n < 100 // don't expect to get that high
+                                        // w/o flakeout or other ones failing too
+                                   else n > 0)
      |> Option.isSome
-     || !misses > 1
+     || !misses > 0
   then Assert.Fail("Coverage is too low")
 
 let msbuildCommon (p : MSBuildParams) =
@@ -3808,7 +3813,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
     Assert.That("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
                                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
-    // Shell.rm("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt") 
+    // Shell.rm("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3836,7 +3841,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
     Assert.That("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
                            "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
-    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt") 
+    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,

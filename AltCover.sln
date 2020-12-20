@@ -47,6 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\coverletArgs.runsettings = Build\coverletArgs.runsettings
 		Build\coverletArgs.sample.runsettings = Build\coverletArgs.sample.runsettings
 		.config\dotnet-tools.json = .config\dotnet-tools.json
+		Build\dump-uncovered.ps1 = Build\dump-uncovered.ps1
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk
