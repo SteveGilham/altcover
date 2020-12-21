@@ -987,6 +987,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
           TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
 
     uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
+    |> List.map fst
     |> printfn "%A uncovered lines"
   with x ->
     printfn "%A" x
@@ -1071,6 +1072,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     [ coverage; scoverage; s4coverage ]
 
   uncovered @"_Reports/_UnitTestWithOpenCove*/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines")
 
 // Hybrid (Self) Tests
@@ -1178,7 +1180,9 @@ _Target "UnitTestWithAltCover" (fun _ ->
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCover" }) [ altReport; RecorderReport ]
 
-  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml" |> printfn "%A uncovered lines")
+  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml" 
+  |> List.map fst
+  |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
@@ -1314,6 +1318,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         TargetDir = "_Reports/_UnitTestWithAltCoverRunner" }) xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines"
 
   let reportLines = xmlreports |> List.map File.ReadAllLines
@@ -1443,6 +1448,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
         TargetDir = "_Reports/_UnitTestWithAltCoverCore" }) xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
@@ -1547,6 +1553,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
         TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" }) xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines")
 
 // Pure OperationalTests
