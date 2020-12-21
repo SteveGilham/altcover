@@ -1517,7 +1517,9 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                      <| Primitive.CollectOptions.Create()
 
           if proj.Contains("Recorder")
-          then msbuildDebug MSBuildPath newproj  
+          then doMSBuild 
+                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal}) 
+                  MSBuildPath newproj  
 
           DotNet.test (fun to' ->
             { to'.WithCommon(withWorkingDirectoryVM testdir)
