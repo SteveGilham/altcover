@@ -118,9 +118,12 @@
     <Message Importance="High"
              Text="Testing $([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))"
              />
-
+    <PropertyGroup>
+      <TestTargetPath Condition="'$(AltCover)' != 'true'">$(TargetPath)</TestTargetPath>
+      <TestTargetPath Condition="'$(AltCover)' == 'true'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))</TestTargetPath>
+    </PropertyGroup>
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
-      TestFileFullPath="$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))"
+      TestFileFullPath="$(TestTargetPath)"
       VSTestSetting="$(VSTestSetting)"
       VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
       VSTestFramework="$(TargetFrameworkMoniker)"
