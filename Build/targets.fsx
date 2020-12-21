@@ -887,7 +887,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
-  let buildIt = 
+  let buildIt =
         DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
@@ -903,7 +903,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
-  let testIt = 
+  let testIt =
           DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
@@ -915,7 +915,7 @@ _Target "UnitTestDotNet" (fun _ ->
     !!(@"./*Test*/*Tests.fsproj")
     |> Seq.iter testIt
     !!(@"./Valid*/*Valid*.fsproj")
-    |> Seq.iter testIt    
+    |> Seq.iter testIt
   with x ->
     printfn "%A" x
     reraise())
@@ -1482,7 +1482,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
           Directory.ensure testdir
           Shell.cleanDir testdir
 
-          Shell.copyDir testdir dir (fun _ -> true)
+          Shell.copy testdir (!!(dir @@ "*.*"))
 
           let config = XDocument.Load "./Build/NuGet.config.dotnettest"
           let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -1516,10 +1516,13 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
           let coll = AltCover.CollectOptions.Primitive
                      <| Primitive.CollectOptions.Create()
 
+          if proj.Contains("Recorder")
+          then msbuildDebug MSBuildPath newproj  
+
           DotNet.test (fun to' ->
             { to'.WithCommon(withWorkingDirectoryVM testdir)
                   with Framework = Some "net5.0"
-                       NoBuild = true
+                       NoBuild = proj.Contains("Recorder")
             }.WithAltCoverOptions prep coll ForceTrue
             |> testWithCLIArguments) proj)
   finally
@@ -4444,10 +4447,6 @@ Target.activateFinal "ResetConsoleColours"
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
 // =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
-
-"UnitTestDotNet"
-==> "UnitTestWithAltCoverCoreRunner"
-==> "UnitTest"
 
 "Unpack"
 ==> "UnitTestWithAltCoverCoreRunner"
