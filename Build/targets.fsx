@@ -887,26 +887,35 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
-  !!(@"./*Test*/*Tests.fsproj")
-  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
-  |> Seq.iter
-       (DotNet.build (fun p ->
+  let buildIt = 
+        DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
              Framework = Some "net5.0" }
-         |> buildWithCLIArguments)))
+         |> buildWithCLIArguments)
+
+  !!(@"./*Test*/*Tests.fsproj")
+  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
+  |> Seq.iter buildIt
+
+  !!(@"./Valid*/*Valid*.fsproj")
+  |> Seq.iter buildIt)
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
-  try
-    !!(@"./*Test*/*Tests.fsproj")
-    |> Seq.iter
-         (DotNet.test (fun p ->
+  let testIt = 
+          DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
                Framework = Some "net5.0"
                NoBuild = true }
-           |> testWithCLIArguments))
+           |> testWithCLIArguments)
+
+  try
+    !!(@"./*Test*/*Tests.fsproj")
+    |> Seq.iter testIt
+    !!(@"./Valid*/*Valid*.fsproj")
+    |> Seq.iter testIt    
   with x ->
     printfn "%A" x
     reraise())
@@ -1464,12 +1473,21 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
   try
     tests
-    |> List.iter (fun (report, testproject) ->
+    |> List.iteri (fun n (report, testproject) ->
           let dir = testproject |> Path.GetDirectoryName
+          let proj = testproject |> Path.GetFileName
+          let name = dir |> Path.GetFileName
+          let root = dir |> Path.GetDirectoryName
+          let testdir = root @@ ("__" + name)
+          Directory.ensure testdir
+          Shell.cleanDir testdir
+
+          Shell.copyDir testdir dir (fun _ -> true)
+
           let config = XDocument.Load "./Build/NuGet.config.dotnettest"
           let repo = config.Descendants(XName.Get("add")) |> Seq.head
           repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-          config.Save (dir @@ "NuGet.config")
+          config.Save (testdir @@ "NuGet.config")
 
           let fsproj = XDocument.Load testproject
           let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -1479,8 +1497,12 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                 XAttribute(XName.Get "Version", !Version))
           pack.AddBeforeSelf inject
 
-          let newproj = Path.ChangeExtension(testproject, ".ignore.fsproj")
+          let newproj = testdir @@ proj
           fsproj.Save newproj
+
+          DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM testdir)
+                                   let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                                   { tmp with MSBuildParams = mparams} ) proj
 
           let prep =
             AltCover.PrepareOptions.Primitive
@@ -1495,15 +1517,16 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                      <| Primitive.CollectOptions.Create()
 
           DotNet.test (fun to' ->
-            { to'.WithCommon(withWorkingDirectoryVN dir)
+            { to'.WithCommon(withWorkingDirectoryVM testdir)
                   with Framework = Some "net5.0"
+                       NoBuild = true
             }.WithAltCoverOptions prep coll ForceTrue
-            |> testWithCLIArguments) newproj)
+            |> testWithCLIArguments) proj)
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
-    printfn "Should clear %A" folder
-    // Shell.mkdir folder
-    // Shell.deleteDir folder
+    //printfn "Should clear %A" folder
+    Shell.mkdir folder
+    Shell.deleteDir folder
 
   let xmlreports =
     tests
