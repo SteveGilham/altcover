@@ -1473,7 +1473,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
   try
     tests
-    |> List.iteri (fun n (report, testproject) ->
+    |> List.iter (fun (report, testproject) ->
           let dir = testproject |> Path.GetDirectoryName
           let proj = testproject |> Path.GetFileName
           let name = dir |> Path.GetFileName
