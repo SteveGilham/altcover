@@ -10,7 +10,6 @@
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
-    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
     <RollForward>Major</RollForward>
   </PropertyGroup>
 
