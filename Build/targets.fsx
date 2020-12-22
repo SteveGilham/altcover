@@ -912,7 +912,7 @@ _Target "UnitTestDotNet" (fun _ ->
            |> testWithCLIArguments)
 
   try
-    !!(@"./*Test*/*Tests.fsproj")
+    !!(@"./*Test*/AltCover.*.Tests.fsproj")
     |> Seq.iter testIt
     !!(@"./Valid*/*Valid*.fsproj")
     |> Seq.iter testIt
@@ -939,7 +939,7 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = !!(@"./*Tests/*Tests.fsproj")
+    let l = !!(@"./*Test*/AltCover.*.Tests.fsproj")
             |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
             |> Seq.toList
 
@@ -1368,8 +1368,8 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
+       Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Expecto.Tests/_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCore.xml", // report
        "AltCover.Tests.fsproj", // project
        Path.getFullName "Tests", // workingDirectory
@@ -1460,7 +1460,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
    [
      (
        reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "./Tests/AltCover.Tests.fsproj"
+       Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
      )
      (
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report

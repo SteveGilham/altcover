@@ -1,10 +1,6 @@
-namespace Tests
-
+﻿namespace Tests
 #if !NET472
-open AltCover
-open Expecto
-
-module ExpectoMain =
+module ExpectoTestManifest =
 
   let regular = [
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
@@ -482,29 +478,4 @@ module ExpectoMain =
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMono, "XTests.ShouldGenerateExpectedXmlReportFromMono"
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle, "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle"
         ]
-
-  let specials =
-    { 0 .. 31 }
-    |> Seq.map (fun i ->
-         testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
-         lock ExpectoTestCommon.sync (fun () ->
-           AltCover.Main.init()
-           Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
-    |> Seq.toList
-
-  let consistencyCheck() =
-    ExpectoTestCommon.consistencyCheck regular ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
-
-  [<Tests>]
-  let tests =
-    ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck regular specials
-     (fun () -> AltCover.Main.init()
-                AltCover.Runner.init())
-
-module UnitTestStub =
-  [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
-  let unitTestStub argv =
-    let writeResults = TestResults.writeNUnitSummary ("AltCover.TestResults.xml", "AltCover.Tests")
-    let config = defaultConfig.appendSummaryHandler writeResults
-    runTestsWithArgs config argv ExpectoMain.tests
 #endif

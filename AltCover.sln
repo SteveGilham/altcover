@@ -101,6 +101,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample23", "Sample23\Sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample24", "Sample24\Sample24.csproj", "{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Expecto.Tests", "AltCover.Expecto.Tests\AltCover.Expecto.Tests.fsproj", "{F547865E-7274-499A-B622-E3D6DF9C6592}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -268,6 +270,11 @@ Global
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07}.Release|x86.ActiveCfg = Release|Any CPU
+		{F547865E-7274-499A-B622-E3D6DF9C6592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F547865E-7274-499A-B622-E3D6DF9C6592}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F547865E-7274-499A-B622-E3D6DF9C6592}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F547865E-7274-499A-B622-E3D6DF9C6592}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F547865E-7274-499A-B622-E3D6DF9C6592}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
