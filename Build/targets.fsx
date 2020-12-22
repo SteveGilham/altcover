@@ -1541,7 +1541,9 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
   let xmlreports =
     tests
-    |> List.map (fun (report, _) -> report.Replace(".xml",".net5.0.xml"))
+    |> List.map (fun (report, _) -> if File.Exists report
+                                    then report
+                                    else report.Replace(".xml",".net5.0.xml"))
     |> List.filter (fun f -> File.Exists f
                              && f.Contains("GTKV") |> not)
 
