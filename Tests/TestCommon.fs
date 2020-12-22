@@ -65,6 +65,10 @@ module TestCommon =
 module TestCommonTests =
     [<Test>]
     let ExerciseItAll() =
+#if !NET472
+      let attr = TestAttribute()
+      test <@ attr.IsNotNull @>
+#endif
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(Path.Combine(where, Guid.NewGuid().ToString()), "nonesuch.txt")
       let realDir = Path.Combine(where, Guid.NewGuid().ToString())
