@@ -1,8 +1,13 @@
 ﻿namespace Tests
 #if !NET472
-module ExpectoTestManifest =
 
+#if EXPECTO_MAIN
+module Manifest =
   let regular = [
+#else
+module ExpectoTestManifest =
+  let simpleTests () = [
+#endif
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
@@ -478,4 +483,9 @@ module ExpectoTestManifest =
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMono, "XTests.ShouldGenerateExpectedXmlReportFromMono"
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle, "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle"
         ]
+
+#if !EXPECTO_MAIN
+  let consistencyCheck specials =
+    ExpectoTestCommon.consistencyCheck (simpleTests()) specials //["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
+#endif
 #endif

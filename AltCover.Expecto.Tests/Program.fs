@@ -15,11 +15,11 @@ module ExpectoMain =
     |> Seq.toList
 
   let consistencyCheck() =
-    ExpectoTestCommon.consistencyCheck ExpectoTestManifest.regular ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
+    ExpectoTestManifest.consistencyCheck ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
 
   [<Tests>]
   let tests =
-    ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck ExpectoTestManifest.regular specials
+    ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck Manifest.regular specials
      (fun () -> AltCoverRunnerTests.mainInit()
                 AltCoverRunnerTests.runnerInit())
 

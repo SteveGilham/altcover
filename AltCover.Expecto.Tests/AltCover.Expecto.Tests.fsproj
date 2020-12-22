@@ -5,9 +5,11 @@
     <TargetFramework>net5.0</TargetFramework>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE;EXPECTO_MAIN</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Tests\Expecto.fs" Link="Expecto.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
