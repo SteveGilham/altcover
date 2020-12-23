@@ -72,12 +72,14 @@ module Instance =
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Access by reflection in the data collector")>]
   let mutable internal supervision =
+    //Assembly.GetExecutingAssembly().GetName().Name = "AltCover.Recorder.g" &&
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
     |> Seq.exists (fun n ->
           n.Name = "AltCover.DataCollector"
           && n.FullName.EndsWith
-              ("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal))
+              ("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal)) &&
+              Token <> "AltCover"
 
   // Implementation details
 #if DEBUG

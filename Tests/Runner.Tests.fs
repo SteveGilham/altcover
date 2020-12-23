@@ -37,6 +37,12 @@ module AltCoverUsage =
 module AltCoverRunnerTests =
     // fs
 
+    let runnerInit() =
+      AltCover.Runner.init()
+
+    let mainInit() =
+      AltCover.Main.init()
+
     [<Test>]
     let MaxTimeFirst () =
       let now = DateTime.Now
@@ -63,7 +69,7 @@ module AltCoverRunnerTests =
 
     [<Test>]
     let JunkUspidGivesNegativeIndex() =
-      Runner.init()
+      runnerInit()
       let key = " "
       let index = Counter.I.findIndexFromUspid 0 key
       test <@ index < 0 @>

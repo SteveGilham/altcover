@@ -2170,6 +2170,8 @@ module AltCoverTests3 =
              (f.EnumerateFiles()
               |> Seq.map (fun x -> x.FullName)
               |> Seq.filter
+                    (fun f -> f.EndsWith("AltCover.Expecto.Tests.exe", StringComparison.OrdinalIgnoreCase) |> not)
+              |> Seq.filter
                    (fun f ->
                    f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
                    || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))

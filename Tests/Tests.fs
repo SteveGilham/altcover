@@ -2210,7 +2210,7 @@ module AltCoverTests =
       let path5 = sample4path.Replace("4", "5").Replace("572", "472").Replace("netcoreapp2.1", "netstandard2.0")
       let path6 = sample4path.Replace("4", "6").Replace("672", "472").Replace("2.1", "2.0")
       try
-        Main.init()
+        AltCoverRunnerTests.mainInit()
 
         let visitor1, document1 = Report.reportGenerator()
         Visitor.visit [ visitor1 ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )

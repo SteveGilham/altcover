@@ -201,6 +201,11 @@ let withWorkingDirectoryVM dir o =
       WorkingDirectory = Path.getFullName dir
       Verbosity = Some DotNet.Verbosity.Minimal }
 
+let withWorkingDirectoryVN dir o =
+  { dotnetOptions o with
+      WorkingDirectory = Path.getFullName dir
+      Verbosity = Some DotNet.Verbosity.Normal }
+
 let withWorkingDirectoryOnly dir o =
   { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
@@ -882,26 +887,35 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
-  !!(@"./*Test*/*Tests.fsproj")
-  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
-  |> Seq.iter
-       (DotNet.build (fun p ->
+  let buildIt =
+        DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
              Framework = Some "net5.0" }
-         |> buildWithCLIArguments)))
+         |> buildWithCLIArguments)
+
+  !!(@"./*Test*/*Tests.fsproj")
+  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
+  |> Seq.iter buildIt
+
+  !!(@"./Valid*/*Valid*.fsproj")
+  |> Seq.iter buildIt)
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
-  try
-    !!(@"./*Test*/*Tests.fsproj")
-    |> Seq.iter
-         (DotNet.test (fun p ->
+  let testIt =
+          DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
                Framework = Some "net5.0"
                NoBuild = true }
-           |> testWithCLIArguments))
+           |> testWithCLIArguments)
+
+  try
+    !!(@"./*Test*/AltCover.*.Tests.fsproj")
+    |> Seq.iter testIt
+    !!(@"./Valid*/*Valid*.fsproj")
+    |> Seq.iter testIt
   with x ->
     printfn "%A" x
     reraise())
@@ -925,7 +939,7 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = !!(@"./*Tests/*Tests.fsproj")
+    let l = !!(@"./*Test*/AltCover.*.Tests.fsproj")
             |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
             |> Seq.toList
 
@@ -1354,8 +1368,8 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
+       Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Expecto.Tests/_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCore.xml", // report
        "AltCover.Tests.fsproj", // project
        Path.getFullName "Tests", // workingDirectory
@@ -1441,85 +1455,97 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover =
-    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "./Tests/AltCover.Tests.fsproj"
+       Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
-       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
      (
-       Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net5.0",
-       Path.getFullName "Recorder2.Tests/_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net5.0",
        reports @@ "Recorder2TestWithAltCoverCoreRunner.xml",
        Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
      (
-       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
 
-  tests
-  |> List.iter (fun (testDirectory, output, report, testproject) ->
+  try
+    tests
+    |> List.iter (fun (report, testproject) ->
+          let dir = testproject |> Path.GetDirectoryName
+          let proj = testproject |> Path.GetFileName
+          let name = dir |> Path.GetFileName
+          let root = dir |> Path.GetDirectoryName
+          let testdir = root @@ ("__" + name)
+          Directory.ensure testdir
+          Shell.cleanDir testdir
 
-       printfn "Instrument the code %s" testDirectory
-       Shell.cleanDir output
-       let prep =
-         AltCover.PrepareOptions.Primitive
-           ({ Primitive.PrepareOptions.Create() with
-                XmlReport = report
-                OutputDirectories = [| output |]
-                TypeFilter = [ "SolutionRoot"; "Expecto" ]
-                VisibleBranches = true
-                StrongNameKey = keyfile
-                SingleVisit = true
-                InPlace = false
-                Save = false }
-            |> AltCoverFilter)
-         |> AltCoverCommand.Prepare
-       { AltCoverCommand.Options.Create prep with
-           ToolPath = altcover
-           ToolType = dotnetAltcover
-           WorkingDirectory = testDirectory }
-       |> AltCoverCommand.run
+          Shell.copy testdir (!!(dir @@ "*.*"))
 
-       printfn "Unit test the instrumented code %s" testproject
-       let (dotnetexe, args) =
-         defaultDotNetTestCommandLine (Some "net5.0") testproject
+          let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+          let repo = config.Descendants(XName.Get("add")) |> Seq.head
+          repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+          config.Save (testdir @@ "NuGet.config")
 
-       let collect =
-         AltCover.CollectOptions.Primitive
-           { Primitive.CollectOptions.Create() with
-               Executable = dotnetexe
-               RecorderDirectory = output
-               CommandLine = args }
-         |> AltCoverCommand.Collect
-       { AltCoverCommand.Options.Create collect with
-           ToolPath = altcover
-           ToolType = dotnetAltcover
-           WorkingDirectory = output }
-       |> AltCoverCommand.run)
+          let fsproj = XDocument.Load testproject
+          let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+          let inject =
+             XElement
+               (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+                XAttribute(XName.Get "Version", !Version))
+          pack.AddBeforeSelf inject
+
+          let newproj = testdir @@ proj
+          fsproj.Save newproj
+
+          DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM testdir)
+                                   let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                                   { tmp with MSBuildParams = mparams} ) proj
+
+          let prep =
+            AltCover.PrepareOptions.Primitive
+              ({ Primitive.PrepareOptions.Create() with
+                  XmlReport = report
+                  TypeFilter = [ "SolutionRoot"; "Expecto" ]
+                  VisibleBranches = true
+                  StrongNameKey = keyfile
+                  SingleVisit = true }
+              |> AltCoverFilter)
+          let coll = AltCover.CollectOptions.Primitive
+                     <| Primitive.CollectOptions.Create()
+
+          if proj.Contains("Recorder")
+          then doMSBuild 
+                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal}) 
+                  MSBuildPath newproj  
+
+          DotNet.test (fun to' ->
+            { to'.WithCommon(withWorkingDirectoryVM testdir)
+                  with Framework = Some "net5.0"
+                       NoBuild = proj.Contains("Recorder")
+            }.WithAltCoverOptions prep coll ForceTrue
+            |> testWithCLIArguments) proj)
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    //printfn "Should clear %A" folder
+    Shell.mkdir folder
+    Shell.deleteDir folder
 
   let xmlreports =
     tests
-    |> List.map (fun (_, _, report, _) -> report)
-    |> List.filter (fun f -> f.Contains("GTKV") |> not)
+    |> List.map (fun (report, _) -> if File.Exists report
+                                    then report
+                                    else report.Replace(".xml",".net5.0.xml"))
+    |> List.filter (fun f -> File.Exists f
+                             && f.Contains("GTKV") |> not)
 
   ReportGenerator.generateReports (fun p ->
     { p with
@@ -4433,7 +4459,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverCore"
 // =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
 
-"UnitTestDotNet"
+"Packaging"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
