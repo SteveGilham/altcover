@@ -95,10 +95,31 @@
   </Target>
 
   <!-- Override Microsoft.TestPlatform.targets to do coverage work -->
-  <Target Name="VSTest">
+  <Target Name="VSTest" DependsOnTargets="ShowInfoMessageIfProjectHasNoIsTestProjectProperty">
     <CallTarget Targets="AltCoverVSTestPreFlight" ContinueOnError="ErrorAndStop" />
     <CallTarget Targets="AltCoverVSTestCore" />
   </Target>
+  
+  <Target Name="ShowCallOfVSTestTaskWithParameter">
+    <Message Text="Calling task Microsoft.TestPlatform.Build.Tasks.VSTestTask with following parameter..." Importance="low" />
+    <Message Text="TestFileFullPath = $(TestTargetPath)" Importance="low" />
+    <Message Text="VSTestSetting = $(VSTestSetting)" Importance="low" />
+    <Message Text="VSTestTestAdapterPath = $(VSTestTestAdapterPath)" Importance="low" />
+    <Message Text="VSTestFramework = $(TargetFrameworkMoniker)" Importance="low" />
+    <Message Text="VSTestPlatform = $(PlatformTarget)" Importance="low" />
+    <Message Text="VSTestTestCaseFilter = $(VSTestTestCaseFilter)" Importance="low" />
+    <Message Text="VSTestLogger = $(VSTestLogger)" Importance="low" />
+    <Message Text="VSTestListTests = $(VSTestListTests)" Importance="low" />
+    <Message Text="VSTestDiag = $(VSTestDiag)" Importance="low" />
+    <Message Text="VSTestCLIRunSettings = $(VSTestCLIRunSettings)" Importance="low" />
+    <Message Text="VSTestResultsDirectory = $(VSTestResultsDirectory)" Importance="low" />
+    <Message Text="VSTestConsolePath = $(VSTestConsolePath)" Importance="low" />
+    <Message Text="VSTestVerbosity = $(VSTestVerbosity)" Importance="low" />
+    <Message Text="VSTestCollect = $(VSTestCollect)" Importance="low" />
+    <Message Text="VSTestBlame = $(VSTestBlame)" Importance="low" />
+    <Message Text="VSTestTraceDataCollectorDirectoryPath = $(TraceDataCollectorDirectoryPath)" Importance="low" />
+    <Message Text="VSTestNoLogo = $(VSTestNoLogo)" Importance="low" />
+  </Target>  
 
   <!-- As per the first part of Microsoft.TestPlatform.targets v2.1.300, but with pre-flight checks clause -->
   <Target Name="AltCoverVSTestPreFlight">
@@ -107,21 +128,21 @@
     <CallTarget Targets="AltCoverRunPreparation" ContinueOnError="ErrorAndStop" />
   </Target>
 
-  <!-- As per the second part Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
+  <!-- As per the second part Microsoft.TestPlatform.targets v2.1.809, but with OnError clause -->
   <Target Name="AltCoverVSTestCore">
-    <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
+    <PropertyGroup>
+      <TestTargetPath Condition="'$(AltCover)' != 'true'">$(TargetPath)</TestTargetPath>
+      <TestTargetPath Condition="'$(AltCover)' == 'true'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))</TestTargetPath>
+    </PropertyGroup>
+
     <AltCover.RunSettings
       TestSetting="$(VSTestSetting)"
       Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Extended" PropertyName="VSTestSetting" />
     </AltCover.RunSettings>
-    <Message Importance="High"
-             Text="Testing $([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))"
-             />
-    <PropertyGroup>
-      <TestTargetPath Condition="'$(AltCover)' != 'true'">$(TargetPath)</TestTargetPath>
-      <TestTargetPath Condition="'$(AltCover)' == 'true'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))</TestTargetPath>
-    </PropertyGroup>
+
+    <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
+
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
       TestFileFullPath="$(TestTargetPath)"
       VSTestSetting="$(VSTestSetting)"
@@ -137,8 +158,11 @@
       VSTestResultsDirectory="$(VSTestResultsDirectory)"
       VSTestVerbosity="$(VSTestVerbosity)"
       VSTestCollect="$(VSTestCollect)"
-      VSTestBlame="$(VSTestBlame)" />
-    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverFailFast)' != 'true' " />
+      VSTestBlame="$(VSTestBlame)" 
+      VSTestTraceDataCollectorDirectoryPath="$(TraceDataCollectorDirectoryPath)"
+      VSTestNoLogo="$(VSTestNoLogo)" />
+
+    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverFailFast)' != 'true'" />
   </Target>
 
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest" Condition="'$(AltCover)' == 'true'">
