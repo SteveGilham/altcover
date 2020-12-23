@@ -100,27 +100,6 @@
     <CallTarget Targets="AltCoverVSTestCore" />
   </Target>
   
-  <Target Name="ShowCallOfVSTestTaskWithParameter">
-    <Message Text="Calling task Microsoft.TestPlatform.Build.Tasks.VSTestTask with following parameter..." Importance="low" />
-    <Message Text="TestFileFullPath = $(TestTargetPath)" Importance="low" />
-    <Message Text="VSTestSetting = $(VSTestSetting)" Importance="low" />
-    <Message Text="VSTestTestAdapterPath = $(VSTestTestAdapterPath)" Importance="low" />
-    <Message Text="VSTestFramework = $(TargetFrameworkMoniker)" Importance="low" />
-    <Message Text="VSTestPlatform = $(PlatformTarget)" Importance="low" />
-    <Message Text="VSTestTestCaseFilter = $(VSTestTestCaseFilter)" Importance="low" />
-    <Message Text="VSTestLogger = $(VSTestLogger)" Importance="low" />
-    <Message Text="VSTestListTests = $(VSTestListTests)" Importance="low" />
-    <Message Text="VSTestDiag = $(VSTestDiag)" Importance="low" />
-    <Message Text="VSTestCLIRunSettings = $(VSTestCLIRunSettings)" Importance="low" />
-    <Message Text="VSTestResultsDirectory = $(VSTestResultsDirectory)" Importance="low" />
-    <Message Text="VSTestConsolePath = $(VSTestConsolePath)" Importance="low" />
-    <Message Text="VSTestVerbosity = $(VSTestVerbosity)" Importance="low" />
-    <Message Text="VSTestCollect = $(VSTestCollect)" Importance="low" />
-    <Message Text="VSTestBlame = $(VSTestBlame)" Importance="low" />
-    <Message Text="VSTestTraceDataCollectorDirectoryPath = $(TraceDataCollectorDirectoryPath)" Importance="low" />
-    <Message Text="VSTestNoLogo = $(VSTestNoLogo)" Importance="low" />
-  </Target>  
-
   <!-- As per the first part of Microsoft.TestPlatform.targets v2.1.300, but with pre-flight checks clause -->
   <Target Name="AltCoverVSTestPreFlight">
     <CallTarget Targets="AltCoverPreFlight" />
