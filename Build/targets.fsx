@@ -912,9 +912,13 @@ _Target "UnitTestDotNet" (fun _ ->
            |> testWithCLIArguments)
 
   try
-    !!(@"./*Test*/AltCover.*.Tests.fsproj")
-    |> Seq.iter testIt
-    !!(@"./Valid*/*Valid*.fsproj")
+    [
+      Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+      Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+      Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+      Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+      Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+    ]
     |> Seq.iter testIt
   with x ->
     printfn "%A" x
@@ -923,12 +927,12 @@ _Target "UnitTestDotNet" (fun _ ->
 _Target "BuildForCoverlet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-  let l = !!(@"./*Tests/*Tests.fsproj")
-          |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
-                                  && s.Contains("Recorder") |> not) // net20
-          |> Seq.toList
-
-  ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
+  
+  [
+    Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+    Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+    Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+  ]
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
@@ -939,9 +943,14 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = !!(@"./*Test*/AltCover.*.Tests.fsproj")
-            |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
-            |> Seq.toList
+    let l = 
+      [
+        Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+        Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+        Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+      ]
 
     let xml =
       ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
