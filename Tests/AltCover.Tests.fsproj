@@ -4,7 +4,6 @@
     <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
-    <GenerateProgramFile>false</GenerateProgramFile>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -24,7 +23,7 @@
     <Compile Include="Tests2.fs" />
     <Compile Include="Tests3.fs" />
     <Compile Include="XTests.fs" />
-    <Compile Include="Expecto.fs" />
+    <Compile Include="Expecto.fs"  Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>

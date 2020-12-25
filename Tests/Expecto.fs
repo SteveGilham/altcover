@@ -1,5 +1,9 @@
 ﻿namespace Tests
-#if !NET472
+#if NET472
+
+junk goes here
+
+#else
 
 #if EXPECTO_MAIN
 module Manifest =
