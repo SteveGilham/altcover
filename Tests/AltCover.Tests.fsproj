@@ -94,7 +94,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
