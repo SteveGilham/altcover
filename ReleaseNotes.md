@@ -4,10 +4,11 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 7.3.8xx (Genbu series release 11)
 * Revise the whole `dotnet test` integration
-  * Will support SDK versions back at least to v2.1.809, but v2.1.300 is definitely now out of support due to API changes to `VSTest` in the interim
-  * Rather than copy/instrument back to `$(TargetDir)`/clean and copy-back, now instrument to a new dirctory and test there; there are now no worries about instrumented code ever being in the actual build artifact output directory
+  * Will support SDK versions back at least to v2.1.809, but v2.1.300 is definitely now out of support due to API changes to  the `Microsoft.TestPlatform.Build.Tasks.VSTestTask` task in the interim
+  * Rather than copy/instrument back to `$(TargetDir)`/clean and copy-back, now instrument to a new directory and test there; there are now no worries about instrumented code ever being in the actual build artifact output directory
   * `/p:AltCoverForce=true` now simply clears the instrumentation target directory, and gives an informational message only
-  * Resolve the instrumentation directory once and only once -- prevents inconsistent handling in the case where `--output` redirects `$(TargetDir)` part-way through the process
+  * Resolve the instrumentation directory once and only once -- prevents inconsistent handling in the case where command line parameter`--output` redirects `$(TargetDir)` part-way through the process
+* Some refactoring and other build process improvements
 
 # 7.3.802 (Genbu series release 10)
 * Add a `-q`option for AltCover, given once suppresses informational messages, twice also suppresses warnings and thrice also suppresses errors.  Away from the command line, the option is called `Verbosity`, and is based on `System.Diagnostics.TraceLevel` -- the default level being `Info`, with `Warning`, `Error` and `Off` equivalent to `-q`, `-qq` and `-qqq` respectively.  For the moment `Verbose` is the same as `Info`
