@@ -5,9 +5,6 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder2.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'net5.0'">NETCOREAPP2_0</ExtraDefines>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'net472'">NET4</ExtraDefines>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
@@ -42,9 +39,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
-    <PackageReference Include="NUnit" Version="3.12.0" Condition="'$(TargetFramework)' != 'net20'" />
-    <!-- last net2.0 support here -->
-    <PackageReference Include="NUnit" Version="3.11.0" Condition="'$(TargetFramework)' == 'net20'" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -52,24 +47,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0" Condition="'$(TargetFramework)' == 'net20'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net5.0'" />
-    <PackageReference Update="FSharp.Core" Version="5.0.0" Condition="'$(TargetFramework)' != 'net20'" />
-    <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />
+    <PackageReference Update="FSharp.Core" Version="5.0.0" />
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net20'">
+  <ItemGroup>
     <PackageReference Include="System.IO.Compression">
       <Version>4.3.0</Version>
     </PackageReference>

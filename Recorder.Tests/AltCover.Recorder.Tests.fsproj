@@ -5,9 +5,6 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'net5.0'">NETCOREAPP2_0</ExtraDefines>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'net20'">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(TargetFramework)' == 'net472'">NET4</ExtraDefines>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->

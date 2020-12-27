@@ -110,4 +110,8 @@
                                unvisited count to zero.
       --showGenerated        Mark generated code with a visit count of -2 (
                                Automatic) for the Visualizer if unvisited
+  -q                         Optional, multiple: Quiet mode -- once to switch
+                               off informational messages, twice to switch off
+                               warnings as well, three (or more) times to
+                               switch off all messages.
   -?, --help, -h             Prints out the options.

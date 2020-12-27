@@ -37,6 +37,12 @@ module AltCoverUsage =
 module AltCoverRunnerTests =
     // fs
 
+    let runnerInit() =
+      AltCover.Runner.init()
+
+    let mainInit() =
+      AltCover.Main.init()
+
     [<Test>]
     let MaxTimeFirst () =
       let now = DateTime.Now
@@ -63,7 +69,7 @@ module AltCoverRunnerTests =
 
     [<Test>]
     let JunkUspidGivesNegativeIndex() =
-      Runner.init()
+      runnerInit()
       let key = " "
       let index = Counter.I.findIndexFromUspid 0 key
       test <@ index < 0 @>
@@ -371,7 +377,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 10
+      let optionCount = 11
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort
@@ -1332,6 +1338,51 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.EqualTo "UsageError"))
 
     [<Test>]
+    let ParsingQuietWorks() =
+      Runner.init()
+      try
+        let options = Runner.declareOptions()
+        let input = [| "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 1)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingMultiQuietWorks() =
+      Runner.init()
+      try
+        let options = Runner.declareOptions()
+        let input = [| "-q"; "-q"; "-q" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 3)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
+    let ParsingBatchMultiQuietWorks() =
+      Runner.init()
+      try
+        let options = Runner.declareOptions()
+        let input = [| "-qq" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.verbosity, Is.EqualTo 2)
+      finally
+        CommandLine.verbosity <- 0
+
+    [<Test>]
     let ShouldRequireExe() =
       Runner.init()
       lock Runner.executable (fun () ->
@@ -1485,19 +1536,19 @@ module AltCoverRunnerTests =
       Runner.init()
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-#if NET5_0
-      let path = Path.Combine(SolutionRoot.location, "_Binaries/Sample12/Debug+AnyCPU/netcoreapp2.0/Sample12.dll")
-#else
+#if NET472
       let path = Path.Combine(where, "Sample12.exe")
+#else
+      let path = Path.Combine(SolutionRoot.location, "_Binaries/Sample12/Debug+AnyCPU/netcoreapp2.0/Sample12.dll")
 #endif
 
       let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
 
       let args =
-#if NET5_0
-          [ "dotnet"; path ]
-#else
+#if NET472
           maybe nonWindows [ "mono"; path ] [ path ]
+#else
+          [ "dotnet"; path ]
 #endif
 
       let r = CommandLine.processTrailingArguments args <| DirectoryInfo(where)
@@ -2459,10 +2510,10 @@ module AltCoverRunnerTests =
             then setAttribute el "crapScore" "0")
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       PostProcess.action "offset" counts ReportFormat.OpenCover (XmlAbstraction.XDoc after)
-  #if ! NET5_0
+//#if NET472
       NUnit.Framework.Assert.That(after.ToString(),
           NUnit.Framework.Is.EqualTo(before.ToString()))
-  #endif
+//#endif
 
       test <@ after.ToString() = before.ToString() @>
 

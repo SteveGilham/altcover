@@ -16,6 +16,7 @@
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
     <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

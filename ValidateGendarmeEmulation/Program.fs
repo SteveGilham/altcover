@@ -1,6 +1,6 @@
 namespace Tests
 
-#if  NET5_0
+#if !NET472
 
 open Expecto
 

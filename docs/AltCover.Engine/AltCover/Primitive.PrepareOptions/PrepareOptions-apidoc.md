@@ -12,7 +12,8 @@ public PrepareOptions(IEnumerable<string> inputDirectories, IEnumerable<string> 
     IEnumerable<string> callContext, string reportFormat, bool inPlace, bool save, bool zipFile, 
     bool methodPoint, bool singleVisit, bool lineCover, bool branchCover, 
     IEnumerable<string> commandLine, bool exposeReturnCode, bool sourceLink, bool defer, 
-    bool localSource, bool visibleBranches, string showStatic, bool showGenerated)
+    bool localSource, bool visibleBranches, string showStatic, bool showGenerated, 
+    TraceLevel verbosity)
 ```
 
 ## See Also

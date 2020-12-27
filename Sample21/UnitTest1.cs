@@ -13,12 +13,12 @@ namespace Sample21
     public void Test1()
     {
       var t1 = new Traditional() as ITraditional;
-#if NET5_0
+#if !NET472
       var m1 = new Modern1() as IModern;
       var m2 = new Modern2() as IModern;
 #endif
       Assert.That(t1.DoSomething(), Is.EqualTo("Sample21.Traditional"));
-#if NET5_0
+#if !NET472
       Assert.That(m1.DoSomething(), Is.EqualTo("Sample21.Modern1"));
       Assert.That(m2.DoSomething(), Is.EqualTo("** Sample21.Modern2"));
 #endif
@@ -38,7 +38,7 @@ namespace Sample21
     }
   }
 
-#if NET5_0
+#if !NET472
 
   public interface IModern
   {

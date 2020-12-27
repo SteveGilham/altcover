@@ -21,6 +21,7 @@ public sealed class CollectOptions : IEquatable<CollectOptions>, IStructuralEqua
 | [RecorderDirectory](Primitive.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](Primitive.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](Primitive.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [Verbosity](Primitive.CollectOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [WorkingDirectory](Primitive.CollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 
 ## See Also

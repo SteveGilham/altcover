@@ -135,6 +135,7 @@ module internal Runner =
   let mutable internal summaryFormat = SummaryFormat.Default
 
   let internal init() =
+    CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode := false
     recordingDirectory <- None
@@ -148,9 +149,6 @@ module internal Runner =
     summaryFormat <- Default
     summary.Clear() |> ignore
 
-  [<SuppressMessage("Microsoft.Maintainability",
-    "CA1506:AvoidExcessiveClassCoupling",
-    Justification="Consolidation point")>]
   module internal I =
 
     let internal write line =
@@ -585,6 +583,7 @@ module internal Runner =
            CommandLine.error <-
              CommandLine.Format.Local("MultiplesNotAllowed", "--summary")
              :: CommandLine.error))
+      ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -618,8 +617,6 @@ module internal Runner =
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-    Justification="It's OK, really.")>]
   module internal J =
     let internal requireExe(parse : Either<string * OptionSet, string list * OptionSet>) =
       match parse with
@@ -907,6 +904,7 @@ module internal Runner =
             Options2 = options }
         255
     | Right(rest, _) ->
+        CommandLine.applyVerbosity()
         let value =
           CommandLine.doPathOperation (fun () ->
             let pair = J.recorderInstance()

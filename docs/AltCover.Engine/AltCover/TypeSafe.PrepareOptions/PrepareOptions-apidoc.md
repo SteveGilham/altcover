@@ -9,7 +9,7 @@ public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDire
     Filters methodTopLevel, Context callContext, ReportFormat reportFormat, Flag inPlace, 
     Flag save, Flag zipFile, Flag methodPoint, Flag singleVisit, Flag lineCover, Flag branchCover, 
     CommandLine commandLine, Flag exposeReturnCode, Flag sourceLink, Flag defer, Flag localSource, 
-    Flag visibleBranches, StaticFormat showStatic, Flag showGenerated)
+    Flag visibleBranches, StaticFormat showStatic, Flag showGenerated, TraceLevel verbosity)
 ```
 
 ## See Also

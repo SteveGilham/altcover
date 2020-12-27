@@ -2,6 +2,18 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.3.8xx (Genbu series release 11)
+* Revise the whole `dotnet test` integration
+  * Will support SDK versions back at least to v2.1.809, but v2.1.300 is definitely now out of support due to API changes to  the `Microsoft.TestPlatform.Build.Tasks.VSTestTask` task in the interim
+  * Rather than copy/instrument back to `$(TargetDir)`/clean and copy-back, now instrument to a new directory and test there; there are now no worries about instrumented code ever being in the actual build artifact output directory
+  * `/p:AltCoverForce=true` now simply clears the instrumentation target directory, and gives an informational message only
+  * Resolve the instrumentation directory once and only once -- prevents inconsistent handling in the case where command line parameter`--output` redirects `$(TargetDir)` part-way through the process
+* Some refactoring and other build process improvements
+
+# 7.3.802 (Genbu series release 10)
+* Add a `-q`option for AltCover, given once suppresses informational messages, twice also suppresses warnings and thrice also suppresses errors.  Away from the command line, the option is called `Verbosity`, and is based on `System.Diagnostics.TraceLevel` -- the default level being `Info`, with `Warning`, `Error` and `Off` equivalent to `-q`, `-qq` and `-qqq` respectively.  For the moment `Verbose` is the same as `Info`
+* Other minor build process improvements
+
 # 7.2.801 (Genbu series release 9)
 * [BUGFIX] Don't `ArgumentNullException` when running the `--callContext` for `async` feature off the build machine
 * [BUGFIX] Refactor to avoid "System.ArgumentException: An item with the same key has already been added. Key: AltCover.Recorder.g/7.2.0.0" that could occur in some rare circumstances while instrumenting code.

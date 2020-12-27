@@ -13,6 +13,7 @@ public class Echo : Task
 | [Echo](Echo/Echo-apidoc)() | The default constructor |
 | [Colour](Echo/Colour-apidoc) { get; set; } | The name of the output colour, defaulting to current |
 | [Text](Echo/Text-apidoc) { get; set; } | The text to write, a required parameter |
+| [Verbosity](Echo/Verbosity-apidoc) { get; set; } | Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values) |
 | override [Execute](Echo/Execute-apidoc)() | Perform the operation |
 
 ## See Also

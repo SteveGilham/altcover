@@ -9,7 +9,6 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
-open System.Resources
 
 open Manatee.Json
 open Mono.Cecil
@@ -86,8 +85,6 @@ module internal Instrument =
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
-                    Justification = "partitioned into closures")>]
   module internal I =
 
     // Locate the method that must be called to register a code point for coverage visit.
@@ -472,16 +469,16 @@ module internal Instrument =
 
       o.GetIndentedString().Replace("\t\t", "  ").Replace("\t", "  ").Replace(" :", ":")
 
-    let private visitModule (state : InstrumentContext) (m : ModuleDefinition) included =
+    let private visitModule (state : InstrumentContext) (m : ModuleEntry)  =
       let restate =
-        match included <> Inspections.Ignore with
+        match m.Inspection <> Inspections.Ignore with
         | true ->
             let recordingMethod =
               match state.RecordingMethod with
               | [] -> recordingMethod state.RecordingAssembly
               | _ -> state.RecordingMethod
 
-            let refs = recordingMethod |> List.map m.ImportReference
+            let refs = recordingMethod |> List.map m.Module.ImportReference
             { state with
                 RecordingMethodRef =
                   { Visit = refs.[0]
@@ -490,20 +487,19 @@ module internal Instrument =
                 RecordingMethod = recordingMethod
                 AsyncSupport = state.AsyncSupport
                                |> Option.map (fun a -> { a with LocalWait =
-                                                                  a.Wait |> m.ImportReference })
+                                                                  a.Wait |> m.Module.ImportReference })
             }
         | _ -> state
       { restate with
           ModuleId =
             match CoverageParameters.reportKind() with
-            | ReportFormat.OpenCover -> KeyStore.hashFile m.FileName
-            | _ -> m.Mvid.ToString() }
+            | ReportFormat.OpenCover -> KeyStore.hashFile m.Module.FileName
+            | _ -> m.Module.Mvid.ToString() }
 
-    let private visitMethod (state : InstrumentContext) (m : MethodDefinition)
-                            (included : Inspections) =
-      match included.IsInstrumented with
+    let private visitMethod (state : InstrumentContext) m =
+      match m.Inspection.IsInstrumented with
       | true ->
-          let body = m.Body
+          let body = m.Method.Body
           { state with
               MethodBody = body
               MethodWorker = body.GetILProcessor() }
@@ -514,12 +510,12 @@ module internal Instrument =
       body.Instructions |> Seq.iter (substituteInstructionOperand instruction injected)
       body.ExceptionHandlers |> Seq.iter (substituteExceptionBoundary instruction injected)
 
-    let private visitMethodPoint (state : InstrumentContext) instruction point included =
-      if included then
+    let private visitMethodPoint (state : InstrumentContext) e =
+      if e.Interesting then
         let instrLoadModuleId =
-          insertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-            state.ModuleId point
-        updateBranchReferences state.MethodBody instruction instrLoadModuleId
+          insertVisit e.Instruction state.MethodWorker state.RecordingMethodRef.Visit
+            state.ModuleId e.Uid
+        updateBranchReferences state.MethodBody e.Instruction instrLoadModuleId
       state
 
     let internal visitBranchPoint (state : InstrumentContext) branch =
@@ -611,12 +607,11 @@ module internal Instrument =
     let private invokePredicate (f:unit -> bool) =
       f()
 
-    let internal doTrack state (m : MethodDefinition) (included:Inspections)
-                               (track : (int * string) option) =
-      track
-      |> Option.fold (fun (s:InstrumentContext) (n, _)  -> // this line for FxCop
+    let internal doTrack state (m : MethodEntry) =
+      m.Track
+      |> Option.fold (fun (s:InstrumentContext) (n, _)  ->
            let body =
-             [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
+             [ m.Method.Body; state.MethodBody ].[(m.Inspection.IsInstrumented).ToInt32]
            let methodWorker = body.GetILProcessor()
            removeTailInstructions methodWorker
            let (endFinally, rtype, leave) = encapsulateWithTryFinally methodWorker
@@ -643,7 +638,7 @@ module internal Instrument =
                                   "System.Threading.Tasks.Task"
                                   "System.Threading.Tasks.Task`1"
                                ] |> Seq.exists (fun n -> n = e)
-           let isStateMachine () = m.CustomAttributes // could improve this
+           let isStateMachine () = m.Method.CustomAttributes // could improve this
                                    |> Seq.exists (fun a -> a.AttributeType.FullName =
                                                                "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
            let asyncChecks =
@@ -671,7 +666,7 @@ module internal Instrument =
               // ahead of the leave opcode
 
               let newstate = { state with AsyncSupport = Some
-                                            (Option.defaultWith (fun () -> AsyncSupport.Update m)
+                                            (Option.defaultWith (fun () -> AsyncSupport.Update m.Method)
                                               state.AsyncSupport) }
 
               let injectWait ilp (i:Instruction) =
@@ -692,22 +687,21 @@ module internal Instrument =
               newstate
            else state) state
 
-    let private visitAfterMethod state m (included : Inspections) track =
-      if included.IsInstrumented then
+    let private visitAfterMethod state (m:MethodEntry) =
+      if m.Inspection.IsInstrumented then
         let body = state.MethodBody
         // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
         body.SimplifyMacros()
         // changes "long" conditional operators to their short representation where possible
         body.OptimizeMacros()
-      doTrack state m included track
+      doTrack state m
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
       Justification = "AvoidSpeculativeGenerality too")>]
-    let private visitAfterAssembly state (assembly : AssemblyDefinition)
-        (paths : string list) =
-      let originalFileName = Path.GetFileName assembly.MainModule.FileName
-      writeAssemblies assembly originalFileName paths Output.info
+    let private visitAfterAssembly (state:InstrumentContext) (assembly : AssemblyEntry) =
+      let originalFileName = Path.GetFileName assembly.Assembly.MainModule.FileName
+      writeAssemblies assembly.Assembly originalFileName assembly.Destinations Output.info
       state
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
@@ -760,21 +754,20 @@ module internal Instrument =
     let internal instrumentationVisitorCore (state : InstrumentContext) (node : Node) =
       match node with
       | Start _ -> visitStart state
-      | Assembly(assembly, included, _) ->
-          updateStrongReferences assembly state.InstrumentedAssemblies |> ignore
-          if included <> Inspections.Ignore then
-            assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+      | Assembly assembly ->
+          updateStrongReferences assembly.Assembly state.InstrumentedAssemblies |> ignore
+          if assembly.Inspection <> Inspections.Ignore then
+            assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
           state
-      | Module(m, included) -> visitModule state m included
+      | Module m -> visitModule state m
       | Type _ -> state
-      | Method(m, included, _, _) -> visitMethod state m included
-      | MethodPoint(instruction, _, point, included, _) ->
-          visitMethodPoint state instruction point included
+      | Method m -> visitMethod state m
+      | MethodPoint m  -> visitMethodPoint state m
       | BranchPoint branch -> visitBranchPoint state branch
-      | AfterMethod(m, included, track) -> visitAfterMethod state m included track
+      | AfterMethod m -> visitAfterMethod state m
       | AfterType -> state
       | AfterModule -> state
-      | AfterAssembly(assembly, paths) -> visitAfterAssembly state assembly paths
+      | AfterAssembly assembly -> visitAfterAssembly state assembly
       | Finish -> finishVisit state
 
     let internal instrumentationVisitorWrapper (core : InstrumentContext -> Node -> InstrumentContext)
@@ -801,8 +794,3 @@ module internal Instrument =
   // returns>Stateful visitor function</returns>
   let internal instrumentGenerator(assemblies : string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
-
-[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Scope="member", Target="AltCover.Instrument+I+doTrack@617.#Invoke(AltCover.InstrumentContext,System.Tuple`2<System.Int32,System.String>)",
-  Justification="Nice idea if you can manage it")>]
-()

@@ -115,6 +115,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option `--teamcity[=VALUE]`
         ///</summary>
         member SummaryFormat : System.String
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        member Verbosity : System.Diagnostics.TraceLevel
 // ```
 #if RUNNER
 // ```
@@ -300,6 +304,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option ` --showGenerated`
         ///</summary>
         member ShowGenerated : bool
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        member Verbosity : System.Diagnostics.TraceLevel
 // ```
 #if RUNNER
 // ```

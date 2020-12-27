@@ -93,6 +93,10 @@ module Abstract =
     /// Corresponds to command line option `--teamcity[=VALUE]`
     ///</summary>
     abstract member SummaryFormat : String with get
+    ///<summary>
+    /// Corresponds to command line option ` -q`
+    ///</summary>
+    abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
 // ```
 // ### interface `IPrepareOptions`
@@ -256,6 +260,10 @@ module Abstract =
     /// Corresponds to command line option ` --showGenerated`
     ///</summary>
     abstract member ShowGenerated : bool with get
+    ///<summary>
+    /// Corresponds to command line option ` -q`
+    ///</summary>
+    abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
 // ```
 #if RUNNER

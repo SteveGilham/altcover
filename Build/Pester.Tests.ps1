@@ -42,15 +42,15 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-        $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+        $i = "./_Binaries/Sample2/Debug+AnyCPU/net5.0"
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
         if (Test-Path $x) { Remove-Item -force $x }
 	
-        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
+        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter ("Adapter", "FSharp") -ReportFormat NCover -InformationAction Continue
         $o | Should -Exist
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
@@ -70,7 +70,7 @@ Describe "Invoke-Altcover" {
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "Sample2.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
@@ -84,7 +84,7 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {

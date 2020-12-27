@@ -1,12 +1,17 @@
-namespace Tests
+﻿namespace Tests
+#if NET472
 
-#if  NET5_0
-open AltCover
-open Expecto
+junk goes here
 
-module ExpectoMain =
+#else
 
+#if EXPECTO_MAIN
+module Manifest =
   let regular = [
+#else
+module ExpectoTestManifest =
+  let simpleTests () = [
+#endif
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
@@ -72,6 +77,9 @@ module ExpectoMain =
           Tests.AltCoverRunnerTests.ParsingTCGivesTC, "Runner.ParsingTCGivesTC"
           Tests.AltCoverRunnerTests.ParsingMultipleTCGivesFailure, "Runner.ParsingMultipleTCGivesFailure"
           Tests.AltCoverRunnerTests.ParsingBadTCGivesFailure, "Runner.ParsingBadTCGivesFailure"
+          Tests.AltCoverRunnerTests.ParsingQuietWorks, "Runner.ParsingQuietWorks"
+          Tests.AltCoverRunnerTests.ParsingMultiQuietWorks, "Runner.ParsingMultiQuietWorks"
+          Tests.AltCoverRunnerTests.ParsingBatchMultiQuietWorks, "Runner.ParsingBatchMultiQuietWorks"
           Tests.AltCoverRunnerTests.ShouldRequireExe, "Runner.ShouldRequireExe"
           Tests.AltCoverRunnerTests.ShouldAcceptExe, "Runner.ShouldAcceptExe"
           Tests.AltCoverRunnerTests.ShouldRequireCollectIfNotExe, "Runner.ShouldRequireCollectIfNotExe"
@@ -311,7 +319,8 @@ module ExpectoMain =
           Tests.AltCoverTests2.NonFinishShouldDisposeThreadingAssembly, "Tests2.NonFinishShouldDisposeThreadingAssembly"
           Tests.AltCoverTests2.NonFinishShouldNotDisposeNullRecordingAssembly, "Tests2.NonFinishShouldNotDisposeNullRecordingAssembly"
           Tests.AltCoverTests2.FinishShouldLeaveRecordingAssembly, "Tests2.FinishShouldLeaveRecordingAssembly"
-          Tests.AltCoverTests2.StrongNameKeyCanBeValidatedExceptOnNetCore, "Tests2.StrongNameKeyCanBeValidatedExceptOnNetCore"
+          Tests.AltCoverTests2.StrongNameKeyCanBeValidated, "Tests2.StrongNameKeyCanBeValidated"
+          Tests.AltCoverTests2.VerbosityShouldBeHonoured, "Tests2.VerbosityShouldBeHonoured"
           Tests.AltCoverTests2.CryptographicExceptionIsTransformed, "Tests2.CryptographicExceptionIsTransformed"
           Tests.AltCoverTests2.OutputCanBeExercised, "Tests2.OutputCanBeExercised"
           Tests.AltCoverTests2.NoThrowNoErrorLeavesAllOK, "Tests2.NoThrowNoErrorLeavesAllOK"
@@ -411,6 +420,9 @@ module ExpectoMain =
           Tests.AltCoverTests3.ParsingStaticMinusGivesNoStatic, "Tests3.ParsingStaticMinusGivesNoStatic"
           Tests.AltCoverTests3.ParsingMultipleStaticGivesFailure, "Tests3.ParsingMultipleStaticGivesFailure"
           Tests.AltCoverTests3.ParsingJunkStaticGivesFailure, "Tests3.ParsingJunkStaticGivesFailure"
+          Tests.AltCoverTests3.ParsingQuietWorks, "Tests3.ParsingQuietWorks"
+          Tests.AltCoverTests3.ParsingMultiQuietWorks, "Tests3.ParsingMultiQuietWorks"
+          Tests.AltCoverTests3.ParsingBatchMultiQuietWorks, "Tests3.ParsingBatchMultiQuietWorks"
           Tests.AltCoverTests3.OutputLeftPassesThrough, "Tests3.OutputLeftPassesThrough"
           Tests.AltCoverTests3.OutputInPlaceFails, "Tests3.OutputInPlaceFails"
           Tests.AltCoverTests3.OutputToNewPlaceIsOK, "Tests3.OutputToNewPlaceIsOK"
@@ -431,17 +443,21 @@ module ExpectoMain =
           Tests.AltCoverTests3.ErrorResponseIsAsExpected, "Tests3.ErrorResponseIsAsExpected"
           Tests.AltCoverTests3.LoggingCanBeExercised, "Tests3.LoggingCanBeExercised"
           Tests.AltCoverTests3.EmptyInstrumentIsJustTheDefaults, "Tests3.EmptyInstrumentIsJustTheDefaults"
+          Tests.AltCoverTests3.InstrumentLevelsCanBeSet, "Tests3.InstrumentLevelsCanBeSet"
           Tests.AltCoverTests3.NonDefaultInstrumentObsoleteIsOK, "Tests3.NonDefaultInstrumentObsoleteIsOK"
           Tests.AltCoverTests3.NonDefaultInstrumentIsOK, "Tests3.NonDefaultInstrumentIsOK"
           Tests.AltCoverTests3.EmptyCollectIsJustTheDefaults, "Tests3.EmptyCollectIsJustTheDefaults"
+          Tests.AltCoverTests3.CollectLevelsCanBeSet, "Tests3.CollectLevelsCanBeSet"
           Tests.AltCoverTests3.CollectWithExeIsNotCollecting, "Tests3.CollectWithExeIsNotCollecting"
           Tests.AltCoverTests3.EmptyPowerShellIsJustTheDefaults, "Tests3.EmptyPowerShellIsJustTheDefaults"
           Tests.AltCoverTests3.EmptyVersionIsJustTheDefaults, "Tests3.EmptyVersionIsJustTheDefaults"
           Tests.AltCoverTests3.EchoWorks, "Tests3.EchoWorks"
+          Tests.AltCoverTests3.EchoFallsSilent, "Tests3.EchoFallsSilent"
           Tests.AltCoverTests3.RunSettingsFailsIfCollectorNotFound, "Tests3.RunSettingsFailsIfCollectorNotFound"
           Tests.AltCoverTests3.RunSettingsWorksIfOK, "Tests3.RunSettingsWorksIfOK"
           Tests.AltCoverTests3.RunSettingsExtendsOK, "Tests3.RunSettingsExtendsOK"
           Tests.AltCoverTests3.RunSettingsRecoversOK, "Tests3.RunSettingsRecoversOK"
+          Tests.AltCoverTests3.RunSettingsThrowsIfUninitialized, "Tests3.RunSettingsThrowsIfUninitialized"
           Tests.AltCoverXTests.CollectOptionsCanBeValidated, "XTests.CollectOptionsCanBeValidated"
           Tests.AltCoverXTests.TypeSafeEmptyThresholdCanBeValidated, "XTests.TypeSafeEmptyThresholdCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectOptionsCanBeValidated, "XTests.TypeSafeCollectOptionsCanBeValidated"
@@ -473,28 +489,8 @@ module ExpectoMain =
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle, "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle"
         ]
 
-  let specials =
-    { 0 .. 31 }
-    |> Seq.map (fun i ->
-         testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
-         lock ExpectoTestCommon.sync (fun () ->
-           AltCover.Main.init()
-           Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
-    |> Seq.toList
-
-  let consistencyCheck() =
-    ExpectoTestCommon.consistencyCheck regular ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
-
-  [<Tests>]
-  let tests =
-    ExpectoTestCommon.makeTests  "AltCoverTests" consistencyCheck regular specials
-     (fun () -> AltCover.Main.init()
-                AltCover.Runner.init())
-
-module UnitTestStub =
-  [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
-  let unitTestStub argv =
-    let writeResults = TestResults.writeNUnitSummary ("AltCover.TestResults.xml", "AltCover.Tests")
-    let config = defaultConfig.appendSummaryHandler writeResults
-    runTestsWithArgs config argv ExpectoMain.tests
+#if !EXPECTO_MAIN
+  let consistencyCheck specials =
+    ExpectoTestCommon.consistencyCheck (simpleTests()) specials //["Tests.AltCoverTests2::ShouldUpdateHandlerOK"]
+#endif
 #endif
