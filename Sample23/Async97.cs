@@ -66,17 +66,21 @@ IL_002e: ret None
 
 *****************************************
 
+	.override method instance void [System.Runtime]System.Runtime.CompilerServices.IAsyncStateMachine::MoveNext()
+	.locals init (
+		[0] int32, ...
+
 IL_0000: ldarg.0 Some 0xfeefee
 IL_0001: ldfld System.Int32 Sample23.Async97/<DoSomethingAsync>d__0::<>1__state None
-IL_0006: stloc.0 None
-IL_0007: ldloc.0 Some 16707566
+IL_0006: stloc.0 None  // int num = <>1__state;
+IL_0007: ldloc.0 Some 16707566  <== // if (num != 0)
 IL_0008: brfalse.s IL_000c None
 IL_000a: br.s IL_000e None
 IL_000c: br.s IL_000f None
 IL_000e: nop Some 10
 IL_000f: nop Some 16707566
-IL_0010: ldloc.0 Some 16707566
-IL_0011: brfalse.s IL_0015 None
+IL_0010: ldloc.0 Some 16707566 <== // if (num != 0)
+IL_0011: brfalse.s IL_0015 None <<= 2 here
 IL_0013: br.s IL_0017 None
 IL_0015: br.s IL_0029 None
 IL_0017: nop Some 12
@@ -86,8 +90,8 @@ IL_001a: ldfld System.String Sample23.Async97/<DoSomethingAsync>d__0::file None
 IL_001f: call System.IO.FileStream System.IO.File::OpenRead(System.String) None
 IL_0024: stfld System.IO.FileStream Sample23.Async97/<DoSomethingAsync>d__0::<source>5__1 None
 IL_0029: nop Some 16707566
-IL_002a: ldloc.0 Some 16707566
-IL_002b: brfalse.s IL_002f None
+IL_002a: ldloc.0 Some 16707566 <== // if (num != 0)
+IL_002b: brfalse.s IL_002f None <<= 2 here
 IL_002d: br.s IL_0031 None
 IL_002f: br.s IL_0081 None
 IL_0031: ldarg.0 Some 14
@@ -142,7 +146,7 @@ IL_00ab: ldfld System.Int32 Sample23.Async97/<DoSomethingAsync>d__0::<>s__2 None
 IL_00b0: box System.Int32 None
 IL_00b5: stloc.1 None
 IL_00b6: leave.s IL_00f1 None
-IL_00b8: ldloc.0 Some 16707566
+IL_00b8: ldloc.0 Some 16707566 <== // if (num < 0 && <source>5__1 != null)
 IL_00b9: ldc.i4.0 None
 IL_00ba: bge.s IL_00d0 None
 IL_00bc: ldarg.0 None
@@ -177,4 +181,53 @@ IL_00ff: ldloc.1 None
 IL_0100: call System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Object>::SetResult(!0) None
 IL_0105: nop None
 IL_0106: ret None
+
+
+{{ Start = IL_0011: brfalse.s IL_0015
+  SequencePoint = Mono.Cecil.Cil.SequencePoint
+  Indexes = [-1]
+  Uid = 0
+  Path = 0
+  Offset = 17
+  Target = [IL_0017: nop; IL_0013: br.s IL_0017]
+  Included = true
+  VisitCount = None
+  Representative = Representative
+  Key = 0 }}
+{{ Start = IL_0011: brfalse.s IL_0015
+  SequencePoint = Mono.Cecil.Cil.SequencePoint
+  Indexes = [0]
+  Uid = 1
+  Path = 1
+  Offset = 17
+  Target = [IL_0029: nop; IL_0015: br.s IL_0029]
+  Included = true
+  VisitCount = None
+  Representative = Representative
+  Key = 1 }}
+
+ {{ Start = IL_002b: brfalse.s IL_002f
+  SequencePoint = Mono.Cecil.Cil.SequencePoint
+  Indexes = [-1]
+  Uid = 2
+  Path = 0
+  Offset = 43
+  Target = [IL_0031: ldarg.0; IL_002d: br.s IL_0031]
+  Included = true
+  VisitCount = None
+  Representative = Representative
+  Key = 2 }}
+{{ Start = IL_002b: brfalse.s IL_002f
+  SequencePoint = Mono.Cecil.Cil.SequencePoint
+  Indexes = [0]
+  Uid = 3
+  Path = 1
+  Offset = 43
+  Target = [IL_0081: ldarg.0; IL_002f: br.s IL_0081]
+  Included = true
+  VisitCount = None
+  Representative = Representative
+  Key = 3 }}
+
+
  */
