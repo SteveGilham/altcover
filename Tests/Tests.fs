@@ -889,42 +889,113 @@ module AltCoverTests =
       use rr = r.GetSymbolReader(def.MainModule, symbols23)
       def.MainModule.ReadSymbols(rr)
 
+      let types = def.MainModule.GetAllTypes()
+      let synch = types
+                  |> Seq.filter (fun t -> t.Name = "Async97")
+                  |> Seq.collect (fun t -> t.Methods)
+                  |> Seq.filter (fun m -> m.Name = "DoSomethingSynch")
+                  |> Seq.head
+
+      //synch.Body.Instructions
+      //|> Seq.iter (fun i ->
+      //  let sp = synch.DebugInformation.GetSequencePoint(i)
+      //           |> Option.ofObj
+      //           |> Option.map (fun s -> s.StartLine)
+      //  printfn "%A %A" i sp)
+
       let method =
         (def.MainModule.GetAllTypes()
-         |> Seq.filter (fun t -> t.Name = "<DoSomething>d__0")
+         |> Seq.filter (fun t -> t.Name = "<DoSomethingAsync>d__0")
          |> Seq.head).Methods
         |> Seq.filter (fun m -> m.Name = "MoveNext")
         |> Seq.head
 
-      method.Body.Instructions
-      |> Seq.iter (fun i ->
-        let sp = method.DebugInformation.GetSequencePoint(i)
-                 |> Option.ofObj
-                 |> Option.map (fun s -> s.StartLine)
-        printfn "%A %A" i sp)
+      //method.Body.Instructions
+      //|> Seq.iter (fun i ->
+      //  let sp = method.DebugInformation.GetSequencePoint(i)
+      //           |> Option.ofObj
+      //           |> Option.map (fun s -> s.StartLine)
+      //  printfn "%A %A" i sp)
 
       Visitor.visit [] [] // cheat reset
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         CoverageParameters.nameFilters.Clear()
+        let synchStructure =
+          Visitor.I.deeper <| Node.Method { Method = synch
+                                            Inspection = Inspections.Instrument
+                                            Track = None
+                                            DefaultVisitCount = Exemption.None} |> Seq.toList
+
+        synchStructure
+        |> List.iteri (fun i node ->
+             match node with
+             | MethodPoint { Instruction = _
+                             SeqPnt = _
+                             Uid = n
+                             Interesting = b
+                             DefaultVisitCount = Exemption.None} ->
+               Assert.That(n, Is.EqualTo i, "synch point number")
+               Assert.That(b, Is.True, "synch flag " + i.ToString()))
+
+        Visitor.visit [] []
+
         let deeper =
-          Visitor.I.deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None) |> Seq.toList
-        Assert.That(deeper.Length, Is.EqualTo 8)
+          Visitor.I.deeper <| Node.Method { Method = method
+                                            Inspection = Inspections.Instrument
+                                            Track = None
+                                            DefaultVisitCount = Exemption.None} |> Seq.toList
         deeper
-        |> List.skip 8
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
-        deeper
-        |> List.take 8
-        |> List.iteri (fun i node ->
-             match node with
-             | (MethodPoint(_, _, n, b, Exemption.None)) ->
+             | MethodPoint { Instruction = _
+                             SeqPnt = _
+                             Uid = n
+                             Interesting = b
+                             DefaultVisitCount = Exemption.None} ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString()))
+
+        Assert.That(deeper.Length, Is.EqualTo synchStructure.Length)
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
+
+    [<Test>]
+    let AnotherAsyncTestInContext() =
+      let sample24 =
+        Path.Combine(dir, "Sample24.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(sample24)
+      let symbols24 = Path.ChangeExtension(sample24, ".pdb")
+
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, symbols24)
+      def.MainModule.ReadSymbols(rr)
+
+      let methods = def.MainModule.GetAllTypes()
+                    |> Seq.collect (fun t -> t.Methods)
+                    |> Seq.filter (fun m -> m.Name = "MoveNext")
+                    |> Seq.toList
+
+      methods
+      |> Seq.iter (fun method ->
+        Visitor.visit [] [] // cheat reset
+        try
+          CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+          CoverageParameters.nameFilters.Clear()
+          let deeper =
+            Visitor.I.deeper <| Node.Method { Method = method
+                                              Inspection = Inspections.Instrument
+                                              Track = None
+                                              DefaultVisitCount = Exemption.None} |> Seq.toList
+          // Expect no branch points here from the async
+          test <@ deeper
+                  |> List.forall (fun n -> match n with
+                                           | MethodPoint _ -> true
+                                           | _ -> false) @>
+        finally
+          CoverageParameters.nameFilters.Clear()
+          CoverageParameters.theReportFormat <- None)
 
     [<Test>]
     let DebugBuildTernaryTestInContext() =
