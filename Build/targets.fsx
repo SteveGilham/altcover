@@ -855,7 +855,7 @@ _Target "UnitTest" (fun _ ->
 _Target "UncoveredUnitTest" ignore
 
 let NUnitRetry f spec =
-  let rec NUnitRetryImpl depth f spec =
+  let rec doNUnitRetry depth f spec =
     try 
       if File.Exists spec
       then File.Delete spec
@@ -873,10 +873,10 @@ let NUnitRetry f spec =
         let summary = xml.Descendants(XName.Get "test-run")
                       |> Seq.head
         if summary.Attribute(XName.Get "failed").Value = "0"
-        then NUnitRetryImpl (depth + 1) f spec
+        then doNUnitRetry (depth + 1) f spec
         else reraise()
       else reraise()
-  NUnitRetryImpl 0 f spec
+  doNUnitRetry 0 f spec
 
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
