@@ -3,6 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.3.8xx (Genbu series release 11)
+* Extra detection and removal of compiler generated branches in C# `async`/`await` constructs
 * Revise the whole `dotnet test` integration
   * Will support SDK versions back at least to v2.1.809, but v2.1.300 is definitely now out of support due to API changes to  the `Microsoft.TestPlatform.Build.Tasks.VSTestTask` task in the interim
   * Rather than copy/instrument back to `$(TargetDir)`/clean and copy-back, now instrument to a new directory and test there; there are now no worries about instrumented code ever being in the actual build artifact output directory
