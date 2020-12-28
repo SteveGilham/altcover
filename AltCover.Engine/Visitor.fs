@@ -926,12 +926,6 @@ module internal Visitor =
               (i, toJump, jump.Offset, 0) ]
         | _ -> []
 
-    // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
-    let private isMoveNext =
-      Regex
-        (@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$",
-         RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
-
     let private coalesceBranchPoints dbg (bps : GoTo seq) =
       let selectRepresentatives (_, bs) =
         let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
@@ -994,18 +988,28 @@ module internal Visitor =
       |> Seq.sortBy
            (fun b -> b.Key) // important! instrumentation assumes we work in the order we started with
 
-    let private extractBranchPoints dbg methodFullName rawInstructions interesting vc =
+    let private extractBranchPoints dbg rawInstructions interesting vc =
       let makeDefault i =
         if !CoverageParameters.coalesceBranches then -1 else i
 
       let processBranches =
         if !CoverageParameters.coalesceBranches then coalesceBranchPoints dbg else id
 
-      // Generated MoveNext => skip one branch
-      let skip = (isMoveNext.IsMatch methodFullName).ToInt32
-      (Seq.map
-        (snd
-         >> (fun (i : Instruction) ->
+      // possibly add MoveNext filtering
+      let generated (i:Instruction) =
+        let before = i.Previous
+        let sp = dbg.GetSequencePoint before
+        before.OpCode = OpCodes.Ldloc_0 &&
+          sp.IsNotNull && sp.IsHidden
+
+      [ rawInstructions |> Seq.cast ]
+      |> Seq.filter (fun _ -> dbg.IsNotNull)
+      |> Seq.concat
+      |> Seq.filter
+            (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch
+                                      && (i |> generated |> not))
+      |> Seq.map
+        (fun (i : Instruction) ->
          getJumps dbg
            i // if two or more jumps go between the same two places, coalesce them
          |> List.groupBy (fun (_, _, o, _) -> o)
@@ -1016,15 +1020,7 @@ module internal Visitor =
                |> List.map (fun (_, _, _, n) -> n)
                |> List.sort))
          |> List.sortBy (fun (_, _, l) -> l.Head)
-         |> indexList))
-         ([ rawInstructions |> Seq.cast ]
-          |> Seq.filter (fun _ ->
-               dbg.IsNotNull)
-          |> Seq.concat
-          |> Seq.filter
-               (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-          |> Seq.mapi (fun n i -> (n, i)) //
-          |> Seq.filter (fun (n, _) -> n >= skip)))
+         |> indexList)
       |> Seq.filter (fun l -> !CoverageParameters.coalesceBranches || l.Length > 1) // TODO revisit
       |> Seq.collect id
       |> Seq.mapi (fun i (path, (from, target, indexes)) ->
@@ -1126,7 +1122,7 @@ module internal Visitor =
             |> dbg.GetSequencePoint
 
           let branches = wanted interesting spnt
-          extractBranchPoints dbg m.Method.FullName rawInstructions branches m.DefaultVisitCount
+          extractBranchPoints dbg rawInstructions branches m.DefaultVisitCount
         else
           []
       branchNumber <- branchNumber + List.length bp

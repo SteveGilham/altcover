@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace NUnitTestProject1
@@ -30,6 +31,13 @@ namespace NUnitTestProject1
     public int AddSynch(int x, int y)
     {
       return x + y;
+    }
+
+    public IEnumerable<int> Yielder()
+    {
+      yield return 1;
+      yield return 2;
+      yield return 3;
     }
   }
 }

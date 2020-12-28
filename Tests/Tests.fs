@@ -988,7 +988,7 @@ module AltCoverTests =
                                               Inspection = Inspections.Instrument
                                               Track = None
                                               DefaultVisitCount = Exemption.None} |> Seq.toList
-          // Expect no branch points here from the async
+          // Expect no branch points here from the async (or yield)
           test <@ deeper
                   |> List.forall (fun n -> match n with
                                            | MethodPoint _ -> true
