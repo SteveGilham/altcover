@@ -854,33 +854,56 @@ _Target "UnitTest" (fun _ ->
 
 _Target "UncoveredUnitTest" ignore
 
+let NUnitRetry f spec =
+  let rec NUnitRetryImpl depth f spec =
+    try 
+      if File.Exists spec
+      then File.Delete spec
+      NUnit3.run (f >> (fun p -> {p with ResultSpecs = [ spec ]}))
+    with x ->
+      printfn "%A" x
+      if depth > 2
+      then reraise ()
+      if File.Exists spec 
+      then 
+        let xml =
+          "./Build/NuGet.csproj"
+          |> Path.getFullName
+          |> XDocument.Load
+        let summary = xml.Descendants(XName.Get "test-run")
+                      |> Seq.head
+        if summary.Attribute(XName.Get "failed").Value = "0"
+        then NUnitRetryImpl (depth + 1) f spec
+        else reraise()
+      else reraise()
+  NUnitRetryImpl 0 f spec
+
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
     !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/JustUnitTestReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/JustUnitTestReport.xml"
 
     !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll")
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/RecorderUnitTestReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/RecorderUnitTestReport.xml"
 
     !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/Recorder2UnitTestReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/Recorder2UnitTestReport.xml"
   with x ->
     printfn "%A" x
+    !!  "./_Reports/*UnitTestReport.xml"
+    |> Seq.iter (File.ReadAllText >> (printfn "%s"))
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
@@ -1143,13 +1166,15 @@ _Target "UnitTestWithAltCover" (fun _ ->
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
     |> Seq.concat
     |> Seq.distinct
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/UnitTestWithAltCoverReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/UnitTestWithAltCoverReport.xml"
   with x ->
     printfn "%A" x
+    "./_Reports/UnitTestWithAltCoverReport.xml"
+    |> File.ReadAllText
+    |> printfn "%s"
     reraise()
 
   printfn "Instrument the net20 Recorder tests"
@@ -1176,11 +1201,10 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
   printfn "Execute the net20 Recorder tests"
   !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
-  |> NUnit3.run (fun p ->
+  |> NUnitRetry (fun p ->
        { p with
            ToolPath = nunitConsole
-           WorkingDir = "."
-           ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverReport.xml" ] })
+           WorkingDir = "." }) "./_Reports/RecorderTestWithAltCoverReport.xml"
 
   ReportGenerator.generateReports (fun p ->
     { p with
