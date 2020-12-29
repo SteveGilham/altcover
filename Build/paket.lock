@@ -99,7 +99,7 @@ NUGET
     FParsec (1.1.1) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.3.4) - restriction: || (>= net45) (>= netstandard2.0)
       System.ValueTuple (>= 4.4) - restriction: >= net45
-    FSharp.Control.Reactive (4.4.2) - restriction: >= netstandard2.0
+    FSharp.Control.Reactive (4.5) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.2) - restriction: || (>= net46) (>= netstandard2.0)
       System.Reactive (>= 4.4.1) - restriction: || (>= net46) (>= netstandard2.0)
     FSharp.Core (5.0)
@@ -617,7 +617,7 @@ NUGET
       System.Security.Cryptography.Encoding (>= 4.3) - restriction: && (< net461) (>= netstandard1.6) (< netstandard2.0)
       System.Security.Cryptography.Primitives (>= 4.3) - restriction: && (< net461) (>= netstandard1.6) (< netstandard2.0)
       System.Text.Encoding (>= 4.3) - restriction: && (< net461) (>= netstandard1.6) (< netstandard2.0)
-    System.Security.Cryptography.Pkcs (5.0) - restriction: || (&& (>= monoandroid) (>= netstandard2.0)) (&& (>= monotouch) (>= netstandard2.0)) (&& (< net461) (>= netstandard2.0)) (&& (< net472) (>= netstandard2.0)) (>= netcoreapp2.1) (&& (>= netstandard2.0) (>= xamarintvos)) (&& (>= netstandard2.0) (>= xamarinwatchos)) (>= xamarinios) (>= xamarinmac)
+    System.Security.Cryptography.Pkcs (5.0.1) - restriction: || (&& (>= monoandroid) (>= netstandard2.0)) (&& (>= monotouch) (>= netstandard2.0)) (&& (< net461) (>= netstandard2.0)) (&& (< net472) (>= netstandard2.0)) (>= netcoreapp2.1) (&& (>= netstandard2.0) (>= xamarintvos)) (&& (>= netstandard2.0) (>= xamarinwatchos)) (>= xamarinios) (>= xamarinmac)
       System.Buffers (>= 4.5.1) - restriction: && (< monoandroid) (< net46) (< netcoreapp2.0) (>= netstandard2.0) (< netstandard2.1) (< xamarinios) (< xamarinmac)
       System.Formats.Asn1 (>= 5.0) - restriction: || (>= monoandroid) (>= monotouch) (&& (< net46) (< netcoreapp2.0) (>= netstandard2.0) (< netstandard2.1)) (&& (>= netcoreapp2.0) (< netcoreapp2.1) (< netstandard2.1)) (&& (< netcoreapp2.0) (>= netstandard2.1)) (>= netcoreapp3.0) (>= uap10.1) (>= xamarinios) (>= xamarinmac) (>= xamarintvos) (>= xamarinwatchos)
       System.Memory (>= 4.5.4) - restriction: || (&& (< monoandroid) (< net46) (< netcoreapp2.0) (>= netstandard2.0) (< netstandard2.1) (< xamarinios) (< xamarinmac)) (&& (>= netcoreapp2.0) (< netcoreapp2.1) (< netstandard2.1)) (>= uap10.1)
