@@ -1046,7 +1046,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
       { p with
           WorkingDir = "."
           ExePath = openCoverConsole
-          TestRunnerExePath = nunitConsole
+          TestRunnerExePath = nunitConsole // OK, not on Linux
           Filter =
             "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]*"
           MergeByHash = true
@@ -1063,7 +1063,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
       { p with
           WorkingDir = "."
           ExePath = openCoverConsole
-          TestRunnerExePath = nunitConsole
+          TestRunnerExePath = nunitConsole // OK, not on Linux
           Filter =
             "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.*"
           MergeByHash = true
@@ -1079,7 +1079,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
       { p with
           WorkingDir = "."
           ExePath = openCoverConsole
-          TestRunnerExePath = nunitConsole
+          TestRunnerExePath = nunitConsole // OK, not on Linux
           Filter =
             "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.*"
           MergeByHash = true
@@ -1318,25 +1318,48 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
        let nunitcmd = NUnit3.buildArgs nunitparams nunitAssemblies
 
-       try
-         let collect =
-           AltCover.CollectOptions.TypeSafe
-             { TypeSafe.CollectOptions.Create() with
-                 Executable = TypeSafe.FilePath nunitConsole
-                 RecorderDirectory = TypeSafe.DirectoryPath (testDirectory @@ outputDirectory)
-                 CommandLine = nunitcmd
-                               |> AltCoverCommand.splitCommandLine
-                               |> Seq.map TypeSafe.CommandArgument
-                               |> TypeSafe.CommandArguments  }
-           |> AltCoverCommand.Collect
-         { AltCoverCommand.Options.Create collect with
-             ToolPath = altcover
-             ToolType = frameworkAltcover
-             WorkingDirectory = "." }
-         |> AltCoverCommand.run
-       with x ->
-         printfn "%A" x
-         reraise())
+       let collect =
+         AltCover.CollectOptions.TypeSafe
+           { TypeSafe.CollectOptions.Create() with
+               Executable = TypeSafe.FilePath nunitConsole
+               RecorderDirectory = TypeSafe.DirectoryPath (testDirectory @@ outputDirectory)
+               CommandLine = nunitcmd
+                             |> AltCoverCommand.splitCommandLine
+                             |> Seq.map TypeSafe.CommandArgument
+                             |> TypeSafe.CommandArguments  }
+         |> AltCoverCommand.Collect
+       let command = { AltCoverCommand.Options.Create collect with
+                           ToolPath = altcover
+                           ToolType = frameworkAltcover
+                           WorkingDirectory = "." }
+
+
+       let nUnitRetry2 () =
+        let rec doNUnitRetry2 depth  =
+          try 
+            if File.Exists nunitReport
+            then File.Delete nunitReport
+            AltCoverCommand.run command
+          with x ->
+            printfn "%A" x
+            if depth > 2
+            then reraise ()
+            if File.Exists nunitReport 
+            then 
+              let xml =
+                "./Build/NuGet.csproj"
+                |> Path.getFullName
+                |> XDocument.Load
+              let summary = xml.Descendants(XName.Get "test-run")
+                            |> Seq.head
+              if summary.Attribute(XName.Get "failed").Value = "0"
+              then doNUnitRetry2 (depth + 1) 
+              else reraise()
+            else reraise()
+        doNUnitRetry2 0
+
+       nUnitRetry2 ())
+
   let pester = Path.getFullName "_Reports/Pester.xml"
 
   let xmlreports =
