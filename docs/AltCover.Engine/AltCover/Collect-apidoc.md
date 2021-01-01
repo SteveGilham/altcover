@@ -21,6 +21,7 @@ public class Collect : Task
 | [Summary](Collect/Summary-apidoc) { get; } | Task output calue, the summary of coverage. |
 | [SummaryFormat](Collect/SummaryFormat-apidoc) { get; set; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](Collect/Threshold-apidoc) { get; set; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [Verbosity](Collect/Verbosity-apidoc) { get; set; } | Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values) |
 | [WorkingDirectory](Collect/WorkingDirectory-apidoc) { get; set; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 | override [Execute](Collect/Execute-apidoc)() | Perform the operation |
 

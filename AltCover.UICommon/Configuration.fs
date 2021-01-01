@@ -1,6 +1,6 @@
 ﻿namespace AltCover
 
-#if NETSTANDARD2_0
+#if !NET472
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -42,7 +42,7 @@ module Configuration =
       try
         let doc = XDocument.Load(file)
         try
-          let schemas = new XmlSchemaSet()
+          let schemas = XmlSchemaSet()
           use str = Assembly.GetExecutingAssembly()
                                      .GetManifestResourceStream("AltCover.UICommon.config.xsd")
           use xr = new StreamReader(str)

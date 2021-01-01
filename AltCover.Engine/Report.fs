@@ -37,15 +37,15 @@ module internal Report =
       document.Add(element)
       element :: s
 
-    let visitModule (s : list<XElement>) (head : XElement) (moduleDef : ModuleDefinition)
-        included =
+    let visitModule (s : list<XElement>) (head : XElement) (moduleDef : ModuleEntry) =
+      let def = moduleDef.Module
       let element =
         XElement
-          ("module".X, XAttribute("moduleId".X, moduleDef.Mvid.ToString()),
-           XAttribute("name".X, moduleDef.FileName |> System.IO.Path.GetFullPath),
-           XAttribute("assembly".X, moduleDef.Assembly.Name.Name),
-           XAttribute("assemblyIdentity".X, moduleDef.Assembly.Name.FullName),
-           XAttribute("excluded".X, toExcluded included))
+          ("module".X, XAttribute("moduleId".X, def.Mvid.ToString()),
+           XAttribute("name".X, def.FileName |> System.IO.Path.GetFullPath),
+           XAttribute("assembly".X, def.Assembly.Name.Name),
+           XAttribute("assemblyIdentity".X, def.Assembly.Name.FullName),
+           XAttribute("excluded".X, toExcluded moduleDef.Inspection.IsInstrumented))
       head.Add(element)
       element :: s
 
@@ -66,17 +66,17 @@ module internal Report =
       element :: s
 
     let visitMethodPoint (s : list<XElement>) (head : XElement)
-        (codeSegment' : SeqPnt option) included vc =
-      match codeSegment' with
+        (e : StatementEntry) =
+      match e.SeqPnt with
       | Some codeSegment ->
           let element =
             XElement
-              ("seqpnt".X, XAttribute("visitcount".X, int vc),
+              ("seqpnt".X, XAttribute("visitcount".X, int e.DefaultVisitCount),
                XAttribute("line".X, codeSegment.StartLine),
                XAttribute("column".X, codeSegment.StartColumn),
                XAttribute("endline".X, codeSegment.EndLine),
                XAttribute("endcolumn".X, codeSegment.EndColumn),
-               XAttribute("excluded".X, toExcluded included),
+               XAttribute("excluded".X, toExcluded e.Interesting),
                XAttribute("document".X, codeSegment.Document |> Visitor.sourceLinkMapping))
           if head.IsEmpty then
             head.Add(element)
@@ -94,12 +94,10 @@ module internal Report =
 
       match node with
       | Start _ -> startVisit s
-      | Module(moduleDef, included) ->
-          visitModule s head moduleDef (included.IsInstrumented)
-      | Method(methodDef, included, _, _) ->
-          visitMethod s head methodDef (included.IsInstrumented)
-      | MethodPoint(_, codeSegment, _, included, vc) ->
-          visitMethodPoint s head codeSegment included vc
+      | Module m -> visitModule s head m
+      | Method m ->
+          visitMethod s head m.Method (m.Inspection.IsInstrumented)
+      | MethodPoint m  -> visitMethodPoint s head m
       | AfterMethod _ ->
           if head.IsEmpty then head.Remove()
           tail

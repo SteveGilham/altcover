@@ -39,6 +39,7 @@ The members correspond to the like-named command line options for `AltCover Runn
     abstract member CommandLine : IEnumerable<String> with get
     abstract member ExposeReturnCode : bool with get
     abstract member SummaryFormat : String with get
+    abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
 ```
 ### interface `IPrepareOptions`
@@ -85,6 +86,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
     abstract member VisibleBranches : bool with get
     abstract member ShowStatic : string with get
     abstract member ShowGenerated : bool with get
+    abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
 ```
 

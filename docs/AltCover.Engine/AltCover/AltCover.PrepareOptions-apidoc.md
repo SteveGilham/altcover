@@ -44,6 +44,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [Verbosity](AltCover.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
 | [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](AltCover.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |

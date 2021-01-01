@@ -133,6 +133,10 @@ In detail
                                unvisited count to zero.
       --showGenerated        Mark generated code with a visit count of -2 (
                                Automatic) for the Visualizer if unvisited
+  -q                         Optional, multiple: Quiet mode -- once to switch
+                               off informational messages, twice to switch off
+                               warnings as well, three (or more) times to
+                               switch off all messages.
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
 ```
@@ -192,6 +196,10 @@ or
                                is the same as 'B'
                                If the option is not present, then the default
                                is 'OC'.
+  -q                         Optional, multiple: Quiet mode -- once to switch
+                               off informational messages, twice to switch off
+                               warnings as well, three (or more) times to
+                               switch off all messages.
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.
 ```

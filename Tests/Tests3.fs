@@ -14,12 +14,6 @@ open Mono.Cecil.Cil
 #nowarn "25"
 
 module AltCoverTests3 =
-#if NET5_0
-    let monoSample1 = "../_Mono/Sample1"
-#else
-    let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
-                      |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
-#endif
     // AltCover.fs and CommandLine.fs
 
     [<Test>]
@@ -171,10 +165,11 @@ module AltCoverTests3 =
                            |> Seq.sort
                            |> Seq.toList
 
-      // dotnet test loses commandline, defer, exposereturncode, inplace, save
-      //                   N/A,         fixed, N/A,              fixed,   fixed
+      // dotnet test loses commandline, defer, exposereturncode, save
+      //                   N/A,         fixed, N/A,              fixed
+      // inplace is explicitly hard-coded
       Assert.That(attributeNames
-                  |> Seq.length, Is.EqualTo (optionCount - 4),
+                  |> Seq.length, Is.EqualTo (optionCount - 3),
                   "expected " + String.Join("; ", primitiveNames) + Environment.NewLine +
                   "but got  " + String.Join("; ", attributeNames))
 
@@ -2160,8 +2155,8 @@ module AltCoverTests3 =
            "Simple to-from comparison failed")
         Assert.That
           (x
-           |> Seq.filter (fun (_,l) -> l |> List.exists (fun i -> i = t.FullName))
-           |> Seq.map fst
+           |> Seq.filter (fun l -> l.Destinations |> List.exists (fun i -> i = t.FullName))
+           |> Seq.map (fun x -> x.AssemblyPath)
            |> Seq.filter
                 (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not)
            |> Seq.filter // flaky in altcoverrunner
@@ -2174,6 +2169,8 @@ module AltCoverTests3 =
            Is.EquivalentTo
              (f.EnumerateFiles()
               |> Seq.map (fun x -> x.FullName)
+              |> Seq.filter
+                    (fun f -> f.EndsWith("AltCover.Expecto.Tests.exe", StringComparison.OrdinalIgnoreCase) |> not)
               |> Seq.filter
                    (fun f ->
                    f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
@@ -2190,7 +2187,7 @@ module AltCoverTests3 =
            "First list mismatch with from files")
         Assert.That(y,
                     Is.EquivalentTo(x
-                                    |> Seq.map (fst >> Path.GetFileNameWithoutExtension)),
+                                    |> Seq.map ((fun x -> x.AssemblyPath) >> Path.GetFileNameWithoutExtension)),
                                     "Second list mismatch"))
 
     [<Test>]
@@ -2338,7 +2335,7 @@ module AltCoverTests3 =
       finally
         Console.SetError saved
 
-#if  NET5_0
+#if !NET472
     [<Test>]
     let TargetsPathIsAsExpected() =
       Main.init()
@@ -2438,7 +2435,7 @@ module AltCoverTests3 =
         test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale
-#if NET5_0
+#if !NET472
         let dir = Path.Combine(SolutionRoot.location,
                                 "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0")
 #else

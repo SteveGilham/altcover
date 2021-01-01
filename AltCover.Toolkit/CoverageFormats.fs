@@ -30,8 +30,6 @@ module CoverageFormats =
     Justification = "AvoidSpeculativeGenerality too")>]
   [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
     Justification = "AvoidSpeculativeGenerality too")>]
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-     Justification="That's XML + code reuse for you.")>]
   let ConvertFromNCover (document:XDocument) (assemblies : string seq) =
     let reporter, rewrite = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
@@ -51,7 +49,7 @@ module CoverageFormats =
       assemblies
       |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
-      |> Seq.map (fun p -> (p, []))
+      |> Seq.map (fun p -> { AssemblyPath = p; Destinations = [] })
 
     // ensure default state
     AltCover.Main.init()

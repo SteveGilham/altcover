@@ -94,11 +94,7 @@ module internal Main =
             "--callContext", x) :: CommandLine.error
       (false, Left None)
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-    Justification="It's perfectly maintainable.")>]
   module internal I =
-    [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-      Justification="It's perfectly maintainable.")>]
     let internal declareOptions() =
       let makeRegex (x : String) =
         x.Replace(char 0, '\\').Replace(char 1, '|')
@@ -447,7 +443,7 @@ module internal Main =
              let proto = a.Path.Head
              let targets =
                a.Path |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
-             ((proto, targets), a.Name))
+             ({ AssemblyPath = proto; Destinations = targets}, a.Name))
 
       List.unzip sorted
 
