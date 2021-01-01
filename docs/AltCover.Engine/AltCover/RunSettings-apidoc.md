@@ -15,6 +15,7 @@ public class RunSettings : Task
 | [RunSettings](RunSettings/RunSettings-apidoc)() | The default constructor |
 | [Extended](RunSettings/Extended-apidoc) { get; set; } | The settings file generated, an output parameter |
 | [TestSetting](RunSettings/TestSetting-apidoc) { get; set; } | The current settings file to be extended |
+| [Verbosity](RunSettings/Verbosity-apidoc) { get; set; } | Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values) |
 | override [Execute](RunSettings/Execute-apidoc)() | Perform the operation |
 
 ## See Also

@@ -941,8 +941,8 @@ SYNTAX
 ```
 Invoke-AltCover [-Runner] <SwitchParameter> -RecorderDirectory <string> [-Cobertura <string>] [-CommandLine
 <string[]>] [-DropReturnCode <SwitchParameter>] [-Executable <string>] [-LcovReport <string>] [-OutputFile
-<string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}] [-Threshold <string>] [-WorkingDirectory
-<string>] [<CommonParameters>]
+<string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}] [-Threshold <string>] [-Verbosity {Off |
+Error | Warning | Info | Verbose}] [-WorkingDirectory <string>] [<CommonParameters>]
 
 Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>] [-AttributeFilter <string[]>]
 [-AttributeTopLevel <string[]>] [-BranchCover <SwitchParameter>] [-CallContext <string[]>] [-CommandLine
@@ -952,8 +952,9 @@ Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>]
 [-MethodTopLevel <string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-ReportFormat {NCover |
 OpenCover}] [-Save <SwitchParameter>] [-ShowGenerated <SwitchParameter>] [-ShowStatic {KeepHidden | Mark |
 Reveal}] [-Single <SwitchParameter>] [-SourceLink <SwitchParameter>] [-StrongNameKey <string>] [-SymbolDirectory
-<string[]>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>] [-VisibleBranches <SwitchParameter>] [-XmlReport
-<string>] [-ZipFile <SwitchParameter>] [<CommonParameters>]
+<string[]>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>] [-Verbosity {Off | Error | Warning | Info |
+Verbose}] [-VisibleBranches <SwitchParameter>] [-XmlReport <string>] [-ZipFile <SwitchParameter>]
+[<CommonParameters>]
 
 Invoke-AltCover [-Version] <SwitchParameter> [<CommonParameters>]
 
@@ -1484,6 +1485,19 @@ Possible values: Default, N, O, C, R, B, RPlus, BPlus
 Required?                    false
 Position?                    named
 Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-Verbosity <TraceLevel>` 
+Selects output level of the command
+
+Possible values: Off, Error, Warning, Info, Verbose
+
+```
+Required?                    false
+Position?                    named
+Default value                Info
 Accept pipeline input?       false
 Accept wildcard characters?  false
 ```

@@ -3,7 +3,7 @@
 open System
 open System.Diagnostics.CodeAnalysis
 open Gtk
-#if !NETCOREAPP2_1
+#if NET472
 open Glade
 #endif
 
@@ -12,13 +12,13 @@ open Glade
 [<Sealed; AutoSerializable(false)>]
 type internal Handler() =
   class
-#if NETCOREAPP2_1
+#if !NET472
     [<Builder.Object; DefaultValue(true)>]
     val mutable toolbar1 : Toolbar
 #endif
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -27,7 +27,7 @@ type internal Handler() =
     val mutable mainWindow : Window
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -36,7 +36,7 @@ type internal Handler() =
     val mutable openButton : MenuToolButton
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -45,7 +45,7 @@ type internal Handler() =
     val mutable separator1 : SeparatorToolItem
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -54,7 +54,7 @@ type internal Handler() =
     val mutable exitButton : ToolButton
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -63,7 +63,7 @@ type internal Handler() =
     val mutable refreshButton : ToolButton
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -72,7 +72,7 @@ type internal Handler() =
     val mutable fontButton : ToolButton
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -81,7 +81,7 @@ type internal Handler() =
     val mutable showAboutButton : ToolButton
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -90,7 +90,7 @@ type internal Handler() =
     val mutable aboutVisualizer : AboutDialog
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -99,7 +99,7 @@ type internal Handler() =
     val mutable fileOpenMenu : Menu
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -111,7 +111,7 @@ type internal Handler() =
     val mutable auxModel : TreeStore
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -120,7 +120,7 @@ type internal Handler() =
     val mutable sourceScroller : ScrolledWindow
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -129,7 +129,7 @@ type internal Handler() =
     val mutable lineView : TextView
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -138,7 +138,7 @@ type internal Handler() =
     val mutable codeView : TextView
 
     [<
-#if NETCOREAPP2_1
+#if !NET472
       Builder.Object;
 #else
       Widget;
@@ -163,7 +163,7 @@ type internal Handler() =
       md.Icon <- parent.Icon
       md.Title <- "AltCover.Visualizer"
       md.Run() |> ignore
-#if NETCOREAPP2_1
+#if !NET472
     // implicit Dispose()
 #else
       md.Destroy()

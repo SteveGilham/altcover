@@ -9,8 +9,6 @@ open Fake.DotNet
 [<RequireQualifiedAccess>]
 [<SuppressMessage("Gendarme.Rules.Smells", "RelaxedAvoidCodeDuplicatedInSameClassRule",
   Justification="Two match statements aren't worth bothering with")>]
-[<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Justification="This is where it all comes together")>]
 module AltCoverCommand =
   let private toSeq(s : String seq) =
     match s with
@@ -273,8 +271,8 @@ module AltCoverCommand =
     runCore options withMono
 
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@255T.#monoPath", Justification="Generated code")>]
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@253T.#monoPath", Justification="Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@255T.#options", Justification="Generated code")>]
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@253T.#options", Justification="Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@215T.#options", Justification="Generated code")>]()
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@213T.#options", Justification="Generated code")>]()

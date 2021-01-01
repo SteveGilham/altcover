@@ -1,15 +1,11 @@
-#if NET5_0
-namespace Tests.Recorder.Core
-#else
-#if NET4
-namespace Tests.Recorder.Clr4
-#else
-#if NET2
+#if !NET472
+#if NET20
 namespace Tests.Recorder.Clr2
 #else
-namespace Tests.Recorder.Unknown
+namespace Tests.Recorder.Core
 #endif
-#endif
+#else
+namespace Tests.Recorder.Clr4
 #endif
 
 // fsharplint:disable  MemberNames NonPublicValuesNames RedundantNewKeyword
@@ -34,7 +30,7 @@ module AltCoverTests =
   let private GetMyMethodName tag = ignore tag
   //    let st = StackTrace(StackFrame(1))
   //    st.GetFrame(0).GetMethod().Name |>
-  //#if NET2
+  //#if NET20
   //    printfn "%s %s 2" tag
   //#else
   //    printfn "%s %s" tag
@@ -334,7 +330,6 @@ module AltCoverTests =
     Assert.That(exn.Message, Is.EqualTo unique)
 
 #if NET5_0
-
   [<Test>]
   let NullRefShouldBeHandled() =
     GetMyMethodName "=>"
@@ -1082,7 +1077,7 @@ module AltCoverTests =
       AltCoverCoreTests.maybeIOException
             (fun () -> Directory.Delete(unique))
 
-#if !NET2
+#if !NET20
   [<Test>]
   let ZipFlushLeavesExpectedTracesWhenDiverted() =
     let saved = Console.Out
@@ -1287,7 +1282,7 @@ module AltCoverTests =
     RealIdShouldIncrementCount()
     PauseLeavesExpectedTraces()
     ResumeLeavesExpectedTraces()
-#if !NET2
+#if !NET20
     ZipFlushLeavesExpectedTraces()
 #endif
     FlushLeavesExpectedTraces()

@@ -64,6 +64,7 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [Threshold](InvokeAltCoverCommand/Threshold-apidoc) { get; set; } | One or more of minimum acceptable statement (S), branch (B) or method (M)/alternative method (AM) coverage percentage (integer, 1 to 100) or maximum acceptable CRAP/alternative CRAP score (C/AC followed by integer, 1 to 255) e.g. M80AM70C40AC100B50. If the value starts with a number, a leading S is assumed. If any threshold is specified more than once, the last instance is assumed -- so 25S50 counts as S50. Zero/absent values are ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the process is the largest abs(threshold - actual) rounded up to the nearest integer. |
 | [TypeFilter](InvokeAltCoverCommand/TypeFilter-apidoc) { get; set; } | Type names to exclude from instrumentation |
 | [TypeTopLevel](InvokeAltCoverCommand/TypeTopLevel-apidoc) { get; set; } | Names to mark a type as "top level" |
+| [Verbosity](InvokeAltCoverCommand/Verbosity-apidoc) { get; set; } | Selects output level of the command |
 | [Version](InvokeAltCoverCommand/Version-apidoc) { get; set; } | Selects `Version` mode |
 | [VisibleBranches](InvokeAltCoverCommand/VisibleBranches-apidoc) { get; set; } | Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies. |
 | [WorkingDirectory](InvokeAltCoverCommand/WorkingDirectory-apidoc) { get; set; } | The working directory for the application launch |

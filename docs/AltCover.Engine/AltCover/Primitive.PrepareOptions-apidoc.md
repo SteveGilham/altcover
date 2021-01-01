@@ -43,6 +43,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [SymbolDirectories](Primitive.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [TypeFilter](Primitive.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Primitive.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [Verbosity](Primitive.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [VisibleBranches](Primitive.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
 | [XmlReport](Primitive.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](Primitive.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |

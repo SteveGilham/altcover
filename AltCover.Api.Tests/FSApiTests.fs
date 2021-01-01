@@ -106,7 +106,7 @@ module FSApiTests =
             |> not
           then setAttribute el "crapScore" "0")
     OpenCover.PostProcess after BranchOrdinal.Offset
-//#if ! NET5_0
+//#if !NET472
 //    NUnit.Framework.Assert.That(after.ToString(),
 //        NUnit.Framework.Is.EqualTo(before.ToString()))
 //#endif
@@ -177,7 +177,7 @@ module FSApiTests =
     let sample = typeof<M.Thing>.Assembly.Location
     let reporter, doc = AltCover.Report.reportGenerator()
     let visitors = [ reporter ]
-    Visitor.visit visitors [(sample, [])]
+    Visitor.visit visitors [ { AssemblyPath = sample; Destinations = [] } ]
     use mstream = new MemoryStream()
     let rewrite = CoverageFormats.ConvertFromNCover doc [ sample ]
     test <@ rewrite |> isNull |> not @>
@@ -338,13 +338,13 @@ module FSApiTests =
                             |> List.collect (fun f -> f prep)
                             |> List.sort
 
-    // not input and output directories
-//#if ! NET5_0
+    // not input and output directories or inplace
+//#if !NET472
 //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
 //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", prepareFragments))
 //#endif
-    test <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 2) @>
+    test <@ (prepareFragments) |> List.length = ((prepareNames |> List.length) - 3) @>
 
     let collect = doc.Descendants()
                   |> Seq.filter (fun d -> d.Name.LocalName = "AltCover.Collect")
@@ -363,7 +363,7 @@ module FSApiTests =
                             |> List.sort
 
     // not recorder directory
-//#if ! NET5_0
+//#if !NET472
 //    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
 //                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", collectFragments))
@@ -386,7 +386,7 @@ module FSApiTests =
                             |> List.sort
 
     // ignore Is<CaseName> and Tag
-//#if ! NET5_0
+//#if !NET472
 //    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
 //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", optionsFragments))

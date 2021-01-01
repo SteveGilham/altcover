@@ -147,7 +147,7 @@ module DotNet =
                        Justification="Internal implementation detail")>]
     let internal toCLIOptionsArgArgumentList (options : ICLIOptions) =
       [
-        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Saved` folders from previous runs
+        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented` folders from previous runs
         arg, "FailFast", "true", options.FailFast //=true|false` to skip coverage collection if the unit tests fail
       ]
 

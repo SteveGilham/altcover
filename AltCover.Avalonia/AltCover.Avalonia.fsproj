@@ -18,6 +18,7 @@
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
     <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

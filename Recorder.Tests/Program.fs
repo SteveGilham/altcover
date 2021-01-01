@@ -1,15 +1,11 @@
-#if NET5_0
-namespace Tests.Recorder.Core
-#else
-#if NET4
-namespace Tests.Recorder.Clr4
-#else
-#if NET2
+#if !NET472
+#if NET20
 namespace Tests.Recorder.Clr2
 #else
-namespace Tests.Recorder.Unknown
+namespace Tests.Recorder.Core
 #endif
-#endif
+#else
+namespace Tests.Recorder.Clr4
 #endif
 
 module UnitTestStub =

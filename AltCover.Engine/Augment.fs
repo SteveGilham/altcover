@@ -6,10 +6,10 @@ open System.Diagnostics.CodeAnalysis
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
 [<AutoOpen>]
-#if !GUI
-module internal Augment =
-#else
+#if GUI
 module Augment =
+#else
+module internal Augment =
 #endif
 
 #if !ValidateGendarmeEmulation

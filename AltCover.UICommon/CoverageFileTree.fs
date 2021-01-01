@@ -209,8 +209,6 @@ module CoverageFileTree =
 
     methods |> Seq.iter (applyToModel model)
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-         Justification="Where it all comes together")>]
   let DoSelected (environment:CoverageModelDisplay<'TModel, 'TRow, 'TIcon>) index =
       let current = environment.GetFileInfo index
       match CoverageFile.LoadCoverageFile current with

@@ -5,14 +5,14 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 
 open Gtk
-#if !NETCOREAPP2_1
+#if NET472
 open Microsoft.Win32
 #endif
 
 module internal Persistence =
   let mutable internal save = true
 
-#if NETCOREAPP2_1
+#if !NET472
 
   let internal saveSchemaDir = Configuration.SaveSchemaDir
   let internal saveFont = Configuration.SaveFont
