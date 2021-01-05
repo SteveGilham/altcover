@@ -26,18 +26,18 @@
   </PropertyGroup>
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
-    <Message Condition="Exists('$(AltCoverInstrumentedDirectory)') AND '$(AltCoverForce)' == 'true'"
+    <Message Condition="Exists('$(AltCoverInstrumentedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' == 'true'"
              Importance="High"
-             Text="Directory '$(AltCoverInstrumentedDirectory)' exists from a previous run.  Forcibly deleting it" />
-    <RemoveDir Directories="$(AltCoverInstrumentedDirectory)"
-               Condition="Exists('$(AltCoverInstrumentedDirectory)') AND '$(AltCoverForce)' == 'true'" />
+             Text="Directory '$(AltCoverInstrumentedDirectory)_$(ProjectName)' exists from a previous run.  Forcibly deleting it" />
+    <RemoveDir Directories="$(AltCoverInstrumentedDirectory)_$(ProjectName)"
+               Condition="Exists('$(AltCoverInstrumentedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' == 'true'" />
   </Target>
 
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
       <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
       <AltCoverInputDirectory Include="$(TargetDir)" />
-      <AltCoverOutputDirectory Include="$(AltCoverInstrumentedDirectory)" />
+      <AltCoverOutputDirectory Include="$(AltCoverInstrumentedDirectory)_$(ProjectName)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -111,7 +111,7 @@
   <Target Name="AltCoverVSTestCore">
     <PropertyGroup>
       <TestTargetPath Condition="'$(AltCover)' != 'true'">$(TargetPath)</TestTargetPath>
-      <TestTargetPath Condition="'$(AltCover)' == 'true'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory), $(TargetFileName)))</TestTargetPath>
+      <TestTargetPath Condition="'$(AltCover)' == 'true'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</TestTargetPath>
     </PropertyGroup>
 
     <AltCover.RunSettings
@@ -151,7 +151,7 @@
     </PropertyGroup>
 
     <AltCover.Collect
-      RecorderDirectory="$(AltCoverInstrumentedDirectory)"
+      RecorderDirectory="$(AltCoverInstrumentedDirectory)_$(ProjectName)"
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
       Cobertura="$(AltCoverCobertura)"
