@@ -3929,7 +3929,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "1"; "0" ])
 
     printfn "optest failing test fast ------------------------------------------------"
 
@@ -3957,7 +3957,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0"; "0"; "0"; "0"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
 
     printfn "optest line cover ------------------------------------------------"
     let p2 =
