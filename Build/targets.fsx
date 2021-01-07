@@ -863,7 +863,9 @@ let NUnitRetry f spec =
     with x ->
       printfn "%A" x
       if depth > 2
-      then reraise ()
+      then 
+        printfn "Recursion limited"
+        reraise ()
       if File.Exists spec 
       then 
         let xml =
@@ -872,10 +874,15 @@ let NUnitRetry f spec =
           |> XDocument.Load
         let summary = xml.Descendants(XName.Get "test-run")
                       |> Seq.head
-        if summary.Attribute(XName.Get "failed").Value = "0"
+        let failcount = summary.Attribute(XName.Get "failed").Value
+        if failcount = "0"
         then doNUnitRetry (depth + 1) f spec
-        else reraise()
-      else reraise()
+        else 
+          printfn "Actual failures found %A" failcount
+          reraise()
+      else 
+        printfn "Report not found"
+        reraise()
   doNUnitRetry 0 f spec
 
 _Target "JustUnitTest" (fun _ ->
@@ -1237,9 +1244,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "UnitTestWithAltCoverRunner.xml", // coverage report
         "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-          Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/Sample2.dll" ],
+            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll" ],
         baseFilter,
         keyfile
       )
@@ -1343,7 +1348,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
           with x ->
             printfn "%A" x
             if depth > 2
-            then reraise ()
+            then 
+              printfn "Recursion limited"
+              reraise ()
             if File.Exists nunitReport 
             then 
               let xml =
@@ -1352,10 +1359,15 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                 |> XDocument.Load
               let summary = xml.Descendants(XName.Get "test-run")
                             |> Seq.head
-              if summary.Attribute(XName.Get "failed").Value = "0"
+              let failcount = summary.Attribute(XName.Get "failed").Value
+              if failcount  = "0"
               then doNUnitRetry2 (depth + 1) 
-              else reraise()
-            else reraise()
+              else 
+                printfn "Actual failures %A" failcount
+                reraise()
+            else 
+              printfn "Report not found"
+              reraise()
         doNUnitRetry2 0
 
        nUnitRetry2 ())
@@ -3917,7 +3929,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "1"; "0" ])
 
     printfn "optest failing test fast ------------------------------------------------"
 
@@ -3945,7 +3957,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0"; "0"; "0"; "0"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
 
     printfn "optest line cover ------------------------------------------------"
     let p2 =
