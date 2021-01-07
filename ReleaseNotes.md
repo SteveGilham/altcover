@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.3.806 (Genbu series release 11a)
+* [BUGFIX] Handle concurrent instrumentation in the case `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]` 
+
 # 7.3.805 (Genbu series release 11)
 * Extra detection and removal of compiler generated branches in C# `async`/`await` constructs
 * Revise the whole `dotnet test` integration
