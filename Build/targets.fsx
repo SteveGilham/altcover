@@ -856,18 +856,18 @@ _Target "UncoveredUnitTest" ignore
 
 let NUnitRetry f spec =
   let rec doNUnitRetry depth f spec =
-    try 
+    try
       if File.Exists spec
       then File.Delete spec
       NUnit3.run (f >> (fun p -> {p with ResultSpecs = [ spec ]}))
     with x ->
       printfn "%A" x
       if depth > 2
-      then 
+      then
         printfn "Recursion limited"
         reraise ()
-      if File.Exists spec 
-      then 
+      if File.Exists spec
+      then
         let xml =
           "./Build/NuGet.csproj"
           |> Path.getFullName
@@ -877,10 +877,10 @@ let NUnitRetry f spec =
         let failcount = summary.Attribute(XName.Get "failed").Value
         if failcount = "0"
         then doNUnitRetry (depth + 1) f spec
-        else 
+        else
           printfn "Actual failures found %A" failcount
           reraise()
-      else 
+      else
         printfn "Report not found"
         reraise()
   doNUnitRetry 0 f spec
@@ -957,7 +957,7 @@ _Target "UnitTestDotNet" (fun _ ->
 _Target "BuildForCoverlet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-  
+
   [
     Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
     Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
@@ -973,7 +973,7 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = 
+    let l =
       [
         Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
@@ -1179,9 +1179,6 @@ _Target "UnitTestWithAltCover" (fun _ ->
              WorkingDir = "." }) "./_Reports/UnitTestWithAltCoverReport.xml"
   with x ->
     printfn "%A" x
-    "./_Reports/UnitTestWithAltCoverReport.xml"
-    |> File.ReadAllText
-    |> printfn "%s"
     reraise()
 
   printfn "Instrument the net20 Recorder tests"
@@ -1220,7 +1217,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCover" }) [ altReport; RecorderReport ]
 
-  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml" 
+  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
   |> List.map fst
   |> printfn "%A uncovered lines")
 
@@ -1338,21 +1335,20 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                            ToolType = frameworkAltcover
                            WorkingDirectory = "." }
 
-
        let nUnitRetry2 () =
         let rec doNUnitRetry2 depth  =
-          try 
+          try
             if File.Exists nunitReport
             then File.Delete nunitReport
             AltCoverCommand.run command
           with x ->
             printfn "%A" x
             if depth > 2
-            then 
+            then
               printfn "Recursion limited"
               reraise ()
-            if File.Exists nunitReport 
-            then 
+            if File.Exists nunitReport
+            then
               let xml =
                 "./Build/NuGet.csproj"
                 |> Path.getFullName
@@ -1361,11 +1357,11 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                             |> Seq.head
               let failcount = summary.Attribute(XName.Get "failed").Value
               if failcount  = "0"
-              then doNUnitRetry2 (depth + 1) 
-              else 
+              then doNUnitRetry2 (depth + 1)
+              else
                 printfn "Actual failures %A" failcount
                 reraise()
-            else 
+            else
               printfn "Report not found"
               reraise()
         doNUnitRetry2 0
@@ -1591,9 +1587,9 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                      <| Primitive.CollectOptions.Create()
 
           if proj.Contains("Recorder")
-          then doMSBuild 
-                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal}) 
-                  MSBuildPath newproj  
+          then doMSBuild
+                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal})
+                  MSBuildPath newproj
 
           DotNet.test (fun to' ->
             { to'.WithCommon(withWorkingDirectoryVM testdir)

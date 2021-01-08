@@ -230,8 +230,7 @@ Kovra Raporto: {0}
     <value>Laŭvola, multobla: Rilatado aŭ tempoj de vizitoj en tikoj aŭ nomitaj metodvokoj kondukantaj al la vizitoj.
     Ununura cifero 0-7 donas la nombron de dekuma lokoj de sekundoj por raporti; ĉio alia kompatas la sistemon horloĝon disponebla per DateTime.UtcNow
     Kordo en krampoj [] estas interpretita kiel atributo tipo nomon (la malantaŭa parto "Attribute" estas nedeviga), do [Test] aŭ [TestAttribute] kongruas; se la nomo enhavas unu aŭ pli ".", tiam ĝi estos egalita kontraŭ la plena nomo de la atributa tipo.
-    Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).
-   Nekongrua kun --single</value>
+    Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).</value>
   </data>
   <data name="DirectoryNotFound" xml:space="preserve">
     <value>{0} : Dosierujo {1} ne trovita</value>
@@ -358,8 +357,7 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
     <value>Komandlinioj opcioj {0} kaj {1} estas reciproke ekskluzivaj.</value>
   </data>
   <data name="single" xml:space="preserve">
-    <value>Laŭvola: nur registru la unuan sukceson en ajna loko.
-    Nekongrua kun --callContext.</value>
+    <value>Laŭvola: registru la unuan trafon nur en iu ajn loko, aŭ unue trafu por ĉiu kunteksto se --callContext funkcias.</value>
   </data>
   <data name="linecover" xml:space="preserve">
     <value>Laŭvola: Ne registru branĉan kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.

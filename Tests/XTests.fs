@@ -397,7 +397,7 @@ module AltCoverXTests =
                                               CallContext = [| "0" |] }
 
     let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
-    test <@ scan.Length = 2 @>
+    test <@ scan.Length = 1 @>
 
   [<Test>]
   let TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency() =
@@ -412,7 +412,7 @@ module AltCoverXTests =
       |> AltCover.PrepareOptions.TypeSafe
 
     let scan = subject.Validate()
-    test <@ scan.Length = 2 @>
+    test <@ scan.Length = 1 @>
     let rendered = subject |> Args.prepare
     test
       <@ rendered = [ "-c"; "0"; "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--single";

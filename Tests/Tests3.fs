@@ -1412,25 +1412,6 @@ module AltCoverTests3 =
         CoverageParameters.trackingNames.Clear()
 
     [<Test>]
-    let ParsingAfterSingleGivesFailure() =
-      Main.init()
-      try
-        CoverageParameters.single <- true
-        CoverageParameters.theInterval <- None
-        CoverageParameters.trackingNames.Clear()
-        let options = Main.I.declareOptions()
-        let input = [| "-c"; "3"; "/c"; "x"; "--callContext"; "Hello, World!" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        CoverageParameters.single <- false
-        CoverageParameters.theInterval <- None
-        CoverageParameters.trackingNames.Clear()
-
-    [<Test>]
     let ParsingNCoverFormatGivesNCover() =
       Main.init()
       try
@@ -1575,23 +1556,6 @@ module AltCoverTests3 =
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--single : specify this only once")
       finally
         CoverageParameters.single <- false
-
-    [<Test>]
-    let ParsingSingleAfterContextGivesFailure() =
-      Main.init()
-      try
-        CoverageParameters.single <- false
-        CoverageParameters.theInterval <- Some 0
-        let options = Main.I.declareOptions()
-        let input = [| "--single" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        CoverageParameters.single <- false
-        CoverageParameters.theInterval <- None
 
     [<Test>]
     let ParsingLineCoverGivesLineCover() =
