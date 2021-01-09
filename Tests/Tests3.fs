@@ -2529,7 +2529,7 @@ module AltCoverTests3 =
         255)
         let result = subject.Execute()
         Assert.That(result, Is.False)
-        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ])
+        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--save"; "--defer" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2565,7 +2565,7 @@ module AltCoverTests3 =
           255)
           let result = subject.Execute()
           Assert.That(result, Is.False)
-          Assert.That(args, Is.EquivalentTo ([ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ] @ q ), level)
+          Assert.That(args, Is.EquivalentTo ([ "--reportFormat"; "OpenCover"; "--save"; "--defer" ] @ q ), level)
         )
       finally
         Main.effectiveMain <- save
@@ -2594,7 +2594,7 @@ module AltCoverTests3 =
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2619,7 +2619,7 @@ module AltCoverTests3 =
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
 
         let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
         let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)

@@ -1179,9 +1179,6 @@ _Target "UnitTestWithAltCover" (fun _ ->
              WorkingDir = "." }) "./_Reports/UnitTestWithAltCoverReport.xml"
   with x ->
     printfn "%A" x
-    "./_Reports/UnitTestWithAltCoverReport.xml"
-    |> File.ReadAllText
-    |> printfn "%s"
     reraise()
 
   printfn "Instrument the net20 Recorder tests"
