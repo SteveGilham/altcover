@@ -4004,7 +4004,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     try
       DotNet.test (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFastInPlace")).WithAltCoverOptions
-          pf1 cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
+          pf1a cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
     Assert.That("./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
@@ -4469,6 +4469,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
              InputDirectories = [ o ]
              CallContext = [ "0"; "[Fact]" ]
              AssemblyFilter = [| "xunit" |]
+             InPlace = true
              Save = false })
       |> AltCoverCommand.Prepare
     { AltCoverCommand.Options.Create prep with WorkingDirectory = working } |> AltCoverCommand.run
