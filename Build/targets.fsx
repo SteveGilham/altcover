@@ -856,18 +856,18 @@ _Target "UncoveredUnitTest" ignore
 
 let NUnitRetry f spec =
   let rec doNUnitRetry depth f spec =
-    try 
+    try
       if File.Exists spec
       then File.Delete spec
       NUnit3.run (f >> (fun p -> {p with ResultSpecs = [ spec ]}))
     with x ->
       printfn "%A" x
       if depth > 2
-      then 
+      then
         printfn "Recursion limited"
         reraise ()
-      if File.Exists spec 
-      then 
+      if File.Exists spec
+      then
         let xml =
           "./Build/NuGet.csproj"
           |> Path.getFullName
@@ -877,10 +877,10 @@ let NUnitRetry f spec =
         let failcount = summary.Attribute(XName.Get "failed").Value
         if failcount = "0"
         then doNUnitRetry (depth + 1) f spec
-        else 
+        else
           printfn "Actual failures found %A" failcount
           reraise()
-      else 
+      else
         printfn "Report not found"
         reraise()
   doNUnitRetry 0 f spec
@@ -957,7 +957,7 @@ _Target "UnitTestDotNet" (fun _ ->
 _Target "BuildForCoverlet" (fun _ ->
   msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
   msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-  
+
   [
     Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
     Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
@@ -973,7 +973,7 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = 
+    let l =
       [
         Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
@@ -1220,7 +1220,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCover" }) [ altReport; RecorderReport ]
 
-  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml" 
+  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
   |> List.map fst
   |> printfn "%A uncovered lines")
 
@@ -1338,21 +1338,20 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                            ToolType = frameworkAltcover
                            WorkingDirectory = "." }
 
-
        let nUnitRetry2 () =
         let rec doNUnitRetry2 depth  =
-          try 
+          try
             if File.Exists nunitReport
             then File.Delete nunitReport
             AltCoverCommand.run command
           with x ->
             printfn "%A" x
             if depth > 2
-            then 
+            then
               printfn "Recursion limited"
               reraise ()
-            if File.Exists nunitReport 
-            then 
+            if File.Exists nunitReport
+            then
               let xml =
                 "./Build/NuGet.csproj"
                 |> Path.getFullName
@@ -1361,11 +1360,11 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                             |> Seq.head
               let failcount = summary.Attribute(XName.Get "failed").Value
               if failcount  = "0"
-              then doNUnitRetry2 (depth + 1) 
-              else 
+              then doNUnitRetry2 (depth + 1)
+              else
                 printfn "Actual failures %A" failcount
                 reraise()
-            else 
+            else
               printfn "Report not found"
               reraise()
         doNUnitRetry2 0
@@ -1591,9 +1590,9 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                      <| Primitive.CollectOptions.Create()
 
           if proj.Contains("Recorder")
-          then doMSBuild 
-                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal}) 
-                  MSBuildPath newproj  
+          then doMSBuild
+                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal})
+                  MSBuildPath newproj
 
           DotNet.test (fun to' ->
             { to'.WithCommon(withWorkingDirectoryVM testdir)
@@ -3833,6 +3832,10 @@ _Target "DotnetTestIntegration" (fun _ ->
      ("./_DotnetTestFailInstrumentation", "Sample13", "fsproj")
      ("./_DotnetTestLineCover", "Sample10", "csproj")
      ("./_DotnetTestBranchCover", "Sample10", "csproj")
+     ("./_DotnetTestInPlace", "Sample4", "fsproj")
+     ("./_DotnetTestFailInPlace", "Sample13", "fsproj")
+     ("./_DotnetTestFailFastInPlace", "Sample13", "fsproj")
+     ("./_DotnetTestFailInstrumentationInPlace", "Sample13", "fsproj")
     ]
     |> List.iter (fun (d, p, t) ->  Directory.ensure d
                                     Shell.cleanDir d
@@ -3867,13 +3870,16 @@ _Target "DotnetTestIntegration" (fun _ ->
     let before = Actions.ticksNow()
     let p0 = Primitive.PrepareOptions.Create()
     let c0 = Primitive.CollectOptions.Create()
-
+    let asInPlace (p:Primitive.PrepareOptions) = { p with InPlace = true }
+    let p0a = asInPlace p0
     let p1 =
       { p0 with
           CallContext = [ "[Fact]"; "0" ]
           AssemblyFilter = [| "xunit" |] }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
+    let pp1a = AltCover.PrepareOptions.Primitive (asInPlace p1)
+
     let cc0 = AltCover.CollectOptions.Primitive { c0 with SummaryFormat = "+B" }
     DotNet.test (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest").WithAltCoverGetVersion()
@@ -3883,14 +3889,28 @@ _Target "DotnetTestIntegration" (fun _ ->
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
     Actions.CheckSample4 before x
 
+    DotNet.test (fun to' ->
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestInPlace").WithAltCoverGetVersion()
+          .WithAltCoverImportModule()).WithAltCoverOptions pp1a cc0 ForceTrue
+      |> testWithCLIArguments) "dotnettest.fsproj"
+
+    let x = Path.getFullName "./_DotnetTestInPlace/coverage.netcoreapp2.1.xml"
+    Actions.CheckSample4 before x
+
     printfn "optest failing instrumentation ------------------------------------------------"
 
     let xx0 = Path.getFullName "./_Reports/nonesuch.xml"
+    let xx0a = Path.getFullName "./_Reports/nonesuchInPlace.xml"
 
     let pf0 =
       { p0 with AssemblyFilter = [| "NUnit" |]
                 StrongNameKey = "./_Reports/nonesuch.junk"
                 XmlReport = xx0
+      } |> AltCover.PrepareOptions.Primitive
+    let pf0a =
+      { p0a with AssemblyFilter = [| "NUnit" |]
+                 StrongNameKey = "./_Reports/nonesuch.junk"
+                 XmlReport = xx0a
       } |> AltCover.PrepareOptions.Primitive
 
     try
@@ -3903,11 +3923,24 @@ _Target "DotnetTestIntegration" (fun _ ->
     Assert.That("./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists |> not,
                                  "./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present")
 
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInstrumentationInPlace")).WithAltCoverOptions
+          pf0a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That (xx0a |> File.Exists |> not,  xx0a + " should not be present")
+    Assert.That("./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists |> not,
+                                 "./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present")
+
     printfn "optest failing test ------------------------------------------------"
 
     let xx = Path.getFullName "./_DotnetTestFail/coverage.xml"
+    let xxa = Path.getFullName "./_DotnetTestFailInPlace/coverage.xml"
     let pf1 =
       { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareOptions.Primitive
+    let pf1a =
+      { p0a with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareOptions.Primitive
 
     try
       DotNet.test (fun to' ->
@@ -3919,6 +3952,15 @@ _Target "DotnetTestIntegration" (fun _ ->
                                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
     // Shell.rm("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInPlace")).WithAltCoverOptions
+          pf1a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFailinPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                               "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
@@ -3929,13 +3971,28 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "1"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "0"; "1"; "1"; "1"; "1"; "0" ])
+
+    do use coverageFile =
+         new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; "1"; "1"; "1"; "0" ])
 
     printfn "optest failing test fast ------------------------------------------------"
 
     let xx = Path.getFullName "./_DotnetTestFailFast/coverage.xml"
+    let xxa = Path.getFullName "./_DotnetTestFailFastInPlace/coverage.xml"
     let pf1 =
       { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareOptions.Primitive
+    let pf1a =
+      { p0 with AssemblyFilter = [| "NUnit" |] } |> asInPlace |> AltCover.PrepareOptions.Primitive
 
     try
       DotNet.test (fun to' ->
@@ -3945,6 +4002,16 @@ _Target "DotnetTestIntegration" (fun _ ->
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
     Assert.That("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
                            "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFastInPlace")).WithAltCoverOptions
+          pf1 cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                           "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
     // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
@@ -3957,7 +4024,19 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
+       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
+
+    do use coverageFile =
+         new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
 
     printfn "optest line cover ------------------------------------------------"
     let p2 =
