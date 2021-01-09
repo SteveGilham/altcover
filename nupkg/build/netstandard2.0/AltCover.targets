@@ -6,6 +6,7 @@
     <AltCoverEngine Condition="Exists($(AltCoverNetStdEngine))">$(AltCoverNetStdEngine)</AltCoverEngine>
     <AltCoverEngine Condition="Exists($(AltCoverNetCoreEngine))">$(AltCoverNetCoreEngine)</AltCoverEngine>
     <AltCoverInstrumentedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Instrumented'))</AltCoverInstrumentedDirectory>
+    <AltCoverSavedDirectory>$([System.IO.Path]::Combine($(TargetDir), '__Saved'))</AltCoverSavedDirectory>
   </PropertyGroup>
 
   <UsingTask TaskName="AltCover.Prepare"
@@ -22,22 +23,35 @@
         AssemblyFile="$(AltCoverEngine)" />
 
   <PropertyGroup>
+    <AltCoverInPlace Condition="'$(AltCoverInPlace)' == ''">false</AltCoverInPlace>
     <AltCoverVerbosity Condition="'$(AltCoverVerbosity)' == ''">Info</AltCoverVerbosity>
+    <AltCoverPreFlightCheck Condition="Exists('$(AltCoverSavedDirectory)_$(ProjectName)')  AND '$(AltCoverInPlace)' != 'false'">Fail</AltCoverPreFlightCheck>
+    <AltCoverPreFlightCheck Condition="!Exists('$(AltCoverSavedDirectory)_$(ProjectName)') OR  '$(AltCoverInPlace)' == 'false'">OK</AltCoverPreFlightCheck>    
   </PropertyGroup>
 
-  <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
+  <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">
     <Message Condition="Exists('$(AltCoverInstrumentedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' == 'true'"
              Importance="High"
              Text="Directory '$(AltCoverInstrumentedDirectory)_$(ProjectName)' exists from a previous run.  Forcibly deleting it" />
     <RemoveDir Directories="$(AltCoverInstrumentedDirectory)_$(ProjectName)"
                Condition="Exists('$(AltCoverInstrumentedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' == 'true'" />
   </Target>
-
+  
+  <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' != 'false'">
+    <Error Condition="Exists('$(AltCoverSavedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' != 'true'"
+           Text="Directory '$(AltCoverSavedDirectory)_$(ProjectName)' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
+    <Warning Condition="Exists('$(AltCoverSavedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' == 'true'"
+             Text="Directory '$(AltCoverSavedDirectory)_$(ProjectName)' exists from a previous run.  Forcibly deleting it" />
+    <RemoveDir Directories="$(AltCoverSavedDirectory)_$(ProjectName)"
+               Condition="Exists('$(AltCoverSavedDirectory)_$(ProjectName)') AND '$(AltCoverForce)' == 'true'" />
+  </Target>
+  
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
       <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
       <AltCoverInputDirectory Include="$(TargetDir)" />
-      <AltCoverOutputDirectory Include="$(AltCoverInstrumentedDirectory)_$(ProjectName)" />
+      <AltCoverOutputDirectory Condition="'$(AltCoverInPlace)' == 'false'" Include="$(AltCoverInstrumentedDirectory)_$(ProjectName)" />
+      <AltCoverOutputDirectory Condition="'$(AltCoverInPlace)' != 'false'" Include="$(AltCoverSavedDirectory)_$(ProjectName)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -63,7 +77,7 @@
     <AltCover.Prepare
       InputDirectories="@(AltCoverInputDirectory)"
       OutputDirectories="@(AltCoverOutputDirectory)"
-      InPlace="false"
+      InPlace="$(AltCoverInPlace)"
       SymbolDirectories="$(AltCoverSymbolDirectories.Split('|'))"
       Dependencies="$(AltCoverDependencyList.Split('|'))"
       Keys="$(AltCoverKeys.Split('|'))"
@@ -110,8 +124,8 @@
   <!-- As per the second part Microsoft.TestPlatform.targets v2.1.809, but with OnError clause -->
   <Target Name="AltCoverVSTestCore">
     <PropertyGroup>
-      <TestTargetPath Condition="'$(AltCover)' != 'true'">$(TargetPath)</TestTargetPath>
-      <TestTargetPath Condition="'$(AltCover)' == 'true'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</TestTargetPath>
+      <TestTargetPath Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetPath)</TestTargetPath>
+      <TestTargetPath Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</TestTargetPath>
     </PropertyGroup>
 
     <AltCover.RunSettings
@@ -148,10 +162,12 @@
     <PropertyGroup>
       <AltCoverColour Condition="'$(AltCoverShowSummary)' != ''">$(AltCoverShowSummary)</AltCoverColour>
       <AltCoverColour Condition="'$(AltCoverShowSummary)' == ''">Foreground</AltCoverColour>
-    </PropertyGroup>
+      <AltCoverRecorderDirectory Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetDir)</AltCoverRecorderDirectory>
+      <AltCoverRecorderDirectory Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$(AltCoverInstrumentedDirectory)_$(ProjectName)</AltCoverRecorderDirectory>
+  </PropertyGroup>
 
     <AltCover.Collect
-      RecorderDirectory="$(AltCoverInstrumentedDirectory)_$(ProjectName)"
+      RecorderDirectory="$(AltCoverRecorderDirectory)"
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
       Cobertura="$(AltCoverCobertura)"
@@ -163,8 +179,15 @@
                    Condition="$(AltCoverShowSummary) != ''"
                    Verbosity="$(AltCoverVerbosity)" />
     <ItemGroup>
+      <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
+      <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
+      <AltCoverSavedFiles Include="$(AltCoverSavedDirectory))_$(ProjectName)/*.*" />
       <AltCoverRunSettings Include="$(TEMP)/*.altcover.runsettings" />
     </ItemGroup>
     <Delete Files="@(AltCoverRunSettings)" />
+    <Delete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCoverInPlace)' != 'false'"/>
+    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCoverInPlace)' != 'false'"/>
+    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCoverInPlace)' != 'false'"/>
+    <RemoveDir Directories="$(AltCoverSavedDirectory)" Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)') AND '$(AltCoverInPlace)' != 'false'"/>
   </Target>
 </Project>
