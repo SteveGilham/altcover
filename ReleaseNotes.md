@@ -2,6 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.3.8xx (Genbu series release 12)
+* Add command line option `/p:AltCoverInPlace=true|false` (default false)
+* Wire up "InPlace" to the Fake `DotNet.test` driver for the above (with default false throughout)
+
 # 7.3.806 (Genbu series release 11a)
 * [BUGFIX] Handle concurrent instrumentation in the case `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]` 
 
