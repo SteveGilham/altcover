@@ -3949,15 +3949,6 @@ _Target "DotnetTestIntegration" (fun _ ->
                                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
     // Shell.rm("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
-    try
-      DotNet.test (fun to' ->
-        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInPlace")).WithAltCoverOptions
-          pf1a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
-      Assert.Fail("Build exception should be raised")
-    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    Assert.That("./_DotnetTestFailinPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
-                               "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
-
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
@@ -3970,6 +3961,15 @@ _Target "DotnetTestIntegration" (fun _ ->
 
        Assert.That(String.Join(";", recorded), Is.EqualTo
           "1;1;1;1;1;1;1;1;0;1;1;1;0", xx )
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInPlace")).WithAltCoverOptions
+          pf1a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFailinPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                               "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -4003,16 +4003,6 @@ _Target "DotnetTestIntegration" (fun _ ->
                 "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
     // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
-    try
-      DotNet.test (fun to' ->
-        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFastInPlace")).WithAltCoverOptions
-          pf1a cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
-      Assert.Fail("Build exception should be raised")
-    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    Assert.That("./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
-                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
-    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
-
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
@@ -4025,6 +4015,16 @@ _Target "DotnetTestIntegration" (fun _ ->
 
        Assert.That(String.Join(";", recorded), Is.EqualTo
           "0;0;0;0;0;0;0;0;0;0;0;0;0", xx )
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFastInPlace")).WithAltCoverOptions
+          pf1a cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
