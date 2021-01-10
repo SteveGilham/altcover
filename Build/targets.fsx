@@ -3968,7 +3968,7 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf1a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    let filepath = Path.GetFullPath "./_DotnetTestFailinPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+    let filepath = Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
     Assert.That(filepath |> File.Exists,
                 filepath + " should exist")
 
