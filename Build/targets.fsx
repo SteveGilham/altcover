@@ -3968,7 +3968,8 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "0"; "1"; "1"; "1"; "1"; "0" ])
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "1;1;1;1;1;1;1;1;0;1;1;0", xx )
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3980,7 +3981,8 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; "1"; "1"; "1"; "0" ])
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "1;1;1;1;1;1;1;0;1;1;1;0", xxa )
 
     printfn "optest failing test fast ------------------------------------------------"
 
@@ -4021,7 +4023,8 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "0;0;0;0;0;0;0;0;0;0;0;0", xx )
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -4033,7 +4036,8 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0";"0"; "0"; "0";"0"; "0"; "0"; "0"; "0"; "0" ])
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "0;0;0;0;0;0;0;0;0;0;0;0", xxa )
 
     printfn "optest line cover ------------------------------------------------"
     let p2 =
