@@ -3969,7 +3969,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.toList
 
        Assert.That(String.Join(";", recorded), Is.EqualTo
-          "1;1;1;1;1;1;1;1;0;1;1;0", xx )
+          "1;1;1;1;1;1;1;1;0;1;1;1;0", xx )
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3982,7 +3982,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.toList
 
        Assert.That(String.Join(";", recorded), Is.EqualTo
-          "1;1;1;1;1;1;1;0;1;1;1;0", xxa )
+          "1;1;1;1;1;1;1;0;1;1;1;1;0", xxa )
 
     printfn "optest failing test fast ------------------------------------------------"
 
@@ -4000,7 +4000,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
     Assert.That("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
-                           "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+                "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
     // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     try
@@ -4010,7 +4010,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
     Assert.That("./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
-                           "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
     // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
@@ -4024,7 +4024,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.toList
 
        Assert.That(String.Join(";", recorded), Is.EqualTo
-          "0;0;0;0;0;0;0;0;0;0;0;0", xx )
+          "0;0;0;0;0;0;0;0;0;0;0;0;0", xx )
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -4037,7 +4037,7 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.toList
 
        Assert.That(String.Join(";", recorded), Is.EqualTo
-          "0;0;0;0;0;0;0;0;0;0;0;0", xxa )
+          "0;0;0;0;0;0;0;0;0;0;0;0;0", xxa )
 
     printfn "optest line cover ------------------------------------------------"
     let p2 =

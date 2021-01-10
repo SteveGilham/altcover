@@ -20,4 +20,6 @@ type SimpleTest() =
     System.IO.File.WriteAllText(filepath, filepath)
 
   [<Test>]
-  member this.Test1() = Assert.Fail("This test should fail -- " + filepath)
+  member this.Test1() =
+    Assert.That(filepath |> File.Exists, Is.True, filepath + " should exist")
+    Assert.Fail("This test should fail -- " + filepath)

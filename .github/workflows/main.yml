@@ -54,4 +54,7 @@ jobs:
       if: failure()
       with:
           name: reports.linux
-          path: _Reports
+          path: 
+              _Reports
+              ./**/AltCover*.log
+              ./**/dotnettest.*.txt
