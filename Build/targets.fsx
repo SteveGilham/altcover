@@ -3968,8 +3968,9 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf1a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    Assert.That("./_DotnetTestFailinPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
-                               "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+    let filepath = Path.GetFullPath "./_DotnetTestFailinPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+    Assert.That(filepath |> File.Exists,
+                filepath + " should exist")
 
     do use coverageFile =
          new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
