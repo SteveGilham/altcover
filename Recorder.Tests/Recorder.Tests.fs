@@ -78,11 +78,21 @@ module AltCoverTests =
     lock Adapter.Lock (fun () ->
       try
         Adapter.SamplesClear()
-        Assert.True( Adapter.AddSample("module", 23) )
-        Assert.True( Adapter.AddSample("module", 24) )
-        Assert.True( Adapter.AddSample("newmodule", 23) )
-        Assert.True( Adapter.AddSample("module", 23) |> not )
-        Assert.True( Adapter.AddSampleUnconditional("module", 23) )
+        Assert.True( Adapter.AddSample("module", 23, Null) )
+        Assert.True( Adapter.AddSample("module", 24, Null) )
+        Assert.True( Adapter.AddSample("newmodule", 23, Null) )
+        Assert.True( Adapter.AddSample("module", 23, Null) |> not )
+        Assert.True( Adapter.AddSampleUnconditional("module", 23, Null) )
+        Assert.True( Adapter.AddSample("module", 23, Call 1) )
+        Assert.True( Adapter.AddSample("module", 23, Time 0L) )
+        Assert.True( Adapter.AddSample("module", 24, Both {Call = 1; Time = 0L} ) )
+        Assert.True( Adapter.AddSample("module", 25, Both {Call = 1; Time = 0L} ) )
+        Assert.True( Adapter.AddSample("module", 25, Call 1) |> not )
+        Assert.True( Adapter.AddSample("module", 25, Call 1) |> not )
+        Assert.True( Adapter.AddSample("module", 25, Null) |> not )
+        Assert.Throws<InvalidDataException>(fun() ->
+          Adapter.AddSample("module", 23, Table null) |> ignore
+        ) |> ignore
       finally
         Adapter.SamplesClear())
     GetMyMethodName "<="

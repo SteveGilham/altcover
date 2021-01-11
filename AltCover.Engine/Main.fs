@@ -189,11 +189,6 @@ module internal Main =
         (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
         ("c|callContext=",
          (fun x ->
-           if CoverageParameters.single then
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible",
-                  "--single", "--callContext") :: CommandLine.error
-           else
              let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.theInterval) x
              if ok then
                match selection with
@@ -219,10 +214,6 @@ module internal Main =
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--single")
                :: CommandLine.error
-           else if Option.isSome CoverageParameters.theInterval || CoverageParameters.trackingNames.Any() then
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible",
-                  "--single", "--callContext") :: CommandLine.error
            else
              CoverageParameters.single <- true))
         ("linecover",

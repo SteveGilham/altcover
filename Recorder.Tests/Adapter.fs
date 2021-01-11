@@ -64,10 +64,10 @@ module Adapter =
   //let internal VisitImpl (a, b, c) =
   //  Instance.I.visitImpl a b c
 
-  let AddSample (moduleId, hitPointId) =
-    Instance.I.takeSample Sampling.Single moduleId hitPointId
-  let AddSampleUnconditional (moduleId, hitPointId) =
-    Instance.I.takeSample Sampling.All moduleId hitPointId
+  let internal AddSample (moduleId, hitPointId, context) =
+    Instance.I.takeSample Sampling.Single moduleId hitPointId  context
+  let internal AddSampleUnconditional (moduleId, hitPointId, context) =
+    Instance.I.takeSample Sampling.All moduleId hitPointId context
 
   let internal NewBoth (time, call) =
     Both

@@ -372,7 +372,6 @@ type InvokeAltCoverCommand() =
   /// <para type="description">A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow</para>
   /// <para type="description">A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.</para>
   /// <para type="description">Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</para>
-  /// <para type="description">Incompatible with -Single</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -419,7 +418,7 @@ type InvokeAltCoverCommand() =
   member val MethodPoint : SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">only record the first hit at any location.  Incompatible with `-CallContext`.</para>
+  /// <para type="description">only record the first hit at any location (or first for that context if `-CallContext` is operating).</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
