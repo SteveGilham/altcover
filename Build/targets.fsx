@@ -3863,6 +3863,10 @@ _Target "DotnetTestIntegration" (fun _ ->
                                     fsproj.Save (d + "/dotnettest." + t)
                                     Shell.copy d !!("./" + p + "/*." + t.Substring(0, 2))
                                     Shell.copy d !!("./" + p + "/*.json")
+
+                                    let data = "./" + p + "/Data"
+                                    if Directory.Exists data
+                                    then Shell.copyDir (d @@ "Data") data File.Exists
     )
 
     printfn "Simple positive case ------------------------------------------------"
@@ -4050,7 +4054,6 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     let p2a = asInPlace p2
 
-    let pp2 = AltCover.PrepareOptions.Primitive p2
     let pp2a = AltCover.PrepareOptions.Primitive p2a
 
     DotNet.test (fun to' ->

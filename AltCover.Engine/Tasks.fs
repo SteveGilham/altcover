@@ -389,3 +389,39 @@ type RunSettings() =
            |> sprintf "Settings After: %s"
            |> signal
       File.Delete(tempFile)
+
+type ContingentCopy() =
+  inherit Task(null)
+
+  member val RelativeDir = String.Empty with get, set
+  member val CopyToOutputDirectory = String.Empty with get, set
+
+  [<Required>]
+  member val FileName = String.Empty with get, set
+
+  [<Required>]
+  member val BuildOutputDirectory = String.Empty with get, set
+
+  [<Required>]
+  member val InstrumentDirectory = String.Empty with get, set
+
+  override self.Execute() =
+    //base.Log.LogMessage(MessageImportance.High, sprintf "Relative dir %A" self.RelativeDir)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "CopyToOutputDirectory %A" self.CopyToOutputDirectory)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "FileName %A" self.FileName)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "BuildOutputDirectory %A" self.BuildOutputDirectory)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
+
+    if (self.CopyToOutputDirectory = "Always" || self.CopyToOutputDirectory = "PreserveNewest") &&
+        (self.RelativeDir |> Path.IsPathRooted |> not) && (self.RelativeDir |> String.IsNullOrWhiteSpace |> not)
+    then
+      let toDir = Path.Combine(self.InstrumentDirectory, self.RelativeDir)
+      let filename = self.FileName |> Path.GetFileName
+      let toFile = Path.Combine(toDir, filename)
+      if toDir |> Directory.Exists |> not
+      then toDir |> Directory.CreateDirectory |> ignore
+      let from = Path.Combine(self.BuildOutputDirectory, self.RelativeDir, filename)
+      //base.Log.LogMessage(MessageImportance.High, sprintf "copy %A => %A" from toFile)
+      if File.Exists from
+      then File.Copy(from, toFile, true)
+    true
