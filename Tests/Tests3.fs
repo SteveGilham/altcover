@@ -2921,4 +2921,40 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty,
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
+
+    [<Test>]
+    let ContingentCopyTest() =
+      Main.init()
+      let subject = ContingentCopy()
+      let unique = Guid.NewGuid().ToString()
+
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let relative = where |> Path.GetFileName
+
+      subject.BuildOutputDirectory <- where |> Path.GetDirectoryName
+      subject.InstrumentDirectory <- Path.Combine(where, unique)
+      subject.FileName <- "Sample2.pdb"
+
+      let from = Path.Combine(subject.BuildOutputDirectory, relative, subject.FileName)
+      test <@ from |> File.Exists @>
+
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- relative
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- String.Empty
+      subject.CopyToOutputDirectory <- "Always"
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- relative
+      test <@ subject.Execute() @>
+      let target = Path.Combine(subject.InstrumentDirectory, relative, subject.FileName)
+      test <@ target |> File.Exists @>
+
   // Recorder.fs => Recorder.Tests

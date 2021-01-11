@@ -3648,6 +3648,7 @@ _Target "ApiUse" (fun _ ->
     fsproj.Save "./_ApiUse/_DotnetTest/dotnettest.fsproj"
     Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.fs")
     Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.json")
+    Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Sample4/Data" File.Exists
 
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -4483,6 +4484,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.fs")
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.json")
+    Shell.copyDir "./_DotnetGlobalTest/Data" "./Sample4/Data" File.Exists
 
     Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
       "tool"
