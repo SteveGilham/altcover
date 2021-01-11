@@ -9,7 +9,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
   * Wire up "InPlace" to the Fake `DotNet.test` driver for the above
   * **NB** `/p:AltCoverInPlace=true` will not play well with the concurrent instrument-and-test behaviour of `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]`
   * If `/p:AltCoverInPlace` is not `true` then copy all files  in the project included as `<None Include=./[some subdirectory]/..." with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt rthe intrumented files
-
+* Allow `--callContext` and `--single` together, which will log at most one visit _per context_ per location, not just one visit per location
 
 # 7.3.806 (Genbu series release 11a)
 * [BUGFIX] Handle concurrent instrumentation in the case `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]` 
