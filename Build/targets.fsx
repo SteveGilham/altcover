@@ -3827,12 +3827,14 @@ _Target "DotnetTestIntegration" (fun _ ->
      ("./_DotnetTestFail", "Sample13", "fsproj")
      ("./_DotnetTestFailFast", "Sample13", "fsproj")
      ("./_DotnetTestFailInstrumentation", "Sample13", "fsproj")
-     ("./_DotnetTestLineCover", "Sample10", "csproj")
-     ("./_DotnetTestBranchCover", "Sample10", "csproj")
+     ("./_DotnetTestLineCoverInPlace", "Sample10", "csproj")
+     ("./_DotnetTestBranchCoverInPlace", "Sample10", "csproj")
      ("./_DotnetTestInPlace", "Sample4", "fsproj")
      ("./_DotnetTestFailInPlace", "Sample13", "fsproj")
      ("./_DotnetTestFailFastInPlace", "Sample13", "fsproj")
      ("./_DotnetTestFailInstrumentationInPlace", "Sample13", "fsproj")
+     ("./_DotnetTestLineCover", "Sample10", "csproj")
+     ("./_DotnetTestBranchCover", "Sample10", "csproj")
     ]
     |> List.iter (fun (d, p, t) ->  Directory.ensure d
                                     Shell.cleanDir d
@@ -4046,6 +4048,15 @@ _Target "DotnetTestIntegration" (fun _ ->
           LineCover = true
           AssemblyFilter = [| "xunit" |] }
 
+    let p2a = asInPlace p2
+
+    let pp2 = AltCover.PrepareOptions.Primitive p2
+    let pp2a = AltCover.PrepareOptions.Primitive p2a
+
+    DotNet.test (fun to' ->
+      to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCoverInPlace").WithAltCoverOptions
+        pp2a cc0 ForceTrue |> testWithCLIArguments) ""
+
     let pp2 = AltCover.PrepareOptions.Primitive p2
     DotNet.test (fun to' ->
       to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithAltCoverOptions
@@ -4064,14 +4075,46 @@ _Target "DotnetTestIntegration" (fun _ ->
          (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
           Is.EqualTo 0)
 
+    let xa = Path.getFullName "./_DotnetTestLineCoverInPlace/coverage.xml"
+
+    do use coverageFile =
+         new FileStream(xa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length,
+          Is.EqualTo 13)
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
+          Is.EqualTo 0)
+
     printfn "optest branch cover ------------------------------------------------"
 
     let p3 =
       { p0 with
           BranchCover = true
           AssemblyFilter = [| "xunit" |] }
+    let p3a = asInPlace p3
 
     let pp3 = AltCover.PrepareOptions.Primitive p3
+    let pp3a = AltCover.PrepareOptions.Primitive p3a
+
+    DotNet.test (fun to' ->
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCoverInPlace").WithAltCoverOptions
+        pp3a cc0 ForceTrue) |> testWithCLIArguments) ""
+
+    let x = Path.getFullName "./_DotnetTestBranchCoverInPlace/coverage.xml"
+
+    do use coverageFile =
+         new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length,
+          Is.EqualTo 0)
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
+          Is.EqualTo 2)
 
     DotNet.test (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithAltCoverOptions

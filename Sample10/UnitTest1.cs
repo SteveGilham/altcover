@@ -1,24 +1,26 @@
 using System;
+using System.IO;
 using Xunit;
 
 namespace sample10.core
 {
-    public class UnitTest1
+  public class UnitTest1
+  {
+    [Fact]
+    public void Test1()
     {
-        [Fact]
-        public void Test1()
-        {
-            var now = DateTime.Now;
-            if (now.Year > 2000)
-            {
-                Console.WriteLine("Where is my rocket pack?");
-            }
-            else
-            {
-                Console.WriteLine("Twentieth Century, boy!");
-            }
+      var now = DateTime.Now;
+      if (now.Year > 2000)
+      {
+        Console.WriteLine("Where is my rocket pack?");
+      }
+      else
+      {
+        Console.WriteLine("Twentieth Century, boy!");
+      }
 
-            Assert.True(now.Year > 2000);
-        }
+      // Assert.True(now.Year > 2000);
+      Assert.True(File.Exists(Path.Combine("Data", "foo.txt")));
     }
+  }
 }
