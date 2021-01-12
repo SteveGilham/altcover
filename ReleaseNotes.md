@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.4.8xx (Genbu series release 13)
+* Extend  "If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<None Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files" to other Build Action types (at least all those that my VS2019 Community Edition was prepared to mention) .  File an issue report if you have yet another build action type that you need copying for a not-in-place test scenario.
+
 # 7.4.807 (Genbu series release 12)
 * [MAYBE BREAKING] Set `InPlace` default to `false` uniformly across the API
   * Add `dotnet test` command line option `/p:AltCoverInPlace=true|false` (default false)
