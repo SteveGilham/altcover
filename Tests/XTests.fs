@@ -242,6 +242,7 @@ module AltCoverXTests =
                                               InputDirectories = [| here |]
                                               OutputDirectories = [| here |]
                                               SymbolDirectories = [| here |]
+                                              InPlace = true
                                               Dependencies =
                                                 [| Assembly.GetExecutingAssembly().Location |]
                                               CallContext = [| "[Fact]" |]
@@ -299,6 +300,7 @@ module AltCoverXTests =
                                                                       GetMethod("TypeSafePrepareOptionsCanBeValidated"))
                                                     TypeSafe.CallerName "Test" |]
                                              MethodPoint = TypeSafe.Set
+                                             InPlace = TypeSafe.Set
                                              PathFilter =
                                                TypeSafe.Unfiltered.Join [| TypeSafe.Raw "ok" |] }
 
@@ -351,7 +353,7 @@ module AltCoverXTests =
     test
       <@ (AltCover.PrepareOptions.TypeSafe subject)
          |> Args.prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
-                                   "-p"; "ok"; "--reportFormat"; "NCover"; "--inplace"; "--save"; "--";
+                                   "-p"; "ok"; "--reportFormat"; "NCover"; "--save"; "--";
                                    "[Fact]" ] @>
 
   [<Test>]
@@ -397,7 +399,7 @@ module AltCoverXTests =
                                               CallContext = [| "0" |] }
 
     let scan = (AltCover.PrepareOptions.Primitive subject).Validate()
-    test <@ scan.Length = 2 @>
+    test <@ scan.Length = 1 @>
 
   [<Test>]
   let TypeSafePrepareOptionsCanBeValidatedAndDetectInconsistency() =
@@ -412,10 +414,10 @@ module AltCoverXTests =
       |> AltCover.PrepareOptions.TypeSafe
 
     let scan = subject.Validate()
-    test <@ scan.Length = 2 @>
+    test <@ scan.Length = 1 @>
     let rendered = subject |> Args.prepare
     test
-      <@ rendered = [ "-c"; "0"; "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--single";
+      <@ rendered = [ "-c"; "0"; "--reportFormat"; "OpenCover"; "--save"; "--single";
                       "--linecover"; "--branchcover" ] @>
 
   [<Test>]

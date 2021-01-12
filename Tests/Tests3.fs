@@ -1412,25 +1412,6 @@ module AltCoverTests3 =
         CoverageParameters.trackingNames.Clear()
 
     [<Test>]
-    let ParsingAfterSingleGivesFailure() =
-      Main.init()
-      try
-        CoverageParameters.single <- true
-        CoverageParameters.theInterval <- None
-        CoverageParameters.trackingNames.Clear()
-        let options = Main.I.declareOptions()
-        let input = [| "-c"; "3"; "/c"; "x"; "--callContext"; "Hello, World!" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        CoverageParameters.single <- false
-        CoverageParameters.theInterval <- None
-        CoverageParameters.trackingNames.Clear()
-
-    [<Test>]
     let ParsingNCoverFormatGivesNCover() =
       Main.init()
       try
@@ -1575,23 +1556,6 @@ module AltCoverTests3 =
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--single : specify this only once")
       finally
         CoverageParameters.single <- false
-
-    [<Test>]
-    let ParsingSingleAfterContextGivesFailure() =
-      Main.init()
-      try
-        CoverageParameters.single <- false
-        CoverageParameters.theInterval <- Some 0
-        let options = Main.I.declareOptions()
-        let input = [| "--single" |]
-        let parse = CommandLine.parseCommandLine input options
-        match parse with
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        CoverageParameters.single <- false
-        CoverageParameters.theInterval <- None
 
     [<Test>]
     let ParsingLineCoverGivesLineCover() =
@@ -2529,7 +2493,7 @@ module AltCoverTests3 =
         255)
         let result = subject.Execute()
         Assert.That(result, Is.False)
-        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ])
+        Assert.That(args, Is.EquivalentTo [ "--reportFormat"; "OpenCover"; "--save"; "--defer" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2565,7 +2529,7 @@ module AltCoverTests3 =
           255)
           let result = subject.Execute()
           Assert.That(result, Is.False)
-          Assert.That(args, Is.EquivalentTo ([ "--reportFormat"; "OpenCover"; "--inplace"; "--save"; "--defer" ] @ q ), level)
+          Assert.That(args, Is.EquivalentTo ([ "--reportFormat"; "OpenCover"; "--save"; "--defer" ] @ q ), level)
         )
       finally
         Main.effectiveMain <- save
@@ -2594,7 +2558,7 @@ module AltCoverTests3 =
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "Ncover"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
       finally
         Main.effectiveMain <- save
         Output.info <- fst saved
@@ -2619,7 +2583,7 @@ module AltCoverTests3 =
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--inplace"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
+             [ "-y"; "a"; "-y"; "b"; "--reportFormat"; "ncover"; "--save"; "--defer"; "--"; "testing"; "1"; "2"; "3" ])
 
         let message = subject.GetType().GetMethod("Message", BindingFlags.Instance ||| BindingFlags.NonPublic)
         let x = Assert.Throws<System.Reflection.TargetInvocationException>(fun () -> message.Invoke(subject, [| "x" :> obj|] ) |> ignore)
@@ -2957,4 +2921,44 @@ module AltCoverTests3 =
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty,
                                                Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
+
+    [<Test>]
+    let ContingentCopyTest() =
+      Main.init()
+      let subject = ContingentCopy()
+      let unique = Guid.NewGuid().ToString()
+
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let relative = where |> Path.GetFileName
+
+      subject.BuildOutputDirectory <- where |> Path.GetDirectoryName
+      subject.InstrumentDirectory <- Path.Combine(where, unique)
+      subject.FileName <- "Sample2.pdb"
+
+      let from = Path.Combine(subject.BuildOutputDirectory, relative, subject.FileName)
+      test <@ from |> File.Exists @>
+
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- relative
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- String.Empty
+      subject.CopyToOutputDirectory <- "Always"
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- where
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
+      subject.RelativeDir <- relative
+      test <@ subject.Execute() @>
+      let target = Path.Combine(subject.InstrumentDirectory, relative, subject.FileName)
+      test <@ target |> File.Exists @>
+
   // Recorder.fs => Recorder.Tests

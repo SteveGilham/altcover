@@ -349,5 +349,51 @@ type RunSettings =
     ///</summary>
     member Verbosity : string with get, set
   end
+// ```
+// ## Task `AltCover.Copy`
+// Used by the .net core implementation to copy files copied relative to the output directory to the same locations relative to the instrumented files folder
+//
+// Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
+// ```
+///<summary>
+/// <para>Used by the .net core implementation to copy files copied relative to the output directory to the same locations relative to the instrumented files folder.</para>
+/// <para>Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.</para>
+///</summary>
+type ContingentCopy =
+  class
+    inherit Task
+    ///<summary>
+    /// <para>The default constructor</para>
+    ///</summary>
+    new : unit -> ContingentCopy
+    ///<summary>
+    /// <para>Perform the operation</para>
+    /// <returns>The success of the outcome.</returns>
+    ///</summary>
+    override Execute : unit -> bool
+    ///<summary>
+    /// The file relative location (if empty, then no-op)
+    ///</summary>
+    member RelativeDir : string with get, set
+    ///<summary>
+    /// The file copying property (if empty, then no-op)
+    ///</summary>
+    member CopyToOutputDirectory : string with get, set
+    ///<summary>
+    /// The name of the file
+    ///</summary>
+    [<Required>]
+    member FileName : string with get, set
+    ///<summary>
+    /// The base of the relative from directory
+    ///</summary>
+    [<Required>]
+    member BuildOutputDirectory : string with get, set
+    ///<summary>
+    /// The base of the relatuve to directory
+    ///</summary>
+    [<Required>]
+    member InstrumentDirectory : string with get, set
+  end
 
 // ```

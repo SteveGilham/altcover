@@ -119,6 +119,7 @@ module DotNet =
         (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
         (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
+        (arg, "InPlace", "true", prepare.InPlace) //=true|false` to test in-place (meaning extra file copies)
       ]
 
     let internal toCollectFromArgArgumentList (collect : Abstract.ICollectOptions) =
@@ -147,7 +148,7 @@ module DotNet =
                        Justification="Internal implementation detail")>]
     let internal toCLIOptionsArgArgumentList (options : ICLIOptions) =
       [
-        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented` folders from previous runs
+        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
         arg, "FailFast", "true", options.FailFast //=true|false` to skip coverage collection if the unit tests fail
       ]
 

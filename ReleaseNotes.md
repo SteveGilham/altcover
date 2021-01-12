@@ -2,6 +2,15 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.4.807 (Genbu series release 12)
+* [MAYBE BREAKING] Set `InPlace` default to `false` uniformly across the API
+  * Add `dotnet test` command line option `/p:AltCoverInPlace=true|false` (default false)
+  * If  `/p:AltCoverInPlace=true` then `/p:AltCoverForce=true` has its pre-v7.3.805 meaning
+  * Wire up "InPlace" to the Fake `DotNet.test` driver for the above
+  * If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<None Include=./[some subdirectory]/..." with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files
+  * **NB** `/p:AltCoverInPlace=true` will not play well with the concurrent instrument-and-test behaviour of `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]`
+* Allow `--callContext` and `--single` together, which will log at most one visit _per context_ per location, not just one visit per location
+
 # 7.3.806 (Genbu series release 11a)
 * [BUGFIX] Handle concurrent instrumentation in the case `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]` 
 

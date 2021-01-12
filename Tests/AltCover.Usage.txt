@@ -69,7 +69,6 @@
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
-                                   Incompatible with --single
       --reportFormat=VALUE   Optional: Generate the report in the specified
                                format (NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
@@ -81,8 +80,8 @@
                                visited or not.  Overrides the --linecover and --
                                branchcover options.
       --single               Optional: only record the first hit at any
-                               location.
-                                   Incompatible with --callContext.
+                               location, or first hit for each context if --
+                               callContext is operating.
       --linecover            Optional: Do not record branch coverage.  Implies,
                                and is compatible with, the --reportFormat=
                                opencover option.

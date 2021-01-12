@@ -81,6 +81,11 @@ module Instance =
               ("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.Ordinal)) &&
               Token <> "AltCover"
 
+  type internal Sampled =
+  | Visit of int
+  | CallVisit of (int * int)
+  | TimeVisit of (int * int64)
+
   // Implementation details
 #if DEBUG
   module internal I =
@@ -104,7 +109,7 @@ module Instance =
     /// </summary>
     let mutable internal visits = new Dictionary<string, Dictionary<int, PointVisit>>()
 
-    let mutable internal samples = new Dictionary<string, Dictionary<int, bool>>()
+    let mutable internal samples = new Dictionary<string, Dictionary<Sampled, bool>>()
     let mutable internal isRunner = false
 
     let internal synchronize = Object()
@@ -237,7 +242,7 @@ module Instance =
       let wasConnected = isRunner
       initialiseTrace trace
       if (wasConnected <> isRunner) then
-        samples <- Dictionary<string, Dictionary<int, bool>>()
+        samples <- Dictionary<string, Dictionary<Sampled, bool>>()
         clear()
       recording <- true
 
@@ -285,23 +290,32 @@ module Instance =
     let internal addVisit moduleId hitPointId context =
       issue71Wrapper visits moduleId hitPointId context logException Counter.addSingleVisit
 
-    let internal takeSample strategy moduleId hitPointId =
+    let internal takeSample strategy moduleId hitPointId (context:Track) =
       match strategy with
       | Sampling.All -> true
       | _ ->
-          let mutable hasModuleKey = samples.ContainsKey(moduleId)
-          if hasModuleKey |> not then
-            lock samples (fun () ->
-              hasModuleKey <- samples.ContainsKey(moduleId)
-              if hasModuleKey |> not then samples.Add(moduleId, Dictionary<int, bool>()))
+        match context with
+        | Null -> [ Visit hitPointId ]
+        | Time t -> [ Visit hitPointId; TimeVisit (hitPointId, t) ]
+        | Call c -> [ Visit hitPointId; CallVisit (hitPointId, c) ]
+        | Both b -> [ Visit hitPointId; TimeVisit (hitPointId, b.Time); CallVisit (hitPointId, b.Call) ]
+        | _ -> context.ToString() |> InvalidDataException |> raise
+        |> Seq.map (fun hit ->
+                        let mutable hasModuleKey = samples.ContainsKey(moduleId)
+                        if hasModuleKey |> not then
+                          lock samples (fun () ->
+                            hasModuleKey <- samples.ContainsKey(moduleId)
+                            if hasModuleKey |> not then samples.Add(moduleId, Dictionary<Sampled, bool>()))
 
-          let next = samples.[moduleId]
-          let mutable hasPointKey = next.ContainsKey(hitPointId)
-          if hasPointKey |> not then
-            lock next (fun () ->
-              hasPointKey <- next.ContainsKey(hitPointId)
-              if hasPointKey |> not then next.Add(hitPointId, true))
-          (hasPointKey && hasModuleKey) |> not
+                        let next = samples.[moduleId]
+
+                        let mutable hasPointKey = next.ContainsKey(hit)
+                        if hasPointKey |> not then
+                          lock next (fun () ->
+                            hasPointKey <- next.ContainsKey(hit)
+                            if hasPointKey |> not then next.Add(hit, true))
+                        (hasPointKey && hasModuleKey) |> not)
+          |> Seq.fold (||) false // true if any are novel -- all must be evaluated
 
     /// <summary>
     /// This method is executed from instrumented assemblies.
@@ -309,7 +323,7 @@ module Instance =
     /// <param name="moduleId">Assembly being visited</param>
     /// <param name="hitPointId">Sequence Point identifier</param>
     let internal visitImpl moduleId hitPointId context =
-      if (Sample = Sampling.All || takeSample Sample moduleId hitPointId) then
+      if (Sample = Sampling.All || takeSample Sample moduleId hitPointId context) then
         let adder =
           if Defer || supervision || (trace.IsConnected |> not)
           then addVisit

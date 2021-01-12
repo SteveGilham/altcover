@@ -16,6 +16,7 @@
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
+      InPlace="true"
       XmlReport="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
       AssemblyFilter="@(AssemblyFilter)" />
