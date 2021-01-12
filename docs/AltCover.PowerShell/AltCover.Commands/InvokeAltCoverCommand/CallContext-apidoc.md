@@ -8,8 +8,6 @@ A string in brackets "[]" is interpreted as an attribute type name (the trailing
 
 Other strings are interpreted as method names (fully qualified if the string contains any "." characters).
 
-Incompatible with -Single
-
 ```csharp
 public string[] CallContext { get; set; }
 ```
