@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.4.8xx (Genbu series release 12)
+# 7.4.807 (Genbu series release 12)
 * [MAYBE BREAKING] Set `InPlace` default to `false` uniformly across the API
   * Add `dotnet test` command line option `/p:AltCoverInPlace=true|false` (default false)
   * If  `/p:AltCoverInPlace=true` then `/p:AltCoverForce=true` has its pre-v7.3.805 meaning
