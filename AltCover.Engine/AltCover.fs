@@ -453,14 +453,6 @@ module AltCover =
       then f key x |> ignore
 
     member private self.Consistent() =
-      if self.SingleVisit && self.CallContext.Any() then
-        CommandLine.error <-
-          String.Format
-            (System.Globalization.CultureInfo.CurrentCulture,
-             CommandLine.resources.GetString "Incompatible", "--single", "--callContext")
-          :: CommandLine.error
-
-    member private self.Consistent'() =
       if self.LineCover && self.BranchCover then
         CommandLine.error <-
           String.Format
@@ -508,7 +500,6 @@ module AltCover =
         |> Seq.iter
              (fun a -> PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
         self.Consistent()
-        self.Consistent'()
         validateContext self.CallContext
         CommandLine.error |> List.toArray
       finally
