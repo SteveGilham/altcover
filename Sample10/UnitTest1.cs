@@ -20,7 +20,7 @@ namespace sample10.core
       }
 
       // Assert.True(now.Year > 2000);
-      Assert.True(File.Exists(Path.Combine("Data", "foo.txt")));
+      Assert.True(File.Exists(Path.Combine("Data", "Foo.txt")));
     }
   }
 }
