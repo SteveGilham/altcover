@@ -2952,6 +2952,10 @@ module AltCoverTests3 =
       test <@ subject.Execute() @>
       test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
 
+      subject.RelativeDir <- where
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
       subject.RelativeDir <- relative
       test <@ subject.Execute() @>
       let target = Path.Combine(subject.InstrumentDirectory, relative, subject.FileName)
