@@ -56,7 +56,7 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [Save](InvokeAltCoverCommand/Save-apidoc) { get; set; } | Write raw coverage data to file for later processing |
 | [ShowGenerated](InvokeAltCoverCommand/ShowGenerated-apidoc) { get; set; } | Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited |
 | [ShowStatic](InvokeAltCoverCommand/ShowStatic-apidoc) { get; set; } | Instrument and show code that is by default skipped as trivial. |
-| [Single](InvokeAltCoverCommand/Single-apidoc) { get; set; } | only record the first hit at any location. Incompatible with `-CallContext`. |
+| [Single](InvokeAltCoverCommand/Single-apidoc) { get; set; } | only record the first hit at any location (or first for that context if `-CallContext` is operating). |
 | [SourceLink](InvokeAltCoverCommand/SourceLink-apidoc) { get; set; } | Display sourcelink URLs rather than file paths if present. |
 | [StrongNameKey](InvokeAltCoverCommand/StrongNameKey-apidoc) { get; set; } | The default strong naming key to apply to instrumented assemblies |
 | [SummaryFormat](InvokeAltCoverCommand/SummaryFormat-apidoc) { get; set; } | Selects summary format |

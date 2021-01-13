@@ -396,8 +396,6 @@ type ContingentCopy() =
                     Justification="The name of the MSBuild property to use")>]
   member val RelativeDir = String.Empty with get, set
   member val CopyToOutputDirectory = String.Empty with get, set
-
-  [<Required>]
   member val FileName = String.Empty with get, set
 
   [<Required>]
@@ -414,7 +412,9 @@ type ContingentCopy() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
 
     if (self.CopyToOutputDirectory = "Always" || self.CopyToOutputDirectory = "PreserveNewest") &&
-        (self.RelativeDir |> Path.IsPathRooted |> not) && (self.RelativeDir |> String.IsNullOrWhiteSpace |> not)
+        (self.RelativeDir |> Path.IsPathRooted |> not) &&
+        (self.RelativeDir |> String.IsNullOrWhiteSpace |> not) &&
+        (self.FileName |> String.IsNullOrWhiteSpace |> not)
     then
       let toDir = Path.Combine(self.InstrumentDirectory, self.RelativeDir)
       let filename = self.FileName |> Path.GetFileName

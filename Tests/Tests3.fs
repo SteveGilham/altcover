@@ -2933,6 +2933,9 @@ module AltCoverTests3 =
 
       subject.BuildOutputDirectory <- where |> Path.GetDirectoryName
       subject.InstrumentDirectory <- Path.Combine(where, unique)
+      test <@ subject.Execute() @>
+      test <@ subject.InstrumentDirectory |> Directory.Exists |> not @>
+
       subject.FileName <- "Sample2.pdb"
 
       let from = Path.Combine(subject.BuildOutputDirectory, relative, subject.FileName)

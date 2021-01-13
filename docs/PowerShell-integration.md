@@ -1283,8 +1283,6 @@ the full name of the attribute type.
 
 Other strings are interpreted as method names (fully qualified if the string contains any "." characters).
 
-Incompatible with -Single
-
 ```
 Required?                    false
 Position?                    named
@@ -1351,7 +1349,7 @@ Accept wildcard characters?  false
 ```
 
 #### `-Single <SwitchParameter>` 
-only record the first hit at any location. Incompatible with `-CallContext`.
+only record the first hit at any location (or first for that context if `-CallContext` is operating).
 
 ```
 Required?                    false
