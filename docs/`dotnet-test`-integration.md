@@ -47,13 +47,14 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverLocalSource=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
 * `/p:AltCoverVisibleBranches=true|false` to ignore compiler generated internal `switch`/`match` branches
 * `/p:AltCoverShowGenerated=true|false` to mark generated code in the coverage file
+* `/p:AltCoverInPlace=true|false` to test in-place (meaning extra file copies)
 * `/p:AltCoverLcovReport=`"path to lcov format result"
 * `/p:AltCoverCobertura=`"path to cobertura format result"
 * `/p:AltCoverThreshold=`"coverage threshold required"
 * `/p:AltCoverSummaryFormat=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
 * `/p:AltCoverVerbosity=`"Levels of output -- Info (default), Warning, Error, or Off"
 * `/p:AltCoverShowSummary=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
-* `/p:AltCoverForce=true|false` to force delete any left-over `__Instrumented` folders from previous runs
+* `/p:AltCoverForce=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
 * `/p:AltCoverFailFast=true|false` to skip coverage collection if the unit tests fail
 * `/p:AltCoverImportModule=true` to emit the `Import-Module` command needed to register the `pwsh` support
 * `/p:AltCoverGetVersion=true|false` to emit the current AltCover version

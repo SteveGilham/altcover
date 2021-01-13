@@ -130,3 +130,24 @@ type RunSettings =
     member Verbosity : string with get, set
   end
 ```
+## Task `AltCover.Copy`
+Used by the .net core implementation to copy files copied relative to the output directory to the same locations relative to the instrumented files folder
+
+Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
+```
+type ContingentCopy =
+  class
+    inherit Task
+    new : unit -> ContingentCopy
+    override Execute : unit -> bool
+    member RelativeDir : string with get, set
+    member CopyToOutputDirectory : string with get, set
+    [<Required>]
+    member FileName : string with get, set
+    [<Required>]
+    member BuildOutputDirectory : string with get, set
+    [<Required>]
+    member InstrumentDirectory : string with get, set
+  end
+
+```

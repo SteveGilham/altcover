@@ -129,12 +129,30 @@
       <TestTargetPath Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetPath)</TestTargetPath>
       <TestTargetPath Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</TestTargetPath>
     </PropertyGroup>
+    
+    <ItemGroup>
+      <AltCoverBuildItem Include="@(ApplicationDefinition)" />
+      <AltCoverBuildItem Include="@(EditorConfigFiles)" />
+      <AltCoverBuildItem Include="@(XamlAppDef)" />
+      <AltCoverBuildItem Include="@(DesignData)" />
+      <AltCoverBuildItem Include="@(CodeAnalysisDictionary)" />
+      <AltCoverBuildItem Include="@(None)" />
+      <AltCoverBuildItem Include="@(Resource)" />
+      <AltCoverBuildItem Include="@(EntityDeploy)" />
+      <AltCoverBuildItem Include="@(Compile)" />
+      <AltCoverBuildItem Include="@(SplashScreen)" />
+      <AltCoverBuildItem Include="@(Content)" />
+      <AltCoverBuildItem Include="@(EmbeddedResource)" />
+      <AltCoverBuildItem Include="@(Page)" />
+      <AltCoverBuildItem Include="@(DesignDataWithDesignTimeCreatableTypes)" />
+      <AltCoverBuildItem Include="@(AdditionalFiles)" />
+    </ItemGroup>
 
     <AltCover.ContingentCopy
-      Condition="'$(TestTargetPath)' != '$(TargetPath)'"
-      RelativeDir="%(None.RelativeDir)"
-      CopyToOutputDirectory="%(None.CopyToOutputDirectory)"
-      FileName="%(None.FullPath)"
+      Condition="'$(TestTargetPath)' != '$(TargetPath)' AND ('%(AltCoverBuildItem.CopyToOutputDirectory)' == 'Always' OR '%(AltCoverBuildItem.CopyToOutputDirectory)' == 'PreserveNewest' )"
+      RelativeDir="%(AltCoverBuildItem.RelativeDir)"
+      CopyToOutputDirectory="%(AltCoverBuildItem.CopyToOutputDirectory)"
+      FileName="%(AltCoverBuildItem.FullPath)"
       BuildOutputDirectory="$(TargetDir)"
       InstrumentDirectory="$(AltCoverInstrumentedDirectory)_$(ProjectName)" />
 

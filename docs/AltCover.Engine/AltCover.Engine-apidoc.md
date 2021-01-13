@@ -9,6 +9,7 @@
 | class [Collect](AltCover/Collect-apidoc) | Description of the `AltCover Runner` command |
 | static class [CollectExtension](AltCover/CollectExtension-apidoc) | `Abstract.ICollectOptions` extension methods |
 | static class [Command](AltCover/Command-apidoc) | This represents the various operations available |
+| class [ContingentCopy](AltCover/ContingentCopy-apidoc) | Used by the .net core implementation to copy files copied relative to the output directory to the same locations relative to the instrumented files folder. |
 | class [Echo](AltCover/Echo-apidoc) | Outputs a possibly coloured string of text to `stdout`. |
 | class [GetVersion](AltCover/GetVersion-apidoc) | Description of the `AltCover Version` command |
 | class [PowerShell](AltCover/PowerShell-apidoc) | Description of the `AltCover ImportModule` command |

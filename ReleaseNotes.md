@@ -2,12 +2,17 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.4.808 (Genbu series release 13)
+* [BUGFIX] In some use cases, the error `The "AltCover.ContingentCopy" task was not given a value for the required parameter "FileName".` could be provoked by `dotnet test` (Issue #113)
+* Extend  to other Build Action types (at least all those that my VS2019 Community Edition was prepared to mention) the "If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<[Action] Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files" behaviour added for the `None` action in teh previous release.  File an issue report if you have yet another build action type that you need copying for a not-in-place test scenario.
+* 
+
 # 7.4.807 (Genbu series release 12)
 * [MAYBE BREAKING] Set `InPlace` default to `false` uniformly across the API
   * Add `dotnet test` command line option `/p:AltCoverInPlace=true|false` (default false)
   * If  `/p:AltCoverInPlace=true` then `/p:AltCoverForce=true` has its pre-v7.3.805 meaning
   * Wire up "InPlace" to the Fake `DotNet.test` driver for the above
-  * If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<None Include=./[some subdirectory]/..." with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files
+  * If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<None Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files
   * **NB** `/p:AltCoverInPlace=true` will not play well with the concurrent instrument-and-test behaviour of `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]`
 * Allow `--callContext` and `--single` together, which will log at most one visit _per context_ per location, not just one visit per location
 
