@@ -7,7 +7,7 @@
     <None Remove="*.*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="altcover" version="7.4.807" />
+    <PackageReference Include="altcover" version="7.4.808" />
     <PackageReference Include="BlackFox.CommandLine" version="1.0.0" />
     <PackageReference Include="NuGet.CommandLine" version="5.8.0">
       <PrivateAssets>all</PrivateAssets>
