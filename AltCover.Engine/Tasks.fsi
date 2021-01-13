@@ -382,7 +382,6 @@ type ContingentCopy =
     ///<summary>
     /// The name of the file
     ///</summary>
-    [<Required>]
     member FileName : string with get, set
     ///<summary>
     /// The base of the relative from directory
