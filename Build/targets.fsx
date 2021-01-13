@@ -4471,44 +4471,6 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue113" (fun _ ->
-  try
-    Directory.ensure "./_Issue113"
-    Shell.cleanDir ("./_Issue113")
-    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
-    let repo = config.Descendants(XName.Get("add")) |> Seq.head
-    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-    config.Save "./_Issue113/NuGet.config"
-
-    Shell.copyDir "./_Issue113" "./RegressionTesting/issue113" File.Exists
-
-    let csproj = XDocument.Load "./_Issue113/UnitTestProject1/UnitTestProject1.xml"
-    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    csproj.Save "./_Issue113/UnitTestProject1/UnitTestProject1.csproj"
-    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue113")
-                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
-                             { tmp with MSBuildParams = mparams}) ""
-
-    let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "xunit" |] }
-    let pp0 = AltCover.PrepareOptions.Primitive p0
-    let c0 = Primitive.CollectOptions.Create()
-    let cc0 = AltCover.CollectOptions.Primitive c0
-    DotNet.test (fun p ->
-      (({ p.WithCommon(withWorkingDirectoryVM "_Issue113/UnitTestProject1") with
-            Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithAltCoverOptions pp0 cc0 ForceTrue)
-        .WithAltCoverImportModule().WithAltCoverGetVersion()
-      |> testWithCLIArguments) ""
-  finally
-    let folder = (nugetCache @@ "altcover") @@ !Version
-    Shell.mkdir folder
-    Shell.deleteDir folder)
-
 _Target "DotnetGlobalIntegration" (fun _ ->
   let working = Path.getFullName "./_DotnetGlobalTest"
   let mutable set = false
@@ -4903,10 +4865,6 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue20"
-==> "Deployment"
-
-"Unpack"
-==> "Issue113"
 ==> "Deployment"
 
 "Unpack"
