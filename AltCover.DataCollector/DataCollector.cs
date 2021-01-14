@@ -85,9 +85,9 @@ namespace AltCover
 
     public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
     {
-      Debug.WriteLine("Debug TestCaseEnd {0} => {1}",
-        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-        testCaseEndArgs.TestOutcome);
+      //Debug.WriteLine("Debug TestCaseEnd {0} => {1}",
+      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+      //  testCaseEndArgs.TestOutcome);
 
       //ConsoleOutput.Instance.WriteLine(
       //  String.Format(
@@ -96,10 +96,10 @@ namespace AltCover
       //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
       //  testCaseEndArgs.TestOutcome), OutputLevel.Information);
 
-      //Console.Error.WriteLine(
-      //  "Console.Error.WriteLine TestCaseEnd {0} => {1}",
-      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-      //  testCaseEndArgs.TestOutcome);
+      Console.Error.WriteLine(
+        "Console.Error.WriteLine TestCaseEnd {0} => {1}",
+        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+        testCaseEndArgs.TestOutcome);
 
       //ConsoleOutput.Instance.WriteLine(
       //  String.Format(
