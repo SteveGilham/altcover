@@ -142,7 +142,6 @@ type ContingentCopy =
     override Execute : unit -> bool
     member RelativeDir : string with get, set
     member CopyToOutputDirectory : string with get, set
-    [<Required>]
     member FileName : string with get, set
     [<Required>]
     member BuildOutputDirectory : string with get, set
