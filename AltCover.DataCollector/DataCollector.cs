@@ -96,6 +96,11 @@ namespace AltCover
       //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
       //  testCaseEndArgs.TestOutcome), OutputLevel.Information);
 
+      Console.Out.WriteLine(
+        "Console.Out.WriteLine TestCaseEnd {0} => {1}",
+        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+        testCaseEndArgs.TestOutcome);
+
       Console.Error.WriteLine(
         "Console.Error.WriteLine TestCaseEnd {0} => {1}",
         testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
