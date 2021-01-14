@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 [assembly: System.Resources.NeutralResourcesLanguageAttribute("en-GB")]
 
@@ -27,7 +28,7 @@ namespace AltCover
             .FirstOrDefault();
         if (rec == null)
         {
-          if (EqtTrace.IsErrorEnabled)
+          if (EqtTrace.IsWarningEnabled)
           {
             // resgen /PublicClass /compile .\Resources\Resources.resx
             EqtTrace.Warning(Resources.Resources.RecorderNotFound);
@@ -41,7 +42,7 @@ namespace AltCover
               .FirstOrDefault();
           if (i == null)
           {
-            if (EqtTrace.IsErrorEnabled)
+            if (EqtTrace.IsWarningEnabled)
             {
               EqtTrace.Warning(Resources.Resources.InstanceNotFound);
             }
@@ -63,7 +64,7 @@ namespace AltCover
                                   BindingFlags.Static | BindingFlags.NonPublic);
           if (supervision == null)
           {
-            if (EqtTrace.IsErrorEnabled)
+            if (EqtTrace.IsWarningEnabled)
             {
               EqtTrace.Warning(Resources.Resources.SupervisionNotFound);
             }
@@ -84,7 +85,33 @@ namespace AltCover
 
     public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
     {
-      Debug.WriteLine("TestCaseEnd {0}", testCaseEndArgs);
+      Debug.WriteLine("Debug TestCaseEnd {0} => {1}",
+        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+        testCaseEndArgs.TestOutcome);
+
+      //ConsoleOutput.Instance.WriteLine(
+      //  String.Format(
+      //  System.Globalization.CultureInfo.InvariantCulture,
+      //  "ConsoleOutput TestCaseEnd {0} => {1}",
+      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+      //  testCaseEndArgs.TestOutcome), OutputLevel.Information);
+
+      //Console.Error.WriteLine(
+      //  "Console.Error.WriteLine TestCaseEnd {0} => {1}",
+      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+      //  testCaseEndArgs.TestOutcome);
+
+      //ConsoleOutput.Instance.WriteLine(
+      //  String.Format(
+      //  System.Globalization.CultureInfo.InvariantCulture,
+      //  "ConsoleError TestCaseEnd {0} => {1}",
+      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+      //  testCaseEndArgs.TestOutcome), OutputLevel.Error);
+
+      if (EqtTrace.IsInfoEnabled)
+      {
+        EqtTrace.Info("TestCaseEnd {0}", testCaseEndArgs);
+      }
     }
 
     public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
@@ -101,7 +128,7 @@ namespace AltCover
           var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
           if (flush == null)
           {
-            if (EqtTrace.IsErrorEnabled)
+            if (EqtTrace.IsWarningEnabled)
             {
               EqtTrace.Warning(Resources.Resources.FlushNotFound);
             }
