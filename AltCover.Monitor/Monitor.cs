@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -10,9 +11,43 @@ namespace AltCover
   /// <summary>
   /// A simple data type tp hold sequence and branch point counts.
   /// </summary>
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+  [SuppressMessage("Gendarme.Rules.Performance",
+                   "OverrideValueTypeDefaultsRule",
+                   Justification = "There is no use case")]
+  [SuppressMessage("Microsoft.Performance",
+                   "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes",
+                   Justification = "There is no use case")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
   public struct PointCount
   {
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Design",
+                     "AvoidVisibleFieldsRule",
+                     Justification = "It's a struct, dude")]
+    [SuppressMessage("Microsoft.Design",
+                     "CA1051:DoNotDeclareVisibleInstanceFields",
+                     Justification = "It's a struct, dude")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+    /// <summary>
+    /// Count of sequence/method points.
+    /// </summary>
     public int Code;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Design",
+                     "AvoidVisibleFieldsRule",
+                     Justification = "It's a struct, dude")]
+    [SuppressMessage("Microsoft.Design",
+                     "CA1051:DoNotDeclareVisibleInstanceFields",
+                     Justification = "It's a struct, dude")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+    /// <summary>
+    /// Count of branch points.
+    /// </summary>
     public int Branch;
   }
 
@@ -52,6 +87,11 @@ namespace AltCover
       }
     }
 
+    /// <summary>
+    /// Try to get the total visitable points
+    /// </summary>
+    /// <param name="totals">The total point counts if running under AltCover coverage</param>
+    /// <returns>True if running under AltCover coverage</returns>
     public static bool TryGetPointTotals(out PointCount totals)
     {
       var instance = RecorderInstance;
@@ -70,23 +110,31 @@ namespace AltCover
       return instance.Any();
     }
 
+    /// <summary>
+    /// Try to get the total visited points
+    /// </summary>
+    /// <param name="totals">The visited point counts if running under AltCover coverage</param>
+    /// <returns>True if running under AltCover coverage</returns>
     public static bool TryGetVisitTotals(out PointCount totals)
     {
       var instance = RecorderInstance;
       totals = instance.Select(t => t.Assembly.GetTypes()
                                     .Where(t2 => t2.FullName == "AltCover.Recorder.Instance.I")
                                     .FirstOrDefault())
-               .Where(t => !ReferenceEquals(t, null))
+               .Where(t => t is object)
         .Aggregate(new PointCount(), (t, i) =>
       {
         var visits = i.GetProperty("visits").GetValue(null)
          as IDictionary;
-        var indexes = visits.Values.Cast<IDictionary>()
-              .SelectMany(d => d.Keys.Cast<int>());
-        var total = indexes.Count();
-        t.Branch = indexes.Count(index => index < 0);
-        t.Code = total - t.Branch;
-        return t;
+        lock (visits)
+        {
+          var indexes = visits.Values.Cast<IDictionary>()
+                .SelectMany(d => d.Keys.Cast<int>());
+          var total = indexes.Count();
+          t.Branch = indexes.Count(index => index < 0);
+          t.Code = total - t.Branch;
+          return t;
+        }
       });
 
       return instance.Any();

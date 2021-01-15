@@ -49,8 +49,10 @@ namespace AltCover.Cake
     /// <param name="log">[Optional]C# definition of the process logging; if no logging support is supplied, then Cake logging at an appropriate severity is used.</param>
     /// <returns>The integer return code for the instrumentation process.</returns>
     [CakeMethodAlias]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static int Prepare(this ICakeContext context, Abstract.IPrepareOptions prepareArgs, Abstract.ILoggingOptions log = null)
     {
       return FSCommand.Prepare(prepareArgs, MakeLog(context, log));
@@ -65,8 +67,10 @@ namespace AltCover.Cake
     /// <param name="log">[Optional]C# efinition of the process logging; if no logging support is supplied, then Cake logging at an appropriate severity is used.</param>
     /// <returns>The integer return code for the collection process.</returns>
     [CakeMethodAlias]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed",
                      Justification = "WTF is this rule saying?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static int Collect(this ICakeContext context, Abstract.ICollectOptions collectArgs, Abstract.ILoggingOptions log = null)
     {
       return FSCommand.Collect(collectArgs, MakeLog(context, log));
