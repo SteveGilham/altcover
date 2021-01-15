@@ -4,7 +4,6 @@
     <TargetFrameworks>net5.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Api.Tests</AssemblyName>
-    <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="'$(TargetFramework)' != 'net472'">Exe</OutputType>
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>

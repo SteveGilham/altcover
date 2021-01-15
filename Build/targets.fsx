@@ -1040,6 +1040,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
   let testFiles = "./_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ::
                   (!!(@"_Binaries/*Test*/Debug+AnyCPU/net472/AltCover*Test*.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
+                   |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Monitor.Tests.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Tests.Visualizer.dll")
                    |> Seq.toList)
@@ -1135,6 +1136,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let Recorder4Dir =
     Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472"
   let apiDir = Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
+  let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
 
   let altReport = reports @@ "UnitTestWithAltCover.xml"
 
@@ -1143,12 +1145,13 @@ _Target "UnitTestWithAltCover" (fun _ ->
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = altReport
-           InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir |]
+           InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir; monitorDir |]
            OutputDirectories =
              [| "./__UnitTestWithAltCover"
                 weakDir @@ "__ValidateGendarmeEmulationWithAltCover"
                 Recorder4Dir @@ "__RecorderTestWithAltCover"
-                apiDir @@ "__ApiTestWithAltCover" |]
+                apiDir @@ "__ApiTestWithAltCover"
+                monitorDir @@ "__MonitorTestWithAltCover"|]
            StrongNameKey = keyfile
            ReportFormat = "NCover"
            InPlace = false
@@ -1171,6 +1174,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   try
     [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
+      !!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
       !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
@@ -1255,6 +1259,16 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "./_Reports/ApiTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
             "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCoverRunner/AltCover.Api.Tests.dll" ],
+        baseFilter,
+        keyfile
+      )
+      (
+        Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472", // test directory
+        "./__MonitorTestWithAltCoverRunner", // relative output
+        "MonitorTestWithAltCoverRunner.xml", // coverage report
+        "./_Reports/MonitorTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+        [ Path.getFullName // test assemblies
+            "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCoverRunner/AltCover.Monitor.Tests.dll" ],
         baseFilter,
         keyfile
       )
@@ -1532,6 +1546,10 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
      (
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+     )
+     (
+       reports @@ "MonitorTestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
      )
      (
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
