@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
+    <RootNamespace>AltCover</RootNamespace>
+    <AssemblyName>AltCover.Monitor</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SolutionDir)\Build\Infrastructure.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>1701;1702;NU1603</NoWarn>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+  </PropertyGroup>
+</Project>
