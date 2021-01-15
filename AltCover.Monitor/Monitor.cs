@@ -2,7 +2,7 @@
 
 namespace AltCover
 {
-  public class Monitor
+  public static class Monitor
   {
   }
 }

@@ -649,6 +649,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 //     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Monitor.dll"
        "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
@@ -759,10 +760,12 @@ _Target "FxCop" (fun _ ->
       then
         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
+          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net472/AltCover.Monitor.dll" ]
       else // HACK HACK HACK
         [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
+          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net472/AltCover.Monitor.dll" ]), // TODO netcore support
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
@@ -2435,6 +2438,8 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Mono.Options.dll"
   let recorder =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
+  let monitor =
+    Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.Monitor.dll"
   let poshHelp =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
@@ -2469,6 +2474,7 @@ _Target "Packaging" (fun _ ->
       (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
+      (monitor, Some "tools/net472", None)
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
@@ -2482,6 +2488,7 @@ _Target "Packaging" (fun _ ->
       (engine, Some "lib/net472", None)
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
+      (monitor, Some "lib/net472", None)
       (fscore, Some "lib/net472", None)
       (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
@@ -2550,7 +2557,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let dataFiles1 where =
-    (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
+    [
+      (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
+      (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
+    ]
+    |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
