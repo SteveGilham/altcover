@@ -85,33 +85,14 @@ namespace AltCover
 
     public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
     {
-      //Debug.WriteLine("Debug TestCaseEnd {0} => {1}",
+      Debug.WriteLine("Debug TestCaseEnd {0} => {1}",
+        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
+        testCaseEndArgs.TestOutcome);
+
+      //Console.Error.WriteLine(
+      //  "Console.Error.WriteLine TestCaseEnd {0} => {1}",
       //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
       //  testCaseEndArgs.TestOutcome);
-
-      //ConsoleOutput.Instance.WriteLine(
-      //  String.Format(
-      //  System.Globalization.CultureInfo.InvariantCulture,
-      //  "ConsoleOutput TestCaseEnd {0} => {1}",
-      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-      //  testCaseEndArgs.TestOutcome), OutputLevel.Information);
-
-      Console.Out.WriteLine(
-        "Console.Out.WriteLine TestCaseEnd {0} => {1}",
-        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-        testCaseEndArgs.TestOutcome);
-
-      Console.Error.WriteLine(
-        "Console.Error.WriteLine TestCaseEnd {0} => {1}",
-        testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-        testCaseEndArgs.TestOutcome);
-
-      //ConsoleOutput.Instance.WriteLine(
-      //  String.Format(
-      //  System.Globalization.CultureInfo.InvariantCulture,
-      //  "ConsoleError TestCaseEnd {0} => {1}",
-      //  testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName,
-      //  testCaseEndArgs.TestOutcome), OutputLevel.Error);
 
       if (EqtTrace.IsInfoEnabled)
       {
