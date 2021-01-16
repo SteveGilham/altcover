@@ -118,14 +118,14 @@ namespace AltCover
     public static bool TryGetVisitTotals(out PointCount totals)
     {
       var instance = RecorderInstance;
-      totals = instance.Select(t => t.Assembly.GetTypes()
-                                    .Where(t2 => t2.FullName == "AltCover.Recorder.Instance.I")
-                                    .FirstOrDefault())
-               .Where(t => t is object)
+      totals = instance
+        .Select(t => t.GetNestedType("I", System.Reflection.BindingFlags.NonPublic))
+        .Where(t => t is object)
         .Aggregate(new PointCount(), (t, i) =>
       {
-        var visits = i.GetProperty("visits").GetValue(null)
+        var visits = i.GetProperty("visits", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).GetValue(null)
          as IDictionary;
+
         lock (visits)
         {
           var indexes = visits.Values.Cast<IDictionary>()
