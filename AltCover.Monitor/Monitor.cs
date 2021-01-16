@@ -22,20 +22,9 @@ namespace AltCover
 #pragma warning restore IDE0079 // Remove unnecessary suppression
   public struct PointCount
   {
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-
-    [SuppressMessage("Gendarme.Rules.Design",
-                     "AvoidVisibleFieldsRule",
-                     Justification = "It's a struct, dude")]
-    [SuppressMessage("Microsoft.Design",
-                     "CA1051:DoNotDeclareVisibleInstanceFields",
-                     Justification = "It's a struct, dude")]
-#pragma warning restore IDE0079 // Remove unnecessary suppression
     /// <summary>
     /// Count of sequence/method points.
     /// </summary>
-    public int Code;
-
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 
     [SuppressMessage("Gendarme.Rules.Design",
@@ -45,9 +34,20 @@ namespace AltCover
                      "CA1051:DoNotDeclareVisibleInstanceFields",
                      Justification = "It's a struct, dude")]
 #pragma warning restore IDE0079 // Remove unnecessary suppression
+    public int Code;
+
     /// <summary>
     /// Count of branch points.
     /// </summary>
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Design",
+                     "AvoidVisibleFieldsRule",
+                     Justification = "It's a struct, dude")]
+    [SuppressMessage("Microsoft.Design",
+                     "CA1051:DoNotDeclareVisibleInstanceFields",
+                     Justification = "It's a struct, dude")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public int Branch;
   }
 
