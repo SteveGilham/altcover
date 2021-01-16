@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 7.5.8xx (Genbu series release 14)
 * [NEW] AltCover.Monitor API to track current coverage from running unit tests.  Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
+* [BUGFIX] In OpenCover format output, only emit `<File />` records relevant to the respective module, not for all source files encountered so far.
 
 # 7.4.808 (Genbu series release 13)
 * [BUGFIX] In some use cases, the error `The "AltCover.ContingentCopy" task was not given a value for the required parameter "FileName".` could be provoked by `dotnet test` (Issue #113)
