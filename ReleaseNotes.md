@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.5.8xx (Genbu series release 14)
+* [NEW] AltCover.Monitor API to track current coverage from running unit tests.  Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
+
 # 7.4.808 (Genbu series release 13)
 * [BUGFIX] In some use cases, the error `The "AltCover.ContingentCopy" task was not given a value for the required parameter "FileName".` could be provoked by `dotnet test` (Issue #113)
 * Extend  to other Build Action types (at least all those that my VS2019 Community Edition was prepared to mention) the "If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<[Action] Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files" behaviour added for the `None` action in the previous release.  File an issue report if you have yet another build action type that you need copying for a not-in-place test scenario.
