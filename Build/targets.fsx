@@ -2849,6 +2849,7 @@ _Target "Unpack" (fun _ ->
      [
       "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
       "./AltCover.Cake/AltCover.Cake.csproj"
+      "./AltCover.Monitor/AltCover.Monitor.csproj"
      ]
      |> List.map (Path.getFullName >>  XDocument.Load)
     xml
@@ -2880,6 +2881,7 @@ _Target "Unpack" (fun _ ->
     "AltCover.Cake"
     "AltCover.DotNet"
     "AltCover.Engine" // beware static linkage -- maybe copy from debug?
+    "AltCover.Monitor"
     "AltCover.PowerShell"
     "AltCover.Toolkit"
   ]
