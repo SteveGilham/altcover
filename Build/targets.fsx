@@ -1810,7 +1810,7 @@ _Target "AsyncAwaitTests" (fun _ ->
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
            CallContext = [ "[Test]" ]
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "nunit" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "OpenCover"
