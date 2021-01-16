@@ -67,23 +67,17 @@ namespace AltCover
         AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name == assembly)
             .FirstOrDefault();
-        if (rec == null)
-        {
-          yield break;
-        }
-        else
+        if (rec != null)
         {
           var i = rec.GetTypes()
               .Where(t => t.Name == "Instance")
               .FirstOrDefault();
-          if (i == null)
-          {
-          }
-          else
+          if (i != null)
           {
             yield return i;
           }
         }
+        yield break;
       }
     }
 

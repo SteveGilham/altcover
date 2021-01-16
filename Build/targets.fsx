@@ -846,6 +846,57 @@ _Target "FxCop" (fun _ ->
 // Unit Test
 
 _Target "UnitTest" (fun _ ->
+  let reports = Path.getFullName "./_Reports"
+
+  let xmlreports =
+    [
+        "UnitTestWithAltCoverRunner.xml"
+        "ApiTestWithAltCoverRunner.xml"
+        "ValidateGendarmeEmulationWithAltCoverRunner.xml"
+        "RecorderTestWithAltCoverRunner.xml"
+        "RecorderTest2WithAltCoverRunner.xml"
+        "Pester.xml"
+        "MonitorTestWithAltCoverCoreRunner.net5.0.xml" //"MonitorTestWithAltCoverRunner.xml"
+    ] |> List.map (fun report -> reports @@ report)
+
+  let reportLines = xmlreports |> List.map File.ReadAllLines
+
+  let top =
+    reportLines
+    |> List.head
+    |> Seq.takeWhile (fun l -> l.StartsWith("    <Module") |> not)
+  let tail =
+    reportLines
+    |> List.head
+    |> Seq.skipWhile (fun l -> l <> "  </Modules>")
+  let core =
+    reportLines
+    |> List.map (fun f ->
+         f
+         |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+         |> Seq.takeWhile (fun l -> l <> "  </Modules>"))
+
+  let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
+  File.WriteAllLines
+    (coverage,
+     Seq.concat
+       [ top
+         Seq.concat core
+         tail ]
+     |> Seq.toArray)
+
+  let coveralls =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
+    |> Path.getFullName
+
+  if Environment.isWindows &&
+     [
+       "APPVEYOR_BUILD_NUMBER"
+       "GITHUB_RUN_NUMBER"
+     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
+  then
+    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
+      "Coveralls upload failed"
 
   printfn "Dump uncovered lines"
   CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/dump-uncovered.ps1" ]
@@ -894,6 +945,7 @@ _Target "JustUnitTest" (fun _ ->
     !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Monitor.Tests.dll")
     |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -1400,45 +1452,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
   uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
   |> List.map fst
-  |> printfn "%A uncovered lines"
-
-  let reportLines = xmlreports |> List.map File.ReadAllLines
-
-  let top =
-    reportLines
-    |> List.head
-    |> Seq.takeWhile (fun l -> l.StartsWith("    <Module") |> not)
-  let tail =
-    reportLines
-    |> List.head
-    |> Seq.skipWhile (fun l -> l <> "  </Modules>")
-  let core =
-    reportLines
-    |> List.map (fun f ->
-         f
-         |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-         |> Seq.takeWhile (fun l -> l <> "  </Modules>"))
-
-  let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
-  File.WriteAllLines
-    (coverage,
-     Seq.concat
-       [ top
-         Seq.concat core
-         tail ]
-     |> Seq.toArray)
-  let coveralls =
-    ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
-    |> Path.getFullName
-
-  if Environment.isWindows &&
-     [
-       "APPVEYOR_BUILD_NUMBER"
-       "GITHUB_RUN_NUMBER"
-     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
-  then
-    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
-      "Coveralls upload failed")
+  |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverCore" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"

@@ -10,7 +10,7 @@ module MonitorTests =
     test'<@ a @> "should be running under AltCover"
     let code = b.Code
     let branch = b.Branch
-    test <@ (code, branch) = (161, 22) @>
+    test <@ (code, branch) = (157, 22) @>
 
   [<Test>]
   let ShouldRecordVisitTotals() =
