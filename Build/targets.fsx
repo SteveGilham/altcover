@@ -1706,7 +1706,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
-           AssemblyFilter = [ "Adapter"; "FSharp" ]
+           AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
@@ -1868,7 +1868,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
            OutputDirectories = [ instrumented ]
-           AssemblyFilter = [ "Adapter"; "FSharp" ]
+           AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
            ReportFormat = "NCover"
@@ -1926,7 +1926,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = simpleReport
-           AssemblyFilter = [ "Adapter"; "FSharp" ]
+           AssemblyFilter = [ "Adapter"; "FSharp"; "nunit" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
@@ -3131,7 +3131,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
            XmlReport = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
-           AssemblyFilter = [ "Adapter"; "FSharp" ]
+           AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            InPlace = false
            ReportFormat = "NCover"
            Save = false })
@@ -3205,7 +3205,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
                XmlReport = x
                OutputDirectories = [ o ]
                InputDirectories = [ i ]
-               AssemblyFilter = [ "Adapter"; "FSharp" ]
+               AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
                InPlace = false
                ReportFormat = "NCover"
                Save = false })
