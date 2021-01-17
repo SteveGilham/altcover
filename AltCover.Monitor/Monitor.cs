@@ -95,7 +95,9 @@ namespace AltCover
            var doc = XDocument.Load(xml);
            var seqpnt = doc.Descendants("seqpnt").Count();
            var sp2 = doc.Descendants("SequencePoint").Count()
-                   + doc.Descendants("MethodPoint").Count();
+                    + doc.Descendants("Method")
+                      .Where(x => !x.Descendants("SequencePoint").Any())
+                      .Count();
            t.Branch = doc.Descendants("BranchPoint").Count();
            t.Code = Math.Max(seqpnt, sp2);
            return t;
