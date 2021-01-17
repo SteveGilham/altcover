@@ -100,7 +100,7 @@ module TestCommonTests =
 #if !NET472
       Assert.Throws<Expecto.AssertException>(
 #else
-#if (ValidateGendarmeEmulation || GUI)
+#if (ValidateGendarmeEmulation || GUI || Monitor)
       Assert.Throws<NUnit.Framework.AssertionException>(
 #else
       Assert.Throws<Xunit.Sdk.TrueException>(
