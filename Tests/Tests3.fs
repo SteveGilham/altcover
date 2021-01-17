@@ -2098,61 +2098,46 @@ module AltCoverTests3 =
     [<Test>]
     let PreparingNewPlaceShouldCopyEverything() =
       Main.init()
-      let monoRuntime =
-        ("Mono.Runtime"
-         |> Type.GetType).IsNotNull
       // because mono symbol-writing is broken, work around trying to
       // examine the instrumented files in a self-test run.
-      let original = Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
-      let updated = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let here = maybe monoRuntime original updated
-
-      let there = Path.Combine(here, Guid.NewGuid().ToString())
+      let here = Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy")
+      let there = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                               Guid.NewGuid().ToString())
       let toInfo = [ Directory.CreateDirectory there ]
       let fromInfo = [ DirectoryInfo(here) ]
-      let (x, y) = Main.I.prepareTargetFiles fromInfo toInfo fromInfo [there]
-      Seq.zip fromInfo toInfo
-      |> Seq.iter (fun (f,t) ->
-        Assert.That
-          (t.EnumerateFiles() |> Seq.map (fun x -> x.Name),
-           Is.EquivalentTo(f.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
-           "Simple to-from comparison failed")
-        Assert.That
-          (x
-           |> Seq.filter (fun l -> l.Destinations |> List.exists (fun i -> i = t.FullName))
-           |> Seq.map (fun x -> x.AssemblyPath)
-           |> Seq.filter
-                (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not)
-           |> Seq.filter // flaky in altcoverrunner
-                (fun f -> (f |> Path.GetFileName).StartsWith("Sample23", StringComparison.OrdinalIgnoreCase) |> not)
-           |> Seq.filter
-                (fun f -> (f |> Path.GetFileName).StartsWith("xunit.", StringComparison.OrdinalIgnoreCase) |> not)
-           |> Seq.filter
-                (fun f -> (f |> Path.GetFileName).StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase) |> not)
-           |> Seq.sort,
-           Is.EquivalentTo
-             (f.EnumerateFiles()
-              |> Seq.map (fun x -> x.FullName)
-              |> Seq.filter
-                    (fun f -> f.EndsWith("AltCover.Expecto.Tests.exe", StringComparison.OrdinalIgnoreCase) |> not)
-              |> Seq.filter
-                   (fun f ->
-                   f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                   || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-              |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-              |> Seq.filter // flaky in altcoverrunner
-                   (fun f -> (f |> Path.GetFileName).StartsWith("Sample23", StringComparison.OrdinalIgnoreCase) |> not)
-              |> Seq.filter
-                   (fun f ->
-                   File.Exists(Path.ChangeExtension(f, ".pdb")) ||
-                   File.Exists(f + ".mdb") ||
-                   f |> Path.GetFileNameWithoutExtension = "Sample8")
-             |> Seq.sort),
-           "First list mismatch with from files")
-        Assert.That(y,
-                    Is.EquivalentTo(x
-                                    |> Seq.map ((fun x -> x.AssemblyPath) >> Path.GetFileNameWithoutExtension)),
-                                    "Second list mismatch"))
+      let x, y = Main.I.prepareTargetFiles fromInfo toInfo fromInfo [there]
+      let f,t = Seq.zip fromInfo toInfo |> Seq.head
+      Assert.That
+        (t.EnumerateFiles() |> Seq.map (fun x -> x.Name),
+          Is.EquivalentTo(f.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
+          "Simple to-from comparison failed")
+
+      Assert.That(y,
+                  Is.EquivalentTo(x
+                                  |> Seq.map ((fun x -> x.AssemblyPath) >> Path.GetFileNameWithoutExtension)),
+                                  "Prepared lists mismatch")
+
+      test <@ (x |> List.head).Destinations |> Seq.head = t.FullName @>
+
+      let assemblyPaths =
+        x
+        |> Seq.map (fun x -> x.AssemblyPath)
+        |> Seq.sort
+        |> Seq.toList
+
+      let assemblies = f.EnumerateFiles()
+                       |> Seq.map (fun x -> x.FullName)
+                       |> Seq.filter
+                            (fun f ->
+                            f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                            || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                       |> Seq.filter (Mono.Cecil.AssemblyDefinition.ReadAssembly
+                                      >> ProgramDatabase.getPdbFromImage
+                                      >> Option.isSome)
+                       |> Seq.sort
+                       |> Seq.toList
+
+      test <@ assemblies = assemblyPaths @>
 
     [<Test>]
     let ShouldProcessTrailingArguments() =
