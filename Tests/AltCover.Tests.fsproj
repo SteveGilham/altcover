@@ -23,7 +23,7 @@
     <Compile Include="Tests2.fs" />
     <Compile Include="Tests3.fs" />
     <Compile Include="XTests.fs" />
-    <Compile Include="Expecto.fs"  Condition="'$(TargetFramework)' != 'net472'" />
+    <Compile Include="Expecto.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -100,7 +100,7 @@
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.0" />
     <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
   </ItemGroup>
 

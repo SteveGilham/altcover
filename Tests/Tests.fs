@@ -1571,15 +1571,16 @@ module AltCoverTests =
           Node.AfterAssembly { Assembly = def; Inspection = Inspections.Instrument; Destinations = []}
           Node.Finish ]
 
-      let outputs = inputs |> Seq.map (Visitor.I.deeper >> Seq.toList)
+      let outputs = inputs |> Seq.map (Visitor.I.deeper >> Seq.toList) |> Seq.toList
 
-      let expected =
+      let expected : Node list list =
         [ []
           []
           []
           []
           [] ]
-      Assert.That(outputs, Is.EquivalentTo(expected))
+      //Assert.That(outputs, Is.EquivalentTo(expected))
+      test <@ outputs = expected @>
 
     [<Test>]
     let MethodPointsAreDeeperThanMethods() =

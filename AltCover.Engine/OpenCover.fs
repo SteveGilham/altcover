@@ -444,8 +444,24 @@ module internal OpenCover =
            summary.SetAttributeValue("numClasses".X, s.ModuleClasses)
            summary.SetAttributeValue("numMethods".X, s.ModuleMethods))
       let files = head.Parent.Elements("Files".X)
+      let uids = [
+                  head.Parent.Descendants("MethodPoint".X)
+                  head.Parent.Descendants("SequencePoint".X)
+                  head.Parent.Descendants("BranchPoint".X)
+                 ]
+                 |> Seq.concat
+                 |> Seq.map (fun d -> d.Attribute("fileid".X))
+                 |> Seq.filter(fun a -> a.IsNotNull)
+                 |> Seq.map (fun a -> a.Value)
+                 |> Seq.distinct
+                 |> Seq.map Int32.TryParse
+                 |> Seq.filter fst
+                 |> Seq.map snd
+                 |> Set.ofSeq
+
       s.Files
       |> Map.toSeq
+      |> Seq.filter (fun (_, v) -> Set.contains v uids)
       |> Seq.sortBy snd
       |> Seq.iter (fun (k, v) ->
            files
