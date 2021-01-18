@@ -2470,8 +2470,6 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Mono.Options.dll"
   let recorder =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
-  let monitor =
-    Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.Monitor.dll"
   let poshHelp =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
@@ -2506,7 +2504,6 @@ _Target "Packaging" (fun _ ->
       (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
-      (monitor, Some "tools/net472", None)
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
@@ -2520,7 +2517,6 @@ _Target "Packaging" (fun _ ->
       (engine, Some "lib/net472", None)
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
-      (monitor, Some "lib/net472", None)
       (fscore, Some "lib/net472", None)
       (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
@@ -2588,12 +2584,13 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let monitorFiles where = 
+    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let dataFiles1 where =
-    [
-      (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
-      (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
-    ]
-    |> Seq.concat
+    (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2679,16 +2676,15 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          poshHelpFiles "tools/netcoreapp2.0/"
          dataFiles "tools/netcoreapp2.0/"
+         monitorFiles "lib/netstandard2.0/"
          otherFiles
          housekeeping ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat
-      [ apiFiles
-        resourceFiles "lib/net472/"
-        libFiles "lib/net472/"
-        netstdFiles "lib/netstandard2.0"
+      [ netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
+        monitorFiles "lib/netstandard2.0/"
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         poshHelpFiles "lib/netstandard2.0/"
@@ -2708,6 +2704,7 @@ _Target "Packaging" (fun _ ->
         poshFiles "tools/netcoreapp2.1/any/"
         poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
+        monitorFiles "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
         auxFiles
         otherFilesGlobal
