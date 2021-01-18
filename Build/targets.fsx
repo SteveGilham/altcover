@@ -649,7 +649,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 //     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
-       "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Monitor.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll"
        "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
@@ -761,11 +761,11 @@ _Target "FxCop" (fun _ ->
         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
-          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net472/AltCover.Monitor.dll" ]
+          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ]
       else // HACK HACK HACK
         [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
           "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
-          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net472/AltCover.Monitor.dll" ]), // TODO netcore support
+          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ]), // TODO netcore support
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
@@ -2470,6 +2470,8 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Mono.Options.dll"
   let recorder =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
+  let monitor =
+    Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/net20/AltCover.Monitor.dll"
   let poshHelp =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
@@ -2504,6 +2506,7 @@ _Target "Packaging" (fun _ ->
       (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
+      (monitor, Some "lib/net20", None)
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
@@ -2517,6 +2520,8 @@ _Target "Packaging" (fun _ ->
       (engine, Some "lib/net472", None)
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
+      (monitor, Some "lib/net472", None)
+      (monitor, Some "lib/net20", None)
       (fscore, Some "lib/net472", None)
       (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
@@ -2585,7 +2590,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let monitorFiles where = 
-    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
+    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/net20/AltCover.M*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2681,7 +2686,10 @@ _Target "Packaging" (fun _ ->
          housekeeping ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat
-      [ netstdFiles "lib/netstandard2.0"
+      [ apiFiles
+        resourceFiles "lib/net472/"
+        libFiles "lib/net472/"
+        netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
         monitorFiles "lib/netstandard2.0/"
@@ -2705,6 +2713,7 @@ _Target "Packaging" (fun _ ->
         poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
         monitorFiles "lib/netstandard2.0/"
+        [ (monitor, Some "lib/net20", None) ]
         [ (packable, Some "", None) ]
         auxFiles
         otherFilesGlobal
@@ -2875,15 +2884,15 @@ _Target "Unpack" (fun _ ->
       ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
   [
-    "AltCover.Cake"
-    "AltCover.DotNet"
-    "AltCover.Engine" // beware static linkage -- maybe copy from debug?
-    "AltCover.Monitor"
-    "AltCover.PowerShell"
-    "AltCover.Toolkit"
+    "AltCover.Cake", "netstandard2.0"
+    "AltCover.DotNet", "netstandard2.0"
+    "AltCover.Engine", "netstandard2.0" // beware static linkage -- maybe copy from debug?
+    "AltCover.Monitor", "net20"
+    "AltCover.PowerShell", "netstandard2.0"
+    "AltCover.Toolkit", "netstandard2.0"
   ]
-  |> List.iter (fun n ->
-    Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.0/" + n + ".xml")
+  |> List.iter (fun (n,v) ->
+    Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/" + v + "/" + n + ".xml")
     Actions.RunDotnet (dotnetOptions >> dotnetOptionsWithRollForwards) "xmldocmd"
      (unpacked + n + ".dll ./_Documentation/" + n + " --visibility public --skip-unbrowsable --clean")
      ("documenting " + n)))

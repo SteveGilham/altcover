@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.IO;
+using System.Reflection;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace AltCover
 {
@@ -63,18 +63,25 @@ namespace AltCover
     {
       get
       {
-        var rec =
-        AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => a.GetName().Name == assembly)
-            .FirstOrDefault();
+        Assembly rec = null;
+        foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+        {
+          if (a.GetName().Name == assembly)
+          {
+            rec = a;
+            break;
+          }
+        }
+
         if (rec != null)
         {
-          var i = rec.GetTypes()
-              .Where(t => t.Name == "Instance")
-              .FirstOrDefault();
-          if (i != null)
+          foreach (var i in rec.GetTypes())
           {
-            yield return i;
+            if (i.Name == "Instance")
+            {
+              yield return i;
+              break;
+            }
           }
         }
         yield break;
@@ -89,21 +96,31 @@ namespace AltCover
     public static bool TryGetPointTotals(out PointCount totals)
     {
       var instance = RecorderInstance;
-      totals = instance.Aggregate(new PointCount(), (t, i) =>
-         {
-           var xml = i.GetProperty("ReportFile").GetValue(null).ToString();
-           var doc = XDocument.Load(xml);
-           var seqpnt = doc.Descendants("seqpnt").Count();
-           var sp2 = doc.Descendants("SequencePoint").Count()
-                    + doc.Descendants("Method")
-                      .Where(x => !x.Descendants("SequencePoint").Any())
-                      .Count();
-           t.Branch = doc.Descendants("BranchPoint").Count();
-           t.Code = Math.Max(seqpnt, sp2);
-           return t;
-         });
+      totals = new PointCount();
+      var found = false;
+      foreach (var i in instance)
+      {
+        var xml = i.GetProperty("ReportFile").GetValue(null, Type.EmptyTypes).ToString();
+        using (var file = File.OpenRead(xml))
+        {
+          var doc = new XmlDocument();
+          doc.Load(file);
+          var seqpnt = doc.DocumentElement.SelectNodes("//seqpnt").Count;
+          var sp2 = doc.DocumentElement.SelectNodes("//SequencePoint").Count;
 
-      return instance.Any();
+          foreach (XmlNode m in doc.DocumentElement.SelectNodes("//Method"))
+          {
+            if (m.SelectSingleNode("//SequencePoint") is null)
+              sp2++;
+          }
+
+          totals.Branch = doc.DocumentElement.SelectNodes("//BranchPoint").Count;
+          totals.Code = Math.Max(seqpnt, sp2);
+          found = true;
+        }
+      }
+
+      return found;
     }
 
     /// <summary>
@@ -115,26 +132,34 @@ namespace AltCover
     public static bool TryGetVisitTotals(out PointCount totals)
     {
       var instance = RecorderInstance;
-      totals = instance
-        .Select(t => t.GetNestedType("I", System.Reflection.BindingFlags.NonPublic))
-        .Where(t => t is object)
-        .Aggregate(new PointCount(), (t, i) =>
+      totals = new PointCount();
+      var found = false;
+      foreach (var i in instance)
       {
-        var visits = i.GetProperty("visits", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).GetValue(null)
+        found = true;
+        var inner = i.GetNestedType("I", System.Reflection.BindingFlags.NonPublic);
+        var visits = inner.GetProperty("visits",
+           System.Reflection.BindingFlags.NonPublic |
+           System.Reflection.BindingFlags.Public |
+           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes)
          as IDictionary;
 
         lock (visits)
         {
-          var indexes = visits.Values.Cast<IDictionary>()
-                .SelectMany(d => d.Keys.Cast<int>());
-          var total = indexes.Count();
-          t.Branch = indexes.Count(index => index < 0);
-          t.Code = total - t.Branch;
-          return t;
+          foreach (var v in visits.Values)
+          {
+            var innerV = v as IDictionary;
+            foreach (var k in innerV.Keys)
+            {
+              if ((int)k < 0)
+                totals.Branch++;
+              else
+                totals.Code++;
+            }
+          }
         }
-      });
-
-      return instance.Any();
+      }
+      return found;
     }
   }
 }

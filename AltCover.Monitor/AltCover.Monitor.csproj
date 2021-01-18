@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
-    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
+    <TargetFramework>net20</TargetFramework>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Monitor</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -29,27 +28,25 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-  
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="_Intermediate\**" />
     <EmbeddedResource Remove="_Intermediate\**" />
     <None Remove="_Intermediate\**" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net20" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  
 </Project>
