@@ -4600,6 +4600,43 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
+_Target "Issue114" (fun _ ->
+  try
+    Directory.ensure "./_Issue114"
+    Shell.cleanDir ("./_Issue114")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.api")
+    config.Save "./_Issue114/NuGet.config"
+
+    let csproj = XDocument.Load "./Sample26/sample26.fsproj"
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover.api"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./_Issue114/sample26.fsproj"
+    Shell.copy "./_Issue114" (!!"./Sample26/*.fs")
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue114")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                             { tmp with MSBuildParams = mparams}) ""
+
+    let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "nunit"; "Adapter"; "FSharp"; "AltCover" |] }
+    let pp0 = AltCover.PrepareOptions.Primitive p0
+    let c0 = Primitive.CollectOptions.Create()
+    let cc0 = AltCover.CollectOptions.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
+            Configuration = DotNet.BuildConfiguration.Debug
+            NoBuild = false }).WithAltCoverOptions pp0 cc0 ForceTrue)
+        .WithAltCoverImportModule().WithAltCoverGetVersion()
+      |> testWithCLIArguments) ""
+  finally
+    let folder = (nugetCache @@ "altcover.api") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
 // AOB
 
 _Target "MakeDocumentation" (fun _ ->
@@ -4907,6 +4944,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue20"
+==> "Deployment"
+
+"Unpack"
+==> "Issue114"
 ==> "Deployment"
 
 "Unpack"
