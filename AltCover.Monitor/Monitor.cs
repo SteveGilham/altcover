@@ -106,13 +106,8 @@ namespace AltCover
           var doc = new XmlDocument();
           doc.Load(file);
           var seqpnt = doc.DocumentElement.SelectNodes("//seqpnt").Count;
-          var sp2 = doc.DocumentElement.SelectNodes("//SequencePoint").Count;
-
-          foreach (XmlNode m in doc.DocumentElement.SelectNodes("//Method"))
-          {
-            if (m.SelectSingleNode("//SequencePoint") is null)
-              sp2++;
-          }
+          var sp2 = doc.DocumentElement.SelectNodes("//SequencePoint").Count
+                    + doc.DocumentElement.SelectNodes("//MethodPoint[@uspid]").Count;
 
           totals.Branch = doc.DocumentElement.SelectNodes("//BranchPoint").Count;
           totals.Code = Math.Max(seqpnt, sp2);
