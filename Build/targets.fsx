@@ -915,7 +915,7 @@ let NUnitRetry f spec =
       then File.Delete spec
       NUnit3.run (f >> (fun p -> {p with ResultSpecs = [ spec ]}))
     with x ->
-      printfn "%A" x
+      printfn "doNUnitRetry caught %A" x
       if depth > 2
       then
         printfn "Recursion limited"
@@ -1237,7 +1237,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
              ToolPath = nunitConsole
              WorkingDir = "." }) "./_Reports/UnitTestWithAltCoverReport.xml"
   with x ->
-    printfn "%A" x
+    printfn "UnitTestWithAltCover caught %A" x
     reraise()
 
   printfn "Instrument the net20 Recorder tests"
