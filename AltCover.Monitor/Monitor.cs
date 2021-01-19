@@ -51,6 +51,65 @@ namespace AltCover
     public int Branch;
   }
 
+  internal sealed class Carrier : IDisposable
+  {
+    private readonly ArrayList data = new ArrayList();
+    private bool disposedValue;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Exceptions",
+                     "UseObjectDisposedExceptionRule",
+                     Justification = "There is no use case")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+    public T Add<T>(T item)
+    {
+      data.Add(item);
+      return item;
+    }
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Interoperability",
+                     "DelegatesPassedToNativeCodeMustIncludeExceptionHandlingRule",
+                     Justification = "Gendarme bug here")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+    private void Dispose(bool disposing)
+    {
+      if (!disposedValue)
+      {
+        if (disposing)
+        {
+          // dispose managed state (managed objects)
+          foreach (var item in data)
+          {
+            (item as IDisposable)?.Dispose();
+          }
+
+          data.Clear();
+        }
+
+        // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+        // TODO: set large fields to null
+        disposedValue = true;
+      }
+    }
+
+    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+    // ~Carrier()
+    // {
+    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+    //     Dispose(disposing: false);
+    // }
+
+    public void Dispose()
+    {
+      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+      Dispose(disposing: true);
+      GC.SuppressFinalize(this);
+    }
+  }
+
   /// <summary>
   /// Provides real-time insights into the recording process.
   /// </summary>
@@ -93,6 +152,15 @@ namespace AltCover
     /// </summary>
     /// <param name="totals">The total point counts if running under AltCover coverage</param>
     /// <returns>True if running under AltCover coverage</returns>
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Correctness",
+                     "EnsureLocalDisposalRule",
+                     Justification = "Carrier type does it")]
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidRepetitiveCallsToPropertiesRule",
+                     Justification = "Once per instance")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static bool TryGetPointTotals(out PointCount totals)
     {
       var instance = RecorderInstance;
@@ -102,14 +170,22 @@ namespace AltCover
       {
         var xml = i.GetProperty("ReportFile").GetValue(null, Type.EmptyTypes).ToString();
         using (var file = File.OpenRead(xml))
+        using (var scans = new Carrier())
         {
           var doc = new XmlDocument();
           doc.Load(file);
-          var seqpnt = doc.DocumentElement.SelectNodes("//seqpnt").Count;
-          var sp2 = doc.DocumentElement.SelectNodes("//SequencePoint").Count
-                    + doc.DocumentElement.SelectNodes("//MethodPoint[@uspid]").Count;
+          var seqpnt = scans.Add(doc.DocumentElement.SelectNodes("//seqpnt")).Count;
+          var sp2 = scans.Add(doc.DocumentElement.SelectNodes("//SequencePoint")).Count;
 
-          totals.Branch = doc.DocumentElement.SelectNodes("//BranchPoint").Count;
+          foreach (XmlElement m in scans.Add(doc.DocumentElement.SelectNodes("//Method")))
+          {
+            if (scans.Add(m.SelectNodes(".//SequencePoint")).Count == 0)
+            {
+              sp2++;
+            }
+          }
+
+          totals.Branch = scans.Add(doc.DocumentElement).SelectNodes("//BranchPoint").Count;
           totals.Code = Math.Max(seqpnt, sp2);
           found = true;
         }

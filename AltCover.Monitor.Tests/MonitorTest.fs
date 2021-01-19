@@ -27,8 +27,6 @@ module MonitorTests =
 // $lines = Get-Content C:\Users\steve\Documents\GitHub\altcover\_Reports\MonitorTestWithAltCoverCoreRunner.net5.0.xml
 // $lines | ? { $_ -like "*BranchPoint *" } | Measure-Object
 // $lines | ? { $_ -like "* uspid=*" } | ? { -not ($_ -like "*xsi:type*") } | Measure-Object
-// Current (169, 41) = (140, 41)
-
     test <@ (code, branch) = (eCode, eBranch) @>
 
   [<Test>]
@@ -39,4 +37,4 @@ module MonitorTests =
     test'<@ a && a0 @> "should be running under AltCover"
     let code = b.Code
     let branch = b.Branch
-    test <@ (code, branch) = (131, 33) @>
+    test <@ (code, branch) = (148, 41) @>

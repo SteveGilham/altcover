@@ -760,12 +760,10 @@ _Target "FxCop" (fun _ ->
       then
         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
-          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ]
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
       else // HACK HACK HACK
         [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
-          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ]), // TODO netcore support
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
@@ -795,7 +793,8 @@ _Target "FxCop" (fun _ ->
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
+    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
     ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
@@ -2590,7 +2589,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let monitorFiles where = 
-    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/net20/AltCover.M*.*")
+    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2712,8 +2711,9 @@ _Target "Packaging" (fun _ ->
         poshFiles "tools/netcoreapp2.1/any/"
         poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
-        monitorFiles "lib/netstandard2.0/"
-        [ (monitor, Some "lib/net20", None) ]
+        // monitorFiles "lib/netstandard2.0/"
+        // monitorFiles "lib/netcoreapp2.1/any/"
+        // [ (monitor, Some "lib/net20", None) ]
         [ (packable, Some "", None) ]
         auxFiles
         otherFilesGlobal
@@ -2884,15 +2884,15 @@ _Target "Unpack" (fun _ ->
       ((packageVersionPart "PowerShellStandard.Library") + "System.Management.Automation.dll")
 
   [
-    "AltCover.Cake", "netstandard2.0"
-    "AltCover.DotNet", "netstandard2.0"
-    "AltCover.Engine", "netstandard2.0" // beware static linkage -- maybe copy from debug?
-    "AltCover.Monitor", "net20"
-    "AltCover.PowerShell", "netstandard2.0"
-    "AltCover.Toolkit", "netstandard2.0"
+    "AltCover.Cake"
+    "AltCover.DotNet"
+    "AltCover.Engine" // beware static linkage -- maybe copy from debug?
+    "AltCover.Monitor"
+    "AltCover.PowerShell"
+    "AltCover.Toolkit"
   ]
-  |> List.iter (fun (n,v) ->
-    Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/" + v + "/" + n + ".xml")
+  |> List.iter (fun n ->
+    Shell.copyFile (unpacked + n + ".xml") ("./_Binaries/" + n + "/Release+AnyCPU/netstandard2.0/" + n + ".xml")
     Actions.RunDotnet (dotnetOptions >> dotnetOptionsWithRollForwards) "xmldocmd"
      (unpacked + n + ".dll ./_Documentation/" + n + " --visibility public --skip-unbrowsable --clean")
      ("documenting " + n)))
