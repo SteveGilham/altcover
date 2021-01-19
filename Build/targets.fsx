@@ -4618,14 +4618,14 @@ _Target "Issue114" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.api")
     config.Save "./_Issue114/NuGet.config"
 
-    let csproj = XDocument.Load "./Sample26/sample26.fsproj"
+    let csproj = XDocument.Load "./Sample26/Sample26.fsproj"
     let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
         (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover.api"),
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
-    csproj.Save "./_Issue114/sample26.fsproj"
+    csproj.Save "./_Issue114/Sample26.fsproj"
     Shell.copy "./_Issue114" (!!"./Sample26/*.fs")
     DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue114")
                              let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
