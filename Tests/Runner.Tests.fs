@@ -295,6 +295,38 @@ module AltCoverRunnerTests =
 
     // Runner.fs and CommandLine.fs
     [<Test>]
+    let ShouldGeneratePlausibleJson() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/NCover.json")
+      Runner.jsonPath := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        let r = Runner.I.jsonSummary baseline ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("NCover.json", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd()
+        Assert.That
+          (result, Is.EqualTo expected)
+      finally
+        Runner.jsonPath := None
+
+    [<Test>]
     let UsageIsAsExpected() =
       Runner.init()
       let options = Runner.declareOptions()

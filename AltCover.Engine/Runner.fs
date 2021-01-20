@@ -489,8 +489,8 @@ module internal Runner =
 
     let internal convertReport (report : XDocument) (stream : Stream) =
       doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-                     XmlExtensions.ToJson(report.Root).ToString()
-                     |> writer.WriteLine)
+          XmlExtensions.ToJson(report.Root).ToString() // ready minified
+          |> writer.Write)
 
     let internal jsonSummary (report : XDocument) (_ : ReportFormat) result =
       doWithStream(fun () -> File.OpenWrite(!jsonPath |> Option.get))
