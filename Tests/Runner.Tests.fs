@@ -377,7 +377,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 11
+      let optionCount = 12
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort
@@ -843,6 +843,73 @@ module AltCoverRunnerTests =
         finally
           Runner.I.initSummary()
           LCov.path := None)
+
+    [<Test>]
+    let ParsingJsonGivesJson() =
+      Runner.init()
+      lock Runner.jsonPath (fun () ->
+        try
+          Runner.jsonPath := None
+          Runner.I.initSummary()
+          let options = Runner.declareOptions()
+          let unique = "some exe"
+          let input = [| "-j"; unique |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Right(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.Empty)
+          match !Runner.jsonPath with
+          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+          Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
+        finally
+          Runner.I.initSummary()
+          Runner.jsonPath := None)
+
+    [<Test>]
+    let ParsingMultipleJsonGivesFailure() =
+      Runner.init()
+      lock Runner.jsonPath (fun () ->
+        try
+          Runner.jsonPath := None
+          Runner.I.initSummary()
+          let options = Runner.declareOptions()
+          let unique = Guid.NewGuid().ToString()
+
+          let input =
+            [| "-j"
+               unique
+               "/j"
+               unique.Replace("-", "+") |]
+
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--jsonReport : specify this only once")
+        finally
+          Runner.I.initSummary()
+          Runner.jsonPath := None)
+
+    [<Test>]
+    let ParsingNoJsonGivesFailure() =
+      Runner.init()
+      lock Runner.jsonPath (fun () ->
+        try
+          Runner.jsonPath := None
+          Runner.I.initSummary()
+          let options = Runner.declareOptions()
+          let blank = " "
+          let input = [| "-j"; blank |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.EqualTo "UsageError")
+        finally
+          Runner.I.initSummary()
+          Runner.jsonPath := None)
 
     [<Test>]
     let ParsingThresholdGivesThreshold() =

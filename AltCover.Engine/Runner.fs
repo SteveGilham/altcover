@@ -10,6 +10,7 @@ open System.Text
 open System.Xml
 open System.Xml.Linq
 
+open Manatee.Json
 open Mono.Cecil
 open Mono.Options
 
@@ -133,6 +134,7 @@ module internal Runner =
   let mutable internal output : Option<string> = None
   let internal summary = StringBuilder()
   let mutable internal summaryFormat = SummaryFormat.Default
+  let internal jsonPath : Option<string> ref = ref None
 
   let internal init() =
     CommandLine.verbosity <- 0
@@ -143,6 +145,7 @@ module internal Runner =
     executable := None
     LCov.path := None
     Cobertura.path := None
+    jsonPath := None
     collect := false
     threshold <- None
     output <- None
@@ -484,10 +487,22 @@ module internal Runner =
     let mutable internal summaries : (XDocument -> ReportFormat -> int -> (int * byte * string)) list =
       []
 
+    let internal convertReport (report : XDocument) (stream : Stream) =
+      doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
+                     XmlExtensions.ToJson(report.Root).ToString()
+                     |> writer.WriteLine)
+
+    let internal jsonSummary (report : XDocument) (_ : ReportFormat) result =
+      doWithStream(fun () -> File.OpenWrite(!jsonPath |> Option.get))
+        (convertReport report)
+      (result, 0uy, String.Empty)
+
     let internal addLCovSummary() =
       summaries <- LCov.summary :: summaries
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
+    let internal addJsonSummary() =
+      summaries <- jsonSummary :: summaries
 
     let internal initSummary() =
       summaries <- [ standardSummary ]
@@ -535,6 +550,18 @@ module internal Runner =
                           |> Path.GetFullPath
                           |> Some
              I.addLCovSummary()))
+      ("j|jsonReport=",
+       (fun x ->
+         if CommandLine.validatePath "--jsonReport" x then
+           if Option.isSome !jsonPath then
+             CommandLine.error <-
+               CommandLine.Format.Local("MultiplesNotAllowed", "--jsonReport")
+               :: CommandLine.error
+           else
+             jsonPath  := x
+                          |> Path.GetFullPath
+                          |> Some
+             I.addJsonSummary()))
       ("t|threshold=",
        (fun x ->
          let ok, t = Threshold.Validate x

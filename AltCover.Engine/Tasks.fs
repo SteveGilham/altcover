@@ -196,6 +196,9 @@ type Collect() =
   member val SummaryFormat = String.Empty with get, set
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
+  [<SuppressMessage("Microsoft.Naming", "CA1704",
+    Justification="'Json' is jargon")>]
+  member val JsonReport = String.Empty with get, set
 
   [<Output>]
   [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
@@ -223,6 +226,7 @@ type Collect() =
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
           LcovReport = self.LcovReport
+          JsonReport = self.JsonReport
           Threshold = self.Threshold
           Cobertura = self.Cobertura
           OutputFile = self.OutputFile
