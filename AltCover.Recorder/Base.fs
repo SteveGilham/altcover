@@ -94,7 +94,13 @@ module internal Counter =
 
   let internal branchMask = 0x7FFFFFFF
 
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Access by reflection in the monitor")>]
   let mutable internal totalVisits = 0L
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Access by reflection in the monitor")>]
   let mutable internal branchVisits = 0L
 
   // Implementation details
