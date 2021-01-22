@@ -32,9 +32,9 @@ module internal Json =
          let attribute = simpleAttributeToValue a
          attributes.Add (a.Name.LocalName, attribute))
       element.Add ("$", JsonValue attributes)
-    if xElement.Value |> String.IsNullOrWhiteSpace |> not
-    then
-      element.Add("_", JsonValue(xElement.Value))
+    //if xElement.Value |> String.IsNullOrWhiteSpace |> not
+    //then
+    //  element.Add("_", JsonValue(xElement.Value))
     JsonValue element
 
   let addMethodSeqpnts (mjson:JsonValue) (m:XElement) =
@@ -71,11 +71,41 @@ module internal Json =
     let jv = JsonValue jo
     jv
 
+  let opencoverToJson report =
+    let json = simpleElementToJSon report
+    let summary = report.Elements(XName.Get "Summary")
+                  |> Seq.tryHead
+    summary |> Option.iter (fun s -> let js = simpleElementToJSon s
+                                     json.Object.Add("Summary", JsonValue js))
+
+    let modules = JsonArray()
+    json.Object.Add("Module", JsonValue modules)
+    report.Descendants(XName.Get "Module")
+    |> Seq.iter(fun m ->
+      let mjson = simpleElementToJSon m
+      // TODO --
+      // Summary
+      // FullName
+      // ModulePath
+      // ModuleTime
+      // ModuleName
+      // addModuleFiles mjson m
+      // addModuleClasses mjson m
+      modules.Add mjson
+    )
+    let jo = JsonObject()
+    jo.Add("CoverageSession", json)
+    let jv = JsonValue jo
+    jv
+
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-        (match format with
-         | ReportFormat.NCover -> ncoverToJson report.Root
-         | _ -> XmlExtensions.ToJson(report.Root)).ToString() // ready minified
+        (report.Root
+        |> (match format with
+            | ReportFormat.NCover -> ncoverToJson
+            | ReportFormat.OpenCover
+            | ReportFormat.OpenCoverWithTracking ->  opencoverToJson
+            | _ -> XmlExtensions.ToJson)).ToString() // ready minified
         |> writer.Write)
 
   let internal summary (report : XDocument) (format : ReportFormat) result =
