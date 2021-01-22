@@ -306,13 +306,13 @@ module AltCoverRunnerTests =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
            Guid.NewGuid().ToString() + "/NCover.json")
-      Runner.jsonPath := Some unique
+      Json.path := Some unique
       unique
       |> Path.GetDirectoryName
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Runner.I.jsonSummary baseline ReportFormat.NCover 0
+        let r = Json.summary baseline ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -324,7 +324,7 @@ module AltCoverRunnerTests =
         Assert.That
           (result, Is.EqualTo expected)
       finally
-        Runner.jsonPath := None
+        Json.path := None
 
     [<Test>]
     let UsageIsAsExpected() =
@@ -879,9 +879,9 @@ module AltCoverRunnerTests =
     [<Test>]
     let ParsingJsonGivesJson() =
       Runner.init()
-      lock Runner.jsonPath (fun () ->
+      lock Json.path (fun () ->
         try
-          Runner.jsonPath := None
+          Json.path := None
           Runner.I.initSummary()
           let options = Runner.declareOptions()
           let unique = "some exe"
@@ -891,19 +891,19 @@ module AltCoverRunnerTests =
           | Right(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
-          match !Runner.jsonPath with
+          match !Json.path with
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
           Runner.I.initSummary()
-          Runner.jsonPath := None)
+          Json.path := None)
 
     [<Test>]
     let ParsingMultipleJsonGivesFailure() =
       Runner.init()
-      lock Runner.jsonPath (fun () ->
+      lock Json.path (fun () ->
         try
-          Runner.jsonPath := None
+          Json.path := None
           Runner.I.initSummary()
           let options = Runner.declareOptions()
           let unique = Guid.NewGuid().ToString()
@@ -922,14 +922,14 @@ module AltCoverRunnerTests =
             Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--jsonReport : specify this only once")
         finally
           Runner.I.initSummary()
-          Runner.jsonPath := None)
+          Json.path := None)
 
     [<Test>]
     let ParsingNoJsonGivesFailure() =
       Runner.init()
-      lock Runner.jsonPath (fun () ->
+      lock Json.path (fun () ->
         try
-          Runner.jsonPath := None
+          Json.path := None
           Runner.I.initSummary()
           let options = Runner.declareOptions()
           let blank = " "
@@ -941,7 +941,7 @@ module AltCoverRunnerTests =
             Assert.That(x, Is.EqualTo "UsageError")
         finally
           Runner.I.initSummary()
-          Runner.jsonPath := None)
+          Json.path := None)
 
     [<Test>]
     let ParsingThresholdGivesThreshold() =
