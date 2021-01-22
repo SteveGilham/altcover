@@ -36,6 +36,7 @@
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
     <EmbeddedResource Include="NCover.json" />
+    <EmbeddedResource Include="OpenCover.json" />
     <EmbeddedResource Include="NCover.lcov" />
     <EmbeddedResource Include="OpenCover.lcov" />
     <EmbeddedResource Include="NCover.cobertura" />

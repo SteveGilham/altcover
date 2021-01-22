@@ -293,9 +293,9 @@ module AltCoverRunnerTests =
         Directory.SetCurrentDirectory(here)
         maybeIOException (fun () -> Directory.Delete(unique))
 
-    // Runner.fs and CommandLine.fs
+    //Json.fs
     [<Test>]
-    let ShouldGeneratePlausibleJson() =
+    let NCoverShouldGeneratePlausibleJson() =
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -321,11 +321,49 @@ module AltCoverRunnerTests =
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected = reader.ReadToEnd()
-        Assert.That
-          (result, Is.EqualTo expected)
+        //Assert.That
+        //  (result, Is.EqualTo expected)
+        test <@ result = expected @>
       finally
         Json.path := None
 
+    [<Test>]
+    let OpenCoverShouldGeneratePlausibleJson() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/OpenCover.json")
+      Json.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addJsonSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize baseline ReportFormat.OpenCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("OpenCover.json", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd()
+        //Assert.That
+        //  (result, Is.EqualTo expected)
+        test <@ result = expected @>
+      finally
+        Json.path := None
+
+    // Runner.fs and CommandLine.fs
     [<Test>]
     let UsageIsAsExpected() =
       Runner.init()

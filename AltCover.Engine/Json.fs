@@ -13,12 +13,72 @@ open Manatee.Json
 module internal Json =
   let internal path : Option<string> ref = ref None
 
-  let internal convertReport (report : XDocument) (stream : Stream) =
+  let simpleAttributeToValue (a:XAttribute) =
+    let value = a.Value
+    let b,v = Double.TryParse value
+    if b then JsonValue v
+    else
+      let b2, v2 = Boolean.TryParse value
+      if b2 then JsonValue v2
+      else JsonValue value
+
+  let simpleElementToJSon (xElement : XElement) =
+    let element = JsonObject()
+    if xElement.HasAttributes
+    then
+      let attributes = JsonObject()
+      xElement.Attributes()
+      |> Seq.iter(fun (a:XAttribute) ->
+         let attribute = simpleAttributeToValue a
+         attributes.Add (a.Name.LocalName, attribute))
+      element.Add ("$", JsonValue attributes)
+    if xElement.Value |> String.IsNullOrWhiteSpace |> not
+    then
+      element.Add("_", JsonValue(xElement.Value))
+    JsonValue element
+
+  let addMethodSeqpnts (mjson:JsonValue) (m:XElement) =
+    let seqpnts = JsonArray()
+    mjson.Object.Add("seqpnt", JsonValue seqpnts)
+    m.Descendants(XName.Get "seqpnt")
+    |> Seq.iter(fun sp ->
+      let spjson = simpleElementToJSon sp
+      seqpnts.Add spjson
+    )
+
+  let addModuleMethods (mjson:JsonValue) (m:XElement) =
+    let methods = JsonArray()
+    mjson.Object.Add("method", JsonValue methods)
+    m.Descendants(XName.Get "method")
+    |> Seq.iter(fun m2 ->
+      let m2json = simpleElementToJSon m2
+      addMethodSeqpnts m2json m
+      methods.Add m2json
+    )
+
+  let ncoverToJson report =
+    let json = simpleElementToJSon report
+    let modules = JsonArray()
+    json.Object.Add("module", JsonValue modules)
+    report.Descendants(XName.Get "module")
+    |> Seq.iter(fun m ->
+      let mjson = simpleElementToJSon m
+      addModuleMethods mjson m
+      modules.Add mjson
+    )
+    let jo = JsonObject()
+    jo.Add("coverage", json)
+    let jv = JsonValue jo
+    jv
+
+  let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-        XmlExtensions.ToJson(report.Root).ToString() // ready minified
+        (match format with
+         | ReportFormat.NCover -> ncoverToJson report.Root
+         | _ -> XmlExtensions.ToJson(report.Root)).ToString() // ready minified
         |> writer.Write)
 
-  let internal summary (report : XDocument) (_ : ReportFormat) result =
+  let internal summary (report : XDocument) (format : ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-      (convertReport report)
+      (convertReport report format)
     (result, 0uy, String.Empty)
