@@ -118,9 +118,8 @@ namespace AltCover
     internal static string assembly = "AltCover.Recorder.g";
 
     // Use the Null Object pattern here
-    private static IEnumerable<Type> RecorderInstance
+    private static IEnumerable<Type> TypeInstance(string name)
     {
-      get
       {
         Assembly rec = null;
         foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
@@ -136,7 +135,7 @@ namespace AltCover
         {
           foreach (var i in rec.GetTypes())
           {
-            if (i.Name == "Instance")
+            if (i.Name == name)
             {
               yield return i;
               break;
@@ -163,7 +162,7 @@ namespace AltCover
 #pragma warning restore IDE0079 // Remove unnecessary suppression
     public static bool TryGetPointTotals(out PointCount totals)
     {
-      var instance = RecorderInstance;
+      var instance = TypeInstance("Instance");
       totals = new PointCount();
       var found = false;
       foreach (var i in instance)
@@ -202,34 +201,26 @@ namespace AltCover
     /// <remarks>Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.</remarks>
     public static bool TryGetVisitTotals(out PointCount totals)
     {
-      var instance = RecorderInstance;
+      var counter = TypeInstance("Counter");
       totals = new PointCount();
       var found = false;
-      foreach (var i in instance)
+      foreach (var t in counter)
       {
-        found = true;
-        var inner = i.GetNestedType("I", System.Reflection.BindingFlags.NonPublic);
-        var visits = inner.GetProperty("visits",
+        var temp = (Int64)t.GetProperty("branchVisits",
            System.Reflection.BindingFlags.NonPublic |
            System.Reflection.BindingFlags.Public |
-           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes)
-         as IDictionary;
+           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes);
+        totals.Branch = (int)temp;
 
-        lock (visits)
-        {
-          foreach (var v in visits.Values)
-          {
-            var innerV = v as IDictionary;
-            foreach (var k in innerV.Keys)
-            {
-              if ((int)k < 0)
-                totals.Branch++;
-              else
-                totals.Code++;
-            }
-          }
-        }
+        temp = (Int64)t.GetProperty("totalVisits",
+           System.Reflection.BindingFlags.NonPublic |
+           System.Reflection.BindingFlags.Public |
+           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes);
+        totals.Code = (int)temp - totals.Branch;
+
+        found = true;
       }
+
       return found;
     }
   }

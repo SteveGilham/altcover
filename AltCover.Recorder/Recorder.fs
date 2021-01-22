@@ -208,7 +208,10 @@ module Instance =
     let internal watcher = new FileSystemWatcher()
     let mutable internal recording = true
 
-    let internal clear() = visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+    let internal clear() =
+      visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+      Counter.branchVisits <- 0L
+      Counter.totalVisits <- 0L
 
     /// <summary>
     /// This method flushes hit count buffers.

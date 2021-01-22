@@ -94,6 +94,9 @@ module internal Counter =
 
   let internal branchMask = 0x7FFFFFFF
 
+  let mutable internal totalVisits = 0L
+  let mutable internal branchVisits = 0L
+
   // Implementation details
 #if DEBUG
   module internal I =
@@ -274,7 +277,11 @@ module internal Counter =
       if not (counts.ContainsKey hitPointId) then
         lock counts (fun () ->
         if not (counts.ContainsKey hitPointId)
-        then counts.Add(hitPointId, PointVisit.Create()))
+        then
+          System.Threading.Interlocked.Increment(&totalVisits) |> ignore
+          if hitPointId < 0
+          then System.Threading.Interlocked.Increment(&branchVisits) |> ignore
+          counts.Add(hitPointId, PointVisit.Create()))
 
 #if RUNNER
     let internal addTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
