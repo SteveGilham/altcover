@@ -73,24 +73,33 @@ module internal Json =
 
   let opencoverToJson report =
     let json = simpleElementToJSon report
-    let summary = report.Elements(XName.Get "Summary")
-                  |> Seq.tryHead
-    summary |> Option.iter (fun s -> let js = simpleElementToJSon s
-                                     json.Object.Add("Summary", JsonValue js))
+    report.Elements(XName.Get "Summary")
+    |> Seq.iter (fun s -> let js = simpleElementToJSon s
+                          json.Object.Add("Summary", JsonValue js))
 
     let modules = JsonArray()
     json.Object.Add("Module", JsonValue modules)
     report.Descendants(XName.Get "Module")
     |> Seq.iter(fun m ->
       let mjson = simpleElementToJSon m
+      m.Elements(XName.Get "Summary")
+      |> Seq.iter (fun s -> let js = simpleElementToJSon s
+                            mjson.Object.Add("Summary", JsonValue js))
+
+      [
+        "FullName"
+        "ModulePath"
+        "ModuleTime"
+        "ModuleName"
+      ]
+      |> Seq.iter  (fun tag ->
+        m.Elements(XName.Get tag)
+        |> Seq.iter (fun s -> let js = s.Value
+                              mjson.Object.Add(tag, JsonValue js)))
       // TODO --
-      // Summary
-      // FullName
-      // ModulePath
-      // ModuleTime
-      // ModuleName
       // addModuleFiles mjson m
       // addModuleClasses mjson m
+      // addModuleTrackedMethods mjson m
       modules.Add mjson
     )
     let jo = JsonObject()
