@@ -155,7 +155,7 @@ NUGET
     Microsoft.Win32.SystemEvents (5.0) - restriction: >= netcoreapp3.0
       Microsoft.NETCore.Platforms (>= 5.0) - restriction: >= netcoreapp2.0
     Mono.Posix.NETStandard (1.0) - restriction: >= netstandard2.0
-    MSBuild.StructuredLogger (2.1.272) - restriction: >= netstandard2.0
+    MSBuild.StructuredLogger (2.1.303) - restriction: >= netstandard2.0
       Microsoft.Build (>= 16.4) - restriction: >= netstandard2.0
       Microsoft.Build.Framework (>= 16.4) - restriction: >= netstandard2.0
       Microsoft.Build.Tasks.Core (>= 16.4) - restriction: >= netstandard2.0

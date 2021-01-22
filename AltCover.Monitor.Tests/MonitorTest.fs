@@ -37,4 +37,4 @@ module MonitorTests =
     test'<@ a && a0 @> "should be running under AltCover"
     let code = b.Code
     let branch = b.Branch
-    test <@ (code, branch) = (148, 41) @>
+    test <@ (code, branch) = (137, 34) @>

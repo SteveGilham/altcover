@@ -110,14 +110,16 @@ module AltCoverTests =
         Instance.Visit "key" 17
         Instance.I.recording <- true
         Instance.CoverageFormat <- ReportFormat.NCover
-        Instance.Visit key 23
+        Instance.Visit key -23
         Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-        Instance.Visit key 23
+        Instance.Visit key -23
         Assert.True( Adapter.VisitsSeq()
                      |> Seq.length = 1 )
         Assert.True( Adapter.VisitsEntrySeq key
                      |> Seq.length = 1 )
-        Assert.True( Adapter.VisitCount(key, 23) = 2L )
+        Assert.True( Adapter.VisitCount(key, -23) = 2L )
+        Assert.That(Counter.totalVisits, Is.EqualTo 1L)
+        Assert.That(Counter.branchVisits, Is.EqualTo 1L)
       finally
         Instance.CoverageFormat <- ReportFormat.NCover
         Instance.I.recording <- true
