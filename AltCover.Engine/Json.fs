@@ -34,7 +34,7 @@ module internal Json =
          element.Add (a.Name.LocalName, attribute))
     JsonValue element
 
-  let addMethodSeqpnts (mjson:JsonValue) (m:XElement) =
+  let addMethodSeqpnts (mjson:JsonValue) (m:XContainer) =
     let seqpnts = JsonArray()
     m.Descendants(XName.Get "seqpnt")
     |> Seq.iter(fun sp ->
@@ -55,37 +55,38 @@ module internal Json =
     if methods.Count > 0
     then mjson.Object.Add("method", JsonValue methods)
 
-  let addTerminalGroup group item (json:JsonValue) (x:XElement) =
+  let addGenericGroup group item f (json:JsonValue) (x:XContainer) =
     let items = JsonArray()
     x.Descendants(XName.Get group)
     |> Seq.collect (fun f -> f.Descendants(XName.Get item))
-    |> Seq.iter(fun m2 ->
-      let m2json = simpleElementToJSon m2
-      items.Add m2json
+    |> Seq.iter(fun x ->
+      let json = simpleElementToJSon x
+      items.Add json
+      f json x
     )
     if items.Count > 0
     then json.Object.Add(item, JsonValue items)
 
-  let addMethodPoints group item (mjson:JsonValue) (m:XElement) =
-    let points = JsonArray()
-    m.Descendants(XName.Get group)
-    |> Seq.collect (fun c -> c.Descendants(XName.Get item))
-    |> Seq.iter(fun x ->
-      let point = simpleElementToJSon x
-      points.Add point
-      addTerminalGroup "Times" "Time"  point x
-      addTerminalGroup "TrackedMethodRefs" "TrackedMethodRef"  point x
-    )
-    if points.Count > 0
-    then mjson.Object.Add(item, JsonValue points)
+  let addTerminalGroup group item (json:JsonValue) (x:XContainer) =
+    addGenericGroup group item (fun _ _ -> ()) json x
 
-  let addClassMethods (mjson:JsonValue) (m:XElement) =
-    let methods = JsonArray()
-    m.Descendants(XName.Get "Methods")
-    |> Seq.collect (fun c -> c.Descendants(XName.Get "Method"))
-    |> Seq.iter(fun x ->
+  let addMethodPoints group item (json:JsonValue) (x:XContainer) =
+    addGenericGroup group item (fun point x ->
+      addTerminalGroup "Times" "Time"  point x
+      addTerminalGroup "TrackedMethodRefs" "TrackedMethodRef"  point x) json x
+
+  let addIntermediateGroup group item perItem (json:JsonValue) (x:XContainer) =
+    let items = JsonArray()
+    x.Descendants(XName.Get group)
+    |> Seq.collect (fun c -> c.Descendants(XName.Get item))
+    |> Seq.iter (perItem items)
+    if items.Count > 0
+    then json.Object.Add(item, JsonValue items)
+
+  let addClassMethods (mjson:JsonValue) (m:XContainer) =
+    addIntermediateGroup "Methods" "Method" (fun items x ->
       let ``method`` = simpleElementToJSon x
-      methods.Add ``method``
+      items.Add ``method``
       [
         "Summary"
         "FileRef"
@@ -106,17 +107,12 @@ module internal Json =
                               ``method``.Object.Add(tag, JsonValue js)))
       addMethodPoints "SequencePoints" "SequencePoint"  ``method`` x
       addMethodPoints "BranchPoints" "BranchPoint" ``method`` x
-    )
-    if methods.Count > 0
-    then mjson.Object.Add("Method", JsonValue methods)
+    ) mjson m
 
-  let addModuleClasses (mjson:JsonValue) (m:XElement) =
-    let classes = JsonArray()
-    m.Descendants(XName.Get "Classes")
-    |> Seq.collect (fun c -> c.Descendants(XName.Get "Class"))
-    |> Seq.iter(fun c ->
+  let addModuleClasses (mjson:JsonValue) (m:XContainer) =
+    addIntermediateGroup "Classes" "Class" (fun items c ->
       let ``class`` = simpleElementToJSon c
-      classes.Add ``class``
+      items.Add ``class``
       c.Elements(XName.Get "Summary")
       |> Seq.iter (fun s -> let js = simpleElementToJSon s
                             ``class``.Object.Add("Summary", JsonValue js))
@@ -129,36 +125,36 @@ module internal Json =
         |> Seq.iter (fun s -> let js = s.Value
                               ``class``.Object.Add(tag, JsonValue js)))
       addClassMethods ``class`` c
-    )
-    if classes.Count > 0
-    then mjson.Object.Add("Class", JsonValue classes)
+    ) mjson m
 
-  let ncoverToJson report =
+  let topLevelToJson coverage ``module`` f report =
     let json = simpleElementToJSon report
     let modules = JsonArray()
-    report.Descendants(XName.Get "module")
-    |> Seq.iter(fun m ->
-      let mjson = simpleElementToJSon m
-      addModuleMethods mjson m
-      modules.Add mjson
-    )
-
+    f json report modules
     if modules.Count > 0
-    then json.Object.Add("module", JsonValue modules)
+    then json.Object.Add(``module``, JsonValue modules)
 
     let jo = JsonObject()
-    jo.Add("coverage", json)
+    jo.Add(coverage, json)
     let jv = JsonValue jo
     jv
 
+  let ncoverToJson report =
+    topLevelToJson "coverage" "module" (fun _ x modules ->
+      x.Descendants(XName.Get "module")
+      |> Seq.iter(fun m ->
+        let mjson = simpleElementToJSon m
+        addModuleMethods mjson m
+        modules.Add mjson
+      )) report
+
   let opencoverToJson report =
-    let json = simpleElementToJSon report
-    report.Elements(XName.Get "Summary")
+    topLevelToJson "CoverageSession" "Module" (fun json x modules ->
+    x.Elements(XName.Get "Summary")
     |> Seq.iter (fun s -> let js = simpleElementToJSon s
                           json.Object.Add("Summary", JsonValue js))
 
-    let modules = JsonArray()
-    report.Descendants(XName.Get "Module")
+    x.Descendants(XName.Get "Module")
     |> Seq.iter(fun m ->
       let mjson = simpleElementToJSon m
       m.Elements(XName.Get "Summary")
@@ -181,14 +177,7 @@ module internal Json =
       addTerminalGroup "TrackedMethods" "TrackedMethod" mjson m
 
       modules.Add mjson
-    )
-    if modules.Count > 0
-    then json.Object.Add("Module", JsonValue modules)
-
-    let jo = JsonObject()
-    jo.Add("CoverageSession", json)
-    let jv = JsonValue jo
-    jv
+    )) report
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
