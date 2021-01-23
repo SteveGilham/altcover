@@ -71,7 +71,8 @@ module internal Json =
     |> Seq.iter(fun x ->
       let point = simpleElementToJSon x
       points.Add point
-      // addMethodPoints "SequencePoints" "SequencePoint"  ``method`` x
+      addTerminalGroup "Times" "Time"  point x
+      addTerminalGroup "TrackedMethodRefs" "TrackedMethodRef"  point x
     )
 
   let addClassMethods (mjson:JsonValue) (m:XElement) =
