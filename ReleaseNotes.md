@@ -3,8 +3,9 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.5.8xx (Genbu series release 15)
-* Publish the AltCover.Monitor API as API in the main package `altcover` as well as in `altcover.api` (but not in `altcover.global`; global tools aren't library compatible to be accessed through package reference)
+* Publish the AltCover.Monitor API as API (i.e. under `lib/`) in the main package `altcover` as well as in `altcover.api` (but not in `altcover.global`; global tools aren't library compatible to be accessed through package reference)
 * Support writing unit tests involving the API back to `net20` as well as `netstandard2.0`
+* [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
 
 # 7.5.809 (Genbu series release 14)
 * [NEW] AltCover.Monitor API to track current coverage from running unit tests.  Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
