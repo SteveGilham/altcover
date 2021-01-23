@@ -159,6 +159,7 @@ type MainWindow() as this =
           let margin = Thickness(0.0, pad)
 
           Dispatcher.UIThread.Post(fun _ ->
+            stack.Children.Clear()
             for l in 1 .. lines.Length do
               let pic = new Image()
               let pix = HandlerCommon.IconForBranches icons branches l
