@@ -11,6 +11,7 @@ open GuiCommon
 
 open AltCover.FontSupport
 open Avalonia.Controls
+open Avalonia.Controls.Presenters
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
@@ -117,7 +118,7 @@ type MainWindow() as this =
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
-  member private this.UpdateTextFonts (text:TextBlock) text2 =
+  member private this.UpdateTextFonts (text:TextPresenter) text2 =
     [ text; text2 ]
     |> List.iter (fun t ->
           let (_, logfont) = LogFont.TryParse(Persistence.readFont())
@@ -134,7 +135,7 @@ type MainWindow() as this =
     (xpath: XPathNavigator) =
         let visibleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
-        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
+        let tagByCoverage (buff : TextPresenter) (lines : FormattedTextLine list) (n : CodeTag) =
           let start = (n.Column - 1) +
                       (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
           let finish = (n.EndColumn - 1) +
@@ -167,7 +168,7 @@ type MainWindow() as this =
               pic.Margin <- margin
               stack.Children.Add pic)
 
-        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock)
+        let markCoverage (root : XPathNavigator) (textBox:TextPresenter) (text2: TextPresenter)
                            (lines : FormattedTextLine list) filename =
           let tags = HandlerCommon.TagCoverage root filename lines.Length
 
@@ -188,8 +189,8 @@ type MainWindow() as this =
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
-             let text = this.FindControl<TextBlock>("Source")
-             let text2 = this.FindControl<TextBlock>("Lines")
+             let text = this.FindControl<TextPresenter>("Source")
+             let text2 = this.FindControl<TextPresenter>("Lines")
              let scroller = this.FindControl<ScrollViewer>("Coverage")
 
              let noSource() =
@@ -258,8 +259,8 @@ type MainWindow() as this =
 
     let respondToFont font =
       font.ToString() |> Persistence.saveFont
-      let text = this.FindControl<TextBlock>("Source")
-      let text2 = this.FindControl<TextBlock>("Lines")
+      let text = this.FindControl<TextPresenter>("Source")
+      let text2 = this.FindControl<TextPresenter>("Lines")
       this.UpdateTextFonts text text2
       [ text; text2 ]
       |> Seq.iter (fun t ->
@@ -405,8 +406,8 @@ type MainWindow() as this =
                                         this.Title <- "AltCover.Visualizer"
                                         tree.Items.OfType<IDisposable>()
                                         |> Seq.iter (fun x -> x.Dispose())
-                                        let t1 = this.FindControl<TextBlock>("Source")
-                                        let t2 = this.FindControl<TextBlock>("Lines")
+                                        let t1 = this.FindControl<TextPresenter>("Source")
+                                        let t2 = this.FindControl<TextPresenter>("Lines")
                                         [t1; t2]
                                         |> Seq.iter (fun t ->
                                           t.Text <- String.Empty
