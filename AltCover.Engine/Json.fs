@@ -22,7 +22,7 @@ module internal Json =
       if b2 then JsonValue v2
       else JsonValue value
 
-  let simpleElementToJSon (xElement : XElement) =
+  let mappedElementToJSon mappings (xElement : XElement) =
     let element = JsonObject()
     if xElement.HasAttributes
     then
@@ -30,9 +30,16 @@ module internal Json =
       |> Seq.iter(fun (a:XAttribute) ->
         if a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not
         then
-         let attribute = simpleAttributeToValue a
-         element.Add (a.Name.LocalName, attribute))
+          let map = mappings
+                    |> Seq.tryFind (fun (n,_) -> n = a.Name.LocalName)
+                    |> Option.map snd
+                    |> Option.defaultValue simpleAttributeToValue
+          let attribute = map a
+          element.Add (a.Name.LocalName, attribute))
     JsonValue element
+
+  let simpleElementToJSon (xElement : XElement) =
+    mappedElementToJSon [] xElement
 
   let addMethodSeqpnts (mjson:JsonValue) (m:XContainer) =
     let seqpnts = JsonArray()
@@ -55,25 +62,58 @@ module internal Json =
     if methods.Count > 0
     then mjson.Object.Add("method", JsonValue methods)
 
-  let addGenericGroup group item f (json:JsonValue) (x:XContainer) =
+  let addGenericGroup mappings group item f (json:JsonValue) (x:XContainer) =
     let items = JsonArray()
     x.Descendants(XName.Get group)
     |> Seq.collect (fun f -> f.Descendants(XName.Get item))
     |> Seq.iter(fun x ->
-      let json = simpleElementToJSon x
+      let json = mappedElementToJSon mappings x
       items.Add json
       f json x
     )
     if items.Count > 0
     then json.Object.Add(item, JsonValue items)
 
-  let addTerminalGroup group item (json:JsonValue) (x:XContainer) =
-    addGenericGroup group item (fun _ _ -> ()) json x
+  let addTerminalGroup mappings group item (json:JsonValue) (x:XContainer) =
+    addGenericGroup mappings group item (fun _ _ -> ()) json x
 
-  let addMethodPoints group item (json:JsonValue) (x:XContainer) =
-    addGenericGroup group item (fun point x ->
-      addTerminalGroup "Times" "Time"  point x
-      addTerminalGroup "TrackedMethodRefs" "TrackedMethodRef"  point x) json x
+  let formatSingleTime (t:String) =
+    let formatTimeValue l =
+      let million = 1000000L
+      let rem = (l/million)*million
+      let time = DateTime(rem, DateTimeKind.Utc)
+      (time.ToString("yyyy-MM-dd HH:mm:ss.f", DateTimeFormatInfo.InvariantInfo)
+        + (l % million).ToString("D6", CultureInfo.InvariantCulture).TrimEnd('0'))
+
+    [t]
+    |> Seq.map Int64.TryParse
+    |> Seq.filter fst
+    |> Seq.map (snd >> formatTimeValue  >> JsonValue)
+    |> Seq.tryHead
+    |> Option.defaultValue JsonValue.Null
+
+  let formatTimeValue (a:XAttribute) =
+    formatSingleTime a.Value
+
+  let formatTimeList (a:XAttribute) =
+    a.Value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
+    |> Seq.map formatSingleTime
+    |> Seq.filter (fun t -> t <> JsonValue.Null)
+    |> JsonArray
+    |> JsonValue
+
+  let formatOffsetChain (a:XAttribute) =
+    a.Value.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
+    |> Seq.map Int32.TryParse
+    |> Seq.filter fst
+    |> Seq.map (snd >> float >> JsonValue)
+    |> JsonArray
+    |> JsonValue
+
+  let addMethodPoints mappings group item (json:JsonValue) (x:XContainer) =
+    addGenericGroup mappings group item (fun point x ->
+      addTerminalGroup ["time", formatTimeValue ]"Times" "Time"  point x
+      addTerminalGroup [] "TrackedMethodRefs" "TrackedMethodRef"  point x) json x
 
   let addIntermediateGroup group item perItem (json:JsonValue) (x:XContainer) =
     let items = JsonArray()
@@ -105,8 +145,8 @@ module internal Json =
         x.Elements(XName.Get tag)
         |> Seq.iter (fun s -> let js = s.Value
                               ``method``.Object.Add(tag, JsonValue js)))
-      addMethodPoints "SequencePoints" "SequencePoint"  ``method`` x
-      addMethodPoints "BranchPoints" "BranchPoint" ``method`` x
+      addMethodPoints [] "SequencePoints" "SequencePoint"  ``method`` x
+      addMethodPoints ["offsetchain", formatOffsetChain ] "BranchPoints" "BranchPoint" ``method`` x
     ) mjson m
 
   let addModuleClasses (mjson:JsonValue) (m:XContainer) =
@@ -172,9 +212,11 @@ module internal Json =
         |> Seq.iter (fun s -> let js = s.Value
                               mjson.Object.Add(tag, JsonValue js)))
 
-      addTerminalGroup "Files" "File" mjson m
+      addTerminalGroup [] "Files" "File" mjson m
       addModuleClasses mjson m
-      addTerminalGroup "TrackedMethods" "TrackedMethod" mjson m
+      addTerminalGroup [
+        "entry", formatTimeList
+        "exit", formatTimeList ] "TrackedMethods" "TrackedMethod" mjson m
 
       modules.Add mjson
     )) report
