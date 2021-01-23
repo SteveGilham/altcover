@@ -36,36 +36,38 @@ module internal Json =
 
   let addMethodSeqpnts (mjson:JsonValue) (m:XElement) =
     let seqpnts = JsonArray()
-    mjson.Object.Add("seqpnt", JsonValue seqpnts)
     m.Descendants(XName.Get "seqpnt")
     |> Seq.iter(fun sp ->
       let spjson = simpleElementToJSon sp
       seqpnts.Add spjson
     )
+    if seqpnts.Count > 0
+    then mjson.Object.Add("seqpnt", JsonValue seqpnts)
 
   let addModuleMethods (mjson:JsonValue) (m:XElement) =
     let methods = JsonArray()
-    mjson.Object.Add("method", JsonValue methods)
     m.Descendants(XName.Get "method")
     |> Seq.iter(fun m2 ->
       let m2json = simpleElementToJSon m2
       addMethodSeqpnts m2json m
       methods.Add m2json
     )
+    if methods.Count > 0
+    then mjson.Object.Add("method", JsonValue methods)
 
-  let addTerminalGroup group item (mjson:JsonValue) (m:XElement) =
-    let methods = JsonArray()
-    mjson.Object.Add(item, JsonValue methods)
-    m.Descendants(XName.Get group)
+  let addTerminalGroup group item (json:JsonValue) (x:XElement) =
+    let items = JsonArray()
+    x.Descendants(XName.Get group)
     |> Seq.collect (fun f -> f.Descendants(XName.Get item))
     |> Seq.iter(fun m2 ->
       let m2json = simpleElementToJSon m2
-      methods.Add m2json
+      items.Add m2json
     )
+    if items.Count > 0
+    then json.Object.Add(item, JsonValue items)
 
   let addMethodPoints group item (mjson:JsonValue) (m:XElement) =
     let points = JsonArray()
-    mjson.Object.Add(item, JsonValue points)
     m.Descendants(XName.Get group)
     |> Seq.collect (fun c -> c.Descendants(XName.Get item))
     |> Seq.iter(fun x ->
@@ -74,10 +76,11 @@ module internal Json =
       addTerminalGroup "Times" "Time"  point x
       addTerminalGroup "TrackedMethodRefs" "TrackedMethodRef"  point x
     )
+    if points.Count > 0
+    then mjson.Object.Add(item, JsonValue points)
 
   let addClassMethods (mjson:JsonValue) (m:XElement) =
     let methods = JsonArray()
-    mjson.Object.Add("Method", JsonValue methods)
     m.Descendants(XName.Get "Methods")
     |> Seq.collect (fun c -> c.Descendants(XName.Get "Method"))
     |> Seq.iter(fun x ->
@@ -104,10 +107,11 @@ module internal Json =
       addMethodPoints "SequencePoints" "SequencePoint"  ``method`` x
       addMethodPoints "BranchPoints" "BranchPoint" ``method`` x
     )
+    if methods.Count > 0
+    then mjson.Object.Add("Method", JsonValue methods)
 
   let addModuleClasses (mjson:JsonValue) (m:XElement) =
     let classes = JsonArray()
-    mjson.Object.Add("Class", JsonValue classes)
     m.Descendants(XName.Get "Classes")
     |> Seq.collect (fun c -> c.Descendants(XName.Get "Class"))
     |> Seq.iter(fun c ->
@@ -126,17 +130,22 @@ module internal Json =
                               ``class``.Object.Add(tag, JsonValue js)))
       addClassMethods ``class`` c
     )
+    if classes.Count > 0
+    then mjson.Object.Add("Class", JsonValue classes)
 
   let ncoverToJson report =
     let json = simpleElementToJSon report
     let modules = JsonArray()
-    json.Object.Add("module", JsonValue modules)
     report.Descendants(XName.Get "module")
     |> Seq.iter(fun m ->
       let mjson = simpleElementToJSon m
       addModuleMethods mjson m
       modules.Add mjson
     )
+
+    if modules.Count > 0
+    then json.Object.Add("module", JsonValue modules)
+
     let jo = JsonObject()
     jo.Add("coverage", json)
     let jv = JsonValue jo
@@ -149,7 +158,6 @@ module internal Json =
                           json.Object.Add("Summary", JsonValue js))
 
     let modules = JsonArray()
-    json.Object.Add("Module", JsonValue modules)
     report.Descendants(XName.Get "Module")
     |> Seq.iter(fun m ->
       let mjson = simpleElementToJSon m
@@ -174,6 +182,9 @@ module internal Json =
 
       modules.Add mjson
     )
+    if modules.Count > 0
+    then json.Object.Add("Module", JsonValue modules)
+
     let jo = JsonObject()
     jo.Add("CoverageSession", json)
     let jv = JsonValue jo
@@ -184,9 +195,7 @@ module internal Json =
         (report.Root
         |> (match format with
             | ReportFormat.NCover -> ncoverToJson
-            | ReportFormat.OpenCover
-            | ReportFormat.OpenCoverWithTracking ->  opencoverToJson
-            | _ -> XmlExtensions.ToJson)).ToString() // ready minified
+            | _ -> opencoverToJson)).ToString() // ready minified
         |> writer.Write)
 
   let internal summary (report : XDocument) (format : ReportFormat) result =
