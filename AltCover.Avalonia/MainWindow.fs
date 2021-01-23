@@ -169,24 +169,22 @@ type MainWindow() as this =
               pic.Margin <- margin
               stack.Children.Add pic)
 
+        let mutable formats = []
+        let mutable linemark = []
+
         let markCoverage (root : XPathNavigator) (textBox:TextPresenter) (text2: TextPresenter)
                            (lines : FormattedTextLine list) filename =
           let tags = HandlerCommon.TagCoverage root filename lines.Length
 
-          let formats = tags
-                        |> List.map (tagByCoverage textBox lines)
+          formats <- tags
+                     |> List.map (tagByCoverage textBox lines)
 
-          let linemark =
+          linemark <-
             tags
             |> HandlerCommon.TagLines visited notVisited
             |> List.map (fun (l, tag) ->
                           let start = (l - 1) * (7 + Environment.NewLine.Length)
                           FormattedTextStyleSpan(start, 7, tag))
-
-          Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
-                                            textBox.Tag <- formats
-                                            text2.FormattedText.Spans <- linemark
-                                            text2.Tag <- linemark)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
@@ -224,6 +222,12 @@ type MainWindow() as this =
                   async {
                       Threading.Thread.Sleep(300)
                       Dispatcher.UIThread.Post(fun _ ->
+                        text.FormattedText.Spans <- formats
+                        text.Tag <- formats
+                        text.InvalidateVisual()
+                        text2.FormattedText.Spans <- linemark
+                        text2.Tag <- linemark
+                        text2.InvalidateVisual()
                         let midpoint = scroller.Viewport.Height / 2.0
                         if (depth > midpoint)
                         then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
