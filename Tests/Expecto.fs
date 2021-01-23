@@ -29,7 +29,7 @@ module ExpectoTestManifest =
           Tests.AltCoverRunnerTests.FlushLeavesExpectedTraces, "Runner.FlushLeavesExpectedTraces"
           Tests.AltCoverRunnerTests.FlushLeavesExpectedTracesWhenDiverted, "Runner.FlushLeavesExpectedTracesWhenDiverted"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleJson, "Runner.NCoverShouldGeneratePlausibleJson"
-          Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleJson, "Runner.NOpenrShouldGeneratePlausibleJson"
+          Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleJson, "Runner.OpenCoverShouldGeneratePlausibleJson"
           Tests.AltCoverRunnerTests.UsageIsAsExpected, "Runner.UsageIsAsExpected"
           Tests.AltCoverRunnerTests.ShouldLaunchWithExpectedOutput, "Runner.ShouldLaunchWithExpectedOutput"
           Tests.AltCoverRunnerTests.ShouldHaveExpectedOptions, "Runner.ShouldHaveExpectedOptions"
