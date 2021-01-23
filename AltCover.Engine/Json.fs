@@ -63,6 +63,69 @@ module internal Json =
       methods.Add m2json
     )
 
+  let addMethodPoints group item (mjson:JsonValue) (m:XElement) =
+    let points = JsonArray()
+    mjson.Object.Add(item, JsonValue points)
+    m.Descendants(XName.Get group)
+    |> Seq.collect (fun c -> c.Descendants(XName.Get item))
+    |> Seq.iter(fun x ->
+      let point = simpleElementToJSon x
+      points.Add point
+      // addMethodPoints "SequencePoints" "SequencePoint"  ``method`` x
+    )
+
+  let addClassMethods (mjson:JsonValue) (m:XElement) =
+    let methods = JsonArray()
+    mjson.Object.Add("Method", JsonValue methods)
+    m.Descendants(XName.Get "Methods")
+    |> Seq.collect (fun c -> c.Descendants(XName.Get "Method"))
+    |> Seq.iter(fun x ->
+      let ``method`` = simpleElementToJSon x
+      methods.Add ``method``
+      [
+        "Summary"
+        "FileRef"
+        "MethodPoint"
+      ]
+      |> Seq.iter (fun name ->
+      x.Elements(XName.Get name)
+      |> Seq.iter (fun s -> let js = simpleElementToJSon s
+                            ``method``.Object.Add(name, JsonValue js)))
+
+      [
+        "MetadataToken"
+        "Name"
+      ]
+      |> Seq.iter  (fun tag ->
+        x.Elements(XName.Get tag)
+        |> Seq.iter (fun s -> let js = s.Value
+                              ``method``.Object.Add(tag, JsonValue js)))
+      addMethodPoints "SequencePoints" "SequencePoint"  ``method`` x
+      addMethodPoints "BranchPoints" "BranchPoint" ``method`` x
+    )
+
+  let addModuleClasses (mjson:JsonValue) (m:XElement) =
+    let classes = JsonArray()
+    mjson.Object.Add("Class", JsonValue classes)
+    m.Descendants(XName.Get "Classes")
+    |> Seq.collect (fun c -> c.Descendants(XName.Get "Class"))
+    |> Seq.iter(fun c ->
+      let ``class`` = simpleElementToJSon c
+      classes.Add ``class``
+      c.Elements(XName.Get "Summary")
+      |> Seq.iter (fun s -> let js = simpleElementToJSon s
+                            ``class``.Object.Add("Summary", JsonValue js))
+
+      [
+        "FullName"
+      ]
+      |> Seq.iter  (fun tag ->
+        c.Elements(XName.Get tag)
+        |> Seq.iter (fun s -> let js = s.Value
+                              ``class``.Object.Add(tag, JsonValue js)))
+      addClassMethods ``class`` c
+    )
+
   let ncoverToJson report =
     let json = simpleElementToJSon report
     let modules = JsonArray()
@@ -105,10 +168,9 @@ module internal Json =
                               mjson.Object.Add(tag, JsonValue js)))
 
       addTerminalGroup "Files" "File" mjson m
+      addModuleClasses mjson m
       addTerminalGroup "TrackedMethods" "TrackedMethod" mjson m
 
-      // TODO --
-      // addModuleClasses mjson m
       modules.Add mjson
     )
     let jo = JsonObject()
