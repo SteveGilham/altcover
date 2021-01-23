@@ -26,15 +26,13 @@ module internal Json =
     let element = JsonObject()
     if xElement.HasAttributes
     then
-      let attributes = JsonObject()
       xElement.Attributes()
       |> Seq.iter(fun (a:XAttribute) ->
+        printfn "%A" <| a.Name.ToString()
+        if a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not
+        then
          let attribute = simpleAttributeToValue a
-         attributes.Add (a.Name.LocalName, attribute))
-      element.Add ("$", JsonValue attributes)
-    //if xElement.Value |> String.IsNullOrWhiteSpace |> not
-    //then
-    //  element.Add("_", JsonValue(xElement.Value))
+         element.Add (a.Name.LocalName, attribute))
     JsonValue element
 
   let addMethodSeqpnts (mjson:JsonValue) (m:XElement) =

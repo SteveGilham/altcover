@@ -333,7 +333,7 @@ module AltCoverRunnerTests =
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
-             (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+             (fun n -> n.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
       let unique =
