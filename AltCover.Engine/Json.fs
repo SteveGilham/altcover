@@ -28,7 +28,6 @@ module internal Json =
     then
       xElement.Attributes()
       |> Seq.iter(fun (a:XAttribute) ->
-        printfn "%A" <| a.Name.ToString()
         if a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not
         then
          let attribute = simpleAttributeToValue a
@@ -51,6 +50,16 @@ module internal Json =
     |> Seq.iter(fun m2 ->
       let m2json = simpleElementToJSon m2
       addMethodSeqpnts m2json m
+      methods.Add m2json
+    )
+
+  let addModuleFiles (mjson:JsonValue) (m:XElement) =
+    let methods = JsonArray()
+    mjson.Object.Add("File", JsonValue methods)
+    m.Descendants(XName.Get "Files")
+    |> Seq.collect (fun f -> f.Descendants(XName.Get "File"))
+    |> Seq.iter(fun m2 ->
+      let m2json = simpleElementToJSon m2
       methods.Add m2json
     )
 
@@ -94,8 +103,10 @@ module internal Json =
         m.Elements(XName.Get tag)
         |> Seq.iter (fun s -> let js = s.Value
                               mjson.Object.Add(tag, JsonValue js)))
+
+      addModuleFiles mjson m
+
       // TODO --
-      // addModuleFiles mjson m
       // addModuleClasses mjson m
       // addModuleTrackedMethods mjson m
       modules.Add mjson
