@@ -53,11 +53,11 @@ module internal Json =
       methods.Add m2json
     )
 
-  let addModuleFiles (mjson:JsonValue) (m:XElement) =
+  let addTerminalGroup group item (mjson:JsonValue) (m:XElement) =
     let methods = JsonArray()
-    mjson.Object.Add("File", JsonValue methods)
-    m.Descendants(XName.Get "Files")
-    |> Seq.collect (fun f -> f.Descendants(XName.Get "File"))
+    mjson.Object.Add(item, JsonValue methods)
+    m.Descendants(XName.Get group)
+    |> Seq.collect (fun f -> f.Descendants(XName.Get item))
     |> Seq.iter(fun m2 ->
       let m2json = simpleElementToJSon m2
       methods.Add m2json
@@ -104,11 +104,11 @@ module internal Json =
         |> Seq.iter (fun s -> let js = s.Value
                               mjson.Object.Add(tag, JsonValue js)))
 
-      addModuleFiles mjson m
+      addTerminalGroup "Files" "File" mjson m
+      addTerminalGroup "TrackedMethods" "TrackedMethod" mjson m
 
       // TODO --
       // addModuleClasses mjson m
-      // addModuleTrackedMethods mjson m
       modules.Add mjson
     )
     let jo = JsonObject()
