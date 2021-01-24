@@ -38,6 +38,9 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Content Include="..\AltCover.Tests\GenuineNCover158.json" Link="GenuineNCover158.json" />
+    <Content Include="..\AltCover.Tests\OpenCover.json" Link="OpenCover.json" />
+    <Content Include="..\AltCover.Tests\Sample4FullTracking.xml" Link="Sample4FullTracking.xml" />
     <Compile Include="FSApiTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

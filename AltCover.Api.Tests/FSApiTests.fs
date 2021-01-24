@@ -132,6 +132,34 @@ module FSApiTests =
     test <@ result = expected @>
 
   [<Test>]
+  let OpenCoverToJson() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")
+    let doc = XDocument.Load(stream)
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.json")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    test <@ result = expected @>
+
+  [<Test>]
+  let NCoverToJson() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.AltCover.Api.Tests.GenuineNCover158.Xml.xml")
+    let doc = XDocument.Load(stream)
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.AltCover.Api.Tests.GenuineNCover158.Xml.json")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    test <@ result = expected @>
+
+  [<Test>]
   let OpenCoverToBarChart() =
     use stream=
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.xml")
