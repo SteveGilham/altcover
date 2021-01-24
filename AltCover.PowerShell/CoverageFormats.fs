@@ -117,6 +117,49 @@ type ConvertToLcovCommand() =
       Directory.SetCurrentDirectory here
 
 /// <summary>
+/// <para type="synopsis">Creates a JSON format report from other report formats.</para>
+/// <para type="description">Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline. Writes the JSON report to a string.</para>
+/// <example>
+///   <code>ConvertTo-CoverageJson -InputFile "./Tests/HandRolledMonoCoverage.xml"</code>
+/// </example>
+/// </summary>
+[<Cmdlet(VerbsData.ConvertTo, "CoverageJson")>]
+[<OutputType("System.String"); AutoSerializable(false)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Json is a name")>]
+[<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Json is a name")>]
+type ConvertToCoverageJsonCommand() =
+  inherit PSCmdlet()
+
+  /// <summary>
+  /// <para type="description">Input as `XDocument` value</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val XDocument : XDocument = null with get, set
+
+  /// <summary>
+  /// <para type="description">Input as file path</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile : string = null with get, set
+
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+      if self.ParameterSetName = "FromFile" then
+        self.XDocument <- XDocument.Load self.InputFile
+      AltCover.CoverageFormats.ConvertToJson self.XDocument
+      |> self.WriteObject
+    finally
+      Directory.SetCurrentDirectory here
+
+/// <summary>
 /// <para type="synopsis">Creates a Cobertura format report from other report formats.</para>
 /// <para type="description">Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline.</para>
 /// <para type="description">Writes the Cobertura report to the object pipeline as an `XDocument`, and optionally to a file.</para>

@@ -299,13 +299,13 @@ module AltCoverRunnerTests =
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-           Guid.NewGuid().ToString() + "/NCover.json")
+           Guid.NewGuid().ToString() + "/GenuineNCover158.json")
       Json.path := Some unique
       unique
       |> Path.GetDirectoryName

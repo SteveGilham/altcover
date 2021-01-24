@@ -33,9 +33,9 @@ module internal Json =
           let map = mappings
                     |> Seq.tryFind (fun (n,_) -> n = a.Name.LocalName)
                     |> Option.map snd
-                    |> Option.defaultValue simpleAttributeToValue
-          let attribute = map a
-          element.Add (a.Name.LocalName, attribute))
+                    |> Option.defaultValue (simpleAttributeToValue >> Some)
+          map a
+          |> Option.iter (fun v -> element.Add (a.Name.LocalName, v)))
     JsonValue element
 
   let internal simpleElementToJSon (xElement : XElement) =
@@ -93,7 +93,6 @@ module internal Json =
     |> Seq.filter fst
     |> Seq.map (snd >> formatTimeValue  >> JsonValue)
     |> Seq.tryHead
-    |> Option.defaultValue JsonValue.Null
 
   let internal formatTimeValue (a:XAttribute) =
     formatSingleTime a.Value
@@ -101,9 +100,10 @@ module internal Json =
   let internal formatTimeList (a:XAttribute) =
     a.Value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
     |> Seq.map formatSingleTime
-    |> Seq.filter (fun t -> t <> JsonValue.Null)
+    |> Seq.choose id
     |> JsonArray
     |> JsonValue
+    |> Some
 
   let internal formatOffsetChain (a:XAttribute) =
     a.Value.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
@@ -112,6 +112,7 @@ module internal Json =
     |> Seq.map (snd >> float >> JsonValue)
     |> JsonArray
     |> JsonValue
+    |> Some
 
   let internal addMethodPoints mappings group item (json:JsonValue) (x:XContainer) =
     addGenericGroup mappings group item (fun point x ->

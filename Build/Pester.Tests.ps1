@@ -702,3 +702,21 @@ Describe "Write-OpenCoverDerivedState" {
     $result | Should -BeExactly $expected
   }
 }
+
+Describe "ConvertTo-CoverageJson" {
+    It "converts from a document" {
+        $xd = [xdoc]::Load("./Tests/GenuineNCover158.Xml")
+        $json = ConvertTo-CoverageJson $xd
+        $json | Set-Content("./_Packaging/GenuineNCover158.json")
+        $expect = Get-Content "./Tests/NCover.json" 
+        $json | Should -BeExactly $expect
+    }
+
+    It "Converts from a file" {
+        $path = "./Tests/Sample4FullTracking.xml"
+        $json = ConvertTo-CoverageJson $path
+        $json | Set-Content("./_Packaging/OpenCover.json")
+        $expect = Get-Content "./Tests/OpenCover.json" 
+        $json | Should -BeExactly $expect
+    }
+}
