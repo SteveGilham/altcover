@@ -37,4 +37,8 @@ module MonitorTests =
     test'<@ a && a0 @> "should be running under AltCover"
     let code = b.Code
     let branch = b.Branch
+#if BUILD_ON_APPVEYOR
+    test <@ (code, branch) = (70, 9) @>
+#else
     test <@ (code, branch) = (137, 34) @>
+#endif
