@@ -12,9 +12,9 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants Condition="'$(APPVEYOR)' == ''">DEBUG;TRACE;CODE_ANALYSIS;Monitor</DefineConstants>
+    <DefineConstants Condition="'$(APPVEYOR)' != ''">DEBUG;TRACE;CODE_ANALYSIS;Monitor;BUILD_ON_APPVEYOR</DefineConstants>
     <RollForward>Major</RollForward>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;Monitor</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

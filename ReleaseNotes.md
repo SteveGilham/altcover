@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.6.810 (Genbu series release 15)
+# 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
 * Monitor API
   * [BUGFIX] Harden the monitor API `TryGetVisitTotals` against race conditions in multi-threaded tests
