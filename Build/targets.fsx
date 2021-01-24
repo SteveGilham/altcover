@@ -404,11 +404,11 @@ _Target "SetVersion" (fun _ ->
   pr.Attribute(XName.Get "version").Value <- gendarmeVersion
   project1.Save("./Build/NuGet.csproj")
 
-  let project2 = XDocument.Load ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  let project2 = XDocument.Load ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
   let gv = project2.Descendants(XName.Get "GendarmeVersion")
            |> Seq.head
   gv.Value <- gendarmeVersion
-  project2.Save("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  project2.Save("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
 
   // patch coveralls.io for github actions
   let coverallsdll =
@@ -483,12 +483,12 @@ module SolutionRoot =
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
   [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
-    "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-    "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+    "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+    "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
-    "./Tests.Visualizer/AltCover.Visualizer.Tests.fsproj" ]
+    "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ]
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
        let proj = Path.GetFileName f
@@ -968,8 +968,8 @@ _Target "JustUnitTest" (fun _ ->
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
-  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
   let buildIt =
         DotNet.build (fun p ->
@@ -999,9 +999,9 @@ _Target "UnitTestDotNet" (fun _ ->
     [
       Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
       Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-      Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-      Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-      Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+      Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+      Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+      Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
     ]
     |> Seq.iter testIt
   with x ->
@@ -1009,13 +1009,13 @@ _Target "UnitTestDotNet" (fun _ ->
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
   [
     Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
     Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-    Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+    Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
   ]
   |> Seq.iter
        (DotNet.build (fun p ->
@@ -1031,13 +1031,13 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
       [
         Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-        Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-        Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+        Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+        Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+        Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
       ]
 
     let xml =
-      ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
+      ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
@@ -1490,7 +1490,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml", // report
        "AltCover.ValidateGendarmeEmulation.fsproj", // project
-       Path.getFullName "ValidateGendarmeEmulations", // workingDirectory
+       Path.getFullName "AltCover.ValidateGendarmeEmulation", // workingDirectory
        (fun p -> { p with TypeFilter = [ "<Start"; "Expecto"; "Tests" ]}) >> AltCoverFilter // filter
      )
    ]
@@ -1566,13 +1566,13 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
      )
      (
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
-       Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
+       Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj")
      (
        reports @@ "Recorder2TestWithAltCoverCoreRunner.xml",
-       Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
+       Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
      (
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
+       Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
 
   try

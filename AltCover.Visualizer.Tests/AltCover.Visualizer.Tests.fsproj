@@ -47,14 +47,14 @@
     <EmbeddedResource Include="Reports\OpenCoverWithTrackedMethods.xml" />
     <EmbeddedResource Include="Reports\OpenCover_altcover.xml" />
     <EmbeddedResource Include="Reports\OpenCover_coverlet.xml" />
-    <Compile Include="..\Tests\AssemblyInfo.fs">
+    <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
-    <Compile Include="..\Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="UICommonTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
