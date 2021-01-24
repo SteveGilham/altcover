@@ -56,7 +56,7 @@ module internal Json =
     m.Descendants(XName.Get "method")
     |> Seq.iter(fun m2 ->
       let m2json = simpleElementToJSon m2
-      addMethodSeqpnts m2json m
+      addMethodSeqpnts m2json m2
       methods.Add m2json
     )
     if methods.Count > 0

@@ -317,7 +317,7 @@ module AltCoverRunnerTests =
         let result = File.ReadAllText unique
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
-          |> Seq.find (fun n -> n.EndsWith("NCover.json", StringComparison.Ordinal))
+          |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected = reader.ReadToEnd()
