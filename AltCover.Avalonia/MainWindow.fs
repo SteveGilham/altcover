@@ -169,22 +169,21 @@ type MainWindow() as this =
               pic.Margin <- margin
               stack.Children.Add pic)
 
-        let mutable formats = []
-        let mutable linemark = []
-
         let markCoverage (root : XPathNavigator) (textBox:TextPresenter) (text2: TextPresenter)
                            (lines : FormattedTextLine list) filename =
           let tags = HandlerCommon.TagCoverage root filename lines.Length
 
-          formats <- tags
-                     |> List.map (tagByCoverage textBox lines)
+          let formats = tags
+                        |> List.map (tagByCoverage textBox lines)
 
-          linemark <-
+          let linemark =
             tags
             |> HandlerCommon.TagLines visited notVisited
             |> List.map (fun (l, tag) ->
                           let start = (l - 1) * (7 + Environment.NewLine.Length)
                           FormattedTextStyleSpan(start, 7, tag))
+
+          (formats, linemark)
 
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
@@ -214,7 +213,7 @@ type MainWindow() as this =
                   let depth = sample.Height * float (line - 1)
                   let root = xpath.Clone()
                   root.MoveToRoot()
-                  markCoverage root text text2 textLines info.FullName
+                  let (formats, linemark) = markCoverage root text text2 textLines info.FullName
                   let stack = this.FindControl<StackPanel>("Branches")
                   root.MoveToRoot()
                   markBranches root stack textLines info.FullName
