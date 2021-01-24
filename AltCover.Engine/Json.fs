@@ -41,30 +41,26 @@ module internal Json =
   let internal simpleElementToJSon (xElement : XElement) =
     mappedElementToJSon [] xElement
 
-  let internal addMethodSeqpnts (mjson:JsonValue) (m:XContainer) =
-    let seqpnts = JsonArray()
-    m.Descendants(XName.Get "seqpnt")
-    |> Seq.iter(fun sp ->
-      let spjson = simpleElementToJSon sp
-      seqpnts.Add spjson
+  let internal addNCoverElements next key (json:JsonValue) (x:XContainer) =
+    let elements = JsonArray()
+    x.Descendants(XName.Get key)
+    |> Seq.iter(fun xx ->
+      let keyjson = simpleElementToJSon xx
+      next keyjson xx
+      elements.Add keyjson
     )
-    if seqpnts.Count > 0
-    then mjson.Object.Add("seqpnt", JsonValue seqpnts)
+    if elements.Count > 0
+    then json.Object.Add(key, JsonValue elements)
 
-  let internal addModuleMethods (mjson:JsonValue) (m:XElement) =
-    let methods = JsonArray()
-    m.Descendants(XName.Get "method")
-    |> Seq.iter(fun m2 ->
-      let m2json = simpleElementToJSon m2
-      addMethodSeqpnts m2json m2
-      methods.Add m2json
-    )
-    if methods.Count > 0
-    then mjson.Object.Add("method", JsonValue methods)
+  let internal addMethodSeqpnts (mjson:JsonValue) (m:XContainer) =
+    addNCoverElements (fun _ _ -> ()) "seqpnt" mjson m
+
+  let internal addModuleMethods (mjson:JsonValue) (m:XContainer) =
+    addNCoverElements addMethodSeqpnts "method" mjson m
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
-    Justification = "Should the need ecerarise...")>]
+    Justification = "Should the need ever arise...")>]
   let internal addGenericGroup mappings group item f (json:JsonValue) (x:XContainer) =
     let items = JsonArray()
     x.Descendants(XName.Get group)
