@@ -49,7 +49,7 @@
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Tests\AssemblyInfo.fs">
+    <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
@@ -58,7 +58,7 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Engine\Gendarme.fs" Link="Gendarme.fs" />
-    <Compile Include="..\Tests\TestCommon.fs" Link="TestCommon.fs" />
+    <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>

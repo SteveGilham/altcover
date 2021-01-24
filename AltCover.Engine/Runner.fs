@@ -143,6 +143,7 @@ module internal Runner =
     executable := None
     LCov.path := None
     Cobertura.path := None
+    Json.path := None
     collect := false
     threshold <- None
     output <- None
@@ -348,8 +349,7 @@ module internal Runner =
       Justification="Library method inlined")>]
     [<SuppressMessage("Gendarme.Rules.Maintainability", "AvoidComplexMethodsRule",
       Justification="TODO: refactor even more")>]
-    let internal openCoverSummary(report : XDocument) =
-      let summary = report.Descendants("Summary".X) |> Seq.head
+    let private makeOpenCoverSummary (report:XDocument) (summary : XElement) =
 
       let summarise go (visit : string) (number : string) (precalc : string option) key =
         let vc = summary.Attribute(visit.X).Value
@@ -435,6 +435,12 @@ module internal Runner =
        crapvalue
        altcrapvalue]
 
+    let internal openCoverSummary(report : XDocument) =
+      report.Root.Elements("Summary".X)
+      |> Seq.tryHead
+      |> Option.map (makeOpenCoverSummary report)
+      |> Option.defaultValue []
+
     [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
       Justification="Inlined library code")>]
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
@@ -488,6 +494,8 @@ module internal Runner =
       summaries <- LCov.summary :: summaries
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
+    let internal addJsonSummary() =
+      summaries <- Json.summary :: summaries
 
     let internal initSummary() =
       summaries <- [ standardSummary ]
@@ -535,6 +543,18 @@ module internal Runner =
                           |> Path.GetFullPath
                           |> Some
              I.addLCovSummary()))
+      ("j|jsonReport=",
+       (fun x ->
+         if CommandLine.validatePath "--jsonReport" x then
+           if Option.isSome !Json.path then
+             CommandLine.error <-
+               CommandLine.Format.Local("MultiplesNotAllowed", "--jsonReport")
+               :: CommandLine.error
+           else
+             Json.path  := x
+                           |> Path.GetFullPath
+                           |> Some
+             I.addJsonSummary()))
       ("t|threshold=",
        (fun x ->
          let ok, t = Threshold.Validate x

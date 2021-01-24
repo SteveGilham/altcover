@@ -124,7 +124,7 @@ module internal Cobertura =
 
     let internal openCover (report : XDocument) (packages : XElement) =
       let extract (owner : XElement) (target : XElement) =
-        let summary = owner.Descendants("Summary".X) |> Seq.head
+        let summary = owner.Elements("Summary".X) |> Seq.head
 
         let valueOf (name : string) =
           summary.Attribute(name.X).Value
@@ -213,7 +213,7 @@ module internal Cobertura =
         extract method mtx
         mtx.Add(XAttribute("complexity".X, ccplex))
         method.Descendants("SequencePoint".X) |> Seq.iter (copySeqPnt lines)
-        let summary = method.Descendants("Summary".X) |> Seq.head
+        let summary = method.Elements("Summary".X) |> Seq.head
         (b |> provideAttributeValue summary "numBranchPoints",
          bv |> provideAttributeValue summary "visitedBranchPoints",
          s |> provideAttributeValue summary "numSequencePoints",

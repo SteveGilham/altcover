@@ -129,7 +129,7 @@
       <TestTargetPath Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetPath)</TestTargetPath>
       <TestTargetPath Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$([System.IO.Path]::Combine($(AltCoverInstrumentedDirectory)_$(ProjectName), $(TargetFileName)))</TestTargetPath>
     </PropertyGroup>
-    
+
     <ItemGroup>
       <AltCoverBuildItem Include="@(ApplicationDefinition)" />
       <AltCoverBuildItem Include="@(EditorConfigFiles)" />
@@ -200,7 +200,8 @@
       Threshold="$(AltCoverThreshold)"
       Cobertura="$(AltCoverCobertura)"
       SummaryFormat="$(AltCoverSummaryFormat)"
-      Verbosity="$(AltCoverVerbosity)">
+      Verbosity="$(AltCoverVerbosity)"
+      JsonReport="$(AltCoverLcovReport)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary" />
     </AltCover.Collect>
     <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)"

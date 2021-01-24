@@ -404,11 +404,11 @@ _Target "SetVersion" (fun _ ->
   pr.Attribute(XName.Get "version").Value <- gendarmeVersion
   project1.Save("./Build/NuGet.csproj")
 
-  let project2 = XDocument.Load ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  let project2 = XDocument.Load ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
   let gv = project2.Descendants(XName.Get "GendarmeVersion")
            |> Seq.head
   gv.Value <- gendarmeVersion
-  project2.Save("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  project2.Save("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
 
   // patch coveralls.io for github actions
   let coverallsdll =
@@ -483,12 +483,12 @@ module SolutionRoot =
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
   [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
-    "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-    "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+    "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+    "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
-    "./Tests.Visualizer/AltCover.Visualizer.Tests.fsproj" ]
+    "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ]
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
        let proj = Path.GetFileName f
@@ -649,7 +649,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 //     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
-       "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Monitor.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll"
        "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
@@ -760,12 +760,10 @@ _Target "FxCop" (fun _ ->
       then
         [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
           "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
-          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net472/AltCover.Monitor.dll" ]
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
       else // HACK HACK HACK
         [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll"
-          "_Binaries/AltCover.Monitor/Debug+AnyCPU/net472/AltCover.Monitor.dll" ]), // TODO netcore support
+          "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]), // TODO netcore support
       [],
       standardRules)
     ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
@@ -795,7 +793,8 @@ _Target "FxCop" (fun _ ->
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
+    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
     ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
@@ -915,7 +914,7 @@ let NUnitRetry f spec =
       then File.Delete spec
       NUnit3.run (f >> (fun p -> {p with ResultSpecs = [ spec ]}))
     with x ->
-      printfn "%A" x
+      printfn "doNUnitRetry caught %A" x
       if depth > 2
       then
         printfn "Recursion limited"
@@ -969,8 +968,8 @@ _Target "JustUnitTest" (fun _ ->
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
-  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
   let buildIt =
         DotNet.build (fun p ->
@@ -1000,9 +999,9 @@ _Target "UnitTestDotNet" (fun _ ->
     [
       Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
       Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-      Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-      Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-      Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+      Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+      Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+      Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
     ]
     |> Seq.iter testIt
   with x ->
@@ -1010,13 +1009,13 @@ _Target "UnitTestDotNet" (fun _ ->
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  msbuildDebug MSBuildPath "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
   [
     Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
     Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-    Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+    Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
   ]
   |> Seq.iter
        (DotNet.build (fun p ->
@@ -1032,13 +1031,13 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
       [
         Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
         Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-        Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-        Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-        Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+        Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+        Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+        Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
       ]
 
     let xml =
-      ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
+      ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
@@ -1237,7 +1236,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
              ToolPath = nunitConsole
              WorkingDir = "." }) "./_Reports/UnitTestWithAltCoverReport.xml"
   with x ->
-    printfn "%A" x
+    printfn "UnitTestWithAltCover caught %A" x
     reraise()
 
   printfn "Instrument the net20 Recorder tests"
@@ -1491,7 +1490,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml", // report
        "AltCover.ValidateGendarmeEmulation.fsproj", // project
-       Path.getFullName "ValidateGendarmeEmulations", // workingDirectory
+       Path.getFullName "AltCover.ValidateGendarmeEmulation", // workingDirectory
        (fun p -> { p with TypeFilter = [ "<Start"; "Expecto"; "Tests" ]}) >> AltCoverFilter // filter
      )
    ]
@@ -1567,13 +1566,13 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
      )
      (
        reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
-       Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
+       Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj")
      (
        reports @@ "Recorder2TestWithAltCoverCoreRunner.xml",
-       Path.getFullName "./Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
+       Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
      (
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
+       Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
 
   try
@@ -2471,7 +2470,7 @@ _Target "Packaging" (fun _ ->
   let recorder =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
   let monitor =
-    Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.Monitor.dll"
+    Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/net20/AltCover.Monitor.dll"
   let poshHelp =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
@@ -2506,7 +2505,7 @@ _Target "Packaging" (fun _ ->
       (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
-      (monitor, Some "tools/net472", None)
+      (monitor, Some "lib/net20", None)
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
@@ -2521,6 +2520,7 @@ _Target "Packaging" (fun _ ->
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
       (monitor, Some "lib/net472", None)
+      (monitor, Some "lib/net20", None)
       (fscore, Some "lib/net472", None)
       (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
@@ -2588,12 +2588,13 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let monitorFiles where = 
+    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let dataFiles1 where =
-    [
-      (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
-      (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
-    ]
-    |> Seq.concat
+    (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2679,6 +2680,7 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          poshHelpFiles "tools/netcoreapp2.0/"
          dataFiles "tools/netcoreapp2.0/"
+         monitorFiles "lib/netstandard2.0/"
          otherFiles
          housekeeping ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
@@ -2689,6 +2691,7 @@ _Target "Packaging" (fun _ ->
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
+        monitorFiles "lib/netstandard2.0/"
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         poshHelpFiles "lib/netstandard2.0/"
@@ -2708,6 +2711,9 @@ _Target "Packaging" (fun _ ->
         poshFiles "tools/netcoreapp2.1/any/"
         poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
+        // monitorFiles "lib/netstandard2.0/"
+        // [ (monitor, Some "lib/net20", None) ]
+        monitorFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
         otherFilesGlobal
@@ -4603,6 +4609,43 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
+_Target "Issue114" (fun _ ->
+  try
+    Directory.ensure "./_Issue114"
+    Shell.cleanDir ("./_Issue114")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.api")
+    config.Save "./_Issue114/NuGet.config"
+
+    let csproj = XDocument.Load "./Sample26/Sample26.fsproj"
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover.api"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./_Issue114/Sample26.fsproj"
+    Shell.copy "./_Issue114" (!!"./Sample26/*.fs")
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue114")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                             { tmp with MSBuildParams = mparams}) ""
+
+    let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "nunit"; "Adapter"; "FSharp"; "AltCover" |] }
+    let pp0 = AltCover.PrepareOptions.Primitive p0
+    let c0 = Primitive.CollectOptions.Create()
+    let cc0 = AltCover.CollectOptions.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
+            Configuration = DotNet.BuildConfiguration.Debug
+            NoBuild = false }).WithAltCoverOptions pp0 cc0 ForceTrue)
+        .WithAltCoverImportModule().WithAltCoverGetVersion()
+      |> testWithCLIArguments) ""
+  finally
+    let folder = (nugetCache @@ "altcover.api") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
 // AOB
 
 _Target "MakeDocumentation" (fun _ ->
@@ -4910,6 +4953,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue20"
+==> "Deployment"
+
+"Unpack"
+==> "Issue114"
 ==> "Deployment"
 
 "Unpack"

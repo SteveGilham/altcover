@@ -9,7 +9,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Avalonia.FuncUI", 
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer", "AltCover.Visualizer\AltCover.Visualizer.fsproj", "{218DBE5A-CC62-4649-97BC-BC47EC5B4D32}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer.Tests", "Tests.Visualizer\AltCover.Visualizer.Tests.fsproj", "{93D327EE-100B-4837-A0CA-499ADEEADCD2}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Visualizer.Tests", "AltCover.Visualizer.Tests\AltCover.Visualizer.Tests.fsproj", "{93D327EE-100B-4837-A0CA-499ADEEADCD2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject

@@ -12,7 +12,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.Cake", "AltCover.C
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Fake", "AltCover.Fake\AltCover.Fake.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Tests", "Tests\AltCover.Tests.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Tests", "AltCover.Tests\AltCover.Tests.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample1", "Sample1\Sample1.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
 EndProject
@@ -85,7 +85,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample17", "Sample17\Sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet", "Build\NuGet.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.ValidateGendarmeEmulation", "ValidateGendarmeEmulation\AltCover.ValidateGendarmeEmulation.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.ValidateGendarmeEmulation", "AltCover.ValidateGendarmeEmulation\AltCover.ValidateGendarmeEmulation.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample18", "Sample18\Sample18.fsproj", "{8F488261-3FF5-4983-AE1E-17B151507552}"
 EndProject

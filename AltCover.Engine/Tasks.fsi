@@ -239,6 +239,10 @@ type Collect =
     /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
+    ///<summary>
+    /// Corresponds to command line option `-j, --jsonReport=VALUE`
+    ///</summary>
+    member JsonReport : string with get, set
   end
 // ```
 // ## Task `AltCover.PowerShell`
