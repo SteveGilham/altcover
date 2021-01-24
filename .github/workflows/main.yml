@@ -53,6 +53,6 @@ jobs:
       with:
           name: reports.linux
           path: |
-            Reports
+            _Reports
             ./**/AltCover*.log
             ./**/dotnettest.*.txt

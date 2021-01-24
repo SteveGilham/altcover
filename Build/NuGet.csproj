@@ -15,7 +15,7 @@
     </PackageReference>
     <PackageReference Include="Mono.Options" version="6.6.0.161" />
     <PackageReference Include="coveralls.io" version="1.4.2" />
-    <PackageReference Include="NUnit.ConsoleRunner" version="3.11.1" />
+    <PackageReference Include="NUnit.ConsoleRunner" version="3.12.0" />
     <PackageReference Include="OpenCover" version="4.7.922" />
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
     <PackageReference Include="Pester" version="5.1.1" />

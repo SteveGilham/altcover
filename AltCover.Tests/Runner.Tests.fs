@@ -293,6 +293,78 @@ module AltCoverRunnerTests =
         Directory.SetCurrentDirectory(here)
         maybeIOException (fun () -> Directory.Delete(unique))
 
+    //Json.fs
+    [<Test>]
+    let NCoverShouldGeneratePlausibleJson() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/GenuineNCover158.json")
+      Json.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        let r = Json.summary baseline ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd()
+        //printfn "%s" result
+        //Assert.That
+        //  (result, Is.EqualTo expected)
+        test <@ result = expected @>
+      finally
+        Json.path := None
+
+    [<Test>]
+    let OpenCoverShouldGeneratePlausibleJson() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("Sample4FullTracking.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/OpenCover.json")
+      Json.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addJsonSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize baseline ReportFormat.OpenCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("OpenCover.json", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd()
+        //printfn "%s" result
+        //Assert.That
+        //  (result, Is.EqualTo expected)
+        test <@ result = expected @>
+      finally
+        Json.path := None
+
     // Runner.fs and CommandLine.fs
     [<Test>]
     let UsageIsAsExpected() =
@@ -377,7 +449,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 11
+      let optionCount = 12
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort
@@ -843,6 +915,73 @@ module AltCoverRunnerTests =
         finally
           Runner.I.initSummary()
           LCov.path := None)
+
+    [<Test>]
+    let ParsingJsonGivesJson() =
+      Runner.init()
+      lock Json.path (fun () ->
+        try
+          Json.path := None
+          Runner.I.initSummary()
+          let options = Runner.declareOptions()
+          let unique = "some exe"
+          let input = [| "-j"; unique |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Right(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.Empty)
+          match !Json.path with
+          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+          Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
+        finally
+          Runner.I.initSummary()
+          Json.path := None)
+
+    [<Test>]
+    let ParsingMultipleJsonGivesFailure() =
+      Runner.init()
+      lock Json.path (fun () ->
+        try
+          Json.path := None
+          Runner.I.initSummary()
+          let options = Runner.declareOptions()
+          let unique = Guid.NewGuid().ToString()
+
+          let input =
+            [| "-j"
+               unique
+               "/j"
+               unique.Replace("-", "+") |]
+
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--jsonReport : specify this only once")
+        finally
+          Runner.I.initSummary()
+          Json.path := None)
+
+    [<Test>]
+    let ParsingNoJsonGivesFailure() =
+      Runner.init()
+      lock Json.path (fun () ->
+        try
+          Json.path := None
+          Runner.I.initSummary()
+          let options = Runner.declareOptions()
+          let blank = " "
+          let input = [| "-j"; blank |]
+          let parse = CommandLine.parseCommandLine input options
+          match parse with
+          | Left(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.EqualTo "UsageError")
+        finally
+          Runner.I.initSummary()
+          Json.path := None)
 
     [<Test>]
     let ParsingThresholdGivesThreshold() =

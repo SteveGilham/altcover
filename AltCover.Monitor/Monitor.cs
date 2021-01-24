@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.IO;
+using System.Reflection;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace AltCover
 {
@@ -51,6 +51,65 @@ namespace AltCover
     public int Branch;
   }
 
+  internal sealed class Carrier : IDisposable
+  {
+    private readonly ArrayList data = new ArrayList();
+    private bool disposedValue;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Exceptions",
+                     "UseObjectDisposedExceptionRule",
+                     Justification = "There is no use case")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+    public T Add<T>(T item)
+    {
+      data.Add(item);
+      return item;
+    }
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Interoperability",
+                     "DelegatesPassedToNativeCodeMustIncludeExceptionHandlingRule",
+                     Justification = "Gendarme bug here")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+    private void Dispose(bool disposing)
+    {
+      if (!disposedValue)
+      {
+        if (disposing)
+        {
+          // dispose managed state (managed objects)
+          foreach (var item in data)
+          {
+            (item as IDisposable)?.Dispose();
+          }
+
+          data.Clear();
+        }
+
+        // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+        // TODO: set large fields to null
+        disposedValue = true;
+      }
+    }
+
+    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+    // ~Carrier()
+    // {
+    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+    //     Dispose(disposing: false);
+    // }
+
+    public void Dispose()
+    {
+      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+      Dispose(disposing: true);
+      GC.SuppressFinalize(this);
+    }
+  }
+
   /// <summary>
   /// Provides real-time insights into the recording process.
   /// </summary>
@@ -59,22 +118,28 @@ namespace AltCover
     internal static string assembly = "AltCover.Recorder.g";
 
     // Use the Null Object pattern here
-    private static IEnumerable<Type> RecorderInstance
+    private static IEnumerable<Type> TypeInstance(string name)
     {
-      get
       {
-        var rec =
-        AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => a.GetName().Name == assembly)
-            .FirstOrDefault();
+        Assembly rec = null;
+        foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+        {
+          if (a.GetName().Name == assembly)
+          {
+            rec = a;
+            break;
+          }
+        }
+
         if (rec != null)
         {
-          var i = rec.GetTypes()
-              .Where(t => t.Name == "Instance")
-              .FirstOrDefault();
-          if (i != null)
+          foreach (var i in rec.GetTypes())
           {
-            yield return i;
+            if (i.Name == name)
+            {
+              yield return i;
+              break;
+            }
           }
         }
         yield break;
@@ -86,24 +151,46 @@ namespace AltCover
     /// </summary>
     /// <param name="totals">The total point counts if running under AltCover coverage</param>
     /// <returns>True if running under AltCover coverage</returns>
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+    [SuppressMessage("Gendarme.Rules.Correctness",
+                     "EnsureLocalDisposalRule",
+                     Justification = "Carrier type does it")]
+    [SuppressMessage("Gendarme.Rules.Performance",
+                     "AvoidRepetitiveCallsToPropertiesRule",
+                     Justification = "Once per instance")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static bool TryGetPointTotals(out PointCount totals)
     {
-      var instance = RecorderInstance;
-      totals = instance.Aggregate(new PointCount(), (t, i) =>
-         {
-           var xml = i.GetProperty("ReportFile").GetValue(null).ToString();
-           var doc = XDocument.Load(xml);
-           var seqpnt = doc.Descendants("seqpnt").Count();
-           var sp2 = doc.Descendants("SequencePoint").Count()
-                    + doc.Descendants("Method")
-                      .Where(x => !x.Descendants("SequencePoint").Any())
-                      .Count();
-           t.Branch = doc.Descendants("BranchPoint").Count();
-           t.Code = Math.Max(seqpnt, sp2);
-           return t;
-         });
+      var instance = TypeInstance("Instance");
+      totals = new PointCount();
+      var found = false;
+      foreach (var i in instance)
+      {
+        var xml = i.GetProperty("ReportFile").GetValue(null, Type.EmptyTypes).ToString();
+        using (var file = File.OpenRead(xml))
+        using (var scans = new Carrier())
+        {
+          var doc = new XmlDocument();
+          doc.Load(file);
+          var seqpnt = scans.Add(doc.DocumentElement.SelectNodes("//seqpnt")).Count;
+          var sp2 = scans.Add(doc.DocumentElement.SelectNodes("//SequencePoint")).Count;
 
-      return instance.Any();
+          foreach (XmlElement m in scans.Add(doc.DocumentElement.SelectNodes("//Method")))
+          {
+            if (scans.Add(m.SelectNodes(".//SequencePoint")).Count == 0)
+            {
+              sp2++;
+            }
+          }
+
+          totals.Branch = scans.Add(doc.DocumentElement).SelectNodes("//BranchPoint").Count;
+          totals.Code = Math.Max(seqpnt, sp2);
+          found = true;
+        }
+      }
+
+      return found;
     }
 
     /// <summary>
@@ -114,27 +201,27 @@ namespace AltCover
     /// <remarks>Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.</remarks>
     public static bool TryGetVisitTotals(out PointCount totals)
     {
-      var instance = RecorderInstance;
-      totals = instance
-        .Select(t => t.GetNestedType("I", System.Reflection.BindingFlags.NonPublic))
-        .Where(t => t is object)
-        .Aggregate(new PointCount(), (t, i) =>
+      var counter = TypeInstance("Counter");
+      totals = new PointCount();
+      var found = false;
+      foreach (var t in counter)
       {
-        var visits = i.GetProperty("visits", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).GetValue(null)
-         as IDictionary;
+        var temp = (Int64)t.GetProperty("branchVisits",
+           System.Reflection.BindingFlags.NonPublic |
+           System.Reflection.BindingFlags.Public |
+           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes);
+        totals.Branch = (int)temp;
 
-        lock (visits)
-        {
-          var indexes = visits.Values.Cast<IDictionary>()
-                .SelectMany(d => d.Keys.Cast<int>());
-          var total = indexes.Count();
-          t.Branch = indexes.Count(index => index < 0);
-          t.Code = total - t.Branch;
-          return t;
-        }
-      });
+        temp = (Int64)t.GetProperty("totalVisits",
+           System.Reflection.BindingFlags.NonPublic |
+           System.Reflection.BindingFlags.Public |
+           System.Reflection.BindingFlags.Static).GetValue(null, Type.EmptyTypes);
+        totals.Code = (int)temp - totals.Branch;
 
-      return instance.Any();
+        found = true;
+      }
+
+      return found;
     }
   }
 }

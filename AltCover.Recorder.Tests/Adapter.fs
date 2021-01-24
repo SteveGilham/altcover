@@ -9,13 +9,16 @@ module Adapter =
   let DoResume() = Instance.I.doResume
   let DoUnload() = Instance.I.doUnload
   let DoExit() = Instance.I.doExit
-  let VisitsClear() = Instance.I.clear()
+  let VisitsClear() =
+    Instance.I.clear()
+    Counter.branchVisits <- 0L
+    Counter.totalVisits <- 0L
   let SamplesClear() = Instance.I.samples.Clear()
 
   let Reset() =
     Instance.I.isRunner <- false
-    Instance.I.clear()
-    Instance.I.samples.Clear()
+    VisitsClear()
+    SamplesClear()
 
   let internal prepareName name =
     if name

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Tests\Expecto.fs" Link="Expecto.fs" />
+    <Compile Include="..\AltCover.Tests\Expecto.fs" Link="Expecto.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tests\AltCover.Tests.fsproj" />
+    <ProjectReference Include="..\AltCover.Tests\AltCover.Tests.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
