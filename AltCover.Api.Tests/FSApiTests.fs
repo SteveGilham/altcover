@@ -148,12 +148,12 @@ module FSApiTests =
   [<Test>]
   let NCoverToJson() =
     use stream=
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.AltCover.Api.Tests.GenuineNCover158.Xml.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.Xml")
     let doc = XDocument.Load(stream)
     let result = CoverageFormats.ConvertToJson doc
 
     use stream3 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.AltCover.Api.Tests.GenuineNCover158.Xml.json")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.json")
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
