@@ -40,6 +40,7 @@ public class InvokeAltCoverCommand : PSCmdlet
 | [FileFilter](InvokeAltCoverCommand/FileFilter-apidoc) { get; set; } | Source file names to exclude from instrumentation |
 | [InPlace](InvokeAltCoverCommand/InPlace-apidoc) { get; set; } | Instrument the inputDirectory, rather than the outputDirectory (e.g. for `dotnet test`) |
 | [InputDirectory](InvokeAltCoverCommand/InputDirectory-apidoc) { get; set; } | Folder or folders containing assemblies to instrument (default: current directory) |
+| [JsonReport](InvokeAltCoverCommand/JsonReport-apidoc) { get; set; } | File path for JSON format version of the collected data |
 | [Key](InvokeAltCoverCommand/Key-apidoc) { get; set; } | Strong name key or keys that were used to sign the inputs |
 | [LcovReport](InvokeAltCoverCommand/LcovReport-apidoc) { get; set; } | File path for lcov format version of the collected data |
 | [LineCover](InvokeAltCoverCommand/LineCover-apidoc) { get; set; } | Do not record branch coverage. Implies, and is compatible with, the -ReportFormat "opencover" option. Incompatible with `-BranchCover`. |

@@ -15,6 +15,7 @@ public class Collect : Task
 | [CommandLine](Collect/CommandLine-apidoc) { get; set; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
 | [Executable](Collect/Executable-apidoc) { get; set; } | Corresponds to command line option `-x, --executable=VALUE` |
 | [ExposeReturnCode](Collect/ExposeReturnCode-apidoc) { get; set; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [JsonReport](Collect/JsonReport-apidoc) { get; set; } | Corresponds to command line option `-j, --jsonReport=VALUE` |
 | [LcovReport](Collect/LcovReport-apidoc) { get; set; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](Collect/OutputFile-apidoc) { get; set; } | Corresponds to command line option `-o, --outputFile=VALUE` |
 | [RecorderDirectory](Collect/RecorderDirectory-apidoc) { get; set; } | Corresponds to command line option `-r, --recorderDirectory=VALUE`; a required parameter |

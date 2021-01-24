@@ -14,8 +14,12 @@ namespace AltCover
 
     val ConvertToCobertura :
       document:System.Xml.Linq.XDocument -> System.Xml.Linq.XDocument
+
+    val ConvertToJson :
+      document:System.Xml.Linq.XDocument -> string
+
 ```
-The input is either in NCover for OpenCover format; Cobertura, being XML, is returned as a document, the lcov format output is to a stream.
+The input is either in NCover for OpenCover format; Cobertura, being XML, is returned as a document, the lcov format output is to a stream, and JSON as a string.
 ```
 
     val ConvertFromNCover :

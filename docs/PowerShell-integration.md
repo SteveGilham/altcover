@@ -15,6 +15,7 @@ which unpeels the wrapper around the file path.  Just substitute in the appropri
 * [ConvertFrom-NCover](#convertfrom-ncover)
 * [ConvertTo-BarChart](#convertto-barchart)
 * [ConvertTo-Cobertura](#convertto-cobertura)
+* [ConvertTo-CoverageJson](#convertto-coveragejson)
 * [ConvertTo-Lcov](#convertto-lcov)
 * [ConvertTo-NCover](#convertto-ncover)
 * [ConvertTo-XDocument](#convertto-xdocument)
@@ -556,6 +557,89 @@ ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile 
 ```
 
 
+###    ConvertTo-CoverageJson
+
+NAME
+
+```
+ConvertTo-CoverageJson
+
+```
+SYNOPSIS
+
+Creates a JSON format report from other report formats.
+
+
+SYNTAX
+
+```
+ConvertTo-CoverageJson [-XDocument] <XDocument> [<CommonParameters>]
+
+ConvertTo-CoverageJson [-InputFile] <string> [<CommonParameters>]
+
+
+```
+DESCRIPTION
+
+Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object
+pipeline. Writes the JSON report to a string.
+
+
+PARAMETERS
+#### `-XDocument <XDocument>` 
+Input as `XDocument` value
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `-InputFile <string>` 
+Input as file path
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `<CommonParameters>` 
+This cmdlet supports the common parameters: Verbose, Debug,
+ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+OutBuffer, PipelineVariable, and OutVariable. For more information, see
+about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216).
+
+INPUTS
+```
+System.Xml.Linq.XDocument
+```
+Input as `XDocument` value
+
+```
+System.String
+```
+Input as file path
+
+
+OUTPUTS
+```
+System.String
+```
+
+
+----------  EXAMPLE 1  ----------
+
+
+```
+ConvertTo-CoverageJson -InputFile "./Tests/HandRolledMonoCoverage.xml"
+```
+
+
 ###    ConvertTo-Lcov
 
 NAME
@@ -940,9 +1024,9 @@ SYNTAX
 
 ```
 Invoke-AltCover [-Runner] <SwitchParameter> -RecorderDirectory <string> [-Cobertura <string>] [-CommandLine
-<string[]>] [-DropReturnCode <SwitchParameter>] [-Executable <string>] [-LcovReport <string>] [-OutputFile
-<string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}] [-Threshold <string>] [-Verbosity {Off |
-Error | Warning | Info | Verbose}] [-WorkingDirectory <string>] [<CommonParameters>]
+<string[]>] [-DropReturnCode <SwitchParameter>] [-Executable <string>] [-JsonReport <string>] [-LcovReport
+<string>] [-OutputFile <string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}] [-Threshold
+<string>] [-Verbosity {Off | Error | Warning | Info | Verbose}] [-WorkingDirectory <string>] [<CommonParameters>]
 
 Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>] [-AttributeFilter <string[]>]
 [-AttributeTopLevel <string[]>] [-BranchCover <SwitchParameter>] [-CallContext <string[]>] [-CommandLine
@@ -1025,6 +1109,17 @@ Accept wildcard characters?  false
 
 #### `-LcovReport <string>` 
 File path for lcov format version of the collected data
+
+```
+Required?                    false
+Position?                    named
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-JsonReport <string>` 
+File path for JSON format version of the collected data
 
 ```
 Required?                    false

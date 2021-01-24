@@ -197,6 +197,7 @@ The members correspond to the like-named command line options for `AltCover Runn
         ExposeReturnCode: Flag
         SummaryFormat: SummaryFormat
         Verbosity : System.Diagnostics.TraceLevel
+        JsonReport: FilePath
       }
       with
         static member Create : unit -> CollectOptions
