@@ -11,6 +11,7 @@ open GuiCommon
 
 open AltCover.FontSupport
 open Avalonia.Controls
+open Avalonia.Controls.Presenters
 open Avalonia.Markup.Xaml
 open Avalonia.Media
 open Avalonia.Media.Imaging
@@ -117,7 +118,7 @@ type MainWindow() as this =
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
-  member private this.UpdateTextFonts (text:TextBlock) text2 =
+  member private this.UpdateTextFonts (text:TextPresenter) text2 =
     [ text; text2 ]
     |> List.iter (fun t ->
           let (_, logfont) = LogFont.TryParse(Persistence.readFont())
@@ -134,7 +135,7 @@ type MainWindow() as this =
     (xpath: XPathNavigator) =
         let visibleName = (context.Row.Header :?> StackPanel).Tag.ToString()
 
-        let tagByCoverage (buff : TextBlock) (lines : FormattedTextLine list) (n : CodeTag) =
+        let tagByCoverage (buff : TextPresenter) (lines : FormattedTextLine list) (n : CodeTag) =
           let start = (n.Column - 1) +
                       (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
           let finish = (n.EndColumn - 1) +
@@ -158,6 +159,7 @@ type MainWindow() as this =
           let margin = Thickness(0.0, pad)
 
           Dispatcher.UIThread.Post(fun _ ->
+            stack.Children.Clear()
             for l in 1 .. lines.Length do
               let pic = new Image()
               let pix = HandlerCommon.IconForBranches icons branches l
@@ -167,29 +169,27 @@ type MainWindow() as this =
               pic.Margin <- margin
               stack.Children.Add pic)
 
-        let markCoverage (root : XPathNavigator) textBox (text2: TextBlock)
+        let mutable formats = []
+        let mutable linemark = []
+
+        let markCoverage (root : XPathNavigator) (textBox:TextPresenter) (text2: TextPresenter)
                            (lines : FormattedTextLine list) filename =
           let tags = HandlerCommon.TagCoverage root filename lines.Length
 
-          let formats = tags
-                        |> List.map (tagByCoverage textBox lines)
+          formats <- tags
+                     |> List.map (tagByCoverage textBox lines)
 
-          let linemark =
+          linemark <-
             tags
             |> HandlerCommon.TagLines visited notVisited
             |> List.map (fun (l, tag) ->
                           let start = (l - 1) * (7 + Environment.NewLine.Length)
                           FormattedTextStyleSpan(start, 7, tag))
 
-          Dispatcher.UIThread.Post(fun _ -> textBox.FormattedText.Spans <- formats
-                                            textBox.Tag <- formats
-                                            text2.FormattedText.Spans <- linemark
-                                            text2.Tag <- linemark)
-
         context.Row.DoubleTapped
         |> Event.add (fun _ ->
-             let text = this.FindControl<TextBlock>("Source")
-             let text2 = this.FindControl<TextBlock>("Lines")
+             let text = this.FindControl<TextPresenter>("Source")
+             let text2 = this.FindControl<TextPresenter>("Lines")
              let scroller = this.FindControl<ScrollViewer>("Coverage")
 
              let noSource() =
@@ -222,6 +222,12 @@ type MainWindow() as this =
                   async {
                       Threading.Thread.Sleep(300)
                       Dispatcher.UIThread.Post(fun _ ->
+                        text.FormattedText.Spans <- formats
+                        text.Tag <- formats
+                        text.InvalidateVisual()
+                        text2.FormattedText.Spans <- linemark
+                        text2.Tag <- linemark
+                        text2.InvalidateVisual()
                         let midpoint = scroller.Viewport.Height / 2.0
                         if (depth > midpoint)
                         then scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
@@ -258,8 +264,8 @@ type MainWindow() as this =
 
     let respondToFont font =
       font.ToString() |> Persistence.saveFont
-      let text = this.FindControl<TextBlock>("Source")
-      let text2 = this.FindControl<TextBlock>("Lines")
+      let text = this.FindControl<TextPresenter>("Source")
+      let text2 = this.FindControl<TextPresenter>("Lines")
       this.UpdateTextFonts text text2
       [ text; text2 ]
       |> Seq.iter (fun t ->
@@ -405,8 +411,8 @@ type MainWindow() as this =
                                         this.Title <- "AltCover.Visualizer"
                                         tree.Items.OfType<IDisposable>()
                                         |> Seq.iter (fun x -> x.Dispose())
-                                        let t1 = this.FindControl<TextBlock>("Source")
-                                        let t2 = this.FindControl<TextBlock>("Lines")
+                                        let t1 = this.FindControl<TextPresenter>("Source")
+                                        let t2 = this.FindControl<TextPresenter>("Lines")
                                         [t1; t2]
                                         |> Seq.iter (fun t ->
                                           t.Text <- String.Empty
