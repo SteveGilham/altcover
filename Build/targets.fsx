@@ -2712,8 +2712,8 @@ _Target "Packaging" (fun _ ->
         poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
         // monitorFiles "lib/netstandard2.0/"
-        // monitorFiles "lib/netcoreapp2.1/any/"
         // [ (monitor, Some "lib/net20", None) ]
+        monitorFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
         otherFilesGlobal
