@@ -349,8 +349,7 @@ module internal Runner =
       Justification="Library method inlined")>]
     [<SuppressMessage("Gendarme.Rules.Maintainability", "AvoidComplexMethodsRule",
       Justification="TODO: refactor even more")>]
-    let internal openCoverSummary(report : XDocument) =
-      let summary = report.Descendants("Summary".X) |> Seq.head
+    let private makeOpenCoverSummary (report:XDocument) (summary : XElement) =
 
       let summarise go (visit : string) (number : string) (precalc : string option) key =
         let vc = summary.Attribute(visit.X).Value
@@ -435,6 +434,12 @@ module internal Runner =
        altmcovered
        crapvalue
        altcrapvalue]
+
+    let internal openCoverSummary(report : XDocument) =
+      report.Root.Elements("Summary".X)
+      |> Seq.tryHead
+      |> Option.map (makeOpenCoverSummary report)
+      |> Option.defaultValue []
 
     [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
       Justification="Inlined library code")>]
