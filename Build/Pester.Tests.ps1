@@ -708,7 +708,7 @@ Describe "ConvertTo-CoverageJson" {
         $xd = [xdoc]::Load("./Tests/GenuineNCover158.Xml")
         $json = ConvertTo-CoverageJson $xd
         $json | Set-Content("./_Packaging/GenuineNCover158.json")
-        $expect = Get-Content "./Tests/NCover.json" 
+        $expect = Get-Content "./Tests/GenuineNCover158.json" 
         $json | Should -BeExactly $expect
     }
 
