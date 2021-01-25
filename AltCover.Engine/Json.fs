@@ -14,6 +14,8 @@ open Manatee.Json
 module internal Json =
   let internal path : Option<string> ref = ref None
 
+  // --- Generic XML to JSON helpers ---
+
   let internal appendChar (builder:StringBuilder) (c:Char) =
     builder.Append(c) |> ignore
 
@@ -84,6 +86,8 @@ module internal Json =
   let internal appendSimpleElement builder (xElement : XElement) =
     appendMappedElement builder false [] xElement
 
+  // --- Manatee remnant ---
+
   let internal simpleAttributeToValue (a:XAttribute) =
     let value = a.Value
     let b,v = Double.TryParse value
@@ -111,6 +115,8 @@ module internal Json =
 
   let internal simpleElementToJSon (xElement : XElement) =
     mappedElementToJSon [] xElement
+
+  // --- OpenCover ---
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
@@ -249,6 +255,53 @@ module internal Json =
       appendChar builder ']'
     builder.Append("}}") // return the builder
 
+  let opencoverToJson report =
+    let builder = StringBuilder()
+    builder.Append("{\"CoverageSession\":{") |> ignore
+    let mutable topComma = appendSimpleElement builder report
+    report.Elements(XName.Get "Summary")
+    |> Seq.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+                          appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
+                          appendChar builder '}'
+                          topComma <- true)
+    // appendCoverageModules builder topComma report |> ignore
+    builder.Append("}}") // return value
+
+    //topLevelToJson "CoverageSession" "Module" (fun builder topComma x modules ->
+    //x.Elements(XName.Get "Summary")
+    //|> Seq.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+    //                      appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
+    //                      appendChar builder '}')
+    //x.Descendants(XName.Get "Module")
+    //|> Seq.iter(fun m ->
+    //  let mjson = simpleElementToJSon m
+    //  m.Elements(XName.Get "Summary")
+    //  |> Seq.iter (fun s -> let js = simpleElementToJSon s
+    //                        mjson.Object.Add("Summary", JsonValue js))
+
+    //  [
+    //    "FullName"
+    //    "ModulePath"
+    //    "ModuleTime"
+    //    "ModuleName"
+    //  ]
+    //  |> Seq.iter  (fun tag ->
+    //    m.Elements(XName.Get tag)
+    //    |> Seq.iter (fun s -> let js = s.Value
+    //                          mjson.Object.Add(tag, JsonValue js)))
+
+    //  addTerminalGroup [] "Files" "File" mjson m
+    //  addModuleClasses mjson m
+    //  addTerminalGroup [
+    //    "entry", formatTimeList
+    //    "exit", formatTimeList ] "TrackedMethods" "TrackedMethod" mjson m
+
+    //  modules.Add mjson
+    //)
+    //true ) report
+
+  // --- NCover ---
+
   let internal appendNCoverElements next key
     (builder:StringBuilder) (comma:bool) (x:XContainer) =
     let mutable first = true
@@ -292,40 +345,6 @@ module internal Json =
     let topComma = appendSimpleElement builder report
     appendCoverageModules builder topComma report |> ignore
     builder.Append("}}") // return value
-
-  let opencoverToJson report =
-    topLevelToJson "CoverageSession" "Module" (fun builder topComma x modules ->
-    x.Elements(XName.Get "Summary")
-    |> Seq.iter (fun s -> if topComma then appendChar builder ',' |> ignore
-                          appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
-                          appendChar builder '}')
-    x.Descendants(XName.Get "Module")
-    |> Seq.iter(fun m ->
-      let mjson = simpleElementToJSon m
-      m.Elements(XName.Get "Summary")
-      |> Seq.iter (fun s -> let js = simpleElementToJSon s
-                            mjson.Object.Add("Summary", JsonValue js))
-
-      [
-        "FullName"
-        "ModulePath"
-        "ModuleTime"
-        "ModuleName"
-      ]
-      |> Seq.iter  (fun tag ->
-        m.Elements(XName.Get tag)
-        |> Seq.iter (fun s -> let js = s.Value
-                              mjson.Object.Add(tag, JsonValue js)))
-
-      addTerminalGroup [] "Files" "File" mjson m
-      addModuleClasses mjson m
-      addTerminalGroup [
-        "entry", formatTimeList
-        "exit", formatTimeList ] "TrackedMethods" "TrackedMethod" mjson m
-
-      modules.Add mjson
-    )
-    true ) report
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
