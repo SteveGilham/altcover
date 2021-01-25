@@ -17,23 +17,25 @@ module internal Json =
   let internal appendChar (builder:StringBuilder) (c:Char) =
     builder.Append(c) |> ignore
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal escapeString (builder:StringBuilder) (s:String) =
     s
-    |> Seq.iter (fun c -> if Char.IsControl c || c = '\\' || c = '&'
-                          then
-                            match c with
-                            | '"' -> builder.Append("\\\"")
-                            | '\\' -> builder.Append("\\\\")
-                            | '\b' -> builder.Append("\\b")
-                            | '\f' -> builder.Append("\\f")
-                            | '\n' -> builder.Append("\\n")
-                            | '\r' -> builder.Append("\\r")
-                            | '\t' -> builder.Append("\\t")
-                            | _ -> builder.Append("\\u").Append(((int)c).ToString("X4"));
-
-                            |> ignore
-                          else appendChar builder c
-        )
+    |> Seq.iter (fun c ->
+      if Char.IsControl c || c = '\\' || c = '&'
+      then
+        match c with
+        | '"' -> builder.Append("\\\"")
+        | '\\' -> builder.Append("\\\\")
+        | '\b' -> builder.Append("\\b")
+        | '\f' -> builder.Append("\\f")
+        | '\n' -> builder.Append("\\n")
+        | '\r' -> builder.Append("\\r")
+        | '\t' -> builder.Append("\\t")
+        | _ -> builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
+        |> ignore
+      else appendChar builder c )
 
   let internal appendSimpleAttributeValue (builder:StringBuilder) (a:XAttribute) =
     let value = a.Value
@@ -47,23 +49,28 @@ module internal Json =
         escapeString builder value
         appendChar builder '"'
 
+  let internal appendSequence builder topComma (sequence:(StringBuilder -> unit)seq)  =
+    sequence
+    |> Seq.fold (fun comma item ->
+       if comma
+       then appendChar builder ','
+       item builder
+       true
+      ) topComma
+
   let internal appendMappedElement
     (builder:StringBuilder)
+    (topComma:bool)
     (mappings: (string * (XAttribute -> JsonValue)) list)
     (xElement : XElement) =
-    let mutable comma = false
-    if xElement.HasAttributes
-    then
-      xElement.Attributes()
-      |> Seq.iter(fun (a:XAttribute) ->
-        if a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not
-        then
+
+    xElement.Attributes()
+    |> Seq.filter (fun a -> a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not)
+    |> Seq.map (fun a -> (fun (b:StringBuilder) ->
           let local = a.Name.LocalName
-          if comma
-          then appendChar builder ','
-          builder.Append("\"")
-                 .Append(local) // known safe
-                 .Append("\":") |> ignore
+          b.Append("\"")
+           .Append(local) // known safe
+           .Append("\":") |> ignore
           let mapped = mappings
                        |> Seq.tryFind (fun (n,_) -> n = local)
                        |> Option.map snd
@@ -71,12 +78,11 @@ module internal Json =
             (fun (v:XAttribute) ->
               builder.Append((f v).ToString()) |> ignore))
           a |>
-          Option.defaultValue (appendSimpleAttributeValue builder) mapped
-          comma <- true)
-    comma
+          Option.defaultValue (appendSimpleAttributeValue builder) mapped ))
+    |> (appendSequence builder topComma)
 
   let internal appendSimpleElement builder (xElement : XElement) =
-    appendMappedElement builder [] xElement
+    appendMappedElement builder false [] xElement
 
   let internal simpleAttributeToValue (a:XAttribute) =
     let value = a.Value
@@ -105,23 +111,6 @@ module internal Json =
 
   let internal simpleElementToJSon (xElement : XElement) =
     mappedElementToJSon [] xElement
-
-  let internal addNCoverElements next key (json:JsonValue) (x:XContainer) =
-    let elements = JsonArray()
-    x.Descendants(XName.Get key)
-    |> Seq.iter(fun xx ->
-      let keyjson = simpleElementToJSon xx
-      next keyjson xx
-      elements.Add keyjson
-    )
-    if elements.Count > 0
-    then json.Object.Add(key, JsonValue elements)
-
-  let internal addMethodSeqpnts (mjson:JsonValue) (m:XContainer) =
-    addNCoverElements (fun _ _ -> ()) "seqpnt" mjson m
-
-  let internal addModuleMethods (mjson:JsonValue) (m:XContainer) =
-    addNCoverElements addMethodSeqpnts "method" mjson m
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
@@ -260,15 +249,59 @@ module internal Json =
       appendChar builder ']'
     builder.Append("}}") // return the builder
 
+  let internal appendNCoverElements next key
+    (builder:StringBuilder) (comma:bool) (x:XContainer) =
+    let mutable first = true
+
+    x.Elements(XName.Get key)
+    |> Seq.map (fun xx -> (fun (b:StringBuilder) ->
+      if first
+      then
+        if comma
+        then appendChar b ','
+        b.Append("\"")
+         .Append(key)
+         .Append("\":[")
+         |> ignore
+      first <- false
+      appendChar b '{'
+      let c2 = appendSimpleElement b xx
+      next b c2 xx |> ignore
+      appendChar b '}'
+    ))
+
+    |> appendSequence builder false // (sequence:(StringBuilder -> unit)seq)
+    |> ignore
+
+    if first |> not
+    then builder.Append ("]")|> ignore
+    true
+
+  let internal appendMethodSeqpnts (builder:StringBuilder) comma (x:XContainer) =
+    appendNCoverElements (fun _ _ _ -> false) "seqpnt" builder comma x
+
+  let internal appendModuleMethods (builder:StringBuilder) comma (x:XContainer) =
+    appendNCoverElements appendMethodSeqpnts "method" builder comma x
+
+  let internal appendCoverageModules (builder:StringBuilder) comma (x:XContainer) =
+    appendNCoverElements appendModuleMethods "module" builder comma x
+
   let ncoverToJson report =
-    topLevelToJson "coverage" "module" (fun _ comma x modules ->
-      x.Descendants(XName.Get "module")
-      |> Seq.iter(fun m ->
-        let mjson = simpleElementToJSon m
-        addModuleMethods mjson m
-        modules.Add mjson
-      )
-      comma) report
+    let builder = StringBuilder()
+    builder.Append("{\"coverage\":{") |> ignore
+    let topComma = appendSimpleElement builder report
+    appendCoverageModules builder topComma report |> ignore
+    builder.Append("}}") // return value
+
+    //topLevelToJson "coverage" "module" (fun builder comma x modules ->
+    //  x.Descendants(XName.Get "module")
+    //  |> Seq.map (fun m -> (fun b ->
+    //    appendChar b '{'
+    //    appendSimpleElement b m |> ignore // TODO comma
+    //    let mjson = JsonValue(JsonObject())
+    //    b.Append ((addModuleMethods mjson m).ToString()) |> ignore
+    //  ))
+    //  |> appendSequence builder comma) report
 
   let opencoverToJson report =
     topLevelToJson "CoverageSession" "Module" (fun builder topComma x modules ->
