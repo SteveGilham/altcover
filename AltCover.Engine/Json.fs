@@ -293,16 +293,6 @@ module internal Json =
     appendCoverageModules builder topComma report |> ignore
     builder.Append("}}") // return value
 
-    //topLevelToJson "coverage" "module" (fun builder comma x modules ->
-    //  x.Descendants(XName.Get "module")
-    //  |> Seq.map (fun m -> (fun b ->
-    //    appendChar b '{'
-    //    appendSimpleElement b m |> ignore // TODO comma
-    //    let mjson = JsonValue(JsonObject())
-    //    b.Append ((addModuleMethods mjson m).ToString()) |> ignore
-    //  ))
-    //  |> appendSequence builder comma) report
-
   let opencoverToJson report =
     topLevelToJson "CoverageSession" "Module" (fun builder topComma x modules ->
     x.Elements(XName.Get "Summary")
