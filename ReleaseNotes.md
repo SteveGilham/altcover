@@ -2,6 +2,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.6.8xx (Genbu series release 16)
+* JSON output shake down 
+  * Reduce allocations
+  * Escape strings more vigorously
+  * Method metadata tokens typed as `int`
+
 # 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
 * Monitor API

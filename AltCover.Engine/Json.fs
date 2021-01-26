@@ -6,8 +6,6 @@ open System.Xml.Linq
 open System.Globalization
 open System.Text
 
-open Manatee.Json
-
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Json' is jargon")>]
@@ -23,21 +21,27 @@ module internal Json =
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal escapeString (builder:StringBuilder) (s:String) =
+    let appendEscaped c =
+      match c with
+      | '"' -> builder.Append("\\\"")
+      | '/' -> builder.Append("\\/")
+      | '\\' -> builder.Append("\\\\")
+      | '\b' -> builder.Append("\\b")
+      | '\f' -> builder.Append("\\f")
+      | '\t' -> builder.Append("\\t")
+      | '\r' -> builder.Append("\\r")
+      | '\n' -> builder.Append("\\n")
+      | '&'
+      | '<'
+      | '>'
+      | '%'
+          -> builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
+      | x when (Char.IsControl x )
+          -> builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
+      | _ -> builder.Append c
+      |> ignore
     s
-    |> Seq.iter (fun c ->
-      if Char.IsControl c || c = '\\' || c = '&'
-      then
-        match c with
-        | '"' -> builder.Append("\\\"")
-        | '\\' -> builder.Append("\\\\")
-        | '\b' -> builder.Append("\\b")
-        | '\f' -> builder.Append("\\f")
-        | '\n' -> builder.Append("\\n")
-        | '\r' -> builder.Append("\\r")
-        | '\t' -> builder.Append("\\t")
-        | _ -> builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
-        |> ignore
-      else appendChar builder c )
+    |> Seq.iter appendEscaped
 
   let internal appendSimpleValue (builder:StringBuilder) (value:string) =
     let b,v = Double.TryParse value
@@ -50,9 +54,6 @@ module internal Json =
         escapeString builder value
         appendChar builder '"'
 
-  let internal appendSimpleAttributeValue (builder:StringBuilder) (a:XAttribute) =
-    appendSimpleValue builder a.Value
-
   let internal appendSequence builder topComma (sequence:(StringBuilder -> unit)seq)  =
     sequence
     |> Seq.fold (fun comma item ->
@@ -61,82 +62,6 @@ module internal Json =
        item builder
        true
       ) topComma
-
-  let internal appendMappedElement
-    (builder:StringBuilder)
-    (topComma:bool)
-    (mappings: (string * (XAttribute -> JsonValue)) list)
-    (xElement : XElement) =
-
-    xElement.Attributes()
-    |> Seq.filter (fun a -> a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not)
-    |> Seq.map (fun a -> (fun (b:StringBuilder) ->
-          let local = a.Name.LocalName
-          b.Append("\"")
-           .Append(local) // known safe
-           .Append("\":") |> ignore
-          let mapped = mappings
-                       |> Seq.tryFind (fun (n,_) -> n = local)
-                       |> Option.map snd
-                       |> Option.map (fun f ->
-            (fun (v:XAttribute) ->
-              builder.Append((f v).ToString()) |> ignore))
-          a |>
-          Option.defaultValue (appendSimpleAttributeValue builder) mapped ))
-    |> (appendSequence builder topComma)
-
-  let internal appendSimpleElement builder (xElement : XElement) =
-    appendMappedElement builder false [] xElement
-
-  // --- Manatee remnant ---
-
-  let internal simpleAttributeToValue (a:XAttribute) =
-    let value = a.Value
-    let b,v = Double.TryParse value
-    if b then JsonValue v
-    else
-      let b2, v2 = Boolean.TryParse value
-      if b2 then JsonValue v2
-      else JsonValue value
-
-  let internal mappedElementToJSon mappings (xElement : XElement) =
-    let element = JsonObject()
-    if xElement.HasAttributes
-    then
-      xElement.Attributes()
-      |> Seq.iter(fun (a:XAttribute) ->
-        if a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not
-        then
-          let map = mappings
-                    |> Seq.tryFind (fun (n,_) -> n = a.Name.LocalName)
-                    |> Option.map snd
-                    |> Option.defaultValue (simpleAttributeToValue >> Some)
-          map a
-          |> Option.iter (fun v -> element.Add (a.Name.LocalName, v)))
-    JsonValue element
-
-  let internal simpleElementToJSon (xElement : XElement) =
-    mappedElementToJSon [] xElement
-
-  // --- OpenCover ---
-
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
-    Justification = "Should the need ever arise...")>]
-  let internal addGenericGroup mappings group item f (json:JsonValue) (x:XContainer) =
-    let items = JsonArray()
-    x.Descendants(XName.Get group)
-    |> Seq.collect (fun f -> f.Descendants(XName.Get item))
-    |> Seq.iter(fun x ->
-      let json = mappedElementToJSon mappings x
-      items.Add json
-      f json x
-    )
-    if items.Count > 0
-    then json.Object.Add(item, JsonValue items)
-
-  let internal addTerminalGroup mappings group item (json:JsonValue) (x:XContainer) =
-    addGenericGroup mappings group item (fun _ _ -> ()) json x
 
   let internal formatSingleTime (t:String) =
     let formatTimeValue l =
@@ -149,68 +74,71 @@ module internal Json =
     [t]
     |> Seq.map Int64.TryParse
     |> Seq.filter fst
-    |> Seq.map (snd >> formatTimeValue  >> JsonValue)
+    |> Seq.map (snd >> formatTimeValue)
     |> Seq.tryHead
+    |> Option.defaultValue "1970-01-01 00:00:00.0"
 
-  let internal formatTimeValue (a:XAttribute) =
-    formatSingleTime a.Value
+  let internal appendSingleTime (builder:StringBuilder) (value:string) =
+    formatSingleTime value
+    |> appendSimpleValue builder
 
-  let internal formatTimeList (a:XAttribute) =
-    a.Value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
-    |> Seq.map formatSingleTime
-    |> Seq.choose id
-    |> JsonArray
-    |> JsonValue
-    |> Some
+  let internal formatTimeList (builder:StringBuilder) (value:string) =
+    appendChar builder '['
+    value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
+    |> Seq.map (fun v -> fun b -> appendChar (v
+                                              |> formatSingleTime
+                                              |> builder.Append('"').Append) '"')
+    |> appendSequence builder false
+    |> ignore
+    appendChar builder ']'
 
-  let internal formatOffsetChain (a:XAttribute) =
-    a.Value.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
-    |> Seq.map Int32.TryParse
-    |> Seq.filter fst
-    |> Seq.map (snd >> float >> JsonValue)
-    |> JsonArray
-    |> JsonValue
-    |> Some
+  let specialValues = [
+                       ("time", appendSingleTime)
+                       ("offsetchain", (fun builder value ->
+                          appendChar builder '['
+                          value.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
+                          |> Seq.filter (Int32.TryParse >> fst)
+                          |> Seq.map (fun v -> fun b -> v |> (builder.Append >> ignore))
+                          |> appendSequence builder false
+                          |> ignore
+                          appendChar builder ']'))
+                       ("entry", formatTimeList)
+                       ("exit", formatTimeList)
+                      ]
+                      |> Map.ofSeq
 
-  let internal addMethodPoints mappings group item (json:JsonValue) (x:XContainer) =
-    addGenericGroup mappings group item (fun point x ->
-      addTerminalGroup ["time", formatTimeValue ]"Times" "Time"  point x
-      addTerminalGroup [] "TrackedMethodRefs" "TrackedMethodRef"  point x) json x
+  let internal appendMappedElement
+    (builder:StringBuilder)
+    (topComma:bool)
+    (xElement : XElement) =
 
-  let internal addIntermediateGroup group item perItem (json:JsonValue) (x:XContainer) =
-    let items = JsonArray()
-    x.Descendants(XName.Get group)
-    |> Seq.collect (fun c -> c.Descendants(XName.Get item))
-    |> Seq.iter (perItem items)
-    if items.Count > 0
-    then json.Object.Add(item, JsonValue items)
+    xElement.Attributes()
+    |> Seq.filter (fun a -> a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not)
+    |> Seq.map (fun a -> (fun (b:StringBuilder) ->
+          let local = a.Name.LocalName
+          b.Append("\"")
+           .Append(local) // known safe
+           .Append("\":") |> ignore
+          let mapped = specialValues
+                       |> Map.tryFind local
+                       |> Option.defaultValue appendSimpleValue
 
-  let internal addClassMethods (mjson:JsonValue) (m:XContainer) =
-    addIntermediateGroup "Methods" "Method" (fun items x ->
-      let ``method`` = simpleElementToJSon x
-      items.Add ``method``
-      [
-        "Summary"
-        "FileRef"
-        "MethodPoint"
-      ]
-      |> Seq.iter (fun name ->
-      x.Elements(XName.Get name)
-      |> Seq.iter (fun s -> let js = simpleElementToJSon s
-                            ``method``.Object.Add(name, JsonValue js)))
+          mapped builder a.Value))
+    |> (appendSequence builder topComma)
 
-      [
-        "MetadataToken"
-        "Name"
-      ]
-      |> Seq.iter  (fun tag ->
-        x.Elements(XName.Get tag)
-        |> Seq.iter (fun s -> let js = s.Value
-                              ``method``.Object.Add(tag, JsonValue js)))
-      addMethodPoints [] "SequencePoints" "SequencePoint"  ``method`` x
-      addMethodPoints ["offsetchain", formatOffsetChain ] "BranchPoints" "BranchPoint" ``method`` x
-    ) mjson m
+  let internal appendSimpleElement builder (xElement : XElement) =
+    appendMappedElement builder false xElement
 
+  let internal applyHeadline report (tag:string) =
+    let builder = StringBuilder()
+    builder.Append(tag) |> ignore
+    (builder, appendSimpleElement builder report)
+
+  // --- OpenCover ---
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
+    Justification = "Should the need ever arise...")>]
   let internal appendInternalElements next group key
     (builder:StringBuilder) (comma:bool) (x:XContainer) =
     let mutable first = true
@@ -332,18 +260,12 @@ module internal Json =
     topComma <- appendInternalElements appendClassMethods "Classes" "Class" builder topComma x
     appendInternalElements openCoverSink "TrackedMethods" "TrackedMethod" builder topComma x
 
-    //  addTerminalGroup [
-    //    "entry", formatTimeList
-    //    "exit", formatTimeList ] "TrackedMethods" "TrackedMethod" mjson m
-
   let internal appendSessionModules (builder:StringBuilder) comma (x:XContainer) =
     appendInternalElements appendModuleInternals "Modules" "Module" builder comma x
 
   let opencoverToJson report =
-    let builder = StringBuilder()
-    builder.Append("{\"CoverageSession\":{") |> ignore
-    let mutable topComma = appendSimpleElement builder report
-    topComma <- appendItemSummary builder topComma report
+    let (builder,comma) = applyHeadline report "{\"CoverageSession\":{"
+    let topComma = appendItemSummary builder comma report
     appendSessionModules builder topComma report |> ignore
     builder.Append("}}") // return value
 
@@ -388,10 +310,8 @@ module internal Json =
     appendNCoverElements appendModuleMethods "module" builder comma x
 
   let ncoverToJson report =
-    let builder = StringBuilder()
-    builder.Append("{\"coverage\":{") |> ignore
-    let topComma = appendSimpleElement builder report
-    appendCoverageModules builder topComma report |> ignore
+    let (builder,comma) = applyHeadline report "{\"coverage\":{"
+    appendCoverageModules builder comma report |> ignore
     builder.Append("}}") // return value
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
