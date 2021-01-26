@@ -211,52 +211,6 @@ module internal Json =
       addMethodPoints ["offsetchain", formatOffsetChain ] "BranchPoints" "BranchPoint" ``method`` x
     ) mjson m
 
-  let internal addModuleClasses (mjson:JsonValue) (m:XContainer) =
-    addIntermediateGroup "Classes" "Class" (fun items c ->
-      let ``class`` = simpleElementToJSon c
-      items.Add ``class``
-      c.Elements(XName.Get "Summary")
-      |> Seq.iter (fun s -> let js = simpleElementToJSon s
-                            ``class``.Object.Add("Summary", JsonValue js))
-
-      [
-        "FullName"
-      ]
-      |> Seq.iter  (fun tag ->
-        c.Elements(XName.Get tag)
-        |> Seq.iter (fun s -> let js = s.Value
-                              ``class``.Object.Add(tag, JsonValue js)))
-      addClassMethods ``class`` c
-    ) mjson m
-
-  let internal topLevelToJson (coverage:string) (``module``:string) f report =
-    let builder = StringBuilder()
-    builder.Append("{\"")
-           .Append(coverage) // known safe
-           .Append("\":{") |> ignore
-    let topComma = appendSimpleElement builder report
-
-    let modules = JsonArray()
-    let comma2 = f builder topComma report modules
-
-    if modules.Count > 0
-    then
-      if comma2
-      then appendChar builder ','
-      appendChar builder '"'
-      builder.Append(``module``)
-             .Append("\":[")
-             |> ignore
-      let mutable comma = false
-      modules
-      |> Seq.iter(fun m ->
-        if comma
-        then appendChar builder ','
-        builder.Append(m.ToString()) |> ignore
-        comma <- true)
-      appendChar builder ']'
-    builder.Append("}}") // return the builder
-
   let internal appendInternalElements next group key
     (builder:StringBuilder) (comma:bool) (x:XContainer) =
     let mutable first = true
@@ -297,6 +251,12 @@ module internal Json =
                              topComma <- true)
     topComma
 
+  let openCoverSink _ _ _ = false
+
+  let internal appendPointTracking (builder:StringBuilder) comma (x:XContainer) =
+    let mutable topComma = appendInternalElements openCoverSink "Times" "Time" builder comma x
+    appendInternalElements openCoverSink "TrackedMethodRefs" "TrackedMethodRef" builder topComma x
+
   let internal appendMethodPoints (builder:StringBuilder) comma (x:XContainer) =
     let mutable topComma = comma
     [
@@ -329,11 +289,8 @@ module internal Json =
                                            .Append("\":"))
                                    s.Value
                                  topComma <- true))
-    topComma <- appendInternalElements (fun _ _ _ -> false) "SequencePoints" "SequencePoint" builder topComma x
-    appendInternalElements (fun _ _ _ -> false) "BranchPoints" "BranchPoint" builder topComma x
-
-      //addMethodPoints [] "SequencePoints" "SequencePoint"  ``method`` x
-      //addMethodPoints ["offsetchain", formatOffsetChain ] "BranchPoints" "BranchPoint" ``method`` x
+    topComma <- appendInternalElements appendPointTracking "SequencePoints" "SequencePoint" builder topComma x
+    appendInternalElements appendPointTracking "BranchPoints" "BranchPoint" builder topComma x
 
   let internal appendClassMethods (builder:StringBuilder) comma (x:XContainer) =
     let mutable topComma = appendItemSummary builder comma x
@@ -371,25 +328,13 @@ module internal Json =
                                    s.Value
                                  topComma <- true))
 
-    topComma <- appendInternalElements (fun _ _ _ -> false) "Files" "File" builder comma x
+    topComma <- appendInternalElements openCoverSink "Files" "File" builder comma x
     topComma <- appendInternalElements appendClassMethods "Classes" "Class" builder topComma x
-    appendInternalElements (fun _ _ _ -> false) "TrackedMethods" "TrackedMethod" builder topComma x
-    //x.Descendants(XName.Get "Module")
-    //|> Seq.iter(fun m ->
-    //  let mjson = simpleElementToJSon m
-    //  m.Elements(XName.Get "Summary")
-    //  |> Seq.iter (fun s -> let js = simpleElementToJSon s
-    //                        mjson.Object.Add("Summary", JsonValue js))
+    appendInternalElements openCoverSink "TrackedMethods" "TrackedMethod" builder topComma x
 
-    //  addTerminalGroup [] "Files" "File" mjson m
-    //  addModuleClasses mjson m
     //  addTerminalGroup [
     //    "entry", formatTimeList
     //    "exit", formatTimeList ] "TrackedMethods" "TrackedMethod" mjson m
-
-    //  modules.Add mjson
-    //)
-    //true ) report
 
   let internal appendSessionModules (builder:StringBuilder) comma (x:XContainer) =
     appendInternalElements appendModuleInternals "Modules" "Module" builder comma x
