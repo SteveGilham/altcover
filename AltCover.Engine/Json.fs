@@ -39,8 +39,7 @@ module internal Json =
         |> ignore
       else appendChar builder c )
 
-  let internal appendSimpleAttributeValue (builder:StringBuilder) (a:XAttribute) =
-    let value = a.Value
+  let internal appendSimpleValue (builder:StringBuilder) (value:string) =
     let b,v = Double.TryParse value
     if b then builder.AppendFormat(CultureInfo.InvariantCulture, "{0}", v) |> ignore
     else
@@ -50,6 +49,9 @@ module internal Json =
         appendChar builder '"'
         escapeString builder value
         appendChar builder '"'
+
+  let internal appendSimpleAttributeValue (builder:StringBuilder) (a:XAttribute) =
+    appendSimpleValue builder a.Value
 
   let internal appendSequence builder topComma (sequence:(StringBuilder -> unit)seq)  =
     sequence
@@ -255,40 +257,129 @@ module internal Json =
       appendChar builder ']'
     builder.Append("}}") // return the builder
 
-  let opencoverToJson report =
-    let builder = StringBuilder()
-    builder.Append("{\"CoverageSession\":{") |> ignore
-    let mutable topComma = appendSimpleElement builder report
-    report.Elements(XName.Get "Summary")
-    |> Seq.iter (fun s -> if topComma then appendChar builder ',' |> ignore
-                          appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
-                          appendChar builder '}'
-                          topComma <- true)
-    // appendCoverageModules builder topComma report |> ignore
-    builder.Append("}}") // return value
+  let internal appendInternalElements next group key
+    (builder:StringBuilder) (comma:bool) (x:XContainer) =
+    let mutable first = true
 
-    //topLevelToJson "CoverageSession" "Module" (fun builder topComma x modules ->
-    //x.Elements(XName.Get "Summary")
-    //|> Seq.iter (fun s -> if topComma then appendChar builder ',' |> ignore
-    //                      appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
-    //                      appendChar builder '}')
+    x.Elements(XName.Get group)
+    |> Seq.collect(fun xx -> xx.Elements(XName.Get key))
+    |> Seq.map (fun xx -> (fun (b:StringBuilder) ->
+      if first
+      then
+        if comma
+        then appendChar b ','
+        b.Append("\"")
+         .Append(key)
+         .Append("\":[")
+         |> ignore
+      first <- false
+      appendChar b '{'
+      let c2 = appendSimpleElement b xx
+      next b c2 xx |> ignore
+      appendChar b '}'
+    ))
+
+    |> appendSequence builder false // (sequence:(StringBuilder -> unit)seq)
+    |> ignore
+
+    let result = first |> not
+    if result
+    then builder.Append ("]")|> ignore
+    result
+
+  let internal appendItemSummary (builder:StringBuilder) comma (x:XContainer) =
+    let mutable topComma = comma
+    x.Elements(XName.Get "Summary")
+    |> Seq.tryHead
+    |> Option.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+                             appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
+                             appendChar builder '}'
+                             topComma <- true)
+    topComma
+
+  let internal appendMethodPoints (builder:StringBuilder) comma (x:XContainer) =
+    let mutable topComma = comma
+    [
+      "Summary"
+      "FileRef"
+      "MethodPoint"
+    ]
+    |> Seq.iter (fun name ->
+      x.Elements(XName.Get name)
+      |> Seq.tryHead
+      |> Option.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+                               appendSimpleElement (
+                                 builder.Append('"')
+                                        .Append(name)
+                                        .Append( "\":{")) s |> ignore
+                               appendChar builder '}'
+                               topComma <- true))
+
+    [
+      "MetadataToken"
+      "Name"
+    ]
+    |> Seq.iter  (fun tag ->
+        x.Elements(XName.Get tag)
+        |> Seq.tryHead
+        |> Option.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+                                 appendSimpleValue
+                                   (builder.Append('"')
+                                           .Append(tag)
+                                           .Append("\":"))
+                                   s.Value
+                                 topComma <- true))
+    topComma <- appendInternalElements (fun _ _ _ -> false) "SequencePoints" "SequencePoint" builder topComma x
+    appendInternalElements (fun _ _ _ -> false) "BranchPoints" "BranchPoint" builder topComma x
+
+      //addMethodPoints [] "SequencePoints" "SequencePoint"  ``method`` x
+      //addMethodPoints ["offsetchain", formatOffsetChain ] "BranchPoints" "BranchPoint" ``method`` x
+
+  let internal appendClassMethods (builder:StringBuilder) comma (x:XContainer) =
+    let mutable topComma = appendItemSummary builder comma x
+    [
+        "FullName"
+    ]
+    |> Seq.iter  (fun tag ->
+        x.Elements(XName.Get tag)
+        |> Seq.tryHead
+        |> Option.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+                                 appendSimpleValue
+                                   (builder.Append('"')
+                                           .Append(tag)
+                                           .Append("\":"))
+                                   s.Value
+                                 topComma <- true))
+    topComma <- appendInternalElements appendMethodPoints "Methods" "Method" builder topComma x
+
+  let internal appendModuleInternals (builder:StringBuilder) comma (x:XContainer) =
+    let mutable topComma = appendItemSummary builder comma x
+    [
+        "FullName"
+        "ModulePath"
+        "ModuleTime"
+        "ModuleName"
+    ]
+    |> Seq.iter  (fun tag ->
+        x.Elements(XName.Get tag)
+        |> Seq.tryHead
+        |> Option.iter (fun s -> if topComma then appendChar builder ',' |> ignore
+                                 appendSimpleValue
+                                   (builder.Append('"')
+                                           .Append(tag)
+                                           .Append("\":"))
+                                   s.Value
+                                 topComma <- true))
+
+    topComma <- appendInternalElements (fun _ _ _ -> false) "Files" "File" builder comma x
+    topComma <- appendInternalElements appendClassMethods "Classes" "Class" builder topComma x
+    appendInternalElements (fun _ _ _ -> false) "TrackedMethods" "TrackedMethod" builder topComma x
     //x.Descendants(XName.Get "Module")
     //|> Seq.iter(fun m ->
     //  let mjson = simpleElementToJSon m
     //  m.Elements(XName.Get "Summary")
     //  |> Seq.iter (fun s -> let js = simpleElementToJSon s
     //                        mjson.Object.Add("Summary", JsonValue js))
-
-    //  [
-    //    "FullName"
-    //    "ModulePath"
-    //    "ModuleTime"
-    //    "ModuleName"
-    //  ]
-    //  |> Seq.iter  (fun tag ->
-    //    m.Elements(XName.Get tag)
-    //    |> Seq.iter (fun s -> let js = s.Value
-    //                          mjson.Object.Add(tag, JsonValue js)))
 
     //  addTerminalGroup [] "Files" "File" mjson m
     //  addModuleClasses mjson m
@@ -299,6 +390,17 @@ module internal Json =
     //  modules.Add mjson
     //)
     //true ) report
+
+  let internal appendSessionModules (builder:StringBuilder) comma (x:XContainer) =
+    appendInternalElements appendModuleInternals "Modules" "Module" builder comma x
+
+  let opencoverToJson report =
+    let builder = StringBuilder()
+    builder.Append("{\"CoverageSession\":{") |> ignore
+    let mutable topComma = appendSimpleElement builder report
+    topComma <- appendItemSummary builder topComma report
+    appendSessionModules builder topComma report |> ignore
+    builder.Append("}}") // return value
 
   // --- NCover ---
 
@@ -326,9 +428,10 @@ module internal Json =
     |> appendSequence builder false // (sequence:(StringBuilder -> unit)seq)
     |> ignore
 
-    if first |> not
+    let result = first |> not
+    if result
     then builder.Append ("]")|> ignore
-    true
+    result
 
   let internal appendMethodSeqpnts (builder:StringBuilder) comma (x:XContainer) =
     appendNCoverElements (fun _ _ _ -> false) "seqpnt" builder comma x
