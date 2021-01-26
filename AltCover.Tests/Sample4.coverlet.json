@@ -1,0 +1,297 @@
+{
+  "Sample4.dll": {
+    "C:\\Users\\steve\\source\\repos\\ClassLibrary1\\Sample4\\Program.fs": {
+      "Program/Program": {
+        "System.Int32 Program/Program::main(System.String[])": {
+          "Lines": {
+            "1": 0
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\steve\\source\\repos\\ClassLibrary1\\Sample4\\Tests.fs": {
+      "Tests.DU": {
+        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)": {
+          "Lines": {
+            "49": 1
+          },
+          "Branches": []
+        },
+        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)": {
+          "Lines": {
+            "50": 1
+          },
+          "Branches": []
+        },
+        "System.Void Tests.DU::testMakeUnion()": {
+          "Lines": {
+            "54": 1,
+            "55": 1,
+            "56": 1
+          },
+          "Branches": [
+            {
+              "Line": 54,
+              "Offset": 201,
+              "EndOffset": 203,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 54,
+              "Offset": 209,
+              "EndOffset": 215,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 54,
+              "Offset": 201,
+              "EndOffset": 218,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 0
+            },
+            {
+              "Line": 54,
+              "Offset": 209,
+              "EndOffset": 218,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 0
+            },
+            {
+              "Line": 55,
+              "Offset": 466,
+              "EndOffset": 468,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 1
+            },
+            {
+              "Line": 55,
+              "Offset": 475,
+              "EndOffset": 481,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 1
+            },
+            {
+              "Line": 55,
+              "Offset": 466,
+              "EndOffset": 484,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 0
+            },
+            {
+              "Line": 55,
+              "Offset": 475,
+              "EndOffset": 484,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 0
+            },
+            {
+              "Line": 56,
+              "Offset": 716,
+              "EndOffset": 718,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 1
+            },
+            {
+              "Line": 56,
+              "Offset": 725,
+              "EndOffset": 731,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 1
+            },
+            {
+              "Line": 56,
+              "Offset": 716,
+              "EndOffset": 732,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 0
+            },
+            {
+              "Line": 56,
+              "Offset": 725,
+              "EndOffset": 732,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 0
+            }
+          ]
+        }
+      },
+      "Tests.DU/MyUnion": {
+        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()": {
+          "Lines": {
+            "36": 1,
+            "37": 1,
+            "38": 0,
+            "39": 0,
+            "41": 0,
+            "42": 0
+          },
+          "Branches": [
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 40,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 91,
+              "Path": 3,
+              "Ordinal": 3,
+              "Hits": 0
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 137,
+              "Path": 4,
+              "Ordinal": 4,
+              "Hits": 0
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 183,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 183,
+              "Path": 2,
+              "Ordinal": 2,
+              "Hits": 0
+            }
+          ]
+        },
+        "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()": {
+          "Lines": {
+            "44": 0
+          },
+          "Branches": []
+        }
+      },
+      "Tests.DU/MyClass": {
+        "System.Int32 Tests.DU/MyClass::get_Property()": {
+          "Lines": {
+            "47": 0
+          },
+          "Branches": []
+        },
+        "System.Void Tests.DU/MyClass::.ctor()": {
+          "Lines": {
+            "46": 0
+          },
+          "Branches": []
+        }
+      },
+      "Tests.M": {
+        "Tests.M/Thing Tests.M::makeThing(System.String)": {
+          "Lines": {
+            "20": 2
+          },
+          "Branches": []
+        },
+        "System.Void Tests.M::testMakeThing()": {
+          "Lines": {
+            "24": 1,
+            "25": 1
+          },
+          "Branches": [
+            {
+              "Line": 24,
+              "Offset": 201,
+              "EndOffset": 203,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 24,
+              "Offset": 209,
+              "EndOffset": 215,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 24,
+              "Offset": 201,
+              "EndOffset": 218,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 0
+            },
+            {
+              "Line": 24,
+              "Offset": 209,
+              "EndOffset": 218,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 0
+            },
+            {
+              "Line": 25,
+              "Offset": 519,
+              "EndOffset": 521,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 1
+            },
+            {
+              "Line": 25,
+              "Offset": 528,
+              "EndOffset": 534,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 1
+            },
+            {
+              "Line": 25,
+              "Offset": 519,
+              "EndOffset": 535,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 0
+            },
+            {
+              "Line": 25,
+              "Offset": 528,
+              "EndOffset": 535,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 0
+            }
+          ]
+        }
+      },
+      "Tests.M/Thing": {
+        "System.Byte[] Tests.M/Thing::bytes()": {
+          "Lines": {
+            "18": 1
+          },
+          "Branches": []
+        }
+      }
+    }
+  }
+}
