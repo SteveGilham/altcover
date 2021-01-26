@@ -17,31 +17,11 @@ module internal Json =
   let internal appendChar (builder:StringBuilder) (c:Char) =
     builder.Append(c) |> ignore
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")>]
   let internal escapeString (builder:StringBuilder) (s:String) =
-    let appendEscaped c =
-      match c with
-      | '"' -> builder.Append("\\\"")
-      | '/' -> builder.Append("\\/")
-      | '\\' -> builder.Append("\\\\")
-      | '\b' -> builder.Append("\\b")
-      | '\f' -> builder.Append("\\f")
-      | '\t' -> builder.Append("\\t")
-      | '\r' -> builder.Append("\\r")
-      | '\n' -> builder.Append("\\n")
-      | '&'
-      | '<'
-      | '>'
-      | '%'
-          -> builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
-      | x when (Char.IsControl x )
-          -> builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
-      | _ -> builder.Append c
-      |> ignore
     s
-    |> Seq.iter appendEscaped
+    |> System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode
+    |> builder.Append
+    |> ignore
 
   let internal appendSimpleValue (builder:StringBuilder) (value:string) =
     let b,v = Double.TryParse value

@@ -295,13 +295,6 @@ module AltCoverRunnerTests =
 
     //Json.fs
     [<Test>]
-    let JsonTextShouldEscapeOK() =
-      let b = System.Text.StringBuilder()
-      "fn\"/\b\f\n\r\t\u001fo&<>%r\\d"
-      |> (Json.escapeString b)
-      test <@ b.ToString() = """fn\"\/\b\f\n\r\t\u001Fo\u0026\u003C\u003E\u0025r\\d""" @>
-
-    [<Test>]
     let NCoverShouldGeneratePlausibleJson() =
       Runner.init()
       let resource =

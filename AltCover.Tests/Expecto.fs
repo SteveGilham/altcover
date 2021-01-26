@@ -28,7 +28,6 @@ module ExpectoTestManifest =
           Tests.AltCoverRunnerTests.KnownModuleWithPayloadMakesExpectedChangeInOpenCover, "Runner.KnownModuleWithPayloadMakesExpectedChangeInOpenCover"
           Tests.AltCoverRunnerTests.FlushLeavesExpectedTraces, "Runner.FlushLeavesExpectedTraces"
           Tests.AltCoverRunnerTests.FlushLeavesExpectedTracesWhenDiverted, "Runner.FlushLeavesExpectedTracesWhenDiverted"
-          Tests.AltCoverRunnerTests.JsonTextShouldEscapeOK, "Runner.JsonTextShouldEscapeOK"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleJson, "Runner.NCoverShouldGeneratePlausibleJson"
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleJson, "Runner.OpenCoverShouldGeneratePlausibleJson"
           Tests.AltCoverRunnerTests.UsageIsAsExpected, "Runner.UsageIsAsExpected"
