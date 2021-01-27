@@ -44,6 +44,11 @@ module AltCoverRunnerTests =
       AltCover.Main.init()
 
     [<Test>]
+    let ShouldFailXmlDataForNativeJson() =
+      Assert.Throws<NotSupportedException>(fun () -> ReportFormat.NativeJson
+                                                     |> Counter.I.xmlByFormat
+                                                     |> ignore) |> ignore
+    [<Test>]
     let MaxTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
