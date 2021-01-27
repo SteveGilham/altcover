@@ -6,7 +6,6 @@ open System.Xml.Linq
 open System.Globalization
 open System.Text
 
-// based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Json' is jargon")>]
 module internal Json =
