@@ -14,14 +14,30 @@ module internal Json =
 
   // --- Generic XML to JSON helpers ---
 
+  [<Sealed>]
+  type BuildWriter() =
+    inherit TextWriter(CultureInfo.InvariantCulture)
+    member val Builder:StringBuilder = null with get, set
+    override self.Encoding = Encoding.Unicode // pointless but required
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
+      Justification="Would be meaningless")>]
+    override self.Write(value:Char) =
+        value
+        |> self.Builder.Append
+        |> ignore
+
+  let writer = new BuildWriter()
+
   let internal appendChar (builder:StringBuilder) (c:Char) =
     builder.Append(c) |> ignore
 
   let internal escapeString (builder:StringBuilder) (s:String) =
-    s
-    |> System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode
-    |> builder.Append
-    |> ignore
+    try
+      writer.Builder <- builder
+      System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(writer, s)
+    finally
+      writer.Builder <- null
 
   let internal appendSimpleValue (builder:StringBuilder) (value:string) =
     let b,v = Double.TryParse value

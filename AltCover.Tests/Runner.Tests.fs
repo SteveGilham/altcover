@@ -330,6 +330,8 @@ module AltCoverRunnerTests =
 
     [<Test>]
     let OpenCoverShouldGeneratePlausibleJson() =
+      use dummy = new Json.BuildWriter()
+      test <@ dummy.Encoding = System.Text.Encoding.Unicode @>
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
