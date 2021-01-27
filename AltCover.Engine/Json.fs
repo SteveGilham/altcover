@@ -43,31 +43,20 @@ module internal Json =
        true
       ) topComma
 
-  let internal formatSingleTime (t:String) =
-    let formatTimeValue l =
-      let million = 1000000L
-      let rem = (l/million)*million
-      let time = DateTime(rem, DateTimeKind.Utc)
-      (time.ToString("yyyy-MM-dd HH:mm:ss.f", DateTimeFormatInfo.InvariantInfo)
-        + (l % million).ToString("D6", CultureInfo.InvariantCulture).TrimEnd('0'))
-
-    [t]
-    |> Seq.map Int64.TryParse
-    |> Seq.filter fst
-    |> Seq.map (snd >> formatTimeValue)
-    |> Seq.tryHead
-    |> Option.defaultValue "1970-01-01 00:00:00.0"
-
   let internal appendSingleTime (builder:StringBuilder) (value:string) =
-    formatSingleTime value
-    |> appendSimpleValue builder
+    appendChar builder '"'
+    value
+    |> Int64.TryParse
+    |> snd
+    |> BitConverter.GetBytes
+    |> Convert.ToBase64String
+    |> escapeString builder
+    appendChar builder '"'
 
   let internal formatTimeList (builder:StringBuilder) (value:string) =
     appendChar builder '['
     value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
-    |> Seq.map (fun v -> fun b -> appendChar (v
-                                              |> formatSingleTime
-                                              |> builder.Append('"').Append) '"')
+    |> Seq.map (fun v -> fun b -> appendSingleTime b v)
     |> appendSequence builder false
     |> ignore
     appendChar builder ']'

@@ -5,8 +5,9 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 # 7.6.8xx (Genbu series release 16)
 * JSON output shake down 
   * Reduce allocations
-  * Escape strings more vigorously
-  * Method metadata tokens typed as `int`
+  * Escape strings more rigorously
+  * Method metadata tokens are kept numeric
+  * Because int64 doesn't fit as a double, tracking-related timestamps represented as Base64Encoded strings `Convert.ToBase64String(BitConverter.GetBytes(ticks))`
 
 # 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
