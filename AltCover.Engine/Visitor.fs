@@ -343,7 +343,10 @@ module internal CoverageParameters =
     let fmt = reportKind()
     if fmt = ReportFormat.OpenCover && (trackingNames.Any() || interval() > 0)
     then ReportFormat.OpenCoverWithTracking
-    else fmt
+    else
+      if fmt = ReportFormat.NativeJson && (trackingNames.Any() || interval() > 0)
+      then ReportFormat.NativeJsonWithTracking
+      else fmt
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyData> = None
   let mutable internal recorderStrongNameKey : option<StrongNameKeyData> = None
@@ -533,7 +536,9 @@ module internal Visitor =
 
              let included =
                inspection ||| if inspection = Inspections.Instrument
-                                 && CoverageParameters.reportFormat() = ReportFormat.OpenCoverWithTracking then
+                                 && (CoverageParameters.reportFormat() = ReportFormat.OpenCoverWithTracking ||
+                                     CoverageParameters.reportFormat() = ReportFormat.NativeJsonWithTracking)
+                               then
                                 Inspections.Track
                               else
                                 Inspections.Ignore
@@ -1110,7 +1115,8 @@ module internal Visitor =
                    DefaultVisitCount = m.DefaultVisitCount})
 
       let includeBranches() =
-        instructions.Any() && CoverageParameters.reportKind() = ReportFormat.OpenCover
+        instructions.Any() && (CoverageParameters.reportKind() = ReportFormat.OpenCover ||
+                               CoverageParameters.reportKind() = ReportFormat.NativeJson)
         && (CoverageParameters.coverstyle <> CoverStyle.LineOnly)
         && (!CoverageParameters.methodPoint |> not)
 

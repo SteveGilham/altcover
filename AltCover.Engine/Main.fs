@@ -203,6 +203,7 @@ module internal Main =
            else
              CoverageParameters.theReportFormat <- Some (match x with
                                                          | Select "NCover" _ -> ReportFormat.NCover
+                                                         | Select "Json" _ -> ReportFormat.NativeJson
                                                          | _ ->  ReportFormat.OpenCover)))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
@@ -482,7 +483,8 @@ module internal Main =
               let reporter, document =
                 match CoverageParameters.reportKind() with
                 | ReportFormat.OpenCover -> OpenCover.reportGenerator()
-                | _ -> Report.reportGenerator()
+                | ReportFormat.NCover -> Report.reportGenerator()
+                | format -> format |> (sprintf "%A") |> NotSupportedException |> raise // MUST DO
 
               let visitors =
                 [ reporter

@@ -56,10 +56,10 @@ FN:4,(anonymous_0)
   // it looks like TN: records precede every SF: record
 
   // from e.g. https://manpages.debian.org/unstable/lcov/geninfo.1.en.html
-  // Following is a quick description of the tracefile format as used by 
+  // Following is a quick description of the tracefile format as used by
   // genhtml, geninfo and lcov.
 
-  // A tracefile is made up of several human-readable lines of text, divided into sections.   
+  // A tracefile is made up of several human-readable lines of text, divided into sections.
 
   let internal convertReport (report : XDocument) (format : ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
@@ -165,7 +165,8 @@ FN:4,(anonymous_0)
                 //
                 // end_of_record
                 writer.WriteLine "end_of_record")
-      | _ ->  // ReportFormat.OpenCover, ReportFormat.OpenCoverWithTracking
+      | ReportFormat.OpenCover
+      | ReportFormat.OpenCoverWithTracking ->
           report.Descendants("File".X)
           |> Seq.iter (fun f ->
                 //If available, a tracefile begins with the testname which
@@ -303,7 +304,8 @@ FN:4,(anonymous_0)
                 // Each sections ends with:
                 //
                 // end_of_record
-                writer.WriteLine "end_of_record"))
+                writer.WriteLine "end_of_record")
+      | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise) //maybe later
 
   let internal summary (report : XDocument) (format : ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))

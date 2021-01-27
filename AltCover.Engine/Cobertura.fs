@@ -312,7 +312,9 @@ module internal Cobertura =
 
     match format with
     | ReportFormat.NCover -> I.nCover report packages
-    | _ -> I.openCover report packages
+    | ReportFormat.OpenCover
+    | ReportFormat.OpenCoverWithTracking -> I.openCover report packages
+    | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise // Maybe later
 
     // lines reprise
     packages.Descendants("class".X)

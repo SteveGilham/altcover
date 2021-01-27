@@ -450,7 +450,9 @@ module internal Runner =
         report
         |> match format with
            | ReportFormat.NCover -> nCoverSummary
-           | _ -> openCoverSummary
+           | ReportFormat.OpenCover
+           | ReportFormat.OpenCoverWithTracking -> openCoverSummary
+           | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise
 
       let best = (result, 0uy, String.Empty)
 

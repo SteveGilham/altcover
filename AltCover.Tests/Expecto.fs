@@ -14,6 +14,7 @@ module ExpectoTestManifest =
 #endif
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+          Tests.AltCoverRunnerTests.ShouldFailXmlDataForNativeJson, "Runner.ShouldFailXmlDataForNativeJson"
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
