@@ -15,6 +15,8 @@ type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1
   | OpenCoverWithTracking = 2
+  | NativeJson = 3
+  | NativeJsonWithTracking = 4
 
 #if !RUNNER
 open ICSharpCode.SharpZipLib.Zip
@@ -157,7 +159,8 @@ module internal Counter =
       match format with
       | ReportFormat.OpenCoverWithTracking
       | ReportFormat.OpenCover -> openCoverXml
-      | _ -> nCoverXml
+      | ReportFormat.NCover -> nCoverXml
+      | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise
 
     let internal minTime (t1:DateTime) (t2:DateTime) =
       if t1 < t2

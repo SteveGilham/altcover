@@ -52,6 +52,12 @@ module AltCoverTests =
            n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
   [<Test>]
+  let ShouldFailXmlDataForNativeJson() =
+    Assert.Throws<NotSupportedException>(fun () -> ReportFormat.NativeJson
+                                                   |> Counter.I.xmlByFormat
+                                                   |> ignore) |> ignore
+
+  [<Test>]
   let ShouldBeAbleToGetTheDefaultReportFileName() =
     Assert.True( Instance.ReportFile = "Coverage.Default.xml" )
 
