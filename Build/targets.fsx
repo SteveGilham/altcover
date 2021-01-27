@@ -753,6 +753,7 @@ _Target "FxCop" (fun _ ->
   let defaultCSharpRules = List.concat [
     deprecatedRules
     standardRules
+    ["-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed"]
   ]
 
   [ (
@@ -2588,7 +2589,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
-  let monitorFiles where = 
+  let monitorFiles where =
     (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
