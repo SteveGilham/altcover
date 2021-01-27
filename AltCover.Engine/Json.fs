@@ -14,7 +14,7 @@ module internal Json =
   // --- Generic XML to JSON helpers ---
 
   [<Sealed>]
-  type BuildWriter() =
+  type private BuildWriter() =
     inherit TextWriter(CultureInfo.InvariantCulture)
     member val Builder:StringBuilder = null with get, set
     member self.Clear() = let temp = self.Builder
@@ -28,79 +28,80 @@ module internal Json =
         value
         |> self.Builder.Append
         |> ignore
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
+      Justification="Would be meaningless")>]
     override self.Write(value:String) =
         value
         |> self.Builder.Append
         |> ignore
 
-  let buildWriter = new BuildWriter()
+  let private escapeString (builder:TextWriter) (s:String) =
+    System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
 
-  let internal escapeString (s:String) =
-    System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(buildWriter, s)
-
-  let internal appendSimpleValue (builder:StringBuilder) (value:string) =
+  let private appendSimpleValue (builder:BuildWriter) (value:string) =
     let b,v = Double.TryParse value
-    if b then builder.AppendFormat(CultureInfo.InvariantCulture, "{0}", v) |> ignore
+    if b then builder.Builder.AppendFormat(CultureInfo.InvariantCulture, "{0}", v) |> ignore
     else
       let b2, v2 = Boolean.TryParse value
-      if b2 then buildWriter.Write(if v2 then "true" else "false") |> ignore
+      if b2 then builder.Write(if v2 then "true" else "false") |> ignore
       else
-        buildWriter.Write '"'
-        escapeString value
-        buildWriter.Write '"'
+        builder.Write '"'
+        escapeString builder value
+        builder.Write '"'
 
-  let internal appendSequence builder topComma (sequence:(StringBuilder -> unit)seq)  =
+  let private appendSequence (builder:BuildWriter) topComma (sequence:(BuildWriter -> unit)seq)  =
     sequence
     |> Seq.fold (fun comma item ->
        if comma
-       then buildWriter.Write ','
+       then builder.Write ','
        item builder
        true
       ) topComma
 
-  let internal appendSingleTime (builder:StringBuilder) (value:string) =
-    buildWriter.Write '"'
+  let private appendSingleTime (builder:TextWriter) (value:string) =
+    builder.Write '"'
     value
     |> Int64.TryParse
     |> snd
     |> BitConverter.GetBytes
     |> Convert.ToBase64String
-    |> escapeString
-    buildWriter.Write '"'
+    |> escapeString builder
+    builder.Write '"'
 
-  let internal formatTimeList (builder:StringBuilder) (value:string) =
-    buildWriter.Write '['
+  let private formatTimeList (builder:BuildWriter) (value:string) =
+    builder.Write '['
     value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
     |> Seq.map (fun v -> fun b -> appendSingleTime b v)
     |> appendSequence builder false
     |> ignore
-    buildWriter.Write ']'
+    builder.Write ']'
 
-  let specialValues = [
-                       ("time", appendSingleTime)
-                       ("offsetchain", (fun builder value ->
-                          buildWriter.Write '['
-                          value.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
-                          |> Seq.filter (Int32.TryParse >> fst)
-                          |> Seq.map (fun v -> fun b -> v |> (builder.Append >> ignore))
-                          |> appendSequence builder false
-                          |> ignore
-                          buildWriter.Write ']'))
-                       ("entry", formatTimeList)
-                       ("exit", formatTimeList)
-                      ]
-                      |> Map.ofSeq
+  let private specialValues = [
+                                 ("time", appendSingleTime)
+                                 ("offsetchain", (fun builder value ->
+                                    builder.Write '['
+                                    value.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
+                                    |> Seq.filter (Int32.TryParse >> fst)
+                                    |> Seq.map (fun v -> fun b -> v |> builder.Write)
+                                    |> appendSequence builder false
+                                    |> ignore
+                                    builder.Write ']'))
+                                 ("entry", formatTimeList)
+                                 ("exit", formatTimeList)
+                                ]
+                                |> Map.ofSeq
 
-  let internal appendMappedElement
-    (builder:StringBuilder)
+  let private appendMappedElement
+    (builder:BuildWriter)
     (topComma:bool)
     (xElement : XElement) =
 
     xElement.Attributes()
     |> Seq.filter (fun a -> a.Name.ToString().StartsWith("{", StringComparison.Ordinal) |> not)
-    |> Seq.map (fun a -> (fun (b:StringBuilder) ->
+    |> Seq.map (fun a -> (fun (b:BuildWriter) ->
           let local = a.Name.LocalName
-          b.Append("\"")
+          b.Builder.Append("\"")
            .Append(local) // known safe
            .Append("\":") |> ignore
           let mapped = specialValues
@@ -110,44 +111,50 @@ module internal Json =
           mapped builder a.Value))
     |> (appendSequence builder topComma)
 
-  let internal appendSimpleElement builder (xElement : XElement) =
+  let private appendSimpleElement builder (xElement : XElement) =
     appendMappedElement builder false xElement
 
-  let internal applyHeadline report (tag:string) =
-    let builder = StringBuilder()
-    buildWriter.Builder <- builder
-    buildWriter.Write tag
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+    Justification="Would be meaningless")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
+    Justification="Would be meaningless")>]
+  let private applyHeadline report (tag:string) =
+    let builder = new BuildWriter()
+    builder.Builder <- StringBuilder()
+    builder.Write tag
     (builder, appendSimpleElement builder report)
 
-  let close() =
-    buildWriter.Write("}}")
-    buildWriter.Clear()// return value
+  let private close (builder:BuildWriter) =
+    builder.Write("}}")
+    builder.Clear()// return value
 
   // --- OpenCover ---
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
     Justification = "Should the need ever arise...")>]
-  let internal appendInternalElements next group key
-    (builder:StringBuilder) (comma:bool) (x:XContainer) =
+  let private appendInternalElements next group key
+    (builder:BuildWriter) (comma:bool) (x:XContainer) =
     let mutable first = true
 
     x.Elements(XName.Get group)
     |> Seq.collect(fun xx -> xx.Elements(XName.Get key))
-    |> Seq.map (fun xx -> (fun (b:StringBuilder) ->
+    |> Seq.map (fun xx -> (fun (b:BuildWriter) ->
       if first
       then
         if comma
-        then buildWriter.Write ','
-        b.Append("\"")
+        then builder.Write ','
+        b.Builder.Append("\"")
          .Append(key)
          .Append("\":[")
          |> ignore
       first <- false
-      buildWriter.Write '{'
+      builder.Write '{'
       let c2 = appendSimpleElement b xx
       next b c2 xx |> ignore
-      buildWriter.Write '}'
+      builder.Write '}'
     ))
 
     |> appendSequence builder false // (sequence:(StringBuilder -> unit)seq)
@@ -155,26 +162,27 @@ module internal Json =
 
     let result = first |> not
     if result
-    then builder.Append ("]")|> ignore
+    then builder.Write ']'
     result
 
-  let internal appendItemSummary (builder:StringBuilder) comma (x:XContainer) =
+  let private appendItemSummary (builder:BuildWriter) comma (x:XContainer) =
     let mutable topComma = comma
     x.Elements(XName.Get "Summary")
     |> Seq.tryHead
-    |> Option.iter (fun s -> if topComma then buildWriter.Write ',' |> ignore
-                             appendSimpleElement (builder.Append("\"Summary\":{")) s |> ignore
-                             buildWriter.Write '}'
+    |> Option.iter (fun s -> if topComma then builder.Write ',' |> ignore
+                             builder.Write("\"Summary\":{")
+                             appendSimpleElement builder s |> ignore
+                             builder.Write '}'
                              topComma <- true)
     topComma
 
   let openCoverSink _ _ _ = false
 
-  let internal appendPointTracking (builder:StringBuilder) comma (x:XContainer) =
+  let private appendPointTracking (builder:BuildWriter) comma (x:XContainer) =
     let mutable topComma = appendInternalElements openCoverSink "Times" "Time" builder comma x
     appendInternalElements openCoverSink "TrackedMethodRefs" "TrackedMethodRef" builder topComma x
 
-  let internal appendMethodPoints (builder:StringBuilder) comma (x:XContainer) =
+  let private appendMethodPoints (builder:BuildWriter) comma (x:XContainer) =
     let mutable topComma = comma
     [
       "Summary"
@@ -184,12 +192,12 @@ module internal Json =
     |> Seq.iter (fun name ->
       x.Elements(XName.Get name)
       |> Seq.tryHead
-      |> Option.iter (fun s -> if topComma then buildWriter.Write ',' |> ignore
-                               appendSimpleElement (
-                                 builder.Append('"')
+      |> Option.iter (fun s -> if topComma then builder.Write ',' |> ignore
+                               builder.Builder.Append('"')
                                         .Append(name)
-                                        .Append( "\":{")) s |> ignore
-                               buildWriter.Write '}'
+                                        .Append( "\":{") |> ignore
+                               appendSimpleElement builder s |> ignore
+                               builder.Write '}'
                                topComma <- true))
 
     [
@@ -199,17 +207,16 @@ module internal Json =
     |> Seq.iter  (fun tag ->
         x.Elements(XName.Get tag)
         |> Seq.tryHead
-        |> Option.iter (fun s -> if topComma then buildWriter.Write ',' |> ignore
-                                 appendSimpleValue
-                                   (builder.Append('"')
+        |> Option.iter (fun s -> if topComma then builder.Write ',' |> ignore
+                                 builder.Builder.Append('"')
                                            .Append(tag)
-                                           .Append("\":"))
-                                   s.Value
+                                           .Append("\":") |> ignore
+                                 appendSimpleValue builder s.Value
                                  topComma <- true))
     topComma <- appendInternalElements appendPointTracking "SequencePoints" "SequencePoint" builder topComma x
     appendInternalElements appendPointTracking "BranchPoints" "BranchPoint" builder topComma x
 
-  let internal appendClassMethods (builder:StringBuilder) comma (x:XContainer) =
+  let private appendClassMethods (builder:BuildWriter) comma (x:XContainer) =
     let mutable topComma = appendItemSummary builder comma x
     [
         "FullName"
@@ -217,16 +224,15 @@ module internal Json =
     |> Seq.iter  (fun tag ->
         x.Elements(XName.Get tag)
         |> Seq.tryHead
-        |> Option.iter (fun s -> if topComma then buildWriter.Write ',' |> ignore
-                                 appendSimpleValue
-                                   (builder.Append('"')
+        |> Option.iter (fun s -> if topComma then builder.Write ',' |> ignore
+                                 builder.Builder.Append('"')
                                            .Append(tag)
-                                           .Append("\":"))
-                                   s.Value
+                                           .Append("\":") |> ignore
+                                 appendSimpleValue builder s.Value
                                  topComma <- true))
     topComma <- appendInternalElements appendMethodPoints "Methods" "Method" builder topComma x
 
-  let internal appendModuleInternals (builder:StringBuilder) comma (x:XContainer) =
+  let private appendModuleInternals (builder:BuildWriter) comma (x:XContainer) =
     let mutable topComma = appendItemSummary builder comma x
     [
         "FullName"
@@ -237,48 +243,47 @@ module internal Json =
     |> Seq.iter  (fun tag ->
         x.Elements(XName.Get tag)
         |> Seq.tryHead
-        |> Option.iter (fun s -> if topComma then buildWriter.Write ',' |> ignore
-                                 appendSimpleValue
-                                   (builder.Append('"')
+        |> Option.iter (fun s -> if topComma then builder.Write ',' |> ignore
+                                 builder.Builder.Append('"')
                                            .Append(tag)
-                                           .Append("\":"))
-                                   s.Value
+                                           .Append("\":") |> ignore
+                                 appendSimpleValue builder s.Value
                                  topComma <- true))
 
     topComma <- appendInternalElements openCoverSink "Files" "File" builder comma x
     topComma <- appendInternalElements appendClassMethods "Classes" "Class" builder topComma x
     appendInternalElements openCoverSink "TrackedMethods" "TrackedMethod" builder topComma x
 
-  let internal appendSessionModules (builder:StringBuilder) comma (x:XContainer) =
+  let private appendSessionModules (builder:BuildWriter) comma (x:XContainer) =
     appendInternalElements appendModuleInternals "Modules" "Module" builder comma x
 
   let opencoverToJson report =
     let (builder,comma) = applyHeadline report "{\"CoverageSession\":{"
     let topComma = appendItemSummary builder comma report
     appendSessionModules builder topComma report |> ignore
-    close()
+    close builder
 
   // --- NCover ---
 
-  let internal appendNCoverElements next key
-    (builder:StringBuilder) (comma:bool) (x:XContainer) =
+  let private appendNCoverElements next key
+    (builder:BuildWriter) (comma:bool) (x:XContainer) =
     let mutable first = true
 
     x.Elements(XName.Get key)
-    |> Seq.map (fun xx -> (fun (b:StringBuilder) ->
+    |> Seq.map (fun xx -> (fun (b:BuildWriter) ->
       if first
       then
         if comma
-        then buildWriter.Write ','
-        b.Append("\"")
+        then builder.Write ','
+        b.Builder.Append("\"")
          .Append(key)
          .Append("\":[")
          |> ignore
       first <- false
-      buildWriter.Write '{'
+      builder.Write '{'
       let c2 = appendSimpleElement b xx
       next b c2 xx |> ignore
-      buildWriter.Write '}'
+      builder.Write '}'
     ))
 
     |> appendSequence builder false // (sequence:(StringBuilder -> unit)seq)
@@ -286,22 +291,22 @@ module internal Json =
 
     let result = first |> not
     if result
-    then builder.Append ("]")|> ignore
+    then builder.Builder.Append ("]")|> ignore
     result
 
-  let internal appendMethodSeqpnts (builder:StringBuilder) comma (x:XContainer) =
+  let private appendMethodSeqpnts (builder:BuildWriter) comma (x:XContainer) =
     appendNCoverElements (fun _ _ _ -> false) "seqpnt" builder comma x
 
-  let internal appendModuleMethods (builder:StringBuilder) comma (x:XContainer) =
+  let private appendModuleMethods (builder:BuildWriter) comma (x:XContainer) =
     appendNCoverElements appendMethodSeqpnts "method" builder comma x
 
-  let internal appendCoverageModules (builder:StringBuilder) comma (x:XContainer) =
+  let private appendCoverageModules (builder:BuildWriter) comma (x:XContainer) =
     appendNCoverElements appendModuleMethods "module" builder comma x
 
   let ncoverToJson report =
     let (builder,comma) = applyHeadline report "{\"coverage\":{"
     appendCoverageModules builder comma report |> ignore
-    close()
+    close builder
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
