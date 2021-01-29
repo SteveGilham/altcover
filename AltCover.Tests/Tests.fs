@@ -2324,12 +2324,10 @@ module AltCoverTests =
         stash.Position <- 0L
         use reader = new StreamReader(stash)
         reader.ReadToEnd()
-        //|> JsonSerializer.Deserialize<NativeJson.Modules>
 
     [<Test>]
     let ShouldGenerateExpectedJsonReportFromDotNet() =
       let visitor, document = NativeJson.reportGenerator()
-      let where = Assembly.GetExecutingAssembly().Location
       let path = sample4path
       try
         "Main"
