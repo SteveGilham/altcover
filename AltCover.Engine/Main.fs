@@ -482,9 +482,11 @@ module internal Main =
               <| CommandLine.Format.Local("reportingto", report)
               let reporter, document =
                 match CoverageParameters.reportKind() with
+                | ReportFormat.OpenCoverWithTracking
                 | ReportFormat.OpenCover -> OpenCover.reportGenerator()
-                | ReportFormat.NCover -> Report.reportGenerator()
-                | format -> format |> (sprintf "%A") |> NotSupportedException |> raise // MUST DO
+                | ReportFormat.NativeJsonWithTracking
+                | ReportFormat.NativeJson -> NativeJson.reportGenerator()
+                | _ -> Report.reportGenerator()
 
               let visitors =
                 [ reporter

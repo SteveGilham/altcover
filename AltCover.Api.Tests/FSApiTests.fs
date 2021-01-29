@@ -206,8 +206,12 @@ module FSApiTests =
     let reporter, doc = AltCover.Report.reportGenerator()
     let visitors = [ reporter ]
     Visitor.visit visitors [ { AssemblyPath = sample; Destinations = [] } ]
-    use mstream = new MemoryStream()
-    let rewrite = CoverageFormats.ConvertFromNCover doc [ sample ]
+    let document =
+        use stash = new MemoryStream()
+        stash |> doc
+        stash.Position <- 0L
+        XDocument.Load stash
+    let rewrite = CoverageFormats.ConvertFromNCover document [ sample ]
     test <@ rewrite |> isNull |> not @>
 
   [<Test>]

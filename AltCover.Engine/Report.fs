@@ -106,4 +106,4 @@ module internal Report =
       | _ -> s
 
     let result = Visitor.encloseState reportVisitor List.empty<XElement>
-    (result, document)
+    (result, fun (s:System.IO.Stream) -> document.Save s) // fsharplint:disable-line

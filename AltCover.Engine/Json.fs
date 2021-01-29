@@ -64,8 +64,7 @@ module internal Json =
     value
     |> Int64.TryParse
     |> snd
-    |> BitConverter.GetBytes
-    |> Convert.ToBase64String
+    |> NativeJson.FromTracking
     |> escapeString builder
     builder.Write '"'
 

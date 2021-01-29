@@ -866,18 +866,23 @@ module AltCoverXTests =
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMono() =
-    let visitor, document = Report.reportGenerator()
+    let visitor, documentSource = Report.reportGenerator()
     let path = monoSample1path
     Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
     let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path |> Path.GetFullPath) + "\"")
     let baseline = XDocument.Load(new System.IO.StringReader(expectedText))
+    let document =
+      use stash = new MemoryStream()
+      stash |> documentSource
+      stash.Position <- 0L
+      XDocument.Load stash
     let result = document.Elements()
     let expected = baseline.Elements()
     RecursiveValidate result expected 0 true
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
-    let visitor, document = OpenCover.reportGenerator()
+    let visitor, documentSource = OpenCover.reportGenerator()
     let path = monoSample1path
 
     try
@@ -895,6 +900,11 @@ module AltCoverXTests =
        |> baseline.Descendants
        |> Seq.head).SetValue path
 
+      let document =
+        use stash = new MemoryStream()
+        stash |> documentSource
+        stash.Position <- 0L
+        XDocument.Load stash
       let result = document.Elements()
       let expected = baseline.Elements()
       RecursiveValidateOpenCover result expected 0 true false

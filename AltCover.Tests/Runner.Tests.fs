@@ -1982,7 +1982,7 @@ module AltCoverRunnerTests =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
         let doc = XDocument.Load stream
-        Zip.save doc reportFile true
+        Zip.save (fun s -> doc.Save s) reportFile true  // fsharplint:disable-line
 
         let hits = List<string * int * Track>()
         [ 0..9 ]
@@ -2485,17 +2485,11 @@ module AltCoverRunnerTests =
       after.DocumentElement.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
       |> Seq.toList
-      |> List.iter (fun el ->
-           el
-           |> el.ParentNode.RemoveChild
-           |> ignore)
+      |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore)  // fsharplint:disable-line
       after.DocumentElement.SelectNodes("//MethodPoint")
       |> Seq.cast<XmlElement>
       |> Seq.toList
-      |> List.iter (fun el ->
-           el
-           |> el.ParentNode.RemoveChild
-           |> ignore)
+      |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore)  // fsharplint:disable-line
       let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
       after.DocumentElement.SelectNodes("//Summary")
       |> Seq.cast<XmlElement>
@@ -2554,10 +2548,7 @@ module AltCoverRunnerTests =
       after.DocumentElement.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
       |> Seq.toList
-      |> List.iter (fun el ->
-           el
-           |> el.ParentNode.RemoveChild
-           |> ignore)
+      |> List.iter (fun el -> el|> el.ParentNode.RemoveChild |> ignore)  // fsharplint:disable-line
       after.DocumentElement.SelectNodes("//MethodPoint")
       |> Seq.cast<XmlElement>
       |> Seq.iter (fun el -> el.SetAttribute("vc", "0"))

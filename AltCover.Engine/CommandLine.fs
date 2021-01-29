@@ -45,7 +45,7 @@ module internal Process =
 open Process
 
 module internal Zip =
-  let internal save (document : XDocument) (report : string) (zip : bool) =
+  let internal save (document : Stream -> unit) (report : string) (zip : bool) =
     if zip
     then
       use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
@@ -53,8 +53,10 @@ module internal Zip =
                   |> Path.GetFileName
                   |> archive.CreateEntry
       use sink = entry.Open()
-      document.Save(sink)
-    else document.Save(report)
+      document sink
+    else
+      use file = File.OpenWrite report
+      document file
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",

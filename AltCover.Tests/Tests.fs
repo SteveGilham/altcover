@@ -2285,6 +2285,12 @@ module AltCoverTests =
                      r.ToString() + " -> " + a1.Name.ToString()))
            RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 
+    let makeDocument (f:Stream -> unit) =
+        use stash = new MemoryStream()
+        stash |> f
+        stash.Position <- 0L
+        XDocument.Load stash
+
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNet() =
       let visitor, document = Report.reportGenerator()
@@ -2305,7 +2311,7 @@ module AltCoverTests =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
         let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
@@ -2318,7 +2324,7 @@ module AltCoverTests =
       try
         CoverageParameters.methodPoint := true
         Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        document.Descendants(XName.Get "method")
+        (makeDocument document).Descendants(XName.Get "method")
         |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "seqpnt")
                               test <@ sx |> Seq.length = 1 @>)
       finally
@@ -2334,7 +2340,7 @@ module AltCoverTests =
 
         let visitor1, document1 = Report.reportGenerator()
         Visitor.visit [ visitor1 ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        let names1 = document1.Descendants(XName.Get "method")
+        let names1 = (makeDocument document1).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
                     //  |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
                     //  |> Seq.filter (fun n -> n <> "Main")
@@ -2356,7 +2362,7 @@ module AltCoverTests =
         |> CoverageParameters.nameFilters.Add
         let visitor2, document2 = Report.reportGenerator()
         Visitor.visit [ visitor2 ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        let names2 = document2.Descendants(XName.Get "method")
+        let names2 = (makeDocument document2).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
                      |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
                      |> Seq.filter (fun n -> n <> "Main")
@@ -2378,7 +2384,7 @@ module AltCoverTests =
         |> CoverageParameters.topLevel.Add
         let visitor3, document3 = Report.reportGenerator()
         Visitor.visit [ visitor3 ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        let names3 = document3.Descendants(XName.Get "method")
+        let names3 = (makeDocument document3).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
                      |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
                      |> Seq.filter (fun n -> n <> "Main")
@@ -2401,7 +2407,7 @@ module AltCoverTests =
         |> CoverageParameters.topLevel.Add
         let visitor5, document5 = Report.reportGenerator()
         Visitor.visit [ visitor5 ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        let names5 = document5.Descendants(XName.Get "method")
+        let names5 = (makeDocument document5).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
                      |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
                      |> Seq.filter (fun n -> n <> "Main")
@@ -2432,7 +2438,7 @@ module AltCoverTests =
 
         let visitor6, document6 = Report.reportGenerator()
         Visitor.visit [ visitor6 ] (Visitor.I.toSeq  { AssemblyPath = path6; Destinations = [] } )
-        let names6 = document6.Descendants(XName.Get "method")
+        let names6 = (makeDocument document6).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
                     //  |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
                     //                         mx.Attribute(XName.Get "class").Value))
@@ -2462,7 +2468,7 @@ module AltCoverTests =
 
         let visitor7, document7 = Report.reportGenerator()
         Visitor.visit [ visitor7 ] (Visitor.I.toSeq  { AssemblyPath = path6; Destinations = [] } )
-        let names7 = document7.Descendants(XName.Get "method")
+        let names7 = (makeDocument document7).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
                      |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
                                             mx.Attribute(XName.Get "class").Value))
@@ -2490,7 +2496,7 @@ module AltCoverTests =
 
         let visitor8, document8 = Report.reportGenerator()
         Visitor.visit [ visitor8 ] (Visitor.I.toSeq  { AssemblyPath = path5; Destinations = [] } )
-        let names8 = document8.Descendants(XName.Get "method")
+        let names8 = (makeDocument document8).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
                     //  |> Seq.map (fun mx -> (mx.Attribute(XName.Get "name").Value + "    ",
                     //                         mx.Attribute(XName.Get "class").Value))
@@ -2519,7 +2525,7 @@ module AltCoverTests =
 
         let visitor9, document9 = Report.reportGenerator()
         Visitor.visit [ visitor9 ] (Visitor.I.toSeq  { AssemblyPath = path5; Destinations = [] } )
-        let names9 = document9.Descendants(XName.Get "method")
+        let names9 = (makeDocument document9).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "false")
                      |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value + "    ")
                     //  |> Seq.sortBy (fun n -> BitConverter.ToInt32(
@@ -2536,7 +2542,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let visitor4, document4 = Report.reportGenerator()
         Visitor.visit [ visitor4 ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        let names4 = document4.Descendants(XName.Get "method")
+        let names4 = (makeDocument document4).Descendants(XName.Get "method")
                      |> Seq.filter (fun mx -> mx.Attribute(XName.Get "excluded").Value = "true")
                     //  |> Seq.map (fun mx -> mx.Attribute(XName.Get "name").Value)
                     //  |> Seq.filter (fun n -> n <> "Main")
@@ -2562,7 +2568,7 @@ module AltCoverTests =
       try
         CoverageParameters.methodPoint := true
         Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-        document.Descendants(XName.Get "Method")
+        (makeDocument document).Descendants(XName.Get "Method")
         |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "SequencePoint")
                               test <@ sx |> Seq.length = 1 @>)
       finally
@@ -2589,7 +2595,7 @@ module AltCoverTests =
         let map = Visitor.sourceLinkDocuments |> Option.get
         let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
 
-        let files = document.Descendants(XName.Get "seqpnt")
+        let files = (makeDocument document).Descendants(XName.Get "seqpnt")
                     |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
                     |> Seq.distinct
                     |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
@@ -2601,7 +2607,7 @@ module AltCoverTests =
                        ]
         Assert.That (files, Is.EquivalentTo expected)
 
-        let untracked = document.Descendants(XName.Get "seqpnt")
+        let untracked = (makeDocument document).Descendants(XName.Get "seqpnt")
                         |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
                         |> Seq.distinct
                         |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal) |> not)
@@ -2640,7 +2646,7 @@ module AltCoverTests =
                       "excluded=\"false\" instrumented=\"true\"")
         let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
@@ -2669,7 +2675,7 @@ module AltCoverTests =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
         let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
@@ -2700,7 +2706,7 @@ module AltCoverTests =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
         let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
       finally
@@ -2887,7 +2893,7 @@ module AltCoverTests =
         let map = Visitor.sourceLinkDocuments |> Option.get
         let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
 
-        let files = document.Descendants(XName.Get "File")
+        let files = (makeDocument document).Descendants(XName.Get "File")
                     |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
                     |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
                     |> Seq.sort
@@ -2898,7 +2904,7 @@ module AltCoverTests =
                        ]
         Assert.That (files, Is.EquivalentTo expected)
 
-        let untracked = document.Descendants(XName.Get "File")
+        let untracked = (makeDocument document).Descendants(XName.Get "File")
                         |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
                         |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal) |> not)
                         |> Seq.map Path.GetFileName
@@ -2930,7 +2936,7 @@ module AltCoverTests =
                (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -2966,7 +2972,7 @@ module AltCoverTests =
         baseline.Descendants(X "BranchPoint")
         |> Seq.toList
         |> Seq.iter (fun x -> x.Remove())
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -2999,7 +3005,7 @@ module AltCoverTests =
         baseline.Descendants(X "SequencePoint")
         |> Seq.toList
         |> Seq.iter (fun x -> x.Remove())
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3038,7 +3044,7 @@ module AltCoverTests =
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
         let baseline = AddTrackingForMain "Sample1WithOpenCover.xml"
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3071,7 +3077,7 @@ module AltCoverTests =
         </Modules>
         </CoverageSession>"
         let baseline = XDocument.Load(new System.IO.StringReader(raw))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true true
       finally
@@ -3109,7 +3115,7 @@ module AltCoverTests =
         </Modules>
         </CoverageSession>"
         let baseline = XDocument.Load(new System.IO.StringReader(raw))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true true
       finally
@@ -3138,7 +3144,7 @@ module AltCoverTests =
                (fun n -> n.EndsWith("Sample1ClassExclusion.xml", StringComparison.Ordinal))
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3164,7 +3170,7 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
         let baseline = AddTrackingForMain "Sample1ClassExclusion.xml"
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3192,7 +3198,7 @@ module AltCoverTests =
                n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3227,7 +3233,7 @@ module AltCoverTests =
                               |> Seq.iter (fun x -> x.Remove()))
                               //|> Seq.iter (fun s -> s.SetAttributeValue(XName.Get "maxCyclomaticComplexity", "2")
                               //                      s.SetAttributeValue(XName.Get "minCyclomaticComplexity", "2")))
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3252,7 +3258,7 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = path; Destinations = [] } )
         let baseline = AddTrackingForMain "Sample1MethodExclusion.xml"
-        let result = document.Elements()
+        let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidateOpenCover result expected 0 true false
       finally
@@ -3274,13 +3280,14 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = sample21trad; Destinations = [] } )
 
-        let classes = document.Descendants(XName.Get "FullName")
+        let doc = makeDocument document
+        let classes = doc.Descendants(XName.Get "FullName")
                       |> Seq.map (fun x -> x.Value)
                       |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
                       |> Seq.sort
                       |> Seq.toList
 
-        let methods = document.Descendants(XName.Get "Name")
+        let methods = doc.Descendants(XName.Get "Name")
                       |> Seq.map (fun x -> x.Value)
                       |> Seq.sort
                       |> Seq.toList
@@ -3311,14 +3318,15 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = sample21; Destinations = [] })
 
-        let classes = document.Descendants(XName.Get "FullName")
+        let doc = makeDocument document
+        let classes = doc.Descendants(XName.Get "FullName")
                       |> Seq.filter (fun x -> x.Parent.Attribute(XName.Get "skippedDueTo") |> isNull)
                       |> Seq.map (fun x -> x.Value)
                       |> Seq.filter (Seq.head >> Char.IsLetterOrDigit)
                       |> Seq.sort
                       |> Seq.toList
 
-        let methods = document.Descendants(XName.Get "Name")
+        let methods = doc.Descendants(XName.Get "Name")
                       |> Seq.map (fun x -> x.Value)
                       |> Seq.sort
                       |> Seq.toList
@@ -3356,8 +3364,9 @@ module AltCoverTests =
       let X name = XName.Get(name)
       let path = Path.Combine(SolutionDir(), "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.Engine.dll")
       Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
-      Assert.That(document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
-      Assert.That(document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
-      document.Descendants(X "File")
+      let doc = makeDocument document
+      Assert.That(doc.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
+      Assert.That(doc.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
+      doc.Descendants(X "File")
       |> Seq.iteri
            (fun i x -> Assert.That(x.Attribute(X "uid").Value, Is.EqualTo(string (1 + i))))

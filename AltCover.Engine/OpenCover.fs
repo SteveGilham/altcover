@@ -512,4 +512,4 @@ module internal OpenCover =
       | _ -> s
 
     let result = Visitor.encloseState reportVisitor (OpenCoverContext.Build())
-    (result, document)
+    (result, fun (s:Stream) -> document.Save s)  // fsharplint:disable-line
