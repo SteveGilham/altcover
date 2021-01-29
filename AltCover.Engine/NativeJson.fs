@@ -1,43 +1,35 @@
 ﻿namespace AltCover
 
+open System.Collections.Generic
+
 module NativeJson =
-  let inspo = "src/coverlet.core/CoverageResult.cs"
-(*
-    internal class BranchInfo
+  // Coverlet compatible -- src/coverlet.core/CoverageResult.cs
+  // also round-trippable
+  type BranchInfo =
+      {
+          Line:int
+          Offset:int
+          EndOffset:int
+          Path:int
+          Ordinal:uint
+          Hits:int
+      }
+
+  type Lines = SortedDictionary<int, int>
+
+  type Branches = List<BranchInfo>
+
+  type Method =
     {
-        public int Line { get; set; }
-        public int Offset { get; set; }
-        public int EndOffset { get; set; }
-        public int Path { get; set; }
-        public uint Ordinal { get; set; }
-        public int Hits { get; set; }
+      Lines:Lines
+      Branches:Branches
     }
 
-    internal class Lines : SortedDictionary<int, int> { }
-
-    internal class Branches : List<BranchInfo> { }
-
-    internal class Method
+  type Methods = Dictionary<string, Method>
+  type Classes = Dictionary<string, Methods>
+  type Documents = Dictionary<string, Classes>
+  type Modules = Dictionary<string, Documents>
+  type CoverageResult =
     {
-        internal Method()
-        {
-            Lines = new Lines();
-            Branches = new Branches();
-        }
-        public Lines Lines;
-        public Branches Branches;
+      Modules:Modules
     }
-    internal class Methods : Dictionary<string, Method> { }
-    internal class Classes : Dictionary<string, Methods> { }
-    internal class Documents : Dictionary<string, Classes> { }
-    internal class Modules : Dictionary<string, Documents> { }
-
-    internal class CoverageResult
-    {
-        public string Identifier;
-        public Modules Modules;
-        public bool UseSourceLink;
-        internal List<InstrumenterResult> InstrumentedResults;
-
-        internal CoverageResult() { }
-*)
