@@ -45,6 +45,7 @@
     <Compile Include="Report.fs" />
     <Compile Include="Gendarme.fs" />
     <Compile Include="OpenCover.fs" />
+    <Compile Include="NativeJson.fs" />
     <Compile Include="CommandLine.fs" />
     <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
