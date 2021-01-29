@@ -3,7 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.6.8xx (Genbu series release 16)
-* JSON output shake down (some changes possibly breaking)
+* JSON output hardening (some changes possibly breaking)
   * Reduce allocations
   * Escape strings more rigorously
   * Method metadata tokens are kept numeric
