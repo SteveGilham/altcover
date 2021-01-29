@@ -36,6 +36,7 @@
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
     <EmbeddedResource Include="Sample4FullTracking.xml" />
+    <EmbeddedResource Include="Sample4.native.json" />
     <EmbeddedResource Include="GenuineNCover158.json" />
     <EmbeddedResource Include="GenuineNCover158.Xml" />
     <EmbeddedResource Include="OpenCover.json" />
@@ -86,6 +87,7 @@
     </Reference>
     <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="System.Text.Json" Version="5.0.1" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>

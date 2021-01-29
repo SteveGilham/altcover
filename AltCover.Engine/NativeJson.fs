@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
+open System.IO
 open System.Text.Json
 
 module NativeJson =
@@ -75,18 +76,22 @@ module NativeJson =
 
   type internal JsonContext =
     {
-      placeholder:int
+      Documents: Documents option
     }
     static member Build() =
       {
-        placeholder = 0
+        Documents = None
       }
 
   let internal reportGenerator () =
     let document = Modules()
 
     let startVisit = id
-    let visitModule s _ = s
+    let visitModule s (m:ModuleEntry) =
+      let documents = Documents()
+      document.Add(m.Module.FileName |> Path.GetFileName, documents)
+      { s with Documents = Some documents }
+
     let visitType s _ = s
     let visitMethod s _ _ = s
     let visitMethodPoint s _ = s
@@ -113,5 +118,5 @@ module NativeJson =
 
     let result = Visitor.encloseState reportVisitor (JsonContext.Build())
     (result, fun (s:System.IO.Stream) -> let encoded = JsonSerializer.Serialize(document, options)
-                                         use writer = new System.IO.StreamWriter(s)
-                                         writer.Write(encoded))
+                                                       |> System.Text.Encoding.UTF8.GetBytes
+                                         s.Write(encoded, 0, encoded.Length))

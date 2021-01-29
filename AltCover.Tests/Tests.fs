@@ -6,6 +6,7 @@ open System.Collections.Generic
 open System.IO
 open System.Linq
 open System.Reflection
+open System.Text.Json
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -2314,6 +2315,38 @@ module AltCoverTests =
         let result = (makeDocument document).Elements()
         let expected = baseline.Elements()
         RecursiveValidate result expected 0 true
+      finally
+        CoverageParameters.nameFilters.Clear()
+
+    let internal makeJson (f:Stream -> unit) =
+        use stash = new MemoryStream()
+        stash |> f
+        stash.Position <- 0L
+        use reader = new StreamReader(stash)
+        reader.ReadToEnd()
+        //|> JsonSerializer.Deserialize<NativeJson.Modules>
+
+    [<Test>]
+    let ShouldGenerateExpectedJsonReportFromDotNet() =
+      let visitor, document = NativeJson.reportGenerator()
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = sample4path
+      try
+        "Main"
+        |> (Regex
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Method
+            >> CoverageParameters.nameFilters.Add)
+        Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = path; Destinations = [] } )
+
+        let result = makeJson document
+        let nativeJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
+        use stream =
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
+        use reader = new StreamReader(stream)
+        let expected = reader.ReadToEnd()
+        Assert.That(result, Is.EqualTo expected)
       finally
         CoverageParameters.nameFilters.Clear()
 
