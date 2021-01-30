@@ -71,12 +71,12 @@ module NativeJson =
       SeqPnts:SeqPnts
       TId:int option // tracking ID
     }
-    static member Create() =
+    static member Create(track:(int*string) option) =
       {
-        Lines = null
-        Branches = null
-        SeqPnts = null
-        TId = None
+        Lines = Lines()
+        Branches = Branches()
+        SeqPnts = SeqPnts()
+        TId = track |> Option.map fst
       }
 
   type internal Methods = Dictionary<string, Method>
@@ -133,30 +133,18 @@ module NativeJson =
                     | _ -> let m = Methods()
                            classes.Add(visibleTypeName, m)
                            m
-      (methods, visibleMethodName,
-        match methods.TryGetValue visibleMethodName with
-        | true, m -> m
-        | _ -> let m = Method.Create()
-               methods.Add(visibleMethodName, m)
-               m)
+      match methods.TryGetValue visibleMethodName with
+      | true, m -> m
+      | _ -> let m = Method.Create(s.Track)
+             methods.Add(visibleMethodName, m)
+             m
 
     let visitMethodPoint (s : JsonContext) (e:StatementEntry) =
       if e.Interesting then
         e.SeqPnt
         |> Option.iter (fun codeSegment ->
           let doc = codeSegment.Document |> Visitor.sourceLinkMapping
-          let (methods, visibleMethodName, ``method``) = getMethodRecord s doc
-          let mplus = { ``method`` with Lines = if isNull ``method``.Lines
-                                                then Lines()
-                                                else ``method``.Lines
-                                        SeqPnts = if isNull ``method``.SeqPnts
-                                                  then SeqPnts()
-                                                  else ``method``.SeqPnts
-                                        TId = if s.Track |> Option.isSome &&
-                                                   Option.isNone ``method``.TId
-                                              then Some (s.Track.Value |> fst)
-                                              else None
-                                         }
+          let mplus = getMethodRecord s doc
           mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
           mplus.SeqPnts.Add {
             VC = int e.DefaultVisitCount
@@ -168,21 +156,12 @@ module NativeJson =
             Id = e.Uid
             Times = None
             Tracks = None}
-          methods.[visibleMethodName] <- mplus
         )
       s
     let visitBranchPoint  (s : JsonContext) (b:GoTo) =
       if b.Included then
         let doc = b.SequencePoint.Document.Url |> Visitor.sourceLinkMapping
-        let (methods, visibleMethodName, ``method``) = getMethodRecord s doc
-        let mplus = { ``method`` with Branches = if isNull ``method``.Branches
-                                                 then Branches()
-                                                 else ``method``.Branches
-                                      TId = if s.Track |> Option.isSome &&
-                                                  Option.isNone ``method``.TId
-                                            then Some (s.Track.Value |> fst)
-                                            else None
-                                        }
+        let mplus = getMethodRecord s doc
         mplus.Branches.Add {
                               Line = b.SequencePoint.StartLine
                               Offset = b.Offset
@@ -197,7 +176,6 @@ module NativeJson =
                               Times = None
                               Tracks = None
                            }
-        methods.[visibleMethodName] <- mplus
       s
 
     let visitAfterMethod (s : JsonContext) _ =
