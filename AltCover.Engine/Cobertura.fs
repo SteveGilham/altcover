@@ -310,11 +310,11 @@ module internal Cobertura =
     let packages = XElement("packages".X)
     element.Add(packages)
 
-    match format with
-    | ReportFormat.NCover -> I.nCover report packages
-    | ReportFormat.OpenCover
-    | ReportFormat.OpenCoverWithTracking -> I.openCover report packages
-    | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise // Maybe later
+    (match format with
+     | ReportFormat.NCover -> I.nCover
+     | ReportFormat.OpenCover
+     | ReportFormat.OpenCoverWithTracking -> I.openCover
+     | _ -> raise (NotSupportedException (sprintf "%A" format))) report packages // Maybe later
 
     // lines reprise
     packages.Descendants("class".X)

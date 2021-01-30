@@ -314,10 +314,7 @@ module internal Json =
             | ReportFormat.NCover -> ncoverToJson // ready minified
             | ReportFormat.OpenCover
             | ReportFormat.OpenCoverWithTracking -> opencoverToJson // ready minified
-            | _ -> format
-                   |> (sprintf "%A")
-                   |> NotSupportedException
-                   |> raise)).ToString()// Maybe later
+            | _ -> raise (NotSupportedException (sprintf "%A" format)))).ToString()// Maybe later
         |> writer.Write)
 
   let internal summary (report : XDocument) (format : ReportFormat) result =

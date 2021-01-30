@@ -9,7 +9,7 @@ open System.Text.Json
 open Mono.Cecil
 
 module NativeJson =
-  let options =
+  let internal options =
     let o = JsonSerializerOptions()
     o.WriteIndented <- true
     o.IgnoreNullValues <- true
@@ -17,8 +17,8 @@ module NativeJson =
 
   type internal TimeStamp = string
 
-  let FromTracking(l:int64) : TimeStamp =
-    l
+  let FromTracking(ticks:int64) : TimeStamp =
+    ticks
     |> BitConverter.GetBytes
     |> Convert.ToBase64String
 
@@ -36,7 +36,6 @@ module NativeJson =
       EC:int
       Offset:int
       Id:int
-      From: string option
       Times: Times option
       Tracks: Tracks option
     }
@@ -55,7 +54,6 @@ module NativeJson =
       Hits:int
     // scope to expand
       Id:int
-      From: string option
       Times: Times option
       Tracks: Tracks option
     }
@@ -86,6 +84,7 @@ module NativeJson =
   type internal Documents = SortedDictionary<string, Classes>
   type internal Modules = SortedDictionary<string, Documents> // <= serialize this
 
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type internal JsonContext =
     {
       Documents: Documents
@@ -121,26 +120,32 @@ module NativeJson =
                VisibleMethod = m.VisibleMethod
                Track = m.Track }
 
+    let getMethodRecord (s : JsonContext) (doc:string) =
+      let visibleTypeName = s.VisibleType.FullName
+      let visibleMethodName = s.VisibleMethod.FullName
+      let classes = match s.Documents.TryGetValue doc with
+                    | true, c -> c
+                    | _ -> let c = Classes()
+                           s.Documents.Add(doc, c)
+                           c
+      let methods = match classes.TryGetValue visibleTypeName with
+                    | true, m -> m
+                    | _ -> let m = Methods()
+                           classes.Add(visibleTypeName, m)
+                           m
+      (methods, visibleMethodName,
+        match methods.TryGetValue visibleMethodName with
+        | true, m -> m
+        | _ -> let m = Method.Create()
+               methods.Add(visibleMethodName, m)
+               m)
+
     let visitMethodPoint (s : JsonContext) (e:StatementEntry) =
       if e.Interesting then
         e.SeqPnt
         |> Option.iter (fun codeSegment ->
           let doc = codeSegment.Document |> Visitor.sourceLinkMapping
-          let classes = match s.Documents.TryGetValue doc with
-                        | true, c -> c
-                        | _ -> let c = Classes()
-                               s.Documents.Add(doc, c)
-                               c
-          let methods = match classes.TryGetValue s.VisibleType.FullName with
-                        | true, m -> m
-                        | _ -> let m = Methods()
-                               classes.Add(s.VisibleType.FullName, m)
-                               m
-          let ``method`` = match methods.TryGetValue s.VisibleMethod.FullName with
-                           | true, m -> m
-                           | _ -> let m = Method.Create()
-                                  methods.Add(s.VisibleMethod.FullName, m)
-                                  m
+          let (methods, visibleMethodName, ``method``) = getMethodRecord s doc
           let mplus = { ``method`` with Lines = if isNull ``method``.Lines
                                                 then Lines()
                                                 else ``method``.Lines
@@ -161,15 +166,39 @@ module NativeJson =
             EC = codeSegment.EndColumn
             Offset = codeSegment.Offset
             Id = e.Uid
-            From=  if s.Method <> s.VisibleMethod
-                   then Some s.Method.FullName
-                   else None
             Times = None
             Tracks = None}
-          methods.[s.VisibleMethod.FullName] <- mplus
+          methods.[visibleMethodName] <- mplus
         )
       s
-    let visitBranchPoint s _ = s
+    let visitBranchPoint  (s : JsonContext) (b:GoTo) =
+      if b.Included then
+        let doc = b.SequencePoint.Document.Url |> Visitor.sourceLinkMapping
+        let (methods, visibleMethodName, ``method``) = getMethodRecord s doc
+        let mplus = { ``method`` with Branches = if isNull ``method``.Branches
+                                                 then Branches()
+                                                 else ``method``.Branches
+                                      TId = if s.Track |> Option.isSome &&
+                                                  Option.isNone ``method``.TId
+                                            then Some (s.Track.Value |> fst)
+                                            else None
+                                        }
+        mplus.Branches.Add {
+                              Line = b.SequencePoint.StartLine
+                              Offset = b.Offset
+                              EndOffset = b.Target.Head.Offset
+                              Path = mplus.Branches
+                                     |> Seq.filter (fun k -> k.Offset = b.Offset)
+                                     |> Seq.length
+                              Ordinal = uint mplus.Branches.Count
+                              Hits = int b.VisitCount
+                            // scope to expand
+                              Id= b.Uid
+                              Times = None
+                              Tracks = None
+                           }
+        methods.[visibleMethodName] <- mplus
+      s
 
     let visitAfterMethod (s : JsonContext) _ =
       { s with Method = null
