@@ -883,6 +883,7 @@ module AltCoverTests2 =
 
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
       let state2 = AltCover.Instrument.I.doTrack state { Method = recorder.Head
+                                                         VisibleMethod = recorder.Head
                                                          Inspection = Inspections.Track
                                                          Track = Some(42, "hello")
                                                          DefaultVisitCount = Exemption.None }
@@ -940,6 +941,7 @@ module AltCoverTests2 =
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
       let state2 = AltCover.Instrument.I.doTrack state { Method = target
+                                                         VisibleMethod = target
                                                          Inspection = Inspections.Track
                                                          Track = Some(42, "hello")
                                                          DefaultVisitCount = Exemption.None }
@@ -994,6 +996,7 @@ module AltCoverTests2 =
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
       let state2 = AltCover.Instrument.I.doTrack state { Method = target
+                                                         VisibleMethod = target
                                                          Inspection = Inspections.Track
                                                          Track = Some(42, "hello")
                                                          DefaultVisitCount = Exemption.None }
@@ -1048,6 +1051,7 @@ module AltCoverTests2 =
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
       let state2 = AltCover.Instrument.I.doTrack state  { Method = target
+                                                          VisibleMethod = target
                                                           Inspection = Inspections.Track
                                                           Track = Some(42, "hello")
                                                           DefaultVisitCount = Exemption.None }
@@ -1107,6 +1111,7 @@ module AltCoverTests2 =
       Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
 
       let m = Node.Method { Method = target
+                            VisibleMethod = target
                             Inspection = Inspections.Instrument
                             Track = None
                             DefaultVisitCount = Exemption.None }
@@ -1161,6 +1166,7 @@ module AltCoverTests2 =
       let countBefore = recorder.Head.Body.Instructions.Count
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
       let state2 = AltCover.Instrument.I.doTrack state { Method = recorder.Head
+                                                         VisibleMethod = recorder.Head
                                                          Inspection = Inspections.Track
                                                          Track = None
                                                          DefaultVisitCount = Exemption.None }
@@ -1183,6 +1189,7 @@ module AltCoverTests2 =
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None }
@@ -1244,6 +1251,7 @@ module AltCoverTests2 =
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None }
@@ -1304,6 +1312,7 @@ module AltCoverTests2 =
         CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
         let branches =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None }
@@ -1363,6 +1372,7 @@ module AltCoverTests2 =
       let input = InstrumentContext.Build []
       let output =
         Instrument.I.instrumentationVisitor input (Node.Method { Method = null
+                                                                 VisibleMethod = null
                                                                  Inspection = Inspections.Ignore
                                                                  Track = None
                                                                  DefaultVisitCount = Exemption.None })
@@ -1386,6 +1396,7 @@ module AltCoverTests2 =
       let output =
         Instrument.I.instrumentationVisitor input
           (Node.Method { Method = func
+                         VisibleMethod = func
                          Inspection = Inspections.Instrument
                          Track = None
                          DefaultVisitCount = Exemption.None })
@@ -1419,6 +1430,7 @@ module AltCoverTests2 =
       let output =
         Instrument.I.instrumentationVisitor input
           (Node.AfterMethod { Method = func
+                              VisibleMethod = func
                               Inspection = Inspections.Ignore
                               Track = None
                               DefaultVisitCount = Exemption.None })
@@ -1453,6 +1465,7 @@ module AltCoverTests2 =
       let output =
         Instrument.I.instrumentationVisitor input
           (Node.AfterMethod { Method = func
+                              VisibleMethod = func
                               Inspection = Inspections.Instrument
                               Track = None
                               DefaultVisitCount = Exemption.None })

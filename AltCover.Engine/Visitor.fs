@@ -108,6 +108,7 @@ type internal TypeEntry =
 type internal MethodEntry =
   {
     Method : MethodDefinition
+    VisibleMethod : MethodDefinition
     Inspection : Inspections
     Track : (int * string) option
     DefaultVisitCount : Exemption
@@ -829,6 +830,7 @@ module internal Visitor =
 
              let inclusion = Seq.fold updateInspection t.Inspection methods
              Method { Method = m
+                      VisibleMethod = (m::methods) |> List.last
                       Inspection = inclusion
                       Track = track m
                       DefaultVisitCount = visitcount })

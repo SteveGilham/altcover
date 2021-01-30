@@ -924,6 +924,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let synchStructure =
           Visitor.I.deeper <| Node.Method { Method = synch
+                                            VisibleMethod = synch
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None} |> Seq.toList
@@ -943,6 +944,7 @@ module AltCoverTests =
 
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None} |> Seq.toList
@@ -986,6 +988,7 @@ module AltCoverTests =
           CoverageParameters.nameFilters.Clear()
           let deeper =
             Visitor.I.deeper <| Node.Method { Method = method
+                                              VisibleMethod = method
                                               Inspection = Inspections.Instrument
                                               Track = None
                                               DefaultVisitCount = Exemption.None} |> Seq.toList
@@ -1021,6 +1024,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None } |> Seq.toList
@@ -1096,6 +1100,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None } |> Seq.toList
@@ -1151,6 +1156,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.Automatic } |> Seq.toList
@@ -1494,6 +1500,7 @@ module AltCoverTests =
           Node.Module { Module = null; Inspection = Inspections.Ignore}
           Node.Type { Type = null; Inspection = Inspections.Instrument; DefaultVisitCount = Exemption.None}
           Node.Method { Method = null
+                        VisibleMethod = null
                         Inspection = Inspections.Ignore
                         Track = None
                         DefaultVisitCount = Exemption.None }
@@ -1503,6 +1510,7 @@ module AltCoverTests =
                              Interesting = true
                              DefaultVisitCount = Exemption.None }
           Node.AfterMethod { Method = null
+                             VisibleMethod = null
                              Inspection = Inspections.Ignore
                              Track = None
                              DefaultVisitCount = Exemption.None }
@@ -1518,6 +1526,7 @@ module AltCoverTests =
           [ AfterModule ]
           [ AfterType ]
           [ AfterMethod { Method = null
+                          VisibleMethod = null
                           Inspection = Inspections.Ignore
                           Track = None
                           DefaultVisitCount = Exemption.None } ]
@@ -1565,6 +1574,7 @@ module AltCoverTests =
                              Interesting = true
                              DefaultVisitCount = Exemption.None }
           Node.AfterMethod{ Method = null
+                            VisibleMethod = null
                             Inspection = Inspections.Ignore
                             Track = None
                             DefaultVisitCount = Exemption.None }
@@ -1604,6 +1614,7 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None } |> Seq.toList
@@ -1647,6 +1658,7 @@ module AltCoverTests =
         CoverageParameters.nameFilters.Clear()
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.Declared }
@@ -1710,6 +1722,7 @@ module AltCoverTests =
         CoverageParameters.coalesceBranches := true
         let deeper =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.StaticAnalysis }
@@ -1772,12 +1785,14 @@ module AltCoverTests =
                  else Inspections.Ignore
 
                let node = Node.Method { Method = m
+                                        VisibleMethod = m
                                         Inspection = flag
                                         Track = None
                                         DefaultVisitCount = Exemption.None }
                List.concat [ [ node ]
                              (Visitor.I.deeper >> Seq.toList) node
                              [ Node.AfterMethod { Method = m
+                                                  VisibleMethod = m
                                                   Inspection = flag
                                                   Track = None
                                                   DefaultVisitCount = Exemption.None } ] ])
@@ -2824,6 +2839,7 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         let branches =
           Visitor.I.deeper <| Node.Method { Method = method
+                                            VisibleMethod = method
                                             Inspection = Inspections.Instrument
                                             Track = None
                                             DefaultVisitCount = Exemption.None }

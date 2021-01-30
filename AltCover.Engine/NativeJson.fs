@@ -6,10 +6,13 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Text.Json
 
+open Mono.Cecil
+
 module NativeJson =
   let options =
     let o = JsonSerializerOptions()
     o.WriteIndented <- true
+    o.IgnoreNullValues <- true
     o
 
   type internal TimeStamp = string
@@ -33,8 +36,9 @@ module NativeJson =
       EC:int
       Offset:int
       Id:int
-      Times: Times
-      Tracks: Tracks
+      From: string option
+      Times: Times option
+      Tracks: Tracks option
     }
   type internal SeqPnts = List<SeqPnt>
 
@@ -51,8 +55,9 @@ module NativeJson =
       Hits:int
     // scope to expand
       Id:int
-      Times: Times
-      Tracks: Tracks
+      From: string option
+      Times: Times option
+      Tracks: Tracks option
     }
 
   type Lines = SortedDictionary<int, int>
@@ -66,7 +71,7 @@ module NativeJson =
       Branches:Branches
       // scope to expand
       SeqPnts:SeqPnts
-      TId:int // tracking ID
+      TId:int option // tracking ID
     }
 
   type internal Methods = Dictionary<string, Method>
@@ -76,11 +81,15 @@ module NativeJson =
 
   type internal JsonContext =
     {
-      Documents: Documents option
+      Documents: Documents
+      Method : MethodDefinition
+      VisibleMethod : MethodDefinition
     }
     static member Build() =
       {
-        Documents = None
+        Documents = null
+        Method = null
+        VisibleMethod = null
       }
 
   let internal reportGenerator () =
@@ -90,30 +99,37 @@ module NativeJson =
     let visitModule s (m:ModuleEntry) =
       let documents = Documents()
       document.Add(m.Module.FileName |> Path.GetFileName, documents)
-      { s with Documents = Some documents }
+      { s with Documents = documents }
 
-    let visitType s _ = s
-    let visitMethod s _ _ = s
+//    let visitType s _ = s
+    let visitMethod (s : JsonContext) (m:MethodEntry) =
+      { s with Method = m.Method
+               VisibleMethod = m.VisibleMethod }
+
     let visitMethodPoint s _ = s
     let visitBranchPoint s _ = s
-    let visitAfterMethod s _ = s
-    let visitAfterType = id
-    let visitAfterModule = id
-    let afterAll = id
+
+    let visitAfterMethod (s : JsonContext) _ =
+      { s with Method = null
+               VisibleMethod = null }
+//    let visitAfterType = id
+    let visitAfterModule s =
+      { s with Documents = null }
+//    let afterAll = id
 
     let reportVisitor (s : JsonContext) (node : Node) =
       match node with
       | Start _ -> startVisit s
       | Node.Module m -> visitModule s m
-      | Node.Type t -> visitType s t
-      | Node.Method m -> visitMethod s m.Method m.Inspection
+//      | Node.Type t -> visitType s t
+      | Node.Method m -> visitMethod s m
       | MethodPoint m -> visitMethodPoint s m
       | BranchPoint b -> visitBranchPoint s b
       | AfterMethod m ->
           visitAfterMethod s m
-      | AfterType _ -> visitAfterType s
+//      | AfterType _ -> visitAfterType s
       | AfterModule _ -> visitAfterModule s
-      | Finish -> afterAll s
+//      | Finish -> afterAll s
       | _ -> s
 
     let result = Visitor.encloseState reportVisitor (JsonContext.Build())
