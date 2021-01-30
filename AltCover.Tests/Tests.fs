@@ -1498,7 +1498,7 @@ module AltCoverTests =
         [ Node.Start []
           Node.Assembly { Assembly = def; Inspection = Inspections.Instrument; Destinations = []}
           Node.Module { Module = null; Inspection = Inspections.Ignore}
-          Node.Type { Type = null; Inspection = Inspections.Instrument; DefaultVisitCount = Exemption.None}
+          Node.Type { VisibleType=null; Type = null; Inspection = Inspections.Instrument; DefaultVisitCount = Exemption.None}
           Node.Method { Method = null
                         VisibleMethod = null
                         Inspection = Inspections.Ignore
@@ -1774,6 +1774,7 @@ module AltCoverTests =
             >> FilterClass.Build FilterScope.Method
             >> CoverageParameters.nameFilters.Add)
         let deeper = Visitor.I.deeper <| Node.Type { Type = type'
+                                                     VisibleType=type'
                                                      Inspection = Inspections.Instrument
                                                      DefaultVisitCount = Exemption.None } |> Seq.toList
         Visitor.visit [] [] // cheat reset
@@ -1828,7 +1829,7 @@ module AltCoverTests =
                let flag =
                  maybe (t.Name <> "Program") Inspections.Instrument Inspections.Ignore
 
-               let node = Node.Type { Type = t; Inspection =  flag; DefaultVisitCount = Exemption.None }
+               let node = Node.Type { VisibleType=t; Type = t; Inspection =  flag; DefaultVisitCount = Exemption.None }
                List.concat [ [ node ]
                              (Visitor.I.deeper >> Seq.toList) node
                              [ Node.AfterType ] ])
@@ -2343,7 +2344,8 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedJsonReportFromDotNet() =
       let visitor, document = NativeJson.reportGenerator()
-      let path = sample4path
+      let path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
+
       try
         "Main"
         |> (Regex
@@ -2353,12 +2355,15 @@ module AltCoverTests =
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = path; Destinations = [] } )
 
         let result = makeJson document
+        printfn "%s" result
         let nativeJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
         use stream =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
         use reader = new StreamReader(stream)
         let expected = reader.ReadToEnd()
+                         .Replace(@"C:\\Users\\steve\\source\\repos\\ClassLibrary1",
+                         SolutionRoot.location.Replace("\\", "\\\\"))
         Assert.That(result, Is.EqualTo expected)
       finally
         CoverageParameters.nameFilters.Clear()

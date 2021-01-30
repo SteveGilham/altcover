@@ -1363,6 +1363,7 @@ module AltCoverTests2 =
       let input = InstrumentContext.Build []
       let output =
         Instrument.I.instrumentationVisitor input (Node.Type { Type = null
+                                                               VisibleType=null
                                                                Inspection = Inspections.Ignore
                                                                DefaultVisitCount = Exemption.None })
       Assert.That(output, Is.SameAs input)

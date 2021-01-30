@@ -73,23 +73,36 @@ module NativeJson =
       SeqPnts:SeqPnts
       TId:int option // tracking ID
     }
+    static member Create() =
+      {
+        Lines = null
+        Branches = null
+        SeqPnts = null
+        TId = None
+      }
 
   type internal Methods = Dictionary<string, Method>
   type internal Classes = Dictionary<string, Methods>
-  type internal Documents = Dictionary<string, Classes>
-  type internal Modules = Dictionary<string, Documents> // <= serialize this
+  type internal Documents = SortedDictionary<string, Classes>
+  type internal Modules = SortedDictionary<string, Documents> // <= serialize this
 
   type internal JsonContext =
     {
       Documents: Documents
+      Type : TypeDefinition
+      VisibleType : TypeDefinition
       Method : MethodDefinition
       VisibleMethod : MethodDefinition
+      Track : (int * string) option
     }
     static member Build() =
       {
         Documents = null
+        Type = null
+        VisibleType = null
         Method = null
         VisibleMethod = null
+        Track = None
       }
 
   let internal reportGenerator () =
@@ -97,22 +110,75 @@ module NativeJson =
 
     let startVisit = id
     let visitModule s (m:ModuleEntry) =
-      let documents = Documents()
+      let documents = Documents(StringComparer.Ordinal)
       document.Add(m.Module.FileName |> Path.GetFileName, documents)
       { s with Documents = documents }
-
-//    let visitType s _ = s
+    let visitType (s : JsonContext) (m:TypeEntry) =
+      { s with Type = m.Type
+               VisibleType = m.VisibleType }
     let visitMethod (s : JsonContext) (m:MethodEntry) =
       { s with Method = m.Method
-               VisibleMethod = m.VisibleMethod }
+               VisibleMethod = m.VisibleMethod
+               Track = m.Track }
 
-    let visitMethodPoint s _ = s
+    let visitMethodPoint (s : JsonContext) (e:StatementEntry) =
+      if e.Interesting then
+        e.SeqPnt
+        |> Option.iter (fun codeSegment ->
+          let doc = codeSegment.Document |> Visitor.sourceLinkMapping
+          let classes = match s.Documents.TryGetValue doc with
+                        | true, c -> c
+                        | _ -> let c = Classes()
+                               s.Documents.Add(doc, c)
+                               c
+          let methods = match classes.TryGetValue s.VisibleType.FullName with
+                        | true, m -> m
+                        | _ -> let m = Methods()
+                               classes.Add(s.VisibleType.FullName, m)
+                               m
+          let ``method`` = match methods.TryGetValue s.VisibleMethod.FullName with
+                           | true, m -> m
+                           | _ -> let m = Method.Create()
+                                  methods.Add(s.VisibleMethod.FullName, m)
+                                  m
+          let mplus = { ``method`` with Lines = if isNull ``method``.Lines
+                                                then Lines()
+                                                else ``method``.Lines
+                                        SeqPnts = if isNull ``method``.SeqPnts
+                                                  then SeqPnts()
+                                                  else ``method``.SeqPnts
+                                        TId = if s.Track |> Option.isSome &&
+                                                   Option.isNone ``method``.TId
+                                              then Some (s.Track.Value |> fst)
+                                              else None
+                                         }
+          mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
+          mplus.SeqPnts.Add {
+            VC = int e.DefaultVisitCount
+            SL = codeSegment.StartLine
+            SC = codeSegment.StartColumn
+            EL = codeSegment.EndLine
+            EC = codeSegment.EndColumn
+            Offset = codeSegment.Offset
+            Id = e.Uid
+            From=  if s.Method <> s.VisibleMethod
+                   then Some s.Method.FullName
+                   else None
+            Times = None
+            Tracks = None}
+          methods.[s.VisibleMethod.FullName] <- mplus
+        )
+      s
     let visitBranchPoint s _ = s
 
     let visitAfterMethod (s : JsonContext) _ =
       { s with Method = null
-               VisibleMethod = null }
-//    let visitAfterType = id
+               VisibleMethod = null
+               Track = None }
+    let visitAfterType (s : JsonContext) =
+      { s with Type = null
+               VisibleType = null }
+
     let visitAfterModule s =
       { s with Documents = null }
 //    let afterAll = id
@@ -121,13 +187,12 @@ module NativeJson =
       match node with
       | Start _ -> startVisit s
       | Node.Module m -> visitModule s m
-//      | Node.Type t -> visitType s t
+      | Node.Type t -> visitType s t
       | Node.Method m -> visitMethod s m
       | MethodPoint m -> visitMethodPoint s m
       | BranchPoint b -> visitBranchPoint s b
-      | AfterMethod m ->
-          visitAfterMethod s m
-//      | AfterType _ -> visitAfterType s
+      | AfterMethod m -> visitAfterMethod s m
+      | AfterType _ -> visitAfterType s
       | AfterModule _ -> visitAfterModule s
 //      | Finish -> afterAll s
       | _ -> s

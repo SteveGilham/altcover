@@ -1,16 +1,14 @@
 {
   "Sample4.dll": {
-    "C:\\Users\\steve\\source\\repos\\ClassLibrary1\\Sample4\\Program.fs": {
-      "Program/Program": {
-        "System.Int32 Program/Program::main(System.String[])": {
+    "C:\\Users\\steve\\source\\repos\\ClassLibrary1\\Sample4\\Tests.fs": {
+      "Tests.Program": {
+        "System.Int32 Tests.Program::main(System.String[])": {
           "Lines": {
-            "1": 0
+            "61": 0
           },
           "Branches": []
         }
       }
-    },
-    "C:\\Users\\steve\\source\\repos\\ClassLibrary1\\Sample4\\Tests.fs": {
       "Tests.DU": {
         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)": {
           "Lines": {

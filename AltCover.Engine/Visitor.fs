@@ -100,6 +100,7 @@ type internal ModuleEntry =
 type internal TypeEntry =
   {
     Type : TypeDefinition
+    VisibleType : TypeDefinition
     Inspection : Inspections
     DefaultVisitCount : Exemption
   }
@@ -616,6 +617,7 @@ module internal Visitor =
                else
                  Exemption.None
              Type { Type = t
+                    VisibleType = (t::types) |> List.last
                     Inspection = inclusion
                     DefaultVisitCount = visitcount })
             >> buildSequence)
@@ -1069,7 +1071,7 @@ module internal Visitor =
         |> Seq.filter (fun (x : Instruction) ->
              if dbg.HasSequencePoints then
                let s = dbg.GetSequencePoint x
-               (not << isNull) s && (s.IsHidden |> not)
+               s.IsNotNull && (s.IsHidden |> not)
              else
                false)
         |> Seq.toList
