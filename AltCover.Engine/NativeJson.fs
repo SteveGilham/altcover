@@ -27,7 +27,7 @@ module NativeJson =
   type internal Tracks = List<int>
 
   [<ExcludeFromCodeCoverage; NoComparison>]
-  type internal SeqPnt =
+  type SeqPnt =
     {
       VC:int
       SL:int
@@ -39,12 +39,12 @@ module NativeJson =
       Times: Times option
       Tracks: Tracks option
     }
-  type internal SeqPnts = List<SeqPnt>
+  type SeqPnts = List<SeqPnt>
 
   // Coverlet compatible -- src/coverlet.core/CoverageResult.cs
   // also round-trippable
   [<ExcludeFromCodeCoverage; NoComparison>]
-  type internal BranchInfo =
+  type BranchInfo =
     {
       Line:int
       Offset:int
@@ -60,10 +60,10 @@ module NativeJson =
 
   type Lines = SortedDictionary<int, int>
 
-  type internal Branches = List<BranchInfo>
+  type Branches = List<BranchInfo>
 
   [<ExcludeFromCodeCoverage; NoComparison>]
-  type internal Method =
+  type Method =
     {
       Lines:Lines
       Branches:Branches
@@ -109,7 +109,7 @@ module NativeJson =
 
     let startVisit = id
     let visitModule s (m:ModuleEntry) =
-      let documents = Documents(StringComparer.Ordinal)
+      let documents = Documents()
       document.Add(m.Module.FileName |> Path.GetFileName, documents)
       { s with Documents = documents }
     let visitType (s : JsonContext) (m:TypeEntry) =
@@ -121,8 +121,8 @@ module NativeJson =
                Track = m.Track }
 
     let getMethodRecord (s : JsonContext) (doc:string) =
-      let visibleTypeName = s.VisibleType.FullName
       let visibleMethodName = s.VisibleMethod.FullName
+      let visibleTypeName = s.VisibleMethod.DeclaringType.FullName
       let classes = match s.Documents.TryGetValue doc with
                     | true, c -> c
                     | _ -> let c = Classes()

@@ -2364,6 +2364,7 @@ module AltCoverTests =
         let expected = reader.ReadToEnd()
                          .Replace(@"C:\\Users\\steve\\source\\repos\\ClassLibrary1",
                          SolutionRoot.location.Replace("\\", "\\\\"))
+        // printfn "%s" result
         Assert.That(result, Is.EqualTo expected)
       finally
         CoverageParameters.nameFilters.Clear()
