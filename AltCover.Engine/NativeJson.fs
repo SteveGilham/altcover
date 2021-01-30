@@ -66,8 +66,16 @@ module NativeJson =
   type Method =
     {
       Lines:Lines
+      [<SuppressMessage(
+            "Gendarme.Rules.Design.Generic",
+            "DoNotExposeGenericListsRule",
+            Justification="Harmless in context")>]
       Branches:Branches
       // scope to expand
+      [<SuppressMessage(
+            "Gendarme.Rules.Design.Generic",
+            "DoNotExposeGenericListsRule",
+            Justification="Harmless in context")>]
       SeqPnts:SeqPnts
       TId:int option // tracking ID
     }
@@ -208,3 +216,35 @@ module NativeJson =
     (result, fun (s:System.IO.Stream) -> let encoded = JsonSerializer.Serialize(document, options)
                                                        |> System.Text.Encoding.UTF8.GetBytes
                                          s.Write(encoded, 0, encoded.Length))
+
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+Method.#Branches",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+Method.#SeqPnts",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
+  MessageId="Pnts", Justification="Smaller JSON")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
+  MessageId="t", Justification="Smaller JSON")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.NativeJson+Method.#SeqPnts",
+  MessageId="Pnts", Justification="Smaller JSON")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="type",
+  Target="AltCover.NativeJson+SeqPnt",
+  MessageId="Pnt", Justification="Smaller JSON")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.String>>,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.Int32>>)",
+  MessageId="e", Justification="Smaller JSON")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.String>>,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.Int32>>)",
+  MessageId="s", Justification="Smaller JSON")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.String>>,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.Int32>>)",
+  MessageId="v", Justification="Smaller JSON")>]
+()

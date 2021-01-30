@@ -2355,7 +2355,7 @@ module AltCoverTests =
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = path; Destinations = [] } )
 
         let result = makeJson document
-        printfn "%s" result
+
         let nativeJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
         use stream =
@@ -2364,8 +2364,9 @@ module AltCoverTests =
         let expected = reader.ReadToEnd()
                          .Replace(@"C:\\Users\\steve\\source\\repos\\ClassLibrary1",
                          SolutionRoot.location.Replace("\\", "\\\\"))
+                         .Replace('\r',' ').Replace('\n',' ').Trim()
         // printfn "%s" result
-        Assert.That(result, Is.EqualTo expected)
+        Assert.That(result.Replace('\r',' ').Replace('\n',' ').Trim(), Is.EqualTo expected)
       finally
         CoverageParameters.nameFilters.Clear()
 
