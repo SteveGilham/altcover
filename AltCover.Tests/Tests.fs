@@ -2362,8 +2362,8 @@ module AltCoverTests =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
         use reader = new StreamReader(stream)
         let expected = reader.ReadToEnd()
-                         .Replace(@"C:\\Users\\steve\\source\\repos\\ClassLibrary1",
-                         SolutionRoot.location.Replace("\\", "\\\\"))
+                         .Replace("Tests.fs",
+                         Path.Combine(SolutionRoot.location, "Sample4", "Tests.fs").Replace("\\", "\\\\"))
                          .Replace('\r',' ').Replace('\n',' ').Trim()
         // printfn "%s" result
         Assert.That(result.Replace('\r',' ').Replace('\n',' ').Trim(), Is.EqualTo expected)

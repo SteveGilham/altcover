@@ -1,6 +1,6 @@
 {
   "Sample4.dll": {
-    "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Sample4\\Tests.fs": {
+    "Tests.fs": {
       "Tests.Program": {
         "System.Int32 Tests.Program::main(System.String[])": {
           "Lines": {
