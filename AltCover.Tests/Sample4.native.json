@@ -154,7 +154,8 @@
               "Offset": 0,
               "Id": 8
             }
-          ]
+          ],
+          "TId": 1
         }
       },
       "Tests.DU/MyUnion": {

@@ -36,8 +36,8 @@ module NativeJson =
       EC:int
       Offset:int
       Id:int
-      Times: Times option
-      Tracks: Tracks option
+      Times: Times
+      Tracks: Tracks
     }
   type SeqPnts = List<SeqPnt>
 
@@ -54,8 +54,8 @@ module NativeJson =
       Hits:int
     // scope to expand
       Id:int
-      Times: Times option
-      Tracks: Tracks option
+      Times: Times
+      Tracks: Tracks
     }
 
   type Lines = SortedDictionary<int, int>
@@ -77,14 +77,14 @@ module NativeJson =
             "DoNotExposeGenericListsRule",
             Justification="Harmless in context")>]
       SeqPnts:SeqPnts
-      TId:int option // tracking ID
+      TId:Nullable<int> // tracking ID
     }
     static member Create(track:(int*string) option) =
       {
         Lines = Lines()
         Branches = Branches()
         SeqPnts = SeqPnts()
-        TId = track |> Option.map fst
+        TId = track |> Option.map fst |> Option.toNullable
       }
 
   type internal Methods = Dictionary<string, Method>
@@ -162,8 +162,8 @@ module NativeJson =
             EC = codeSegment.EndColumn
             Offset = codeSegment.Offset
             Id = e.Uid
-            Times = None
-            Tracks = None}
+            Times = null
+            Tracks = null}
         )
       s
     let visitBranchPoint  (s : JsonContext) (b:GoTo) =
@@ -181,8 +181,8 @@ module NativeJson =
                               Hits = int b.VisitCount
                             // scope to expand
                               Id= b.Uid
-                              Times = None
-                              Tracks = None
+                              Times = null
+                              Tracks = null
                            }
       s
 

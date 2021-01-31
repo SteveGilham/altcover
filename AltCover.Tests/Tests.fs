@@ -2352,6 +2352,7 @@ module AltCoverTests =
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Method
             >> CoverageParameters.nameFilters.Add)
+        CoverageParameters.trackingNames.Add("testMakeUnion")
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = path; Destinations = [] } )
 
         let result = makeJson document
@@ -2368,6 +2369,7 @@ module AltCoverTests =
         // printfn "%s" result
         Assert.That(result.Replace("\r",String.Empty).Replace("\n",String.Empty).Trim(), Is.EqualTo expected)
       finally
+        CoverageParameters.trackingNames.Clear()
         CoverageParameters.nameFilters.Clear()
 
     [<Test>]
