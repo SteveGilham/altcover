@@ -17,6 +17,12 @@ module AltCoverTests3 =
     // AltCover.fs and CommandLine.fs
 
     [<Test>]
+    let ShouldResolveThisAssembly() =
+      let target = typeof<Marker>.Assembly
+      let args = ResolveEventArgs(target.FullName, Assembly.GetExecutingAssembly())
+      test <@ AltCover.Process.assemblyResolve AltCoverTests2.infrastructureSnk args = target @>
+
+    [<Test>]
     let ShouldLaunchWithExpectedOutput() =
       Main.init()
       let path =

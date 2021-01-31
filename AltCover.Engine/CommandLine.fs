@@ -25,7 +25,7 @@ module internal Process =
                     Justification = "Not a lot of alteratives")>]
   [<SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods",
                     Justification = "Not a lot of alteratives")>]
-  let assemblyResolve (sender:Object) (args:ResolveEventArgs) =
+  let assemblyResolve (_:Object) (args:ResolveEventArgs) =
     let n = AssemblyName(args.Name)
     match AppDomain.CurrentDomain.GetAssemblies()
           |> Seq.tryFind(fun a -> a.GetName().Name = n.Name) with
@@ -36,16 +36,9 @@ module internal Process =
       if File.Exists file
       then file |> Assembly.LoadFile
       else
-        if args.Name.Contains(".resources, V") |> not
-        then eprintfn "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
+        //if args.Name.Contains(".resources, V") |> not
+        //then eprintfn "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
         null
-
-      //eprintfn "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
-      //null
-  //let TypeResolve (sender:Object) (args:ResolveEventArgs) =
-  //  if args.Name <> "Mono.Runtime"
-  //  then eprintfn "TypeResolve Name %s from %A" args.Name args.RequestingAssembly
-  //  null
 
   type System.Diagnostics.Process with
     // Work around observed unreliability of WaitForExit()
@@ -488,4 +481,3 @@ module internal CommandLine =
 
   do
     AppDomain.CurrentDomain.add_AssemblyResolve <| ResolveEventHandler(assemblyResolve)
-    //AppDomain.CurrentDomain.add_TypeResolve  <| ResolveEventHandler(TypeResolve)
