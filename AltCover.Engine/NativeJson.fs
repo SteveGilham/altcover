@@ -27,6 +27,10 @@ module NativeJson =
   type internal Tracks = List<int>
 
   [<ExcludeFromCodeCoverage; NoComparison>]
+  [<SuppressMessage(
+        "Gendarme.Rules.Design.Generic",
+        "DoNotExposeGenericListsRule",
+        Justification="Harmless in context")>]
   type SeqPnt =
     {
       VC:int
@@ -36,7 +40,15 @@ module NativeJson =
       EC:int
       Offset:int
       Id:int
+      [<SuppressMessage(
+            "Gendarme.Rules.Design.Generic",
+            "DoNotExposeGenericListsRule",
+            Justification="Harmless in context")>]
       Times: Times
+      [<SuppressMessage(
+            "Gendarme.Rules.Design.Generic",
+            "DoNotExposeGenericListsRule",
+            Justification="Harmless in context")>]
       Tracks: Tracks
     }
   type SeqPnts = List<SeqPnt>
@@ -44,6 +56,10 @@ module NativeJson =
   // Coverlet compatible -- src/coverlet.core/CoverageResult.cs
   // also round-trippable
   [<ExcludeFromCodeCoverage; NoComparison>]
+  [<SuppressMessage(
+        "Gendarme.Rules.Design.Generic",
+        "DoNotExposeGenericListsRule",
+        Justification="Harmless in context")>]
   type BranchInfo =
     {
       Line:int
@@ -54,7 +70,15 @@ module NativeJson =
       Hits:int
     // scope to expand
       Id:int
+      [<SuppressMessage(
+            "Gendarme.Rules.Design.Generic",
+            "DoNotExposeGenericListsRule",
+            Justification="Harmless in context")>]
       Times: Times
+      [<SuppressMessage(
+            "Gendarme.Rules.Design.Generic",
+            "DoNotExposeGenericListsRule",
+            Justification="Harmless in context")>]
       Tracks: Tracks
     }
 
@@ -63,6 +87,10 @@ module NativeJson =
   type Branches = List<BranchInfo>
 
   [<ExcludeFromCodeCoverage; NoComparison>]
+  [<SuppressMessage(
+        "Gendarme.Rules.Design.Generic",
+        "DoNotExposeGenericListsRule",
+        Justification="Harmless in context")>]
   type Method =
     {
       Lines:Lines
@@ -226,11 +254,33 @@ module NativeJson =
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+Method.#SeqPnts",
   Justification="Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="member", Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+BranchInfo.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.UInt32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+BranchInfo.#Times",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+BranchInfo.#Tracks",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>)",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+SeqPnt.#Times",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+SeqPnt.#Tracks",
+  Justification="Harmless in context")>]
+
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>)",
   MessageId="Pnts", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>)",
   MessageId="t", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
   Target="AltCover.NativeJson+Method.#SeqPnts",
@@ -239,12 +289,12 @@ module NativeJson =
   Target="AltCover.NativeJson+SeqPnt",
   MessageId="Pnt", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.String>>,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.Int32>>)",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
   MessageId="e", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.String>>,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.Int32>>)",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
   MessageId="s", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.String>>,Microsoft.FSharp.Core.FSharpOption`1<System.Collections.Generic.List`1<System.Int32>>)",
+  Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
   MessageId="v", Justification="Smaller JSON")>]
 ()
