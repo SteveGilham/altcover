@@ -20,7 +20,12 @@ open System.Diagnostics.CodeAnalysis
 [<ExcludeFromCodeCoverage>]
 module internal Process =
 
-  let AssemblyResolve (sender:Object) (args:ResolveEventArgs) =
+  [<SuppressMessage("Gendarme.Rules.BadPractice",
+                    "AvoidCallingProblematicMethodsRule",
+                    Justification = "Not a lot of alteratives")>]
+  [<SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods",
+                    Justification = "Not a lot of alteratives")>]
+  let assemblyResolve (sender:Object) (args:ResolveEventArgs) =
     let n = AssemblyName(args.Name)
     match AppDomain.CurrentDomain.GetAssemblies()
           |> Seq.tryFind(fun a -> a.GetName().Name = n.Name) with
@@ -482,5 +487,5 @@ module internal CommandLine =
     Output.warn <- writeOut
 
   do
-    AppDomain.CurrentDomain.add_AssemblyResolve <| ResolveEventHandler(AssemblyResolve)
+    AppDomain.CurrentDomain.add_AssemblyResolve <| ResolveEventHandler(assemblyResolve)
     //AppDomain.CurrentDomain.add_TypeResolve  <| ResolveEventHandler(TypeResolve)
