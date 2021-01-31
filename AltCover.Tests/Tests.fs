@@ -2364,9 +2364,9 @@ module AltCoverTests =
         let expected = reader.ReadToEnd()
                          .Replace("Tests.fs",
                          Path.Combine(SolutionRoot.location, "Sample4", "Tests.fs").Replace("\\", "\\\\"))
-                         .Replace('\r',' ').Replace('\n',' ').Trim()
+                         .Replace("\r",String.Empty).Replace("\n",String.Empty).Trim()
         // printfn "%s" result
-        Assert.That(result.Replace('\r',' ').Replace('\n',' ').Trim(), Is.EqualTo expected)
+        Assert.That(result.Replace("\r",String.Empty).Replace("\n",String.Empty).Trim(), Is.EqualTo expected)
       finally
         CoverageParameters.nameFilters.Clear()
 
