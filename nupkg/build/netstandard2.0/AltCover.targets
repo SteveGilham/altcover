@@ -204,8 +204,8 @@
       JsonReport="$(AltCoverLcovReport)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary" />
     </AltCover.Collect>
-    <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)"
-                   Condition="$(AltCoverShowSummary) != ''"
+    <AltCover.Echo Condition="'$(AltCoverShowSummary)' != '' AND '$(AltCoverSummary)' !=''"
+                   Text="$(AltCoverSummary)" Colour="$(AltCoverColour)"
                    Verbosity="$(AltCoverVerbosity)" />
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
