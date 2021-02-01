@@ -196,6 +196,7 @@ module internal Counter =
         (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
         (outputFile : Stream) =
       let flushStart = DateTime.UtcNow
+      let (m, i, m', s, v) = xmlByFormat format // throw early on unsupported
       let coverageDocument = readXDocument coverageFile
       let root = coverageDocument.DocumentElement
       let startTimeNode = root.GetAttributeNode("startTime")
@@ -221,8 +222,6 @@ module internal Counter =
            "AltCover.Recorder "
            + System.Diagnostics.FileVersionInfo.GetVersionInfo(
                System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
-
-      let (m, i, m', s, v) = xmlByFormat format
 
       let moduleNodes = selectNodes coverageDocument m
       moduleNodes
@@ -343,8 +342,8 @@ module internal Counter =
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
   [<SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'target' is disposed")>]
+    "CA2000:DisposeObjectsBeforeLosingScope",
+    Justification = "'target' is disposed")>]
   let internal doFlushStream postProcess pointProcess own counts format coverageFile output =
     use target =
       match output with

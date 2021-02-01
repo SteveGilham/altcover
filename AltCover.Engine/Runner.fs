@@ -7,6 +7,7 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Text
+open System.Text.Json
 open System.Xml
 open System.Xml.Linq
 
@@ -856,8 +857,7 @@ module internal Runner =
                inner.SetAttribute(attribute, t.ToString())
                inner.SetAttribute("vc", sprintf "%d" n))
 
-    let internal pointProcess (pt : XmlElement) tracks =
-      let (times, calls) =
+    let internal extractTracks tracks =
         tracks
         |> Seq.map (fun t ->
              match t with
@@ -867,15 +867,130 @@ module internal Runner =
              | _ -> (None, None))
         |> Seq.toList
         |> List.unzip
+
+    let internal pointProcess (pt : XmlElement) tracks =
+      let (times, calls) = extractTracks tracks
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
+
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+     "InstantiateArgumentExceptionCorrectlyRule",
+     Justification="Inlined library code")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+     "AvoidRepetitiveCallsToPropertiesRule",
+     Justification="Inlined library code")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+     Justification="Inlined library code")>]
+    let internal lineVisits (seqpnts:NativeJson.SeqPnt seq) =
+      (seqpnts
+       |> Seq.maxBy (fun sp -> sp.VC)).VC
+
+    let updateNativeJsonMethod (visits:Dictionary<int, PointVisit>) (m:NativeJson.Method) =
+        let sps = m.SeqPnts
+                  |> Seq.map(fun sp ->
+                    let b, count = visits.TryGetValue sp.Id
+                    if b then
+                       let (times', calls') = extractTracks count.Tracks
+                       let times = times' |> Seq.choose id
+                       let calls = calls' |> Seq.choose id
+                       let nsp = {sp with VC = (int <| count.Total()) + Math.Max(0, sp.VC)
+                                          Tracks = (if sp.Tracks |> isNull && calls |> Seq.isEmpty |> not
+                                                    then NativeJson.Tracks()
+                                                    else sp.Tracks)
+                                          Times = (if sp.Times |> isNull && times |> Seq.isEmpty |> not
+                                                    then NativeJson.Times()
+                                                    else sp.Times)
+                       }
+                       if calls |> Seq.isEmpty |> not
+                       then nsp.Tracks.AddRange calls
+                       if times |> Seq.isEmpty |> not
+                       then nsp.Times.AddRange (times |> Seq.map NativeJson.FromTracking)
+                       nsp
+                    else sp) |> Seq.toList
+        m.SeqPnts.Clear()
+        m.SeqPnts.AddRange sps
+
+        let bps = m.Branches
+                  |> Seq.map(fun bp ->
+                    let b, count = visits.TryGetValue (bp.Id ||| Counter.branchFlag)
+                    if b then
+                       let (times', calls') = extractTracks count.Tracks
+                       let times = times' |> Seq.choose id
+                       let calls = calls' |> Seq.choose id
+                       let nbp = {bp with Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
+                                          Tracks = (if bp.Tracks |> isNull && calls |> Seq.isEmpty |> not
+                                                    then NativeJson.Tracks()
+                                                    else bp.Tracks)
+                                          Times = (if bp.Times |> isNull && times |> Seq.isEmpty |> not
+                                                    then NativeJson.Times()
+                                                    else bp.Times)
+                       }
+                       if calls |> Seq.isEmpty |> not
+                       then nbp.Tracks.AddRange calls
+                       if times |> Seq.isEmpty |> not
+                       then nbp.Times.AddRange (times |> Seq.map NativeJson.FromTracking)
+                       nbp
+                    else bp) |> Seq.toList
+        m.Branches.Clear()
+        m.Branches.AddRange bps
+
+        m.SeqPnts
+        |> Seq.groupBy (fun s -> s.SL)
+        |> Seq.iter (fun (l,ss) -> m.Lines.[l] <- lineVisits ss)
+
+    [<SuppressMessage("Gendarme.Rules.Correctness",
+     "EnsureLocalDisposalRule",
+     Justification="The reader must not close the stream")>]
+    [<SuppressMessage("Microsoft.Reliability",
+     "CA2000:DisposeObjectsBeforeLosingScope",
+     Justification="The reader must not close the stream")>]
+    let writeNativeJsonReport (hits:Dictionary<string, Dictionary<int, PointVisit>>)
+      _ (file:Stream) output =
+      let flushStart = DateTime.UtcNow
+      // do work here
+      let jsonText =
+        let reader = new StreamReader(file) // DO NOT DISPOSE
+        reader.ReadToEnd()
+
+      let json = JsonSerializer.Deserialize<NativeJson.Modules>(jsonText)
+
+      // do magic here
+      json
+      |> Seq.iter (fun kvp ->
+        let key = kvp.Key
+        let b, visits = hits.TryGetValue key
+        if b then
+          kvp.Value.Values
+          |> Seq.collect (fun doc -> doc.Values)
+          |> Seq.collect (fun c -> c.Values)
+          |> Seq.iter (updateNativeJsonMethod visits)
+      )
+
+      let encoded = JsonSerializer.SerializeToUtf8Bytes(json, NativeJson.options)
+      if Option.isSome output
+      then
+        use outputFile =
+          new FileStream(output.Value, FileMode.OpenOrCreate, FileAccess.Write,
+                         FileShare.None, 4096, FileOptions.SequentialScan)
+        outputFile.Write(encoded, 0, encoded.Length)
+      else
+        file.Seek(0L, SeekOrigin.Begin) |> ignore
+        file.SetLength 0L
+        file.Write(encoded, 0, encoded.Length)
+
+      TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
     let internal writeReportBase (hits : Dictionary<string, Dictionary<int, PointVisit>>)
         format report =
       let reporter (arg: string option) =
         let (container, file) = Zip.openUpdate report
         try
-          AltCover.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
+          if format = ReportFormat.NativeJson ||
+             format = ReportFormat.NativeJsonWithTracking
+          then
+            writeNativeJsonReport hits format file arg
+          else
+            AltCover.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
         finally
           file.Dispose()
           if container.IsNotNull then container.Dispose()
@@ -930,7 +1045,6 @@ module internal Runner =
         let value =
           CommandLine.doPathOperation (fun () ->
             let pair = J.recorderInstance()
-            use assembly = fst pair
             let instance = snd pair
 
             let report =
@@ -939,12 +1053,13 @@ module internal Runner =
               |> Path.GetFullPath
 
             let format =
-              (J.getMethod instance "get_CoverageFormat") |> J.getFirstOperandAsNumber
+              (J.getMethod instance "get_CoverageFormat")
+              |> J.getFirstOperandAsNumber
+              |> enum
             let hits = Dictionary<string, Dictionary<int, PointVisit>>()
             let payload = J.getPayload
             let result = J.getMonitor hits report payload rest
-            let format' = enum format
-            let delta = J.doReport hits format' report output
+            let delta = J.doReport hits format report output
             CommandLine.writeResourceWithFormatItems
               "Coverage statistics flushing took {0:N} seconds" [| delta.TotalSeconds |]
               false
@@ -955,7 +1070,7 @@ module internal Runner =
               (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
             let document = J.loadReport report
-            J.doSummaries document format' result) 255 true
+            J.doSummaries document format result) 255 true
         CommandLine.reportErrors "Collection" false
         value
 

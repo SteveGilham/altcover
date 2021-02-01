@@ -37,6 +37,7 @@
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
     <EmbeddedResource Include="Sample4FullTracking.xml" />
     <EmbeddedResource Include="Sample4.native.json" />
+    <EmbeddedResource Include="Sample4.syntheticvisits.native.json" />
     <EmbeddedResource Include="GenuineNCover158.json" />
     <EmbeddedResource Include="GenuineNCover158.Xml" />
     <EmbeddedResource Include="OpenCover.json" />

@@ -494,6 +494,7 @@ module internal Instrument =
           ModuleId =
             match CoverageParameters.reportKind() with
             | ReportFormat.OpenCover -> KeyStore.hashFile m.Module.FileName
+            | ReportFormat.NativeJson -> m.Module.FileName |> Path.GetFileName
             | _ -> m.Module.Mvid.ToString() }
 
     let private visitMethod (state : InstrumentContext) m =

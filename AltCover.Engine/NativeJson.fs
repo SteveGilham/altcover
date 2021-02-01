@@ -106,6 +106,8 @@ module NativeJson =
             Justification="Harmless in context")>]
       SeqPnts:SeqPnts
       TId:Nullable<int> // tracking ID
+      Entry:Times
+      Exit:Times
     }
     static member Create(track:(int*string) option) =
       {
@@ -113,6 +115,8 @@ module NativeJson =
         Branches = Branches()
         SeqPnts = SeqPnts()
         TId = track |> Option.map fst |> Option.toNullable
+        Entry = if track.IsNone then null else Times()
+        Exit = if track.IsNone then null else Times()
       }
 
   type internal Methods = Dictionary<string, Method>
@@ -241,8 +245,7 @@ module NativeJson =
       | _ -> s
 
     let result = Visitor.encloseState reportVisitor (JsonContext.Build())
-    (result, fun (s:System.IO.Stream) -> let encoded = JsonSerializer.Serialize(document, options)
-                                                       |> System.Text.Encoding.UTF8.GetBytes
+    (result, fun (s:System.IO.Stream) -> let encoded = JsonSerializer.SerializeToUtf8Bytes(document, options)
                                          s.Write(encoded, 0, encoded.Length))
 
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
@@ -264,7 +267,7 @@ module NativeJson =
   Target="AltCover.NativeJson+BranchInfo.#Tracks",
   Justification="Harmless in context")>]
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
-  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>)",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
   Justification="Harmless in context")>]
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
@@ -275,15 +278,21 @@ module NativeJson =
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+SeqPnt.#Tracks",
   Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+Method.#Entry",
+  Justification="Harmless in context")>]
+[<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
+  Target="AltCover.NativeJson+Method.#Exit",
+  Justification="Harmless in context")>]
 
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>)",
+  Target="AltCover.NativeJson+Method.#SeqPnts",
   MessageId="Pnts", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>)",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
   MessageId="t", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.NativeJson+Method.#SeqPnts",
+  Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
   MessageId="Pnts", Justification="Smaller JSON")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="type",
   Target="AltCover.NativeJson+SeqPnt",

@@ -4,12 +4,12 @@
       "Tests.Program": {
         "System.Int32 Tests.Program::main(System.String[])": {
           "Lines": {
-            "61": 0
+            "61": 1
           },
           "Branches": [],
           "SeqPnts": [
             {
-              "VC": 0,
+              "VC": 1,
               "SL": 61,
               "SC": 16,
               "EL": 61,
@@ -40,26 +40,31 @@
         },
         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)": {
           "Lines": {
-            "50": 0
+            "50": 3
           },
           "Branches": [],
           "SeqPnts": [
             {
-              "VC": 0,
+              "VC": 3,
               "SL": 50,
               "SC": 21,
               "EL": 50,
               "EC": 26,
               "Offset": 0,
-              "Id": 2
+              "Id": 2,
+              "Times": [
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA="
+              ]
             }
           ]
         },
         "System.Void Tests.DU::testMakeUnion()": {
           "Lines": {
-            "54": 0,
-            "55": 0,
-            "56": 0
+            "54": 9,
+            "55": 7,
+            "56": 5
           },
           "Branches": [
             {
@@ -77,8 +82,12 @@
               "EndOffset": 218,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0,
-              "Id": 1
+              "Hits": 2,
+              "Id": 1,
+              "Tracks": [
+                0,
+                0
+              ]
             },
             {
               "Line": 55,
@@ -95,8 +104,20 @@
               "EndOffset": 484,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0,
-              "Id": 3
+              "Hits": 4,
+              "Id": 3,
+              "Times": [
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA="
+              ],
+              "Tracks": [
+                0,
+                0,
+                0,
+                0
+              ]
             }
           ],
           "SeqPnts": [
@@ -110,7 +131,7 @@
               "Id": 3
             },
             {
-              "VC": 0,
+              "VC": 5,
               "SL": 56,
               "SC": 5,
               "EL": 56,
@@ -128,13 +149,22 @@
               "Id": 5
             },
             {
-              "VC": 0,
+              "VC": 7,
               "SL": 55,
               "SC": 5,
               "EL": 55,
               "EC": 39,
               "Offset": 257,
-              "Id": 6
+              "Id": 6,
+              "Times": [
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA="
+              ]
             },
             {
               "VC": 0,
@@ -146,7 +176,7 @@
               "Id": 7
             },
             {
-              "VC": 0,
+              "VC": 9,
               "SL": 54,
               "SC": 5,
               "EL": 54,
@@ -186,8 +216,16 @@
               "EndOffset": 40,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0,
-              "Id": 5
+              "Hits": 6,
+              "Id": 5,
+              "Tracks": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
             },
             {
               "Line": 36,
@@ -204,8 +242,28 @@
               "EndOffset": 137,
               "Path": 3,
               "Ordinal": 3,
-              "Hits": 0,
-              "Id": 7
+              "Hits": 8,
+              "Id": 7,
+              "Times": [
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA=",
+                "AAAAAAAAAAA="
+              ],
+              "Tracks": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
             }
           ],
           "SeqPnts": [
@@ -387,8 +445,20 @@
               "EndOffset": 218,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0,
-              "Id": 9
+              "Hits": 10,
+              "Id": 9,
+              "Tracks": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
             }
           ],
           "SeqPnts": [
