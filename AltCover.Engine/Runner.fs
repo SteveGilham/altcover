@@ -501,6 +501,9 @@ module internal Runner =
                       |> Seq.length
               vs <- vs + s
               visited <- visited || s > 0
+
+              nm <- nm + 1
+              vm <- vm.Increment (s > 0 || b > 0)
             )
 
             if visited
