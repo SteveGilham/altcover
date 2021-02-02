@@ -289,7 +289,7 @@ module internal Json =
                          classes.Add(cname, m)
                          m
     match methods.TryGetValue mname with
-    | true, m -> m
+    | true, m -> m // possible??
     | _ -> let m = NativeJson.Method.Create(None)
            methods.Add(mname, m)
            m
@@ -361,16 +361,13 @@ module internal Json =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
         (report.Root
         |> (match format with
-            | ReportFormat.NCover -> ncoverToJson // ready minified
-            | ReportFormat.OpenCover
-            | ReportFormat.OpenCoverWithTracking -> opencoverToJson // ready minified
-            | _ -> raise (NotSupportedException (sprintf "%A" format)))).ToString()// Maybe later
+            | ReportFormat.NCover -> ncoverToJson
+            | _ -> opencoverToJson)).ToString()// Maybe later
         |> writer.Write)
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
       (match report with
-       | Unknown -> ignore
        | XML document -> convertReport document format
-       | _ -> raise (NotSupportedException(sprintf "%A" format))) //maybe later
+       | _ -> ignore)
     (result, 0uy, String.Empty)
