@@ -109,7 +109,7 @@ module ExpectoTestManifest =
           Tests.AltCoverRunnerTests.TrackingPayloadShouldReportAsExpected, "Runner.TrackingPayloadShouldReportAsExpected"
           Tests.AltCoverRunnerTests.PointProcessShouldCaptureTimes, "Runner.PointProcessShouldCaptureTimes"
           Tests.AltCoverRunnerTests.PostprocessShouldHandleNullCase, "Runner.PostprocessShouldHandleNullCase"
-          Tests.AltCoverRunnerTests.PostprocessShouldHandleEntryAndExitTimes, "RunnerTests.PostprocessShouldHandleEntryAndExitTimes"
+          Tests.AltCoverRunnerTests.PostprocessShouldHandleEntryAndExitTimes, "Runner.PostprocessShouldHandleEntryAndExitTimes"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverState, "Runner.PostprocessShouldRestoreKnownOpenCoverState"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreKnownOpenCoverStateFromMono, "Runner.PostprocessShouldRestoreKnownOpenCoverStateFromMono"
           Tests.AltCoverRunnerTests.PostprocessShouldRestoreDegenerateOpenCoverState, "Runner.PostprocessShouldRestoreDegenerateOpenCoverState"
