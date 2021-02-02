@@ -186,8 +186,12 @@
             }
           ],
           "TId": 1,
-          "Entry": [],
-          "Exit": []
+          "Entry": [
+            "AQAAAAAAAAA="
+          ],
+          "Exit": [
+            "AgAAAAAAAAA="
+          ]
         }
       },
       "Tests.DU/MyUnion": {

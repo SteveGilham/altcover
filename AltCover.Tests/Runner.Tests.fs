@@ -1979,13 +1979,14 @@ module AltCoverRunnerTests =
         do use worker = new FileStream(reportFile, FileMode.CreateNew)
            stream.CopyTo worker
 
-        let tracks = [| Null; Call 0; Time 0L; Both { Time = 0L; Call = 0 } |]
+        let tracks t = [| Null; Call 0; Time t; Both { Time = t; Call = 0 } |]
+        let t0 = tracks 0L
 
         let hits = List<string * int * Track>()
         [ 0..9 ]
         |> Seq.iter (fun i ->
              for j = 1 to i + 1 do
-               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), tracks.[i % 4])
+               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
                ignore j)
 
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1993,6 +1994,18 @@ module AltCoverRunnerTests =
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
              AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+
+        let entries = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        tracks(1L) |> Seq.iter pv.Track
+        entries.Add (1, pv)
+        counts.Add(Track.Entry, entries)
+
+        let entries = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        tracks(2L) |> Seq.iter pv.Track
+        entries.Add (1, pv)
+        counts.Add(Track.Exit, entries)
 
         Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile (Some junkFile) |> ignore
 
@@ -2120,13 +2133,14 @@ module AltCoverRunnerTests =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
         Zip.save (stream.CopyTo) reportFile true  // fsharplint:disable-line
 
-        let tracks = [| Null; Call 0; Time 0L; Both { Time = 0L; Call = 0 } |]
+        let tracks t = [| Null; Call 0; Time t; Both { Time = t; Call = 0 } |]
+        let t0 = tracks 0L
 
         let hits = List<string * int * Track>()
         [ 0..9 ]
         |> Seq.iter (fun i ->
              for j = 1 to i + 1 do
-               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), tracks.[i % 4])
+               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
                ignore j)
 
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -2134,6 +2148,18 @@ module AltCoverRunnerTests =
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
              AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+
+        let entries = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        tracks(1L) |> Seq.iter pv.Track
+        entries.Add (1, pv)
+        counts.Add(Track.Entry, entries)
+
+        let entries = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        tracks(2L) |> Seq.iter pv.Track
+        entries.Add (1, pv)
+        counts.Add(Track.Exit, entries)
 
         // degenerate case 1
         Assert.That(junkfile |> File.Exists |> not)

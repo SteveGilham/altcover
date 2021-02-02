@@ -889,7 +889,31 @@ module internal Runner =
       (seqpnts
        |> Seq.maxBy (fun sp -> sp.VC)).VC
 
-    let updateNativeJsonMethod (visits:Dictionary<int, PointVisit>) (m:NativeJson.Method) =
+    let updateNativeJsonMethod
+      (hits:Dictionary<string, Dictionary<int, PointVisit>>)
+      (visits:Dictionary<int, PointVisit>) (m:NativeJson.Method) =
+        if m.TId.IsNotNull
+        then
+          let e1, entries = hits.TryGetValue Track.Entry
+          if e1 then
+            let e2, entrypoint = entries.TryGetValue m.TId.Value
+            if e2
+            then entrypoint.Tracks
+                 |> Seq.iter (fun t -> match t with
+                                       | Time tx -> tx
+                                                    |> NativeJson.FromTracking
+                                                    |> m.Entry.Add
+                                       | _ -> ())
+          let e3, exits = hits.TryGetValue Track.Exit
+          if e3 then
+            let e4, exitpoint = exits.TryGetValue m.TId.Value
+            if e4
+            then exitpoint.Tracks
+                 |> Seq.iter (fun t -> match t with
+                                       | Time tx -> tx
+                                                    |> NativeJson.FromTracking
+                                                    |> m.Exit.Add
+                                       | _ -> ())
         let sps = m.SeqPnts
                   |> Seq.map(fun sp ->
                     let b, count = visits.TryGetValue sp.Id
@@ -967,7 +991,7 @@ module internal Runner =
           kvp.Value.Values
           |> Seq.collect (fun doc -> doc.Values)
           |> Seq.collect (fun c -> c.Values)
-          |> Seq.iter (updateNativeJsonMethod visits)
+          |> Seq.iter (updateNativeJsonMethod hits visits)
       )
 
       let encoded = JsonSerializer.SerializeToUtf8Bytes(json, NativeJson.options)
