@@ -165,8 +165,7 @@ FN:4,(anonymous_0)
                 //
                 // end_of_record
                 writer.WriteLine "end_of_record")
-      | ReportFormat.OpenCover
-      | ReportFormat.OpenCoverWithTracking ->
+      | _ ->
           report.Descendants("File".X)
           |> Seq.iter (fun f ->
                 //If available, a tracefile begins with the testname which
@@ -304,10 +303,12 @@ FN:4,(anonymous_0)
                 // Each sections ends with:
                 //
                 // end_of_record
-                writer.WriteLine "end_of_record")
-      | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise) //maybe later
+                writer.WriteLine "end_of_record"))
 
-  let internal summary (report : XDocument) (format : ReportFormat) result =
+  let internal summary (report : DocumentType) (format : ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-      (convertReport report format)
+      (match report with
+       | Unknown -> ignore
+       | XML document -> convertReport document format
+       | _ -> raise (NotSupportedException(sprintf "%A" format))) //maybe later
     (result, 0uy, String.Empty)

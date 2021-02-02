@@ -653,7 +653,8 @@ module AltCoverXTests =
       test <@ actual = theFiles @>
       let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
       let expectedXml = XDocument.Load(new StringReader(expectedText))
-      let recordedXml = Runner.J.loadReport report
+      let recordedXml = match Runner.J.loadReport ReportFormat.OpenCover report with
+                        | XML x -> x
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
       CoverageParameters.theOutputDirectories.Clear()

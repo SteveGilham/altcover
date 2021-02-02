@@ -312,9 +312,7 @@ module internal Cobertura =
 
     (match format with
      | ReportFormat.NCover -> I.nCover
-     | ReportFormat.OpenCover
-     | ReportFormat.OpenCoverWithTracking -> I.openCover
-     | _ -> raise (NotSupportedException (sprintf "%A" format))) report packages // Maybe later
+     | _ -> I.openCover) report packages // Maybe later
 
     // lines reprise
     packages.Descendants("class".X)
@@ -334,7 +332,10 @@ module internal Cobertura =
               reprise.Add copy))
     rewrite
 
-  let internal summary (report : XDocument) (format : ReportFormat) result =
-    let rewrite = convertReport report format
+  let internal summary (report : DocumentType) (format : ReportFormat) result =
+    let rewrite = match report with
+                  | Unknown -> XDocument()
+                  | XML document -> convertReport document format
+                  | _ -> raise (NotSupportedException(sprintf "%A" format)) //maybe later
     rewrite.Save(!path |> Option.get)
     (result, 0uy, String.Empty)

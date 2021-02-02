@@ -318,7 +318,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Json.summary baseline ReportFormat.NCover 0
+        let r = Json.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -361,7 +361,7 @@ module AltCoverRunnerTests =
       try
         Runner.I.addJsonSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline ReportFormat.OpenCover 0
+        let r = summarize (XML baseline) ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -2259,8 +2259,8 @@ module AltCoverRunnerTests =
             [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
-        let doc = Runner.J.loadReport(unique + ".acv")
-        Assert.That(doc.Nodes(), Is.Empty)
+        let doc = Runner.J.loadReport ReportFormat.OpenCover (unique + ".acv")
+        Assert.That(doc, Is.EqualTo DocumentType.Unknown)
         Assert.That(counts, Is.Empty)
       finally
         Runner.collect := false
@@ -2811,7 +2811,7 @@ module AltCoverRunnerTests =
           Runner.summaryFormat <- Default
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
           Assert.That
@@ -2837,7 +2837,7 @@ module AltCoverRunnerTests =
           Runner.summaryFormat <- B
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2865,7 +2865,7 @@ module AltCoverRunnerTests =
           Runner.summaryFormat <- Many [ B; O; C]
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2903,7 +2903,7 @@ module AltCoverRunnerTests =
                                          Crap = 0uy
                                          AltMethods = 0uy
                                          AltCrap = 0uy }
-              Runner.I.standardSummary baseline ReportFormat.NCover 42
+              Runner.I.standardSummary (XML baseline) ReportFormat.NCover 42
             finally
               Runner.threshold <- None
           // 80% coverage > threshold so expect return code coming in
@@ -2931,7 +2931,7 @@ module AltCoverRunnerTests =
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Default
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2957,7 +2957,7 @@ module AltCoverRunnerTests =
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- B
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2987,7 +2987,7 @@ module AltCoverRunnerTests =
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Many [ R; O; C]
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -3056,7 +3056,7 @@ module AltCoverRunnerTests =
             let r =
               try
                 Runner.threshold <- Some threshold
-                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+                Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
               finally
                 Runner.threshold <- None
             // 70% coverage < threshold so expect shortfall
@@ -3105,7 +3105,7 @@ module AltCoverRunnerTests =
             Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
             let r =
               try
-                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+                Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
               finally
                 Runner.threshold <- None
             let elementO =
@@ -3176,7 +3176,7 @@ module AltCoverRunnerTests =
       try
         Runner.I.addLCovSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline ReportFormat.OpenCover 0
+        let r = summarize (XML baseline) ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -3208,7 +3208,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline ReportFormat.NCover 0
+        let r = LCov.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -3245,7 +3245,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline ReportFormat.NCover 0
+        let r = LCov.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -3346,7 +3346,7 @@ module AltCoverRunnerTests =
       try
         Runner.I.addCoberturaSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline ReportFormat.NCover 0
+        let r = summarize (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -3389,7 +3389,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline ReportFormat.NCover 0
+        let r = Cobertura.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -3429,7 +3429,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline ReportFormat.OpenCover 0
+        let r = Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace
@@ -3464,7 +3464,7 @@ module AltCoverRunnerTests =
                                 (fun _ _ _ -> (23, 42uy, "Statements"))
                                 (fun _ _ a  -> (a, 0uy, String.Empty))]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let delta = Runner.J.doSummaries (XDocument()) ReportFormat.NCover 0
+        let delta = Runner.J.doSummaries (XML <| XDocument()) ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),

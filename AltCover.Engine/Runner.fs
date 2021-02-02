@@ -446,51 +446,55 @@ module internal Runner =
       Justification="Inlined library code")>]
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
       Justification="Inlined library code")>]
-    let internal standardSummary (report : XDocument) (format : ReportFormat) result =
-      let covered =
-        report
-        |> match format with
-           | ReportFormat.NCover -> nCoverSummary
-           | ReportFormat.OpenCover
-           | ReportFormat.OpenCoverWithTracking -> openCoverSummary
-           | _ -> raise (NotSupportedException (sprintf "%A" format))
+    let internal standardSummary (reportDocument : DocumentType) (format : ReportFormat) result =
+      match reportDocument with
+      | Unknown -> (result, 0uy, String.Empty)
+      | XML report ->
+        let covered =
+          report
+          |> match format with
+             | ReportFormat.NCover -> nCoverSummary
+             | _ -> openCoverSummary
 
-      let best = (result, 0uy, String.Empty)
+        let best = (result, 0uy, String.Empty)
 
-      let possibles =
-        match threshold with
-        | None -> [ best ]
-        | Some t -> let found = covered
-                                |> List.map (fun d -> d.InvariantParseDouble())
-                    let ceil (f:float) (value : float) =
-                      if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
-                    let sink _ : int option = None
-                    let funs = [
-                      (ceil (float t.Statements), t.Statements, "Statements");
-                      (if format = ReportFormat.NCover
-                       then sink else ceil (float t.Branches)), t.Branches, "Branches";
-                      (ceil (float t.Methods), t.Methods, "Methods");
-                      (if format = ReportFormat.NCover
-                       then sink else ceil (float t.AltMethods)), t.AltMethods, "AltMethods";
-                      (if format = ReportFormat.NCover || t.Crap = 0uy
-                       then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
-                      (if format = ReportFormat.NCover || t.AltCrap = 0uy
-                       then sink else(fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
-                    ]
-                    List.zip found funs
-                    |> List.filter (fst >> fst)
-                    |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
-                                                       | Some q -> Some (q, x, y)
-                                                       | None -> None)
-                    |> List.filter Option.isSome
-                    |> List.map Option.get
-                    |> List.filter (fun (a, _, _) -> a >= 0)
-      match possibles with
-      | [] -> best
-      | _ ->
-        possibles |> List.maxBy (fun (a, _, _) -> a)
+        let possibles =
+          match threshold with
+          | None -> [ best ]
+          | Some t -> let found = covered
+                                  |> List.map (fun d -> d.InvariantParseDouble())
+                      let ceil (f:float) (value : float) =
+                        if f <= value && value > 0.0 && f > 0.0 then None else Math.Ceiling(f - value) |> int |> Some
+                      let sink _ : int option = None
+                      let funs = [
+                        (ceil (float t.Statements), t.Statements, "Statements");
+                        (if format = ReportFormat.NCover
+                         then sink else ceil (float t.Branches)), t.Branches, "Branches";
+                        (ceil (float t.Methods), t.Methods, "Methods");
+                        (if format = ReportFormat.NCover
+                         then sink else ceil (float t.AltMethods)), t.AltMethods, "AltMethods";
+                        (if format = ReportFormat.NCover || t.Crap = 0uy
+                         then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                        (if format = ReportFormat.NCover || t.AltCrap = 0uy
+                         then sink else(fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
+                      ]
+                      List.zip found funs
+                      |> List.filter (fst >> fst)
+                      |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
+                                                         | Some q -> Some (q, x, y)
+                                                         | None -> None)
+                      |> List.filter Option.isSome
+                      |> List.map Option.get
+                      |> List.filter (fun (a, _, _) -> a >= 0)
+        match possibles with
+        | [] -> best
+        | _ ->
+          possibles |> List.maxBy (fun (a, _, _) -> a)
 
-    let mutable internal summaries : (XDocument -> ReportFormat -> int -> (int * byte * string)) list =
+      | _ -> (sprintf "TODO %A" format) |> Output.warn
+             (result, 0uy, String.Empty)
+
+    let mutable internal summaries : (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary() =
@@ -1010,7 +1014,7 @@ module internal Runner =
         Justification = "Unit test accessor")>]
     let mutable internal doReport = writeReportBase
 
-    let internal doSummaries (document : XDocument) (format : ReportFormat) result =
+    let internal doSummaries (document : DocumentType) (format : ReportFormat) result =
       let (code, t, f) =
         I.summaries |> List.fold (fun (r,t,f) summary -> let rx,t2,f2 = summary document format r
                                                          if rx > r then (rx, t2, f2)
@@ -1021,8 +1025,14 @@ module internal Runner =
              t :> obj |]
       code
 
-    let internal loadReport report =
-      if File.Exists report then XDocument.Load report else XDocument()
+    let internal loadReport format report =
+      if File.Exists report
+      then
+        if format = ReportFormat.NativeJson ||
+           format = ReportFormat.NativeJsonWithTracking
+        then report |> File.ReadAllText |> JSON
+        else report |> XDocument.Load |> XML
+      else Unknown
 
   // "Public"
   let internal doCoverage arguments options1 =
@@ -1069,7 +1079,7 @@ module internal Runner =
             Directory.GetFiles
               (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
-            let document = J.loadReport report
+            let document = J.loadReport format report
             J.doSummaries document format result) 255 true
         CommandLine.reportErrors "Collection" false
         value

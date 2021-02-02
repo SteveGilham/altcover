@@ -317,7 +317,10 @@ module internal Json =
             | _ -> raise (NotSupportedException (sprintf "%A" format)))).ToString()// Maybe later
         |> writer.Write)
 
-  let internal summary (report : XDocument) (format : ReportFormat) result =
+  let internal summary (report : DocumentType) (format : ReportFormat) result =
     doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-      (convertReport report format)
+      (match report with
+       | Unknown -> ignore
+       | XML document -> convertReport document format
+       | _ -> raise (NotSupportedException(sprintf "%A" format))) //maybe later
     (result, 0uy, String.Empty)

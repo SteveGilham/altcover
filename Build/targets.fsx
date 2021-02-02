@@ -3631,6 +3631,55 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   |> AltCoverCommand.run
   Actions.CheckSample4Visits before x)
 
+_Target "JsonReporting" (fun _ ->
+  Directory.ensure "./_Reports"
+  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let x = Path.getFullName "./_Reports/JsonReporting.json"
+  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+
+  Shell.cleanDir o
+  // let before = Actions.ticksNow()
+  let prep =
+    AltCover.PrepareOptions.Primitive
+      ({ Primitive.PrepareOptions.Create() with
+           XmlReport = x
+           ReportFormat = "Json"
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           CallContext = [ "0"; "[Fact]" ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           Save = false })
+    |> AltCoverCommand.Prepare
+  { AltCoverCommand.Options.Create prep with
+      ToolPath = "AltCover.dll"
+      ToolType = dotnetAltcover
+      WorkingDirectory = unpack }
+  |> AltCoverCommand.run
+  // Actions.CheckSample4Content x -- TODO
+
+  printfn "Execute the instrumented tests"
+  let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+
+  // Run
+  let collect =
+    AltCover.CollectOptions.Primitive
+      { Primitive.CollectOptions.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = o
+          CommandLine = args }
+    |> AltCoverCommand.Collect
+  { AltCoverCommand.Options.Create collect with
+      ToolPath = runner
+      ToolType = dotnetAltcover
+      WorkingDirectory = o }
+  |> AltCoverCommand.run
+  //Actions.CheckSample4Visits before x -- TODO
+)
+
 _Target "MSBuildTest" (fun _ ->
   Directory.ensure "./_Reports"
   let build = Path.getFullName "Build"
@@ -4966,6 +5015,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
+==> "Deployment"
+
+"Unpack"
+==> "JsonReporting"
 ==> "Deployment"
 
 "Analysis"

@@ -8,6 +8,11 @@ open System.Text.Json
 
 open Mono.Cecil
 
+type internal DocumentType =
+| XML of System.Xml.Linq.XDocument
+| JSON of String
+| Unknown
+
 module NativeJson =
   let internal options =
     let o = JsonSerializerOptions()
