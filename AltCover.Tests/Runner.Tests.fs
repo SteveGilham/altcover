@@ -2001,11 +2001,12 @@ module AltCoverRunnerTests =
         entries.Add (1, pv)
         counts.Add(Track.Entry, entries)
 
-        let entries = Dictionary<int, PointVisit>()
+        let exits = Dictionary<int, PointVisit>()
         let pv = PointVisit.Create()
         tracks(2L) |> Seq.iter pv.Track
-        entries.Add (1, pv)
-        counts.Add(Track.Exit, entries)
+        exits.Add (1, pv)
+        exits.Add (2, pv)
+        counts.Add(Track.Exit, exits)
 
         Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile (Some junkFile) |> ignore
 
@@ -2153,13 +2154,14 @@ module AltCoverRunnerTests =
         let pv = PointVisit.Create()
         tracks(1L) |> Seq.iter pv.Track
         entries.Add (1, pv)
+        entries.Add (2, pv)
         counts.Add(Track.Entry, entries)
 
-        let entries = Dictionary<int, PointVisit>()
+        let exits = Dictionary<int, PointVisit>()
         let pv = PointVisit.Create()
         tracks(2L) |> Seq.iter pv.Track
-        entries.Add (1, pv)
-        counts.Add(Track.Exit, entries)
+        exits.Add (1, pv)
+        counts.Add(Track.Exit, exits)
 
         // degenerate case 1
         Assert.That(junkfile |> File.Exists |> not)
