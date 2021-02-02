@@ -3184,6 +3184,132 @@ module AltCoverRunnerTests =
           resetInfo())
 
     [<Test>]
+    let EmptyJsonGeneratesExpectedSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+      let builder = System.Text.StringBuilder()
+      Runner.summary.Clear() |> ignore
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Default
+          let task = Collect()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+          let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||"
+          // printfn "%s" <| builder.ToString()
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo expected
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let EmptyJsonGeneratesExpectedTCSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+      let builder = System.Text.StringBuilder()
+      Runner.summary.Clear() |> ignore
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- B
+          let task = Collect()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+          let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+          let result = builder.ToString()
+          // printfn "%s" result
+          Assert.That
+            (result,
+             Is.EqualTo expected,
+             result
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected, collected))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let EmptyJsonGeneratesExpectedSummaries() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+      let builder = System.Text.StringBuilder()
+      Runner.summary.Clear() |> ignore
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ B; O; C]
+          let task = Collect()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+          let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+          let result = builder.ToString()
+          // printfn "%s" result
+          Assert.That
+            (result,
+             Is.EqualTo expected,
+             result
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected, collected))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let JsonShouldGeneratePlausibleSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let builder = System.Text.StringBuilder()
+      try
+        Assert.Fail("TODO - test data")
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ R; O; C]
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r =
+            try
+              Runner.threshold <- Some { Statements = 25uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy
+                                         AltMethods = 0uy
+                                         AltCrap = 0uy }
+              Runner.I.standardSummary (XML baseline) ReportFormat.NCover 42
+            finally
+              Runner.threshold <- None
+          printfn "%s" <| builder.ToString()
+
+          // 80% coverage > threshold so expect return code coming in
+          Assert.That(r, Is.EqualTo (42, 0, String.Empty))
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|")
+            ))
+      finally
+        resetInfo()
+
+    [<Test>]
     let OpenCoverShouldGeneratePlausibleLcov() =
       Runner.init()
       let resource =
