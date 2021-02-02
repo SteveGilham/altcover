@@ -983,7 +983,7 @@ _Target "BuildForUnitTestDotNet" (fun _ ->
   |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
   |> Seq.iter buildIt
 
-  !!(@"./Valid*/*Valid*.fsproj")
+  !!(@"./*.Valid*/*Valid*.fsproj")
   |> Seq.iter buildIt)
 
 _Target "UnitTestDotNet" (fun _ ->
