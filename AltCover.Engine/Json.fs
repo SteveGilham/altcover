@@ -1,12 +1,14 @@
 ﻿namespace AltCover
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
 open System.Globalization
 open System.Text
+open System.Text.Json
 
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704",
+[<SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Json' is jargon")>]
 module internal Json =
   let internal path : Option<string> ref = ref None
@@ -263,49 +265,97 @@ module internal Json =
     close builder
 
   // --- NCover ---
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+    "InstantiateArgumentExceptionCorrectlyRule",
+    Justification="Inlined library code")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+    "AvoidRepetitiveCallsToPropertiesRule",
+    Justification="Inlined library code")>]
+  [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+    Justification="Inlined library code")>]
+  let internal lineVisits (seqpnts:NativeJson.SeqPnt seq) =
+    (seqpnts
+      |> Seq.maxBy (fun sp -> sp.VC)).VC
 
-  let private appendNCoverElements next key
-    (builder:BuildWriter) (comma:bool) (x:XContainer) =
-    let mutable first = true
+  let getMethodRecord (modul:NativeJson.Documents) (doc:string) (cname:string) (mname:string) =
+    let classes = match modul.TryGetValue doc with
+                  | true, c -> c
+                  | _ -> let c = NativeJson.Classes()
+                         modul.Add(doc, c)
+                         c
+    let methods = match classes.TryGetValue cname with
+                  | true, m -> m
+                  | _ -> let m = NativeJson.Methods()
+                         classes.Add(cname, m)
+                         m
+    match methods.TryGetValue mname with
+    | true, m -> m
+    | _ -> let m = NativeJson.Method.Create(None)
+           methods.Add(mname, m)
+           m
 
-    x.Elements(XName.Get key)
-    |> Seq.map (fun xx -> (fun (b:BuildWriter) ->
-      if first
-      then
-        if comma
-        then builder.Write ','
-        b.Builder.Append("\"")
-         .Append(key)
-         .Append("\":[")
-         |> ignore
-      first <- false
-      builder.Write '{'
-      let c2 = appendSimpleElement b xx
-      next b c2 xx |> ignore
-      builder.Write '}'
-    ))
+  let ncoverToJson (report: XElement) =
+    let json = NativeJson.Modules()
+    report.Descendants(XName.Get "module")
+    |> Seq.iter (fun x ->
+      let modul = NativeJson.Documents()
+      let counts = System.Collections.Generic.Dictionary<string, int>()
+      x.Descendants(XName.Get "method")
+      |> Seq.iteri (fun index m ->
+        let mname = m.Attribute(XName.Get "name").Value
+        let cname = m.Attribute(XName.Get "class").Value.Replace('+', '/')
+        let _, excluded = m.Attribute(XName.Get "excluded").Value
+                          |> Boolean.TryParse
 
-    |> appendSequence builder false // (sequence:(StringBuilder -> unit)seq)
-    |> ignore
+        let mutable docname = String.Empty
+        if not excluded
+        then
+          let sp = NativeJson.SeqPnts()
+          m.Descendants(XName.Get "seqpnt")
+          |> Seq.iter(fun s ->
+            let _, excluded = s.Attribute(XName.Get "excluded").Value
+                              |> Boolean.TryParse
 
-    let result = first |> not
-    if result
-    then builder.Builder.Append ("]")|> ignore
-    result
+            let parse n = s.Attribute(XName.Get n).Value
+                          |> Int32.TryParse
+                          |> snd
+            if not excluded
+            then
+              if String.IsNullOrWhiteSpace docname
+              then docname <- s.Attribute(XName.Get "document").Value
+              {
+                  NativeJson.SeqPnt.VC = parse "visitcount"
+                  NativeJson.SeqPnt.SL = parse "line"
+                  NativeJson.SeqPnt.SC = parse "column"
+                  NativeJson.SeqPnt.EL = parse "endline"
+                  NativeJson.SeqPnt.EC = parse "endcolumn"
+                  NativeJson.SeqPnt.Offset = 0
+                  NativeJson.SeqPnt.Id = 0
+                  NativeJson.SeqPnt.Times = null
+                  NativeJson.SeqPnt.Tracks = null
+              } |> sp.Add )
+          if sp.Count > 0
+          then
+            let basename = sprintf "%s::%s" cname mname
+            let _, count = counts.TryGetValue basename
+            let index = count + 1
+            counts.[basename] <- index
+            let synth = sprintf "ReturnType%d %s(Argument List%d)" index basename index
+            let m = getMethodRecord modul docname cname synth
+            m.SeqPnts.AddRange sp
+            m.SeqPnts
+            |> Seq.groupBy (fun s -> s.SL)
+            |> Seq.iter (fun (l,ss) -> m.Lines.[l] <- lineVisits ss)
+      )
 
-  let private appendMethodSeqpnts (builder:BuildWriter) comma (x:XContainer) =
-    appendNCoverElements (fun _ _ _ -> false) "seqpnt" builder comma x
+      if modul.Count > 0
+      then json.Add(x.Attribute(XName.Get "name").Value
+                    |> Path.GetFileName, modul)
+    )
+    let temp = StringBuilder()
 
-  let private appendModuleMethods (builder:BuildWriter) comma (x:XContainer) =
-    appendNCoverElements appendMethodSeqpnts "method" builder comma x
-
-  let private appendCoverageModules (builder:BuildWriter) comma (x:XContainer) =
-    appendNCoverElements appendModuleMethods "module" builder comma x
-
-  let ncoverToJson report =
-    let (builder,comma) = applyHeadline report "{\"coverage\":{"
-    appendCoverageModules builder comma report |> ignore
-    close builder
+    JsonSerializer.Serialize(json, NativeJson.options)
+    |> temp.Append
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->

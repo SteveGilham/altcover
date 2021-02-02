@@ -983,18 +983,6 @@ module internal Runner =
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-    [<SuppressMessage("Gendarme.Rules.Exceptions",
-     "InstantiateArgumentExceptionCorrectlyRule",
-     Justification="Inlined library code")>]
-    [<SuppressMessage("Gendarme.Rules.Performance",
-     "AvoidRepetitiveCallsToPropertiesRule",
-     Justification="Inlined library code")>]
-    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
-     Justification="Inlined library code")>]
-    let internal lineVisits (seqpnts:NativeJson.SeqPnt seq) =
-      (seqpnts
-       |> Seq.maxBy (fun sp -> sp.VC)).VC
-
     let updateNativeJsonMethod
       (hits:Dictionary<string, Dictionary<int, PointVisit>>)
       (visits:Dictionary<int, PointVisit>) (m:NativeJson.Method) =
@@ -1070,7 +1058,7 @@ module internal Runner =
 
         m.SeqPnts
         |> Seq.groupBy (fun s -> s.SL)
-        |> Seq.iter (fun (l,ss) -> m.Lines.[l] <- lineVisits ss)
+        |> Seq.iter (fun (l,ss) -> m.Lines.[l] <- Json.lineVisits ss)
 
     [<SuppressMessage("Gendarme.Rules.Correctness",
      "EnsureLocalDisposalRule",
