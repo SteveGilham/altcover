@@ -6,12 +6,14 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Text.Json
 
+#if RUNNER
 open Mono.Cecil
 
 type internal DocumentType =
 | XML of System.Xml.Linq.XDocument
 | JSON of String
 | Unknown
+#endif
 
 module NativeJson =
   let internal options =
@@ -129,6 +131,7 @@ module NativeJson =
   type internal Documents = SortedDictionary<string, Classes>
   type internal Modules = SortedDictionary<string, Documents> // <= serialize this
 
+#if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type internal JsonContext =
     {
@@ -312,3 +315,4 @@ module NativeJson =
   Target="AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
   MessageId="v", Justification="Smaller JSON")>]
 ()
+#endif
