@@ -2,7 +2,7 @@
   "ConsoleApplication1.exe": {
     "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Sample19\\ConsoleApplication1\\Program.fs": {
       "Program": {
-        "ReturnType1 Program::Example(Argument List1)": {
+        "System.Void Program::Example(Microsoft.FSharp.Core.FSharpOption\u00601\u003CSystem.Int32\u003E)": {
           "Lines": {
             "2": 1
           },
@@ -19,7 +19,7 @@
             }
           ]
         },
-        "ReturnType1 Program::main(Argument List1)": {
+        "System.Int32 Program::main(System.String[])": {
           "Lines": {
             "9": 1,
             "10": 1,
@@ -66,7 +66,7 @@
             }
           ]
         },
-        "ReturnType1 Program/Example@3::Invoke(Argument List1)": {
+        "Microsoft.FSharp.Core.Unit Program/Example@3::Invoke(System.Int32)": {
           "Lines": {
             "3": 0
           },
@@ -83,7 +83,7 @@
             }
           ]
         },
-        "ReturnType1 Program/Example@3-1::Invoke(Argument List1)": {
+        "System.Int32 Program/Example@3-1::Invoke(System.Int32)": {
           "Lines": {
             "3": 0
           },
@@ -100,7 +100,7 @@
             }
           ]
         },
-        "ReturnType1 Program/Example@5-2::Invoke(Argument List1)": {
+        "Microsoft.FSharp.Core.Unit Program/Example@5-2::Invoke(System.Int32)": {
           "Lines": {
             "5": 0
           },
