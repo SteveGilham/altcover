@@ -280,6 +280,9 @@ module internal Json =
     (seqpnts
       |> Seq.maxBy (fun sp -> sp.VC)).VC
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let getMethodRecord (modul:NativeJson.Documents) (doc:string) (cname:string) (mname:string) =
     let classes = match modul.TryGetValue doc with
                   | true, c -> c
@@ -304,6 +307,9 @@ module internal Json =
                             ProgramDatabase.readSymbols def
                             def)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let ncoverToJson (report: XElement) =
     let json = NativeJson.Modules()
     report.Descendants(XName.Get "module")
@@ -363,9 +369,10 @@ module internal Json =
 
               let md = td
                        |> Option.map(fun t -> t.Methods
-                                              |> Seq.tryFind(fun m -> m.Name = mname &&
-                                                                      m.DebugInformation.HasSequencePoints &&
-                                                                      (let pt = m.DebugInformation.SequencePoints
+                                              |> Seq.tryFind(fun m -> let dbg = m.DebugInformation
+                                                                      m.Name = mname &&
+                                                                      dbg.HasSequencePoints &&
+                                                                      (let pt = dbg.SequencePoints
                                                                                 |> Seq.head
                                                                        pt.StartLine = sp.[0].SL &&
                                                                        pt.StartColumn = sp.[0].SC) ))

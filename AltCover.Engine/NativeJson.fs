@@ -9,6 +9,7 @@ open System.Text.Json
 #if RUNNER
 open Mono.Cecil
 
+[<AutoSerializable(false)>]
 type internal DocumentType =
 | XML of System.Xml.Linq.XDocument
 | JSON of String

@@ -442,6 +442,10 @@ module internal Runner =
       |> Option.map (makeOpenCoverSummary report)
       |> Option.defaultValue []
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Library method inlined")>]
     let internal jsonSummary(report : String) =
       let json = JsonSerializer.Deserialize<NativeJson.Modules>(report)
       let summarise go (vc : int) (nc : int)  key =
@@ -983,14 +987,18 @@ module internal Runner =
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+      Justification = "AvoidSpeculativeGenerality too")>]
     let updateNativeJsonMethod
       (hits:Dictionary<string, Dictionary<int, PointVisit>>)
       (visits:Dictionary<int, PointVisit>) (m:NativeJson.Method) =
         if m.TId.IsNotNull
         then
+          let tidValue = m.TId.Value
           let e1, entries = hits.TryGetValue Track.Entry
           if e1 then
-            let e2, entrypoint = entries.TryGetValue m.TId.Value
+            let e2, entrypoint = entries.TryGetValue tidValue
             if e2
             then entrypoint.Tracks
                  |> Seq.iter (fun t -> match t with
@@ -1000,7 +1008,7 @@ module internal Runner =
                                        | _ -> ())
           let e3, exits = hits.TryGetValue Track.Exit
           if e3 then
-            let e4, exitpoint = exits.TryGetValue m.TId.Value
+            let e4, exitpoint = exits.TryGetValue tidValue
             if e4
             then exitpoint.Tracks
                  |> Seq.iter (fun t -> match t with
