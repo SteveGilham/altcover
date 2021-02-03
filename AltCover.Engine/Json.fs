@@ -292,7 +292,7 @@ module internal Json =
                          classes.Add(cname, m)
                          m
     match methods.TryGetValue mname with
-    | true, m -> m // possible??
+    | true, m -> m
     | _ -> let m = NativeJson.Method.Create(None)
            methods.Add(mname, m)
            m
