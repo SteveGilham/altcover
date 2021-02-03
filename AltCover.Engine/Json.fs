@@ -366,16 +366,21 @@ module internal Json =
                                                                        pt.StartColumn = sp.[0].SC) ))
                        |> Option.flatten
 
+              let truemd = md
+                           |> Option.map (Visitor.I.containingMethods >> Seq.last)
+
               let basename = sprintf "%s::%s" cname mname
               let _, count = counts.TryGetValue basename
               let index = count + 1
               counts.[basename] <- index
               let synth = sprintf "ReturnType%d %s(Argument List%d)" index basename index
-              let methodName = md
+              let methodName = truemd
                                |> Option.map (fun m -> m.FullName)
                                |> Option.defaultValue synth
-
-              let m = getMethodRecord modul docname outerclass methodName
+              let className = truemd
+                              |> Option.map (fun m -> m.DeclaringType.FullName)
+                              |> Option.defaultValue outerclass
+              let m = getMethodRecord modul docname className methodName
               m.SeqPnts.AddRange sp
               m.SeqPnts
               |> Seq.groupBy (fun s -> s.SL)

@@ -798,6 +798,16 @@ module internal Visitor =
       else if !CoverageParameters.showGenerated then selectAutomatic items exemption
       else exemption
 
+    let internal containingMethods m =
+      Seq.unfold (fun (state : MethodDefinition option) ->
+                      match state with
+                      | None -> None
+                      | Some x -> Some(x, if CoverageParameters.topLevel
+                                            |> Seq.exists (Filter.``match`` x)
+                                          then None
+                                          else containingMethod x)) (Some m)
+                    |> Seq.toList
+
     let private visitType (t : TypeEntry) (buildSequence : Node -> seq<Node>) =
       t.Type.Methods
       |> Seq.cast
@@ -813,26 +823,23 @@ module internal Visitor =
                | Some f -> f
            (m, key))
       |> Seq.filter (fun (m, k) -> k <> StaticFilter.Hidden)
-      |> Seq.map (fun (m, k) -> let methods =
-                                 Seq.unfold (fun (state : MethodDefinition option) ->
-                                   match state with
-                                   | None -> None
-                                   | Some x -> Some(x, if CoverageParameters.topLevel
-                                                          |> Seq.exists (Filter.``match`` x)
-                                                       then None
-                                                       else containingMethod x)) (Some m)
-                                 |> Seq.toList
-                                (m, k, methods))
+      |> Seq.map (fun (m, k) -> let methods = containingMethods m
+                                let top = methods |> Seq.last
+                                let topped = methods
+                                             |> List.takeWhile (fun x -> CoverageParameters.topLevel
+                                                                         |> Seq.exists (Filter.``match`` x)
+                                                                         |> not)
+                                (m, k, topped, top))
       // Skip nested methods when in method-point mode
-      |> Seq.filter (fun (_,_,methods) -> !CoverageParameters.methodPoint |> not ||
-                                          methods |> List.tail |> List.isEmpty)
+      |> Seq.filter (fun (_,_,methods, _) -> !CoverageParameters.methodPoint |> not ||
+                                             methods |> List.tail |> List.isEmpty)
       |> Seq.collect
-           ((fun (m, k, methods) ->
+           ((fun (m, k, methods, top) ->
              let visitcount = selectExemption k methods t.DefaultVisitCount
 
              let inclusion = Seq.fold updateInspection t.Inspection methods
              Method { Method = m
-                      VisibleMethod = (m::methods) |> List.last
+                      VisibleMethod = top
                       Inspection = inclusion
                       Track = track m
                       DefaultVisitCount = visitcount })

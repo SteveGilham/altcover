@@ -4,7 +4,9 @@
       "Program": {
         "System.Void Program::Example(Microsoft.FSharp.Core.FSharpOption\u00601\u003CSystem.Int32\u003E)": {
           "Lines": {
-            "2": 1
+            "2": 1,
+            "3": 0,
+            "5": 0
           },
           "Branches": [],
           "SeqPnts": [
@@ -14,6 +16,33 @@
               "SC": 5,
               "EL": 5,
               "EC": 57,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 0,
+              "SL": 3,
+              "SC": 30,
+              "EL": 5,
+              "EC": 56,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 0,
+              "SL": 3,
+              "SC": 47,
+              "EL": 3,
+              "EC": 49,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 0,
+              "SL": 5,
+              "SC": 43,
+              "EL": 5,
+              "EC": 55,
               "Offset": 0,
               "Id": 0
             }
@@ -61,57 +90,6 @@
               "SC": 5,
               "EL": 12,
               "EC": 6,
-              "Offset": 0,
-              "Id": 0
-            }
-          ]
-        },
-        "Microsoft.FSharp.Core.Unit Program/Example@3::Invoke(System.Int32)": {
-          "Lines": {
-            "3": 0
-          },
-          "Branches": [],
-          "SeqPnts": [
-            {
-              "VC": 0,
-              "SL": 3,
-              "SC": 30,
-              "EL": 5,
-              "EC": 56,
-              "Offset": 0,
-              "Id": 0
-            }
-          ]
-        },
-        "System.Int32 Program/Example@3-1::Invoke(System.Int32)": {
-          "Lines": {
-            "3": 0
-          },
-          "Branches": [],
-          "SeqPnts": [
-            {
-              "VC": 0,
-              "SL": 3,
-              "SC": 47,
-              "EL": 3,
-              "EC": 49,
-              "Offset": 0,
-              "Id": 0
-            }
-          ]
-        },
-        "Microsoft.FSharp.Core.Unit Program/Example@5-2::Invoke(System.Int32)": {
-          "Lines": {
-            "5": 0
-          },
-          "Branches": [],
-          "SeqPnts": [
-            {
-              "VC": 0,
-              "SL": 5,
-              "SC": 43,
-              "EL": 5,
-              "EC": 55,
               "Offset": 0,
               "Id": 0
             }

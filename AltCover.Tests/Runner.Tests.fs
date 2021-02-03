@@ -308,6 +308,10 @@ module AltCoverRunnerTests =
         |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      // fix up file path
+      let exe = Path.Combine(SolutionRoot.location, "Sample19", "ConsoleApplication1.exe")
+      baseline.Root.Descendants(XName.Get "module")
+      |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
