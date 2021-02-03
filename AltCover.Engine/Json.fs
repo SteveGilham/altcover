@@ -330,9 +330,14 @@ module internal Json =
               let _, excluded = s.Attribute(XName.Get "excluded").Value
                                 |> Boolean.TryParse
 
-              let parse n = s.Attribute(XName.Get n).Value
-                            |> Int32.TryParse
-                            |> snd
+              let parse n =
+                s.Attribute(XName.Get n)
+                |> Option.ofObj
+                |> Option.map (fun a -> a.Value
+                                        |> Int32.TryParse
+                                        |> snd)
+                |> Option.defaultValue 0
+
               if not excluded
               then
                 if String.IsNullOrWhiteSpace docname
