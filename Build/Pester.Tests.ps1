@@ -72,13 +72,10 @@ Describe "Invoke-Altcover" {
 
         $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
-        Remove-Item -Force -Recurse $o
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
         $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
                             #"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         $result = $summary.Replace("`r", [String]::Empty).Replace("`n", "|") 
-        # Write-Host $result
-        # [Console]::WriteLine($result)
         $result | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 11 of 28 (39.29)|"
                             #"Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 23 (43.48)|"
     }
@@ -706,6 +703,13 @@ Describe "Write-OpenCoverDerivedState" {
 Describe "ConvertTo-CoverageJson" {
     It "converts from a document" {
         $xd = [xdoc]::Load("./AltCover.Tests/GenuineNCover158.Xml")
+
+        ## fix up file path
+        $exe = [System.IO.Path]::Combine("./Sample19", "ConsoleApplication1.exe")
+        $xd.Root.Descendants("module") | % {
+          $_.Attribute("name").Value = [System.IO.Path]::GetFullPath($exe)
+        }
+
         $json = ConvertTo-CoverageJson $xd
         $json | Set-Content("./_Packaging/GenuineNCover158.json")
         $expect = Get-Content "./AltCover.Tests/GenuineNCover158.json" 

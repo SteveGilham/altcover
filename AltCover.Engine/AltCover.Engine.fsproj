@@ -16,6 +16,8 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <!-- If static linking, fix up in the Unpack documentation stage!!-->
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <!-- Maybe this to publish -->
+    <!-- CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -100,6 +102,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <!-- Maybe this to publish -->
+    <!-- PackageReference Include="System.Buffers" version="4.5.1">
+        <PrivateAssets>All</PrivateAssets>
+        <Publish>true</Publish>
+      </PackageReference -->
   </ItemGroup>
 
   <ItemGroup>
