@@ -358,7 +358,12 @@ module internal Json =
 
               let md = td
                        |> Option.map(fun t -> t.Methods
-                                              |> Seq.tryFind(fun m -> m.Name = mname))
+                                              |> Seq.tryFind(fun m -> m.Name = mname &&
+                                                                      m.DebugInformation.HasSequencePoints &&
+                                                                      (let pt = m.DebugInformation.SequencePoints
+                                                                                |> Seq.head
+                                                                       pt.StartLine = sp.[0].SL &&
+                                                                       pt.StartColumn = sp.[0].SC) ))
                        |> Option.flatten
 
               let basename = sprintf "%s::%s" cname mname
