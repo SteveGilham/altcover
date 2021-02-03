@@ -3280,12 +3280,12 @@ module AltCoverRunnerTests =
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.json", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
-      let baseline = XDocument.Load(stream)
+      use reader = new StreamReader(stream)
+      let baseline = reader.ReadToEnd()
       let builder = System.Text.StringBuilder()
       try
-        Assert.Fail("TODO - test data")
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Many [ R; O; C]
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
@@ -3297,18 +3297,18 @@ module AltCoverRunnerTests =
                                          Crap = 0uy
                                          AltMethods = 0uy
                                          AltCrap = 0uy }
-              Runner.I.standardSummary (XML baseline) ReportFormat.NCover 42
+              Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
             finally
               Runner.threshold <- None
           printfn "%s" <| builder.ToString()
 
-          // 80% coverage > threshold so expect return code coming in
+          // 60% coverage > threshold so expect return code coming in
           Assert.That(r, Is.EqualTo (42, 0, String.Empty))
           Assert.That
             (builder.ToString(),
              Is.EqualTo
-               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|" +
-                "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|")
+               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 6 of 10 (60)|Visited Branches 0 of 0 (n/a)|" +
+                "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|")
             ))
       finally
         resetInfo()
