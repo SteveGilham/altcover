@@ -304,6 +304,7 @@ module internal Json =
       |> Seq.iteri (fun index m ->
         let mname = m.Attribute(XName.Get "name").Value
         let cname = m.Attribute(XName.Get "class").Value.Replace('+', '/')
+        let outerclass = cname.Split('/') |> Seq.head
         let _, excluded = m.Attribute(XName.Get "excluded").Value
                           |> Boolean.TryParse
 
@@ -341,7 +342,7 @@ module internal Json =
             let index = count + 1
             counts.[basename] <- index
             let synth = sprintf "ReturnType%d %s(Argument List%d)" index basename index
-            let m = getMethodRecord modul docname cname synth
+            let m = getMethodRecord modul docname outerclass synth
             m.SeqPnts.AddRange sp
             m.SeqPnts
             |> Seq.groupBy (fun s -> s.SL)
