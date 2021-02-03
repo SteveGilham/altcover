@@ -334,8 +334,10 @@ module internal Cobertura =
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =
     let rewrite = match report with
-                  | Unknown -> XDocument()
+                  | Unknown -> null
                   | XML document -> convertReport document format
                   | _ -> raise (NotSupportedException(sprintf "%A" format)) //maybe later
-    rewrite.Save(!path |> Option.get)
+    rewrite
+    |> Option.ofObj
+    |> Option.iter(fun d -> d.Save(!path |> Option.get))
     (result, 0uy, String.Empty)

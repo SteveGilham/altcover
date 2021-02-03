@@ -137,6 +137,7 @@ module ExpectoTestManifest =
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcovWithMissingFullName, "Runner.NCoverShouldGeneratePlausibleLcovWithMissingFullName"
           Tests.AltCoverRunnerTests.MultiSortDoesItsThing, "Runner.MultiSortDoesItsThing"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleCobertura, "Runner.NCoverShouldGeneratePlausibleCobertura"
+          Tests.AltCoverRunnerTests.DegenerateCasesShouldNotGenerateCobertura, "Runner.DegenerateCasesShouldNotGenerateCobertura"
           Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName, "Runner.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName"
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleCobertura, "Runner.OpenCoverShouldGeneratePlausibleCobertura"
           Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported, "Runner.ThresholdViolationShouldBeReported"

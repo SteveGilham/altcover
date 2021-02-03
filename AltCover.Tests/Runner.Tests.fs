@@ -3485,6 +3485,32 @@ module AltCoverRunnerTests =
         xmlDocument.Validate(null)
 
     [<Test>]
+    let DegenerateCasesShouldNotGenerateCobertura() =
+      Runner.init()
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/None.cobertura")
+      Cobertura.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addCoberturaSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        Assert.Throws<NotSupportedException>(fun () ->
+          summarize (JSON "{}") ReportFormat.NativeJson 0
+          |> ignore
+        ) |> ignore
+
+        let r = summarize Unknown ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        Assert.That(unique |> File.Exists |> not)
+      finally
+        Cobertura.path := None
+
+    [<Test>]
     let NCoverShouldGeneratePlausibleCobertura() =
       Runner.init()
       let resource =
