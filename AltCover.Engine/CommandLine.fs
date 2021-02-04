@@ -232,6 +232,7 @@ module internal CommandLine =
       | :? NotSupportedException as n -> n :> Exception |> (logException store)
       | :? IOException as i -> i :> Exception |> (logException store)
       | :? System.Security.SecurityException as s -> s :> Exception |> (logException store)
+      | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
       result
 
     let logExceptionsToFile name extend =
