@@ -23,6 +23,8 @@
         AssemblyFile="$(AltCoverEngine)" />
   <UsingTask TaskName="AltCover.ContingentCopy"
         AssemblyFile="$(AltCoverEngine)" />
+  <UsingTask TaskName="AltCover.RetryDelete"
+        AssemblyFile="$(AltCoverEngine)" />
 
   <PropertyGroup>
     <AltCoverInPlace Condition="'$(AltCoverInPlace)' == ''">false</AltCoverInPlace>
@@ -192,6 +194,7 @@
       <AltCoverColour Condition="'$(AltCoverShowSummary)' == ''">Foreground</AltCoverColour>
       <AltCoverRecorderDirectory Condition="'$(AltCover)' != 'true' OR '$(AltCoverInPlace)' != 'false'">$(TargetDir)</AltCoverRecorderDirectory>
       <AltCoverRecorderDirectory Condition="'$(AltCover)' == 'true' AND '$(AltCoverInPlace)' == 'false'">$(AltCoverInstrumentedDirectory)_$(ProjectName)</AltCoverRecorderDirectory>
+      <AltCoverIsFSharp Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)/FSharp.Core.dll')">true</AltCoverIsFSharp>
     </PropertyGroup>
 
     <AltCover.Collect
@@ -214,9 +217,9 @@
       <AltCoverRunSettings Include="$(TEMP)/*.altcover.runsettings" />
     </ItemGroup>
     <Delete Files="@(AltCoverRunSettings)" />
-    <Delete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCoverInPlace)' != 'false'" />
-    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCoverInPlace)' != 'false'" />
+    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCoverInPlace)' != 'false' AND '$(AltCoverIsFSharp)' != 'true'" />
     <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCoverInPlace)' != 'false'" />
-    <RemoveDir Directories="$(AltCoverSavedDirectory)" Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)') AND '$(AltCoverInPlace)' != 'false'" />
+    <RemoveDir Directories="$(AltCoverSavedDirectory)_$(ProjectName)" Condition="Exists('$(AltCoverSavedDirectory))_$(ProjectName)') AND '$(AltCoverInPlace)' != 'false'" />
+    <AltCover.RetryDelete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCoverInPlace)' != 'false'" />
   </Target>
 </Project>
