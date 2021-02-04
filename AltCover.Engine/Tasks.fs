@@ -432,29 +432,33 @@ type ContingentCopy() =
     true
 
 type RetryDelete() =
-    inherit Task(null)
-    member val Files : string array = [||] with get, set
+  inherit Task(null)
 
-    member private self.DoRetryDelete f depth =
-      try
-        File.Delete f
-      with
-      | x ->
-        match x with
-        | :? IOException
-        | :? System.Security.SecurityException
-        | :? UnauthorizedAccessException ->
-          if depth < 10
-          then
-            Threading.Thread.Sleep(1000)
-            self.DoRetryDelete f (depth + 1)
-          else
-            base.Log.LogMessage(MessageImportance.High, x.ToString())
-        | _ -> reraise()
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val Files : string array = [||] with get, set
 
-    override self.Execute() =
-      if self.Files.IsNotNull then
-        self.Files
-        |> Seq.filter File.Exists
-        |> Seq.iter (fun f -> self.DoRetryDelete f 0)
-      true
+  member private self.DoRetryDelete f depth =
+    try
+      File.Delete f
+    with
+    | x ->
+      match x with
+      | :? IOException
+      | :? System.Security.SecurityException
+      | :? UnauthorizedAccessException ->
+        if depth < 10
+        then
+          Threading.Thread.Sleep(1000)
+          self.DoRetryDelete f (depth + 1)
+        else
+          base.Log.LogMessage(MessageImportance.High, x.ToString())
+      | _ -> reraise()
+
+  override self.Execute() =
+    if self.Files.IsNotNull then
+      self.Files
+      |> Seq.filter File.Exists
+      |> Seq.iter (fun f -> self.DoRetryDelete f 0)
+    true
