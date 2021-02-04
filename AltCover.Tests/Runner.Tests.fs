@@ -3314,6 +3314,32 @@ module AltCoverRunnerTests =
         resetInfo()
 
     [<Test>]
+    let DegenerateCasesShouldNotGenerateLcov() =
+      Runner.init()
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/None.lcov")
+      LCov.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addLCovSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        Assert.Throws<NotSupportedException>(fun () ->
+          summarize (JSON "{}") ReportFormat.NativeJson 0
+          |> ignore
+        ) |> ignore
+
+        let r = summarize Unknown ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        Assert.That(unique |> File.Exists |> not)
+      finally
+        LCov.path := None
+
+    [<Test>]
     let OpenCoverShouldGeneratePlausibleLcov() =
       Runner.init()
       let resource =

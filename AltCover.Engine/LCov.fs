@@ -306,9 +306,9 @@ FN:4,(anonymous_0)
                 writer.WriteLine "end_of_record"))
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =
-    doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-      (match report with
-       | Unknown -> ignore
-       | XML document -> convertReport document format
-       | _ -> raise (NotSupportedException(sprintf "%A" format))) //maybe later
+    match report with
+       | Unknown -> ()
+       | XML document -> doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
+                                     (convertReport document format)
+       | _ -> raise (NotSupportedException(sprintf "%A" format)) //maybe later
     (result, 0uy, String.Empty)
