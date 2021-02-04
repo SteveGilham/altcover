@@ -711,9 +711,10 @@ Describe "ConvertTo-CoverageJson" {
         }
 
         $json = ConvertTo-CoverageJson $xd
-        $json | Set-Content("./_Packaging/GenuineNCover158.json")
+        $json | Set-Content "./_Packaging/GenuineNCover158.json"
         $expect = Get-Content "./AltCover.Tests/GenuineNCover158.json" 
-        $json | Should -BeExactly $expect
+        $result = Get-Content "./_Packaging/GenuineNCover158.json"
+        $result | Should -BeExactly $expect
     }
 
     It "Converts from a file" {
