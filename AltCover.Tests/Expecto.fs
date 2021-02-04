@@ -345,6 +345,7 @@ module ExpectoTestManifest =
           Tests.AltCoverTests2.IOExceptionWrites, "Tests2.IOExceptionWrites"
           Tests.AltCoverTests2.NotSupportedExceptionWrites, "Tests2.NotSupportedExceptionWrites"
           Tests.AltCoverTests2.SecurityExceptionWrites, "Tests2.SecurityExceptionWrites"
+          Tests.AltCoverTests2.UnauthorizedAccessExceptionWrites, "Tests2.UnauthorizedAccessExceptionWrites"
           Tests.AltCoverTests3.ShouldResolveThisAssembly, "Tests3.ShouldResolveThisAssembly"
           Tests.AltCoverTests3.ShouldLaunchWithExpectedOutput, "Tests3.ShouldLaunchWithExpectedOutput"
           Tests.AltCoverTests3.ShouldHaveExpectedOptions, "Tests3.ShouldHaveExpectedOptions"

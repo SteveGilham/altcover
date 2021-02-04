@@ -2469,3 +2469,38 @@ module AltCoverTests2 =
         CommandLine.exceptions <- []
         Output.info <- (fst saved)
         Output.error <- (snd saved)
+
+    [<Test>]
+    let UnauthorizedAccessExceptionWrites() =
+      let saved = (Output.info, Output.error)
+      let err = System.Text.StringBuilder()
+      let info = System.Text.StringBuilder()
+      let f1 = fun (s:String) -> info.Append(s).Append("|") |> ignore
+      let f2 = fun (s:String) -> err.Append(s).Append("|") |> ignore
+      f1 "f1"
+      Assert.That(info.ToString(), Is.Not.Empty)
+      info.Clear() |> ignore
+      Assert.That(info.ToString(), Is.Empty)
+
+      f2 "f2"
+      Assert.That(err.ToString(), Is.Not.Empty)
+      err.Clear() |> ignore
+      Assert.That(err.ToString(), Is.Empty)
+
+      try
+        Output.info <- f1
+        Output.error <- f2
+        let unique = "UnauthorizedAccessException " + Guid.NewGuid().ToString()
+        CommandLine.error <- []
+        CommandLine.exceptions <- []
+        CommandLine.doPathOperation
+          (fun () -> UnauthorizedAccessException(unique) |> raise) () false
+        Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
+        Assert.That(info.ToString(), Is.Empty)
+        Assert.That(err.ToString(), Is.Empty)
+        Assert.That(CommandLine.exceptions, Is.Empty)
+      finally
+        CommandLine.error <- []
+        CommandLine.exceptions <- []
+        Output.info <- (fst saved)
+        Output.error <- (snd saved)
