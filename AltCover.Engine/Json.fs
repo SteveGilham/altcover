@@ -49,9 +49,15 @@ module internal Json =
            methods.Add(mname, m)
            m
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
+    Justification = "Long enough but no longer")>]
   let updateMethodRecord (modul:NativeJson.Documents)
                          (doc:string) (cname:string) (mname:string)
-                         (update: NativeJson.Method) =
+                         (update: (Nullable<int>*NativeJson.Times*NativeJson.Times)) =
     let classes = match modul.TryGetValue doc with
                   | true, c -> c
                   | _ -> let c = NativeJson.Classes()
@@ -62,8 +68,21 @@ module internal Json =
                   | _ -> let m = NativeJson.Methods()
                          classes.Add(cname, m)
                          m
-    methods.[mname] <- update
-    update
+    let m0 = match methods.TryGetValue mname with
+             | true, m -> m
+             | _ -> let m = NativeJson.Method.Create(None)
+                    methods.Add(mname, m)
+                    m
+    let tid, entry, exit = update
+    if tid.HasValue && tid <> m0.TId
+    then
+      let next = { m0 with TId = tid
+                           Entry = entry
+                           Exit = exit }
+      methods.[mname] <- next
+      next
+    else
+      m0
 
   let maybeAssembly path =
     Some path
@@ -72,7 +91,7 @@ module internal Json =
                             ProgramDatabase.readSymbols def
                             def)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let ncoverToJson (report: XElement) =
@@ -334,26 +353,17 @@ module internal Json =
             let className = truemd
                             |> Option.map (fun m -> m.DeclaringType.FullName)
                             |> Option.defaultValue outerclass
-            let m0 = getMethodRecord modul docname className methodName
-            let m = if tracked.ContainsKey mname
-                    then
-                      let (tid, entry, exit) = tracked.[mname]
-                      if mname = methodName
-                      then
-                        updateMethodRecord modul docname className methodName
-                          { m0 with TId = Nullable<int>(tid)
-                                    Entry = entry
-                                    Exit = exit }
-                      else
-                        let m1 = getMethodRecord modul docname className mname
-                        updateMethodRecord modul docname className mname
-                          { m1 with TId = Nullable<int>(tid)
-                                    Entry = entry
-                                    Exit = exit }
-                        |> ignore
-                        m0
-                    else m0
 
+            let (tid, entry, exit) = if tracked.ContainsKey mname
+                                     then
+                                       let (tid0, entry, exit) = tracked.[mname]
+                                       (Nullable<int>(tid0), entry, exit)
+                                     else
+                                       (System.Nullable(), null, null)
+
+            updateMethodRecord modul docname className mname (tid, entry, exit)
+            |> ignore
+            let m = getMethodRecord modul docname className methodName
             if sp.Count > 0 then
               m.SeqPnts.AddRange sp
               m.SeqPnts
