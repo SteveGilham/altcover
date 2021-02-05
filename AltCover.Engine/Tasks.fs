@@ -439,26 +439,12 @@ type RetryDelete() =
       Justification = "MSBuild tasks use arrays")>]
   member val Files : string array = [||] with get, set
 
-  member private self.DoRetryDelete f depth =
-    try
-      File.Delete f
-    with
-    | x ->
-      match x with
-      | :? IOException
-      | :? System.Security.SecurityException
-      | :? UnauthorizedAccessException ->
-        if depth < 10
-        then
-          Threading.Thread.Sleep(1000)
-          self.DoRetryDelete f (depth + 1)
-        else
-          base.Log.LogMessage(MessageImportance.High, x.ToString())
-      | _ -> reraise()
+  member internal self.Write message =
+    base.Log.LogMessage(MessageImportance.High, message)
 
   override self.Execute() =
     if self.Files.IsNotNull then
       self.Files
       |> Seq.filter File.Exists
-      |> Seq.iter (fun f -> self.DoRetryDelete f 0)
+      |> Seq.iter (CommandLine.I.doRetry File.Delete self.Write 10 1000 0)
     true

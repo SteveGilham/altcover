@@ -476,6 +476,7 @@ module ExpectoTestManifest =
           Tests.AltCoverTests3.RunSettingsRecoversOK, "Tests3.RunSettingsRecoversOK"
           Tests.AltCoverTests3.RunSettingsThrowsIfUninitialized, "Tests3.RunSettingsThrowsIfUninitialized"
           Tests.AltCoverTests3.ContingentCopyTest, "Tests3.ContingentCopyTest"
+          Tests.AltCoverTests3.RetryDeleteTest, "Tests3.RetryDeleteTest"
           Tests.AltCoverXTests.CollectOptionsCanBeValidated, "XTests.CollectOptionsCanBeValidated"
           Tests.AltCoverXTests.TypeSafeEmptyThresholdCanBeValidated, "XTests.TypeSafeEmptyThresholdCanBeValidated"
           Tests.AltCoverXTests.TypeSafeCollectOptionsCanBeValidated, "XTests.TypeSafeCollectOptionsCanBeValidated"

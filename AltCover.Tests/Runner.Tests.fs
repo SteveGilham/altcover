@@ -2289,7 +2289,6 @@ module AltCoverRunnerTests =
         let doc0 = Runner.J.loadReport ReportFormat.NativeJson (test + ".0.acv")
         match doc0 with
         | JSON _ -> ()
-        | _ -> Assert.Fail("Should say JSON whatever")
 
         let r =
           Runner.J.getMonitor counts unique (processing unique)

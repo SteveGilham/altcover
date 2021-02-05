@@ -235,6 +235,27 @@ module internal CommandLine =
       | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
       result
 
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Long enough but no longer")>]
+    let rec internal doRetry action log limit (rest:int) depth f  =
+      try
+        action f
+      with
+      | x ->
+        match x with
+        | :? IOException
+        | :? System.Security.SecurityException
+        | :? UnauthorizedAccessException ->
+          if depth < limit
+          then
+            Threading.Thread.Sleep(rest)
+            doRetry action log limit rest (depth + 1) f
+          else
+            x.ToString() |> log
+
+        | _ -> reraise()
+
     let logExceptionsToFile name extend =
       let path = Path.Combine(CoverageParameters.outputDirectories() |> Seq.head, name)
       let path' = Path.Combine(CoverageParameters.inputDirectories() |> Seq.head, name)

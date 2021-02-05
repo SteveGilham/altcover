@@ -2972,4 +2972,41 @@ module AltCoverTests3 =
       let target = Path.Combine(subject.InstrumentDirectory, relative, subject.FileName)
       test <@ target |> File.Exists @>
 
+    [<Test>]
+    let RetryDeleteTest() =
+      Main.init()
+      let subject = RetryDelete()
+      let unique = Guid.NewGuid().ToString()
+
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let from = Path.Combine (where,  "Sample2.pdb")
+      let target = Path.Combine (where, unique)
+      File.Copy(from, target, true)
+      test <@ File.Exists target @>
+      subject.Files <- [| target |]
+      test <@ subject.Execute ()  @>
+      test <@ target |> File.Exists |> not @>
+
+      [
+        IOException() :> Exception
+        System.Security.SecurityException()  :> Exception
+        UnauthorizedAccessException() :> Exception
+      ]
+      |> List.iter (fun ex ->
+        let builder = System.Text.StringBuilder()
+        CommandLine.I.doRetry (fun _ -> raise ex) (builder.Append >> ignore) 2 0 0 target
+        test <@ builder.ToString().StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>
+      )
+
+      let builder = System.Text.StringBuilder()
+      Assert.Throws<InvalidDataException>(fun () ->
+        CommandLine.I.doRetry (fun _ -> raise <| InvalidDataException()) (builder.Append >> ignore) 2 0 0 target
+      ) |> ignore
+
+      test <@ builder.ToString() |> String.IsNullOrEmpty @>
+
+      let write = subject.GetType().GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
+
+      let ex = Assert.Throws<TargetInvocationException>(fun () -> write.Invoke(subject, [| "xx" |]) |> ignore)
+      test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
   // Recorder.fs => Recorder.Tests
