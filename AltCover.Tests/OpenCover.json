@@ -73,7 +73,56 @@
             "55": 1,
             "56": 1
           },
-          "Branches": [],
+          "Branches": [
+            {
+              "Line": 54,
+              "Offset": 209,
+              "EndOffset": 257,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1,
+              "Id": 0,
+              "Times": [
+                "gLi7Z4C/2Ag="
+              ],
+              "Tracks": [
+                1
+              ]
+            },
+            {
+              "Line": 54,
+              "Offset": 209,
+              "EndOffset": 218,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0,
+              "Id": 1
+            },
+            {
+              "Line": 55,
+              "Offset": 475,
+              "EndOffset": 524,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1,
+              "Id": 2,
+              "Times": [
+                "gLi7Z4C/2Ag="
+              ],
+              "Tracks": [
+                1
+              ]
+            },
+            {
+              "Line": 55,
+              "Offset": 475,
+              "EndOffset": 484,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0,
+              "Id": 3
+            }
+          ],
           "SeqPnts": [
             {
               "VC": 1,
@@ -147,7 +196,14 @@
               "Offset": 765,
               "Id": 3
             }
-          ]
+          ],
+          "TId" : 1,
+          "Entry" : [
+                "gLi7Z4C/2Ag="
+              ],
+          "Exit" : [
+                "gLi7Z4C/2Ag="
+              ]
         },
         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()": {
           "Lines": {
@@ -158,7 +214,50 @@
             "41": 0,
             "42": 0
           },
-          "Branches": [],
+          "Branches": [
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 183,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0,
+              "Id": 4
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 40,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1,
+              "Id": 5,
+              "Times": [
+                "gLi7Z4C/2Ag="
+              ],
+              "Tracks": [
+                1
+              ]
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 91,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0,
+              "Id": 6
+            },
+            {
+              "Line": 36,
+              "Offset": 8,
+              "EndOffset": 137,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0,
+              "Id": 7
+            }
+          ],
           "SeqPnts": [
             {
               "VC": 1,
@@ -346,7 +445,32 @@
             "24": 1,
             "25": 1
           },
-          "Branches": [],
+          "Branches": [
+            {
+              "Line": 24,
+              "Offset": 209,
+              "EndOffset": 257,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1,
+              "Id": 8,
+              "Times": [
+                "gLi7Z4C/2Ag="
+              ],
+              "Tracks": [
+                2
+              ]
+            },
+            {
+              "Line": 24,
+              "Offset": 209,
+              "EndOffset": 218,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0,
+              "Id": 9
+            }
+          ],
           "SeqPnts": [
             {
               "VC": 1,
@@ -396,7 +520,14 @@
               "Offset": 568,
               "Id": 23
             }
-          ]
+          ],
+          "TId" : 2,
+          "Entry" : [
+                "gLi7Z4C/2Ag="
+              ],
+          "Exit" : [
+                "gLi7Z4C/2Ag="
+              ]
         },
         "System.Byte[] Tests.M/Thing::bytes()": {
           "Lines": {
