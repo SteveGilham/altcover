@@ -93,8 +93,8 @@
               "Line": 54,
               "Offset": 209,
               "EndOffset": 218,
-              "Path": 0,
-              "Ordinal": 0,
+              "Path": 1,
+              "Ordinal": 1,
               "Hits": 0,
               "Id": 1
             },
@@ -103,7 +103,7 @@
               "Offset": 475,
               "EndOffset": 524,
               "Path": 0,
-              "Ordinal": 0,
+              "Ordinal": 2,
               "Hits": 1,
               "Id": 2,
               "Times": [
@@ -117,8 +117,8 @@
               "Line": 55,
               "Offset": 475,
               "EndOffset": 484,
-              "Path": 0,
-              "Ordinal": 0,
+              "Path": 1,
+              "Ordinal": 3,
               "Hits": 0,
               "Id": 3
             }
@@ -197,13 +197,13 @@
               "Id": 3
             }
           ],
-          "TId" : 1,
-          "Entry" : [
-                "gLi7Z4C/2Ag="
-              ],
-          "Exit" : [
-                "gLi7Z4C/2Ag="
-              ]
+          "TId": 1,
+          "Entry": [
+            "lib0Z4C/2Ag="
+          ],
+          "Exit": [
+            "vDgzaIC/2Ag="
+          ]
         },
         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()": {
           "Lines": {
@@ -228,8 +228,8 @@
               "Line": 36,
               "Offset": 8,
               "EndOffset": 40,
-              "Path": 0,
-              "Ordinal": 0,
+              "Path": 1,
+              "Ordinal": 1,
               "Hits": 1,
               "Id": 5,
               "Times": [
@@ -243,8 +243,8 @@
               "Line": 36,
               "Offset": 8,
               "EndOffset": 91,
-              "Path": 0,
-              "Ordinal": 0,
+              "Path": 2,
+              "Ordinal": 2,
               "Hits": 0,
               "Id": 6
             },
@@ -252,8 +252,8 @@
               "Line": 36,
               "Offset": 8,
               "EndOffset": 137,
-              "Path": 0,
-              "Ordinal": 0,
+              "Path": 3,
+              "Ordinal": 3,
               "Hits": 0,
               "Id": 7
             }
@@ -465,8 +465,8 @@
               "Line": 24,
               "Offset": 209,
               "EndOffset": 218,
-              "Path": 0,
-              "Ordinal": 0,
+              "Path": 1,
+              "Ordinal": 1,
               "Hits": 0,
               "Id": 9
             }
@@ -521,13 +521,13 @@
               "Id": 23
             }
           ],
-          "TId" : 2,
-          "Entry" : [
-                "gLi7Z4C/2Ag="
-              ],
-          "Exit" : [
-                "gLi7Z4C/2Ag="
-              ]
+          "TId": 2,
+          "Entry": [
+            "1yX0Z4C/2Ag="
+          ],
+          "Exit": [
+            "X0kmaIC/2Ag="
+          ]
         },
         "System.Byte[] Tests.M/Thing::bytes()": {
           "Lines": {

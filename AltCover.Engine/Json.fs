@@ -49,6 +49,22 @@ module internal Json =
            methods.Add(mname, m)
            m
 
+  let updateMethodRecord (modul:NativeJson.Documents)
+                         (doc:string) (cname:string) (mname:string)
+                         (update: NativeJson.Method) =
+    let classes = match modul.TryGetValue doc with
+                  | true, c -> c
+                  | _ -> let c = NativeJson.Classes()
+                         modul.Add(doc, c)
+                         c
+    let methods = match classes.TryGetValue cname with
+                  | true, m -> m
+                  | _ -> let m = NativeJson.Methods()
+                         classes.Add(cname, m)
+                         m
+    methods.[mname] <- update
+    update
+
   let maybeAssembly path =
     Some path
     |> Option.filter File.Exists
@@ -168,8 +184,24 @@ module internal Json =
       x.Descendants(XName.Get "File")
       |> Seq.iter (fun x -> files.Add(x.Attribute(XName.Get "uid").Value,
                                       x.Attribute(XName.Get "fullPath").Value) )
-      let def = maybeAssembly path
 
+      let tracked = System.Collections.Generic.Dictionary<string, int * NativeJson.Times * NativeJson.Times>()
+      x.Descendants(XName.Get "TrackedMethod")
+      |> Seq.iter (fun x -> tracked.Add(x.Attribute(XName.Get "name").Value,
+                                        (x.Attribute(XName.Get "uid").Value
+                                         |> Int32.TryParse |> snd,
+                                         (let e = NativeJson.Times()
+                                          x.Attribute(XName.Get "entry").Value.Split(';')
+                                          |> Seq.map (Int64.TryParse >> snd >> NativeJson.FromTracking)
+                                          |> e.AddRange
+                                          e),
+                                         (let e = NativeJson.Times()
+                                          x.Attribute(XName.Get "exit").Value.Split(';')
+                                          |> Seq.map (Int64.TryParse >> snd >> NativeJson.FromTracking)
+                                          |> e.AddRange
+                                          e)) ))
+
+      let def = maybeAssembly path
       try
         x.Descendants(XName.Get "Method")
         |> Seq.iter (fun m ->
@@ -240,13 +272,16 @@ module internal Json =
 
             if String.IsNullOrWhiteSpace docname
             then docname <- files.[s.Attribute(XName.Get "fileid").Value]
+            let offset = parse "offset"
             {
                 NativeJson.BranchInfo.Hits = parse "vc"
                 NativeJson.BranchInfo.Line = parse "sl"
                 NativeJson.BranchInfo.EndOffset = parse "offsetend"
-                NativeJson.BranchInfo.Path = 0 // TODO
-                NativeJson.BranchInfo.Ordinal = 0u // TODO
-                NativeJson.BranchInfo.Offset = parse "offset"
+                NativeJson.BranchInfo.Path = bp
+                                             |> Seq.filter (fun k -> k.Offset = offset)
+                                             |> Seq.length
+                NativeJson.BranchInfo.Ordinal = uint bp.Count
+                NativeJson.BranchInfo.Offset = offset
                 NativeJson.BranchInfo.Id = parse "uspid"
                 NativeJson.BranchInfo.Times =
                                           let t = s.Descendants(XName.Get "Time")
@@ -299,7 +334,26 @@ module internal Json =
             let className = truemd
                             |> Option.map (fun m -> m.DeclaringType.FullName)
                             |> Option.defaultValue outerclass
-            let m = getMethodRecord modul docname className methodName
+            let m0 = getMethodRecord modul docname className methodName
+            let m = if tracked.ContainsKey mname
+                    then
+                      let (tid, entry, exit) = tracked.[mname]
+                      if mname = methodName
+                      then
+                        updateMethodRecord modul docname className methodName
+                          { m0 with TId = Nullable<int>(tid)
+                                    Entry = entry
+                                    Exit = exit }
+                      else
+                        let m1 = getMethodRecord modul docname className mname
+                        updateMethodRecord modul docname className mname
+                          { m1 with TId = Nullable<int>(tid)
+                                    Entry = entry
+                                    Exit = exit }
+                        |> ignore
+                        m0
+                    else m0
+
             if sp.Count > 0 then
               m.SeqPnts.AddRange sp
               m.SeqPnts
