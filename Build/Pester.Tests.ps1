@@ -722,7 +722,8 @@ Describe "ConvertTo-CoverageJson" {
         $json = ConvertTo-CoverageJson $path
         $json | Set-Content("./_Packaging/OpenCover.json")
         $expect = Get-Content "./AltCover.Tests/OpenCover.json" 
-        $json | Should -BeExactly $expect
+        $result = Get-Content "./_Packaging/OpenCover.json"
+        $result | Should -BeExactly $expect
     }
 
     It "Converts Coverlet near-OpenCover format" {
@@ -730,6 +731,7 @@ Describe "ConvertTo-CoverageJson" {
         $json = ConvertTo-CoverageJson $path
         $json | Set-Content("./_Packaging/Coverlet.FromXml.json")
         $expect = Get-Content "./AltCover.Tests/Coverlet.FromXml.json" 
-        $json | Should -BeExactly $expect
+        $result = Get-Content "./_Packaging/Coverlet.FromXml.json"
+        $result | Should -BeExactly $expect
     }
 }
