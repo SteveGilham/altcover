@@ -3344,7 +3344,7 @@ module AltCoverRunnerTests =
               Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
             finally
               Runner.threshold <- None
-          printfn "%s" <| builder.ToString()
+          //printfn "%s" <| builder.ToString()
 
           // 60% coverage > threshold so expect return code coming in
           Assert.That(r, Is.EqualTo (42, 0, String.Empty))
