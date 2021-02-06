@@ -32,7 +32,7 @@ module internal Json =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let getMethodRecord (modul:NativeJson.Documents) (doc:string) (cname:string) (mname:string) =
+  let internal getMethodRecords (modul:NativeJson.Documents) (doc:string) (cname:string) (mname:string) =
     let classes = match modul.TryGetValue doc with
                   | true, c -> c
                   | _ -> let c = NativeJson.Classes()
@@ -44,10 +44,17 @@ module internal Json =
                          classes.Add(cname, m)
                          m
     match methods.TryGetValue mname with
-    | true, m -> m
+    | true, m -> (methods, m)
     | _ -> let m = NativeJson.Method.Create(None)
            methods.Add(mname, m)
-           m
+           (methods, m)
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal getMethodRecord (modul:NativeJson.Documents) (doc:string) (cname:string) (mname:string) =
+    getMethodRecords modul doc cname mname
+    |> snd
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -55,24 +62,10 @@ module internal Json =
   [<SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
     Justification = "Long enough but no longer")>]
-  let updateMethodRecord (modul:NativeJson.Documents)
+  let internal updateMethodRecord (modul:NativeJson.Documents)
                          (doc:string) (cname:string) (mname:string)
                          (update: (Nullable<int>*NativeJson.Times*NativeJson.Times)) =
-    let classes = match modul.TryGetValue doc with
-                  | true, c -> c
-                  | _ -> let c = NativeJson.Classes()
-                         modul.Add(doc, c)
-                         c
-    let methods = match classes.TryGetValue cname with
-                  | true, m -> m
-                  | _ -> let m = NativeJson.Methods()
-                         classes.Add(cname, m)
-                         m
-    let m0 = match methods.TryGetValue mname with
-             | true, m -> m
-             | _ -> let m = NativeJson.Method.Create(None)
-                    methods.Add(mname, m)
-                    m
+    let methods, m0 = getMethodRecords modul doc cname mname
     let tid, entry, exit = update
     if tid.HasValue && tid <> m0.TId
     then
@@ -84,17 +77,52 @@ module internal Json =
     else
       m0
 
-  let maybeAssembly path =
+  let internal maybeAssembly path =
     Some path
     |> Option.filter File.Exists
     |> Option.map (fun p -> let def = AssemblyDefinition.ReadAssembly p
                             ProgramDatabase.readSymbols def
                             def)
 
+  // try to find the method in the assembly
+  [<SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
+    Justification = "Long enough but no longer")>]
+  let internal maybeNames (def:AssemblyDefinition option) (fallbackm:string) (fallbackc:string)
+                 (sp : NativeJson.SeqPnt option) (cname:string) (mname:string) =
+      let td = def
+                |> Option.map (fun a -> a.MainModule.GetAllTypes()
+                                        |> Seq.tryFind(fun t -> t.FullName = cname))
+                |> Option.flatten
+
+      let md = td
+                |> Option.map(fun t -> t.Methods
+                                      |> Seq.tryFind(fun m -> m.FullName = mname ||
+                                                              (m.Name = mname &&
+                                                               (let dbg = m.DebugInformation
+                                                                dbg.HasSequencePoints &&
+                                                                Option.isSome sp &&
+                                                                (let pt = dbg.SequencePoints
+                                                                          |> Seq.head
+                                                                 pt.StartLine = sp.Value.SL &&
+                                                                 pt.StartColumn = sp.Value.SC)))))
+                |> Option.flatten
+
+      let truemd = md
+                    |> Option.map (Visitor.I.containingMethods >> Seq.last)
+
+      let methodName = truemd
+                        |> Option.map (fun m -> m.FullName)
+                        |> Option.defaultValue fallbackm
+      let className = truemd
+                      |> Option.map (fun m -> m.DeclaringType.FullName)
+                      |> Option.defaultValue fallbackc
+      (className, methodName)
+
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let ncoverToJson (report: XElement) =
+  let internal ncoverToJson (report: XElement) =
     let json = NativeJson.Modules()
     report.Descendants(XName.Get "module")
     |> Seq.iter (fun x ->
@@ -145,37 +173,12 @@ module internal Json =
                 } |> sp.Add )
             if sp.Count > 0
             then
-              // try to find the method in the assembly
-              let td = def
-                       |> Option.map (fun a -> a.MainModule.GetAllTypes()
-                                               |> Seq.tryFind(fun t -> t.FullName = cname))
-                       |> Option.flatten
-
-              let md = td
-                       |> Option.map(fun t -> t.Methods
-                                              |> Seq.tryFind(fun m -> let dbg = m.DebugInformation
-                                                                      m.Name = mname &&
-                                                                      dbg.HasSequencePoints &&
-                                                                      (let pt = dbg.SequencePoints
-                                                                                |> Seq.head
-                                                                       pt.StartLine = sp.[0].SL &&
-                                                                       pt.StartColumn = sp.[0].SC) ))
-                       |> Option.flatten
-
-              let truemd = md
-                           |> Option.map (Visitor.I.containingMethods >> Seq.last)
-
               let basename = sprintf "%s::%s" cname mname
               let _, count = counts.TryGetValue basename
               let index = count + 1
               counts.[basename] <- index
               let synth = sprintf "ReturnType%d %s(Argument List%d)" index basename index
-              let methodName = truemd
-                               |> Option.map (fun m -> m.FullName)
-                               |> Option.defaultValue synth
-              let className = truemd
-                              |> Option.map (fun m -> m.DeclaringType.FullName)
-                              |> Option.defaultValue outerclass
+              let (className, methodName) = maybeNames def synth outerclass (sp |> Seq.head |> Some) cname mname
               let m = getMethodRecord modul docname className methodName
               m.SeqPnts.AddRange sp
               m.SeqPnts
@@ -193,7 +196,7 @@ module internal Json =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let opencoverToJson (report: XElement) =
+  let internal opencoverToJson (report: XElement) =
     let json = NativeJson.Modules()
     report.Descendants(XName.Get "Module")
     |> Seq.iter (fun x ->
@@ -229,6 +232,9 @@ module internal Json =
           let outerclass = cname.Split('/') |> Seq.head
 
           let mutable docname = String.Empty
+          let updateDocname (s:XElement) =
+            if String.IsNullOrWhiteSpace docname
+            then docname <- files.[s.Attribute(XName.Get "fileid").Value]
 
           let sp = NativeJson.SeqPnts()
           m.Descendants(XName.Get "SequencePoint")
@@ -241,8 +247,7 @@ module internal Json =
                                       |> snd)
               |> Option.defaultValue 0
 
-            if String.IsNullOrWhiteSpace docname
-            then docname <- files.[s.Attribute(XName.Get "fileid").Value]
+            updateDocname s
             {
                 NativeJson.SeqPnt.VC = parse "vc"
                 NativeJson.SeqPnt.SL = parse "sl"
@@ -289,8 +294,7 @@ module internal Json =
                                       |> snd)
               |> Option.defaultValue 0
 
-            if String.IsNullOrWhiteSpace docname
-            then docname <- files.[s.Attribute(XName.Get "fileid").Value]
+            updateDocname s
             let offset = parse "offset"
             {
                 NativeJson.BranchInfo.Hits = parse "vc"
@@ -333,27 +337,7 @@ module internal Json =
 
           if sp.Count > 0 || bp.Count > 0
           then
-            // try to find the method in the assembly
-            let td = def
-                      |> Option.map (fun a -> a.MainModule.GetAllTypes()
-                                              |> Seq.tryFind(fun t -> t.FullName = cname))
-                      |> Option.flatten
-
-            let md = td
-                      |> Option.map(fun t -> t.Methods
-                                            |> Seq.tryFind(fun m -> m.FullName = mname))
-                      |> Option.flatten
-
-            let truemd = md
-                         |> Option.map (Visitor.I.containingMethods >> Seq.last)
-
-            let methodName = truemd
-                              |> Option.map (fun m -> m.FullName)
-                              |> Option.defaultValue mname
-            let className = truemd
-                            |> Option.map (fun m -> m.DeclaringType.FullName)
-                            |> Option.defaultValue outerclass
-
+            let (className, methodName) = maybeNames def mname outerclass None cname mname
             let (tid, entry, exit) = if tracked.ContainsKey mname
                                      then
                                        let (tid0, entry, exit) = tracked.[mname]
@@ -390,8 +374,9 @@ module internal Json =
         |> writer.Write)
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =
-    doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-      (match report with
-       | XML document -> convertReport document format
-       | _ -> ignore)
+    match report with
+    | XML document ->
+      doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
+       (convertReport document format)
+    | _ -> ()
     (result, 0uy, String.Empty)

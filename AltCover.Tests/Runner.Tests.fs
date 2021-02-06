@@ -322,6 +322,11 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
+        Assert.That(unique |> File.Exists, Is.False)
+        let r0 = Json.summary Unknown ReportFormat.NCover 0
+        Assert.That(r0, Is.EqualTo (0, 0, String.Empty))
+        Assert.That(unique |> File.Exists, Is.False)
+
         let r = Json.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
