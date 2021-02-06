@@ -1016,6 +1016,23 @@ module internal Runner =
                                                     |> NativeJson.FromTracking
                                                     |> m.Exit.Add
                                        | _ -> ())
+
+        let fillTracks tracks calls =
+          let ntrack = if tracks |> isNull && calls |> Seq.isEmpty |> not
+                       then NativeJson.Tracks()
+                       else tracks
+          if calls |> Seq.isEmpty |> not
+          then ntrack.AddRange calls
+          ntrack
+
+        let fillTimes (times:NativeJson.Times) (visits:int64 seq) =
+          let ntimes = if times |> isNull && visits |> Seq.isEmpty |> not
+                       then NativeJson.Times()
+                       else times
+          if visits |> Seq.isEmpty |> not
+          then ntimes.AddRange (visits |> Seq.map NativeJson.FromTracking)
+          ntimes
+
         let sps = m.SeqPnts
                   |> Seq.map(fun sp ->
                     let b, count = visits.TryGetValue sp.Id
@@ -1023,19 +1040,10 @@ module internal Runner =
                        let (times', calls') = extractTracks count.Tracks
                        let times = times' |> Seq.choose id
                        let calls = calls' |> Seq.choose id
-                       let nsp = {sp with VC = (int <| count.Total()) + Math.Max(0, sp.VC)
-                                          Tracks = (if sp.Tracks |> isNull && calls |> Seq.isEmpty |> not
-                                                    then NativeJson.Tracks()
-                                                    else sp.Tracks)
-                                          Times = (if sp.Times |> isNull && times |> Seq.isEmpty |> not
-                                                    then NativeJson.Times()
-                                                    else sp.Times)
+                       {sp with VC = (int <| count.Total()) + Math.Max(0, sp.VC)
+                                Tracks = fillTracks sp.Tracks calls
+                                Times = fillTimes sp.Times times
                        }
-                       if calls |> Seq.isEmpty |> not
-                       then nsp.Tracks.AddRange calls
-                       if times |> Seq.isEmpty |> not
-                       then nsp.Times.AddRange (times |> Seq.map NativeJson.FromTracking)
-                       nsp
                     else sp) |> Seq.toList
         m.SeqPnts.Clear()
         m.SeqPnts.AddRange sps
@@ -1047,19 +1055,10 @@ module internal Runner =
                        let (times', calls') = extractTracks count.Tracks
                        let times = times' |> Seq.choose id
                        let calls = calls' |> Seq.choose id
-                       let nbp = {bp with Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
-                                          Tracks = (if bp.Tracks |> isNull && calls |> Seq.isEmpty |> not
-                                                    then NativeJson.Tracks()
-                                                    else bp.Tracks)
-                                          Times = (if bp.Times |> isNull && times |> Seq.isEmpty |> not
-                                                    then NativeJson.Times()
-                                                    else bp.Times)
+                       {bp with Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
+                                Tracks = fillTracks bp.Tracks calls
+                                Times = fillTimes bp.Times times
                        }
-                       if calls |> Seq.isEmpty |> not
-                       then nbp.Tracks.AddRange calls
-                       if times |> Seq.isEmpty |> not
-                       then nbp.Times.AddRange (times |> Seq.map NativeJson.FromTracking)
-                       nbp
                     else bp) |> Seq.toList
         m.Branches.Clear()
         m.Branches.AddRange bps

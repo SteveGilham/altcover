@@ -3276,7 +3276,7 @@ module AltCoverRunnerTests =
         resetInfo()
 
     [<Test>]
-    let JsonShouldGeneratePlausibleSummary() =
+    let SimpleJsonShouldGeneratePlausibleSummary() =
       let resetInfo () = Output.info <- ignore
       resetInfo()
       Output.info "info"
@@ -3303,7 +3303,7 @@ module AltCoverRunnerTests =
               Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
             finally
               Runner.threshold <- None
-          printfn "%s" <| builder.ToString()
+          //printfn "%s" <| builder.ToString()
 
           // 60% coverage > threshold so expect return code coming in
           Assert.That(r, Is.EqualTo (42, 0, String.Empty))
@@ -3312,6 +3312,47 @@ module AltCoverRunnerTests =
              Is.EqualTo
                ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 6 of 10 (60)|Visited Branches 0 of 0 (n/a)|" +
                 "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|")
+            ))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let ComplexJsonShouldGeneratePlausibleSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      use reader = new StreamReader(stream)
+      let baseline = reader.ReadToEnd()
+      let builder = System.Text.StringBuilder()
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ R; O; C]
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r =
+            try
+              Runner.threshold <- Some { Statements = 25uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy
+                                         AltMethods = 0uy
+                                         AltCrap = 0uy }
+              Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
+            finally
+              Runner.threshold <- None
+          printfn "%s" <| builder.ToString()
+
+          // 60% coverage > threshold so expect return code coming in
+          Assert.That(r, Is.EqualTo (42, 0, String.Empty))
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 4 of 6 (66.67)|Visited Methods 5 of 10 (50)|Visited Points 5 of 19 (26.32)|Visited Branches 5 of 10 (50)|" +
+                "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='4']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='19']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='5']|")
             ))
       finally
         resetInfo()
