@@ -2345,7 +2345,7 @@ module AltCoverTests =
     let ShouldGenerateExpectedJsonReportFromDotNet() =
       let visitor, document = NativeJson.reportGenerator()
       let path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
-
+      CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
       try
         "Main"
         |> (Regex
@@ -2354,6 +2354,8 @@ module AltCoverTests =
             >> CoverageParameters.nameFilters.Add)
         CoverageParameters.trackingNames.Add("testMakeUnion")
         Visitor.visit [ visitor ] (Visitor.I.toSeq { AssemblyPath = path; Destinations = [] } )
+        Assert.That
+          (CoverageParameters.reportFormat(), Is.EqualTo ReportFormat.NativeJsonWithTracking)
 
         let result = makeJson document
 

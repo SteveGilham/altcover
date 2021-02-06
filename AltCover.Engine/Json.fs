@@ -84,6 +84,10 @@ module internal Json =
                             ProgramDatabase.readSymbols def
                             def)
 
+  let internal maybeDispose (def:AssemblyDefinition option) =
+    def
+    |> Option.iter(fun d -> d.Dispose())
+
   // try to find the method in the assembly
   [<SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidLongParameterListsRule",
@@ -186,8 +190,7 @@ module internal Json =
               |> Seq.iter (fun (l,ss) -> m.Lines.[l] <- lineVisits ss)
         )
       finally
-        def
-        |> Option.iter(fun d -> d.Dispose())
+        maybeDispose def
       if modul.Count > 0
       then json.Add(path |> Path.GetFileName, modul)
     )
@@ -357,8 +360,7 @@ module internal Json =
               m.Branches.AddRange bp
         )
       finally
-        def
-        |> Option.iter(fun d -> d.Dispose())
+        maybeDispose def
       if modul.Count > 0
       then
         json.Add(path |> Path.GetFileName, modul)

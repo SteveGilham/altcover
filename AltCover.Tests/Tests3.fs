@@ -1452,6 +1452,23 @@ module AltCoverTests3 =
         CoverageParameters.theReportFormat <- None
 
     [<Test>]
+    let ParsingJsonFormatGivesJson() =
+      Main.init()
+      try
+        CoverageParameters.theReportFormat <- None
+        let options = Main.I.declareOptions()
+        let input = [| "--reportFormat"; "Json" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match CoverageParameters.theReportFormat with
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.NativeJson)
+      finally
+        CoverageParameters.theReportFormat <- None
+
+    [<Test>]
     let ParsingOpenCoverFormatGivesOpenCover() =
       Main.init()
       try

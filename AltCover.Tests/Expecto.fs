@@ -408,6 +408,7 @@ module ExpectoTestManifest =
           Tests.AltCoverTests3.ParsingBadTimeGivesNoOp, "Tests3.ParsingBadTimeGivesNoOp"
           Tests.AltCoverTests3.ParsingNonTimeGivesFailure, "Tests3.ParsingNonTimeGivesFailure"
           Tests.AltCoverTests3.ParsingNoTimeGivesFailure, "Tests3.ParsingNoTimeGivesFailure"
+          Tests.AltCoverTests3.ParsingJsonFormatGivesJson, "Tests3.ParsingJsonFormatGivesJson"
           Tests.AltCoverTests3.ParsingNCoverFormatGivesNCover, "Tests3.ParsingNCoverFormatGivesNCover"
           Tests.AltCoverTests3.ParsingOpenCoverFormatGivesOpenCover, "Tests3.ParsingOpenCoverFormatGivesOpenCover"
           Tests.AltCoverTests3.ParsingMultipleReportFormatGivesFailure, "Tests3.ParsingMultipleReportFormatGivesFailure"
