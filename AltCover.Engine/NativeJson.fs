@@ -5,6 +5,9 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Text.Json
+#if GUI
+open System.Xml.Linq
+#endif
 
 #if RUNNER
 open Mono.Cecil
@@ -17,11 +20,13 @@ type internal DocumentType =
 #endif
 
 module NativeJson =
+#if !GUI
   let internal options =
     let o = JsonSerializerOptions()
     o.WriteIndented <- true
     o.IgnoreNullValues <- true
     o
+#endif
 
   type internal TimeStamp = string
 
@@ -131,6 +136,54 @@ module NativeJson =
   type internal Classes = Dictionary<string, Methods>
   type internal Documents = SortedDictionary<string, Classes>
   type internal Modules = SortedDictionary<string, Documents> // <= serialize this
+#if GUI
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal documentsToXml (key:string) (documents:Documents) =
+    let m = XElement(XName.Get "Module",
+                     XAttribute(XName.Get "hash", key))
+    let p = XElement(XName.Get "ModulePath")
+    p.Value <- key
+    m.Add p
+    let n = XElement(XName.Get "ModuleName")
+    n.Value <- (key |> Path.GetFileNameWithoutExtension)
+    m.Add n
+    let files = XElement(XName.Get "Files")
+    m.Add files
+    let classes = XElement(XName.Get "Classes")
+    m.Add classes
+    documents
+    |> Seq.iteri (fun i kvp ->
+      let file = XElement(XName.Get "File",
+                          XAttribute(XName.Get "uid", (i+1)),
+                          XAttribute(XName.Get "fullPath", kvp.Key))
+      files.Add file
+      )
+    m
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal jsonToXml (modules:Modules) =
+    let x = XDocument()
+    x.Add(XElement(XName.Get "CoverageSession"))
+    let mroot = XElement(XName.Get "Modules")
+    x.Root.Add mroot
+    modules
+    |> Seq.iter (fun kvp ->
+      documentsToXml kvp.Key kvp.Value
+      |> mroot.Add
+    )
+    x
+
+  let internal fileToXml filename =
+    filename
+    |> File.ReadAllText
+    |> JsonSerializer.Deserialize<Modules>
+    |> jsonToXml
+
+#endif
 
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -256,7 +309,9 @@ module NativeJson =
     let result = Visitor.encloseState reportVisitor (JsonContext.Build())
     (result, fun (s:System.IO.Stream) -> let encoded = JsonSerializer.SerializeToUtf8Bytes(document, options)
                                          s.Write(encoded, 0, encoded.Length))
+#endif
 
+#if GUI || RUNNER
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
   Justification="Harmless in context")>]

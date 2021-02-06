@@ -97,7 +97,10 @@ type CoverageFile =
   static member ToCoverageFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
                 (file : FileInfo) =
     try
-      let rawDocument = XDocument.Load(file.FullName)
+      let name = file.FullName
+      let rawDocument = if (name |> Path.GetExtension).ToUpperInvariant() = ".JSON"
+                        then NativeJson.fileToXml name
+                        else XDocument.Load name
       match Transformer.convertFile helper rawDocument with
       | Left x ->
           Left
