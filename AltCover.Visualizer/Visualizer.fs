@@ -129,16 +129,14 @@ module private Gui =
                             FileChooserAction.Open, Resource.GetResourceString "OpenFile.Open",
                             ResponseType.Ok, Resource.GetResourceString "OpenFile.Cancel",
                             ResponseType.Cancel, null)
-    let data = Resource.GetResourceString("SelectXml").Replace("%", "|*.").Split([| '|' |])
-    let filter = new FileFilter()
-    filter.Name <- data.[0]
-    filter.AddPattern data.[1]
-    openFileDialog.AddFilter filter
-
-    let filter = new FileFilter()
-    filter.Name <- data.[2]
-    filter.AddPattern data.[3]
-    openFileDialog.AddFilter filter
+    let data = Resource.GetResourceString("SelectXml").Split([| '|' |])
+    data
+    |> Seq.iter (fun t ->
+      let filter = new FileFilter()
+      let data = t.Split([| '%' |])
+      filter.Name <- data.[0]
+      filter.AddPattern ("*." + data.[1])
+      openFileDialog.AddFilter filter)
     openFileDialog
 #else
   [<SuppressMessage("Microsoft.Reliability",

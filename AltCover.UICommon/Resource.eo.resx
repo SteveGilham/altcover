@@ -181,7 +181,7 @@ raportas al ausente fonta dosiero
     <value>Elektu tiparon por fonta ekrano</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
-    <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
+    <value>XML-dosieroj (*.xml)%xml|JSON-dosieroj (*.json)%json|Ĉiuj dosieroj (*.*)%*</value>
   </data>
   <data name="branchesVisited" xml:space="preserve">
     <value>{0} de {1} branĉoj vizititaj</value>
