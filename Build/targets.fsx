@@ -4773,26 +4773,20 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "JustUnitTest"
-==> "UnitTest"
+// ==> "UnitTest" // deadweight
 
 "Compilation"
 ==> "BuildForUnitTestDotNet"
 ==> "UnitTestDotNet"
-==> "UnitTest"
+// ==> "UnitTest" // deadweight
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
-//=?> ("UnitTestWithOpenCover",
-//     (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
-//     |> Seq.length) < 6)
 =?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-//=?> ("UnitTestWithAltCover",
-//     (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
-//     |> Seq.length) < 6)
-==> "UnitTest"
+// ==> "UnitTest" // deadweight
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
@@ -4809,7 +4803,7 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
+// ==> "UnitTest" // unreliable
 
 "JustUnitTest"
 ==> "UncoveredUnitTest"
