@@ -2343,10 +2343,11 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGenerateExpectedJsonReportFromDotNet() =
-      let visitor, document = NativeJson.reportGenerator()
-      let path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
       CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
       try
+        let visitor, document = Main.I.selectReportGenerator()
+
+        let path = Path.Combine(SolutionDir(), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll")
         "Main"
         |> (Regex
             >> FilterRegex.Exclude
@@ -2373,6 +2374,7 @@ module AltCoverTests =
       finally
         CoverageParameters.trackingNames.Clear()
         CoverageParameters.nameFilters.Clear()
+        CoverageParameters.theReportFormat <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly() =

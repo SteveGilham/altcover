@@ -444,6 +444,14 @@ module internal Main =
       |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
       |> Option.defaultValue false
 
+    let internal selectReportGenerator() =
+      match CoverageParameters.reportKind() with
+      | ReportFormat.OpenCoverWithTracking
+      | ReportFormat.OpenCover -> OpenCover.reportGenerator()
+      | ReportFormat.NativeJsonWithTracking
+      | ReportFormat.NativeJson -> NativeJson.reportGenerator()
+      | _ -> Report.reportGenerator()
+
     [<SuppressMessage("Gendarme.Rules.BadPractice",
       "GetEntryAssemblyMayReturnNullRule",
       Justification="That is the whole point of the call.")>]
@@ -480,13 +488,7 @@ module internal Main =
                   (CoverageParameters.instrumentDirectories())
               Output.info
               <| CommandLine.Format.Local("reportingto", report)
-              let reporter, document =
-                match CoverageParameters.reportKind() with
-                | ReportFormat.OpenCoverWithTracking
-                | ReportFormat.OpenCover -> OpenCover.reportGenerator()
-                | ReportFormat.NativeJsonWithTracking
-                | ReportFormat.NativeJson -> NativeJson.reportGenerator()
-                | _ -> Report.reportGenerator()
+              let reporter, document = selectReportGenerator()
 
               let visitors =
                 [ reporter
