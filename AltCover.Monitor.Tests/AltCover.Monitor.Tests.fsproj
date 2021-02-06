@@ -21,7 +21,7 @@
     <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
@@ -29,7 +29,7 @@
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0"  Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
