@@ -6,6 +6,7 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Text.Json
 #if GUI
+open System.Linq
 open System.Xml.Linq
 #endif
 
@@ -140,7 +141,64 @@ module NativeJson =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let internal documentsToXml (key:string) (documents:Documents) =
+  let internal methodsToXml (fileId:int) (item:XElement) (methods:Methods) =
+    methods
+    |> Seq.iter (fun kvp ->
+      let m = XElement(XName.Get "Method",
+                       XAttribute(XName.Get "visited", false),
+                       XAttribute(XName.Get "cyclomaticComplexity", 0),
+                       XAttribute(XName.Get "sequenceCoverage", 0),
+                       XAttribute(XName.Get "branchCoverage", 0),
+                       XAttribute(XName.Get "isConstructor", false),
+                       XAttribute(XName.Get "isStatic", false),
+                       XAttribute(XName.Get "isGetter", false),
+                       XAttribute(XName.Get "isSetter", false))
+      item.Add m
+      let md = XElement(XName.Get "MetadataToken")
+      md.Value <- "0"
+      m.Add md
+      let n = XElement(XName.Get "Name")
+      n.Value <- kvp.Key
+      m.Add n
+      let f = XElement(XName.Get "FileRef",
+                       XAttribute(XName.Get "uid", fileId))
+      m.Add f
+
+      let sp = XElement(XName.Get "SequencePoints")
+      m.Add sp
+      let bp = XElement(XName.Get "BranchPoints")
+      m.Add bp
+    )
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal classesToXml (fileId:int)
+    (table:Dictionary<string, XElement>) (classes:Classes) =
+    classes
+    |> Seq.iteri (fun i kvp ->
+      let name = kvp.Key
+      let b,i = table.TryGetValue name
+      let item = if b
+                 then i
+                 else
+                   let i2 = XElement(XName.Get "Class")
+                   let n = XElement(XName.Get "FullName")
+                   n.Value <- name
+                   i2.Add n
+                   table.Add(name, i2)
+                   let m = XElement(XName.Get "Methods")
+                   i2.Add m
+                   i2
+      let next = item.Elements(XName.Get "Methods") |> Seq.head
+      methodsToXml fileId next kvp.Value
+    )
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal documentsToXml (indexTable:Dictionary<string, int>)
+    (key:string) (documents:Documents) =
     let m = XElement(XName.Get "Module",
                      XAttribute(XName.Get "hash", key))
     let p = XElement(XName.Get "ModulePath")
@@ -153,13 +211,28 @@ module NativeJson =
     m.Add files
     let classes = XElement(XName.Get "Classes")
     m.Add classes
+    let classTable = Dictionary<string, XElement>()
     documents
-    |> Seq.iteri (fun i kvp ->
-      let file = XElement(XName.Get "File",
-                          XAttribute(XName.Get "uid", (i+1)),
-                          XAttribute(XName.Get "fullPath", kvp.Key))
-      files.Add file
+    |> Seq.iter (fun kvp ->
+      let name = kvp.Key
+      let ok,index = indexTable.TryGetValue name
+      let i = if ok
+              then index
+              else
+                let n = 1 + indexTable.Count
+                indexTable.Add(name, n)
+                n
+      let item = XElement(XName.Get "File",
+                          XAttribute(XName.Get "uid", i),
+                          XAttribute(XName.Get "fullPath", name))
+      files.Add item
+      classesToXml i classTable kvp.Value
       )
+
+    classTable
+    |> Seq.iter (fun kvp ->
+      classes.Add kvp.Value
+    )
     m
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -170,9 +243,10 @@ module NativeJson =
     x.Add(XElement(XName.Get "CoverageSession"))
     let mroot = XElement(XName.Get "Modules")
     x.Root.Add mroot
+    let fileRefs = Dictionary<string, int>()
     modules
     |> Seq.iter (fun kvp ->
-      documentsToXml kvp.Key kvp.Value
+      documentsToXml fileRefs kvp.Key kvp.Value
       |> mroot.Add
     )
     x
