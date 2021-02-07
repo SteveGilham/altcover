@@ -650,7 +650,15 @@ Describe "Write-OpenCoverDerivedState" {
     $fs.Close()
     $sha1.Dispose()
     $hexpected = [System.BitConverter]::ToString($bytes)
-    
+
+    $inputFile = "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml"
+
+    $check = [xml](Get-Content "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml")
+    if ($check.CoverageSession.Summary.visitedSequencePoints -ne "11")
+    {
+      $inputFile = "./AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
+      [System.Console]::WriteLine("Substituting coverlet file")
+    }
     $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType [xdoc]
 
@@ -674,6 +682,7 @@ Describe "Write-OpenCoverDerivedState" {
     $expect = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
 
     $written = [System.IO.File]::ReadAllText("./_Packaging/OpenCoverForPester.coverlet.xml").Replace("`r", "").Replace("utf-16", "utf-8") 
+
     $written | Should -BeExactly $expect
   }
 
