@@ -2668,7 +2668,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let auxVFiles =
-    (!!"./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
+    [
+      (!!"./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
+      (!!(systembuffers @@ "System.Buffers.*"))
+    ]
+    |> Seq.concat
     |> Seq.map
          (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
     |> Seq.toList

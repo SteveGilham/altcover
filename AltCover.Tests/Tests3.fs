@@ -21,7 +21,7 @@ module AltCoverTests3 =
       let target = typeof<Marker>.Assembly
       let here = Assembly.GetExecutingAssembly()
       let args = ResolveEventArgs(target.FullName, here)
-      test <@ AltCover.Process.assemblyResolve AltCoverTests2.infrastructureSnk args = target @>
+      test <@ AltCover.NativeJson.assemblyResolve AltCoverTests2.infrastructureSnk args = target @>
 
       let res =
         here.GetManifestResourceNames()
@@ -36,7 +36,7 @@ module AltCoverTests3 =
 
       let name2 = "issue37, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
       let args2 = ResolveEventArgs(name2, here)
-      let result = AltCover.Process.assemblyResolve AltCoverTests2.infrastructureSnk args2
+      let result = AltCover.NativeJson.assemblyResolve AltCoverTests2.infrastructureSnk args2
       test <@ result.FullName = name2 @>
 
     [<Test>]

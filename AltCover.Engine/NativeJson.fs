@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
+open System.Reflection
 open System.Text.Json
 #if GUI
 open System.Linq
@@ -428,6 +429,38 @@ module NativeJson =
 #endif
 
 #if GUI || RUNNER
+
+  [<SuppressMessage("Gendarme.Rules.BadPractice",
+                    "AvoidCallingProblematicMethodsRule",
+                    Justification = "Not a lot of alteratives")>]
+  [<SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods",
+                    Justification = "Not a lot of alteratives")>]
+  let internal assemblyResolve (_:Object) (args:ResolveEventArgs) =
+    sprintf "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
+    |> System.Diagnostics.Debug.WriteLine
+    let n = AssemblyName(args.Name)
+    match AppDomain.CurrentDomain.GetAssemblies()
+          |> Seq.tryFind(fun a -> a.GetName().Name = n.Name) with
+    | Some a ->
+      System.Diagnostics.Debug.WriteLine "Found loaded"
+      a
+    | _ ->
+      let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let file = Path.Combine(here, n.Name) + ".dll"
+      System.Diagnostics.Debug.WriteLine ("Looking for {0}", file)
+      if File.Exists file
+      then
+        System.Diagnostics.Debug.WriteLine "Found file"
+        file |> Assembly.LoadFile
+      else
+        System.Diagnostics.Debug.WriteLine "**FAILED**"
+        //if args.Name.Contains(".resources, V") |> not
+        //then eprintfn "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
+        null
+#if RUNNER
+  do
+    AppDomain.CurrentDomain.add_AssemblyResolve <| ResolveEventHandler(assemblyResolve)
+#endif
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
   Justification="Harmless in context")>]
