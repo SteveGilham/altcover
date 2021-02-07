@@ -3297,7 +3297,7 @@ module AltCoverRunnerTests =
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-           Guid.NewGuid().ToString() + "/OpenCover.cobertura")
+           Guid.NewGuid().ToString() + "/issue122.cobertura")
       Cobertura.path := Some unique
       unique
       |> Path.GetDirectoryName
@@ -3309,10 +3309,11 @@ module AltCoverRunnerTests =
         let result =
           Regex.Replace
             (File.ReadAllText unique, """timestamp=\"\d*\">""", """timestamp="xx">""")
+        //printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
-               (fun n -> n.EndsWith("OpenCover.cobertura", StringComparison.Ordinal))
+               (fun n -> n.EndsWith("issue122.cobertura", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected =

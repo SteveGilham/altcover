@@ -222,14 +222,15 @@ module internal Cobertura =
       let arrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
         methodSet
         |> Seq.map (fun method ->
-             let fn =
-               (method.Descendants("Name".X) |> Seq.head).Value.Split([| ' '; '(' |])
-               |> Array.toList
-             let key = fn.[1].Substring(name.Length + 2)
-             let signature = fn.[0] + " " + fn.[2]
-             //let fn = (method.Descendants("Name".X) |> Seq.head).Value
-             //let key = name + "::"
-             //let signature = fn.Replace(key, String.Empty)
+             let fn = (method.Descendants("Name".X) |> Seq.head).Value
+             let cplus = name + "::"
+             let marker = fn.IndexOf cplus
+             let returntype = fn.Substring(0, marker)
+             let start = marker + cplus.Length
+             let argsAt = fn.IndexOf('(', start)
+             let args = fn.Substring(argsAt)
+             let signature = returntype + args
+             let key = fn.Substring(start, argsAt - start)
              (key, (signature, method)))
         |> LCov.sortByFirst
         |> Seq.filter (fun (_, (_, mt)) ->

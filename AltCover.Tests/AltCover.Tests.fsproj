@@ -61,6 +61,7 @@
     <EmbeddedResource Include="issue37.dl_" />
     <EmbeddedResource Include="issue37.pd_" />
     <EmbeddedResource Include="issue122.xml" />
+    <EmbeddedResource Include="issue122.cobertura" />
   </ItemGroup>
 
   <ItemGroup>
@@ -94,7 +95,7 @@
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" 
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0"
                       Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
