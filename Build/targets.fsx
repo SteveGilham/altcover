@@ -964,8 +964,6 @@ _Target "JustUnitTest" (fun _ ->
              WorkingDir = "." }) "./_Reports/Recorder2UnitTestReport.xml"
   with x ->
     printfn "%A" x
-    !!  "./_Reports/*UnitTestReport.xml"
-    |> Seq.iter (File.ReadAllText >> (printfn "%s"))
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
