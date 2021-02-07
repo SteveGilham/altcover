@@ -168,6 +168,48 @@ module NativeJson =
       m.Add sp
       let bp = XElement(XName.Get "BranchPoints")
       m.Add bp
+      let value = kvp.Value
+      if value.Branches.IsNotNull
+      then
+        value.Branches
+        |> Seq.iter (fun b ->
+          let bx = XElement(XName.Get "BranchPoint",
+                       XAttribute(XName.Get "vc", b.Hits),
+                       XAttribute(XName.Get "sl", b.Line),
+                       XAttribute(XName.Get "uspid", b.Id),
+                       XAttribute(XName.Get "ordinal", b.Ordinal),
+                       XAttribute(XName.Get "offset", b.Offset),
+                       XAttribute(XName.Get "path", b.Path))
+          bp.Add bx
+        )
+
+      if value.SeqPnts.IsNotNull
+      then
+        value.SeqPnts
+        |> Seq.iter(fun s ->
+          let sx = XElement(XName.Get "SequencePoint",
+                       XAttribute(XName.Get "vc", s.VC),
+                       XAttribute(XName.Get "offset", s.Offset),
+                       XAttribute(XName.Get "sl", s.SL),
+                       XAttribute(XName.Get "sc", s.SC),
+                       XAttribute(XName.Get "el", s.EL),
+                       XAttribute(XName.Get "ec", s.EC))
+          sp.Add sx
+        )
+      else
+        value.Lines
+        |> Seq.iteri (fun i l ->
+          let k = l.Key
+          let sx = XElement(XName.Get "SequencePoint",
+                       XAttribute(XName.Get "vc", l.Value),
+                       XAttribute(XName.Get "offset", i),
+                       XAttribute(XName.Get "sl", k),
+                       XAttribute(XName.Get "sc", 1),
+                       XAttribute(XName.Get "el", k),
+                       XAttribute(XName.Get "ec", 2))
+          sp.Add sx
+        )
+
     )
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
