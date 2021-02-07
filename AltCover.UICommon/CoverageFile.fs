@@ -119,6 +119,10 @@ type CoverageFile =
         Left
           { Fault = e
             File = file }
+    | :? System.Text.Json.JsonException as e ->
+        Left
+          { Fault = e
+            File = file }
     | :? IOException as e ->
         Left
           { Fault = e
