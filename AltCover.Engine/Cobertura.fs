@@ -227,6 +227,9 @@ module internal Cobertura =
                |> Array.toList
              let key = fn.[1].Substring(name.Length + 2)
              let signature = fn.[0] + " " + fn.[2]
+             //let fn = (method.Descendants("Name".X) |> Seq.head).Value
+             //let key = name + "::"
+             //let signature = fn.Replace(key, String.Empty)
              (key, (signature, method)))
         |> LCov.sortByFirst
         |> Seq.filter (fun (_, (_, mt)) ->

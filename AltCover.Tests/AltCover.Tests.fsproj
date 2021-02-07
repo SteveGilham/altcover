@@ -60,6 +60,7 @@
     <EmbeddedResource Include="SwitchSample.pd_" />
     <EmbeddedResource Include="issue37.dl_" />
     <EmbeddedResource Include="issue37.pd_" />
+    <EmbeddedResource Include="issue122.xml" />
   </ItemGroup>
 
   <ItemGroup>
