@@ -50,6 +50,8 @@
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
     <EmbeddedResource Include="SimpleCoverage.json" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <EmbeddedResource Include="NCover122.xml" />
+    <EmbeddedResource Include="NCover122.cobertura" />
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
@@ -63,6 +65,8 @@
     <EmbeddedResource Include="SwitchSample.pd_" />
     <EmbeddedResource Include="issue37.dl_" />
     <EmbeddedResource Include="issue37.pd_" />
+    <EmbeddedResource Include="issue122.xml" />
+    <EmbeddedResource Include="issue122.cobertura" />
   </ItemGroup>
 
   <ItemGroup>

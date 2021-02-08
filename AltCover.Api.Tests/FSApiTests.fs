@@ -280,6 +280,7 @@ module FSApiTests =
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
+    // printfn "FSApi.NCoverToCobertura\r\n%s" result
 
     use stream3 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")

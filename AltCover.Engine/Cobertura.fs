@@ -68,11 +68,19 @@ module internal Cobertura =
              let key, signature =
                let fna = m.Attribute("fullname".X)
                if fna |> isNull then
-                 (m.Attribute("class".X).Value + "." + m.Attribute("name".X).Value,
-                  String.Empty)
+                 (m.Attribute("name".X).Value,
+                  "ReturnType (Arguments)")
                else
-                 let fn = fna.Value.Split([| ' '; '(' |]) |> Array.toList
-                 (fn.[1].Substring(n.Length + 1), fn.[0] + " " + fn.[2])
+                 let fn = fna.Value
+                 let cname = m.Attribute("class".X).Value
+                 let mname = m.Attribute("name".X).Value
+                 let classAt = fn.IndexOf cname
+                 let returnType = fn.Substring(0, classAt)
+                 let methodAt = fn.IndexOf (mname, classAt + cname.Length)
+                 let argsAt = methodAt + mname.Length
+                 let args = fn.Substring(argsAt)
+                 let signature = returnType + args
+                 (mname, signature)
              (key, (signature, m)))
         |> LCov.sortByFirst
         |> Seq.fold (processMethod methods) (0, 0)
@@ -222,11 +230,15 @@ module internal Cobertura =
       let arrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
         methodSet
         |> Seq.map (fun method ->
-             let fn =
-               (method.Descendants("Name".X) |> Seq.head).Value.Split([| ' '; '(' |])
-               |> Array.toList
-             let key = fn.[1].Substring(name.Length + 2)
-             let signature = fn.[0] + " " + fn.[2]
+             let fn = (method.Descendants("Name".X) |> Seq.head).Value
+             let cplus = name + "::"
+             let marker = fn.IndexOf cplus
+             let returntype = fn.Substring(0, marker)
+             let start = marker + cplus.Length
+             let argsAt = fn.IndexOf('(', start)
+             let args = fn.Substring(argsAt)
+             let signature = returntype + args
+             let key = fn.Substring(start, argsAt - start)
              (key, (signature, method)))
         |> LCov.sortByFirst
         |> Seq.filter (fun (_, (_, mt)) ->
