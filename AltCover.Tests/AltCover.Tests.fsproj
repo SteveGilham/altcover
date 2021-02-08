@@ -47,6 +47,8 @@
     <EmbeddedResource Include="NCoverBugFix.lcov" />
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <EmbeddedResource Include="NCover122.xml" />
+    <EmbeddedResource Include="NCover122.cobertura" />
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />

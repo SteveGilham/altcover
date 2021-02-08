@@ -7,6 +7,18 @@
   <packages>
     <package name="Sample1.exe" line-rate="0.8" branch-rate="1" complexity="1">
       <classes>
+        <class name="&lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1" filename="altcover/Sample1/Program.cs" line-rate="0" branch-rate="0" complexity="1">
+          <methods>
+            <method name="Invoke" signature="TKey (System.Collections.Generic.KeyValuePair`2&lt;TKey,TValue&gt;)" line-rate="0" branch-rate="0" complexity="1">
+              <lines>
+                <line number="669" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="669" hits="0" branch="false" />
+          </lines>
+        </class>
         <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.8" branch-rate="1" complexity="1">
           <methods>
             <method name="Main" signature="System.Void (System.String[])" line-rate="0.8" branch-rate="1" complexity="1">
