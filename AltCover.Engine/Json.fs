@@ -15,37 +15,65 @@ open Mono.Cecil
 open Mono.Cecil.Rocks
 
 type internal AltDictionarySerializer() =
-  static member Encode(context:SerializationContext) =
+  static member Encode<'k, 'v>(context:SerializationContext) =
     let o = Manatee.Json.JsonObject()
 
     let encode (kvp:KeyValuePair<'k, 'v>) =
       let key = String.Format(CultureInfo.InvariantCulture, "{0}", kvp.Key)
       let value = kvp.Value
-      context.Push(value.GetType(), value.GetType(), key, value)
-      let value2 = context.RootSerializer.Serialize(context)
+      printfn "Encoding %A => %A (%A)" key value (value.GetType().FullName)
+      context.Push(value.GetType(), typeof<'v>, key, value)
+      printfn "Pushed %A" <| context.Source.GetType()
+      let value2 = if value.GetType() = typeof<int32>
+                   then
+                    printfn "Encoding int %A" value
+                    let c = value.GetType().GetRuntimeMethods()
+                            |> Seq.find (fun m -> m.Name = "System.IConvertible.ToDouble")
+                    printfn "with %A" c
+                    let v = c.Invoke(value, [| null |]) :?> float
+                    printfn "Getting %A" v
+                    Manatee.Json.JsonValue v
+                   else if value.GetType() = typeof<String>
+                        then Manatee.Json.JsonValue(value.ToString())
+                        else context.RootSerializer.Serialize(context)
+      printfn "Got value"
       context.Pop()
+      printfn "Popped"
       o.Add(key, value2)
-
-    let transform o =
-      match o with
-      | :? KeyValuePair<'k, 'v> as kvp -> encode kvp
-      | _ -> ()
+      printfn "Added"
 
     context.Source :?> System.Collections.IDictionary
-    |> Seq.cast<Object>
-    |> Seq.iter transform
+    |> Seq.cast<KeyValuePair<'k,'v>>
+    |> Seq.iter encode
     Manatee.Json.JsonValue(o)
 
   interface ISerializer with
     member this.Handles(context:SerializationContextBase) =
-      if context.InferredType.GetTypeInfo().IsGenericType
-      then context.InferredType.GetGenericTypeDefinition().GetInterfaces()
-           |> Seq.exists(fun t -> t.Name = "IDictionary`2" &&
-                                  t.Namespace = "System.Collections.Generic")
-      else false
+      let b =
+        if context.InferredType.GetTypeInfo().IsGenericType
+        then context.InferredType.GetGenericTypeDefinition().GetInterfaces()
+             |> Seq.exists(fun t -> t.Name = "IDictionary`2" &&
+                                    t.Namespace = "System.Collections.Generic")
+        else false
+      printfn "Do we handle %A => %A (%A)" context.InferredType.FullName b context.CurrentLocation
+      b
 
     member this.Serialize(context:SerializationContext) =
-      AltDictionarySerializer.Encode(context)
+      //AltDictionarySerializer.Encode(context) by reflection to frob the generic types
+      printfn "ADS on %A" <| context.Source.GetType().FullName
+      let typeargs = context.Source.GetType().GetTypeInfo().GenericTypeArguments
+      printfn "typeargs = %A" typeargs
+      try
+        let info = typeof<AltDictionarySerializer>
+                      .GetMethod("Encode", BindingFlags.Static ||| BindingFlags.NonPublic)
+                      .MakeGenericMethod(typeargs)
+        printfn "Invoking with %A" typeargs
+        let r = info.Invoke(null, [| context :> obj |]) :?> Manatee.Json.JsonValue
+        printfn "Invoked with %A" typeargs
+        r
+      with
+      | x -> printfn "Blew %A with %s" typeargs x.Message
+             reraise()
 
     member this.Deserialize(context:DeserializationContext) =
       Object()
