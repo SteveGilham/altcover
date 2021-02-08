@@ -1,7 +1,7 @@
 version: 7.6.{build}-pre
 branches:
-  except:
-  - /develop.*/
+  only:
+  - /release.*/
 skip_tags: true
 image: Visual Studio 2019
 clone_depth: 2
