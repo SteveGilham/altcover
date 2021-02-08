@@ -13,7 +13,9 @@ addons:
 git:
   depth: false
 
-if: NOT branch =~ ^develop/.*$ OR branch =~ ^develop/travis/.*$
+branches:
+  only:
+  - /release.*/
 
 cache:
   timeout: 300

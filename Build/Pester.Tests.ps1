@@ -186,73 +186,14 @@ Describe "ConvertTo-Lcov" {
 
 Describe "ConvertTo-Cobertura" {
   It "Converts OpenCover Data" {
-    $x = ConvertTo-Cobertura -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.cobertura"
+    $x = ConvertTo-Cobertura -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.ConvertTo.cobertura"
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
 
-    $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.71" branch-rate="0.67" lines-covered="10" lines-valid="14" branches-covered="2" branches-valid="3" complexity="2" version="$v" timestamp="$t">
-  <sources>
-    <source>altcover\Sample1</source>
-  </sources>
-  <packages>
-    <package name="Sample1" line-rate="0.71" branch-rate="0.67" complexity="2">
-      <classes>
-        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.71" branch-rate="0.67" complexity="2">
-          <methods>
-            <method name="Main" signature="System.Void System.String[])" line-rate="0.71" branch-rate="0.67" complexity="2">
-              <lines>
-                <line number="11" hits="1" branch="false" />
-                <line number="12" hits="1" branch="false" />
-                <line number="13" hits="1" branch="false" />
-                <line number="13" hits="1" branch="true" condition-coverage="50% (1/2)">
-                  <conditions>
-                    <condition number="10" type="jump" coverage="50%" />
-                  </conditions>
-                </line>
-                <line number="14" hits="1" branch="false" />
-                <line number="15" hits="1" branch="false" />
-                <line number="15" hits="1" branch="false" />
-                <line number="15" hits="1" branch="false" />
-                <line number="16" hits="1" branch="false" />
-                <line number="18" hits="0" branch="false" />
-                <line number="19" hits="0" branch="false" />
-                <line number="19" hits="0" branch="false" />
-                <line number="20" hits="0" branch="false" />
-                <line number="21" hits="1" branch="false" />
-              </lines>
-            </method>
-          </methods>
-          <lines>
-            <line number="11" hits="1" branch="false" />
-            <line number="12" hits="1" branch="false" />
-            <line number="13" hits="1" branch="false" />
-            <line number="13" hits="1" branch="true" condition-coverage="50% (1/2)">
-              <conditions>
-                <condition number="10" type="jump" coverage="50%" />
-              </conditions>
-            </line>
-            <line number="14" hits="1" branch="false" />
-            <line number="15" hits="1" branch="false" />
-            <line number="15" hits="1" branch="false" />
-            <line number="15" hits="1" branch="false" />
-            <line number="16" hits="1" branch="false" />
-            <line number="18" hits="0" branch="false" />
-            <line number="19" hits="0" branch="false" />
-            <line number="19" hits="0" branch="false" />
-            <line number="20" hits="0" branch="false" />
-            <line number="21" hits="1" branch="false" />
-          </lines>
-        </class>
-      </classes>
-    </package>
-  </packages>
-</coverage>
-"@
-    $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.cobertura"))
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/OpenCover.ConvertTo.cobertura"))).Replace("`$v", $v).Replace("`$t", $t)
+
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.ConvertTo.cobertura"))
     $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
 
     $header = $x.Declaration.ToString() + "`n"
@@ -262,57 +203,13 @@ Describe "ConvertTo-Cobertura" {
   It "Converts NCover Data" {
     $lines = (Get-Content "./AltCover.Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
     $lines | Set-Content "./_Packaging/NCover.cob.xml"
-    $x = ConvertTo-Cobertura -InputFile "./_Packaging/NCover.cob.xml" -OutputFile "./_Packaging/NCover.cobertura"
+    $x = ConvertTo-Cobertura -InputFile "./_Packaging/NCover.cob.xml" -OutputFile "./_Packaging/NCover.ConvertTo.cobertura"
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
 
-    $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
-  <sources>
-    <source>Sample1</source>
-  </sources>
-  <packages>
-    <package name="Sample1.exe" line-rate="0.7" branch-rate="1" complexity="1">
-      <classes>
-        <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
-          <methods>
-            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1" complexity="1">
-              <lines>
-                <line number="11" hits="1" branch="false" />
-                <line number="12" hits="1" branch="false" />
-                <line number="13" hits="1" branch="false" />
-                <line number="14" hits="1" branch="false" />
-                <line number="15" hits="1" branch="false" />
-                <line number="16" hits="1" branch="false" />
-                <line number="18" hits="0" branch="false" />
-                <line number="19" hits="0" branch="false" />
-                <line number="20" hits="0" branch="false" />
-                <line number="21" hits="1" branch="false" />
-              </lines>
-            </method>
-          </methods>
-          <lines>
-            <line number="11" hits="1" branch="false" />
-            <line number="12" hits="1" branch="false" />
-            <line number="13" hits="1" branch="false" />
-            <line number="14" hits="1" branch="false" />
-            <line number="15" hits="1" branch="false" />
-            <line number="16" hits="1" branch="false" />
-            <line number="18" hits="0" branch="false" />
-            <line number="19" hits="0" branch="false" />
-            <line number="20" hits="0" branch="false" />
-            <line number="21" hits="1" branch="false" />
-          </lines>
-        </class>
-      </classes>
-    </package>
-  </packages>
-</coverage>
-"@
-    $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.cobertura"))
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/NCover.ConvertTo.cobertura"))).Replace("`$v", $v).Replace("`$t", $t)
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.ConvertTo.cobertura"))
     $got | Should -Be $expected.Replace("`r", "")
 
     $header = $x.Declaration.ToString() + "`n"
