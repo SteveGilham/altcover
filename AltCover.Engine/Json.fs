@@ -1,8 +1,10 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
+open System.Reflection
 open System.Xml.Linq
 open System.Globalization
 open System.Text
@@ -11,6 +13,43 @@ open Manatee.Json.Serialization
 
 open Mono.Cecil
 open Mono.Cecil.Rocks
+
+type internal AltDictionarySerializer() =
+  static member Encode(context:SerializationContext) =
+    let o = Manatee.Json.JsonObject()
+
+    let encode (kvp:KeyValuePair<'k, 'v>) =
+      let key = String.Format(CultureInfo.InvariantCulture, "{0}", kvp.Key)
+      let value = kvp.Value
+      context.Push(value.GetType(), value.GetType(), key, value)
+      let value2 = context.RootSerializer.Serialize(context)
+      context.Pop()
+      o.Add(key, value2)
+
+    let transform o =
+      match o with
+      | :? KeyValuePair<'k, 'v> as kvp -> encode kvp
+      | _ -> ()
+
+    context.Source :?> System.Collections.IDictionary
+    |> Seq.cast<Object>
+    |> Seq.iter transform
+    Manatee.Json.JsonValue(o)
+
+  interface ISerializer with
+    member this.Handles(context:SerializationContextBase) =
+      if context.InferredType.GetTypeInfo().IsGenericType
+      then context.InferredType.GetGenericTypeDefinition().GetInterfaces()
+           |> Seq.exists(fun t -> t.Name = "IDictionary`2" &&
+                                  t.Namespace = "System.Collections.Generic")
+      else false
+
+    member this.Serialize(context:SerializationContext) =
+      AltDictionarySerializer.Encode(context)
+
+    member this.Deserialize(context:DeserializationContext) =
+      Object()
+    member val ShouldMaintainReferences = false
 
 [<SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Json' is jargon")>]
@@ -370,6 +409,8 @@ module internal Json =
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
+        // SerializerFactory.RemoveSerializer<NativeJson.Modules>()
+        SerializerFactory.AddSerializer(AltDictionarySerializer())
         let s = JsonSerializer()
         let o = JsonSerializerOptions()
         o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
@@ -379,6 +420,8 @@ module internal Json =
              | ReportFormat.NCover -> ncoverToJson
              | _ -> opencoverToJson))
          |> s.Serialize<NativeJson.Modules>).GetIndentedString()
+         // tabs instead of 2 space indents -- OK
+         // Dictionary style -- not good
         |> writer.Write)
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =
