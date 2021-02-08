@@ -6,7 +6,8 @@ open System.IO
 open System.Xml.Linq
 open System.Globalization
 open System.Text
-open System.Text.Json
+
+open Manatee.Json.Serialization
 
 open Mono.Cecil
 open Mono.Cecil.Rocks
@@ -194,7 +195,7 @@ module internal Json =
       if modul.Count > 0
       then json.Add(path |> Path.GetFileName, modul)
     )
-    JsonSerializer.Serialize(json, NativeJson.options)
+    json
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -365,14 +366,19 @@ module internal Json =
       then
         json.Add(path |> Path.GetFileName, modul)
     )
-    JsonSerializer.Serialize(json, NativeJson.options)
+    json
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-        (report.Root
-        |> (match format with
-            | ReportFormat.NCover -> ncoverToJson
-            | _ -> opencoverToJson))
+        let s = JsonSerializer()
+        let o = JsonSerializerOptions()
+        o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
+        s.Options <- o
+        ((report.Root
+         |> (match format with
+             | ReportFormat.NCover -> ncoverToJson
+             | _ -> opencoverToJson))
+         |> s.Serialize<NativeJson.Modules>).GetIndentedString()
         |> writer.Write)
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =

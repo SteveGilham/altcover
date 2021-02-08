@@ -336,9 +336,9 @@ module AltCoverRunnerTests =
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected = reader.ReadToEnd()
-        //printfn "%s" result
-        //Assert.That
-        //  (result, Is.EqualTo expected)
+        printfn "%s" result
+        Assert.That
+          (result, Is.EqualTo expected)
         test <@ result = expected @>
       finally
         Json.path := None
