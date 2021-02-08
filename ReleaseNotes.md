@@ -3,6 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 7.6.8xx (Genbu series release 16)
+* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
 * JSON output hardening (some changes possibly breaking)
   * Reduce allocations
   * Escape strings more rigorously
