@@ -68,11 +68,19 @@ module internal Cobertura =
              let key, signature =
                let fna = m.Attribute("fullname".X)
                if fna |> isNull then
-                 (m.Attribute("class".X).Value + "." + m.Attribute("name".X).Value,
-                  String.Empty)
+                 (m.Attribute("name".X).Value,
+                  "ReturnType (Arguments)")
                else
-                 let fn = fna.Value.Split([| ' '; '(' |]) |> Array.toList
-                 (fn.[1].Substring(n.Length + 1), fn.[0] + " " + fn.[2])
+                 let fn = fna.Value
+                 let cname = m.Attribute("class".X).Value
+                 let mname = m.Attribute("name".X).Value
+                 let classAt = fn.IndexOf cname
+                 let returnType = fn.Substring(0, classAt)
+                 let methodAt = fn.IndexOf (mname, classAt + cname.Length)
+                 let argsAt = methodAt + mname.Length
+                 let args = fn.Substring(argsAt)
+                 let signature = returnType + args
+                 (mname, signature)
              (key, (signature, m)))
         |> LCov.sortByFirst
         |> Seq.fold (processMethod methods) (0, 0)

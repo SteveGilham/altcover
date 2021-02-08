@@ -3226,6 +3226,7 @@ module AltCoverRunnerTests =
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
+        //printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
