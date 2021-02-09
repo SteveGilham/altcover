@@ -220,19 +220,53 @@ module NativeJson =
           printfn "%A %A %A" kvp.Key.SerializationName kvp.Key.MemberInfo kvp.Value
         )
 
+        let table = Dictionary<string, obj>()
+        p
+        |> Seq.iter (fun kvp ->
+          table.Add(kvp.Key.MemberInfo.Name, kvp.Value)
+        )
+
+        let evaluate key d =
+          let b, v = table.TryGetValue key
+          if b then v else d
+
         match t with
         | t0 when t0 = typeof<Method> ->
-          let r = Method.Create(Some (0, "dummy"))
-          printfn "returning %A" r
-          r :> obj
+          let c = typeof<Method>.GetConstructors() |> Seq.head
+          c.Invoke( [| (*evaluate "Lines" <|*)
+                       Lines()
+                       (*evaluate "Branches" <|*)
+                       Branches()
+                       (*evaluate "SeqPnts" <|*)
+                       SeqPnts()
+                       evaluate "TId" null // 0
+                       evaluate "Entry" null // Times()
+                       evaluate "Exit" null // Times()
+                     |])
         | t0 when t0 = typeof<SeqPnt> ->
-          let r = SeqPnt.Create()
-          printfn "returning %A" r
-          r :> obj
+          let c = typeof<SeqPnt>.GetConstructors() |> Seq.head
+          c.Invoke( [| evaluate "VC" 0
+                       evaluate "SL" 0
+                       evaluate "SC" 0
+                       evaluate "EL" 0
+                       evaluate "EC" 0
+                       evaluate "Offset" 0
+                       evaluate "Id" 0
+                       evaluate "Times" null // Times()
+                       evaluate "Tracks" null //Tracks()
+                     |])
         | t0 when t0 = typeof<BranchInfo> ->
-          let r = BranchInfo.Create()
-          printfn "returning %A" r
-          r :> obj
+          let c = typeof<BranchInfo>.GetConstructors() |> Seq.head
+          c.Invoke( [| evaluate "Line" 0
+                       evaluate "Offset" 0
+                       evaluate "EndOffset" 0
+                       evaluate "Path" 0
+                       evaluate "Ordinal" 0u
+                       evaluate "Hits" 0
+                       evaluate "Id" 0
+                       evaluate "Times" null // Times()
+                       evaluate "Tracks" null //Tracks()
+                     |])
         | _ ->
           printfn "falling back"
           if this.Fallback.IsNotNull
@@ -306,6 +340,7 @@ module NativeJson =
         let dictionary = Lines()
         context.LocalValue.Object
         |> Seq.iter (fun kvp ->
+          eprintfn "Line %A %A" kvp.Key kvp.Value
           let key = kvp.Key |> Int32.TryParse |> snd
           context.Push(typeof<Int32>, kvp.Key, kvp.Value);
           let value = kvp.Value.Number |> Math.Round |> int
