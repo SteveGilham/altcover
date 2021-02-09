@@ -371,12 +371,11 @@ module internal Json =
     json
 
   let internal xmlToJson (report : XDocument) (format:ReportFormat) =
-    ((report.Root
-      |> (match format with
-          | ReportFormat.NCover -> ncoverToJson
-          | _ -> opencoverToJson))
-      |> NativeJson.serializer.Serialize<NativeJson.Modules>).GetIndentedString()
-      .Replace("`", "\\u0060").Replace("<", "\\u003C").Replace(">", "\\u003E")
+    (report.Root
+     |> (match format with
+         | ReportFormat.NCover -> ncoverToJson
+         | _ -> opencoverToJson))
+    |> NativeJson.toText
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->

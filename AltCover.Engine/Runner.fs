@@ -7,7 +7,6 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Text
-open System.Text.Json
 open System.Xml
 open System.Xml.Linq
 
@@ -447,7 +446,8 @@ module internal Runner =
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
       Justification="Library method inlined")>]
     let internal jsonSummary(report : String) =
-      let json = JsonSerializer.Deserialize<NativeJson.Modules>(report)
+      let j = Manatee.Json.JsonValue.Parse report
+      let json = NativeJson.serializer.Deserialize<NativeJson.Modules>(j)
       let summarise go (vc : int) (nc : int)  key =
 
         let pc =
@@ -1081,7 +1081,8 @@ module internal Runner =
         let reader = new StreamReader(file) // DO NOT DISPOSE
         reader.ReadToEnd()
 
-      let json = JsonSerializer.Deserialize<NativeJson.Modules>(jsonText)
+      let j = Manatee.Json.JsonValue.Parse jsonText
+      let json = NativeJson.serializer.Deserialize<NativeJson.Modules>(j)
 
       // do magic here
       json
@@ -1095,7 +1096,7 @@ module internal Runner =
           |> Seq.iter (updateNativeJsonMethod hits visits)
       )
 
-      let encoded = JsonSerializer.SerializeToUtf8Bytes(json, NativeJson.options)
+      let encoded = NativeJson.serializeToUtf8Bytes json
       if Option.isSome output
       then
         use outputFile =

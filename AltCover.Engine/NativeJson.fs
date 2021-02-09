@@ -6,7 +6,6 @@ open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Reflection
-open System.Text.Json
 #if GUI
 open System.Linq
 open System.Xml.Linq
@@ -76,6 +75,19 @@ module NativeJson =
             Justification="Harmless in context")>]
       Tracks: Tracks
     }
+    static member Create() =
+      {
+        VC = 0
+        SL = 0
+        SC = 0
+        EL = 0
+        EC = 0
+        Offset = 0
+        Id = 0
+        Times = Times()
+        Tracks = Tracks()
+      }
+
   type SeqPnts = List<SeqPnt>
 
   // Coverlet compatible -- src/coverlet.core/CoverageResult.cs
@@ -106,6 +118,18 @@ module NativeJson =
             Justification="Harmless in context")>]
       Tracks: Tracks
     }
+    static member Create() =
+      {
+        Line = 0
+        Offset = 0
+        EndOffset = 0
+        Path = 0
+        Ordinal = 0u
+        Hits = 0
+        Id = 0
+        Times = Times()
+        Tracks = Tracks()
+      }
 
   type Lines = SortedDictionary<int, int>
 
@@ -154,6 +178,13 @@ module NativeJson =
     let info = typeof<JsonSerializer>.GetMethod("Serialize", BindingFlags.Instance ||| BindingFlags.NonPublic)
     info.Invoke(context.RootSerializer, [| context :> obj |]) :?> JsonValue
 
+  let deserialize<'v> (context:DeserializationContext) =
+    printfn "Looking to resolve %A" (typeof<'v>.FullName)
+    let info = typeof<JsonSerializer>.GetMethod("Deserialize", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let built = info.Invoke(context.RootSerializer, [| context :> obj |])
+    printfn "%A %A" built <| built.GetType().FullName
+    built :?> 'v
+
   let encode<'v>(context:SerializationContext) =
     let o = Manatee.Json.JsonObject()
     context.Source :?> IDictionary<string, 'v>
@@ -167,6 +198,47 @@ module NativeJson =
     )
     Manatee.Json.JsonValue(o)
 
+  let decode<'v>(context:DeserializationContext) (dictionary:IDictionary<string, 'v>) =
+    printfn "decoding %A %A" typeof<'v>.FullName dictionary
+    context.LocalValue.Object
+    |> Seq.iter (fun kvp ->
+      let key = kvp.Key.ToString()
+      context.Push(typeof<'v>, key, kvp.Value);
+      let value = deserialize<'v>(context)
+      context.Pop();
+      dictionary.Add(key, value)
+    )
+    dictionary
+
+  type internal JsonResolver() =
+    member val Fallback : IResolver = null with get, set
+    interface IResolver with
+      member this.Resolve (t:Type, p:Dictionary<SerializationInfo, Object>) =
+        printfn "My resolver = %A %A" t.FullName p
+        p
+        |> Seq.iter (fun kvp ->
+          printfn "%A %A %A" kvp.Key.SerializationName kvp.Key.MemberInfo kvp.Value
+        )
+
+        match t with
+        | t0 when t0 = typeof<Method> ->
+          let r = Method.Create(Some (0, "dummy"))
+          printfn "returning %A" r
+          r :> obj
+        | t0 when t0 = typeof<SeqPnt> ->
+          let r = SeqPnt.Create()
+          printfn "returning %A" r
+          r :> obj
+        | t0 when t0 = typeof<BranchInfo> ->
+          let r = BranchInfo.Create()
+          printfn "returning %A" r
+          r :> obj
+        | _ ->
+          printfn "falling back"
+          if this.Fallback.IsNotNull
+          then this.Fallback.Resolve(t, p)
+          else Object()
+
   type internal ModulesSerializer() =
     interface ISerializer with
       member this.Handles(context:SerializationContextBase) =
@@ -174,7 +246,9 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Documents> context
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        Modules()
+        |> (decode<Documents> context)
+        :> obj
       member val ShouldMaintainReferences = false
 
   type internal DocumentsSerializer() =
@@ -184,7 +258,9 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Classes> context
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        Documents()
+        |> (decode<Classes> context)
+        :> obj
       member val ShouldMaintainReferences = false
 
   type internal ClassesSerializer() =
@@ -194,7 +270,9 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Methods> context
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        Classes()
+        |> (decode<Methods> context)
+        :> obj
       member val ShouldMaintainReferences = false
 
   type internal MethodsSerializer() =
@@ -204,7 +282,9 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Method> context
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        Methods()
+        |> (decode<Method> context)
+        :> obj
       member val ShouldMaintainReferences = false
 
   type internal LinesSerializer() =
@@ -223,7 +303,17 @@ module NativeJson =
         Manatee.Json.JsonValue(o)
 
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        let dictionary = Lines()
+        context.LocalValue.Object
+        |> Seq.iter (fun kvp ->
+          let key = kvp.Key |> Int32.TryParse |> snd
+          context.Push(typeof<Int32>, kvp.Key, kvp.Value);
+          let value = kvp.Value.Number |> Math.Round |> int
+          context.Pop();
+          dictionary.Add(key, int value)
+        )
+        dictionary :> Object
+
       member val ShouldMaintainReferences = false
 
   type internal TimesSerializer() =
@@ -238,7 +328,12 @@ module NativeJson =
         Manatee.Json.JsonValue(a)
 
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        let result = Times()
+        context.LocalValue.Array
+        |> Seq.map (fun v -> v.String)
+        |> result.AddRange
+        result :> obj
+
       member val ShouldMaintainReferences = false
 
   type internal TracksSerializer() =
@@ -253,7 +348,11 @@ module NativeJson =
         Manatee.Json.JsonValue(a)
 
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        let result = Tracks()
+        context.LocalValue.Array
+        |> Seq.map (fun v -> v.Number |> Math.Round |> int )
+        |> result.AddRange
+        result :> obj
       member val ShouldMaintainReferences = false
 
   type internal SeqPntsSerializer() =
@@ -272,17 +371,16 @@ module NativeJson =
         |> a.AddRange
         Manatee.Json.JsonValue(a)
       member this.Deserialize(context:DeserializationContext) =
-        Object()
-      member val ShouldMaintainReferences = false
-
-  type internal SeqPntSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<SeqPnt>
-      member this.Serialize(context:SerializationContext) =
-        context.RootSerializer.Serialize<SeqPnt>(context.Source :?> SeqPnt) // TODO
-      member this.Deserialize(context:DeserializationContext) =
-        Object()
+        let result = SeqPnts()
+        context.LocalValue.Array
+        |> Seq.mapi (fun i v ->
+          context.Push(typeof<SeqPnt>, i.ToString(), v);
+          let value = deserialize<SeqPnt> context
+          context.Pop();
+          value
+        )
+        |> result.AddRange
+        result :> obj
       member val ShouldMaintainReferences = false
 
   type internal BranchesSerializer() =
@@ -302,7 +400,16 @@ module NativeJson =
         Manatee.Json.JsonValue(a)
 
       member this.Deserialize(context:DeserializationContext) =
-        Object()
+        let result = Branches()
+        context.LocalValue.Array
+        |> Seq.mapi (fun i v ->
+          context.Push(typeof<BranchInfo>, i.ToString(), v);
+          let value = deserialize<BranchInfo> context
+          context.Pop();
+          value
+        )
+        |> result.AddRange
+        result :> obj
       member val ShouldMaintainReferences = false
 
   let internal serializer =
@@ -320,12 +427,19 @@ module NativeJson =
     let o = JsonSerializerOptions()
     o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
     o.EncodeDefaultValues <- false
+    let r = JsonResolver()
+    r.Fallback <- o.Resolver
+    o.Resolver <- r
     s.Options <- o
     s
 
-  let serializeToUtf8Bytes (document:Modules) =
+  let internal toText (document:Modules) =
     serializer.Serialize<Modules>(document).GetIndentedString()
       .Replace("`", "\\u0060").Replace("<", "\\u003C").Replace(">", "\\u003E")
+
+  let serializeToUtf8Bytes (document:Modules) =
+    document
+    |> toText
     |> System.Text.Encoding.UTF8.GetBytes
 
 #endif
