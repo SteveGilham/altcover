@@ -6,6 +6,7 @@ open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Reflection
+open System.Text
 #if GUI
 open System.Linq
 open System.Xml.Linq
@@ -25,6 +26,32 @@ type internal DocumentType =
 
 module NativeJson =
 
+  [<Sealed>]
+  type private BuildWriter() =
+    inherit TextWriter(CultureInfo.InvariantCulture)
+    member val Builder:StringBuilder = null with get, set
+    member self.Clear() = let temp = self.Builder
+                          self.Builder <- null
+                          temp
+    override self.Encoding = Encoding.Unicode // pointless but required
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
+      Justification="Would be meaningless")>]
+    override self.Write(value:Char) =
+        value
+        |> self.Builder.Append
+        |> ignore
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
+      Justification="Would be meaningless")>]
+    override self.Write(value:String) =
+        value
+        |> self.Builder.Append
+        |> ignore
+
+  let private escapeString (builder:TextWriter) (s:String) =
+    System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
+
   type internal TimeStamp = string
 
   let FromTracking(ticks:int64) : TimeStamp =
@@ -33,13 +60,6 @@ module NativeJson =
     |> Convert.ToBase64String
 
   type internal Times = List<TimeStamp>
-
-  let timesToJson (t:Times) =
-    let a = Manatee.Json.JsonArray()
-    t
-    |> Seq.map Manatee.Json.JsonValue
-    |> a.AddRange
-    Manatee.Json.JsonValue(a)
 
   type internal Tracks = List<int>
 
