@@ -2,7 +2,7 @@
 	"ConsoleApplication1.exe" : {
 			"C:\\Users\\steve\\Documents\\GitHub\\altcover\\Sample19\\ConsoleApplication1\\Program.fs" : {
 					"Program" : {
-							"System.Void Program::Example(Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)" : {
+							"System.Void Program::Example(Microsoft.FSharp.Core.FSharpOption\u00601\u003CSystem.Int32\u003E)" : {
 									"Lines" : {
 											"2" : 1,
 											"3" : 0,

@@ -327,7 +327,7 @@
 											}
 										]
 								},
-							"Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()" : {
+							"Microsoft.FSharp.Core.FSharpFunc\u00602\u003CMicrosoft.FSharp.Core.Unit,Tests.DU/MyUnion\u003E Tests.DU/MyUnion::get_MyBar()" : {
 									"Lines" : {
 											"44" : 0
 										},

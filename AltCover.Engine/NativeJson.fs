@@ -323,6 +323,11 @@ module NativeJson =
     s.Options <- o
     s
 
+  let serializeToUtf8Bytes (document:Modules) =
+    serializer.Serialize<Modules>(document).GetIndentedString()
+      .Replace("`", "\\u0060").Replace("<", "\\u003C").Replace(">", "\\u003E")
+    |> System.Text.Encoding.UTF8.GetBytes
+
 #endif
 
 #if GUI
@@ -611,7 +616,7 @@ module NativeJson =
       | _ -> s
 
     let result = Visitor.encloseState reportVisitor (JsonContext.Build())
-    (result, fun (s:System.IO.Stream) -> let encoded = JsonSerializer.SerializeToUtf8Bytes(document, options)
+    (result, fun (s:System.IO.Stream) -> let encoded = serializeToUtf8Bytes document
                                          s.Write(encoded, 0, encoded.Length))
 #endif
 
