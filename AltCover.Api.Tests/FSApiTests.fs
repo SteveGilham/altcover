@@ -143,8 +143,8 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    test <@ result = expected @>
-
+    test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
+                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
   [<Test>]
   let NCoverToJson() =
     use stream=
@@ -161,8 +161,8 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    test <@ result = expected @>
-
+    test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
+                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
   [<Test>]
   let OpenCoverToBarChart() =
     use stream=

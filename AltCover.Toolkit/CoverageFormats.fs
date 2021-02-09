@@ -28,9 +28,10 @@ module CoverageFormats =
   let ConvertToJson (document:XDocument) =
     let format = XmlUtilities.discoverFormat document
     (document.Root
-            |> (match format with
-                | ReportFormat.NCover -> Json.ncoverToJson
-                | _ -> Json.opencoverToJson)).ToString()
+     |> (match format with
+         | ReportFormat.NCover -> Json.ncoverToJson
+         | _ -> Json.opencoverToJson)
+     |> NativeJson.serializer.Serialize<NativeJson.Modules>).GetIndentedString()
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
