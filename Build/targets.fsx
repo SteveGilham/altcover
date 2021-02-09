@@ -188,9 +188,6 @@ let nunitConsole =
 let xmldoc2cmdletdoc =
   ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp2.1/XmlDoc2CmdletDoc.dll")
   |> Path.getFullName
-let systembuffers =
-  ("./packages/" + (packageVersion "System.Buffers") + "/lib/netstandard2.0/")
-  |> Path.getFullName
 
 let cliArguments =
   { MSBuild.CliArguments.Create() with
@@ -2491,7 +2488,6 @@ _Target "Packaging" (fun _ ->
     Seq.concat
       [ !!"./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
         !!"_Publish/System.*"
-        !!(systembuffers @@ "System.Buffers.*")
       ]
     |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
     |> Seq.toList
@@ -2578,7 +2574,6 @@ _Target "Packaging" (fun _ ->
   let poshFiles where =
     [ (!!"./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
       (!!"./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*")
-      (!!(systembuffers @@ "System.Buffers.*"))
     ]
     |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
@@ -2668,7 +2663,6 @@ _Target "Packaging" (fun _ ->
   let auxVFiles =
     [
       (!!"./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
-      (!!(systembuffers @@ "System.Buffers.*"))
     ]
     |> Seq.concat
     |> Seq.map

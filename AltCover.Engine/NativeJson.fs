@@ -24,13 +24,6 @@ type internal DocumentType =
 #endif
 
 module NativeJson =
-#if !GUI
-  let internal options =
-    let o = System.Text.Json.JsonSerializerOptions()
-    o.WriteIndented <- true
-    o.IgnoreNullValues <- true
-    o
-#endif
 
   type internal TimeStamp = string
 

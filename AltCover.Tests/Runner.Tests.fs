@@ -6,7 +6,6 @@ open System.Collections.Generic
 open System.IO
 open System.IO.Compression
 open System.Reflection
-open System.Text.Json
 open System.Text.RegularExpressions
 open System.Xml
 open System.Xml.Linq
