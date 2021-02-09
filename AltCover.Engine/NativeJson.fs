@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
 open System.IO
 open System.Reflection
 open System.Text.Json
@@ -12,6 +13,8 @@ open System.Xml.Linq
 #endif
 
 #if RUNNER
+open Manatee.Json
+open Manatee.Json.Serialization
 open Mono.Cecil
 
 [<AutoSerializable(false)>]
@@ -24,7 +27,7 @@ type internal DocumentType =
 module NativeJson =
 #if !GUI
   let internal options =
-    let o = JsonSerializerOptions()
+    let o = System.Text.Json.JsonSerializerOptions()
     o.WriteIndented <- true
     o.IgnoreNullValues <- true
     o
@@ -38,6 +41,13 @@ module NativeJson =
     |> Convert.ToBase64String
 
   type internal Times = List<TimeStamp>
+
+  let timesToJson (t:Times) =
+    let a = Manatee.Json.JsonArray()
+    t
+    |> Seq.map Manatee.Json.JsonValue
+    |> a.AddRange
+    Manatee.Json.JsonValue(a)
 
   type internal Tracks = List<int>
 
@@ -138,6 +148,183 @@ module NativeJson =
   type internal Classes = Dictionary<string, Methods>
   type internal Documents = SortedDictionary<string, Classes>
   type internal Modules = SortedDictionary<string, Documents> // <= serialize this
+
+#if RUNNER
+  let serialize (context:SerializationContext) =
+    let info = typeof<JsonSerializer>.GetMethod("Serialize", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    info.Invoke(context.RootSerializer, [| context :> obj |]) :?> JsonValue
+
+  let encode<'v>(context:SerializationContext) =
+    let o = Manatee.Json.JsonObject()
+    context.Source :?> IDictionary<string, 'v>
+    |> Seq.iter (fun kvp ->
+      let key = kvp.Key
+      let value = kvp.Value
+      context.Push(value.GetType(), typeof<'v>, key, value)
+      let value2 = serialize context
+      context.Pop()
+      o.Add(key, value2)
+    )
+    Manatee.Json.JsonValue(o)
+
+  type internal ModulesSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Modules>
+      member this.Serialize(context:SerializationContext) =
+        encode<Documents> context
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal DocumentsSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Documents>
+      member this.Serialize(context:SerializationContext) =
+        encode<Classes> context
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal ClassesSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Classes>
+      member this.Serialize(context:SerializationContext) =
+        encode<Methods> context
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal MethodsSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Methods>
+      member this.Serialize(context:SerializationContext) =
+        encode<Method> context
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal LinesSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Lines>
+      member this.Serialize(context:SerializationContext) =
+        let o = Manatee.Json.JsonObject()
+        context.Source :?> IDictionary<int, int>
+        |> Seq.iter (fun kvp ->
+          let key = kvp.Key.ToString(CultureInfo.InvariantCulture)
+          let value = kvp.Value
+          let value2 = value |> float |> JsonValue
+          o.Add(key, value2)
+        )
+        Manatee.Json.JsonValue(o)
+
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal TimesSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Times>
+      member this.Serialize(context:SerializationContext) =
+        let a = Manatee.Json.JsonArray()
+        context.Source :?> Times
+        |> Seq.map Manatee.Json.JsonValue
+        |> a.AddRange
+        Manatee.Json.JsonValue(a)
+
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal TracksSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Tracks>
+      member this.Serialize(context:SerializationContext) =
+        let a = Manatee.Json.JsonArray()
+        context.Source :?> Tracks
+        |> Seq.map (float >> Manatee.Json.JsonValue)
+        |> a.AddRange
+        Manatee.Json.JsonValue(a)
+
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal SeqPntsSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<SeqPnts>
+      member this.Serialize(context:SerializationContext) =
+        let a = Manatee.Json.JsonArray()
+        context.Source :?> SeqPnts
+        |> Seq.mapi (fun i s ->
+          context.Push(typeof<SeqPnt>, typeof<SeqPnt>, i.ToString(), s)
+          let v = serialize context
+          context.Pop()
+          v
+        )
+        |> a.AddRange
+        Manatee.Json.JsonValue(a)
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal SeqPntSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<SeqPnt>
+      member this.Serialize(context:SerializationContext) =
+        context.RootSerializer.Serialize<SeqPnt>(context.Source :?> SeqPnt) // TODO
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  type internal BranchesSerializer() =
+    interface ISerializer with
+      member this.Handles(context:SerializationContextBase) =
+        context.InferredType = typeof<Branches>
+      member this.Serialize(context:SerializationContext) =
+        let a = Manatee.Json.JsonArray()
+        context.Source :?> Branches
+        |> Seq.mapi (fun i s ->
+          context.Push(typeof<BranchInfo>, typeof<BranchInfo>, i.ToString(), s)
+          let v = serialize context
+          context.Pop()
+          v
+        )
+        |> a.AddRange
+        Manatee.Json.JsonValue(a)
+
+      member this.Deserialize(context:DeserializationContext) =
+        Object()
+      member val ShouldMaintainReferences = false
+
+  let internal serializer =
+    SerializerFactory.AddSerializer(ModulesSerializer())
+    SerializerFactory.AddSerializer(DocumentsSerializer())
+    SerializerFactory.AddSerializer(ClassesSerializer())
+    SerializerFactory.AddSerializer(MethodsSerializer())
+    SerializerFactory.AddSerializer(LinesSerializer())
+    SerializerFactory.AddSerializer(TimesSerializer())
+    SerializerFactory.AddSerializer(TracksSerializer())
+    SerializerFactory.AddSerializer(BranchesSerializer())
+    SerializerFactory.AddSerializer(SeqPntsSerializer())
+
+    let s = JsonSerializer()
+    let o = JsonSerializerOptions()
+    o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
+    o.EncodeDefaultValues <- false
+    s.Options <- o
+    s
+
+#endif
+
 #if GUI
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -436,8 +623,6 @@ module NativeJson =
   [<SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods",
                     Justification = "Not a lot of alteratives")>]
   let internal assemblyResolve (_:Object) (args:ResolveEventArgs) =
-    sprintf "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
-    |> System.Diagnostics.Debug.WriteLine
     let n = AssemblyName(args.Name)
     match AppDomain.CurrentDomain.GetAssemblies()
           |> Seq.tryFind(fun a -> a.GetName().Name = n.Name) with

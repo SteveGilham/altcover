@@ -336,10 +336,12 @@ module AltCoverRunnerTests =
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected = reader.ReadToEnd()
-        printfn "%s" result
-        Assert.That
-          (result, Is.EqualTo expected)
-        test <@ result = expected @>
+        //printfn "%s" result
+        //Assert.That
+        //  (result.Replace("\r",String.Empty).Replace("\n",String.Empty),
+        //  Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
+        test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
+                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
       finally
         Json.path := None
 
@@ -375,8 +377,10 @@ module AltCoverRunnerTests =
         let expected = reader.ReadToEnd()
         //printfn "%s" result
         //Assert.That
-        //  (result, Is.EqualTo expected)
-        test <@ result = expected @>
+        //  (result.Replace("\r",String.Empty).Replace("\n",String.Empty),
+        //  Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
+        test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
+                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
       finally
         Json.path := None
 

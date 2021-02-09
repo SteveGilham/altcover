@@ -14,71 +14,6 @@ open Manatee.Json.Serialization
 open Mono.Cecil
 open Mono.Cecil.Rocks
 
-type internal AltDictionarySerializer() =
-  static member Encode<'k, 'v>(context:SerializationContext) =
-    let o = Manatee.Json.JsonObject()
-
-    let encode (kvp:KeyValuePair<'k, 'v>) =
-      let key = String.Format(CultureInfo.InvariantCulture, "{0}", kvp.Key)
-      let value = kvp.Value
-      printfn "Encoding %A => %A (%A)" key value (value.GetType().FullName)
-      context.Push(value.GetType(), typeof<'v>, key, value)
-      printfn "Pushed %A" <| context.Source.GetType()
-      let value2 = if value.GetType() = typeof<int32>
-                   then
-                    printfn "Encoding int %A" value
-                    let c = value.GetType().GetRuntimeMethods()
-                            |> Seq.find (fun m -> m.Name = "System.IConvertible.ToDouble")
-                    printfn "with %A" c
-                    let v = c.Invoke(value, [| null |]) :?> float
-                    printfn "Getting %A" v
-                    Manatee.Json.JsonValue v
-                   else if value.GetType() = typeof<String>
-                        then Manatee.Json.JsonValue(value.ToString())
-                        else context.RootSerializer.Serialize(context)
-      printfn "Got value"
-      context.Pop()
-      printfn "Popped"
-      o.Add(key, value2)
-      printfn "Added"
-
-    context.Source :?> System.Collections.IDictionary
-    |> Seq.cast<KeyValuePair<'k,'v>>
-    |> Seq.iter encode
-    Manatee.Json.JsonValue(o)
-
-  interface ISerializer with
-    member this.Handles(context:SerializationContextBase) =
-      let b =
-        if context.InferredType.GetTypeInfo().IsGenericType
-        then context.InferredType.GetGenericTypeDefinition().GetInterfaces()
-             |> Seq.exists(fun t -> t.Name = "IDictionary`2" &&
-                                    t.Namespace = "System.Collections.Generic")
-        else false
-      printfn "Do we handle %A => %A (%A)" context.InferredType.FullName b context.CurrentLocation
-      b
-
-    member this.Serialize(context:SerializationContext) =
-      //AltDictionarySerializer.Encode(context) by reflection to frob the generic types
-      printfn "ADS on %A" <| context.Source.GetType().FullName
-      let typeargs = context.Source.GetType().GetTypeInfo().GenericTypeArguments
-      printfn "typeargs = %A" typeargs
-      try
-        let info = typeof<AltDictionarySerializer>
-                      .GetMethod("Encode", BindingFlags.Static ||| BindingFlags.NonPublic)
-                      .MakeGenericMethod(typeargs)
-        printfn "Invoking with %A" typeargs
-        let r = info.Invoke(null, [| context :> obj |]) :?> Manatee.Json.JsonValue
-        printfn "Invoked with %A" typeargs
-        r
-      with
-      | x -> printfn "Blew %A with %s" typeargs x.Message
-             reraise()
-
-    member this.Deserialize(context:DeserializationContext) =
-      Object()
-    member val ShouldMaintainReferences = false
-
 [<SuppressMessage("Microsoft.Naming", "CA1704",
     Justification="'Json' is jargon")>]
 module internal Json =
@@ -437,17 +372,11 @@ module internal Json =
 
   let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-        // SerializerFactory.RemoveSerializer<NativeJson.Modules>()
-        SerializerFactory.AddSerializer(AltDictionarySerializer())
-        let s = JsonSerializer()
-        let o = JsonSerializerOptions()
-        o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
-        s.Options <- o
         ((report.Root
          |> (match format with
              | ReportFormat.NCover -> ncoverToJson
              | _ -> opencoverToJson))
-         |> s.Serialize<NativeJson.Modules>).GetIndentedString()
+         |> NativeJson.serializer.Serialize<NativeJson.Modules>).GetIndentedString()
          // tabs instead of 2 space indents -- OK
          // Dictionary style -- not good
         |> writer.Write)
