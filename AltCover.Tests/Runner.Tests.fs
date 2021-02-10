@@ -2172,6 +2172,7 @@ module AltCoverRunnerTests =
 
         let entries = Dictionary<int, PointVisit>()
         let pv = PointVisit.Create()
+        pv.Track(Time 512L)
         tracks(1L) |> Seq.iter pv.Track
         entries.Add (1, pv)
         entries.Add (2, pv)
@@ -2180,6 +2181,7 @@ module AltCoverRunnerTests =
         let exits = Dictionary<int, PointVisit>()
         let pv = PointVisit.Create()
         tracks(2L) |> Seq.iter pv.Track
+        pv.Track(Time 1024L)
         exits.Add (1, pv)
         counts.Add(Track.Exit, exits)
 
