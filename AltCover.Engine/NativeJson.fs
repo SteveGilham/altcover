@@ -425,10 +425,18 @@ module NativeJson =
        // TODO Times & Tracks
         w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
       )
-      w.Builder.AppendLine().Append(slugs.[10]).AppendLine("]") |> ignore
+      w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
+    if method.TId.HasValue
+    then
+       w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"TId\": ")
+         .Append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
+         .AppendLine(",").Append(slugs.[9]).Append("\"Entry\": [")
+       |> ignore
+       w.Builder.AppendLine("],")
+        .Append(slugs.[9]).Append("\"Exit\": [") |> ignore
+       w.Builder.AppendLine("]") |> ignore
     else
       w.Builder.AppendLine() |> ignore
-      // TODO TId, Entry and Exit
     w
 
   let private methodsToWriter (w:BuildWriter) (methods:Methods) =

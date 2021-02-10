@@ -1,6 +1,6 @@
 {
  "Sample4.dll": {
-			"Tests.fs" : {
+   "Tests.fs": {
      "Tests.Program": {
        "System.Int32 Tests.Program::main(System.String[])": {
          "Lines": {
@@ -153,10 +153,10 @@
             "Offset": 0,
             "Id": 8
            }
-										],
-									"TId" : 1,
-									"Entry" : [],
-									"Exit" : []
+          ],
+         "TId": 1,
+         "Entry": [],
+         "Exit": []
         }
       },
      "Tests.DU/MyUnion": {
