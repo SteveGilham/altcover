@@ -400,9 +400,9 @@ module NativeJson =
           b.Times
           |> Seq.iter (fun t ->
             (if firstTime
-             then w.Builder.AppendLine()
-             else firstTime <- false
-                  w.Builder.AppendLine(","))
+             then firstTime <- false
+                  w.Builder.AppendLine()
+             else w.Builder.AppendLine(","))
              .Append(slugs.[14]).Append('"').Append(t).Append('"') |> ignore
           )
           w.Builder.AppendLine()
@@ -414,9 +414,9 @@ module NativeJson =
           b.Tracks
           |> Seq.iter (fun t ->
             (if firstTime
-             then w.Builder.AppendLine()
-             else firstTime <- false
-                  w.Builder.AppendLine(","))
+             then firstTime <- false
+                  w.Builder.AppendLine()
+             else w.Builder.AppendLine(","))
              .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
           )
           w.Builder.AppendLine()
@@ -464,9 +464,9 @@ module NativeJson =
           s.Times
           |> Seq.iter (fun t ->
             (if firstTime
-             then w.Builder.AppendLine()
-             else firstTime <- false
-                  w.Builder.AppendLine(","))
+             then firstTime <- false
+                  w.Builder.AppendLine()
+             else w.Builder.AppendLine(","))
              .Append(slugs.[14]).Append('"').Append(t).Append('"') |> ignore
           )
           w.Builder.AppendLine()
@@ -478,9 +478,9 @@ module NativeJson =
           s.Tracks
           |> Seq.iter (fun t ->
             (if firstTime
-             then w.Builder.AppendLine()
-             else firstTime <- false
-                  w.Builder.AppendLine(","))
+             then firstTime <- false
+                  w.Builder.AppendLine()
+             else w.Builder.AppendLine(","))
              .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
           )
           w.Builder.AppendLine()
@@ -504,9 +504,9 @@ module NativeJson =
         method.Entry
         |> Seq.iter (fun t ->
            (if firstTime
-            then w.Builder.AppendLine()
-            else firstTime <- false
-                 w.Builder.AppendLine(","))
+            then firstTime <- false
+                 w.Builder.AppendLine()
+            else w.Builder.AppendLine(","))
              .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
         )
         w.Builder.AppendLine().Append(slugs.[10]) |> ignore
@@ -519,9 +519,9 @@ module NativeJson =
         method.Exit
         |> Seq.iter (fun t ->
            (if firstTime
-            then w.Builder.AppendLine()
-            else firstTime <- false
-                 w.Builder.AppendLine(","))
+            then firstTime <- false
+                 w.Builder.AppendLine()
+            else w.Builder.AppendLine(","))
              .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
         )
         w.Builder.AppendLine().Append(slugs.[10]) |> ignore
