@@ -1,483 +1,530 @@
 {
-	"Sample4.dll" : {
-			"Tests.fs" : {
-					"Tests.Program" : {
-							"System.Int32 Tests.Program::main(System.String[])" : {
-									"Lines" : {
-											"61" : 1
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"VC" : 1,
-												"SL" : 61,
-												"SC" : 16,
-												"EL" : 61,
-												"EC" : 17,
-												"Offset" : 2
-											}
-										]
-								}
-						},
-					"Tests.DU" : {
-							"Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)" : {
-									"Lines" : {
-											"49" : 0
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"SL" : 49,
-												"SC" : 21,
-												"EL" : 49,
-												"EC" : 26,
-												"Id" : 1
-											}
-										]
-								},
-							"Tests.DU/MyUnion Tests.DU::returnBar(System.String)" : {
-									"Lines" : {
-											"50" : 3
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"VC" : 3,
-												"SL" : 50,
-												"SC" : 21,
-												"EL" : 50,
-												"EC" : 26,
-												"Id" : 2,
-												"Times" : [
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA="
-													]
-											}
-										]
-								},
-							"System.Void Tests.DU::testMakeUnion()" : {
-									"Lines" : {
-											"54" : 9,
-											"55" : 7,
-											"56" : 5
-										},
-									"Branches" : [
-											{
-												"Line" : 54,
-												"Offset" : 209,
-												"EndOffset" : 257
-											},
-											{
-												"Line" : 54,
-												"Offset" : 209,
-												"EndOffset" : 218,
-												"Path" : 1,
-												"Ordinal" : 1,
-												"Hits" : 2,
-												"Id" : 1,
-												"Tracks" : [
-														0,
-														0
-													]
-											},
-											{
-												"Line" : 55,
-												"Offset" : 475,
-												"EndOffset" : 524,
-												"Ordinal" : 2,
-												"Id" : 2
-											},
-											{
-												"Line" : 55,
-												"Offset" : 475,
-												"EndOffset" : 484,
-												"Path" : 1,
-												"Ordinal" : 3,
-												"Hits" : 4,
-												"Id" : 3,
-												"Times" : [
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA="
-													],
-												"Tracks" : [
-														0,
-														0,
-														0,
-														0
-													]
-											}
-										],
-									"SeqPnts" : [
-											{
-												"SL" : 56,
-												"SC" : 5,
-												"EL" : 56,
-												"EC" : 9,
-												"Offset" : 765,
-												"Id" : 3
-											},
-											{
-												"VC" : 5,
-												"SL" : 56,
-												"SC" : 5,
-												"EL" : 56,
-												"EC" : 44,
-												"Offset" : 524,
-												"Id" : 4
-											},
-											{
-												"SL" : 55,
-												"SC" : 5,
-												"EL" : 55,
-												"EC" : 9,
-												"Offset" : 517,
-												"Id" : 5
-											},
-											{
-												"VC" : 7,
-												"SL" : 55,
-												"SC" : 5,
-												"EL" : 55,
-												"EC" : 39,
-												"Offset" : 257,
-												"Id" : 6,
-												"Times" : [
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA="
-													]
-											},
-											{
-												"SL" : 54,
-												"SC" : 5,
-												"EL" : 54,
-												"EC" : 9,
-												"Offset" : 250,
-												"Id" : 7
-											},
-											{
-												"VC" : 9,
-												"SL" : 54,
-												"SC" : 5,
-												"EL" : 54,
-												"EC" : 37,
-												"Id" : 8
-											}
-										],
-									"TId" : 1,
-									"Entry" : [
-											"AQAAAAAAAAA="
-										],
-									"Exit" : [
-											"AgAAAAAAAAA="
-										]
-								}
-						},
-					"Tests.DU/MyUnion" : {
-							"Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()" : {
-									"Lines" : {
-											"36" : 0,
-											"37" : 0,
-											"38" : 0,
-											"39" : 0,
-											"41" : 0,
-											"42" : 0
-										},
-									"Branches" : [
-											{
-												"Line" : 36,
-												"Offset" : 8,
-												"EndOffset" : 183,
-												"Id" : 4
-											},
-											{
-												"Line" : 36,
-												"Offset" : 8,
-												"EndOffset" : 40,
-												"Path" : 1,
-												"Ordinal" : 1,
-												"Hits" : 6,
-												"Id" : 5,
-												"Tracks" : [
-														0,
-														0,
-														0,
-														0,
-														0,
-														0
-													]
-											},
-											{
-												"Line" : 36,
-												"Offset" : 8,
-												"EndOffset" : 91,
-												"Path" : 2,
-												"Ordinal" : 2,
-												"Id" : 6
-											},
-											{
-												"Line" : 36,
-												"Offset" : 8,
-												"EndOffset" : 137,
-												"Path" : 3,
-												"Ordinal" : 3,
-												"Hits" : 8,
-												"Id" : 7,
-												"Times" : [
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA=",
-														"AAAAAAAAAAA="
-													],
-												"Tracks" : [
-														0,
-														0,
-														0,
-														0,
-														0,
-														0,
-														0,
-														0
-													]
-											}
-										],
-									"SeqPnts" : [
-											{
-												"SL" : 42,
-												"SC" : 17,
-												"EL" : 42,
-												"EC" : 27,
-												"Offset" : 194,
-												"Id" : 9
-											},
-											{
-												"SL" : 42,
-												"SC" : 7,
-												"EL" : 42,
-												"EC" : 11,
-												"Offset" : 187,
-												"Id" : 10
-											},
-											{
-												"SL" : 41,
-												"SC" : 16,
-												"EL" : 41,
-												"EC" : 20,
-												"Offset" : 183,
-												"Id" : 11
-											},
-											{
-												"SL" : 39,
-												"SC" : 20,
-												"EL" : 39,
-												"EC" : 33,
-												"Offset" : 154,
-												"Id" : 12
-											},
-											{
-												"SL" : 36,
-												"SC" : 9,
-												"EL" : 36,
-												"EC" : 24,
-												"Offset" : 137,
-												"Id" : 13
-											},
-											{
-												"SL" : 38,
-												"SC" : 20,
-												"EL" : 38,
-												"EC" : 33,
-												"Offset" : 108,
-												"Id" : 14
-											},
-											{
-												"SL" : 36,
-												"SC" : 9,
-												"EL" : 36,
-												"EC" : 24,
-												"Offset" : 91,
-												"Id" : 15
-											},
-											{
-												"SL" : 37,
-												"SC" : 20,
-												"EL" : 37,
-												"EC" : 33,
-												"Offset" : 54,
-												"Id" : 16
-											},
-											{
-												"SL" : 36,
-												"SC" : 9,
-												"EL" : 36,
-												"EC" : 24,
-												"Id" : 17
-											}
-										]
-								},
-							"Microsoft.FSharp.Core.FSharpFunc\u00602\u003CMicrosoft.FSharp.Core.Unit,Tests.DU/MyUnion\u003E Tests.DU/MyUnion::get_MyBar()" : {
-									"Lines" : {
-											"44" : 0
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"SL" : 44,
-												"SC" : 25,
-												"EL" : 44,
-												"EC" : 36,
-												"Id" : 18
-											},
-											{
-												"SL" : 44,
-												"SC" : 25,
-												"EL" : 44,
-												"EC" : 36,
-												"Id" : 19
-											}
-										]
-								}
-						},
-					"Tests.DU/MyClass" : {
-							"System.Void Tests.DU/MyClass::.ctor()" : {
-									"Lines" : {
-											"46" : 0,
-											"47" : 0
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"SL" : 46,
-												"SC" : 8,
-												"EL" : 46,
-												"EC" : 15,
-												"Offset" : 15,
-												"Id" : 20
-											},
-											{
-												"SL" : 47,
-												"SC" : 27,
-												"EL" : 47,
-												"EC" : 28,
-												"Offset" : 8,
-												"Id" : 21
-											}
-										]
-								}
-						},
-					"Tests.M" : {
-							"Tests.M/Thing Tests.M::makeThing(System.String)" : {
-									"Lines" : {
-											"20" : 0
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"SL" : 20,
-												"SC" : 21,
-												"EL" : 20,
-												"EC" : 34,
-												"Id" : 22
-											}
-										]
-								},
-							"System.Void Tests.M::testMakeThing()" : {
-									"Lines" : {
-											"24" : 0,
-											"25" : 0
-										},
-									"Branches" : [
-											{
-												"Line" : 24,
-												"Offset" : 209,
-												"EndOffset" : 257,
-												"Id" : 8
-											},
-											{
-												"Line" : 24,
-												"Offset" : 209,
-												"EndOffset" : 218,
-												"Path" : 1,
-												"Ordinal" : 1,
-												"Hits" : 10,
-												"Id" : 9,
-												"Tracks" : [
-														0,
-														0,
-														0,
-														0,
-														0,
-														0,
-														0,
-														0,
-														0,
-														0
-													]
-											}
-										],
-									"SeqPnts" : [
-											{
-												"SL" : 25,
-												"SC" : 5,
-												"EL" : 25,
-												"EC" : 9,
-												"Offset" : 568,
-												"Id" : 23
-											},
-											{
-												"SL" : 25,
-												"SC" : 5,
-												"EL" : 25,
-												"EC" : 54,
-												"Offset" : 257,
-												"Id" : 24
-											},
-											{
-												"SL" : 24,
-												"SC" : 5,
-												"EL" : 24,
-												"EC" : 9,
-												"Offset" : 250,
-												"Id" : 25
-											},
-											{
-												"SL" : 24,
-												"SC" : 5,
-												"EL" : 24,
-												"EC" : 43,
-												"Id" : 26
-											}
-										]
-								}
-						},
-					"Tests.M/Thing" : {
-							"System.Byte[] Tests.M/Thing::bytes()" : {
-									"Lines" : {
-											"18" : 0
-										},
-									"Branches" : [],
-									"SeqPnts" : [
-											{
-												"SL" : 18,
-												"SC" : 27,
-												"EL" : 18,
-												"EC" : 73,
-												"Id" : 27
-											}
-										]
-								}
-						}
-				}
-		}
+ "Sample4.dll": {
+   "Tests.fs": {
+     "Tests.Program": {
+       "System.Int32 Tests.Program::main(System.String[])": {
+         "Lines": {
+           "61": 1
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 61,
+            "SC": 16,
+            "EL": 61,
+            "EC": 17,
+            "Offset": 2,
+            "Id": 0
+           }
+          ]
+        }
+      },
+     "Tests.DU": {
+       "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)": {
+         "Lines": {
+           "49": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 49,
+            "SC": 21,
+            "EL": 49,
+            "EC": 26,
+            "Offset": 0,
+            "Id": 1
+           }
+          ]
+        },
+       "Tests.DU/MyUnion Tests.DU::returnBar(System.String)": {
+         "Lines": {
+           "50": 3
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 3,
+            "SL": 50,
+            "SC": 21,
+            "EL": 50,
+            "EC": 26,
+            "Offset": 0,
+            "Id": 2,
+            "Times": [
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA="
+             ]
+           }
+          ]
+        },
+       "System.Void Tests.DU::testMakeUnion()": {
+         "Lines": {
+           "54": 9,
+           "55": 7,
+           "56": 5
+          },
+         "Branches": [
+           {
+            "Line": 54,
+            "Offset": 209,
+            "EndOffset": 257,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0
+           },
+           {
+            "Line": 54,
+            "Offset": 209,
+            "EndOffset": 218,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 2,
+            "Id": 1,
+            "Tracks": [
+              0,
+              0
+             ]
+           },
+           {
+            "Line": 55,
+            "Offset": 475,
+            "EndOffset": 524,
+            "Path": 0,
+            "Ordinal": 2,
+            "Hits": 0,
+            "Id": 2
+           },
+           {
+            "Line": 55,
+            "Offset": 475,
+            "EndOffset": 484,
+            "Path": 1,
+            "Ordinal": 3,
+            "Hits": 4,
+            "Id": 3,
+            "Times": [
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA="
+             ],
+            "Tracks": [
+              0,
+              0,
+              0,
+              0
+             ]
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 56,
+            "SC": 5,
+            "EL": 56,
+            "EC": 9,
+            "Offset": 765,
+            "Id": 3
+           },
+           {
+            "VC": 5,
+            "SL": 56,
+            "SC": 5,
+            "EL": 56,
+            "EC": 44,
+            "Offset": 524,
+            "Id": 4
+           },
+           {
+            "VC": 0,
+            "SL": 55,
+            "SC": 5,
+            "EL": 55,
+            "EC": 9,
+            "Offset": 517,
+            "Id": 5
+           },
+           {
+            "VC": 7,
+            "SL": 55,
+            "SC": 5,
+            "EL": 55,
+            "EC": 39,
+            "Offset": 257,
+            "Id": 6,
+            "Times": [
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA="
+             ]
+           },
+           {
+            "VC": 0,
+            "SL": 54,
+            "SC": 5,
+            "EL": 54,
+            "EC": 9,
+            "Offset": 250,
+            "Id": 7
+           },
+           {
+            "VC": 9,
+            "SL": 54,
+            "SC": 5,
+            "EL": 54,
+            "EC": 37,
+            "Offset": 0,
+            "Id": 8
+           }
+          ],
+         "TId": 1,
+         "Entry": [
+           "AQAAAAAAAAA=",
+           "AQAAAAAAAAA="
+          ],
+         "Exit": [
+           "AgAAAAAAAAA=",
+           "AgAAAAAAAAA="
+          ]
+        }
+      },
+     "Tests.DU/MyUnion": {
+       "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()": {
+         "Lines": {
+           "36": 0,
+           "37": 0,
+           "38": 0,
+           "39": 0,
+           "41": 0,
+           "42": 0
+          },
+         "Branches": [
+           {
+            "Line": 36,
+            "Offset": 8,
+            "EndOffset": 183,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 4
+           },
+           {
+            "Line": 36,
+            "Offset": 8,
+            "EndOffset": 40,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 6,
+            "Id": 5,
+            "Tracks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+             ]
+           },
+           {
+            "Line": 36,
+            "Offset": 8,
+            "EndOffset": 91,
+            "Path": 2,
+            "Ordinal": 2,
+            "Hits": 0,
+            "Id": 6
+           },
+           {
+            "Line": 36,
+            "Offset": 8,
+            "EndOffset": 137,
+            "Path": 3,
+            "Ordinal": 3,
+            "Hits": 8,
+            "Id": 7,
+            "Times": [
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA=",
+              "AAAAAAAAAAA="
+             ],
+            "Tracks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+             ]
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 42,
+            "SC": 17,
+            "EL": 42,
+            "EC": 27,
+            "Offset": 194,
+            "Id": 9
+           },
+           {
+            "VC": 0,
+            "SL": 42,
+            "SC": 7,
+            "EL": 42,
+            "EC": 11,
+            "Offset": 187,
+            "Id": 10
+           },
+           {
+            "VC": 0,
+            "SL": 41,
+            "SC": 16,
+            "EL": 41,
+            "EC": 20,
+            "Offset": 183,
+            "Id": 11
+           },
+           {
+            "VC": 0,
+            "SL": 39,
+            "SC": 20,
+            "EL": 39,
+            "EC": 33,
+            "Offset": 154,
+            "Id": 12
+           },
+           {
+            "VC": 0,
+            "SL": 36,
+            "SC": 9,
+            "EL": 36,
+            "EC": 24,
+            "Offset": 137,
+            "Id": 13
+           },
+           {
+            "VC": 0,
+            "SL": 38,
+            "SC": 20,
+            "EL": 38,
+            "EC": 33,
+            "Offset": 108,
+            "Id": 14
+           },
+           {
+            "VC": 0,
+            "SL": 36,
+            "SC": 9,
+            "EL": 36,
+            "EC": 24,
+            "Offset": 91,
+            "Id": 15
+           },
+           {
+            "VC": 0,
+            "SL": 37,
+            "SC": 20,
+            "EL": 37,
+            "EC": 33,
+            "Offset": 54,
+            "Id": 16
+           },
+           {
+            "VC": 0,
+            "SL": 36,
+            "SC": 9,
+            "EL": 36,
+            "EC": 24,
+            "Offset": 0,
+            "Id": 17
+           }
+          ]
+        },
+       "Microsoft.FSharp.Core.FSharpFunc\u00602\u003CMicrosoft.FSharp.Core.Unit,Tests.DU/MyUnion\u003E Tests.DU/MyUnion::get_MyBar()": {
+         "Lines": {
+           "44": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 44,
+            "SC": 25,
+            "EL": 44,
+            "EC": 36,
+            "Offset": 0,
+            "Id": 18
+           },
+           {
+            "VC": 0,
+            "SL": 44,
+            "SC": 25,
+            "EL": 44,
+            "EC": 36,
+            "Offset": 0,
+            "Id": 19
+           }
+          ]
+        }
+      },
+     "Tests.DU/MyClass": {
+       "System.Void Tests.DU/MyClass::.ctor()": {
+         "Lines": {
+           "46": 0,
+           "47": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 46,
+            "SC": 8,
+            "EL": 46,
+            "EC": 15,
+            "Offset": 15,
+            "Id": 20
+           },
+           {
+            "VC": 0,
+            "SL": 47,
+            "SC": 27,
+            "EL": 47,
+            "EC": 28,
+            "Offset": 8,
+            "Id": 21
+           }
+          ]
+        }
+      },
+     "Tests.M": {
+       "Tests.M/Thing Tests.M::makeThing(System.String)": {
+         "Lines": {
+           "20": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 21,
+            "EL": 20,
+            "EC": 34,
+            "Offset": 0,
+            "Id": 22
+           }
+          ]
+        },
+       "System.Void Tests.M::testMakeThing()": {
+         "Lines": {
+           "24": 0,
+           "25": 0
+          },
+         "Branches": [
+           {
+            "Line": 24,
+            "Offset": 209,
+            "EndOffset": 257,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 8
+           },
+           {
+            "Line": 24,
+            "Offset": 209,
+            "EndOffset": 218,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 10,
+            "Id": 9,
+            "Tracks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+             ]
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 5,
+            "EL": 25,
+            "EC": 9,
+            "Offset": 568,
+            "Id": 23
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 5,
+            "EL": 25,
+            "EC": 54,
+            "Offset": 257,
+            "Id": 24
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 5,
+            "EL": 24,
+            "EC": 9,
+            "Offset": 250,
+            "Id": 25
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 5,
+            "EL": 24,
+            "EC": 43,
+            "Offset": 0,
+            "Id": 26
+           }
+          ]
+        }
+      },
+     "Tests.M/Thing": {
+       "System.Byte[] Tests.M/Thing::bytes()": {
+         "Lines": {
+           "18": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 27,
+            "EL": 18,
+            "EC": 73,
+            "Offset": 0,
+            "Id": 27
+           }
+          ]
+        }
+      }
+    }
+  }
 }
