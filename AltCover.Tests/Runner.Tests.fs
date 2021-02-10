@@ -347,7 +347,7 @@ module AltCoverRunnerTests =
     [<Test>]
     let OpenCoverShouldGeneratePlausibleJson() =
       let jsontype = typeof<AltCover.CollectOptions>.Assembly.GetTypes()
-                     |> Seq.find (fun t -> t.Name = "Json")
+                     |> Seq.find (fun t -> t.Name = "NativeJson")
       let bw = jsontype.GetNestedTypes(BindingFlags.NonPublic)
                |> Seq.find (fun t -> t.Name = "BuildWriter")
       use dummy = Activator.CreateInstance(bw, true) :?> TextWriter

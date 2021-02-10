@@ -446,8 +446,7 @@ module internal Runner =
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
       Justification="Library method inlined")>]
     let internal jsonSummary(report : String) =
-      let j = Manatee.Json.JsonValue.Parse report
-      let json = NativeJson.serializer.Deserialize<NativeJson.Modules>(j)
+      let json = NativeJson.fromJsonText report
       let summarise go (vc : int) (nc : int)  key =
 
         let pc =
@@ -1081,8 +1080,7 @@ module internal Runner =
         let reader = new StreamReader(file) // DO NOT DISPOSE
         reader.ReadToEnd()
 
-      let j = Manatee.Json.JsonValue.Parse jsonText
-      let json = NativeJson.serializer.Deserialize<NativeJson.Modules>(j)
+      let json = NativeJson.fromJsonText jsonText
 
       // do magic here
       json

@@ -3,54 +3,29 @@
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
-open System.Globalization
 open System.IO
 open System.Reflection
-open System.Text
-#if GUI
-open System.Linq
 open System.Xml.Linq
-#endif
 
 #if RUNNER
-open Manatee.Json
+open System.Globalization
+open System.Text
+
 open Manatee.Json.Serialization
 open Mono.Cecil
 
 [<AutoSerializable(false)>]
 type internal DocumentType =
-| XML of System.Xml.Linq.XDocument
+| XML of XDocument
 | JSON of String
 | Unknown
 #endif
 
+#if GUI || RUNNER
+open Manatee.Json
+#endif
+
 module NativeJson =
-
-  [<Sealed>]
-  type private BuildWriter() =
-    inherit TextWriter(CultureInfo.InvariantCulture)
-    member val Builder:StringBuilder = null with get, set
-    member self.Clear() = let temp = self.Builder
-                          self.Builder <- null
-                          temp
-    override self.Encoding = Encoding.Unicode // pointless but required
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
-      Justification="Would be meaningless")>]
-    override self.Write(value:Char) =
-        value
-        |> self.Builder.Append
-        |> ignore
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
-      Justification="Would be meaningless")>]
-    override self.Write(value:String) =
-        value
-        |> self.Builder.Append
-        |> ignore
-
-  let private escapeString (builder:TextWriter) (s:String) =
-    System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
 
   type internal TimeStamp = string
 
@@ -88,18 +63,6 @@ module NativeJson =
             Justification="Harmless in context")>]
       Tracks: Tracks
     }
-    static member Create() =
-      {
-        VC = 0
-        SL = 0
-        SC = 0
-        EL = 0
-        EC = 0
-        Offset = 0
-        Id = 0
-        Times = Times()
-        Tracks = Tracks()
-      }
 
   type SeqPnts = List<SeqPnt>
 
@@ -131,18 +94,6 @@ module NativeJson =
             Justification="Harmless in context")>]
       Tracks: Tracks
     }
-    static member Create() =
-      {
-        Line = 0
-        Offset = 0
-        EndOffset = 0
-        Path = 0
-        Ordinal = 0u
-        Hits = 0
-        Id = 0
-        Times = Times()
-        Tracks = Tracks()
-      }
 
   type Lines = SortedDictionary<int, int>
 
@@ -186,17 +137,186 @@ module NativeJson =
   type internal Documents = SortedDictionary<string, Classes>
   type internal Modules = SortedDictionary<string, Documents> // <= serialize this
 
+#if RUNNER || GUI
+  // Deserialization ---------------------------------------------------------
+
+  let timesFromJsonValue (j:JsonValue) =
+    j.Array
+    |> Seq.map (fun a -> a.String)
+    |> Times
+
+  let tracksFromJsonValue (j:JsonValue) =
+    j.Array
+    |> Seq.map (fun a -> a.Number |> Math.Round |> int)
+    |> Tracks
+
+  let zero = JsonValue(0.0)
+  let softNumberFromKey (o:JsonObject) (key:string) =
+    let b, i = o.TryGetValue key
+    if b then i else zero
+
+  let softValueFromKey (o:JsonObject) (key:string) =
+    let b, i = o.TryGetValue key
+    if b then i else JsonValue.Null
+
+  let seqpntFromJsonValue (j:JsonValue) =
+    let o = j.Object
+    {
+      VC = (softNumberFromKey o "VC").Number |> Math.Round |> int
+      SL = (softNumberFromKey o "SL").Number |> Math.Round |> int
+      SC = (softNumberFromKey o "SC").Number |> Math.Round |> int
+      EL = (softNumberFromKey o "EL").Number |> Math.Round |> int
+      EC = (softNumberFromKey o "EC").Number |> Math.Round |> int
+      Offset = (softNumberFromKey o "Offset").Number |> Math.Round |> int
+      Id = (softNumberFromKey o "Id").Number |> Math.Round |> int
+      Times = let t = softValueFromKey o" Times"
+              if t = JsonValue.Null
+              then null
+              else timesFromJsonValue t
+      Tracks = let t = softValueFromKey o "Tracks"
+               if t = JsonValue.Null
+               then null
+               else tracksFromJsonValue t
+    }
+
+  let seqpntsFromJsonValue (j:JsonValue) =
+    j.Array
+    |> Seq.map seqpntFromJsonValue
+    |> SeqPnts
+
+  let branchinfoFromJsonValue (j:JsonValue) =
+    let o = j.Object
+    {
+      Line = (softNumberFromKey o "Line").Number |> Math.Round |> int
+      Offset = (softNumberFromKey o "Offset").Number |> Math.Round |> int
+      EndOffset = (softNumberFromKey o "EndOffset").Number |> Math.Round |> int
+      Path = (softNumberFromKey o "Path").Number |> Math.Round |> int
+      Ordinal = (softNumberFromKey o "Ordinal").Number |> Math.Round |> uint
+      Hits = (softNumberFromKey o "Hits").Number |> Math.Round |> int
+      // Optionals
+      Id = let t = softValueFromKey o "Id"
+           if t = JsonValue.Null
+           then 0
+           else t.Number |> Math.Round |> int
+      Times = let t = softValueFromKey o" Times"
+              if t = JsonValue.Null
+              then null
+              else timesFromJsonValue t
+      Tracks = let t = softValueFromKey o "Tracks"
+               if t = JsonValue.Null
+               then null
+               else tracksFromJsonValue t
+    }
+
+  let linesFromJsonValue (j:JsonValue) =
+    let result = SortedDictionary<int, int>()
+    j.Object
+    |> Seq.iter (fun kvp ->
+      let _,i = Int32.TryParse kvp.Key
+      if i > 0 then
+        result.[i] <- kvp.Value.Number |> Math.Round |> int
+    )
+    result
+
+  let branchesFromJsonValue (j:JsonValue) =
+    j.Array
+    |> Seq.map branchinfoFromJsonValue
+    |> Branches
+
+  let methodFromJsonValue (j:JsonValue) =
+    let o = j.Object
+    {
+      Lines = (softValueFromKey o "Lines") |> linesFromJsonValue
+      Branches = (softValueFromKey o "Branches") |> branchesFromJsonValue
+      // Optionals
+      SeqPnts = let t = softValueFromKey o "SeqPnts"
+                if t = JsonValue.Null
+                then null
+                else seqpntsFromJsonValue t
+      TId = let t = softValueFromKey o "TId"
+            if t = JsonValue.Null
+            then System.Nullable()
+            else t.Number |> Math.Round |> int |> Nullable<int>
+      Entry = let t = softValueFromKey o "Entry"
+              if t = JsonValue.Null
+              then null
+              else timesFromJsonValue t
+      Exit = let t = softValueFromKey o "Exit"
+             if t = JsonValue.Null
+             then null
+             else timesFromJsonValue t
+    }
+
+  let methodsFromJsonValue (j:JsonValue) =
+    let result = Methods()
+    j.Object
+    |> Seq.iter (fun kvp ->
+        result.[kvp.Key] <- kvp.Value |> methodFromJsonValue
+    )
+    result
+
+  let classesFromJsonValue (j:JsonValue) =
+    let result = Classes()
+    j.Object
+    |> Seq.iter (fun kvp ->
+        result.[kvp.Key] <- kvp.Value |> methodsFromJsonValue
+    )
+    result
+
+  let documentsFromJsonValue (j:JsonValue) =
+    let result = Documents()
+    j.Object
+    |> Seq.iter (fun kvp ->
+        result.[kvp.Key] <- kvp.Value |> classesFromJsonValue
+    )
+    result
+
+  let modulesFromJsonValue (j:JsonValue) =
+    let result = Modules()
+    j.Object
+    |> Seq.iter (fun kvp ->
+        result.[kvp.Key] <- kvp.Value |> documentsFromJsonValue
+    )
+    result
+
+  let fromJsonText (report:string) =
+    report
+    |> Manatee.Json.JsonValue.Parse
+    |> modulesFromJsonValue
+#endif
+
 #if RUNNER
+  // Serialization ---------------------------------------------------------
+
+  [<Sealed>]
+  type private BuildWriter() =
+    inherit TextWriter(CultureInfo.InvariantCulture)
+    member val Builder:StringBuilder = null with get, set
+    member self.Clear() = let temp = self.Builder
+                          self.Builder <- null
+                          temp
+    override self.Encoding = Encoding.Unicode // pointless but required
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
+      Justification="Would be meaningless")>]
+    override self.Write(value:Char) =
+        value
+        |> self.Builder.Append
+        |> ignore
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
+      Justification="Would be meaningless")>]
+    override self.Write(value:String) =
+        value
+        |> self.Builder.Append
+        |> ignore
+
+  let private escapeString (builder:TextWriter) (s:String) =
+    System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
+
   let serialize (context:SerializationContext) =
     let info = typeof<JsonSerializer>.GetMethod("Serialize", BindingFlags.Instance ||| BindingFlags.NonPublic)
     info.Invoke(context.RootSerializer, [| context :> obj |]) :?> JsonValue
-
-  let deserialize<'v> (context:DeserializationContext) =
-    printfn "Looking to resolve %A" (typeof<'v>.FullName)
-    let info = typeof<JsonSerializer>.GetMethod("Deserialize", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let built = info.Invoke(context.RootSerializer, [| context :> obj |])
-    printfn "%A %A" built <| built.GetType().FullName
-    built :?> 'v
 
   let encode<'v>(context:SerializationContext) =
     let o = Manatee.Json.JsonObject()
@@ -211,81 +331,6 @@ module NativeJson =
     )
     Manatee.Json.JsonValue(o)
 
-  let decode<'v>(context:DeserializationContext) (dictionary:IDictionary<string, 'v>) =
-    printfn "decoding %A %A" typeof<'v>.FullName dictionary
-    context.LocalValue.Object
-    |> Seq.iter (fun kvp ->
-      let key = kvp.Key.ToString()
-      context.Push(typeof<'v>, key, kvp.Value);
-      let value = deserialize<'v>(context)
-      context.Pop();
-      dictionary.Add(key, value)
-    )
-    dictionary
-
-  type internal JsonResolver() =
-    member val Fallback : IResolver = null with get, set
-    interface IResolver with
-      member this.Resolve (t:Type, p:Dictionary<SerializationInfo, Object>) =
-        printfn "My resolver = %A %A" t.FullName p
-        p
-        |> Seq.iter (fun kvp ->
-          printfn "%A %A %A" kvp.Key.SerializationName kvp.Key.MemberInfo kvp.Value
-        )
-
-        let table = Dictionary<string, obj>()
-        p
-        |> Seq.iter (fun kvp ->
-          table.Add(kvp.Key.MemberInfo.Name, kvp.Value)
-        )
-
-        let evaluate key d =
-          let b, v = table.TryGetValue key
-          if b then v else d
-
-        match t with
-        | t0 when t0 = typeof<Method> ->
-          let c = typeof<Method>.GetConstructors() |> Seq.head
-          c.Invoke( [| (*evaluate "Lines" <|*)
-                       Lines()
-                       (*evaluate "Branches" <|*)
-                       Branches()
-                       (*evaluate "SeqPnts" <|*)
-                       SeqPnts()
-                       evaluate "TId" null // 0
-                       evaluate "Entry" null // Times()
-                       evaluate "Exit" null // Times()
-                     |])
-        | t0 when t0 = typeof<SeqPnt> ->
-          let c = typeof<SeqPnt>.GetConstructors() |> Seq.head
-          c.Invoke( [| evaluate "VC" 0
-                       evaluate "SL" 0
-                       evaluate "SC" 0
-                       evaluate "EL" 0
-                       evaluate "EC" 0
-                       evaluate "Offset" 0
-                       evaluate "Id" 0
-                       evaluate "Times" null // Times()
-                       evaluate "Tracks" null //Tracks()
-                     |])
-        | t0 when t0 = typeof<BranchInfo> ->
-          let c = typeof<BranchInfo>.GetConstructors() |> Seq.head
-          c.Invoke( [| evaluate "Line" 0
-                       evaluate "Offset" 0
-                       evaluate "EndOffset" 0
-                       evaluate "Path" 0
-                       evaluate "Ordinal" 0u
-                       evaluate "Hits" 0
-                       evaluate "Id" 0
-                       evaluate "Times" null // Times()
-                       evaluate "Tracks" null //Tracks()
-                     |])
-        | _ ->
-          printfn "falling back"
-          if this.Fallback.IsNotNull
-          then this.Fallback.Resolve(t, p)
-          else Object()
-
   type internal ModulesSerializer() =
     interface ISerializer with
       member this.Handles(context:SerializationContextBase) =
@@ -293,9 +338,7 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Documents> context
       member this.Deserialize(context:DeserializationContext) =
-        Modules()
-        |> (decode<Documents> context)
-        :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   type internal DocumentsSerializer() =
@@ -305,9 +348,7 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Classes> context
       member this.Deserialize(context:DeserializationContext) =
-        Documents()
-        |> (decode<Classes> context)
-        :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   type internal ClassesSerializer() =
@@ -317,9 +358,7 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Methods> context
       member this.Deserialize(context:DeserializationContext) =
-        Classes()
-        |> (decode<Methods> context)
-        :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   type internal MethodsSerializer() =
@@ -329,9 +368,7 @@ module NativeJson =
       member this.Serialize(context:SerializationContext) =
         encode<Method> context
       member this.Deserialize(context:DeserializationContext) =
-        Methods()
-        |> (decode<Method> context)
-        :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   type internal LinesSerializer() =
@@ -350,17 +387,7 @@ module NativeJson =
         Manatee.Json.JsonValue(o)
 
       member this.Deserialize(context:DeserializationContext) =
-        let dictionary = Lines()
-        context.LocalValue.Object
-        |> Seq.iter (fun kvp ->
-          eprintfn "Line %A %A" kvp.Key kvp.Value
-          let key = kvp.Key |> Int32.TryParse |> snd
-          context.Push(typeof<Int32>, kvp.Key, kvp.Value);
-          let value = kvp.Value.Number |> Math.Round |> int
-          context.Pop();
-          dictionary.Add(key, int value)
-        )
-        dictionary :> Object
+        raise <| NotImplementedException()
 
       member val ShouldMaintainReferences = false
 
@@ -376,11 +403,7 @@ module NativeJson =
         Manatee.Json.JsonValue(a)
 
       member this.Deserialize(context:DeserializationContext) =
-        let result = Times()
-        context.LocalValue.Array
-        |> Seq.map (fun v -> v.String)
-        |> result.AddRange
-        result :> obj
+        raise <| NotImplementedException()
 
       member val ShouldMaintainReferences = false
 
@@ -396,11 +419,7 @@ module NativeJson =
         Manatee.Json.JsonValue(a)
 
       member this.Deserialize(context:DeserializationContext) =
-        let result = Tracks()
-        context.LocalValue.Array
-        |> Seq.map (fun v -> v.Number |> Math.Round |> int )
-        |> result.AddRange
-        result :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   type internal SeqPntsSerializer() =
@@ -419,16 +438,7 @@ module NativeJson =
         |> a.AddRange
         Manatee.Json.JsonValue(a)
       member this.Deserialize(context:DeserializationContext) =
-        let result = SeqPnts()
-        context.LocalValue.Array
-        |> Seq.mapi (fun i v ->
-          context.Push(typeof<SeqPnt>, i.ToString(), v);
-          let value = deserialize<SeqPnt> context
-          context.Pop();
-          value
-        )
-        |> result.AddRange
-        result :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   type internal BranchesSerializer() =
@@ -448,16 +458,7 @@ module NativeJson =
         Manatee.Json.JsonValue(a)
 
       member this.Deserialize(context:DeserializationContext) =
-        let result = Branches()
-        context.LocalValue.Array
-        |> Seq.mapi (fun i v ->
-          context.Push(typeof<BranchInfo>, i.ToString(), v);
-          let value = deserialize<BranchInfo> context
-          context.Pop();
-          value
-        )
-        |> result.AddRange
-        result :> obj
+        raise <| NotImplementedException()
       member val ShouldMaintainReferences = false
 
   let internal serializer =
@@ -475,9 +476,6 @@ module NativeJson =
     let o = JsonSerializerOptions()
     o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
     o.EncodeDefaultValues <- false
-    let r = JsonResolver()
-    r.Fallback <- o.Resolver
-    o.Resolver <- r
     s.Options <- o
     s
 
@@ -493,6 +491,8 @@ module NativeJson =
 #endif
 
 #if GUI
+  // Conversion to XML ---------------------------------------------------------
+
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
@@ -651,12 +651,14 @@ module NativeJson =
   let internal fileToXml filename =
     filename
     |> File.ReadAllText
-    |> JsonSerializer.Deserialize<Modules>
+    |> fromJsonText
     |> jsonToXml
 
 #endif
 
 #if RUNNER
+  // Instrumentation ---------------------------------------------------------
+
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type internal JsonContext =
     {
@@ -783,36 +785,8 @@ module NativeJson =
 #endif
 
 #if GUI || RUNNER
+  // FxCop ---------------------------------------------------------
 
-  [<SuppressMessage("Gendarme.Rules.BadPractice",
-                    "AvoidCallingProblematicMethodsRule",
-                    Justification = "Not a lot of alteratives")>]
-  [<SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods",
-                    Justification = "Not a lot of alteratives")>]
-  let internal assemblyResolve (_:Object) (args:ResolveEventArgs) =
-    let n = AssemblyName(args.Name)
-    match AppDomain.CurrentDomain.GetAssemblies()
-          |> Seq.tryFind(fun a -> a.GetName().Name = n.Name) with
-    | Some a ->
-      System.Diagnostics.Debug.WriteLine "Found loaded"
-      a
-    | _ ->
-      let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-      let file = Path.Combine(here, n.Name) + ".dll"
-      System.Diagnostics.Debug.WriteLine ("Looking for {0}", file)
-      if File.Exists file
-      then
-        System.Diagnostics.Debug.WriteLine "Found file"
-        file |> Assembly.LoadFile
-      else
-        System.Diagnostics.Debug.WriteLine "**FAILED**"
-        //if args.Name.Contains(".resources, V") |> not
-        //then eprintfn "AssemblyResolve Name %s from %A" args.Name args.RequestingAssembly
-        null
-#if RUNNER
-  do
-    AppDomain.CurrentDomain.add_AssemblyResolve <| ResolveEventHandler(assemblyResolve)
-#endif
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
   Justification="Harmless in context")>]

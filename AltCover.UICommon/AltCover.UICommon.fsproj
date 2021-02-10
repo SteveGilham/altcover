@@ -87,7 +87,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="5.0.1" />
+    <PackageReference Include="Manatee.Json" Version="13.0.5" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

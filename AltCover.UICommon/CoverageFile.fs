@@ -119,7 +119,7 @@ type CoverageFile =
         Left
           { Fault = e
             File = file }
-    | :? System.Text.Json.JsonException as e ->
+    | :? Manatee.Json.JsonValueIncorrectTypeException as e ->
         Left
           { Fault = e
             File = file }

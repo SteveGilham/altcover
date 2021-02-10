@@ -15,30 +15,6 @@ open Mono.Cecil.Cil
 
 module AltCoverTests3 =
     // AltCover.fs and CommandLine.fs
-
-    [<Test>]
-    let ShouldResolveThisAssembly() =
-      let target = typeof<Marker>.Assembly
-      let here = Assembly.GetExecutingAssembly()
-      let args = ResolveEventArgs(target.FullName, here)
-      test <@ AltCover.NativeJson.assemblyResolve AltCoverTests2.infrastructureSnk args = target @>
-
-      let res =
-        here.GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("issue37.dl_", StringComparison.Ordinal))
-      let t2 = Path.Combine(here.Location |> Path.GetDirectoryName,
-                            "issue37.dll")
-      do
-        use stream =
-          Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
-        use sink = File.OpenWrite(t2)
-        stream.CopyTo(sink)
-
-      let name2 = "issue37, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
-      let args2 = ResolveEventArgs(name2, here)
-      let result = AltCover.NativeJson.assemblyResolve AltCoverTests2.infrastructureSnk args2
-      test <@ result.FullName = name2 @>
-
     [<Test>]
     let ShouldLaunchWithExpectedOutput() =
       Main.init()
