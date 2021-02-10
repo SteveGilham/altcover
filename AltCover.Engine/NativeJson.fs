@@ -4,14 +4,11 @@ open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
-open System.Reflection
 open System.Xml.Linq
 
 #if RUNNER
 open System.Globalization
 open System.Text
-
-open Manatee.Json.Serialization
 open Mono.Cecil
 
 [<AutoSerializable(false)>]
@@ -291,7 +288,7 @@ module NativeJson =
   [<Sealed>]
   type private BuildWriter() =
     inherit TextWriter(CultureInfo.InvariantCulture)
-    member val Builder:StringBuilder = null with get, set
+    member val Builder = StringBuilder() with get, set
     member self.Clear() = let temp = self.Builder
                           self.Builder <- null
                           temp
@@ -314,174 +311,144 @@ module NativeJson =
   let private escapeString (builder:TextWriter) (s:String) =
     System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
 
-  let serialize (context:SerializationContext) =
-    let info = typeof<JsonSerializer>.GetMethod("Serialize", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    info.Invoke(context.RootSerializer, [| context :> obj |]) :?> JsonValue
+  let slugs =
+    { 0 .. 14 }
+    |> Seq.map (fun i -> String(' ', i))
+    |> Seq.toArray
 
-  let encode<'v>(context:SerializationContext) =
-    let o = Manatee.Json.JsonObject()
-    context.Source :?> IDictionary<string, 'v>
+  let private dictionaryToWriter<'a>
+    (depth : int)
+    (next : BuildWriter -> 'a -> BuildWriter )
+    (w:BuildWriter)
+    (report:IDictionary<string,'a>)
+    =
+    let mutable first = true
+    report
     |> Seq.iter (fun kvp ->
-      let key = kvp.Key
-      let value = kvp.Value
-      context.Push(value.GetType(), typeof<'v>, key, value)
-      let value2 = serialize context
-      context.Pop()
-      o.Add(key, value2)
+      if not first then ("," |> w.Builder.AppendLine |> ignore)
+      first <- false
+      w.Builder
+        .Append(slugs.[depth])
+        .Append('"') |> ignore
+      escapeString w kvp.Key
+      w.Builder
+        .AppendLine("\": {") |> ignore
+      (next w kvp.Value)
+        .Builder.Append(slugs.[depth + 1])
+        .Append('}') |> ignore
     )
-    Manatee.Json.JsonValue(o)
+    w.Builder.AppendLine() |> ignore
+    w
 
-  type internal ModulesSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Modules>
-      member this.Serialize(context:SerializationContext) =
-        encode<Documents> context
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
+  let private methodToWriter (w:BuildWriter) (method:Method) =
+    w.Builder.Append(slugs.[9]).AppendLine("\"Lines\": {") |> ignore
+    if method.Lines.IsNotNull && method.Lines.Count > 0
+    then
+      let mutable first = true
+      method.Lines
+      |> Seq.iter (fun kvp ->
+        if not first
+        then w.Builder.AppendLine(",") |> ignore
+        first <- false
+        w.Builder.Append(slugs.[11])
+         .Append('"')
+         .Append(kvp.Key.ToString(CultureInfo.InvariantCulture))
+         .Append("\": ")
+         .Append(kvp.Value.ToString(CultureInfo.InvariantCulture))
+         |> ignore
+      )
+      w.Builder.AppendLine() |> ignore
+    else
+      w.Builder.AppendLine("},") |> ignore
 
-  type internal DocumentsSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Documents>
-      member this.Serialize(context:SerializationContext) =
-        encode<Classes> context
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
+    w.Builder.Append(slugs.[10]).AppendLine("},")
+      .Append(slugs.[9]).Append("\"Branches\": [") |> ignore
+    if method.Branches.IsNotNull && method.Branches.Count > 0
+    then
+      let mutable first = true
+      w.Builder.AppendLine() |> ignore
+      method.Branches
+      |> Seq.iter (fun b ->
+        if not first
+        then w.Builder.AppendLine(",") |> ignore
+        first <- false
+        w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Line\": ")
+          .Append(b.Line.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Offset\": ")
+          .Append(b.Offset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"EndOffset\": ")
+          .Append(b.EndOffset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Path\": ")
+          .Append(b.Path.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Ordinal\": ")
+          .Append(b.Ordinal.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Hits\": ")
+          .Append(b.Hits.ToString(CultureInfo.InvariantCulture)) |> ignore
+        if b.Id > 0 then
+          w.Builder.AppendLine().Append(slugs.[12]).Append("\"Id\": ")
+            .Append(b.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
+       // TODO Times & Tracks
+        w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
+      )
+      w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
+    else
+      w.Builder.Append(']') |> ignore
 
-  type internal ClassesSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Classes>
-      member this.Serialize(context:SerializationContext) =
-        encode<Methods> context
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
+    if method.SeqPnts.IsNotNull && method.SeqPnts.Count > 0
+    then
+      w.Builder.AppendLine(",")
+        .Append(slugs.[9])
+        .AppendLine("\"SeqPnts\": [") |> ignore
 
-  type internal MethodsSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Methods>
-      member this.Serialize(context:SerializationContext) =
-        encode<Method> context
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
+      let mutable first = true
+      method.SeqPnts
+      |> Seq.iter (fun s ->
+        if not first
+        then w.Builder.AppendLine(",") |> ignore
+        first <- false
+        w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"VC\": ")
+          .Append(s.VC.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"SL\": ")
+          .Append(s.SL.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"SC\": ")
+          .Append(s.SC.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"EL\": ")
+          .Append(s.EL.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"EC\": ")
+          .Append(s.EC.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Offset\": ")
+          .Append(s.Offset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
+        w.Builder.Append(slugs.[12]).Append("\"Id\": ")
+          .Append(s.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
+       // TODO Times & Tracks
+        w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
+      )
+      w.Builder.AppendLine().Append(slugs.[10]).AppendLine("]") |> ignore
+    else
+      w.Builder.AppendLine() |> ignore
+      // TODO TId, Entry and Exit
+    w
 
-  type internal LinesSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Lines>
-      member this.Serialize(context:SerializationContext) =
-        let o = Manatee.Json.JsonObject()
-        context.Source :?> IDictionary<int, int>
-        |> Seq.iter (fun kvp ->
-          let key = kvp.Key.ToString(CultureInfo.InvariantCulture)
-          let value = kvp.Value
-          let value2 = value |> float |> JsonValue
-          o.Add(key, value2)
-        )
-        Manatee.Json.JsonValue(o)
+  let private methodsToWriter (w:BuildWriter) (methods:Methods) =
+    (dictionaryToWriter 7 methodToWriter w methods)
 
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
+  let private classesToWriter (w:BuildWriter) (classes:Classes) =
+    (dictionaryToWriter 5 methodsToWriter w classes)
 
-      member val ShouldMaintainReferences = false
+  let private documentsToWriter (w:BuildWriter) (documents:Documents) =
+    (dictionaryToWriter 3 classesToWriter w documents)
 
-  type internal TimesSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Times>
-      member this.Serialize(context:SerializationContext) =
-        let a = Manatee.Json.JsonArray()
-        context.Source :?> Times
-        |> Seq.map Manatee.Json.JsonValue
-        |> a.AddRange
-        Manatee.Json.JsonValue(a)
+  let private modulesToWriter (w:BuildWriter) (report:Modules) =
+    (dictionaryToWriter 1 documentsToWriter w report)
 
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-
-      member val ShouldMaintainReferences = false
-
-  type internal TracksSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Tracks>
-      member this.Serialize(context:SerializationContext) =
-        let a = Manatee.Json.JsonArray()
-        context.Source :?> Tracks
-        |> Seq.map (float >> Manatee.Json.JsonValue)
-        |> a.AddRange
-        Manatee.Json.JsonValue(a)
-
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
-
-  type internal SeqPntsSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<SeqPnts>
-      member this.Serialize(context:SerializationContext) =
-        let a = Manatee.Json.JsonArray()
-        context.Source :?> SeqPnts
-        |> Seq.mapi (fun i s ->
-          context.Push(typeof<SeqPnt>, typeof<SeqPnt>, i.ToString(), s)
-          let v = serialize context
-          context.Pop()
-          v
-        )
-        |> a.AddRange
-        Manatee.Json.JsonValue(a)
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
-
-  type internal BranchesSerializer() =
-    interface ISerializer with
-      member this.Handles(context:SerializationContextBase) =
-        context.InferredType = typeof<Branches>
-      member this.Serialize(context:SerializationContext) =
-        let a = Manatee.Json.JsonArray()
-        context.Source :?> Branches
-        |> Seq.mapi (fun i s ->
-          context.Push(typeof<BranchInfo>, typeof<BranchInfo>, i.ToString(), s)
-          let v = serialize context
-          context.Pop()
-          v
-        )
-        |> a.AddRange
-        Manatee.Json.JsonValue(a)
-
-      member this.Deserialize(context:DeserializationContext) =
-        raise <| NotImplementedException()
-      member val ShouldMaintainReferences = false
-
-  let internal serializer =
-    SerializerFactory.AddSerializer(ModulesSerializer())
-    SerializerFactory.AddSerializer(DocumentsSerializer())
-    SerializerFactory.AddSerializer(ClassesSerializer())
-    SerializerFactory.AddSerializer(MethodsSerializer())
-    SerializerFactory.AddSerializer(LinesSerializer())
-    SerializerFactory.AddSerializer(TimesSerializer())
-    SerializerFactory.AddSerializer(TracksSerializer())
-    SerializerFactory.AddSerializer(BranchesSerializer())
-    SerializerFactory.AddSerializer(SeqPntsSerializer())
-
-    let s = JsonSerializer()
-    let o = JsonSerializerOptions()
-    o.PropertySelectionStrategy <- PropertySelectionStrategy.ReadAndWrite
-    o.EncodeDefaultValues <- false
-    s.Options <- o
-    s
-
-  let internal toText (document:Modules) =
-    serializer.Serialize<Modules>(document).GetIndentedString()
-      .Replace("`", "\\u0060").Replace("<", "\\u003C").Replace(">", "\\u003E")
+  let internal toText (report:Modules) =
+    use w = new BuildWriter()
+    w.Builder.AppendLine("{") |> ignore
+    (modulesToWriter w report)
+      .Builder.AppendLine("}") |> ignore
+    w.Builder.ToString()
 
   let serializeToUtf8Bytes (document:Modules) =
     document
