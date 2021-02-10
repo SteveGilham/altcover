@@ -386,9 +386,36 @@ module NativeJson =
         w.Builder.Append(slugs.[12]).Append("\"Hits\": ")
           .Append(b.Hits.ToString(CultureInfo.InvariantCulture)) |> ignore
         if b.Id > 0 then
-          w.Builder.AppendLine().Append(slugs.[12]).Append("\"Id\": ")
+          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Id\": ")
             .Append(b.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
-       // TODO Times & Tracks
+        if b.Times.IsNotNull && b.Times.Count > 0
+        then
+          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Times\": [") |> ignore
+          let mutable firstTime = true
+          b.Times
+          |> Seq.iter (fun t ->
+            (if firstTime
+             then w.Builder.AppendLine()
+             else firstTime <- false
+                  w.Builder.AppendLine(","))
+             .Append(slugs.[14]).Append('"').Append(t).Append('"') |> ignore
+          )
+          w.Builder.AppendLine()
+            .Append(slugs.[13]).Append("]") |> ignore
+        if b.Tracks.IsNotNull && b.Tracks.Count > 0
+        then
+          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Tracks\": [") |> ignore
+          let mutable firstTime = true
+          b.Tracks
+          |> Seq.iter (fun t ->
+            (if firstTime
+             then w.Builder.AppendLine()
+             else firstTime <- false
+                  w.Builder.AppendLine(","))
+             .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
+          )
+          w.Builder.AppendLine()
+            .Append(slugs.[13]).Append("]") |> ignore
         w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
       )
       w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
@@ -422,7 +449,34 @@ module NativeJson =
           .Append(s.Offset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
         w.Builder.Append(slugs.[12]).Append("\"Id\": ")
           .Append(s.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
-       // TODO Times & Tracks
+        if s.Times.IsNotNull && s.Times.Count > 0
+        then
+          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Times\": [") |> ignore
+          let mutable firstTime = true
+          s.Times
+          |> Seq.iter (fun t ->
+            (if firstTime
+             then w.Builder.AppendLine()
+             else firstTime <- false
+                  w.Builder.AppendLine(","))
+             .Append(slugs.[14]).Append('"').Append(t).Append('"') |> ignore
+          )
+          w.Builder.AppendLine()
+            .Append(slugs.[13]).Append("]") |> ignore
+        if s.Tracks.IsNotNull && s.Tracks.Count > 0
+        then
+          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Tracks\": [") |> ignore
+          let mutable firstTime = true
+          s.Tracks
+          |> Seq.iter (fun t ->
+            (if firstTime
+             then w.Builder.AppendLine()
+             else firstTime <- false
+                  w.Builder.AppendLine(","))
+             .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
+          )
+          w.Builder.AppendLine()
+            .Append(slugs.[13]).Append("]") |> ignore
         w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
       )
       w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
@@ -430,13 +484,38 @@ module NativeJson =
     then
        w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"TId\": ")
          .Append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
-         .AppendLine(",").Append(slugs.[9]).Append("\"Entry\": [")
        |> ignore
-       w.Builder.AppendLine("],")
-        .Append(slugs.[9]).Append("\"Exit\": [") |> ignore
-       w.Builder.AppendLine("]") |> ignore
-    else
-      w.Builder.AppendLine() |> ignore
+
+    if method.Entry.IsNotNull && method.Entry.Count > 0
+    then
+      w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"Entry\": [") |> ignore
+      let mutable firstTime = true
+      method.Entry
+      |> Seq.iter (fun t ->
+         (if firstTime
+          then w.Builder.AppendLine()
+          else firstTime <- false
+               w.Builder.AppendLine(","))
+           .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
+      )
+      w.Builder.AppendLine()
+        .Append(slugs.[10]).Append("]") |> ignore
+
+    if method.Exit.IsNotNull && method.Exit.Count > 0
+    then
+      w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"Exit\": [") |> ignore
+      let mutable firstTime = true
+      method.Exit
+      |> Seq.iter (fun t ->
+         (if firstTime
+          then w.Builder.AppendLine()
+          else firstTime <- false
+               w.Builder.AppendLine(","))
+           .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
+      )
+      w.Builder.AppendLine()
+        .Append(slugs.[10]).Append("]") |> ignore
+    w.Builder.AppendLine() |> ignore
     w
 
   let private methodsToWriter (w:BuildWriter) (methods:Methods) =
