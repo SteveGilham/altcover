@@ -133,12 +133,7 @@ type CoverageFile =
             File = file }
 
   static member LoadCoverageFile(file : FileInfo) =
-    let handler = ResolveEventHandler(NativeJson.assemblyResolve)
-    AppDomain.CurrentDomain.add_AssemblyResolve <| handler
-    try
-      CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
-    finally
-      AppDomain.CurrentDomain.remove_AssemblyResolve <| handler
+    CoverageFile.ToCoverageFile (fun x -> Transformer.defaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 
