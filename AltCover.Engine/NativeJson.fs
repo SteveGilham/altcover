@@ -482,40 +482,39 @@ module NativeJson =
       w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
     if method.TId.HasValue
     then
-       w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"TId\": ")
-         .Append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
-       |> ignore
+      w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"TId\": ")
+        .Append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
+      |> ignore
 
-    if method.Entry.IsNotNull && method.Entry.Count > 0
-    then
       w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"Entry\": [") |> ignore
       let mutable firstTime = true
-      method.Entry
-      |> Seq.iter (fun t ->
-         (if firstTime
-          then w.Builder.AppendLine()
-          else firstTime <- false
-               w.Builder.AppendLine(","))
-           .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
-      )
-      w.Builder.AppendLine()
-        .Append(slugs.[10]).Append("]") |> ignore
+      if method.Entry.IsNotNull && method.Entry.Count > 0
+      then
+        method.Entry
+        |> Seq.iter (fun t ->
+           (if firstTime
+            then w.Builder.AppendLine()
+            else firstTime <- false
+                 w.Builder.AppendLine(","))
+             .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
+        )
+        w.Builder.AppendLine().Append(slugs.[10]) |> ignore
+      w.Builder.AppendLine("]") |> ignore
 
-    if method.Exit.IsNotNull && method.Exit.Count > 0
-    then
-      w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"Exit\": [") |> ignore
+      w.Builder.Append(",").AppendLine(slugs.[9]).Append("\"Exit\": [") |> ignore
       let mutable firstTime = true
-      method.Exit
-      |> Seq.iter (fun t ->
-         (if firstTime
-          then w.Builder.AppendLine()
-          else firstTime <- false
-               w.Builder.AppendLine(","))
-           .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
-      )
-      w.Builder.AppendLine()
-        .Append(slugs.[10]).Append("]") |> ignore
-    w.Builder.AppendLine() |> ignore
+      if method.Exit.IsNotNull && method.Exit.Count > 0
+      then
+        method.Exit
+        |> Seq.iter (fun t ->
+           (if firstTime
+            then w.Builder.AppendLine()
+            else firstTime <- false
+                 w.Builder.AppendLine(","))
+             .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
+        )
+        w.Builder.AppendLine().Append(slugs.[10]) |> ignore
+      w.Builder.AppendLine("]") |> ignore
     w
 
   let private methodsToWriter (w:BuildWriter) (methods:Methods) =
