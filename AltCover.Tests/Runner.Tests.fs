@@ -382,10 +382,14 @@ module AltCoverRunnerTests =
         let expected = reader.ReadToEnd()
         //printfn "%s" result
         //Assert.That
-        //  (result.Replace("\r",String.Empty).Replace("\n",String.Empty),
-        //  Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
-        test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
-                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
+        //  (result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+        //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+        //  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+        //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+        test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
       finally
         Json.path := None
 
@@ -2034,8 +2038,10 @@ module AltCoverRunnerTests =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
         use reader = new StreamReader(stream)
         let expected = reader.ReadToEnd()
-                         .Replace("\r",String.Empty).Replace("\n",String.Empty).Trim()
-        Assert.That(jsonText.Replace("\r",String.Empty).Replace("\n",String.Empty).Trim(), Is.EqualTo expected)
+                         .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |])
+        Assert.That(jsonText.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]), Is.EqualTo expected)
       finally
         maybeDeleteFile reportFile
         maybeDeleteFile junkFile
@@ -2201,8 +2207,10 @@ module AltCoverRunnerTests =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
         use reader = new StreamReader(stream)
         let expected = reader.ReadToEnd()
-                         .Replace("\r",String.Empty).Replace("\n",String.Empty).Trim()
-        Assert.That(jsonText.Replace("\r",String.Empty).Replace("\n",String.Empty).Trim(), Is.EqualTo expected)
+                         .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |])
+        Assert.That(jsonText.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]), Is.EqualTo expected)
       finally
         Assert.That(junkfile |> File.Exists |> not)
         Assert.That(junkfile2 |> File.Exists |> not)

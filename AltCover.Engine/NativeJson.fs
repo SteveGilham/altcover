@@ -222,6 +222,11 @@ module NativeJson =
 
   let methodFromJsonValue (j:JsonValue) =
     let o = j.Object
+    let tid = let t = softValueFromKey o "TId"
+              if t = JsonValue.Null
+              then System.Nullable()
+              else t.Number |> Math.Round |> int |> Nullable<int>
+
     {
       Lines = (softValueFromKey o "Lines") |> linesFromJsonValue
       Branches = (softValueFromKey o "Branches") |> branchesFromJsonValue
@@ -230,17 +235,14 @@ module NativeJson =
                 if t = JsonValue.Null
                 then null
                 else seqpntsFromJsonValue t
-      TId = let t = softValueFromKey o "TId"
-            if t = JsonValue.Null
-            then System.Nullable()
-            else t.Number |> Math.Round |> int |> Nullable<int>
+      TId = tid
       Entry = let t = softValueFromKey o "Entry"
               if t = JsonValue.Null
-              then null
+              then if tid.HasValue then Times() else null
               else timesFromJsonValue t
       Exit = let t = softValueFromKey o "Exit"
              if t = JsonValue.Null
-             then null
+             then if tid.HasValue then Times() else null
              else timesFromJsonValue t
     }
 
@@ -357,11 +359,14 @@ module NativeJson =
          .Append(kvp.Value.ToString(CultureInfo.InvariantCulture))
          |> ignore
       )
-      w.Builder.AppendLine() |> ignore
+      w.Builder.AppendLine()
+        .Append(slugs.[10]).AppendLine("},") |> ignore
     else
       w.Builder.AppendLine("},") |> ignore
 
-    w.Builder.Append(slugs.[10]).AppendLine("},")
+    // After Lines, now Branches
+
+    w.Builder
       .Append(slugs.[9]).Append("\"Branches\": [") |> ignore
     if method.Branches.IsNotNull && method.Branches.Count > 0
     then
@@ -422,6 +427,8 @@ module NativeJson =
     else
       w.Builder.Append(']') |> ignore
 
+    // After Branches, now SeqPnts
+
     if method.SeqPnts.IsNotNull && method.SeqPnts.Count > 0
     then
       w.Builder.AppendLine(",")
@@ -449,6 +456,7 @@ module NativeJson =
           .Append(s.Offset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
         w.Builder.Append(slugs.[12]).Append("\"Id\": ")
           .Append(s.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
+
         if s.Times.IsNotNull && s.Times.Count > 0
         then
           w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Times\": [") |> ignore
@@ -480,6 +488,9 @@ module NativeJson =
         w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
       )
       w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
+
+    // After SeqPnts, now Tracking
+
     if method.TId.HasValue
     then
       w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"TId\": ")
@@ -499,9 +510,9 @@ module NativeJson =
              .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
         )
         w.Builder.AppendLine().Append(slugs.[10]) |> ignore
-      w.Builder.AppendLine("]") |> ignore
+      w.Builder.Append("]") |> ignore
 
-      w.Builder.Append(",").AppendLine(slugs.[9]).Append("\"Exit\": [") |> ignore
+      w.Builder.AppendLine(",").Append(slugs.[9]).Append("\"Exit\": [") |> ignore
       let mutable firstTime = true
       if method.Exit.IsNotNull && method.Exit.Count > 0
       then
@@ -515,6 +526,7 @@ module NativeJson =
         )
         w.Builder.AppendLine().Append(slugs.[10]) |> ignore
       w.Builder.AppendLine("]") |> ignore
+    else w.Builder.AppendLine() |> ignore
     w
 
   let private methodsToWriter (w:BuildWriter) (methods:Methods) =
