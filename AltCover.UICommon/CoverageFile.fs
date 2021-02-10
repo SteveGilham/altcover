@@ -119,6 +119,10 @@ type CoverageFile =
         Left
           { Fault = e
             File = file }
+    | :? Manatee.Json.JsonSyntaxException as e ->
+        Left
+          { Fault = e
+            File = file }
     | :? Manatee.Json.JsonValueIncorrectTypeException as e ->
         Left
           { Fault = e
