@@ -137,28 +137,35 @@ module NativeJson =
 #if RUNNER || GUI
   // Deserialization ---------------------------------------------------------
 
-  let timesFromJsonValue (j:JsonValue) =
+  let internal timesFromJsonValue (j:JsonValue) =
     j.Array
     |> Seq.map (fun a -> a.String)
     |> Times
 
-  let tracksFromJsonValue (j:JsonValue) =
+  let internal tracksFromJsonValue (j:JsonValue) =
     j.Array
     |> Seq.map (fun a -> a.Number |> Math.Round |> int)
     |> Tracks
 
-  let zero = JsonValue(0.0)
-  let softNumberFromKey (o:JsonObject) (key:string) =
-    let b, i = o.TryGetValue key
-    if b then i else zero
+  let internal zero = JsonValue(0.0)
 
-  let softValueFromKey (o:JsonObject) (key:string) =
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal softFromKey (fallback:JsonValue) (o:JsonObject) (key:string) =
     let b, i = o.TryGetValue key
-    if b then i else JsonValue.Null
+    if b then i else fallback
 
-  let seqpntFromJsonValue (j:JsonValue) =
+  let internal softNumberFromKey (o:JsonObject) (key:string) =
+    softFromKey zero o key
+
+  let internal softValueFromKey (o:JsonObject) (key:string) =
+    softFromKey JsonValue.Null o key
+
+  let internal seqpntFromJsonValue (j:JsonValue) =
     let o = j.Object
     {
+      // extract
       VC = (softNumberFromKey o "VC").Number |> Math.Round |> int
       SL = (softNumberFromKey o "SL").Number |> Math.Round |> int
       SC = (softNumberFromKey o "SC").Number |> Math.Round |> int
@@ -176,14 +183,14 @@ module NativeJson =
                else tracksFromJsonValue t
     }
 
-  let seqpntsFromJsonValue (j:JsonValue) =
+  let internal seqpntsFromJsonValue (j:JsonValue) =
     j.Array
     |> Seq.map seqpntFromJsonValue
     |> SeqPnts
 
-  let branchinfoFromJsonValue (j:JsonValue) =
+  let internal branchinfoFromJsonValue (j:JsonValue) =
     let o = j.Object
-    {
+    { // extract
       Line = (softNumberFromKey o "Line").Number |> Math.Round |> int
       Offset = (softNumberFromKey o "Offset").Number |> Math.Round |> int
       EndOffset = (softNumberFromKey o "EndOffset").Number |> Math.Round |> int
@@ -205,7 +212,7 @@ module NativeJson =
                else tracksFromJsonValue t
     }
 
-  let linesFromJsonValue (j:JsonValue) =
+  let internal linesFromJsonValue (j:JsonValue) =
     let result = SortedDictionary<int, int>()
     j.Object
     |> Seq.iter (fun kvp ->
@@ -215,12 +222,12 @@ module NativeJson =
     )
     result
 
-  let branchesFromJsonValue (j:JsonValue) =
+  let internal branchesFromJsonValue (j:JsonValue) =
     j.Array
     |> Seq.map branchinfoFromJsonValue
     |> Branches
 
-  let methodFromJsonValue (j:JsonValue) =
+  let internal methodFromJsonValue (j:JsonValue) =
     let o = j.Object
     let tid = let t = softValueFromKey o "TId"
               if t = JsonValue.Null
@@ -246,7 +253,7 @@ module NativeJson =
              else timesFromJsonValue t
     }
 
-  let methodsFromJsonValue (j:JsonValue) =
+  let internal methodsFromJsonValue (j:JsonValue) =
     let result = Methods()
     j.Object
     |> Seq.iter (fun kvp ->
@@ -254,7 +261,7 @@ module NativeJson =
     )
     result
 
-  let classesFromJsonValue (j:JsonValue) =
+  let internal classesFromJsonValue (j:JsonValue) =
     let result = Classes()
     j.Object
     |> Seq.iter (fun kvp ->
@@ -262,7 +269,7 @@ module NativeJson =
     )
     result
 
-  let documentsFromJsonValue (j:JsonValue) =
+  let internal documentsFromJsonValue (j:JsonValue) =
     let result = Documents()
     j.Object
     |> Seq.iter (fun kvp ->
@@ -270,7 +277,7 @@ module NativeJson =
     )
     result
 
-  let modulesFromJsonValue (j:JsonValue) =
+  let internal modulesFromJsonValue (j:JsonValue) =
     let result = Modules()
     j.Object
     |> Seq.iter (fun kvp ->
@@ -278,7 +285,7 @@ module NativeJson =
     )
     result
 
-  let fromJsonText (report:string) =
+  let internal fromJsonText (report:string) =
     report
     |> Manatee.Json.JsonValue.Parse
     |> modulesFromJsonValue
@@ -313,7 +320,7 @@ module NativeJson =
   let private escapeString (builder:TextWriter) (s:String) =
     System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
 
-  let slugs =
+  let private slugs =
     { 0 .. 14 }
     |> Seq.map (fun i -> String(' ', i))
     |> Seq.toArray
@@ -347,7 +354,7 @@ module NativeJson =
     if method.Lines.IsNotNull && method.Lines.Count > 0
     then
       let mutable first = true
-      method.Lines
+      method.Lines // TODO extract
       |> Seq.iter (fun kvp ->
         if not first
         then w.Builder.AppendLine(",") |> ignore
@@ -372,7 +379,7 @@ module NativeJson =
     then
       let mutable first = true
       w.Builder.AppendLine() |> ignore
-      method.Branches
+      method.Branches  // TODO extract
       |> Seq.iter (fun b ->
         if not first
         then w.Builder.AppendLine(",") |> ignore
@@ -397,7 +404,7 @@ module NativeJson =
         then
           w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Times\": [") |> ignore
           let mutable firstTime = true
-          b.Times
+          b.Times // TODO extract
           |> Seq.iter (fun t ->
             (if firstTime
              then firstTime <- false
@@ -529,15 +536,27 @@ module NativeJson =
     else w.Builder.AppendLine() |> ignore
     w
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private methodsToWriter (w:BuildWriter) (methods:Methods) =
     (dictionaryToWriter 7 methodToWriter w methods)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private classesToWriter (w:BuildWriter) (classes:Classes) =
     (dictionaryToWriter 5 methodsToWriter w classes)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private documentsToWriter (w:BuildWriter) (documents:Documents) =
     (dictionaryToWriter 3 classesToWriter w documents)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private modulesToWriter (w:BuildWriter) (report:Modules) =
     (dictionaryToWriter 1 documentsToWriter w report)
 
@@ -546,7 +565,8 @@ module NativeJson =
     w.Builder.AppendLine("{") |> ignore
     (modulesToWriter w report)
       .Builder.AppendLine("}") |> ignore
-    w.Builder.ToString()
+    let result = w.Clear().ToString()
+    result
 
   let serializeToUtf8Bytes (document:Modules) =
     document
