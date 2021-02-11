@@ -149,7 +149,7 @@ module NativeJson =
 
   let internal zero = JsonValue(0.0)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal softFromKey (fallback:JsonValue) (o:JsonObject) (key:string) =
@@ -157,7 +157,7 @@ module NativeJson =
     if b then i else fallback
 
   let internal softNumberFromKey (o:JsonObject) (key:string) =
-    softFromKey zero o key
+    (softFromKey zero o key).Number |> Math.Round |> int
 
   let internal softValueFromKey (o:JsonObject) (key:string) =
     softFromKey JsonValue.Null o key
@@ -166,13 +166,13 @@ module NativeJson =
     let o = j.Object
     {
       // extract
-      VC = (softNumberFromKey o "VC").Number |> Math.Round |> int
-      SL = (softNumberFromKey o "SL").Number |> Math.Round |> int
-      SC = (softNumberFromKey o "SC").Number |> Math.Round |> int
-      EL = (softNumberFromKey o "EL").Number |> Math.Round |> int
-      EC = (softNumberFromKey o "EC").Number |> Math.Round |> int
-      Offset = (softNumberFromKey o "Offset").Number |> Math.Round |> int
-      Id = (softNumberFromKey o "Id").Number |> Math.Round |> int
+      VC = (softNumberFromKey o "VC")
+      SL = (softNumberFromKey o "SL")
+      SC = (softNumberFromKey o "SC")
+      EL = (softNumberFromKey o "EL")
+      EC = (softNumberFromKey o "EC")
+      Offset = (softNumberFromKey o "Offset")
+      Id = (softNumberFromKey o "Id")
       Times = let t = softValueFromKey o" Times"
               if t = JsonValue.Null
               then null
@@ -191,12 +191,12 @@ module NativeJson =
   let internal branchinfoFromJsonValue (j:JsonValue) =
     let o = j.Object
     { // extract
-      Line = (softNumberFromKey o "Line").Number |> Math.Round |> int
-      Offset = (softNumberFromKey o "Offset").Number |> Math.Round |> int
-      EndOffset = (softNumberFromKey o "EndOffset").Number |> Math.Round |> int
-      Path = (softNumberFromKey o "Path").Number |> Math.Round |> int
-      Ordinal = (softNumberFromKey o "Ordinal").Number |> Math.Round |> uint
-      Hits = (softNumberFromKey o "Hits").Number |> Math.Round |> int
+      Line = (softNumberFromKey o "Line")
+      Offset = (softNumberFromKey o "Offset")
+      EndOffset = (softNumberFromKey o "EndOffset")
+      Path = (softNumberFromKey o "Path")
+      Ordinal = (softNumberFromKey o "Ordinal") |> uint
+      Hits = (softNumberFromKey o "Hits")
       // Optionals
       Id = let t = softValueFromKey o "Id"
            if t = JsonValue.Null
@@ -302,14 +302,15 @@ module NativeJson =
                           self.Builder <- null
                           temp
     override self.Encoding = Encoding.Unicode // pointless but required
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    [<SuppressMessage(
       "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
       Justification="Would be meaningless")>]
     override self.Write(value:Char) =
         value
         |> self.Builder.Append
         |> ignore
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+
+    [<SuppressMessage(
       "Gendarme.Rules.Exceptions", "UseObjectDisposedExceptionRule",
       Justification="Would be meaningless")>]
     override self.Write(value:String) =
@@ -320,6 +321,9 @@ module NativeJson =
   let private escapeString (builder:TextWriter) (s:String) =
     System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+    Justification="Would be pointless")>]
   let private slugs =
     { 0 .. 14 }
     |> Seq.map (fun i -> String(' ', i))
@@ -349,6 +353,93 @@ module NativeJson =
     w.Builder.AppendLine() |> ignore
     w
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidMessageChainsRule",
+    Justification = "Fluent interface")>]
+  let private lineToWriter (w:BuildWriter) (kvp:KeyValuePair<int,int>) =
+    w.Builder.Append(slugs.[11])
+      .Append('"')
+      .Append(kvp.Key.ToString(CultureInfo.InvariantCulture))
+      .Append("\": ")
+      .Append(kvp.Value.ToString(CultureInfo.InvariantCulture))
+
+  [<SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidMessageChainsRule",
+    Justification = "Fluent interface")>]
+  let private itemToWriter (w:BuildWriter) (i:int) (n:string) =
+        w.Builder.Append(slugs.[12])
+         .Append('"')
+         .Append(n)
+         .Append("\": ")
+         .Append(i.ToString(CultureInfo.InvariantCulture))
+         .AppendLine(",") |> ignore
+
+  let private timeToWriter (b:StringBuilder) depth (time:TimeStamp) =
+    b.Append(slugs.[depth]).Append('"').Append(time).Append('"') |> ignore
+
+  let private timesToWriter (w:BuildWriter) (times:Times) =
+    if times.IsNotNull && times.Count > 0
+    then
+      w.Builder.AppendLine(",").Append(slugs.[12])
+               .Append("\"Times\": [") |> ignore
+      let mutable firstTime = true
+      times
+      |> Seq.iter (fun t ->
+        timeToWriter  (if firstTime
+                       then firstTime <- false
+                            w.Builder.AppendLine()
+                            else w.Builder.AppendLine(",")) 14 t
+      )
+      w.Builder.AppendLine()
+        .Append(slugs.[13]).Append("]") |> ignore
+
+  let private tracksToWriter (w:BuildWriter) (tracks:Tracks) =
+    if tracks.IsNotNull && tracks.Count > 0
+    then
+      w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Tracks\": [")|> ignore
+      let mutable firstTime = true
+      tracks
+      |> Seq.iter (fun t ->
+        (if firstTime
+         then firstTime <- false
+              w.Builder.AppendLine()
+         else w.Builder.AppendLine(","))
+          .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
+      )
+      w.Builder.AppendLine()
+        .Append(slugs.[13]).Append("]") |> ignore
+
+  let private branchToWriter  (w:BuildWriter) (b:BranchInfo) =
+    w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
+    itemToWriter w b.Line "Line"
+    itemToWriter w b.Offset "Offset"
+    itemToWriter w b.EndOffset "EndOffset"
+    itemToWriter w b.Path "Path"
+    itemToWriter w (int b.Ordinal) "Ordinal"
+    itemToWriter w b.Hits "Hits"
+    itemToWriter w b.Line "Line"
+    if b.Id > 0 then
+      itemToWriter w b.Id "Id"
+    timesToWriter w b.Times
+    tracksToWriter w b.Tracks
+    w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
+
+  let private seqpntToWriter (w:BuildWriter) (s:SeqPnt) =
+    w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
+    itemToWriter w s.VC "VC"
+    itemToWriter w s.SL "SL"
+    itemToWriter w s.SC "SC"
+    itemToWriter w s.EL "EL"
+    itemToWriter w s.EC "EC"
+    itemToWriter w s.Offset "Offset"
+    itemToWriter w s.Id "Id"
+    timesToWriter w s.Times
+    tracksToWriter w s.Tracks
+    w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
+
+  [<SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidMessageChainsRule",
+    Justification = "Fluent interface")>]
   let private methodToWriter (w:BuildWriter) (method:Method) =
     w.Builder.Append(slugs.[9]).AppendLine("\"Lines\": {") |> ignore
     if method.Lines.IsNotNull && method.Lines.Count > 0
@@ -359,12 +450,7 @@ module NativeJson =
         if not first
         then w.Builder.AppendLine(",") |> ignore
         first <- false
-        w.Builder.Append(slugs.[11])
-         .Append('"')
-         .Append(kvp.Key.ToString(CultureInfo.InvariantCulture))
-         .Append("\": ")
-         .Append(kvp.Value.ToString(CultureInfo.InvariantCulture))
-         |> ignore
+        lineToWriter w kvp |> ignore
       )
       w.Builder.AppendLine()
         .Append(slugs.[10]).AppendLine("},") |> ignore
@@ -384,51 +470,7 @@ module NativeJson =
         if not first
         then w.Builder.AppendLine(",") |> ignore
         first <- false
-        w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Line\": ")
-          .Append(b.Line.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Offset\": ")
-          .Append(b.Offset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"EndOffset\": ")
-          .Append(b.EndOffset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Path\": ")
-          .Append(b.Path.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Ordinal\": ")
-          .Append(b.Ordinal.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Hits\": ")
-          .Append(b.Hits.ToString(CultureInfo.InvariantCulture)) |> ignore
-        if b.Id > 0 then
-          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Id\": ")
-            .Append(b.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
-        if b.Times.IsNotNull && b.Times.Count > 0
-        then
-          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Times\": [") |> ignore
-          let mutable firstTime = true
-          b.Times // TODO extract
-          |> Seq.iter (fun t ->
-            (if firstTime
-             then firstTime <- false
-                  w.Builder.AppendLine()
-             else w.Builder.AppendLine(","))
-             .Append(slugs.[14]).Append('"').Append(t).Append('"') |> ignore
-          )
-          w.Builder.AppendLine()
-            .Append(slugs.[13]).Append("]") |> ignore
-        if b.Tracks.IsNotNull && b.Tracks.Count > 0
-        then
-          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Tracks\": [") |> ignore
-          let mutable firstTime = true
-          b.Tracks
-          |> Seq.iter (fun t ->
-            (if firstTime
-             then firstTime <- false
-                  w.Builder.AppendLine()
-             else w.Builder.AppendLine(","))
-             .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
-          )
-          w.Builder.AppendLine()
-            .Append(slugs.[13]).Append("]") |> ignore
-        w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
+        branchToWriter w b
       )
       w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
     else
@@ -448,51 +490,7 @@ module NativeJson =
         if not first
         then w.Builder.AppendLine(",") |> ignore
         first <- false
-        w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"VC\": ")
-          .Append(s.VC.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"SL\": ")
-          .Append(s.SL.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"SC\": ")
-          .Append(s.SC.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"EL\": ")
-          .Append(s.EL.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"EC\": ")
-          .Append(s.EC.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Offset\": ")
-          .Append(s.Offset.ToString(CultureInfo.InvariantCulture)).AppendLine(",") |> ignore
-        w.Builder.Append(slugs.[12]).Append("\"Id\": ")
-          .Append(s.Id.ToString(CultureInfo.InvariantCulture)) |> ignore
-
-        if s.Times.IsNotNull && s.Times.Count > 0
-        then
-          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Times\": [") |> ignore
-          let mutable firstTime = true
-          s.Times
-          |> Seq.iter (fun t ->
-            (if firstTime
-             then firstTime <- false
-                  w.Builder.AppendLine()
-             else w.Builder.AppendLine(","))
-             .Append(slugs.[14]).Append('"').Append(t).Append('"') |> ignore
-          )
-          w.Builder.AppendLine()
-            .Append(slugs.[13]).Append("]") |> ignore
-        if s.Tracks.IsNotNull && s.Tracks.Count > 0
-        then
-          w.Builder.AppendLine(",").Append(slugs.[12]).Append("\"Tracks\": [") |> ignore
-          let mutable firstTime = true
-          s.Tracks
-          |> Seq.iter (fun t ->
-            (if firstTime
-             then firstTime <- false
-                  w.Builder.AppendLine()
-             else w.Builder.AppendLine(","))
-             .Append(slugs.[14]).Append(t.ToString(CultureInfo.InvariantCulture)) |> ignore
-          )
-          w.Builder.AppendLine()
-            .Append(slugs.[13]).Append("]") |> ignore
-        w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
+        seqpntToWriter w s
       )
       w.Builder.AppendLine().Append(slugs.[10]).Append("]") |> ignore
 
@@ -510,11 +508,11 @@ module NativeJson =
       then
         method.Entry
         |> Seq.iter (fun t ->
-           (if firstTime
-            then firstTime <- false
-                 w.Builder.AppendLine()
-            else w.Builder.AppendLine(","))
-             .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
+          timeToWriter
+               (if firstTime
+                then firstTime <- false
+                     w.Builder.AppendLine()
+                else w.Builder.AppendLine(",")) 11 t
         )
         w.Builder.AppendLine().Append(slugs.[10]) |> ignore
       w.Builder.Append("]") |> ignore
@@ -525,41 +523,44 @@ module NativeJson =
       then
         method.Exit
         |> Seq.iter (fun t ->
-           (if firstTime
-            then firstTime <- false
-                 w.Builder.AppendLine()
-            else w.Builder.AppendLine(","))
-             .Append(slugs.[11]).Append('"').Append(t).Append('"') |> ignore
+          timeToWriter
+               (if firstTime
+                then firstTime <- false
+                     w.Builder.AppendLine()
+                else w.Builder.AppendLine(",")) 11 t
         )
         w.Builder.AppendLine().Append(slugs.[10]) |> ignore
       w.Builder.AppendLine("]") |> ignore
     else w.Builder.AppendLine() |> ignore
     w
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let private methodsToWriter (w:BuildWriter) (methods:Methods) =
     (dictionaryToWriter 7 methodToWriter w methods)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let private classesToWriter (w:BuildWriter) (classes:Classes) =
     (dictionaryToWriter 5 methodsToWriter w classes)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let private documentsToWriter (w:BuildWriter) (documents:Documents) =
     (dictionaryToWriter 3 classesToWriter w documents)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let private modulesToWriter (w:BuildWriter) (report:Modules) =
     (dictionaryToWriter 1 documentsToWriter w report)
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+    Justification = "Is this a bug?")>]
   let internal toText (report:Modules) =
     use w = new BuildWriter()
     w.Builder.AppendLine("{") |> ignore
@@ -568,7 +569,7 @@ module NativeJson =
     let result = w.Clear().ToString()
     result
 
-  let serializeToUtf8Bytes (document:Modules) =
+  let internal serializeToUtf8Bytes (document:Modules) =
     document
     |> toText
     |> System.Text.Encoding.UTF8.GetBytes
@@ -578,7 +579,7 @@ module NativeJson =
 #if GUI
   // Conversion to XML ---------------------------------------------------------
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal methodsToXml (fileId:int) (item:XElement) (methods:Methods) =
@@ -652,7 +653,7 @@ module NativeJson =
 
     )
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal classesToXml (fileId:int)
@@ -676,7 +677,7 @@ module NativeJson =
       methodsToXml fileId next kvp.Value
     )
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal documentsToXml (indexTable:Dictionary<string, int>)
@@ -717,7 +718,7 @@ module NativeJson =
     )
     m
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+  [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal jsonToXml (modules:Modules) =
@@ -871,6 +872,11 @@ module NativeJson =
 
 #if GUI || RUNNER
   // FxCop ---------------------------------------------------------
+#if GUI
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline", Scope="member",
+  Target="<StartupCode$AltCover-UICommon>.$NativeJson.#.cctor()",
+  Justification="Compiler Generated")>]
+#endif
 
 [<assembly: SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Scope="member",
   Target="AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
