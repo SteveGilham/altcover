@@ -3636,13 +3636,13 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
 
 _Target "JsonReporting" (fun _ ->
   Directory.ensure "./_Reports"
-  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
   let x = Path.getFullName "./_Reports/JsonReporting.json"
   let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
-  // let before = Actions.ticksNow()
+  let before = Actions.ticksNow()
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
@@ -3656,15 +3656,43 @@ _Target "JsonReporting" (fun _ ->
            Save = false })
     |> AltCoverCommand.Prepare
   { AltCoverCommand.Options.Create prep with
-      ToolPath = "AltCover.dll"
-      ToolType = dotnetAltcover
-      WorkingDirectory = unpack }
+      ToolPath = runner
+      ToolType = frameworkAltcover
+      WorkingDirectory = i }
   |> AltCoverCommand.run
-  // Actions.CheckSample4Content x -- TODO
+
+  let checkSample4Content path =
+    let coverageDocument = path
+                           |> File.ReadAllText
+                           |> System.Text.Json.JsonSerializer.Deserialize<AltCover.NativeJson.Modules>
+    let recorded =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect (fun m -> m.Keys)
+      |> Seq.sort
+      |> Seq.toList
+
+    let expected =
+      [ "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()"
+        "System.Byte[] Tests.M/Thing::bytes()"
+        "System.Int32 Tests.Program::main(System.String[])"
+        "System.Void Tests.DU/MyClass::.ctor()"
+        "System.Void Tests.DU::testMakeUnion()"
+        "System.Void Tests.M::testMakeThing()"
+        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
+        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
+        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
+        "Tests.M/Thing Tests.M::makeThing(System.String)" ]
+    Assert.That
+      (recorded, expected |> Is.EqualTo, sprintf "Bad method list %A" recorded)
+    printfn "Content OK"
+
+  checkSample4Content x
 
   printfn "Execute the instrumented tests"
   let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
-  let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
   // Run
@@ -3677,10 +3705,85 @@ _Target "JsonReporting" (fun _ ->
     |> AltCoverCommand.Collect
   { AltCoverCommand.Options.Create collect with
       ToolPath = runner
-      ToolType = dotnetAltcover
+      ToolType = frameworkAltcover
       WorkingDirectory = o }
   |> AltCoverCommand.run
-  //Actions.CheckSample4Visits before x -- TODO
+
+  let checkSample4Visits from path =
+    let coverageDocument = path
+                           |> File.ReadAllText
+                           |> System.Text.Json.JsonSerializer.Deserialize<AltCover.NativeJson.Modules>
+    let recorded =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect (fun m -> m.Values)
+      |> Seq.collect (fun m -> m.SeqPnts)
+      |> Seq.map (fun s -> s.VC)
+      |> Seq.toList
+
+    let expected = "0 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 2 0 1 0 1 1"
+    Assert.That
+      (String.Join(" ", recorded), expected |> Is.EqualTo,
+       sprintf "Bad visit list %A" recorded)
+    printfn "Visits OK"
+
+    let methods =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect id
+      |> Seq.toList
+
+    let trackedFormat = methods
+                        |> List.filter (fun m -> m.Value.TId.HasValue)
+                        |> List.map (fun m -> m.Key, m.Value.TId.Value)
+                        |> List.sortBy snd
+                        |> List.map (sprintf "%A")
+
+    Assert.That
+      (String.Join(" ", trackedFormat), """("System.Void Tests.DU::testMakeUnion()", 1) ("System.Void Tests.M::testMakeThing()", 2)""" |> Is.EqualTo,
+       sprintf "Bad tracked method list %A" trackedFormat)
+
+    let trackedTimes = methods
+                        |> List.filter (fun m -> m.Value.TId.HasValue)
+//                        |> List.collect (fun m -> let first = m.Value.Entry 
+                        |> List.iter    (fun m -> let first = m.Value.Entry 
+                                                              |> Seq.head
+                                                              |> Convert.FromBase64String
+                                                              |>  (fun x -> BitConverter.ToInt64(x,0))
+                                                              |> System.Net.IPAddress.NetworkToHostOrder
+                                                  let second = m.Value.Exit 
+                                                               |> Seq.head
+                                                               |> Convert.FromBase64String
+                                                               |> (fun x -> BitConverter.ToInt64(x,0))
+                                                               |> System.Net.IPAddress.NetworkToHostOrder
+                                                  test <@ from <= first @>
+                                                  test <@ first <= second @>
+                                                  test <@ second <= Actions.ticksNow() @>)
+//                                                  [first; second])
+        //  Assert.That
+        //    (x.ToString().Replace("\r\n", "\n"),
+        //     Is.EqualTo <| tracked.Replace("\r\n", "\n"))) ???
+    printfn "Tracked OK"
+
+    let trackedVisits =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect (fun m -> m.Values)
+      |> Seq.collect (fun m -> m.SeqPnts)
+      |> Seq.filter (fun s -> s.Tracks |> isNull |> not)
+      |> Seq.collect (fun s -> s.Tracks)
+      |> Seq.map (fun i -> i.ToString(System.Globalization.CultureInfo.InvariantCulture))
+      |> Seq.toList
+
+    Assert.That
+      (String.Join(" ", trackedVisits), "1 1 1 1 1 1 1 2 2 2 2 2" |> Is.EqualTo,
+       sprintf "Bad tracked visit list %A" trackedVisits)
+    printfn "TrackRefs OK"
+
+  checkSample4Visits before x
 )
 
 _Target "MSBuildTest" (fun _ ->
