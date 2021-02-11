@@ -451,9 +451,8 @@ module NativeJson =
         lineToWriter w kvp |> ignore
       )
       w.Builder.AppendLine()
-        .Append(slugs.[10]).AppendLine("},") |> ignore
-    else
-      w.Builder.AppendLine("},") |> ignore
+        .Append(slugs.[10]) |> ignore
+    w.Builder.AppendLine("},") |> ignore
 
     // After Lines, now Branches
 
