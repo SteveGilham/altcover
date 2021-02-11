@@ -28,6 +28,7 @@ module NativeJson =
 
   let FromTracking(ticks:int64) : TimeStamp =
     ticks
+    |> System.Net.IPAddress.HostToNetworkOrder
     |> BitConverter.GetBytes
     |> Convert.ToBase64String
 

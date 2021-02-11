@@ -36,7 +36,7 @@
             "Offset": 0,
             "Id": 1,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -59,7 +59,7 @@
             "Offset": 0,
             "Id": 2,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -82,7 +82,7 @@
             "Ordinal": 0,
             "Hits": 1,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -106,7 +106,7 @@
             "Hits": 1,
             "Id": 2,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -132,7 +132,7 @@
             "Offset": 0,
             "Id": 8,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -156,7 +156,7 @@
             "Offset": 257,
             "Id": 6,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -180,7 +180,7 @@
             "Offset": 524,
             "Id": 4,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -198,10 +198,10 @@
           ],
          "TId": 1,
          "Entry": [
-           "lib0Z4C/2Ag="
+           "CNi/gGf0JpY="
           ],
          "Exit": [
-           "vDgzaIC/2Ag="
+           "CNi/gGgzOLw="
           ]
         },
        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()": {
@@ -232,7 +232,7 @@
             "Hits": 1,
             "Id": 5,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -267,7 +267,7 @@
             "Offset": 0,
             "Id": 17,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -282,7 +282,7 @@
             "Offset": 54,
             "Id": 16,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               1
@@ -431,7 +431,7 @@
             "Offset": 0,
             "Id": 22,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               2
@@ -454,7 +454,7 @@
             "Hits": 1,
             "Id": 8,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               2
@@ -480,7 +480,7 @@
             "Offset": 0,
             "Id": 26,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               2
@@ -504,7 +504,7 @@
             "Offset": 257,
             "Id": 24,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               2
@@ -522,10 +522,10 @@
           ],
          "TId": 2,
          "Entry": [
-           "1yX0Z4C/2Ag="
+           "CNi/gGf0Jdc="
           ],
          "Exit": [
-           "X0kmaIC/2Ag="
+           "CNi/gGgmSV8="
           ]
         },
        "System.Byte[] Tests.M/Thing::bytes()": {
@@ -543,7 +543,7 @@
             "Offset": 0,
             "Id": 27,
             "Times": [
-              "gLi7Z4C/2Ag="
+              "CNi/gGe7uIA="
              ],
             "Tracks": [
               2

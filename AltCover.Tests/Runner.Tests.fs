@@ -2032,7 +2032,7 @@ module AltCoverRunnerTests =
           use worker' = new FileStream(junkFile, FileMode.Open)
           use reader = new StreamReader(worker')
           reader.ReadToEnd()
-        saved.WriteLine jsonText  // NOT printfn "%s" jsonText
+        // saved.WriteLine jsonText  // NOT printfn "%s" jsonText
 
         let visitedJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                           |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
