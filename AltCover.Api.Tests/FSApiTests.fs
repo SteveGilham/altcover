@@ -143,8 +143,17 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
-                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
   [<Test>]
   let NCoverToJson() =
     use stream=
@@ -161,8 +170,18 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
-                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
+
   [<Test>]
   let OpenCoverToBarChart() =
     use stream=

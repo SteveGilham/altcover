@@ -416,9 +416,7 @@ module NativeJson =
     itemToWriter w (int b.Ordinal) "Ordinal" true
     itemToWriter w b.Hits "Hits" (b.Id > 0)
     if b.Id > 0 then
-      itemToWriter w b.Id "Id"
-             ((b.Times.IsNotNull && b.Times.Count > 0) ||
-              (b.Tracks.IsNotNull && b.Tracks.Count > 0))
+      itemToWriter w b.Id "Id" false
 
     timesToWriter w b.Times
     tracksToWriter w b.Tracks
@@ -432,9 +430,7 @@ module NativeJson =
     itemToWriter w s.EL "EL" true
     itemToWriter w s.EC "EC" true
     itemToWriter w s.Offset "Offset" true
-    itemToWriter w s.Id "Id"
-             ((s.Times.IsNotNull && s.Times.Count > 0) ||
-              (s.Tracks.IsNotNull && s.Tracks.Count > 0))
+    itemToWriter w s.Id "Id" false
     timesToWriter w s.Times
     tracksToWriter w s.Tracks
     w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
