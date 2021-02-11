@@ -162,6 +162,12 @@ module NativeJson =
   let internal softValueFromKey (o:JsonObject) (key:string) =
     softFromKey JsonValue.Null o key
 
+  let internal valueFromKey  (o:JsonObject) (key:string) fallback decoder =
+    let t = softValueFromKey o key
+    if t = JsonValue.Null
+    then fallback
+    else decoder t
+
   let internal seqpntFromJsonValue (j:JsonValue) =
     let o = j.Object
     {
@@ -173,14 +179,8 @@ module NativeJson =
       EC = (softNumberFromKey o "EC")
       Offset = (softNumberFromKey o "Offset")
       Id = (softNumberFromKey o "Id")
-      Times = let t = softValueFromKey o" Times"
-              if t = JsonValue.Null
-              then null
-              else timesFromJsonValue t
-      Tracks = let t = softValueFromKey o "Tracks"
-               if t = JsonValue.Null
-               then null
-               else tracksFromJsonValue t
+      Times = valueFromKey o "Times" null timesFromJsonValue
+      Tracks = valueFromKey o "Tracks" null tracksFromJsonValue
     }
 
   let internal seqpntsFromJsonValue (j:JsonValue) =
@@ -198,18 +198,9 @@ module NativeJson =
       Ordinal = (softNumberFromKey o "Ordinal") |> uint
       Hits = (softNumberFromKey o "Hits")
       // Optionals
-      Id = let t = softValueFromKey o "Id"
-           if t = JsonValue.Null
-           then 0
-           else t.Number |> Math.Round |> int
-      Times = let t = softValueFromKey o" Times"
-              if t = JsonValue.Null
-              then null
-              else timesFromJsonValue t
-      Tracks = let t = softValueFromKey o "Tracks"
-               if t = JsonValue.Null
-               then null
-               else tracksFromJsonValue t
+      Id = valueFromKey o "Id" 0 (fun t -> t.Number |> Math.Round |> int)
+      Times = valueFromKey o "Times" null timesFromJsonValue
+      Tracks = valueFromKey o "Tracks" null tracksFromJsonValue
     }
 
   let internal linesFromJsonValue (j:JsonValue) =
@@ -229,28 +220,23 @@ module NativeJson =
 
   let internal methodFromJsonValue (j:JsonValue) =
     let o = j.Object
-    let tid = let t = softValueFromKey o "TId"
-              if t = JsonValue.Null
-              then System.Nullable()
-              else t.Number |> Math.Round |> int |> Nullable<int>
+    let tid = valueFromKey o "TId" (System.Nullable())
+                 (fun t -> t.Number |> Math.Round |> int |> Nullable<int>)
 
     {
-      Lines = (softValueFromKey o "Lines") |> linesFromJsonValue
-      Branches = (softValueFromKey o "Branches") |> branchesFromJsonValue
+      Lines = valueFromKey o "Lines" (Lines()) linesFromJsonValue
+      Branches = valueFromKey o "Branches" (Branches()) branchesFromJsonValue
       // Optionals
-      SeqPnts = let t = softValueFromKey o "SeqPnts"
-                if t = JsonValue.Null
-                then null
-                else seqpntsFromJsonValue t
+      SeqPnts = valueFromKey o "SeqPnts" null seqpntsFromJsonValue
       TId = tid
-      Entry = let t = softValueFromKey o "Entry"
-              if t = JsonValue.Null
-              then if tid.HasValue then Times() else null
-              else timesFromJsonValue t
-      Exit = let t = softValueFromKey o "Exit"
-             if t = JsonValue.Null
-             then if tid.HasValue then Times() else null
-             else timesFromJsonValue t
+      Entry = valueFromKey o "Entry"
+                 (if tid.HasValue
+                  then Times()
+                  else null) timesFromJsonValue
+      Exit = valueFromKey o "Exit"
+                 (if tid.HasValue
+                  then Times()
+                  else null) timesFromJsonValue
     }
 
   let internal methodsFromJsonValue (j:JsonValue) =
