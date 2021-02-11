@@ -211,7 +211,7 @@ module NativeJson =
     }
 
   let internal linesFromJsonValue (j:JsonValue) =
-    let result = SortedDictionary<int, int>()
+    let result = Lines()
     j.Object
     |> Seq.iter (fun kvp ->
       let _,i = Int32.TryParse kvp.Key
