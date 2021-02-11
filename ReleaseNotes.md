@@ -2,15 +2,29 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 7.6.8xx (Genbu series release 16)
-* "Native" JSON ...
+# 8.0.8xx (Habu series release 1)
+* [Breaking] Native JSON report formatting, a superset of coverlet's JSON
+* `Method` has optional 
+  * `SeqPnts` (array of `SeqPnt`) 
+  * `TId` (integer tracking ID) 
+  * `Entry` and
+  * `Exit` (arrays of timestamps)
+* `BranchInfo` has optional 
+ * integer `Id`
+ * `Times` (array of timestamps) and
+ * `Tracks` (array of tracking IDs)
+* `SeqPnt` is `VC` (visit count), `SL` (start line), `SC` (start column), `EL`, `EC` (ditto for end), `Offset`, `Id`, all integers, and optional `Times` and `Tracks` as for `BranchInfo`
+      SC = (softNumberFromKey o "SC")
+      EL = (softNumberFromKey o "EL")
+      EC = (softNumberFromKey o "EC")
+      Offset = (softNumberFromKey o "Offset")
+      Id = (softNumberFromKey o "Id")
+      Times = timesByKey o
+      Tracks = tracksByKey o
+* Because int64 doesn't fit as a double, tracking-related timestamps represented as Base64Encoded strings `Convert.ToBase64String(BitConverter.GetBytes(IPAddresss.HostToNetworkOrder(ticks)))`
+
 
 * [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
-* JSON output hardening (some changes possibly breaking)
-  * Reduce allocations
-  * Escape strings more rigorously
-  * Method metadata tokens are kept numeric
-  * Because int64 doesn't fit as a double, tracking-related timestamps represented as Base64Encoded strings `Convert.ToBase64String(BitConverter.GetBytes(ticks))`
 
 # 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
