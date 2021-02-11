@@ -163,11 +163,17 @@ module NativeJson =
   let internal softValueFromKey (o:JsonObject) (key:string) =
     softFromKey JsonValue.Null o key
 
-  let internal valueFromKey  (o:JsonObject) (key:string) fallback decoder =
+  let internal valueFromKey (o:JsonObject) (key:string) fallback decoder =
     let t = softValueFromKey o key
     if t = JsonValue.Null
     then fallback
     else decoder t
+
+  let internal timesByKey (o:JsonObject) =
+    valueFromKey o "Times" null timesFromJsonValue
+
+  let internal tracksByKey (o:JsonObject) =
+    valueFromKey o "Tracks" null tracksFromJsonValue
 
   let internal seqpntFromJsonValue (j:JsonValue) =
     let o = j.Object
@@ -180,8 +186,8 @@ module NativeJson =
       EC = (softNumberFromKey o "EC")
       Offset = (softNumberFromKey o "Offset")
       Id = (softNumberFromKey o "Id")
-      Times = valueFromKey o "Times" null timesFromJsonValue
-      Tracks = valueFromKey o "Tracks" null tracksFromJsonValue
+      Times = timesByKey o
+      Tracks = tracksByKey o
     }
 
   let internal seqpntsFromJsonValue (j:JsonValue) =
@@ -200,8 +206,8 @@ module NativeJson =
       Hits = (softNumberFromKey o "Hits")
       // Optionals
       Id = valueFromKey o "Id" 0 (fun t -> t.Number |> Math.Round |> int)
-      Times = valueFromKey o "Times" null timesFromJsonValue
-      Tracks = valueFromKey o "Tracks" null tracksFromJsonValue
+      Times = timesByKey o
+      Tracks = tracksByKey o
     }
 
   let internal linesFromJsonValue (j:JsonValue) =
