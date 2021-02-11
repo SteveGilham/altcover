@@ -321,13 +321,10 @@ module NativeJson =
   let private escapeString (builder:TextWriter) (s:String) =
     System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(builder, s)
 
-  [<SuppressMessage(
-    "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-    Justification="Would be pointless")>]
   let private slugs =
     { 0 .. 14 }
-    |> Seq.map (fun i -> String(' ', i))
-    |> Seq.toArray
+    |> Seq.map (fun i -> (i, String(' ', i)))
+    |> Map.ofSeq
 
   let private dictionaryToWriter<'a>
     (depth : int)
@@ -366,13 +363,14 @@ module NativeJson =
   [<SuppressMessage(
     "Gendarme.Rules.Smells", "AvoidMessageChainsRule",
     Justification = "Fluent interface")>]
-  let private itemToWriter (w:BuildWriter) (i:int) (n:string) =
-        w.Builder.Append(slugs.[12])
-         .Append('"')
-         .Append(n)
-         .Append("\": ")
-         .Append(i.ToString(CultureInfo.InvariantCulture))
-         .AppendLine(",") |> ignore
+  let private itemToWriter (w:BuildWriter) (i:int) (n:string) more =
+    w.Builder.Append(slugs.[12])
+      .Append('"')
+      .Append(n)
+      .Append("\": ")
+      .Append(i.ToString(CultureInfo.InvariantCulture)) |> ignore
+    if more then
+      w.Builder.AppendLine(",") |> ignore
 
   let private timeToWriter (b:StringBuilder) depth (time:TimeStamp) =
     b.Append(slugs.[depth]).Append('"').Append(time).Append('"') |> ignore
@@ -411,28 +409,32 @@ module NativeJson =
 
   let private branchToWriter  (w:BuildWriter) (b:BranchInfo) =
     w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
-    itemToWriter w b.Line "Line"
-    itemToWriter w b.Offset "Offset"
-    itemToWriter w b.EndOffset "EndOffset"
-    itemToWriter w b.Path "Path"
-    itemToWriter w (int b.Ordinal) "Ordinal"
-    itemToWriter w b.Hits "Hits"
-    itemToWriter w b.Line "Line"
+    itemToWriter w b.Line "Line" true
+    itemToWriter w b.Offset "Offset" true
+    itemToWriter w b.EndOffset "EndOffset" true
+    itemToWriter w b.Path "Path" true
+    itemToWriter w (int b.Ordinal) "Ordinal" true
+    itemToWriter w b.Hits "Hits" (b.Id > 0)
     if b.Id > 0 then
       itemToWriter w b.Id "Id"
+             ((b.Times.IsNotNull && b.Times.Count > 0) ||
+              (b.Tracks.IsNotNull && b.Tracks.Count > 0))
+
     timesToWriter w b.Times
     tracksToWriter w b.Tracks
     w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
 
   let private seqpntToWriter (w:BuildWriter) (s:SeqPnt) =
     w.Builder.Append(slugs.[11]).AppendLine("{") |> ignore
-    itemToWriter w s.VC "VC"
-    itemToWriter w s.SL "SL"
-    itemToWriter w s.SC "SC"
-    itemToWriter w s.EL "EL"
-    itemToWriter w s.EC "EC"
-    itemToWriter w s.Offset "Offset"
+    itemToWriter w s.VC "VC" true
+    itemToWriter w s.SL "SL" true
+    itemToWriter w s.SC "SC" true
+    itemToWriter w s.EL "EL" true
+    itemToWriter w s.EC "EC" true
+    itemToWriter w s.Offset "Offset" true
     itemToWriter w s.Id "Id"
+             ((s.Times.IsNotNull && s.Times.Count > 0) ||
+              (s.Tracks.IsNotNull && s.Tracks.Count > 0))
     timesToWriter w s.Times
     tracksToWriter w s.Tracks
     w.Builder.AppendLine().Append(slugs.[11]).Append("}") |> ignore
