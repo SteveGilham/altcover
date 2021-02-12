@@ -2097,6 +2097,25 @@ module AltCoverRunnerTests =
         finally
           w0.Dispose()
 
+        // degenerate case 1a
+        let junkzip = junkfile + ".zip"
+        Assert.That(junkzip |> File.Exists |> not)
+        do
+          use archive = ZipFile.Open(junkzip, ZipArchiveMode.Create)
+          let entry = Guid.NewGuid().ToString() |> archive.CreateEntry
+          use sink = entry.Open()
+          sink.Write([| 0uy |], 0 ,1 )
+          ()
+
+        let (c0, w0) = Zip.openUpdate junkfile
+        try
+          Assert.That(c0.IsNotNull)
+          Assert.That(w0, Is.InstanceOf<MemoryStream>())
+          Assert.That(w0.Length, Is.EqualTo 0L)
+        finally
+          c0.Dispose()
+          w0.Dispose()
+
         // degenerate case 2
         Assert.That(junkfile2 |> File.Exists |> not)
         Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile2 None |> ignore
