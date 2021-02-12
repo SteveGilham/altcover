@@ -1194,7 +1194,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = altReport
+           Report = altReport
            InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir (*; monitorDir*) |]
            OutputDirectories =
              [| "./__UnitTestWithAltCover"
@@ -1246,7 +1246,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = RecorderReport
+           Report = RecorderReport
            OutputDirectories = [| "./__RecorderTestWithAltCover" |]
            StrongNameKey = shadowkeyfile
            ReportFormat = "NCover"
@@ -1364,7 +1364,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
        let prep =
          AltCover.PrepareOptions.TypeSafe
            ({ TypeSafe.PrepareOptions.Create() with
-                XmlReport = TypeSafe.FilePath altReport
+                Report = TypeSafe.FilePath altReport
                 OutputDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath outputDirectory |]
                 StrongNameKey = TypeSafe.FilePath signingKey
                 SingleVisit = TypeSafe.Set
@@ -1501,7 +1501,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        let prep =
          AltCover.PrepareOptions.Primitive
            ({ Primitive.PrepareOptions.Create() with
-                XmlReport = report
+                Report = report
                 OutputDirectories = [| output |]
                 StrongNameKey = keyfile
                 ReportFormat = "NCover"
@@ -1610,7 +1610,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
           let prep =
             AltCover.PrepareOptions.Primitive
               ({ Primitive.PrepareOptions.Create() with
-                  XmlReport = report
+                  Report = report
                   TypeFilter = [ "SolutionRoot"; "Expecto" ]
                   VisibleBranches = true
                   StrongNameKey = keyfile
@@ -1669,7 +1669,7 @@ _Target "FSharpTypes" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [| "./" + instrumented |]
            AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -1703,7 +1703,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
@@ -1749,7 +1749,7 @@ _Target "FSharpTests" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            CallContext = [ "[Test]" ]
            AssemblyFilter = [ "Adapter" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -1806,7 +1806,7 @@ _Target "AsyncAwaitTests" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            CallContext = [ "[Test]" ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -1864,7 +1864,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -1923,7 +1923,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            AssemblyFilter = [ "Adapter"; "FSharp"; "nunit" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
@@ -1996,7 +1996,7 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            TypeFilter = [ "System\\." ]
@@ -2022,7 +2022,7 @@ _Target "CSharpDotNetWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            TypeFilter = [ "System\\." ]
@@ -2051,7 +2051,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [| instrumented |]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
@@ -2080,7 +2080,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = altReport
+           Report = altReport
            OutputDirectories = [| "__SelfTest" |]
            AssemblyExcludeFilter = [ "xunit"; "NUnit" ]
            StrongNameKey = keyfile
@@ -2120,7 +2120,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = altReport2
+           Report = altReport2
            OutputDirectories = [| "./__SelfTestDummy" |]
            StrongNameKey = keyfile
            ReportFormat = "NCover"
@@ -2155,7 +2155,7 @@ _Target "RecordResumeTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit"; "xunit" ]
@@ -2233,7 +2233,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            CallContext = [ "Main" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -2309,7 +2309,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
@@ -2383,7 +2383,7 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
@@ -2925,7 +2925,7 @@ _Target "Pester" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = report
+           Report = report
            InputDirectories = [ i ]
            StrongNameKey = key
            TypeFilter = [ "System\\."; "DotNet" ]
@@ -3001,7 +3001,7 @@ _Target "SimpleZipReleaseTest" (fun _ ->
     AltCover.PrepareOptions.Primitive
       { Primitive.PrepareOptions.Create() with
           TypeFilter = [ """System\.""" ]
-          XmlReport = simpleReport
+          Report = simpleReport
           OutputDirectories = [| "./" + instrumented |]
           ReportFormat = "NCover"
           ZipFile = true
@@ -3054,7 +3054,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
@@ -3083,7 +3083,7 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            InPlace = false
@@ -3109,7 +3109,7 @@ _Target "ReleaseDotNetWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            InPlace = false
@@ -3138,7 +3138,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
@@ -3212,7 +3212,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       let prep =
         AltCover.PrepareOptions.Primitive
           ({ Primitive.PrepareOptions.Create() with
-               XmlReport = x
+               Report = x
                OutputDirectories = [ o ]
                InputDirectories = [ i ]
                AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
@@ -3266,7 +3266,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3305,7 +3305,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3356,7 +3356,7 @@ _Target "OpenCoverForPester" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit"; "FSharp" ]
@@ -3427,7 +3427,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3462,7 +3462,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x1
+           Report = x1
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3497,7 +3497,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x2
+           Report = x2
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3533,7 +3533,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x3
+           Report = x3
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3599,7 +3599,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            CallContext = [ "0"; "[Fact]" ]
@@ -3646,7 +3646,7 @@ _Target "JsonReporting" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
           //  ZipFile = true
            ReportFormat = "Json"
            OutputDirectories = [ o ]
@@ -4127,12 +4127,12 @@ _Target "DotnetTestIntegration" (fun _ ->
     let pf0 =
       { p0 with AssemblyFilter = [| "NUnit" |]
                 StrongNameKey = "./_Reports/nonesuch.junk"
-                XmlReport = xx0
+                Report = xx0
       } |> AltCover.PrepareOptions.Primitive
     let pf0a =
       { p0a with AssemblyFilter = [| "NUnit" |]
                  StrongNameKey = "./_Reports/nonesuch.junk"
-                 XmlReport = xx0a
+                 Report = xx0a
       } |> AltCover.PrepareOptions.Primitive
 
     try
@@ -4612,7 +4612,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
           LocalSource = true
           VisibleBranches = false
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./original.$(ProjectName).xml" }
+          Report = "./original.$(ProjectName).xml" }
 
     let pp0 = AltCover.PrepareOptions.Primitive p0
     let c0 = Primitive.CollectOptions.Create()
@@ -4645,7 +4645,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
           LocalSource = true
           VisibleBranches = true
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./combined.$(ProjectName).xml" }
+          Report = "./combined.$(ProjectName).xml" }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
     let c0 = Primitive.CollectOptions.Create()
@@ -4674,7 +4674,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
     // Issue 98 optest
     printfn "----------------------------- issue 98  ----------------------------------------"
     Shell.cleanDir ("./Sample16/Test/_Intermediate")
-    let psln = AltCover.PrepareOptions.Primitive {p0 with XmlReport = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
+    let psln = AltCover.PrepareOptions.Primitive {p0 with Report = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test") with
             Configuration = DotNet.BuildConfiguration.Debug
@@ -4736,7 +4736,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let prep =
       AltCover.PrepareOptions.Primitive
         ({ Primitive.PrepareOptions.Create() with
-             XmlReport = x
+             Report = x
              InputDirectories = [ o ]
              CallContext = [ "0"; "[Fact]" ]
              AssemblyFilter = [| "xunit" |]

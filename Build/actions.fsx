@@ -296,7 +296,7 @@ do ()"""
       AltCover.PrepareOptions.Primitive
         { Primitive.PrepareOptions.Create() with
             TypeFilter = [ """System\.""" ]
-            XmlReport = simpleReport
+            Report = simpleReport
             OutputDirectories = [| "./" + instrumented |]
             ReportFormat = "NCover"
             InPlace = false
@@ -340,7 +340,7 @@ do ()"""
           AltCover.PrepareOptions.Primitive
             { Primitive.PrepareOptions.Create() with
                 TypeFilter = [ """System\.""" ]
-                XmlReport = simpleReport
+                Report = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
                 ReportFormat = "NCover"
                 InPlace = false
