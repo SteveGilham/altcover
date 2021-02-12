@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0.18" branch-rate="2" lines-covered="5" lines-valid="28" branches-covered="10" branches-valid="5" complexity="5" version="3.0.0.0" timestamp="xx">
+  <sources>
+    <source></source>
+  </sources>
+  <packages>
+    <package name="Sample4" line-rate="0.18" branch-rate="2" complexity="2">
+      <classes>
+        <class name="Tests.DU" filename="Tests.fs" line-rate="0.5" branch-rate="0.5" complexity="2.33">
+          <methods>
+            <method name="returnBar" signature="Tests.DU/MyUnion (System.String)" line-rate="1" complexity="1">
+              <lines>
+                <line number="50" hits="3" branch="false" />
+              </lines>
+            </method>
+            <method name="returnFoo" signature="Tests.DU/MyUnion (System.Int32)" line-rate="0" complexity="1">
+              <lines>
+                <line number="49" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="testMakeUnion" signature="System.Void ()" line-rate="0.5" branch-rate="0.5" complexity="5">
+              <lines>
+                <line number="56" hits="0" branch="false" />
+                <line number="56" hits="5" branch="false" />
+                <line number="55" hits="0" branch="false" />
+                <line number="55" hits="7" branch="false" />
+                <line number="54" hits="0" branch="false" />
+                <line number="54" hits="9" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="49" hits="0" branch="false" />
+            <line number="50" hits="3" branch="false" />
+            <line number="54" hits="0" branch="false" />
+            <line number="54" hits="9" branch="false" />
+            <line number="55" hits="0" branch="false" />
+            <line number="55" hits="7" branch="false" />
+            <line number="56" hits="0" branch="false" />
+            <line number="56" hits="5" branch="false" />
+          </lines>
+        </class>
+        <class name="Tests.DU/MyClass" filename="Tests.fs" line-rate="0" complexity="1">
+          <methods>
+            <method name=".ctor" signature="System.Void ()" line-rate="0" complexity="1">
+              <lines>
+                <line number="46" hits="0" branch="false" />
+                <line number="47" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="46" hits="0" branch="false" />
+            <line number="47" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Tests.DU/MyUnion" filename="Tests.fs" line-rate="0" branch-rate="0.5" complexity="3">
+          <methods>
+            <method name="as_bar" signature="Tests.DU/MyUnion ()" line-rate="0" branch-rate="0.5" complexity="5">
+              <lines>
+                <line number="42" hits="0" branch="false" />
+                <line number="42" hits="0" branch="false" />
+                <line number="41" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
+                <line number="36" hits="0" branch="false" />
+                <line number="38" hits="0" branch="false" />
+                <line number="36" hits="0" branch="false" />
+                <line number="37" hits="0" branch="false" />
+                <line number="36" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="get_MyBar" signature="Microsoft.FSharp.Core.FSharpFunc`2&lt;Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion&gt; ()" line-rate="0" complexity="1">
+              <lines>
+                <line number="44" hits="0" branch="false" />
+                <line number="44" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="36" hits="0" branch="false" />
+            <line number="36" hits="0" branch="false" />
+            <line number="36" hits="0" branch="false" />
+            <line number="37" hits="0" branch="false" />
+            <line number="38" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
+            <line number="41" hits="0" branch="false" />
+            <line number="42" hits="0" branch="false" />
+            <line number="42" hits="0" branch="false" />
+            <line number="44" hits="0" branch="false" />
+            <line number="44" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Tests.M" filename="Tests.fs" line-rate="0" branch-rate="0.5" complexity="2">
+          <methods>
+            <method name="makeThing" signature="Tests.M/Thing (System.String)" line-rate="0" complexity="1">
+              <lines>
+                <line number="20" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="testMakeThing" signature="System.Void ()" line-rate="0" branch-rate="0.5" complexity="3">
+              <lines>
+                <line number="25" hits="0" branch="false" />
+                <line number="25" hits="0" branch="false" />
+                <line number="24" hits="0" branch="false" />
+                <line number="24" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="20" hits="0" branch="false" />
+            <line number="24" hits="0" branch="false" />
+            <line number="24" hits="0" branch="false" />
+            <line number="25" hits="0" branch="false" />
+            <line number="25" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Tests.M/Thing" filename="Tests.fs" line-rate="0" complexity="1">
+          <methods>
+            <method name="bytes" signature="System.Byte[] ()" line-rate="0" complexity="1">
+              <lines>
+                <line number="18" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="18" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Tests.Program" filename="Tests.fs" line-rate="1" complexity="1">
+          <methods>
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" complexity="1">
+              <lines>
+                <line number="61" hits="1" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="61" hits="1" branch="false" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

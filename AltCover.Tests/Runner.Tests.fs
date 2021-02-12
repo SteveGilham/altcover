@@ -3638,7 +3638,7 @@ module AltCoverRunnerTests =
         printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
-          |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
+          |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.cobertura", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected =

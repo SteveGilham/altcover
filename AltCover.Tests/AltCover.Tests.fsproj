@@ -38,6 +38,7 @@
     <EmbeddedResource Include="Sample4FullTracking.xml" />
     <EmbeddedResource Include="Sample4.native.json" />
     <EmbeddedResource Include="Sample4.syntheticvisits.native.json" />
+    <EmbeddedResource Include="Sample4.syntheticvisits.native.cobertura" />
     <EmbeddedResource Include="Sample4.coverlet.json" />
     <EmbeddedResource Include="Sample4.coverlet.lcov" />
     <EmbeddedResource Include="GenuineNCover158.json" />
