@@ -329,9 +329,6 @@ module internal CoverageParameters =
 
   let mutable internal theReportPath : Option<string> = None
   let internal zipReport = ref false // ddFlag
-  let internal defaultReportPath = "coverage.xml"
-  let internal reportPath() = Path.GetFullPath(Option.defaultValue defaultReportPath theReportPath)
-
   let mutable internal theInterval : Option<int> = None
   let internal defaultInterval = 0
   let internal interval() = (Option.defaultValue defaultInterval theInterval)
@@ -340,6 +337,12 @@ module internal CoverageParameters =
   let mutable internal coverstyle = CoverStyle.All
 
   let internal reportKind() = (Option.defaultValue ReportFormat.OpenCover theReportFormat)
+
+  let internal defaultReportPath () = if reportKind() = ReportFormat.NativeJson
+                                      then "coverage.json"
+                                      else "coverage.xml"
+
+  let internal reportPath() = Path.GetFullPath(Option.defaultValue (defaultReportPath()) theReportPath)
 
   let internal reportFormat() =
     let fmt = reportKind()
