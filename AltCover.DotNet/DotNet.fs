@@ -128,7 +128,6 @@ module DotNet =
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
         fromArg, "SummaryFormat", collect.SummaryFormat //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
-        fromArg, "JsonReport", collect.JsonReport //=`"path to JSON format result"
       ]
 
     let internal toSharedFromValueArgumentList (verbosity : System.Diagnostics.TraceLevel)  :

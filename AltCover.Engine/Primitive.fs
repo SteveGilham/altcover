@@ -32,10 +32,7 @@ module Primitive =
       CommandLine : String seq
       ExposeReturnCode : bool
       SummaryFormat : String
-      Verbosity : System.Diagnostics.TraceLevel
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="LJson is a name")>]
-      JsonReport : String }
+      Verbosity : System.Diagnostics.TraceLevel }
     static member Create() =
       { RecorderDirectory = String.Empty
         WorkingDirectory = String.Empty
@@ -47,8 +44,7 @@ module Primitive =
         CommandLine = []
         ExposeReturnCode = true
         SummaryFormat = String.Empty
-        Verbosity = System.Diagnostics.TraceLevel.Info
-        JsonReport = String.Empty}
+        Verbosity = System.Diagnostics.TraceLevel.Info}
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",

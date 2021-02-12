@@ -142,7 +142,6 @@ module internal Args =
       item "-t" args.Threshold
       item "-c" args.Cobertura
       item "-o" args.OutputFile
-      item "-j" args.JsonReport
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       optionalItem "--summary" args.SummaryFormat []

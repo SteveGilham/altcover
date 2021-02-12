@@ -1,15 +1,9 @@
 ﻿namespace AltCover
 
 open System
-open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
-open System.Reflection
 open System.Xml.Linq
-open System.Globalization
-open System.Text
-
-open Manatee.Json.Serialization
 
 open Mono.Cecil
 open Mono.Cecil.Rocks
@@ -374,18 +368,5 @@ module internal Json =
     (report.Root
      |> (match format with
          | ReportFormat.NCover -> ncoverToJson
-         | _ -> opencoverToJson))
+         | _ -> opencoverToJson ))
     |> NativeJson.toText
-
-  let internal convertReport (report : XDocument) (format:ReportFormat) (stream : Stream) =
-    doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
-      xmlToJson report format
-      |> writer.Write)
-
-  let internal summary (report : DocumentType) (format : ReportFormat) result =
-    match report with
-    | XML document ->
-      doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-       (convertReport document format)
-    | _ -> ()
-    (result, 0uy, String.Empty)

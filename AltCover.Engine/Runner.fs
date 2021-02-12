@@ -610,8 +610,6 @@ module internal Runner =
       summaries <- LCov.summary :: summaries
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
-    let internal addJsonSummary() =
-      summaries <- Json.summary :: summaries
 
     let internal initSummary() =
       summaries <- [ standardSummary ]
@@ -659,18 +657,6 @@ module internal Runner =
                           |> Path.GetFullPath
                           |> Some
              I.addLCovSummary()))
-      ("j|jsonReport=",
-       (fun x ->
-         if CommandLine.validatePath "--jsonReport" x then
-           if Option.isSome !Json.path then
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--jsonReport")
-               :: CommandLine.error
-           else
-             Json.path  := x
-                           |> Path.GetFullPath
-                           |> Some
-             I.addJsonSummary()))
       ("t|threshold=",
        (fun x ->
          let ok, t = Threshold.Validate x

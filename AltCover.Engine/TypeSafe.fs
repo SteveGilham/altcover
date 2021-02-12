@@ -256,10 +256,7 @@ module TypeSafe =
       CommandLine : CommandLine
       ExposeReturnCode : Flag
       SummaryFormat : SummaryFormat
-      Verbosity : System.Diagnostics.TraceLevel
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Json is a name")>]
-      JsonReport : FilePath}
+      Verbosity : System.Diagnostics.TraceLevel}
     static member Create() =
       { RecorderDirectory = NoDirectory
         WorkingDirectory = NoDirectory
@@ -271,8 +268,7 @@ module TypeSafe =
         CommandLine = NoCommand
         ExposeReturnCode = Set
         SummaryFormat = SummaryFormat.Default
-        Verbosity = System.Diagnostics.TraceLevel.Info
-        JsonReport = NoFile }
+        Verbosity = System.Diagnostics.TraceLevel.Info }
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",

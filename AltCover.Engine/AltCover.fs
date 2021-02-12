@@ -125,14 +125,6 @@ module AltCover =
       | Abstract a -> a.Verbosity
       | TypeSafe t -> t.Verbosity
 
-    [<SuppressMessage("Microsoft.Naming", "CA1704",
-        Justification="'Json' is jargon")>]
-    member self.JsonReport =
-      match self with
-      | Primitive p -> p.JsonReport
-      | Abstract a -> a.JsonReport
-      | TypeSafe t -> t.JsonReport.AsString()
-
     interface Abstract.ICollectOptions with
       member self.RecorderDirectory = self.RecorderDirectory
       member self.WorkingDirectory = self.WorkingDirectory
@@ -145,7 +137,6 @@ module AltCover =
       member self.ExposeReturnCode = self.ExposeReturnCode
       member self.SummaryFormat = self.SummaryFormat
       member self.Verbosity = self.Verbosity
-      member self.JsonReport = self.JsonReport
 
 #if RUNNER
     member self.Validate afterPreparation =
@@ -169,7 +160,6 @@ module AltCover =
         [ ("--executable", self.Executable)
           ("--lcovReport", self.LcovReport)
           ("--cobertura", self.Cobertura)
-          ("--jsonReport", self.JsonReport)
           ("--outputFile", self.OutputFile) ]
         |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
         validate Threshold.Validate self.Threshold

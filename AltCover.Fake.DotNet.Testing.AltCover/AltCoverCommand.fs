@@ -40,8 +40,7 @@ module AltCoverCommand =
                      CommandLine = a.CommandLine
                      ExposeReturnCode = a.ExposeReturnCode
                      SummaryFormat = a.SummaryFormat
-                     Verbosity = a.Verbosity
-                     JsonReport = a.JsonReport}
+                     Verbosity = a.Verbosity}
         AltCover.Primitive copy
 
   let internal setCollectCommandLine (args : string seq) collect =
@@ -60,8 +59,7 @@ module AltCoverCommand =
                      CommandLine = args |> toSeq
                      ExposeReturnCode = a.ExposeReturnCode
                      SummaryFormat = a.SummaryFormat
-                     Verbosity = a.Verbosity
-                     JsonReport = a.JsonReport }
+                     Verbosity = a.Verbosity }
         AltCover.Primitive copy
       | AltCover.TypeSafe t ->
           AltCover.TypeSafe

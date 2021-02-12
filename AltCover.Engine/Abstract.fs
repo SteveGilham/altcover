@@ -97,12 +97,6 @@ module Abstract =
     /// Corresponds to command line option ` -q`
     ///</summary>
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
-    ///<summary>
-    /// Corresponds to command line option `-j, --jsonReport=VALUE`
-    ///</summary>
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", //// no doc
-                        Justification="Json is a name")>] //// no doc
-    abstract member JsonReport : String with get
   end
 // ```
 // ### interface `IPrepareOptions`

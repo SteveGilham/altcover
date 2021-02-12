@@ -205,8 +205,7 @@
       Threshold="$(AltCoverThreshold)"
       Cobertura="$(AltCoverCobertura)"
       SummaryFormat="$(AltCoverSummaryFormat)"
-      Verbosity="$(AltCoverVerbosity)"
-      JsonReport="$(AltCoverLcovReport)">
+      Verbosity="$(AltCoverVerbosity)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary" />
     </AltCover.Collect>
     <AltCover.Echo Condition="'$(AltCoverShowSummary)' != '' AND '$(AltCoverSummary)' !=''"

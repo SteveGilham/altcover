@@ -79,10 +79,6 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option ` -q`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
-        ///<summary>
-        /// Corresponds to command line option `-j, --jsonReport=VALUE`
-        ///</summary>
-        JsonReport: System.String
       }
       with
         ///<summary>

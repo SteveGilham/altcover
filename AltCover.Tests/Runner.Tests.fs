@@ -322,13 +322,7 @@ module AltCoverRunnerTests =
       |> ignore
       try
         Assert.That(unique |> File.Exists, Is.False)
-        let r0 = Json.summary Unknown ReportFormat.NCover 0
-        Assert.That(r0, Is.EqualTo (0, 0, String.Empty))
-        Assert.That(unique |> File.Exists, Is.False)
-
-        let r = Json.summary (XML baseline) ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
-        let result = File.ReadAllText unique
+        let result = Json.xmlToJson baseline ReportFormat.NCover
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
@@ -369,11 +363,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        Runner.I.addJsonSummary()
-        let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize (XML baseline) ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
-        let result = File.ReadAllText unique
+        let result = Json.xmlToJson baseline ReportFormat.OpenCover
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("OpenCover.json", StringComparison.Ordinal))
@@ -477,7 +467,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 12
+      let optionCount = 11
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort
@@ -943,73 +933,6 @@ module AltCoverRunnerTests =
         finally
           Runner.I.initSummary()
           LCov.path := None)
-
-    [<Test>]
-    let ParsingJsonGivesJson() =
-      Runner.init()
-      lock Json.path (fun () ->
-        try
-          Json.path := None
-          Runner.I.initSummary()
-          let options = Runner.declareOptions()
-          let unique = "some exe"
-          let input = [| "-j"; unique |]
-          let parse = CommandLine.parseCommandLine input options
-          match parse with
-          | Right(x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.Empty)
-          match !Json.path with
-          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
-          Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
-        finally
-          Runner.I.initSummary()
-          Json.path := None)
-
-    [<Test>]
-    let ParsingMultipleJsonGivesFailure() =
-      Runner.init()
-      lock Json.path (fun () ->
-        try
-          Json.path := None
-          Runner.I.initSummary()
-          let options = Runner.declareOptions()
-          let unique = Guid.NewGuid().ToString()
-
-          let input =
-            [| "-j"
-               unique
-               "/j"
-               unique.Replace("-", "+") |]
-
-          let parse = CommandLine.parseCommandLine input options
-          match parse with
-          | Left(x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--jsonReport : specify this only once")
-        finally
-          Runner.I.initSummary()
-          Json.path := None)
-
-    [<Test>]
-    let ParsingNoJsonGivesFailure() =
-      Runner.init()
-      lock Json.path (fun () ->
-        try
-          Json.path := None
-          Runner.I.initSummary()
-          let options = Runner.declareOptions()
-          let blank = " "
-          let input = [| "-j"; blank |]
-          let parse = CommandLine.parseCommandLine input options
-          match parse with
-          | Left(x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.I.initSummary()
-          Json.path := None)
 
     [<Test>]
     let ParsingThresholdGivesThreshold() =
