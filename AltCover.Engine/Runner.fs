@@ -445,8 +445,7 @@ module internal Runner =
       Justification="Library method inlined")>]
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
       Justification="Library method inlined")>]
-    let internal jsonSummary(report : String) =
-      let json = NativeJson.fromJsonText report
+    let internal jsonSummary(json : NativeJson.Modules) =
       let summarise go (vc : int) (nc : int)  key =
 
         let pc =
@@ -1140,7 +1139,7 @@ module internal Runner =
       then
         if format = ReportFormat.NativeJson ||
            format = ReportFormat.NativeJsonWithTracking
-        then report |> File.ReadAllText |> JSON
+        then report |> NativeJson.fileToJson |> JSON
         else report |> XDocument.Load |> XML
       else Unknown
 

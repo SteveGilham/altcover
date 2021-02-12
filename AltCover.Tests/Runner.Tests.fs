@@ -2245,10 +2245,6 @@ module AltCoverRunnerTests =
         Assert.That (dryrun, Is.EqualTo 4)
         Assert.That(File.Exists(test + ".0.acv"))
 
-        let doc0 = Runner.J.loadReport ReportFormat.NativeJson (test + ".0.acv")
-        match doc0 with
-        | JSON _ -> ()
-
         let r =
           Runner.J.getMonitor counts unique (processing unique)
             [ "a"; "b"; String.Empty; "c" ]
@@ -3157,6 +3153,7 @@ module AltCoverRunnerTests =
       Output.info "info"
       Runner.init()
       let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+                     |> NativeJson.fromJsonText
       let builder = System.Text.StringBuilder()
       Runner.summary.Clear() |> ignore
       try
@@ -3184,6 +3181,7 @@ module AltCoverRunnerTests =
       Output.info "info"
       Runner.init()
       let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+                     |> NativeJson.fromJsonText
       let builder = System.Text.StringBuilder()
       Runner.summary.Clear() |> ignore
       try
@@ -3213,6 +3211,7 @@ module AltCoverRunnerTests =
       Output.info "info"
       Runner.init()
       let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+                     |> NativeJson.fromJsonText
       let builder = System.Text.StringBuilder()
       Runner.summary.Clear() |> ignore
       try
@@ -3247,6 +3246,7 @@ module AltCoverRunnerTests =
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       use reader = new StreamReader(stream)
       let baseline = reader.ReadToEnd()
+                     |> NativeJson.fromJsonText
       let builder = System.Text.StringBuilder()
       try
         lock Runner.summaryFormat (fun () ->
@@ -3288,6 +3288,7 @@ module AltCoverRunnerTests =
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       use reader = new StreamReader(stream)
       let baseline = reader.ReadToEnd()
+                     |> NativeJson.fromJsonText
       let builder = System.Text.StringBuilder()
       try
         lock Runner.summaryFormat (fun () ->
@@ -3332,11 +3333,6 @@ module AltCoverRunnerTests =
       try
         Runner.I.addLCovSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        Assert.Throws<NotSupportedException>(fun () ->
-          summarize (JSON "{}") ReportFormat.NativeJson 0
-          |> ignore
-        ) |> ignore
-
         let r = summarize Unknown ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         Assert.That(unique |> File.Exists |> not)
@@ -3529,11 +3525,6 @@ module AltCoverRunnerTests =
       try
         Runner.I.addCoberturaSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        Assert.Throws<NotSupportedException>(fun () ->
-          summarize (JSON "{}") ReportFormat.NativeJson 0
-          |> ignore
-        ) |> ignore
-
         let r = summarize Unknown ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         Assert.That(unique |> File.Exists |> not)

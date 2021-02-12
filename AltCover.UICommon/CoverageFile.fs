@@ -99,7 +99,7 @@ type CoverageFile =
     try
       let name = file.FullName
       let rawDocument = if (name |> Path.GetExtension).ToUpperInvariant() = ".JSON"
-                        then NativeJson.fileToXml name
+                        then name |> NativeJson.fileToJson |> NativeJson.jsonToXml
                         else XDocument.Load name
       match Transformer.convertFile helper rawDocument with
       | Left x ->

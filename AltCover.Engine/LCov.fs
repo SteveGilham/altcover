@@ -305,10 +305,15 @@ FN:4,(anonymous_0)
                 // end_of_record
                 writer.WriteLine "end_of_record"))
 
+  let convertJson document s =
+    let x = NativeJson.jsonToXml document
+    convertReport x ReportFormat.OpenCover s
+
   let internal summary (report : DocumentType) (format : ReportFormat) result =
     match report with
        | Unknown -> ()
        | XML document -> doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
                                      (convertReport document format)
-       | _ -> raise (NotSupportedException(sprintf "%A" format)) //maybe later
+       | JSON x -> doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
+                                     (convertJson x)
     (result, 0uy, String.Empty)

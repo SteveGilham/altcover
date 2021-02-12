@@ -344,11 +344,15 @@ module internal Cobertura =
               reprise.Add copy))
     rewrite
 
+  let convertJson document =
+    let x = NativeJson.jsonToXml document
+    convertReport x ReportFormat.OpenCover
+
   let internal summary (report : DocumentType) (format : ReportFormat) result =
     let rewrite = match report with
                   | Unknown -> null
                   | XML document -> convertReport document format
-                  | _ -> raise (NotSupportedException(sprintf "%A" format)) //maybe later
+                  | JSON modules -> convertJson modules
     rewrite
     |> Option.ofObj
     |> Option.iter(fun d -> d.Save(!path |> Option.get))

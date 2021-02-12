@@ -10,12 +10,6 @@ open System.Xml.Linq
 open System.Globalization
 open System.Text
 open Mono.Cecil
-
-[<AutoSerializable(false)>]
-type internal DocumentType =
-| XML of XDocument
-| JSON of String
-| Unknown
 #endif
 
 #if GUI || RUNNER
@@ -566,7 +560,7 @@ module NativeJson =
 
 #endif
 
-#if GUI
+#if GUI || RUNNER
   // Conversion to XML ---------------------------------------------------------
 
   [<SuppressMessage(
@@ -724,11 +718,10 @@ module NativeJson =
     )
     x
 
-  let internal fileToXml filename =
+  let internal fileToJson filename =
     filename
     |> File.ReadAllText
     |> fromJsonText
-    |> jsonToXml
 
 #endif
 
@@ -858,6 +851,12 @@ module NativeJson =
     let result = Visitor.encloseState reportVisitor (JsonContext.Build())
     (result, fun (s:System.IO.Stream) -> let encoded = serializeToUtf8Bytes document
                                          s.Write(encoded, 0, encoded.Length))
+
+[<AutoSerializable(false)>]
+type internal DocumentType =
+| XML of XDocument
+| JSON of NativeJson.Modules
+| Unknown
 #endif
 
 #if GUI || RUNNER
