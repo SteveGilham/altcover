@@ -222,7 +222,7 @@ Coverage Report: {0}
                                associated PowerShell module</value>
   </data>
   <data name="reportFormat=" xml:space="preserve">
-    <value>Optional: Generate the report in the specified format (NCover or the default OpenCover)</value>
+    <value>Optional: Generate the report in the specified format (Json, NCover or the default OpenCover)</value>
   </data>
   <data name="CommandLine" xml:space="preserve">
     <value>Command line : '{0} {1}'</value>
@@ -410,7 +410,7 @@ If the option is not present, then the default is 'OC'.</value>
     <value>Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited</value>
   </data>
   <data name="zipfile" xml:space="preserve">
-    <value>Optional: Emit the XML report inside a zip archive.</value>
+    <value>Optional: Emit the coverage report inside a zip archive.</value>
   </data>
   <data name="methodpoint" xml:space="preserve">
     <value>Optional: record only whether a method has been visited or not.  Overrides the --linecover and --branchcover options.</value>

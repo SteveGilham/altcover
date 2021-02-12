@@ -71,12 +71,13 @@
                                names (fully qualified if the string contains
                                any "." characters).
       --reportFormat=VALUE   Optional: Generate the report in the specified
-                               format (NCover or the default OpenCover)
+                               format (Json, NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
-      --zipfile              Optional: Emit the XML report inside a zip archive.
+      --zipfile              Optional: Emit the coverage report inside a zip
+                               archive.
       --methodpoint          Optional: record only whether a method has been
                                visited or not.  Overrides the --linecover and --
                                branchcover options.

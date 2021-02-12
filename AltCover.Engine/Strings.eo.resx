@@ -218,7 +218,7 @@ Kovra Raporto: {0}
                                asociita PowerShell-modulo</value>
   </data>
   <data name="reportFormat=" xml:space="preserve">
-    <value>Laŭvola: Generu la raporton en la specifita formato (NCover aŭ la defaŭlta OpenCover)</value>
+    <value>Laŭvola: Generu la raporton en la specifita formato (Json, NCover aŭ la defaŭlta OpenCover)</value>
   </data>
   <data name="CommandLine" xml:space="preserve">
     <value>Komandlinio: '{0} {1}'</value>
@@ -406,7 +406,7 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
     <value>Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
   </data>
   <data name="zipfile" xml:space="preserve">
-    <value>Laŭvola: Resendu la XML-raporton ene de zip-arkivo.</value>
+    <value>Laŭvola: Resendu la kovra-raporton ene de zip-arkivo.</value>
   </data>
   <data name="methodpoint" xml:space="preserve">
     <value>Laŭvola: registru nur ĉu metodo estis vizitita aŭ ne. Nuligas la --linecover kaj --branchcover elektojn.</value>
