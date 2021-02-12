@@ -561,9 +561,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         StrongNameKey: FilePath
         ///<summary>
-        /// Corresponds to command line option `-x, --xmlReport=VALUE`
+        /// Corresponds to command line option `-r, --report=VALUE`
         ///</summary>
-        XmlReport: FilePath
+        Report: FilePath
         ///<summary>
         /// Corresponds to command line option `-f, --fileFilter=VALUE`
         ///</summary>

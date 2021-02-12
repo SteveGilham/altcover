@@ -50,7 +50,7 @@ type Prepare() =
       Justification = "MSBuild tasks use arrays")>]
   member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
-  member val XmlReport = String.Empty with get, set
+  member val Report = String.Empty with get, set
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
@@ -134,7 +134,7 @@ type Prepare() =
           Dependencies = self.Dependencies
           Keys = self.Keys
           StrongNameKey = self.StrongNameKey
-          XmlReport = self.XmlReport
+          Report = self.Report
           FileFilter = self.FileFilter
           AssemblyFilter = self.AssemblyFilter
           AssemblyExcludeFilter = self.AssemblyExcludeFilter

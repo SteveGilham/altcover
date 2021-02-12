@@ -130,8 +130,8 @@ Vidu ankaŭ '--inplace'</value>
   <data name="sn|strongNameKey=" xml:space="preserve">
     <value>Laŭvola: la defaŭlta forta-nomo ŝlosilo por apliki al asembleaj instrumentoj (defaŭlte: Neniu)</value>
   </data>
-  <data name="x|xmlReport=" xml:space="preserve">
-    <value>Laŭvola: La eliga raporta ŝablono-dosiero (defaŭlte: 'coverage.xml' en la aktuala dosierujo)</value>
+  <data name="r|report=" xml:space="preserve">
+    <value>Laŭvola: La eliga raporta ŝablono-dosiero (defaŭlte: 'coverage.xml' aŭ 'coverage.json' en la aktuala dosierujo)</value>
   </data>
   <data name="f|fileFilter=" xml:space="preserve">
     <value>Laŭvola, multobla: fonta dosiernomo por ekskludi de instrumentado</value>
@@ -155,7 +155,7 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/r[eport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/j[sonReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/summary|teamcity[=VALO]] [--?|help|h] [-- ] [...]
 aŭ
@@ -454,6 +454,6 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
     <value>Laŭvola, multnombra: Kvieta reĝimo - unufoje por malŝalti informajn mesaĝojn, dufoje por malŝalti ankaŭ avertojn, tri (aŭ pli) fojojn por malŝalti ĉiujn mesaĝojn.</value>
   </data>
   <data name="j|jsonReport=" xml:space="preserve">
-    <value>Laŭvola: Dosiero por la versio de formato JSON de la datumoj kolektitaj</value>
+    <value>Laŭvola: Dosiero por la versio de formato JSON de la  formato NCover/OpenCover datumoj kolektitaj</value>
   </data>
 </root>

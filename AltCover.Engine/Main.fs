@@ -166,12 +166,12 @@ module internal Main =
                CoverageParameters.defaultStrongNameKey <- Some pair
                CoverageParameters.add pair))
 
-        ("x|xmlReport=",
+        ("r|report=",
          (fun x ->
-           if CommandLine.validatePath "--xmlReport" x then
+           if CommandLine.validatePath "--report" x then
              if Option.isSome CoverageParameters.theReportPath then
                CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--report")
                  :: CommandLine.error
              else
                CommandLine.doPathOperation

@@ -130,8 +130,8 @@ See also '--inplace'</value>
   <data name="sn|strongNameKey=" xml:space="preserve">
     <value>Optional: The default strong naming key to apply to instrumented assemblies (default: None)</value>
   </data>
-  <data name="x|xmlReport=" xml:space="preserve">
-    <value>Optional: The output report template file (default: coverage.xml in the current directory)</value>
+  <data name="r|report=" xml:space="preserve">
+    <value>Optional: The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)</value>
   </data>
   <data name="f|fileFilter=" xml:space="preserve">
     <value>Optional, multiple: source file name to exclude from instrumentation</value>
@@ -155,7 +155,7 @@ See also '--inplace'</value>
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
 AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/j[sonReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
 or
@@ -458,6 +458,6 @@ If the option is not present, then the default is 'OC'.</value>
     <value>Optional, multiple: Quiet mode -- once to switch off informational messages, twice to switch off warnings as well, three (or more) times to switch off all messages.</value>
   </data>
   <data name="j|jsonReport=" xml:space="preserve">
-    <value>Optional: File for JSON format version of the collected data</value>
+    <value>Optional: File for JSON format version of the NCover/OpenCover format collected data</value>
   </data>
 </root>

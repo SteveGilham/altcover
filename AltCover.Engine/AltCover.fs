@@ -235,11 +235,11 @@ module AltCover =
       | Abstract a -> a.StrongNameKey
       | TypeSafe t -> t.StrongNameKey.AsString()
 
-    member self.XmlReport =
+    member self.Report =
       match self with
-      | Primitive p -> p.XmlReport
-      | Abstract a -> a.XmlReport
-      | TypeSafe t -> t.XmlReport.AsString()
+      | Primitive p -> p.Report
+      | Abstract a -> a.Report
+      | TypeSafe t -> t.Report.AsString()
 
     member self.FileFilter =
       match self with
@@ -420,7 +420,7 @@ module AltCover =
       member self.Dependencies = self.Dependencies |> PrepareOptions.ToSeq
       member self.Keys = self.Keys |> PrepareOptions.ToSeq
       member self.StrongNameKey = self.StrongNameKey
-      member self.XmlReport = self.XmlReport
+      member self.Report = self.Report
       member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
       member self.AssemblyFilter = self.AssemblyFilter |> PrepareOptions.ToSeq
       member self.AssemblyExcludeFilter = self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
@@ -493,8 +493,8 @@ module AltCover =
           "--outputDirectory"
         PrepareOptions.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
           self.StrongNameKey
-        PrepareOptions.ValidateOptional CommandLine.validatePath "--xmlReport"
-          self.XmlReport
+        PrepareOptions.ValidateOptional CommandLine.validatePath "--report"
+          self.Report
         PrepareOptions.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
           "--symbolDirectory"
         PrepareOptions.ValidateArray self.Dependencies CommandLine.validateAssembly

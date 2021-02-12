@@ -86,7 +86,7 @@ type ReportFormat =
 /// <para type="description">Summary information is also written to the object pipeline.</para>
 /// <para type="description">**Note**: `-WhatIf` includes validation for the command line arguments.  It is ignored for the purely read-only `-Version` option </para>
 /// <example>
-///   <code>        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue</code>
+///   <code>        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover", SupportsShouldProcess = true,
@@ -249,11 +249,11 @@ type InvokeAltCoverCommand() =
   member val StrongNameKey = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">The output report template file (default: coverage.xml in the current directory)</para>
+  /// <para type="description">The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val XmlReport = String.Empty with get, set
+  member val Report = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Source file names to exclude from instrumentation</para>
@@ -557,7 +557,7 @@ type InvokeAltCoverCommand() =
         Dependencies = self.Dependency
         Keys = self.Key
         StrongNameKey = self.StrongNameKey
-        XmlReport = self.XmlReport
+        Report = self.Report
         FileFilter = self.FileFilter
         AssemblyFilter = self.AssemblyFilter
         AssemblyExcludeFilter = self.AssemblyExcludeFilter

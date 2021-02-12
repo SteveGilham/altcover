@@ -435,7 +435,7 @@ module AltCoverXTests =
   let PrepareOptionsCanBeValidatedWithErrors() =
     let subject =
       { Primitive.PrepareOptions.Create() with
-                                              XmlReport =
+                                              Report =
                                                 String(Path.GetInvalidPathChars())
                                               CallContext = [| "0"; "1" |] }
 
@@ -483,7 +483,7 @@ module AltCoverXTests =
       Console.SetOut stdout
       Console.SetError stderr
       let args =
-        [| "-i"; input; "-o"; output; "-x"; report;
+        [| "-i"; input; "-o"; output; "-r"; report;
            "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
@@ -610,7 +610,7 @@ module AltCoverXTests =
       use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
-      let args = [| "-i"; path; "-o"; output; "-x"; report
+      let args = [| "-i"; path; "-o"; output; "-r"; report
                     "--reportFormat"; "ncov"
                     "-sn"; key
                  |]

@@ -54,9 +54,9 @@ type Prepare =
     ///</summary>
     member StrongNameKey : string with get, set
     ///<summary>
-    /// Corresponds to command line option `-x, --xmlReport=VALUE`
+    /// Corresponds to command line option `-r, --report=VALUE`
     ///</summary>
-    member XmlReport : string with get, set
+    member Report : string with get, set
     ///<summary>
     /// Corresponds to command line option `-f, --fileFilter=VALUE`
     ///</summary>

@@ -284,7 +284,7 @@ module TypeSafe =
       Dependencies : FilePaths
       Keys : FilePaths
       StrongNameKey : FilePath
-      XmlReport : FilePath
+      Report : FilePath
       FileFilter : Filters
       AssemblyFilter : Filters
       AssemblyExcludeFilter : Filters
@@ -320,7 +320,7 @@ module TypeSafe =
         Dependencies = NoPaths
         Keys = NoPaths
         StrongNameKey = NoFile
-        XmlReport = NoFile
+        Report = NoFile
         FileFilter = Unfiltered
         AssemblyFilter = Unfiltered
         AssemblyExcludeFilter = Unfiltered

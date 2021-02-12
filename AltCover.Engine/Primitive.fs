@@ -62,7 +62,7 @@ module Primitive =
       Dependencies : String seq
       Keys : String seq
       StrongNameKey : String
-      XmlReport : String
+      Report : String
       FileFilter : String seq
       AssemblyFilter : String seq
       AssemblyExcludeFilter : String seq
@@ -98,7 +98,7 @@ module Primitive =
         Dependencies = Seq.empty
         Keys = Seq.empty
         StrongNameKey = String.Empty
-        XmlReport = String.Empty
+        Report = String.Empty
         FileFilter = Seq.empty
         AssemblyFilter = Seq.empty
         AssemblyExcludeFilter = Seq.empty

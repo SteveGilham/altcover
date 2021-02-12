@@ -60,7 +60,7 @@ module internal Args =
   let internal plainItems(args : Abstract.IPrepareOptions) =
     [ ("--sn", args.StrongNameKey)
       ("--reportFormat", args.ReportFormat)
-      ("-x", args.XmlReport) ]
+      ("-r", args.Report) ]
 
   let internal items(args : Abstract.IPrepareOptions) =
     args
