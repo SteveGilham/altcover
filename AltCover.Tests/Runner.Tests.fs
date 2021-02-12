@@ -3613,7 +3613,7 @@ module AltCoverRunnerTests =
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline =
         use r = new StreamReader(stream)
@@ -3621,7 +3621,7 @@ module AltCoverRunnerTests =
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-           Guid.NewGuid().ToString() + "/Sample4.syntheticvisits.native.cobertura")
+           Guid.NewGuid().ToString() + "/Sample4FullTracking.cobertura")
       Cobertura.path := Some unique
       unique
       |> Path.GetDirectoryName
@@ -3638,7 +3638,7 @@ module AltCoverRunnerTests =
         printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
-          |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.cobertura", StringComparison.Ordinal))
+          |> Seq.find (fun n -> n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected =

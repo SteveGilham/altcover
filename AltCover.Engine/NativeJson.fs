@@ -7,12 +7,12 @@ open System.IO
 open System.Xml.Linq
 
 #if RUNNER
-open System.Globalization
 open System.Text
 open Mono.Cecil
 #endif
 
 #if GUI || RUNNER
+open System.Globalization
 open Manatee.Json
 #endif
 
@@ -722,7 +722,7 @@ module NativeJson =
     )
 
   let private valueOf (x:XElement) (name : string) =
-      x.Attribute(name.X).Value
+      x.Attribute(XName.Get name).Value
       |> Int32.TryParse
       |> snd
 
