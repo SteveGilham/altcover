@@ -1134,15 +1134,6 @@ module internal Runner =
              t :> obj |]
       code
 
-    let internal loadReport format report =
-      if File.Exists report
-      then
-        if format = ReportFormat.NativeJson ||
-           format = ReportFormat.NativeJsonWithTracking
-        then report |> NativeJson.fileToJson |> JSON
-        else report |> XDocument.Load |> XML
-      else Unknown
-
   // "Public"
   let internal doCoverage arguments options1 =
     let check1 =
@@ -1188,7 +1179,7 @@ module internal Runner =
             Directory.GetFiles
               (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
-            let document = J.loadReport format report
+            let document = DocumentType.loadReport format report
             J.doSummaries document format result) 255 true
         CommandLine.reportErrors "Collection" false
         value

@@ -465,7 +465,7 @@ module AltCoverXTests =
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
     Directory.CreateDirectory unique' |> ignore
-    let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.xml")
+    let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.json")
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     let outputSaved = CoverageParameters.theOutputDirectories |> Seq.toList
     let inputSaved = CoverageParameters.theInputDirectories |> Seq.toList
@@ -484,6 +484,7 @@ module AltCoverXTests =
       Console.SetError stderr
       let args =
         [| "-i"; input; "-o"; output; "-r"; report;
+           "--reportFormat"; "Json"
            "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
@@ -532,6 +533,9 @@ module AltCoverXTests =
         |> Seq.toList
 
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
+      let recordedJson = match DocumentType.loadReport CoverageParameters.theReportFormat.Value report with
+                         | JSON j -> j
+      Assert.That(recordedJson.Keys |> Seq.toList, Is.EqualTo ["Sample4.dll"] )
     finally
       CoverageParameters.trackingNames.Clear()
       CoverageParameters.theReportFormat <- None
@@ -547,6 +551,7 @@ module AltCoverXTests =
       CoverageParameters.nameFilters.Clear()
       Output.error <- snd save2
       Output.info <- fst save2
+
     let before = File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
     test <@ before.IndexOf("AltCover.Recorder.g") =  -1 @>
     let o = JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
@@ -653,7 +658,7 @@ module AltCoverXTests =
       test <@ actual = theFiles @>
       let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
       let expectedXml = XDocument.Load(new StringReader(expectedText))
-      let recordedXml = match Runner.J.loadReport ReportFormat.OpenCover report with
+      let recordedXml = match DocumentType.loadReport ReportFormat.OpenCover report with
                         | XML x -> x
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally

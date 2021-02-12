@@ -2622,12 +2622,13 @@ module AltCoverTests =
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportForOpenCoverWithMethodPointOnly() =
-      let visitor, document = OpenCover.reportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample4path
       try
         CoverageParameters.methodPoint := true
+        CoverageParameters.theReportFormat <- None
+        let visitor, document = Main.I.selectReportGenerator() //OpenCover.reportGenerator()
         Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
         (makeDocument document).Descendants(XName.Get "Method")
         |> Seq.iter(fun mx -> let sx = mx.Descendants(XName.Get "SequencePoint")

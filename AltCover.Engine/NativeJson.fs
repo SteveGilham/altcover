@@ -970,6 +970,14 @@ type internal DocumentType =
 | XML of XDocument
 | JSON of NativeJson.Modules
 | Unknown
+with static member loadReport format report =
+      if File.Exists report
+      then
+        if format = ReportFormat.NativeJson ||
+           format = ReportFormat.NativeJsonWithTracking
+        then report |> NativeJson.fileToJson |> JSON
+        else report |> XDocument.Load |> XML
+      else Unknown
 #endif
 
 #if GUI || RUNNER
