@@ -23,9 +23,17 @@
               <lines>
                 <line number="56" hits="0" branch="false" />
                 <line number="56" hits="1" branch="false" />
-                <line number="55" hits="0" branch="false" />
+                <line number="55" hits="0" branch="true" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="5" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
                 <line number="55" hits="1" branch="false" />
-                <line number="54" hits="0" branch="false" />
+                <line number="54" hits="0" branch="true" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="7" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
                 <line number="54" hits="1" branch="false" />
               </lines>
             </method>
@@ -33,9 +41,17 @@
           <lines>
             <line number="49" hits="1" branch="false" />
             <line number="50" hits="1" branch="false" />
-            <line number="54" hits="0" branch="false" />
+            <line number="54" hits="0" branch="true" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="7" type="jump" coverage="50%" />
+              </conditions>
+            </line>
             <line number="54" hits="1" branch="false" />
-            <line number="55" hits="0" branch="false" />
+            <line number="55" hits="0" branch="true" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="5" type="jump" coverage="50%" />
+              </conditions>
+            </line>
             <line number="55" hits="1" branch="false" />
             <line number="56" hits="0" branch="false" />
             <line number="56" hits="1" branch="false" />
@@ -63,7 +79,11 @@
                 <line number="42" hits="0" branch="false" />
                 <line number="41" hits="0" branch="false" />
                 <line number="39" hits="0" branch="false" />
-                <line number="36" hits="0" branch="false" />
+                <line number="36" hits="0" branch="true" condition-coverage="25% (1/4)">
+                  <conditions>
+                    <condition number="13" type="jump" coverage="25%" />
+                  </conditions>
+                </line>
                 <line number="38" hits="0" branch="false" />
                 <line number="36" hits="0" branch="false" />
                 <line number="37" hits="1" branch="false" />
@@ -78,7 +98,11 @@
             </method>
           </methods>
           <lines>
-            <line number="36" hits="0" branch="false" />
+            <line number="36" hits="0" branch="true" condition-coverage="25% (1/4)">
+              <conditions>
+                <condition number="13" type="jump" coverage="25%" />
+              </conditions>
+            </line>
             <line number="36" hits="0" branch="false" />
             <line number="36" hits="1" branch="false" />
             <line number="37" hits="1" branch="false" />
@@ -102,14 +126,22 @@
               <lines>
                 <line number="25" hits="0" branch="false" />
                 <line number="25" hits="1" branch="false" />
-                <line number="24" hits="0" branch="false" />
+                <line number="24" hits="0" branch="true" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="25" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
                 <line number="24" hits="1" branch="false" />
               </lines>
             </method>
           </methods>
           <lines>
             <line number="20" hits="2" branch="false" />
-            <line number="24" hits="0" branch="false" />
+            <line number="24" hits="0" branch="true" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="25" type="jump" coverage="50%" />
+              </conditions>
+            </line>
             <line number="24" hits="1" branch="false" />
             <line number="25" hits="0" branch="false" />
             <line number="25" hits="1" branch="false" />

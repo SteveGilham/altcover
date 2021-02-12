@@ -654,8 +654,9 @@ module NativeJson =
                        XAttribute(XName.Get "sc", s.SC),
                        XAttribute(XName.Get "el", s.EL),
                        XAttribute(XName.Get "ec", s.EC),
-                       XAttribute(XName.Get "bec", bec),
-                       XAttribute(XName.Get "bev", bev))
+                       XAttribute(XName.Get "uspid", s.Id),
+                       XAttribute(XName.Get "bec", bec2),
+                       XAttribute(XName.Get "bev", bev2))
           sp.Add sx
           mvc <- Math.Max (mvc, s.VC)
         )
@@ -680,8 +681,9 @@ module NativeJson =
                        XAttribute(XName.Get "sc", 1),
                        XAttribute(XName.Get "el", k),
                        XAttribute(XName.Get "ec", 2),
-                       XAttribute(XName.Get "bec", bec),
-                       XAttribute(XName.Get "bev", bev))
+                       XAttribute(XName.Get "uspid", i),
+                       XAttribute(XName.Get "bec", bec2),
+                       XAttribute(XName.Get "bev", bev2))
           sp.Add sx
           mvc <- Math.Max (mvc, l.Value)
         )
