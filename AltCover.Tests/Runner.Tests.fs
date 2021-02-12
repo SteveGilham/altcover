@@ -3407,6 +3407,42 @@ module AltCoverRunnerTests =
         LCov.path := None
 
     [<Test>]
+    let JsonShouldGeneratePlausibleLcov() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample4.coverlet.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline =
+        use r = new StreamReader(stream)
+        r.ReadToEnd() |> NativeJson.fromJsonText
+
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample4.coverlet.lcov")
+      LCov.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        let r = LCov.summary (JSON baseline) ReportFormat.NativeJson 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+        //printfn "%s" result
+        Assert.That
+          (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected)
+      finally
+        LCov.path := None
+
+    [<Test>]
     let NCoverShouldGeneratePlausibleLcovWithMissingFullName() =
       Runner.init()
       let resource =
@@ -3557,6 +3593,49 @@ module AltCoverRunnerTests =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
         //printfn "%s" result
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected =
+          reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+                .Replace("""version="3.0.0.0""",
+                         "version=\""
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+        Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+        Validate result
+      finally
+        Cobertura.path := None
+
+    [<Test>]
+    let JsonShouldGeneratePlausibleCobertura() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline =
+        use r = new StreamReader(stream)
+        r.ReadToEnd() |> NativeJson.fromJsonText
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample4.syntheticvisits.native.cobertura")
+      Cobertura.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addCoberturaSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize (JSON baseline) ReportFormat.NativeJson 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result =
+          Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
+                        """timestamp="xx">""").Replace("\\", "/")
+        printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))

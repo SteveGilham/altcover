@@ -608,6 +608,7 @@ module NativeJson =
           bp.Add bx
         )
 
+      let mutable mvc = 0
       if value.SeqPnts.IsNotNull
       then
         value.SeqPnts
@@ -620,6 +621,7 @@ module NativeJson =
                        XAttribute(XName.Get "el", s.EL),
                        XAttribute(XName.Get "ec", s.EC))
           sp.Add sx
+          mvc <- Math.Max (mvc, s.VC)
         )
       else
         value.Lines
@@ -633,8 +635,12 @@ module NativeJson =
                        XAttribute(XName.Get "el", k),
                        XAttribute(XName.Get "ec", 2))
           sp.Add sx
+          mvc <- Math.Max (mvc, l.Value)
         )
 
+      let mp = XElement(XName.Get "MethodPoint",
+                       XAttribute(XName.Get "vc", mvc))
+      m.Add mp
     )
 
   [<SuppressMessage(

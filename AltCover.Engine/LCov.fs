@@ -199,7 +199,6 @@ FN:4,(anonymous_0)
                       |> Seq.tryHead
                       |> Option.iter (fun s ->
                             let n = (m.Descendants("Name".X) |> Seq.head).Value
-                            let mp = m.Descendants("MethodPoint".X) |> Seq.head
                             let sl = s.Attribute("sl".X).Value
                             if sl
                               |> String.IsNullOrWhiteSpace
