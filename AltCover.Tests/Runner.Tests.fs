@@ -2091,11 +2091,10 @@ module AltCoverRunnerTests =
         Assert.That(junkfile |> File.Exists |> not)
         let (c0, w0) = Zip.openUpdate junkfile
         try
-          Assert.That(c0.IsNotNull)
+          Assert.That(c0 |> isNull)
           Assert.That(w0, Is.InstanceOf<MemoryStream>())
           Assert.That(w0.Length, Is.EqualTo 0L)
         finally
-          c0.Dispose()
           w0.Dispose()
 
         // degenerate case 2
@@ -2105,11 +2104,10 @@ module AltCoverRunnerTests =
         Assert.That(junkfile2 |> File.Exists |> not)
         let (c1, w1) = Zip.openUpdate junkfile2
         try
-          Assert.That(c1.IsNotNull)
+          Assert.That(c1 |> isNull)
           Assert.That(w1, Is.InstanceOf<MemoryStream>())
           Assert.That(w1.Length, Is.EqualTo 0L)
         finally
-          c0.Dispose()
           w0.Dispose()
           Assert.That(junkfile2 |> File.Exists |> not)
 
@@ -2189,11 +2187,10 @@ module AltCoverRunnerTests =
         Assert.That(junkfile |> File.Exists |> not)
         let (c0, w0) = Zip.openUpdate junkfile
         try
-          Assert.That(c0.IsNotNull)
+          Assert.That(c0 |> isNull)
           Assert.That(w0, Is.InstanceOf<MemoryStream>())
           Assert.That(w0.Length, Is.EqualTo 0L)
         finally
-          c0.Dispose()
           w0.Dispose()
 
         Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile None |> ignore

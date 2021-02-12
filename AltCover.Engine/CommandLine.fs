@@ -67,7 +67,7 @@ module internal Zip =
   [<SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
                     Justification="ditto, ditto.")>]
   let internal openUpdate (report : string) =
-    if File.Exists (report+ ".zip")
+    if File.Exists (report + ".zip")
     then
       let zip = ZipFile.Open(report + ".zip", ZipArchiveMode.Update)
       let entry = report
@@ -77,10 +77,13 @@ module internal Zip =
                    then entry.Open()
                    else new MemoryStream() :> Stream
       (zip, stream)
-    else
-      let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-      (null, stream :> Stream)
+    else if File.Exists report
+      then
+        let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+        (null, stream :> Stream)
+      else
+        (null, new MemoryStream() :> Stream)
 
 type internal StringSink = Action<String> // delegate of string -> unit
 
