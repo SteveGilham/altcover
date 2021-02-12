@@ -3647,6 +3647,7 @@ _Target "JsonReporting" (fun _ ->
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
            XmlReport = x
+          //  ZipFile = true
            ReportFormat = "Json"
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
@@ -3687,6 +3688,11 @@ _Target "JsonReporting" (fun _ ->
     Assert.That
       (recorded, expected |> Is.EqualTo, sprintf "Bad method list %A" recorded)
     printfn "Content OK"
+
+  // printfn "Extract and verify the first results"
+  // Shell.cleanDir "./_Reports/JsonReporting2"
+  // System.IO.Compression.ZipFile.ExtractToDirectory(x + ".zip", "./_Reports/JsonReporting1")
+  // checkSample4Content "./_Reports/JsonReporting1/JsonReporting.json"
 
   checkSample4Content x
 
@@ -3782,6 +3788,11 @@ _Target "JsonReporting" (fun _ ->
       (String.Join(" ", trackedVisits), "1 1 1 1 1 1 1 2 2 2 2 2" |> Is.EqualTo,
        sprintf "Bad tracked visit list %A" trackedVisits)
     printfn "TrackRefs OK"
+
+  // printfn "Extract and verify the final results"
+  // Shell.cleanDir "./_Reports/JsonReporting1"
+  // System.IO.Compression.ZipFile.ExtractToDirectory(x + ".zip", "./_Reports/JsonReporting2")
+  // checkSample4Visits before "./_Reports/JsonReporting2/JsonReporting.json"
 
   checkSample4Visits before x
 )

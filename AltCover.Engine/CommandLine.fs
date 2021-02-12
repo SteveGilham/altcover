@@ -48,7 +48,9 @@ module internal Zip =
   let internal save (document : Stream -> unit) (report : string) (zip : bool) =
     if zip
     then
-      use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
+      use file = File.OpenWrite (report + ".zip")
+      file.SetLength 0L
+      use archive = new ZipArchive(file, ZipArchiveMode.Create)
       let entry = report
                   |> Path.GetFileName
                   |> archive.CreateEntry
@@ -56,6 +58,7 @@ module internal Zip =
       document sink
     else
       use file = File.OpenWrite report
+      file.SetLength 0L
       document file
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
@@ -64,12 +67,8 @@ module internal Zip =
   [<SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
                     Justification="ditto, ditto.")>]
   let internal openUpdate (report : string) =
-    if File.Exists report
+    if File.Exists (report+ ".zip")
     then
-      let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-      (null, stream :> Stream)
-    else
       let zip = ZipFile.Open(report + ".zip", ZipArchiveMode.Update)
       let entry = report
                   |> Path.GetFileName
@@ -78,6 +77,10 @@ module internal Zip =
                    then entry.Open()
                    else new MemoryStream() :> Stream
       (zip, stream)
+    else
+      let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                      FileOptions.SequentialScan)
+      (null, stream :> Stream)
 
 type internal StringSink = Action<String> // delegate of string -> unit
 
