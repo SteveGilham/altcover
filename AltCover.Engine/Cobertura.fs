@@ -14,9 +14,11 @@ module internal Cobertura =
   module internal I =
 
     let internal setRate hits total (rate : string) (target : XElement) =
-      if total > 0 then
-        let ratio = (float hits) / (float total)
-        target.SetAttributeValue(rate.X, String.Format(CultureInfo.InvariantCulture,
+
+      let ratio = if total > 0
+                  then (float hits) / (float total)
+                  else 0.0
+      target.SetAttributeValue(rate.X, String.Format(CultureInfo.InvariantCulture,
                                                        "{0:0.##}", ratio))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
