@@ -2250,7 +2250,7 @@ module AltCoverRunnerTests =
             [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
-        let doc = DocumentType.loadReport ReportFormat.OpenCover (unique + ".acv")
+        let doc = DocumentType.LoadReport ReportFormat.OpenCover (unique + ".acv")
         Assert.That(doc, Is.EqualTo DocumentType.Unknown)
         Assert.That(counts, Is.Empty)
       finally

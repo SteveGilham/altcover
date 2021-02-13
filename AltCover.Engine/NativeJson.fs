@@ -563,141 +563,155 @@ module NativeJson =
 #if GUI || RUNNER
   // Conversion to XML ---------------------------------------------------------
 
+  let internal buildSummary () =
+    XElement(XName.Get "Summary",
+             XAttribute(XName.Get "numBranchPoints", 0),
+             XAttribute(XName.Get "visitedBranchPoints", 0),
+             XAttribute(XName.Get "numSequencePoints", 0),
+             XAttribute(XName.Get "visitedSequencePoints", 0))
+
+  let internal buildMethodElement name fileId =
+    let m = XElement(XName.Get "Method",
+                      XAttribute(XName.Get "visited", false),
+                      XAttribute(XName.Get "cyclomaticComplexity", 1),
+                      XAttribute(XName.Get "sequenceCoverage", 0),
+                      XAttribute(XName.Get "branchCoverage", 0),
+                      XAttribute(XName.Get "isConstructor", false),
+                      XAttribute(XName.Get "isStatic", false),
+                      XAttribute(XName.Get "isGetter", false),
+                      XAttribute(XName.Get "isSetter", false))
+
+    let sd = buildSummary ()
+    m.Add sd
+    let md = XElement(XName.Get "MetadataToken")
+    md.Value <- "0"
+    m.Add md
+    let n = XElement(XName.Get "Name")
+    n.Value <- name
+    m.Add n
+    let f = XElement(XName.Get "FileRef",
+                      XAttribute(XName.Get "uid", fileId))
+    m.Add f
+    (m, sd)
+
+  let internal makeSummary (ns:int) (vs:int) (nb:int) (vb:int) (sd:XElement) =
+    sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(CultureInfo.InvariantCulture)
+
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal methodToXml (fileId:int) (item:XElement) (method:KeyValuePair<string, Method>) =
+    let m, sd = buildMethodElement method.Key fileId
+    item.Add m
+
+    let sp = XElement(XName.Get "SequencePoints")
+    m.Add sp
+    let bp = XElement(XName.Get "BranchPoints")
+    m.Add bp
+    let value = method.Value
+
+    let bec = Dictionary<int, int>()
+    let bev = Dictionary<int, int>()
+    let mutable nb = 0
+    let mutable vb = 0
+
+    if value.Branches.IsNotNull
+    then
+      value.Branches
+      |> Seq.iter (fun b ->
+        let _, old = bec.TryGetValue b.Line
+        bec.[b.Line] <- old + 1
+        nb <- nb + 1
+        if b.Hits > 0
+        then
+          vb <- vb + 1
+          let _, old = bev.TryGetValue b.Line
+          bev.[b.Line] <- old + 1
+
+        let bx = XElement(XName.Get "BranchPoint",
+                      XAttribute(XName.Get "vc", b.Hits),
+                      XAttribute(XName.Get "sl", b.Line),
+                      XAttribute(XName.Get "uspid", b.Id),
+                      XAttribute(XName.Get "ordinal", b.Ordinal),
+                      XAttribute(XName.Get "offset", b.Offset),
+                      XAttribute(XName.Get "path", b.Path))
+        bp.Add bx
+      )
+
+      let targets = value.Branches
+                    |> Seq.groupBy (fun b -> b.Line)
+                    |> Seq.sumBy (fun (_,x) -> x
+                                              |> Seq.distinctBy(fun bx -> bx.EndOffset)
+                                              |> Seq.length)
+      m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets).ToString(CultureInfo.InvariantCulture)
+
+    let mutable mvc = 0
+    let mutable ns = 0
+    let mutable vs = 0
+    if value.SeqPnts.IsNotNull
+    then
+      value.SeqPnts
+      |> Seq.iter(fun s ->
+        let _, bec2 = bec.TryGetValue s.SL
+        bec.[s.SL] <- 0
+        let _, bev2 = bev.TryGetValue s.SL
+        bev.[s.SL] <- 0
+        ns <- ns + 1
+        if s.VC > 0
+        then vs <- vs + 1
+        let sx = XElement(XName.Get "SequencePoint",
+                      XAttribute(XName.Get "vc", s.VC),
+                      XAttribute(XName.Get "offset", s.Offset),
+                      XAttribute(XName.Get "sl", s.SL),
+                      XAttribute(XName.Get "sc", s.SC),
+                      XAttribute(XName.Get "el", s.EL),
+                      XAttribute(XName.Get "ec", s.EC),
+                      XAttribute(XName.Get "uspid", s.Id),
+                      XAttribute(XName.Get "bec", bec2),
+                      XAttribute(XName.Get "bev", bev2))
+        sp.Add sx
+        mvc <- Math.Max (mvc, s.VC)
+      )
+    else
+      value.Lines
+      |> Seq.iteri (fun i l ->
+        let k = l.Key
+        let _, bec2 = bec.TryGetValue k
+        bec.[k] <- 0
+        let _, bev2 = bev.TryGetValue k
+        bev.[k] <- 0
+        ns <- ns + 1
+        if l.Value > 0
+        then vs <- vs + 1
+
+        let sx = XElement(XName.Get "SequencePoint",
+                      XAttribute(XName.Get "vc", l.Value),
+                      XAttribute(XName.Get "offset", i),
+                      XAttribute(XName.Get "sl", k),
+                      XAttribute(XName.Get "sc", 1),
+                      XAttribute(XName.Get "el", k),
+                      XAttribute(XName.Get "ec", 2),
+                      XAttribute(XName.Get "uspid", i),
+                      XAttribute(XName.Get "bec", bec2),
+                      XAttribute(XName.Get "bev", bev2))
+        sp.Add sx
+        mvc <- Math.Max (mvc, l.Value)
+      )
+
+    let mp = XElement(XName.Get "MethodPoint",
+                      XAttribute(XName.Get "vc", mvc))
+    m.Add mp
+    makeSummary ns vs nb vb sd
+
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let internal methodsToXml (fileId:int) (item:XElement) (methods:Methods) =
     methods
-    |> Seq.iter (fun kvp ->
-      let m = XElement(XName.Get "Method",
-                       XAttribute(XName.Get "visited", false),
-                       XAttribute(XName.Get "cyclomaticComplexity", 1),
-                       XAttribute(XName.Get "sequenceCoverage", 0),
-                       XAttribute(XName.Get "branchCoverage", 0),
-                       XAttribute(XName.Get "isConstructor", false),
-                       XAttribute(XName.Get "isStatic", false),
-                       XAttribute(XName.Get "isGetter", false),
-                       XAttribute(XName.Get "isSetter", false))
-      item.Add m
-      let sd = XElement(XName.Get "Summary",
-                       XAttribute(XName.Get "numBranchPoints", 0),
-                       XAttribute(XName.Get "visitedBranchPoints", 0),
-                       XAttribute(XName.Get "numSequencePoints", 0),
-                       XAttribute(XName.Get "visitedSequencePoints", 0))
-      m.Add sd
-
-      let md = XElement(XName.Get "MetadataToken")
-      md.Value <- "0"
-      m.Add md
-      let n = XElement(XName.Get "Name")
-      n.Value <- kvp.Key
-      m.Add n
-      let f = XElement(XName.Get "FileRef",
-                       XAttribute(XName.Get "uid", fileId))
-      m.Add f
-
-      let sp = XElement(XName.Get "SequencePoints")
-      m.Add sp
-      let bp = XElement(XName.Get "BranchPoints")
-      m.Add bp
-      let value = kvp.Value
-
-      let bec = Dictionary<int, int>()
-      let bev = Dictionary<int, int>()
-
-      if value.Branches.IsNotNull
-      then
-        value.Branches
-        |> Seq.iter (fun b ->
-          let _, old = bec.TryGetValue b.Line
-          bec.[b.Line] <- old + 1
-          if b.Hits > 0
-          then
-            let _, old = bev.TryGetValue b.Line
-            bev.[b.Line] <- old + 1
-
-          let bx = XElement(XName.Get "BranchPoint",
-                       XAttribute(XName.Get "vc", b.Hits),
-                       XAttribute(XName.Get "sl", b.Line),
-                       XAttribute(XName.Get "uspid", b.Id),
-                       XAttribute(XName.Get "ordinal", b.Ordinal),
-                       XAttribute(XName.Get "offset", b.Offset),
-                       XAttribute(XName.Get "path", b.Path))
-          bp.Add bx
-        )
-        let nb = value.Branches.Count
-        let vb = value.Branches
-                 |> Seq.filter (fun b -> b.Hits > 0)
-                 |> Seq.length
-        let targets = value.Branches
-                      |> Seq.groupBy (fun b -> b.Line)
-                      |> Seq.sumBy (fun (_,x) -> x
-                                               |> Seq.distinctBy(fun bx -> bx.EndOffset)
-                                               |> Seq.length)
-        m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets).ToString(CultureInfo.InvariantCulture)
-        sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(CultureInfo.InvariantCulture)
-        sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(CultureInfo.InvariantCulture)
-
-      let mutable mvc = 0
-      if value.SeqPnts.IsNotNull
-      then
-        value.SeqPnts
-        |> Seq.iter(fun s ->
-          let _, bec2 = bec.TryGetValue s.SL
-          bec.[s.SL] <- 0
-          let _, bev2 = bev.TryGetValue s.SL
-          bev.[s.SL] <- 0
-          let sx = XElement(XName.Get "SequencePoint",
-                       XAttribute(XName.Get "vc", s.VC),
-                       XAttribute(XName.Get "offset", s.Offset),
-                       XAttribute(XName.Get "sl", s.SL),
-                       XAttribute(XName.Get "sc", s.SC),
-                       XAttribute(XName.Get "el", s.EL),
-                       XAttribute(XName.Get "ec", s.EC),
-                       XAttribute(XName.Get "uspid", s.Id),
-                       XAttribute(XName.Get "bec", bec2),
-                       XAttribute(XName.Get "bev", bev2))
-          sp.Add sx
-          mvc <- Math.Max (mvc, s.VC)
-        )
-        let ns = value.SeqPnts.Count
-        let vs = value.SeqPnts
-                 |> Seq.filter (fun s -> s.VC > 0)
-                 |> Seq.length
-        sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
-        sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
-      else
-        value.Lines
-        |> Seq.iteri (fun i l ->
-          let k = l.Key
-          let _, bec2 = bec.TryGetValue k
-          bec.[k] <- 0
-          let _, bev2 = bev.TryGetValue k
-          bev.[k] <- 0
-          let sx = XElement(XName.Get "SequencePoint",
-                       XAttribute(XName.Get "vc", l.Value),
-                       XAttribute(XName.Get "offset", i),
-                       XAttribute(XName.Get "sl", k),
-                       XAttribute(XName.Get "sc", 1),
-                       XAttribute(XName.Get "el", k),
-                       XAttribute(XName.Get "ec", 2),
-                       XAttribute(XName.Get "uspid", i),
-                       XAttribute(XName.Get "bec", bec2),
-                       XAttribute(XName.Get "bev", bev2))
-          sp.Add sx
-          mvc <- Math.Max (mvc, l.Value)
-        )
-        let ns = value.Lines.Count
-        let vs = value.Lines.Values
-                 |> Seq.filter (fun s -> s > 0)
-                 |> Seq.length
-        sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
-        sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
-
-      let mp = XElement(XName.Get "MethodPoint",
-                       XAttribute(XName.Get "vc", mvc))
-      m.Add mp
-    )
+    |> Seq.iter  (methodToXml fileId item)
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -728,6 +742,16 @@ module NativeJson =
       |> Int32.TryParse
       |> snd
 
+  let internal summarize sd (m:XElement) name =
+    let (nb, vb, ns, vs) =
+      m.Descendants(XName.Get name)
+      |> Seq.collect(fun m2 -> m2.Elements(XName.Get "Summary"))
+      |> Seq.fold (fun (bv, bn, sn, sv) ms -> (bv + valueOf ms "visitedBranchPoints",
+                                               bn + valueOf ms "numBranchPoints",
+                                               sn + valueOf ms "numSequencePoints",
+                                               sv + valueOf ms "visitedSequencePoints")) (0, 0, 0, 0)
+    makeSummary ns vs nb vb sd
+
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
@@ -735,11 +759,7 @@ module NativeJson =
     (key:string) (documents:Documents) =
     let m = XElement(XName.Get "Module",
                      XAttribute(XName.Get "hash", key))
-    let sd = XElement(XName.Get "Summary",
-                      XAttribute(XName.Get "numBranchPoints", 0),
-                      XAttribute(XName.Get "visitedBranchPoints", 0),
-                      XAttribute(XName.Get "numSequencePoints", 0),
-                      XAttribute(XName.Get "visitedSequencePoints", 0))
+    let sd = buildSummary ()
     m.Add sd
     let p = XElement(XName.Get "ModulePath")
     p.Value <- key
@@ -774,36 +794,24 @@ module NativeJson =
       classes.Add kvp.Value
     )
 
-    let (nb, vb, ns, vs) =
-      m.Descendants(XName.Get "Method")
-      |> Seq.collect(fun m2 -> m2.Elements(XName.Get "Summary"))
-      |> Seq.fold (fun (bv, bn, sn, sv) ms -> (bv + valueOf ms "visitedBranchPoints",
-                                               bn + valueOf ms "numBranchPoints",
-                                               sn + valueOf ms "numSequencePoints",
-                                               sv + valueOf ms "visitedSequencePoints")) (0, 0, 0, 0)
-
-    sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(CultureInfo.InvariantCulture)
-
+    summarize sd m "Method"
     m
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+    Justification="Library method inlined")>]
+  [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+    Justification="Library method inlined")>]
   let internal jsonToXml (modules:Modules) =
     let x = XDocument()
     x.Add(XElement(XName.Get "CoverageSession"))
-    let sd = XElement(XName.Get "Summary",
-                      XAttribute(XName.Get "numBranchPoints", 0),
-                      XAttribute(XName.Get "visitedBranchPoints", 0),
-                      XAttribute(XName.Get "numSequencePoints", 0),
-                      XAttribute(XName.Get "visitedSequencePoints", 0),
-                      XAttribute(XName.Get "maxCyclomaticComplexity", 1))
-    x.Root.Add sd
+    let root = x.Root
+    let sd = buildSummary()
+    root.Add sd
     let mroot = XElement(XName.Get "Modules")
-    x.Root.Add mroot
+    root.Add mroot
     let fileRefs = Dictionary<string, int>()
     modules
     |> Seq.iter (fun kvp ->
@@ -811,18 +819,7 @@ module NativeJson =
       |> mroot.Add
     )
 
-    let (vb, nb, ns, vs) =
-      x.Descendants(XName.Get "Module")
-      |> Seq.collect(fun m2 -> m2.Elements(XName.Get "Summary"))
-      |> Seq.fold (fun (bv, bn, sn, sv) ms -> (bv + valueOf ms "visitedBranchPoints",
-                                               bn + valueOf ms "numBranchPoints",
-                                               sn + valueOf ms "numSequencePoints",
-                                               sv + valueOf ms "visitedSequencePoints")) (0, 0, 0, 0)
-
-    sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(CultureInfo.InvariantCulture)
+    summarize sd root "Module"
 
     let mcc = x.Descendants(XName.Get "Method")
               |> Seq.map (fun x -> valueOf x "cyclomaticComplexity")
@@ -970,7 +967,7 @@ type internal DocumentType =
 | XML of XDocument
 | JSON of NativeJson.Modules
 | Unknown
-with static member loadReport format report =
+with static member internal LoadReport format report =
       if File.Exists report
       then
         if format = ReportFormat.NativeJson ||

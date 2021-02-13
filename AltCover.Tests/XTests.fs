@@ -533,7 +533,7 @@ module AltCoverXTests =
         |> Seq.toList
 
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
-      let recordedJson = match DocumentType.loadReport CoverageParameters.theReportFormat.Value report with
+      let recordedJson = match DocumentType.LoadReport CoverageParameters.theReportFormat.Value report with
                          | JSON j -> j
       Assert.That(recordedJson.Keys |> Seq.toList, Is.EqualTo ["Sample4.dll"] )
     finally
@@ -658,7 +658,7 @@ module AltCoverXTests =
       test <@ actual = theFiles @>
       let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
       let expectedXml = XDocument.Load(new StringReader(expectedText))
-      let recordedXml = match DocumentType.loadReport ReportFormat.OpenCover report with
+      let recordedXml = match DocumentType.LoadReport ReportFormat.OpenCover report with
                         | XML x -> x
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally

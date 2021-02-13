@@ -1179,7 +1179,7 @@ module internal Runner =
             Directory.GetFiles
               (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
-            let document = DocumentType.loadReport format report
+            let document = DocumentType.LoadReport format report
             J.doSummaries document format result) 255 true
         CommandLine.reportErrors "Collection" false
         value

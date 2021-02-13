@@ -364,6 +364,9 @@ module internal Json =
     )
     json
 
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "An internal API")>]
   let internal xmlToJson (report : XDocument) (format:ReportFormat) =
     (report.Root
      |> (match format with
