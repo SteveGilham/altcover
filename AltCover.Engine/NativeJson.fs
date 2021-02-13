@@ -838,7 +838,7 @@ module NativeJson =
                                         if value > top
                                         then value
                                         else top) 1
-    sd.Attribute(XName.Get "maxCyclomaticComplexity").Value <- mcc.ToString(CultureInfo.InvariantCulture)
+    sd.Add(XAttribute(XName.Get "maxCyclomaticComplexity", mcc.ToString(CultureInfo.InvariantCulture)))
 
     x
 
