@@ -563,12 +563,16 @@ module NativeJson =
 #if GUI || RUNNER
   // Conversion to XML ---------------------------------------------------------
 
-  let internal buildSummary () =
-    XElement(XName.Get "Summary",
-             XAttribute(XName.Get "numBranchPoints", 0),
-             XAttribute(XName.Get "visitedBranchPoints", 0),
-             XAttribute(XName.Get "numSequencePoints", 0),
-             XAttribute(XName.Get "visitedSequencePoints", 0))
+  let internal buildSummary (m:XContainer) =
+    let zero name =
+      XAttribute(XName.Get name, 0)
+    let sd = XElement(XName.Get "Summary",
+                       zero "numBranchPoints",
+                       zero "visitedBranchPoints",
+                       zero "numSequencePoints",
+                       zero "visitedSequencePoints")
+    m.Add sd
+    sd
 
   let internal buildMethodElement name fileId =
     let m = XElement(XName.Get "Method",
@@ -581,14 +585,17 @@ module NativeJson =
                       XAttribute(XName.Get "isGetter", false),
                       XAttribute(XName.Get "isSetter", false))
 
-    let sd = buildSummary ()
-    m.Add sd
-    let md = XElement(XName.Get "MetadataToken")
-    md.Value <- "0"
-    m.Add md
-    let n = XElement(XName.Get "Name")
-    n.Value <- name
-    m.Add n
+    let sd = buildSummary m
+    [
+      "MetadataToken", "0"
+      "Name", name
+    ]
+    |> Seq.iter (fun (name, value) ->
+      let x = XElement(XName.Get name)
+      x.Value <- value
+      m.Add x
+    )
+
     let f = XElement(XName.Get "FileRef",
                       XAttribute(XName.Get "uid", fileId))
     m.Add f
@@ -742,6 +749,9 @@ module NativeJson =
       |> Int32.TryParse
       |> snd
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal summarize sd (m:XElement) name =
     let (nb, vb, ns, vs) =
       m.Descendants(XName.Get name)
@@ -759,14 +769,18 @@ module NativeJson =
     (key:string) (documents:Documents) =
     let m = XElement(XName.Get "Module",
                      XAttribute(XName.Get "hash", key))
-    let sd = buildSummary ()
-    m.Add sd
-    let p = XElement(XName.Get "ModulePath")
-    p.Value <- key
-    m.Add p
-    let n = XElement(XName.Get "ModuleName")
-    n.Value <- (key |> Path.GetFileNameWithoutExtension)
-    m.Add n
+    let sd = buildSummary m
+
+    [
+      "ModulePath", key
+      "ModuleName", (key |> Path.GetFileNameWithoutExtension)
+    ]
+    |> Seq.iter (fun (name, value) ->
+      let x = XElement(XName.Get name)
+      x.Value <- value
+      m.Add x
+    )
+
     let files = XElement(XName.Get "Files")
     m.Add files
     let classes = XElement(XName.Get "Classes")
@@ -808,8 +822,7 @@ module NativeJson =
     let x = XDocument()
     x.Add(XElement(XName.Get "CoverageSession"))
     let root = x.Root
-    let sd = buildSummary()
-    root.Add sd
+    let sd = buildSummary root
     let mroot = XElement(XName.Get "Modules")
     root.Add mroot
     let fileRefs = Dictionary<string, int>()
@@ -820,10 +833,11 @@ module NativeJson =
     )
 
     summarize sd root "Module"
-
     let mcc = x.Descendants(XName.Get "Method")
-              |> Seq.map (fun x -> valueOf x "cyclomaticComplexity")
-              |> Seq.max
+              |> Seq.fold (fun top x -> let value = valueOf x "cyclomaticComplexity"
+                                        if value > top
+                                        then value
+                                        else top) 1
     sd.Attribute(XName.Get "maxCyclomaticComplexity").Value <- mcc.ToString(CultureInfo.InvariantCulture)
 
     x

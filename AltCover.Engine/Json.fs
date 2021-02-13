@@ -14,17 +14,10 @@ module internal Json =
   let internal path : Option<string> ref = ref None
 
   // --- NCover ---
-  [<SuppressMessage("Gendarme.Rules.Exceptions",
-    "InstantiateArgumentExceptionCorrectlyRule",
-    Justification="Inlined library code")>]
-  [<SuppressMessage("Gendarme.Rules.Performance",
-    "AvoidRepetitiveCallsToPropertiesRule",
-    Justification="Inlined library code")>]
-  [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
-    Justification="Inlined library code")>]
+
   let internal lineVisits (seqpnts:NativeJson.SeqPnt seq) =
-    (seqpnts
-      |> Seq.maxBy (fun sp -> sp.VC)).VC
+    seqpnts
+    |> Seq.fold(fun m sp -> Math.Max(m, sp.VC)) 0
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
