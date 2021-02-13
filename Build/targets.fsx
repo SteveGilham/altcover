@@ -3641,6 +3641,11 @@ _Target "JsonReporting" (fun _ ->
   let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
+  // Test data gathering only
+  //let x = Path.getFullName "./AltCover.Tests/Sample5.native.json"
+  //let o = Path.getFullName "Sample5/_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
+  //let i = Path.getFullName "_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
+
   Shell.cleanDir o
   let before = Actions.ticksNow()
   let prep =
@@ -3751,16 +3756,16 @@ _Target "JsonReporting" (fun _ ->
       (String.Join(" ", trackedFormat), """("System.Void Tests.DU::testMakeUnion()", 1) ("System.Void Tests.M::testMakeThing()", 2)""" |> Is.EqualTo,
        sprintf "Bad tracked method list %A" trackedFormat)
 
-    //let trackedTimes = 
+    //let trackedTimes =
     methods
                         |> List.filter (fun m -> m.Value.TId.HasValue)
-//                        |> List.collect (fun m -> let first = m.Value.Entry 
-                        |> List.iter    (fun m -> let first = m.Value.Entry 
+//                        |> List.collect (fun m -> let first = m.Value.Entry
+                        |> List.iter    (fun m -> let first = m.Value.Entry
                                                               |> Seq.head
                                                               |> Convert.FromBase64String
                                                               |>  (fun x -> BitConverter.ToInt64(x,0))
                                                               |> System.Net.IPAddress.NetworkToHostOrder
-                                                  let second = m.Value.Exit 
+                                                  let second = m.Value.Exit
                                                                |> Seq.head
                                                                |> Convert.FromBase64String
                                                                |> (fun x -> BitConverter.ToInt64(x,0))
