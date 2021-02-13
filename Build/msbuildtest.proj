@@ -17,7 +17,7 @@
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
       InPlace="true"
-      XmlReport="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
+      Report="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
       AssemblyFilter="@(AssemblyFilter)" />
     <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Sample4/Sample4.fsproj  -f netcoreapp2.1" />
