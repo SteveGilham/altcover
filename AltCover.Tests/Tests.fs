@@ -1280,6 +1280,11 @@ module AltCoverTests =
 
       // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
       // Assert.That (result, Is.EquivalentTo expected)
+
+      //result
+      //|> Seq.zip methods
+      //|> Seq.iter (fun (a,b) -> printfn "          %A // %A" (b |> Option.map (fun bb -> bb.Name)) a)
+
       let toName (m:MethodDefinition) = m.Name
       let toFullName (m:MethodDefinition) = m.FullName
       methods
