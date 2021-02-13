@@ -49,7 +49,7 @@ Describe "Invoke-Altcover" {
             Remove-Item -Force -Recurse $o
         }
         if (Test-Path $x) { Remove-Item -force $x }
-	
+
         Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter ("Adapter", "FSharp", "nunit") -ReportFormat NCover -InformationAction Continue
         $o | Should -Exist
         $x | Should -Exist
@@ -450,7 +450,7 @@ Describe "ConvertFrom-NCover" {
 Describe "Compress-Branching" {
   It "Removes interior branches" {
     $xml = Compress-Branching -WithinSequencePoint -InputFile "./AltCover.Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
-	  $xml | Should -BeOfType [xdoc]
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -468,7 +468,7 @@ Describe "Compress-Branching" {
   }
   It "Unifies equivalent branches" {
     $xml = Compress-Branching -SameSpan -InputFile "./AltCover.Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
-  	$xml | Should -BeOfType [xdoc]
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -486,7 +486,7 @@ Describe "Compress-Branching" {
   }
   It "DoesBoth" {
     $xml = [xdoc]::Load("./AltCover.Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
-	  $xml | Should -BeOfType [xdoc]
+    $xml | Should -BeOfType [xdoc]
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -505,14 +505,14 @@ Describe "Compress-Branching" {
   It "DoesAtLeastOne" {
     $fail = $false
     try {
-	  Compress-Branching -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
-	  $fail = $true
-	}
-	catch {
-	  $_.Exception.Message | Should -BeLikeExactly 'Parameter set cannot be resolved using the specified named parameters.*'
-	}
+      Compress-Branching -InputFile "./AltCover.Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"
+      $fail = $true
+    }
+    catch {
+      $_.Exception.Message | Should -BeLikeExactly 'Parameter set cannot be resolved using the specified named parameters.*'
+    }
 
-	$fail | Should -BeFalse
+    $fail | Should -BeFalse
   }
 }
 
