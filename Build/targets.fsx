@@ -3751,7 +3751,8 @@ _Target "JsonReporting" (fun _ ->
       (String.Join(" ", trackedFormat), """("System.Void Tests.DU::testMakeUnion()", 1) ("System.Void Tests.M::testMakeThing()", 2)""" |> Is.EqualTo,
        sprintf "Bad tracked method list %A" trackedFormat)
 
-    let trackedTimes = methods
+    //let trackedTimes = 
+    methods
                         |> List.filter (fun m -> m.Value.TId.HasValue)
 //                        |> List.collect (fun m -> let first = m.Value.Entry 
                         |> List.iter    (fun m -> let first = m.Value.Entry 
