@@ -18,6 +18,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
   * Preparing as Native JSON, to generate an LCov or Cobertura report at collection is supported
 * [Breaking] with the new JSON output the `-x, --xmlReport` argument or equivalent just becomes `-r, --report`
 * [Breaking] the stop-gap `--jsonReport` collection option from v7.6 is withdrawn
+* AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
 * [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
 
 # 7.6.812 (Genbu series release 15)
