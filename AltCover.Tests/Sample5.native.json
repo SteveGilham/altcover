@@ -1,6 +1,6 @@
 {
  "Sample5.dll": {
-   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Sample5\\Class1.cs": {
+   "altcover/Sample5/Class1.cs": {
      "Sample5.Class1": {
        "System.Int32 Sample5.Class1::F1(System.String)": {
          "Lines": {
@@ -178,7 +178,7 @@
         }
       }
     },
-   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Sample5\\Class1a.cs": {
+   "altcover/Sample5/Class1a.cs": {
      "Sample5.Class1/Inner": {
        "System.Int32 Sample5.Class1/Inner::G1(System.String)": {
          "Lines": {

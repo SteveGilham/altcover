@@ -2,12 +2,12 @@
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
 <coverage line-rate="0" branch-rate="0" lines-covered="0" lines-valid="89" branches-covered="0" branches-valid="4" complexity="3" version="3.0.0.0" timestamp="xx">
   <sources>
-    <source>C:/Users/steve/Documents/GitHub/altcover/Sample5</source>
+    <source>altcover/Sample5</source>
   </sources>
   <packages>
     <package name="Sample5" line-rate="0" branch-rate="0" complexity="1.22">
       <classes>
-        <class name="Sample5.Class1" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1.cs" line-rate="0" branch-rate="0" complexity="1">
+        <class name="Sample5.Class1" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="0" complexity="1">
           <methods>
             <method name="F1" signature="System.Int32 (System.String)" line-rate="0" branch-rate="0" complexity="1">
               <lines>
@@ -45,7 +45,7 @@
             <line number="35" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="0" complexity="2">
+        <class name="Sample5.Class1" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="0" complexity="2">
           <methods>
             <method name="F2" signature="System.Collections.Generic.IEnumerable`1&lt;System.Int32&gt; (System.String)" line-rate="0" branch-rate="0" complexity="3">
               <lines>
@@ -89,7 +89,7 @@
             <line number="30" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1/Inner" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="0" complexity="1.33">
+        <class name="Sample5.Class1/Inner" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="0" complexity="1.33">
           <methods>
             <method name="G1" signature="System.Int32 (System.String)" line-rate="0" branch-rate="0" complexity="1">
               <lines>
@@ -203,7 +203,7 @@
             <line number="100" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.RecursiveSyntheticInvocation`2" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="0" complexity="1">
+        <class name="Sample5.RecursiveSyntheticInvocation`2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="0" complexity="1">
           <methods>
             <method name="System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator" signature="System.Collections.Generic.IEnumerator`1&lt;System.Collections.Generic.KeyValuePair`2&lt;T,K&gt;&gt; ()" line-rate="0" branch-rate="0" complexity="1">
               <lines>

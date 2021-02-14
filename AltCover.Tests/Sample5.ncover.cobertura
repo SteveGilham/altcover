@@ -2,12 +2,12 @@
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
 <coverage line-rate="0" branch-rate="1" lines-covered="0" lines-valid="89" branches-covered="0" branches-valid="0" complexity="1" version="3.0.0.0" timestamp="xx">
   <sources>
-    <source>C:/Users/steve/Documents/GitHub/altcover/Sample5</source>
+    <source>altcover/Sample5</source>
   </sources>
   <packages>
-    <package name="C:/Users/steve/Documents/GitHub/altcover/_Binaries/Sample5/Debug+AnyCPU/net472/Sample5.dll" line-rate="0" branch-rate="1" complexity="1">
+    <package name="altcover/Sample5/Sample5.dll" line-rate="0" branch-rate="1" complexity="1">
       <classes>
-        <class name="Sample5.Class1" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="&lt;F1&gt;g__Interior|0_1" signature="System.Int32 (System.Int32,System.Int32)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -45,7 +45,7 @@
             <line number="35" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+&lt;&gt;c" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+&lt;&gt;c" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="&lt;F1&gt;b__0_0" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -61,7 +61,7 @@
             <line number="14" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+&lt;&gt;c__DisplayClass0_0" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+&lt;&gt;c__DisplayClass0_0" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="&lt;F1&gt;b__2" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -79,7 +79,7 @@
             <line number="34" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+&lt;F2&gt;d__1" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+&lt;F2&gt;d__1" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -107,7 +107,7 @@
             <line number="21" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+&lt;F3&gt;d__2" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+&lt;F3&gt;d__2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="MoveNext" signature="System.Void ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -127,7 +127,7 @@
             <line number="30" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+Inner" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+Inner" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="&lt;G1&gt;g__InteriorToArray|0_1" signature="T[] &lt;T&gt;(T)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -205,7 +205,7 @@
             <line number="100" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+Inner+&lt;&gt;c" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+Inner+&lt;&gt;c" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="&lt;G1&gt;b__0_0" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -221,7 +221,7 @@
             <line number="39" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="&lt;G1&gt;b__3" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -239,7 +239,7 @@
             <line number="64" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+Inner+&lt;G2&gt;d__2`1" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+Inner+&lt;G2&gt;d__2`1" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -269,7 +269,7 @@
             <line number="81" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.Class1+Inner+&lt;G3&gt;d__4" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.Class1+Inner+&lt;G3&gt;d__4" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="MoveNext" signature="System.Void ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -289,7 +289,7 @@
             <line number="95" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.RecursiveSyntheticInvocation`2" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.RecursiveSyntheticInvocation`2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator" signature="System.Collections.Generic.IEnumerator`1 ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -341,7 +341,7 @@
             <line number="152" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -355,7 +355,7 @@
             <line number="117" hits="0" branch="false" />
           </lines>
         </class>
-        <class name="Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4" filename="C:/Users/steve/Documents/GitHub/altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+        <class name="Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
           <methods>
             <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
               <lines>

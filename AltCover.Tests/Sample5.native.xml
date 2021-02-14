@@ -7,8 +7,8 @@
       <ModulePath>Sample5.dll</ModulePath>
       <ModuleName>Sample5</ModuleName>
       <Files>
-        <File uid="1" fullPath="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
-        <File uid="2" fullPath="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+        <File uid="1" fullPath="altcover/Sample5/Class1.cs" />
+        <File uid="2" fullPath="altcover/Sample5/Class1a.cs" />
       </Files>
       <Classes>
         <Class>

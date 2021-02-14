@@ -1,5 +1,5 @@
 ﻿TN:
-SF:C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs
+SF:altcover/Sample5/Class1.cs
 FN:12,System.Int32 Sample5.Class1.F1(System.String)
 FN:14,System.Int32 Sample5.Class1+<>c.<F1>b__0_0(System.Char)
 FN:18,System.Int32 Sample5.Class1.<F1>g__Interior|0_1(System.Int32,System.Int32)
@@ -35,7 +35,7 @@ LH:0
 LF:17
 end_of_record
 TN:
-SF:C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs
+SF:altcover/Sample5/Class1a.cs
 FN:15,System.Boolean Sample5.Class1+<F2>d__1.MoveNext()
 FN:25,System.Void Sample5.Class1+<F3>d__2.MoveNext()
 FN:37,System.Int32 Sample5.Class1+Inner.G1(System.String)
