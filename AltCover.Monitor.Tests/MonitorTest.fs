@@ -38,7 +38,7 @@ module MonitorTests =
     let code = b.Code
     let branch = b.Branch
 #if BUILD_ON_APPVEYOR
-    test <@ (code, branch) = (70, 9) @>
+    test <@ (code, branch) = (78, 11) @>
 #else
-    test <@ (code, branch) = (137, 34) @>
+    test <@ (code, branch) = (145, 36) @>
 #endif
