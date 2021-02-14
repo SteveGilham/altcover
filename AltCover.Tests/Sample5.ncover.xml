@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
+<coverage profilerVersion="AltCover 8.0.7715.13910" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
+  <module moduleId="b93ce38e-69a2-4a3c-acfa-36dba34029a3" name="C:\Users\steve\Documents\GitHub\altcover\_Binaries\Sample5\Debug+AnyCPU\net472\Sample5.dll" assembly="Sample5" assemblyIdentity="Sample5, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+    <method name="F1" class="Sample5.Class1" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1.F1(System.String)">
+      <seqpnt visitcount="0" line="12" column="5" endline="12" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="14" column="7" endline="14" endcolumn="53" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="30" column="7" endline="34" endcolumn="16" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="35" column="5" endline="35" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+    </method>
+    <method name="&lt;F1&gt;g__Interior|0_1" class="Sample5.Class1" metadataToken="100663301" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1.&lt;F1&gt;g__Interior|0_1(System.Int32,System.Int32)">
+      <seqpnt visitcount="0" line="18" column="7" endline="18" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="25" column="9" endline="25" endcolumn="33" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="26" column="7" endline="26" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+    </method>
+    <method name="&lt;F1&gt;g__Recursive|0_3" class="Sample5.Class1" metadataToken="100663302" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1.&lt;F1&gt;g__Recursive|0_3(System.Int32)">
+      <seqpnt visitcount="0" line="21" column="9" endline="21" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="22" column="11" endline="22" endcolumn="24" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="23" column="9" endline="23" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+    </method>
+    <method name="G1" class="Sample5.Class1+Inner" metadataToken="100663313" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner.G1(System.String)">
+      <seqpnt visitcount="0" line="37" column="7" endline="37" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="39" column="9" endline="39" endcolumn="59" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="60" column="9" endline="64" endcolumn="18" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="65" column="7" endline="65" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="G1" class="Sample5.Class1+Inner" metadataToken="100663314" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner.G1(System.Int32)">
+      <seqpnt visitcount="0" line="68" column="7" endline="68" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="69" column="9" endline="69" endcolumn="38" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="70" column="7" endline="70" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="G2" class="Sample5.Class1+Inner" metadataToken="100663316" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner.G2(System.Int32)">
+      <seqpnt visitcount="0" line="84" column="7" endline="84" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="85" column="9" endline="85" endcolumn="38" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="86" column="7" endline="86" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="G3" class="Sample5.Class1+Inner" metadataToken="100663318" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner.G3(System.Int32)">
+      <seqpnt visitcount="0" line="98" column="7" endline="98" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="99" column="9" endline="99" endcolumn="38" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="100" column="7" endline="100" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="&lt;G1&gt;g__InteriorToArray|0_1" class="Sample5.Class1+Inner" metadataToken="100663320" excluded="false" instrumented="true" fullname="T[] Sample5.Class1+Inner.&lt;G1&gt;g__InteriorToArray|0_1&lt;T&gt;(T)">
+      <seqpnt visitcount="0" line="42" column="9" endline="42" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="43" column="11" endline="43" endcolumn="30" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="44" column="9" endline="44" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="&lt;G1&gt;g__Interior|0_2" class="Sample5.Class1+Inner" metadataToken="100663321" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner.&lt;G1&gt;g__Interior|0_2(System.Int32,System.Int32)">
+      <seqpnt visitcount="0" line="48" column="9" endline="48" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="55" column="11" endline="55" endcolumn="35" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="56" column="9" endline="56" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="&lt;G1&gt;g__Recursive|0_4" class="Sample5.Class1+Inner" metadataToken="100663322" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner.&lt;G1&gt;g__Recursive|0_4(System.Int32)">
+      <seqpnt visitcount="0" line="51" column="11" endline="51" endcolumn="12" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="52" column="13" endline="52" endcolumn="54" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="53" column="11" endline="53" endcolumn="12" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="&lt;G1&gt;b__3" class="Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0" metadataToken="100663356" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0.&lt;G1&gt;b__3(System.Char)">
+      <seqpnt visitcount="0" line="61" column="9" endline="61" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="62" column="11" endline="62" endcolumn="40" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="63" column="11" endline="63" endcolumn="50" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="64" column="9" endline="64" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="&lt;G1&gt;b__0_0" class="Sample5.Class1+Inner+&lt;&gt;c" metadataToken="100663359" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner+&lt;&gt;c.&lt;G1&gt;b__0_0(System.Char)">
+      <seqpnt visitcount="0" line="39" column="35" endline="39" endcolumn="36" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="39" column="37" endline="39" endcolumn="55" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="39" column="56" endline="39" endcolumn="57" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+Inner+&lt;G2&gt;d__2`1" metadataToken="100663362" excluded="false" instrumented="true" fullname="System.Boolean Sample5.Class1+Inner+&lt;G2&gt;d__2`1.MoveNext()">
+      <seqpnt visitcount="0" line="74" column="7" endline="74" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="76" column="9" endline="76" endcolumn="38" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="77" column="9" endline="77" endcolumn="16" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="77" column="27" endline="77" endcolumn="33" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="77" column="18" endline="77" endcolumn="23" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="78" column="9" endline="78" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="79" column="11" endline="79" endcolumn="26" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="80" column="9" endline="80" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="77" column="24" endline="77" endcolumn="26" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="81" column="7" endline="81" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+Inner+&lt;G3&gt;d__4" metadataToken="100663369" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner+&lt;G3&gt;d__4.MoveNext()">
+      <seqpnt visitcount="0" line="90" column="7" endline="90" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="92" column="9" endline="92" endcolumn="56" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="93" column="9" endline="93" endcolumn="42" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="94" column="9" endline="94" endcolumn="18" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="95" column="7" endline="95" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="&lt;F1&gt;b__2" class="Sample5.Class1+&lt;&gt;c__DisplayClass0_0" metadataToken="100663324" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+&lt;&gt;c__DisplayClass0_0.&lt;F1&gt;b__2(System.Char)">
+      <seqpnt visitcount="0" line="31" column="7" endline="31" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="32" column="9" endline="32" endcolumn="38" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="33" column="9" endline="33" endcolumn="48" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="34" column="7" endline="34" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+    </method>
+    <method name="&lt;F1&gt;b__0_0" class="Sample5.Class1+&lt;&gt;c" metadataToken="100663327" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+&lt;&gt;c.&lt;F1&gt;b__0_0(System.Char)">
+      <seqpnt visitcount="0" line="14" column="33" endline="14" endcolumn="34" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="14" column="35" endline="14" endcolumn="49" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+      <seqpnt visitcount="0" line="14" column="50" endline="14" endcolumn="51" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+&lt;F2&gt;d__1" metadataToken="100663330" excluded="false" instrumented="true" fullname="System.Boolean Sample5.Class1+&lt;F2&gt;d__1.MoveNext()">
+      <seqpnt visitcount="0" line="15" column="5" endline="15" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="17" column="7" endline="17" endcolumn="14" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="17" column="26" endline="17" endcolumn="31" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="17" column="16" endline="17" endcolumn="22" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="18" column="7" endline="18" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="19" column="9" endline="19" endcolumn="24" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="20" column="7" endline="20" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="17" column="23" endline="17" endcolumn="25" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="21" column="5" endline="21" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+&lt;F3&gt;d__2" metadataToken="100663337" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+&lt;F3&gt;d__2.MoveNext()">
+      <seqpnt visitcount="0" line="25" column="5" endline="25" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="27" column="7" endline="27" endcolumn="54" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="28" column="7" endline="28" endcolumn="40" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="29" column="7" endline="29" endcolumn="16" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="30" column="5" endline="30" endcolumn="6" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663305" excluded="false" instrumented="true" fullname="System.Collections.Generic.IEnumerable`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys()">
+      <seqpnt visitcount="0" line="137" column="11" endline="137" endcolumn="12" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="137" column="13" endline="137" endcolumn="23" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="137" column="24" endline="137" endcolumn="60" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Item" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663306" excluded="false" instrumented="true" fullname="Sample5.RecursiveSyntheticInvocation`2+K Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Item(Sample5.RecursiveSyntheticInvocation`2+T)">
+      <seqpnt visitcount="0" line="143" column="48" endline="143" endcolumn="83" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.get_Count" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663307" excluded="false" instrumented="true" fullname="System.Int32 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.get_Count()">
+      <seqpnt visitcount="0" line="144" column="58" endline="144" endcolumn="93" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.ContainsKey" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663308" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.ContainsKey(Sample5.RecursiveSyntheticInvocation`2+T)">
+      <seqpnt visitcount="0" line="146" column="58" endline="146" endcolumn="93" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663309" excluded="false" instrumented="true" fullname="System.Collections.Generic.IEnumerator`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator()">
+      <seqpnt visitcount="0" line="148" column="88" endline="148" endcolumn="123" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.IEnumerable.GetEnumerator" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663310" excluded="false" instrumented="true" fullname="System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2.System.Collections.IEnumerable.GetEnumerator()">
+      <seqpnt visitcount="0" line="150" column="48" endline="150" endcolumn="83" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.TryGetValue" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663311" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.TryGetValue(Sample5.RecursiveSyntheticInvocation`2+T,K&amp;)">
+      <seqpnt visitcount="0" line="152" column="71" endline="152" endcolumn="106" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2" metadataToken="100663341" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2.MoveNext()">
+      <seqpnt visitcount="0" line="117" column="11" endline="117" endcolumn="12" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="117" column="13" endline="117" endcolumn="25" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4" metadataToken="100663349" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4.MoveNext()">
+      <seqpnt visitcount="0" line="126" column="7" endline="126" endcolumn="8" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="127" column="9" endline="127" endcolumn="33" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+      <seqpnt visitcount="0" line="128" column="9" endline="128" endcolumn="21" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs" />
+    </method>
+  </module>
+</coverage>

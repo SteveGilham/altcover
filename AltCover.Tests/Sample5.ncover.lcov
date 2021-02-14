@@ -1,0 +1,161 @@
+﻿TN:
+SF:C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1.cs
+FN:12,System.Int32 Sample5.Class1.F1(System.String)
+FN:14,System.Int32 Sample5.Class1+<>c.<F1>b__0_0(System.Char)
+FN:18,System.Int32 Sample5.Class1.<F1>g__Interior|0_1(System.Int32,System.Int32)
+FN:21,System.Int32 Sample5.Class1.<F1>g__Recursive|0_3(System.Int32)
+FN:31,System.Int32 Sample5.Class1+<>c__DisplayClass0_0.<F1>b__2(System.Char)
+FNDA:0,System.Int32 Sample5.Class1.F1(System.String)
+FNDA:0,System.Int32 Sample5.Class1+<>c.<F1>b__0_0(System.Char)
+FNDA:0,System.Int32 Sample5.Class1.<F1>g__Interior|0_1(System.Int32,System.Int32)
+FNDA:0,System.Int32 Sample5.Class1.<F1>g__Recursive|0_3(System.Int32)
+FNDA:0,System.Int32 Sample5.Class1+<>c__DisplayClass0_0.<F1>b__2(System.Char)
+FNF:5
+FNH:0
+BRF:0
+BRH:0
+DA:12,0
+DA:14,0
+DA:30,0
+DA:35,0
+DA:14,0
+DA:14,0
+DA:14,0
+DA:18,0
+DA:25,0
+DA:26,0
+DA:21,0
+DA:22,0
+DA:23,0
+DA:31,0
+DA:32,0
+DA:33,0
+DA:34,0
+LH:0
+LF:17
+end_of_record
+TN:
+SF:C:\Users\steve\Documents\GitHub\altcover\Sample5\Class1a.cs
+FN:15,System.Boolean Sample5.Class1+<F2>d__1.MoveNext()
+FN:25,System.Void Sample5.Class1+<F3>d__2.MoveNext()
+FN:37,System.Int32 Sample5.Class1+Inner.G1(System.String)
+FN:39,System.Int32 Sample5.Class1+Inner+<>c.<G1>b__0_0(System.Char)
+FN:42,T[] Sample5.Class1+Inner.<G1>g__InteriorToArray|0_1<T>(T)
+FN:48,System.Int32 Sample5.Class1+Inner.<G1>g__Interior|0_2(System.Int32,System.Int32)
+FN:51,System.Int32 Sample5.Class1+Inner.<G1>g__Recursive|0_4(System.Int32)
+FN:61,System.Int32 Sample5.Class1+Inner+<>c__DisplayClass0_0.<G1>b__3(System.Char)
+FN:68,System.Void Sample5.Class1+Inner.G1(System.Int32)
+FN:74,System.Boolean Sample5.Class1+Inner+<G2>d__2`1.MoveNext()
+FN:84,System.Void Sample5.Class1+Inner.G2(System.Int32)
+FN:90,System.Void Sample5.Class1+Inner+<G3>d__4.MoveNext()
+FN:98,System.Void Sample5.Class1+Inner.G3(System.Int32)
+FN:117,System.Boolean Sample5.RecursiveSyntheticInvocation`2+<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2.MoveNext()
+FN:126,System.Boolean Sample5.RecursiveSyntheticInvocation`2+<get_ValuesWorks>d__4.MoveNext()
+FN:137,System.Collections.Generic.IEnumerable`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Keys()
+FN:143,Sample5.RecursiveSyntheticInvocation`2+K Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Item(Sample5.RecursiveSyntheticInvocation`2+T)
+FN:144,System.Int32 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<T,K>>.get_Count()
+FN:146,System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.ContainsKey(Sample5.RecursiveSyntheticInvocation`2+T)
+FN:148,System.Collections.Generic.IEnumerator`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,K>>.GetEnumerator()
+FN:150,System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2.System.Collections.IEnumerable.GetEnumerator()
+FN:152,System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.TryGetValue(Sample5.RecursiveSyntheticInvocation`2+T,K&)
+FNDA:0,System.Boolean Sample5.Class1+<F2>d__1.MoveNext()
+FNDA:0,System.Void Sample5.Class1+<F3>d__2.MoveNext()
+FNDA:0,System.Int32 Sample5.Class1+Inner.G1(System.String)
+FNDA:0,System.Int32 Sample5.Class1+Inner+<>c.<G1>b__0_0(System.Char)
+FNDA:0,T[] Sample5.Class1+Inner.<G1>g__InteriorToArray|0_1<T>(T)
+FNDA:0,System.Int32 Sample5.Class1+Inner.<G1>g__Interior|0_2(System.Int32,System.Int32)
+FNDA:0,System.Int32 Sample5.Class1+Inner.<G1>g__Recursive|0_4(System.Int32)
+FNDA:0,System.Int32 Sample5.Class1+Inner+<>c__DisplayClass0_0.<G1>b__3(System.Char)
+FNDA:0,System.Void Sample5.Class1+Inner.G1(System.Int32)
+FNDA:0,System.Boolean Sample5.Class1+Inner+<G2>d__2`1.MoveNext()
+FNDA:0,System.Void Sample5.Class1+Inner.G2(System.Int32)
+FNDA:0,System.Void Sample5.Class1+Inner+<G3>d__4.MoveNext()
+FNDA:0,System.Void Sample5.Class1+Inner.G3(System.Int32)
+FNDA:0,System.Boolean Sample5.RecursiveSyntheticInvocation`2+<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2.MoveNext()
+FNDA:0,System.Boolean Sample5.RecursiveSyntheticInvocation`2+<get_ValuesWorks>d__4.MoveNext()
+FNDA:0,System.Collections.Generic.IEnumerable`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Keys()
+FNDA:0,Sample5.RecursiveSyntheticInvocation`2+K Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Item(Sample5.RecursiveSyntheticInvocation`2+T)
+FNDA:0,System.Int32 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<T,K>>.get_Count()
+FNDA:0,System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.ContainsKey(Sample5.RecursiveSyntheticInvocation`2+T)
+FNDA:0,System.Collections.Generic.IEnumerator`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,K>>.GetEnumerator()
+FNDA:0,System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2.System.Collections.IEnumerable.GetEnumerator()
+FNDA:0,System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary<T,K>.TryGetValue(Sample5.RecursiveSyntheticInvocation`2+T,K&)
+FNF:22
+FNH:0
+BRF:0
+BRH:0
+DA:15,0
+DA:17,0
+DA:17,0
+DA:17,0
+DA:18,0
+DA:19,0
+DA:20,0
+DA:17,0
+DA:21,0
+DA:25,0
+DA:27,0
+DA:28,0
+DA:29,0
+DA:30,0
+DA:37,0
+DA:39,0
+DA:60,0
+DA:65,0
+DA:39,0
+DA:39,0
+DA:39,0
+DA:42,0
+DA:43,0
+DA:44,0
+DA:48,0
+DA:55,0
+DA:56,0
+DA:51,0
+DA:52,0
+DA:53,0
+DA:61,0
+DA:62,0
+DA:63,0
+DA:64,0
+DA:68,0
+DA:69,0
+DA:70,0
+DA:74,0
+DA:76,0
+DA:77,0
+DA:77,0
+DA:77,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:77,0
+DA:81,0
+DA:84,0
+DA:85,0
+DA:86,0
+DA:90,0
+DA:92,0
+DA:93,0
+DA:94,0
+DA:95,0
+DA:98,0
+DA:99,0
+DA:100,0
+DA:117,0
+DA:117,0
+DA:126,0
+DA:127,0
+DA:128,0
+DA:137,0
+DA:137,0
+DA:137,0
+DA:143,0
+DA:144,0
+DA:146,0
+DA:148,0
+DA:150,0
+DA:152,0
+LH:0
+LF:72
+end_of_record
