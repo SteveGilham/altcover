@@ -720,6 +720,9 @@ module NativeJson =
     methods
     |> Seq.iter  (methodToXml fileId item)
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal tryGetValueOrDefault (table:Dictionary<string,'a>) (key:string) (f:unit -> 'a) =
       let ok,index = table.TryGetValue key
       if ok
@@ -837,6 +840,10 @@ module NativeJson =
 
     x
 
+#if RUNNER
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal orderXml (x:XDocument) =
     x.Descendants(XName.Get "SequencePoints")
     |> Seq.iter (fun sps ->
@@ -859,6 +866,7 @@ module NativeJson =
       |> bps.Add
     )
     x
+#endif
 
   let internal fileToJson filename =
     filename
