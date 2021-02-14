@@ -6,6 +6,7 @@ open Expecto
 
 module ExpectoMain =
   let regular = [
+          Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"

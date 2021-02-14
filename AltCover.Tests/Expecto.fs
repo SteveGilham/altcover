@@ -12,6 +12,7 @@ module Manifest =
 module ExpectoTestManifest =
   let simpleTests () = [
 #endif
+          Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
           Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.AltCoverRunnerTests.ShouldFailXmlDataForNativeJson, "Runner.ShouldFailXmlDataForNativeJson"

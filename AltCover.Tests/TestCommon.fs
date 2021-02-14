@@ -68,6 +68,15 @@ module TestCommon =
 
 module TestCommonTests =
     [<Test>]
+    let TestIgnoredTests() =
+      let allOK = (fun () -> true)
+      Assert.Throws<NUnit.Framework.IgnoreException>(fun () -> maybeIgnore allOK)
+      |> ignore
+#if !NET472
+      maybeIgnore allOK
+#endif
+
+    [<Test>]
     let ExerciseItAll() =
 #if !NET472
       let attr = TestAttribute()
@@ -162,5 +171,9 @@ module ExpectoTestCommon =
     <| (((check, "ConsistencyCheck") :: regular
         |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
                                                               pretest()
-                                                              f())))) @ specials)
+                                                              try
+                                                                f()
+                                                              with
+                                                              | :? NUnit.Framework.IgnoreException -> ()
+        )))) @ specials)
 #endif
