@@ -1699,6 +1699,22 @@ module AltCoverTests2 =
         CoverageParameters.theReportFormat <- None
 
     [<Test>]
+    let ExcludedModuleJustRecordsHashForOpenCover() =
+      try
+        CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+        let path =
+          Path.Combine(AltCoverTests.dir, "Sample2.dll")
+        use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        ProgramDatabase.readSymbols def
+        let visited = Node.Module { Module = def.MainModule; Inspection = Inspections.Ignore }
+        let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
+        let result = Instrument.I.instrumentationVisitor state visited
+        Assert.That
+          (result, Is.EqualTo { state with ModuleId = path |> KeyStore.hashFile })
+      finally
+        CoverageParameters.theReportFormat <- None
+
+    [<Test>]
     let IncludedModuleEnsuresRecorder() =
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.NCover

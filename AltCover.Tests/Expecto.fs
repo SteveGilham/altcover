@@ -328,6 +328,7 @@ module ExpectoTestManifest =
           Tests.AltCoverTests2.IncludedAssemblyRefsAreUpdated, "Tests2.IncludedAssemblyRefsAreUpdated"
           Tests.AltCoverTests2.ExcludedModuleJustRecordsMVid, "Tests2.ExcludedModuleJustRecordsMVid"
           Tests.AltCoverTests2.ExcludedModuleJustRecordsNameForJson, "Tests2.ExcludedModuleJustRecordsNameForJson"
+          Tests.AltCoverTests2.ExcludedModuleJustRecordsHashForOpenCover, "Tests2.ExcludedModuleJustRecordsHashForOpenCover"
           Tests.AltCoverTests2.IncludedModuleEnsuresRecorder, "Tests2.IncludedModuleEnsuresRecorder"
           Tests.AltCoverTests2.ExcludedMethodPointIsPassThrough, "Tests2.ExcludedMethodPointIsPassThrough"
           Tests.AltCoverTests2.IncludedMethodPointInsertsVisit, "Tests2.IncludedMethodPointInsertsVisit"
