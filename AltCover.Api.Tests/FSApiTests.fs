@@ -123,6 +123,7 @@ module FSApiTests =
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
+    // printfn "%s" result
 
     use stream3 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.lcov")
