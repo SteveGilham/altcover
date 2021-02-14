@@ -13,16 +13,19 @@
               <lines>
                 <line number="12" hits="0" branch="false" />
                 <line number="14" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
                 <line number="18" hits="0" branch="false" />
                 <line number="21" hits="0" branch="false" />
-                <line number="22" hits="0" branch="false" />                
-                <line number="23" hits="0" branch="false" />                
+                <line number="22" hits="0" branch="false" />
+                <line number="23" hits="0" branch="false" />
                 <line number="25" hits="0" branch="false" />
                 <line number="26" hits="0" branch="false" />
                 <line number="30" hits="0" branch="false" />
                 <line number="31" hits="0" branch="false" />
                 <line number="32" hits="0" branch="false" />
-                <line number="33" hits="0" branch="false" />                
+                <line number="33" hits="0" branch="false" />
                 <line number="34" hits="0" branch="false" />
                 <line number="35" hits="0" branch="false" />
               </lines>
@@ -31,16 +34,19 @@
           <lines>
             <line number="12" hits="0" branch="false" />
             <line number="14" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
             <line number="18" hits="0" branch="false" />
             <line number="21" hits="0" branch="false" />
-            <line number="22" hits="0" branch="false" />                
-            <line number="23" hits="0" branch="false" />                
+            <line number="22" hits="0" branch="false" />
+            <line number="23" hits="0" branch="false" />
             <line number="25" hits="0" branch="false" />
             <line number="26" hits="0" branch="false" />
             <line number="30" hits="0" branch="false" />
             <line number="31" hits="0" branch="false" />
             <line number="32" hits="0" branch="false" />
-            <line number="33" hits="0" branch="false" />                
+            <line number="33" hits="0" branch="false" />
             <line number="34" hits="0" branch="false" />
             <line number="35" hits="0" branch="false" />
           </lines>
@@ -50,11 +56,14 @@
             <method name="F2" signature="System.Collections.Generic.IEnumerable`1&lt;System.Int32&gt; (System.String)" line-rate="0" branch-rate="0" complexity="3">
               <lines>
                 <line number="15" hits="0" branch="false" />
+                <line number="17" hits="0" branch="false" />
+                <line number="17" hits="0" branch="false" />
                 <line number="17" hits="0" branch="true" condition-coverage="0% (0/2)">
                   <conditions>
                     <condition number="62" type="jump" coverage="0%" />
                   </conditions>
                 </line>
+                <line number="17" hits="0" branch="false" />
                 <line number="18" hits="0" branch="false" />
                 <line number="19" hits="0" branch="false" />
                 <line number="20" hits="0" branch="false" />
@@ -73,11 +82,14 @@
           </methods>
           <lines>
             <line number="15" hits="0" branch="false" />
+            <line number="17" hits="0" branch="false" />
+            <line number="17" hits="0" branch="false" />
             <line number="17" hits="0" branch="true" condition-coverage="0% (0/2)">
               <conditions>
                 <condition number="62" type="jump" coverage="0%" />
               </conditions>
             </line>
+            <line number="17" hits="0" branch="false" />
             <line number="18" hits="0" branch="false" />
             <line number="19" hits="0" branch="false" />
             <line number="20" hits="0" branch="false" />
@@ -94,6 +106,9 @@
             <method name="G1" signature="System.Int32 (System.String)" line-rate="0" branch-rate="0" complexity="1">
               <lines>
                 <line number="37" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
                 <line number="39" hits="0" branch="false" />
                 <line number="42" hits="0" branch="false" />
                 <line number="43" hits="0" branch="false" />
@@ -130,11 +145,14 @@
               <lines>
                 <line number="74" hits="0" branch="false" />
                 <line number="76" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
                 <line number="77" hits="0" branch="true" condition-coverage="0% (0/2)">
                   <conditions>
                     <condition number="40" type="jump" coverage="0%" />
                   </conditions>
                 </line>
+                <line number="77" hits="0" branch="false" />
                 <line number="78" hits="0" branch="false" />
                 <line number="79" hits="0" branch="false" />
                 <line number="80" hits="0" branch="false" />
@@ -161,6 +179,9 @@
           <lines>
             <line number="37" hits="0" branch="false" />
             <line number="39" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
             <line number="42" hits="0" branch="false" />
             <line number="43" hits="0" branch="false" />
             <line number="44" hits="0" branch="false" />
@@ -181,11 +202,14 @@
             <line number="70" hits="0" branch="false" />
             <line number="74" hits="0" branch="false" />
             <line number="76" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
             <line number="77" hits="0" branch="true" condition-coverage="0% (0/2)">
               <conditions>
                 <condition number="40" type="jump" coverage="0%" />
               </conditions>
             </line>
+            <line number="77" hits="0" branch="false" />
             <line number="78" hits="0" branch="false" />
             <line number="79" hits="0" branch="false" />
             <line number="80" hits="0" branch="false" />
@@ -233,10 +257,13 @@
             <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys" signature="System.Collections.Generic.IEnumerable`1&lt;T&gt; ()" line-rate="0" branch-rate="0" complexity="1">
               <lines>
                 <line number="137" hits="0" branch="false" />
+                <line number="137" hits="0" branch="false" />
+                <line number="137" hits="0" branch="false" />
               </lines>
             </method>
             <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Values" signature="System.Collections.Generic.IEnumerable`1&lt;K&gt; ()" line-rate="0" branch-rate="0" complexity="1">
               <lines>
+                <line number="117" hits="0" branch="false" />
                 <line number="117" hits="0" branch="false" />
               </lines>
             </method>
@@ -255,9 +282,12 @@
           </methods>
           <lines>
             <line number="117" hits="0" branch="false" />
+            <line number="117" hits="0" branch="false" />
             <line number="126" hits="0" branch="false" />
             <line number="127" hits="0" branch="false" />
             <line number="128" hits="0" branch="false" />
+            <line number="137" hits="0" branch="false" />
+            <line number="137" hits="0" branch="false" />
             <line number="137" hits="0" branch="false" />
             <line number="143" hits="0" branch="false" />
             <line number="144" hits="0" branch="false" />

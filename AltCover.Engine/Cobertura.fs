@@ -347,7 +347,7 @@ module internal Cobertura =
     rewrite
 
   let convertJson document =
-    let x = NativeJson.jsonToXml document
+    let x = document |> NativeJson.jsonToXml  |> NativeJson.orderXml
     convertReport x ReportFormat.OpenCover
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =

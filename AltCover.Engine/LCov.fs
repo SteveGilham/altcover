@@ -305,7 +305,7 @@ FN:4,(anonymous_0)
                 writer.WriteLine "end_of_record"))
 
   let convertJson document s =
-    let x = NativeJson.jsonToXml document
+    let x = document |> NativeJson.jsonToXml  |> NativeJson.orderXml
     convertReport x ReportFormat.OpenCover s
 
   let internal summary (report : DocumentType) (format : ReportFormat) result =

@@ -3704,7 +3704,7 @@ module AltCoverRunnerTests =
       let baseline =
         use r = new StreamReader(stream)
         r.ReadToEnd() |> NativeJson.fromJsonText
-      let xml = NativeJson.jsonToXml baseline
+      let xml = baseline |> NativeJson.jsonToXml  |> NativeJson.orderXml
 
       let unique =
         Path.Combine

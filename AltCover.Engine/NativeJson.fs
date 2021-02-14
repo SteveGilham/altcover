@@ -837,6 +837,29 @@ module NativeJson =
 
     x
 
+  let internal orderXml (x:XDocument) =
+    x.Descendants(XName.Get "SequencePoints")
+    |> Seq.iter (fun sps ->
+      let original = sps.Elements() |> Seq.toList
+      sps.RemoveAll()
+      original
+      |> Seq.sortBy(fun sp -> let sl = sp.Attribute(XName.Get "sl").Value |> Int32.TryParse |> snd
+                              let sc = sp.Attribute(XName.Get "sc").Value |> Int32.TryParse |> snd
+                              (sl <<< 16) + sc)
+      |> sps.Add
+    )
+    x.Descendants(XName.Get "BranchPoints")
+    |> Seq.iter (fun bps ->
+      let original = bps.Elements() |> Seq.toList
+      bps.RemoveAll()
+      original
+      |> Seq.sortBy(fun bp -> let sl = bp.Attribute(XName.Get "sl").Value |> Int32.TryParse |> snd
+                              let offset = bp.Attribute(XName.Get "ordinal").Value |> Int32.TryParse |> snd
+                              (sl <<< 16) + offset)
+      |> bps.Add
+    )
+    x
+
   let internal fileToJson filename =
     filename
     |> File.ReadAllText
