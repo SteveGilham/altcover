@@ -530,6 +530,7 @@ module AltCoverTests2 =
         Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path = Path.Combine(SolutionRoot.location, "_Mono/Sample3/Sample3.dll")
+        maybeIgnore (fun () -> path |> File.Exists |> not)
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
@@ -1562,6 +1563,8 @@ module AltCoverTests2 =
       let path =
         Path.Combine
           (mdir, "Sample1.exe")
+
+      maybeIgnore (fun () -> path |> File.Exists |> not)
       use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.readSymbols def
       use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)

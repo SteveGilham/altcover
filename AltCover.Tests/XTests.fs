@@ -594,6 +594,7 @@ module AltCoverXTests =
   let ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let path = monoSample1path |> Path.GetDirectoryName |> Path.GetFullPath
+    maybeIgnore (fun () -> path |> Directory.Exists |> not)
     let key = Path.Combine(SolutionDir(), "Build/SelfTest.snk")
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
@@ -717,6 +718,7 @@ module AltCoverXTests =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recpath = Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
     let recdef = Mono.Cecil.AssemblyDefinition.ReadAssembly recpath
@@ -874,6 +876,7 @@ module AltCoverXTests =
   let ShouldGenerateExpectedXmlReportFromMono() =
     let visitor, documentSource = Report.reportGenerator()
     let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
     Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
     let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path |> Path.GetFullPath) + "\"")
     let baseline = XDocument.Load(new System.IO.StringReader(expectedText))
@@ -890,6 +893,7 @@ module AltCoverXTests =
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
     let visitor, documentSource = OpenCover.reportGenerator()
     let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.nameFilters.Clear()

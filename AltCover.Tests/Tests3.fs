@@ -20,6 +20,7 @@ module AltCoverTests3 =
       Main.init()
       let path =
         Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () -> path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -2159,6 +2160,7 @@ module AltCoverTests3 =
     let ShouldProcessTrailingArguments() =
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let path = Path.Combine(SolutionDir(), "_Mono/Sample1")
+      maybeIgnore (fun () -> path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =

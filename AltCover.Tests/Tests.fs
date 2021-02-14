@@ -210,6 +210,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGetEmbeddedPdbFromImage() =
       let target = sample8path
+      maybeIgnore (fun () -> target |> File.Exists |> not)
       use image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
       let pdb = AltCover.ProgramDatabase.getPdbFromImage image
       match pdb with
@@ -222,6 +223,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGetNoMdbFromMonoImage() =
       let path = Path.GetDirectoryName monoSample1path
+      maybeIgnore (fun () -> path |> Directory.Exists |> not)
       let files =
         Directory.GetFiles(path)
         |> Seq.filter
@@ -323,6 +325,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGetMdbWithFallback() =
       let path = Path.GetDirectoryName monoSample1path
+      maybeIgnore (fun () -> path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
       files
       |> Seq.filter
@@ -376,6 +379,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGetSymbolsFromEmbeddedPdb() =
       let target = sample8path
+      maybeIgnore (fun () -> target  |> File.Exists |> not)
       use image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
       AltCover.ProgramDatabase.readSymbols image
       Assert.That(image.MainModule.HasSymbols, image.MainModule.FileName)
@@ -404,6 +408,7 @@ module AltCoverTests =
     let ShouldGetSymbolsFromMdb() =
       let where = Assembly.GetExecutingAssembly().Location
       let pdb = Path.ChangeExtension(where, ".pdb")
+      maybeIgnore (fun () ->  monoSample1path |> File.Exists |> not)
       let path = Path.GetDirectoryName monoSample1path
 
       let files = Directory.GetFiles(path)
