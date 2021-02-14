@@ -171,34 +171,30 @@ module internal Cobertura =
              XAttribute("coverage".X, sprintf "%d%%" pc))
         cc.Add co
 
-      let copySeqPnt (lines : XElement) (s : XElement) =
-        let vc = s.Attribute("vc".X)
-
-        let vx =
-          (vc
-           |> Option.ofObj
-           |> Option.defaultValue (XAttribute("dummy".X, "0"))).Value
-
-        let bec =
-          s.Attribute("bec".X).Value
-          |> Int32.TryParse
+      let copySeqPnt (lines : XElement) (s : int * XElement seq) =
+        let rep = s |> snd |> Seq.head
+        let (vcn, bec, bev) =
+          s
           |> snd
+          |> Seq.fold (fun  (v, c, n) sp ->
+            (
+              v + (sp.Attribute("vc".X).Value |> Int32.TryParse |> snd),
+              c + (sp.Attribute("bec".X).Value |> Int32.TryParse |> snd),
+              n + (sp.Attribute("bev".X).Value |> Int32.TryParse |> snd)
+            )) (0, 0, 0)
 
-        let bev =
-          s.Attribute("bev".X).Value
-          |> Int32.TryParse
-          |> snd
+        let vx = vcn.ToString(CultureInfo.InvariantCulture)
 
         let line =
           XElement
-            ("line".X, XAttribute("number".X, s.Attribute("sl".X).Value),
+            ("line".X, XAttribute("number".X, rep.Attribute("sl".X).Value),
              XAttribute("hits".X, vx),
              XAttribute
                ("branch".X,
                 (if bec = 0 then "false" else "true")))
 
         if bec > 0 then
-          let uspid = s.Attribute("uspid".X).Value // KISS approach
+          let uspid = rep.Attribute("uspid".X).Value // KISS approach
           doBranch bec bev uspid line
         lines.Add line
 
@@ -222,7 +218,11 @@ module internal Cobertura =
         let mtx, lines = addMethod (methods : XElement) (key, signature)
         extract method mtx
         mtx.Add(XAttribute("complexity".X, ccplex))
-        method.Descendants("SequencePoint".X) |> Seq.iter (copySeqPnt lines)
+        method.Descendants("SequencePoint".X)
+        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+        |> Seq.sortBy fst
+        |> Seq.iter (copySeqPnt lines)
+
         let summary = method.Elements("Summary".X) |> Seq.head
         (b |> provideAttributeValue summary "numBranchPoints",
          bv |> provideAttributeValue summary "visitedBranchPoints",

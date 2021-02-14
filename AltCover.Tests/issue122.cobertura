@@ -35,7 +35,7 @@
                 <line number="16" hits="1" branch="false" />
                 <line number="18" hits="0" branch="false" />
                 <line number="19" hits="0" branch="false" />
-                <line number="20" hits="X" branch="false" />
+                <line number="20" hits="0" branch="false" />
                 <line number="21" hits="-1" branch="false" />
               </lines>
             </method>
@@ -53,7 +53,7 @@
             <line number="16" hits="1" branch="false" />
             <line number="18" hits="0" branch="false" />
             <line number="19" hits="0" branch="false" />
-            <line number="20" hits="X" branch="false" />
+            <line number="20" hits="0" branch="false" />
             <line number="21" hits="-1" branch="false" />
           </lines>
         </class>

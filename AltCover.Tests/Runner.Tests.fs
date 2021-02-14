@@ -3371,6 +3371,7 @@ module AltCoverRunnerTests =
           |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
+        //printfn "%A" result
         let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected)
