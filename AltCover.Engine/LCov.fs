@@ -286,12 +286,18 @@ FN:4,(anonymous_0)
                       b.Attribute("sl".X).Value
                       |> String.IsNullOrWhiteSpace
                       |> not)
-                  |> Seq.fold (fun (f, h) b ->
-                      let sl = b.Attribute("sl".X).Value
-                      let vc = b.Attribute("vc".X).Value
-                      writer.WriteLine("DA:" + sl + "," + vc)
+                  |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+                  |> Seq.sortBy fst
+                  |> Seq.fold (fun (f, h) (line, points) ->
+                      let sl = line.ToString(CultureInfo.InvariantCulture)
+                      let vc = points
+                               |> Seq.fold (fun total point ->
+                                total + (point.Attribute("vc".X).Value |> Int32.TryParse |> snd)
+                               ) 0
+                      let vcs = vc.ToString(CultureInfo.InvariantCulture)
+                      writer.WriteLine("DA:" + sl + "," + vcs)
                       (f + 1,
-                        h + if vc = "0" then 0 else 1)) (0, 0)
+                        h + if vcs = "0" then 0 else 1)) (0, 0)
                 // At  the  end of a section, there is a summary about how many lines were
                 // found and how many were actually instrumented:
                 //

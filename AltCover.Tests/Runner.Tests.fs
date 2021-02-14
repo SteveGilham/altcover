@@ -416,6 +416,7 @@ module AltCoverRunnerTests =
     let ShouldLaunchWithExpectedOutput() =
       Runner.init()
       let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () ->  path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -1658,6 +1659,7 @@ module AltCoverRunnerTests =
     let ShouldProcessTrailingArguments() =
       Runner.init()
       let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () ->  path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -1781,6 +1783,7 @@ module AltCoverRunnerTests =
     let ShouldProcessPayload() =
       Runner.init()
       let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () ->  path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =

@@ -31,6 +31,10 @@ module TestCommon =
   let SolutionDir() =
     AltCover.SolutionRoot.location
 
+  let maybeIgnore f =
+    if f()
+    then Assert.Ignore()
+
   let maybeIOException f =
     try
       f()
