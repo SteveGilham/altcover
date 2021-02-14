@@ -20,6 +20,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [Breaking] the stop-gap `--jsonReport` collection option from v7.6 is withdrawn
 * AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
 * [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
+* Related -- for both LCov and Cobertura, coalesce cases of multiple sequence points per line into one entry per line
 
 # 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
