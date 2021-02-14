@@ -720,6 +720,15 @@ module NativeJson =
     methods
     |> Seq.iter  (methodToXml fileId item)
 
+  let internal tryGetValueOrDefault (table:Dictionary<string,'a>) (key:string) (f:unit -> 'a) =
+      let ok,index = table.TryGetValue key
+      if ok
+      then index
+      else
+        let value = f()
+        table.Add(key, value)
+        value
+
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
@@ -728,18 +737,10 @@ module NativeJson =
     classes
     |> Seq.iteri (fun i kvp ->
       let name = kvp.Key
-      let b,i = table.TryGetValue name
-      let item = if b
-                 then i
-                 else
-                   let i2 = XElement(XName.Get "Class")
-                   let n = XElement(XName.Get "FullName")
-                   n.Value <- name
-                   i2.Add n
-                   table.Add(name, i2)
-                   let m = XElement(XName.Get "Methods")
-                   i2.Add m
-                   i2
+      let item = tryGetValueOrDefault table name (fun () ->
+                    XElement(XName.Get "Class",
+                             XElement(XName.Get "FullName", name),
+                             XElement(XName.Get "Methods")))
       let next = item.Elements(XName.Get "Methods") |> Seq.head
       methodsToXml fileId next kvp.Value
     )
@@ -789,13 +790,7 @@ module NativeJson =
     documents
     |> Seq.iter (fun kvp ->
       let name = kvp.Key
-      let ok,index = indexTable.TryGetValue name
-      let i = if ok
-              then index
-              else
-                let n = 1 + indexTable.Count
-                indexTable.Add(name, n)
-                n
+      let i = tryGetValueOrDefault indexTable name (fun () -> 1 + indexTable.Count)
       let item = XElement(XName.Get "File",
                           XAttribute(XName.Get "uid", i),
                           XAttribute(XName.Get "fullPath", name))
