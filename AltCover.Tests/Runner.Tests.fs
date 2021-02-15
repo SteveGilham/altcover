@@ -3756,7 +3756,7 @@ module AltCoverRunnerTests =
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
-        printfn "%s" result
+        // printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal))
@@ -3802,7 +3802,7 @@ module AltCoverRunnerTests =
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd()
-      printfn "%s" result
+      //printfn "%s" result
       Assert.That
         (result.Replace('\r','\u00FF').Replace('\n','\u00FF')
                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
