@@ -37,7 +37,11 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type internal SeqPnt =
+  type
+#if GUI || RUNNER
+      internal
+#endif
+                SeqPnt =
     {
       VC:int
       SL:int
@@ -67,7 +71,11 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type internal BranchInfo =
+  type
+#if GUI || RUNNER
+       internal
+#endif
+                BranchInfo =
     {
       Line:int
       Offset:int
@@ -98,7 +106,11 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type internal Method =
+  type
+#if GUI || RUNNER
+       internal
+#endif
+                Method =
     {
       Lines:Lines
       [<SuppressMessage(
