@@ -360,11 +360,11 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
     <value>Laŭvola: registru la unuan trafon nur en iu ajn loko, aŭ unue trafu por ĉiu kunteksto se --callContext funkcias.</value>
   </data>
   <data name="linecover" xml:space="preserve">
-    <value>Laŭvola: Ne registru branĉan kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.
+    <value>Laŭvola: Ne registru branĉan kovradon. Ignorita en la kazo de la opcio --reportFormat = NCover. 
     Nekongrua kun --branchcover.</value>
   </data>
   <data name="branchcover" xml:space="preserve">
-    <value>Ne registru linion-kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.
+    <value>Ne registru linion-kovradon. Ignorita en la kazo de la opcio --reportFormat = NCover. 
      Nekongrua kun --linecover.</value>
   </data>
   <data name="p|pathFilter=" xml:space="preserve">

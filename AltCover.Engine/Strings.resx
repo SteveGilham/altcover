@@ -364,11 +364,11 @@ Zero/absent values are ignored. If a coverage result is below threshold, or the 
     <value>Optional: only record the first hit at any location, or first hit for each context if --callContext is operating.</value>
   </data>
   <data name="linecover" xml:space="preserve">
-    <value>Optional: Do not record branch coverage.  Implies, and is compatible with, the --reportFormat=opencover option.
+    <value>Optional: Do not record branch coverage.  Ignored for the --reportFormat=NCover option.
     Incompatible with --branchcover.</value>
   </data>
   <data name="branchcover" xml:space="preserve">
-    <value>Optional: Do not record line coverage.  Implies, and is compatible with, the --reportFormat=opencover option.
+    <value>Optional: Do not record line coverage.  Ignored for the --reportFormat=NCover option.
     Incompatible with --linecover.</value>
   </data>
   <data name="p|pathFilter=" xml:space="preserve">
