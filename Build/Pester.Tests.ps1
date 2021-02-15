@@ -657,7 +657,7 @@ Describe "ConvertFrom-CoverageJson" {
     $raw = [String]::Join("`n", $raw)
     $x = $raw | ConvertFrom-CoverageJson
 
-    $x.Save("./_Packaging/Sample5.fromnativejson.xml")
+    $x.Save("./_Packaging/Sample5.native.xml")
 
     $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/Sample5.native.xml")
     $actual = [System.IO.File]::ReadAllText("./_Packaging/Sample5.native.xml")
