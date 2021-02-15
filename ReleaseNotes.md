@@ -3,24 +3,28 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 8.0.8xx (Habu series release 1)
-* [Breaking] Native JSON report formatting (`--reportFormat=Json` or equivalents), a superset of coverlet's JSON
-  * `Method` has optional 
+* Native JSON report formatting (`--reportFormat=Json` or equivalents), a superset of coverlet's JSON
+  * AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
+  * `ConvertFrom-CoverageJson` cmdlet to convert from coverlet or AltCover JSON to a miminal OpenCover format
+  * Preparing as Native JSON, to generate an LCov or Cobertura report at collection is supported
+* [VISUALIZER] will now consume coverlet and AltCover JSON output
+* [BREAKING] with the new JSON output the `-x, --xmlReport` argument or equivalent just becomes `-r, --report`
+* [BREAKING] the stop-gap `--jsonReport` collection option from v7.6 is withdrawn
+* [BREAKING] the `ConvertTo-CoverageJson` cmdlet now produces the AltCover native JSON format
+* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
+* Related -- for both LCov and Cobertura, coalesce cases of multiple sequence points per line into one entry per line
+* Extensions to coverlet's JSON format are as follows
+  * `Method` has optional fields
     * `SeqPnts` (array of `SeqPnt`) 
     * `TId` (integer tracking ID) 
     * `Entry` and
     * `Exit` (arrays of timestamps)
-  * `BranchInfo` has optional 
+  * `BranchInfo` has optional fields
    * integer `Id`
    * `Times` (array of timestamps) and
    * `Tracks` (array of tracking IDs)
   * `SeqPnt` is `VC` (visit count), `SL` (start line), `SC` (start column), `EL`, `EC` (ditto for end), `Offset`, `Id`, all integers, and optional `Times` and `Tracks` as for `BranchInfo`
-  * Because int64 doesn't fit as a double, tracking-related timestamps represented as Base64Encoded strings of the ticks count as a network byte order quantity `Convert.ToBase64String(BitConverter.GetBytes(IPAddresss.HostToNetworkOrder(ticks)))`
-  * Preparing as Native JSON, to generate an LCov or Cobertura report at collection is supported
-* [Breaking] with the new JSON output the `-x, --xmlReport` argument or equivalent just becomes `-r, --report`
-* [Breaking] the stop-gap `--jsonReport` collection option from v7.6 is withdrawn
-* AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
-* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
-* Related -- for both LCov and Cobertura, coalesce cases of multiple sequence points per line into one entry per line
+  * Because int64 doesn't fit as a double, tracking-related timestamps are represented as Base64Encoded strings of the ticks count as a network byte order quantity `Convert.ToBase64String(BitConverter.GetBytes(IPAddresss.HostToNetworkOrder(ticks)))`
 
 # 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
