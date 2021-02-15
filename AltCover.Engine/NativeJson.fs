@@ -20,7 +20,7 @@ module NativeJson =
 
   type internal TimeStamp = string
 
-  let FromTracking(ticks:int64) : TimeStamp =
+  let internal FromTracking(ticks:int64) : TimeStamp =
     ticks
     |> System.Net.IPAddress.HostToNetworkOrder
     |> BitConverter.GetBytes
@@ -35,7 +35,7 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type SeqPnt =
+  type internal SeqPnt =
     {
       VC:int
       SL:int
@@ -56,7 +56,7 @@ module NativeJson =
       Tracks: Tracks
     }
 
-  type SeqPnts = List<SeqPnt>
+  type internal SeqPnts = List<SeqPnt>
 
   // Coverlet compatible -- src/coverlet.core/CoverageResult.cs
   // also round-trippable
@@ -65,7 +65,7 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type BranchInfo =
+  type internal BranchInfo =
     {
       Line:int
       Offset:int
@@ -87,16 +87,16 @@ module NativeJson =
       Tracks: Tracks
     }
 
-  type Lines = SortedDictionary<int, int>
+  type internal Lines = SortedDictionary<int, int>
 
-  type Branches = List<BranchInfo>
+  type internal Branches = List<BranchInfo>
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   [<SuppressMessage(
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type Method =
+  type internal Method =
     {
       Lines:Lines
       [<SuppressMessage(
