@@ -40,6 +40,7 @@
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
     <EmbeddedResource Include="..\AltCover.Tests\GenuineNCover158.json" Link="GenuineNCover158.json" />
     <EmbeddedResource Include="..\AltCover.Tests\OpenCover.json" Link="OpenCover.json" />
+    <EmbeddedResource Include="OpenCover.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample4FullTracking.xml" Link="Sample4FullTracking.xml" />
     <Compile Include="FSApiTests.fs" />
     <Compile Include="Program.fs" />

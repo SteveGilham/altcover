@@ -601,11 +601,11 @@ module NativeJson =
     m.Add f
     (m, sd)
 
-  let internal makeSummary (ns:int) (vs:int) (nb:int) (vb:int) (sd:XElement) =
-    sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
-    sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
+  let internal makeSummary (nb:int) (vb:int) (ns:int) (vs:int) (sd:XElement) =
     sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(CultureInfo.InvariantCulture)
     sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(CultureInfo.InvariantCulture)
+    sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(CultureInfo.InvariantCulture)
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -711,7 +711,7 @@ module NativeJson =
     let mp = XElement(XName.Get "MethodPoint",
                       XAttribute(XName.Get "vc", mvc))
     m.Add mp
-    makeSummary ns vs nb vb sd
+    makeSummary nb vb ns vs sd
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -760,11 +760,11 @@ module NativeJson =
     let (nb, vb, ns, vs) =
       m.Descendants(XName.Get name)
       |> Seq.collect(fun m2 -> m2.Elements(XName.Get "Summary"))
-      |> Seq.fold (fun (bv, bn, sn, sv) ms -> (bv + valueOf ms "visitedBranchPoints",
-                                               bn + valueOf ms "numBranchPoints",
+      |> Seq.fold (fun (bn, bv, sn, sv) ms -> (bn + valueOf ms "numBranchPoints",
+                                               bv + valueOf ms "visitedBranchPoints",
                                                sn + valueOf ms "numSequencePoints",
                                                sv + valueOf ms "visitedSequencePoints")) (0, 0, 0, 0)
-    makeSummary ns vs nb vb sd
+    makeSummary nb vb ns vs sd
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",

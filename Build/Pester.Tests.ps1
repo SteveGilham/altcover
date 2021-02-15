@@ -641,3 +641,26 @@ Describe "ConvertTo-CoverageJson" {
         $result | Should -BeExactly $expect
     }
 }
+
+Describe "ConvertFrom-CoverageJson" {
+  It "Converts coverlet Data" {
+    $x = ConvertFrom-CoverageJson -InputFile "./AltCover.Tests/Sample4.coverlet.json" -OutputFile "./_Packaging/Sample4.fromcoverletjson.xml"
+
+    $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/Sample4.fromcoverletjson.xml")))
+
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/Sample4.fromcoverletjson.xml"))
+    $got | Should -Be $expected
+  }
+
+  It "Converts With the pipeline" {
+    $raw = Get-Content "./AltCover.Tests/Sample5.native.json"
+    $raw = [String]::Join("`n", $raw)
+    $x = $raw | ConvertFrom-CoverageJson
+
+    $x.Save("./_Packaging/Sample5.fromnativejson.xml")
+
+    $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/Sample5.native.xml")
+    $actual = [System.IO.File]::ReadAllText("./_Packaging/Sample5.native.xml")
+    $actual | Should -Be $expected
+  }
+}

@@ -133,6 +133,33 @@ module FSApiTests =
     test <@ result = expected @>
 
   [<Test>]
+  let JsonToOpenCover() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.json")
+
+    let doc = use reader = new StreamReader(stream)
+              reader.ReadToEnd()
+
+    let result = (OpenCover.JsonToXml doc).ToString()
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.xml")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    printfn "%s" result
+    Assert.That(result
+                  .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                  .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+                  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
+
+  [<Test>]
   let OpenCoverToJson() =
     use stream=
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")

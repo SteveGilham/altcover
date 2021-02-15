@@ -11,6 +11,7 @@ module ExpectoMain =
           Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
           Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
           Tests.FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState, "FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
+          Tests.FSApiTests.JsonToOpenCover, "FSApiTests.JsonToOpenCover"
           Tests.FSApiTests.OpenCoverToJson, "FSApiTests.OpenCoverToJson"
           Tests.FSApiTests.OpenCoverToLcov, "FSApiTests.OpenCoverToLcov"
           Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"

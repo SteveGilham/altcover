@@ -5,7 +5,7 @@
     <source>altcover/Sample4</source>
   </sources>
   <packages>
-    <package name="Sample4" line-rate="0.39" branch-rate="2.5" complexity="2">
+    <package name="Sample4" line-rate="0.39" branch-rate="0.4" complexity="2">
       <classes>
         <class name="Tests.DU" filename="altcover/Sample4/Tests.fs" line-rate="0.63" branch-rate="0.5" complexity="2.33">
           <methods>

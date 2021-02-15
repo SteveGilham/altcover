@@ -3,7 +3,7 @@
   <Summary numBranchPoints="4" visitedBranchPoints="0" numSequencePoints="89" visitedSequencePoints="0" maxCyclomaticComplexity="3" />
   <Modules>
     <Module hash="Sample5.dll">
-      <Summary numBranchPoints="0" visitedBranchPoints="4" numSequencePoints="89" visitedSequencePoints="0" />
+      <Summary numBranchPoints="4" visitedBranchPoints="0" numSequencePoints="89" visitedSequencePoints="0" />
       <ModulePath>Sample5.dll</ModulePath>
       <ModuleName>Sample5</ModuleName>
       <Files>
