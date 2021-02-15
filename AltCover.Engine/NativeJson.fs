@@ -20,11 +20,13 @@ module NativeJson =
 
   type internal TimeStamp = string
 
-  let internal FromTracking(ticks:int64) : TimeStamp =
+#if !GUI
+  let internal fromTracking(ticks:int64) : TimeStamp =
     ticks
     |> System.Net.IPAddress.HostToNetworkOrder
     |> BitConverter.GetBytes
     |> Convert.ToBase64String
+#endif
 
   type internal Times = List<TimeStamp>
 
@@ -114,6 +116,7 @@ module NativeJson =
       Entry:Times
       Exit:Times
     }
+#if !GUI
     static member Create(track:(int*string) option) =
       {
         Lines = Lines()
@@ -123,6 +126,7 @@ module NativeJson =
         Entry = if track.IsNone then null else Times()
         Exit = if track.IsNone then null else Times()
       }
+#endif
 
   type internal Methods = Dictionary<string, Method>
   type internal Classes = Dictionary<string, Methods>
