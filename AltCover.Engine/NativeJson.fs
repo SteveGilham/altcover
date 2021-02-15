@@ -20,11 +20,13 @@ module NativeJson =
 
   type internal TimeStamp = string
 
-  let FromTracking(ticks:int64) : TimeStamp =
+#if !GUI
+  let internal fromTracking(ticks:int64) : TimeStamp =
     ticks
     |> System.Net.IPAddress.HostToNetworkOrder
     |> BitConverter.GetBytes
     |> Convert.ToBase64String
+#endif
 
   type internal Times = List<TimeStamp>
 
@@ -35,7 +37,11 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type SeqPnt =
+  type
+#if GUI || RUNNER
+      internal
+#endif
+                SeqPnt =
     {
       VC:int
       SL:int
@@ -56,7 +62,7 @@ module NativeJson =
       Tracks: Tracks
     }
 
-  type SeqPnts = List<SeqPnt>
+  type internal SeqPnts = List<SeqPnt>
 
   // Coverlet compatible -- src/coverlet.core/CoverageResult.cs
   // also round-trippable
@@ -65,7 +71,11 @@ module NativeJson =
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type BranchInfo =
+  type
+#if GUI || RUNNER
+       internal
+#endif
+                BranchInfo =
     {
       Line:int
       Offset:int
@@ -87,16 +97,20 @@ module NativeJson =
       Tracks: Tracks
     }
 
-  type Lines = SortedDictionary<int, int>
+  type internal Lines = SortedDictionary<int, int>
 
-  type Branches = List<BranchInfo>
+  type internal Branches = List<BranchInfo>
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   [<SuppressMessage(
         "Gendarme.Rules.Design.Generic",
         "DoNotExposeGenericListsRule",
         Justification="Harmless in context")>]
-  type Method =
+  type
+#if GUI || RUNNER
+       internal
+#endif
+                Method =
     {
       Lines:Lines
       [<SuppressMessage(
@@ -114,6 +128,7 @@ module NativeJson =
       Entry:Times
       Exit:Times
     }
+#if !GUI
     static member Create(track:(int*string) option) =
       {
         Lines = Lines()
@@ -123,6 +138,7 @@ module NativeJson =
         Entry = if track.IsNone then null else Times()
         Exit = if track.IsNone then null else Times()
       }
+#endif
 
   type internal Methods = Dictionary<string, Method>
   type internal Classes = Dictionary<string, Methods>

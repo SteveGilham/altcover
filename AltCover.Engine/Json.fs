@@ -207,12 +207,12 @@ module internal Json =
                                          |> Int32.TryParse |> snd,
                                          (let e = NativeJson.Times()
                                           x.Attribute(XName.Get "entry").Value.Split(';')
-                                          |> Seq.map (Int64.TryParse >> snd >> NativeJson.FromTracking)
+                                          |> Seq.map (Int64.TryParse >> snd >> NativeJson.fromTracking)
                                           |> e.AddRange
                                           e),
                                          (let e = NativeJson.Times()
                                           x.Attribute(XName.Get "exit").Value.Split(';')
-                                          |> Seq.map (Int64.TryParse >> snd >> NativeJson.FromTracking)
+                                          |> Seq.map (Int64.TryParse >> snd >> NativeJson.fromTracking)
                                           |> e.AddRange
                                           e)) ))
 
@@ -258,7 +258,7 @@ module internal Json =
                                             |> Seq.map (fun x -> x.Attribute(XName.Get "time").Value
                                                                 |> Int64.TryParse
                                                                 |> snd
-                                                                |> NativeJson.FromTracking)
+                                                                |> NativeJson.fromTracking)
                                             |> t2.AddRange
                                             t2
 
@@ -309,7 +309,7 @@ module internal Json =
                                             |> Seq.map (fun x -> x.Attribute(XName.Get "time").Value
                                                                 |> Int64.TryParse
                                                                 |> snd
-                                                                |> NativeJson.FromTracking)
+                                                                |> NativeJson.fromTracking)
                                             |> t2.AddRange
                                             t2
 

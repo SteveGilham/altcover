@@ -987,7 +987,7 @@ module internal Runner =
             then entrypoint.Tracks
                  |> Seq.iter (fun t -> match t with
                                        | Time tx -> tx
-                                                    |> NativeJson.FromTracking
+                                                    |> NativeJson.fromTracking
                                                     |> m.Entry.Add
                                        | _ -> ())
           let e3, exits = hits.TryGetValue Track.Exit
@@ -997,7 +997,7 @@ module internal Runner =
             then exitpoint.Tracks
                  |> Seq.iter (fun t -> match t with
                                        | Time tx -> tx
-                                                    |> NativeJson.FromTracking
+                                                    |> NativeJson.fromTracking
                                                     |> m.Exit.Add
                                        | _ -> ())
 
@@ -1014,7 +1014,7 @@ module internal Runner =
                        then NativeJson.Times()
                        else times
           if visits |> Seq.isEmpty |> not
-          then ntimes.AddRange (visits |> Seq.map NativeJson.FromTracking)
+          then ntimes.AddRange (visits |> Seq.map NativeJson.fromTracking)
           ntimes
 
         let sps = m.SeqPnts
