@@ -147,7 +147,7 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    printfn "%s" result
+    //printfn "%s" result
     Assert.That(result
                   .Replace('\r','\u00FF').Replace('\n','\u00FF')
                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),

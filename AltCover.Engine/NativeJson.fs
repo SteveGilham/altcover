@@ -16,7 +16,11 @@ open System.Globalization
 open Manatee.Json
 #endif
 
-module internal NativeJson =
+module
+#if GUI || RUNNER
+       internal
+#endif
+                NativeJson =
 
   type internal TimeStamp = string
 
