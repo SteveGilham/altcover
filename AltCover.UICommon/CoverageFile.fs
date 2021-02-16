@@ -58,6 +58,20 @@ module Transformer =
     use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
                                        .GetManifestResourceStream("AltCover.UICommon.NCover.xsd"))
 
+// LCov : TN:
+// JSON : {
+// XML : <
+
+// XML formats after any preamble (skip <? and <!)
+// NCover : <coverage profilerVersion=
+// OpenCover : <CoverageSession xmlns:xsd=
+// Cobertura : <coverage line-rate=
+// dotCover : <Root CoveredStatements=
+// PartCover : <PartCoverReport version= // many versions
+// Dynamic : <results>
+// mprof : <coverage version="0.3">
+// Visual Studio : <CoverageDSPriv>
+
     use ncreader = XmlReader.Create(sr2)
     try
       match document.XPathSelectElements("/CoverageSession").Count() with
