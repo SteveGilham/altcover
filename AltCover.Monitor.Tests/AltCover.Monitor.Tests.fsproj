@@ -47,4 +47,8 @@
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Monitor\AltCover.Monitor.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+  </ItemGroup>
 </Project>
