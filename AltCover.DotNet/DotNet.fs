@@ -103,7 +103,7 @@ module DotNet =
     let internal toPrepareFromArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
-        fromArg, "Report", prepare.Report //=`"path to the report" default: `coverage.xml` or 'coverage.json' in the project directory)
+        fromArg, "Report", prepare.Report //=`"path to the report" default: `coverage.xml` or `coverage.json` in the project directory
         fromArg, "ReportFormat", prepare.ReportFormat //=`"Json", "NCover" or default "OpenCover"
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]

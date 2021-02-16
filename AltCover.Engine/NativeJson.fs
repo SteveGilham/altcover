@@ -16,7 +16,7 @@ open System.Globalization
 open Manatee.Json
 #endif
 
-module NativeJson =
+module internal NativeJson =
 
   type internal TimeStamp = string
 

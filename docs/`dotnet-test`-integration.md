@@ -35,7 +35,7 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverMethodTopLevel=`"pipe `'|'` separated list of method name regexs"
 * `/p:AltCoverCallContext=`"pipe `'|'` separated list of names or numbers"
 * `/p:AltCoverStrongNameKey=`"path to default strong-name key for assemblies"
-* `/p:AltCoverReport=`"path to the report" default: `coverage.xml` or 'coverage.json' in the project directory)
+* `/p:AltCoverReport=`"path to the report" default: `coverage.xml` or `coverage.json` in the project directory
 * `/p:AltCoverReportFormat=`"Json", "NCover" or default "OpenCover"
 * `/p:AltCoverShowStatic=-|+|++` to mark simple code like auto-properties in the coverage file
 * `/p:AltCoverZipFile="true|false"` - set "true" to store the coverage report in a `.zip` archive
@@ -63,10 +63,10 @@ And if you want more control over what happens to the files, then is is still po
 
 **Note**: As MSBuild informational output is suppressed by default with `dotnet test`, and log verbosity has no fine-grained control, the `-v m` (`--verbosity minimal`) option is needed to show the progress and summary information for the instrumentation and collection process if this is desired.
 
-**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in `/p:AltCoverXmlReport` just as for the default `coverage.xml` name.
+**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in `/p:AltCoverReport` just as for the default `coverage.xml` or `coverage.json` name.
 
 ## Example
 ```
-dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAssemblyExcludeFilter=NUnit
+dotnet test /p:AltCover=true /p:AltCoverReport=".\altcover.xml" /p:AltCoverAssemblyExcludeFilter=NUnit
 ```
 Chooses a different report name, and excludes the `NUnit3.TestAdapter` assembly that comes with its pdb files, and gets instrumented by default.
