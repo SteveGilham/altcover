@@ -197,7 +197,6 @@ The members correspond to the like-named command line options for `AltCover Runn
         ExposeReturnCode: Flag
         SummaryFormat: SummaryFormat
         Verbosity : System.Diagnostics.TraceLevel
-        JsonReport: FilePath
       }
       with
         static member Create : unit -> CollectOptions
@@ -224,7 +223,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Dependencies: FilePaths
         Keys: FilePaths
         StrongNameKey: FilePath
-        XmlReport: FilePath
+        Report: FilePath
         FileFilter: Filters
         AssemblyFilter: Filters
         AssemblyExcludeFilter: Filters

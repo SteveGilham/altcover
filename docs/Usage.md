@@ -8,9 +8,9 @@
 
 The full command line is 
 ```
-AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
+AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/j[sonReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
@@ -41,8 +41,9 @@ In detail
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
-                                coverage.xml in the current directory)
+  -r, --report=VALUE         Optional: The output report template file (default:
+                                'coverage.xml' or 'coverage.json' in the
+                               current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
   -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
@@ -93,25 +94,24 @@ In detail
                                names (fully qualified if the string contains
                                any "." characters).
       --reportFormat=VALUE   Optional: Generate the report in the specified
-                               format (NCover or the default OpenCover)
+                               format (Json, NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
-      --zipfile              Optional: Emit the XML report inside a zip archive.
+      --zipfile              Optional: Emit the coverage report inside a zip
+                               archive.
       --methodpoint          Optional: record only whether a method has been
                                visited or not.  Overrides the --linecover and --
                                branchcover options.
       --single               Optional: only record the first hit at any
                                location, or first hit for each context if --
                                callContext is operating.
-      --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
+      --linecover            Optional: Do not record branch coverage.  Ignored
+                               for the --reportFormat=NCover option.
                                    Incompatible with --branchcover.
-      --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
+      --branchcover          Optional: Do not record line coverage.  Ignored
+                               for the --reportFormat=NCover option.
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
@@ -154,8 +154,6 @@ or
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
-                               collected data
-  -j, --jsonReport=VALUE     Optional: File for JSON format version of the
                                collected data
   -t, --threshold=VALUE      Optional: one or more of minimum acceptable
                                statement (S), branch (B) or method (M/AM)

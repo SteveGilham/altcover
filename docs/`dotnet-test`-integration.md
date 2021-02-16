@@ -35,10 +35,10 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverMethodTopLevel=`"pipe `'|'` separated list of method name regexs"
 * `/p:AltCoverCallContext=`"pipe `'|'` separated list of names or numbers"
 * `/p:AltCoverStrongNameKey=`"path to default strong-name key for assemblies"
-* `/p:AltCoverXmlReport=`"path to the xml report" default: `coverage.xml` in the project directory)
-* `/p:AltCoverReportFormat=`"NCover" or default "OpenCover"
+* `/p:AltCoverReport=`"path to the report" default: `coverage.xml` or 'coverage.json' in the project directory)
+* `/p:AltCoverReportFormat=`"Json", "NCover" or default "OpenCover"
 * `/p:AltCoverShowStatic=-|+|++` to mark simple code like auto-properties in the coverage file
-* `/p:AltCoverZipFile="true|false"` - set "true" to store the report in a `.zip` archive
+* `/p:AltCoverZipFile="true|false"` - set "true" to store the coverage report in a `.zip` archive
 * `/p:AltCoverMethodPoint="true|false"` - set "true" to record only the first point of each method
 * `/p:AltCoverSingle="true|false"` - set "true" to record only the first visit to each point
 * `/p:AltCoverLineCover="true|false"` - set "true" to record only line coverage in OpenCover format
@@ -52,7 +52,6 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverCobertura=`"path to cobertura format result"
 * `/p:AltCoverThreshold=`"coverage threshold required"
 * `/p:AltCoverSummaryFormat=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
-* `/p:AltCoverJsonReport=`"path to JSON format result"
 * `/p:AltCoverVerbosity=`"Levels of output -- Info (default), Warning, Error, or Off"
 * `/p:AltCoverShowSummary=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
 * `/p:AltCoverForce=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs

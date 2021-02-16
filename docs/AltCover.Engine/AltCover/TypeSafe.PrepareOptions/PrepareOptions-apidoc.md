@@ -3,7 +3,7 @@
 ```csharp
 public PrepareOptions(DirectoryPaths inputDirectories, DirectoryPaths outputDirectories, 
     DirectoryPaths symbolDirectories, FilePaths dependencies, FilePaths keys, 
-    FilePath strongNameKey, FilePath xmlReport, Filters fileFilter, Filters assemblyFilter, 
+    FilePath strongNameKey, FilePath report, Filters fileFilter, Filters assemblyFilter, 
     Filters assemblyExcludeFilter, Filters typeFilter, Filters methodFilter, 
     Filters attributeFilter, Filters pathFilter, Filters attributeTopLevel, Filters typeTopLevel, 
     Filters methodTopLevel, Context callContext, ReportFormat reportFormat, Flag inPlace, 

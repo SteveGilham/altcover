@@ -40,7 +40,6 @@ The members correspond to the like-named command line options for `AltCover Runn
     abstract member ExposeReturnCode : bool with get
     abstract member SummaryFormat : String with get
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
-    abstract member JsonReport : String with get
   end
 ```
 ### interface `IPrepareOptions`
@@ -59,7 +58,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
     abstract member Dependencies : IEnumerable<String> with get
     abstract member Keys : IEnumerable<String> with get
     abstract member StrongNameKey : String with get
-    abstract member XmlReport : String with get
+    abstract member Report : String with get
     abstract member FileFilter : IEnumerable<String> with get
     abstract member AssemblyFilter : IEnumerable<String> with get
     abstract member AssemblyExcludeFilter : IEnumerable<String> with get

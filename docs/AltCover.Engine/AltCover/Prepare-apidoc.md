@@ -32,6 +32,7 @@ public class Prepare : Task
 | [MethodTopLevel](Prepare/MethodTopLevel-apidoc) { get; set; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Prepare/OutputDirectories-apidoc) { get; set; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](Prepare/PathFilter-apidoc) { get; set; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Report](Prepare/Report-apidoc) { get; set; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Prepare/ReportFormat-apidoc) { get; set; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Prepare/Save-apidoc) { get; set; } | Corresponds to command line option `--save` |
 | [ShowGenerated](Prepare/ShowGenerated-apidoc) { get; set; } | Corresponds to command line option ` --showGenerated` |
@@ -44,7 +45,6 @@ public class Prepare : Task
 | [TypeTopLevel](Prepare/TypeTopLevel-apidoc) { get; set; } | Corresponds to command line option `--typetoplevel=VALUE` |
 | [Verbosity](Prepare/Verbosity-apidoc) { get; set; } | Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values) |
 | [VisibleBranches](Prepare/VisibleBranches-apidoc) { get; set; } | Corresponds to command line option ` -v, --visibleBranches` |
-| [XmlReport](Prepare/XmlReport-apidoc) { get; set; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](Prepare/ZipFile-apidoc) { get; set; } | Corresponds to command line option `--zipfile` |
 | override [Execute](Prepare/Execute-apidoc)() | Perform the operation |
 
