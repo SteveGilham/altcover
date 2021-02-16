@@ -304,12 +304,17 @@ module private Gui =
     let endline = buff.GetIterAtLine(n.EndLine - 1)
     let endchars = endline.CharsInLine
 
+    // coverlet-like case w/o column data
+    let ec = if n.Line = n.EndLine && n.Column = 1 && n.EndColumn = 2
+             then endchars
+             else n.EndColumn
+
     let until =
       if endchars = 0 then
         endline
       else
         buff.GetIterAtLineOffset
-          (n.EndLine - 1, Math.Min(n.EndColumn, endchars) - 1)
+          (n.EndLine - 1, Math.Min(ec, endchars) - 1)
 
     let tag =
       match n.Style with

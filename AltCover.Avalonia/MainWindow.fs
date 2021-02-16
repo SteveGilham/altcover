@@ -138,7 +138,13 @@ type MainWindow() as this =
         let tagByCoverage (buff : TextPresenter) (lines : FormattedTextLine list) (n : CodeTag) =
           let start = (n.Column - 1) +
                       (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
-          let finish = (n.EndColumn - 1) +
+
+          // coverlet-like case w/o column data
+          let ec = if n.Line = n.EndLine && n.Column = 1 && n.EndColumn = 2
+                   then lines.[n.EndLine - 1].Length
+                   else n.EndColumn
+
+          let finish = (ec - 1) +
                        (lines |> Seq.take (n.EndLine - 1) |> Seq.sumBy (fun l -> l.Length))
           FormattedTextStyleSpan(start, finish - start,
                         match n.Style with

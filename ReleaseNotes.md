@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 8.0.8xx (Habu series release 2)
 * Move to Cake 1.0 as baseline for Cake support
+* [VISUALIZER] For with only line-level information (e.g. from coverlet), colour the whole line, and not just the line number gutter
 
 # 8.0.815 (Habu series release 1)
 * [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
