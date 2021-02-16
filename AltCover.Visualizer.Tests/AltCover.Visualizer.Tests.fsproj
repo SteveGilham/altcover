@@ -31,12 +31,12 @@
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <PackageReference Include="nunit" Version="3.12.0" />
-    <PackageReference Include="coverlet.collector" Version="3.0.1">
+    <PackageReference Include="coverlet.collector" Version="3.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
-    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Mono.Cecil" Version="0.11.3" />
   </ItemGroup>

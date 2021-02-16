@@ -12,6 +12,7 @@ public static class CoverageFormats
 | --- | --- |
 | static [ConvertFromNCover](CoverageFormats/ConvertFromNCover-apidoc)(…) | Converts classic NCover format and returns OpenCover format. |
 | static [ConvertToCobertura](CoverageFormats/ConvertToCobertura-apidoc)(…) | Creates a Cobertura format report from other report formats. |
+| static [ConvertToJson](CoverageFormats/ConvertToJson-apidoc)(…) | Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline. Writes the JSON report to a atring. |
 | static [ConvertToLcov](CoverageFormats/ConvertToLcov-apidoc)(…) | Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object pipeline. Writes the Lcov report to a file. |
 | static [ConvertToNCover](CoverageFormats/ConvertToNCover-apidoc)(…) | Converts OpenCover format to NCover format. |
 

@@ -442,15 +442,130 @@ module internal Runner =
       |> Option.defaultValue []
 
     [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
+      Justification="Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+      Justification="Library method inlined")>]
+    let internal jsonSummary(json : NativeJson.Modules) =
+      let summarise go (vc : int) (nc : int)  key =
+
+        let pc =
+              if nc = 0 then
+                "n/a"
+              else
+                let vc1 =
+                  vc
+                  |> float
+
+                let nc1 =
+                  nc
+                  |> float
+
+                Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
+        if go then writeSummary key vc nc pc
+        pc
+
+      let l = (SummaryFormat.ToList summaryFormat) |> Seq.distinct
+      let go = summaryFormat = Default ||
+               l |> Seq.contains O
+
+      let mutable vc = 0
+      let mutable nc = 0
+      let mutable vm = 0
+      let mutable nm = 0
+      let mutable vs = 0
+      let mutable ns = 0
+      let mutable vb = 0
+      let mutable nb = 0
+
+      json.Values
+      |> Seq.iter (fun modul ->
+        let mutable cn = []
+        let mutable cv = []
+        modul.Values
+        |> Seq.iter (fun doc ->
+          doc
+          |> Seq.iter (fun cnv ->
+            let mutable visited = false
+            cn <- cnv.Key :: cn
+
+            cnv.Value.Values
+            |> Seq.iter (fun m ->
+              nb <- nb + m.Branches.Count
+              let b = m.Branches
+                      |> Seq.filter (fun branch -> branch.Hits > 0)
+                      |> Seq.length
+              vb <- vb + b
+              visited <- visited || b > 0
+
+              ns <- ns + m.Lines.Count
+              let s = m.Lines
+                      |> Seq.filter (fun line -> line.Value > 0)
+                      |> Seq.length
+              vs <- vs + s
+              visited <- visited || s > 0
+
+              nm <- nm + 1
+              vm <- vm.Increment (s > 0 || b > 0)
+            )
+
+            if visited
+            then  cv <- cnv.Key :: cv
+          )
+
+        )
+        vc <- vc + (cv |> Seq.distinct |> Seq.length)
+        nc <- nc + (cn |> Seq.distinct |> Seq.length)
+      )
+
+      let _ = summarise go vc nc "VisitedClasses"
+      let mcovered = summarise go vm nm "VisitedMethods"
+      let covered = summarise go vs ns "VisitedPoints"
+      let bcovered = summarise go vb nb "VisitedBranches"
+
+      let extra = summaryFormat = Default ||
+                  l |> Seq.contains C
+      if go || extra then write String.Empty
+
+      if l |> Seq.contains B ||
+         l |> Seq.contains R then
+        writeTC totalTC "C" nc
+        writeTC coverTC "C" vc
+        writeTC totalTC "M" nm
+        writeTC coverTC "M" vm
+        writeTC totalTC "S" ns
+        writeTC coverTC "S" vs
+        l
+        |> Seq.iter (fun f ->
+          let tag =
+            match f with
+            | R -> "R"
+            | B -> "B"
+            | _ -> String.Empty
+          if tag |> String.IsNullOrEmpty |>  not
+          then
+            writeTC totalTC tag nb
+            writeTC coverTC tag vb)
+
+      [covered
+       bcovered
+       mcovered
+       "n/a"
+       "n/a"
+       "n/a"]
+
+    [<SuppressMessage("Gendarme.Rules.Exceptions", "InstantiateArgumentExceptionCorrectlyRule",
       Justification="Inlined library code")>]
     [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
       Justification="Inlined library code")>]
-    let internal standardSummary (report : XDocument) (format : ReportFormat) result =
-      let covered =
-        report
-        |> match format with
-           | ReportFormat.NCover -> nCoverSummary
-           | _ -> openCoverSummary
+    let internal standardSummary (reportDocument : DocumentType) (format : ReportFormat) result =
+      let covered = match reportDocument with
+                    | Unknown -> [] //(result, 0uy, String.Empty)
+                    | XML report ->
+                        report
+                        |> match format with
+                           | ReportFormat.NCover -> nCoverSummary
+                           | _ -> openCoverSummary
+                    | JSON jtext -> jsonSummary jtext // (result, 0uy, String.Empty) // TODO
 
       let best = (result, 0uy, String.Empty)
 
@@ -465,20 +580,20 @@ module internal Runner =
                     let funs = [
                       (ceil (float t.Statements), t.Statements, "Statements");
                       (if format = ReportFormat.NCover
-                       then sink else ceil (float t.Branches)), t.Branches, "Branches";
+                        then sink else ceil (float t.Branches)), t.Branches, "Branches";
                       (ceil (float t.Methods), t.Methods, "Methods");
                       (if format = ReportFormat.NCover
-                       then sink else ceil (float t.AltMethods)), t.AltMethods, "AltMethods";
+                        then sink else ceil (float t.AltMethods)), t.AltMethods, "AltMethods";
                       (if format = ReportFormat.NCover || t.Crap = 0uy
-                       then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
+                        then sink else (fun c -> ceil c (float t.Crap))), t.Crap, "Crap"
                       (if format = ReportFormat.NCover || t.AltCrap = 0uy
-                       then sink else(fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
+                        then sink else(fun c -> ceil c (float t.AltCrap))), t.AltCrap, "AltCrap"
                     ]
                     List.zip found funs
                     |> List.filter (fst >> fst)
                     |> List.map (fun (c, (f, x, y)) -> match c |> snd |> f with
-                                                       | Some q -> Some (q, x, y)
-                                                       | None -> None)
+                                                        | Some q -> Some (q, x, y)
+                                                        | None -> None)
                     |> List.filter Option.isSome
                     |> List.map Option.get
                     |> List.filter (fun (a, _, _) -> a >= 0)
@@ -487,15 +602,13 @@ module internal Runner =
       | _ ->
         possibles |> List.maxBy (fun (a, _, _) -> a)
 
-    let mutable internal summaries : (XDocument -> ReportFormat -> int -> (int * byte * string)) list =
+    let mutable internal summaries : (DocumentType -> ReportFormat -> int -> (int * byte * string)) list =
       []
 
     let internal addLCovSummary() =
       summaries <- LCov.summary :: summaries
     let internal addCoberturaSummary() =
       summaries <- Cobertura.summary :: summaries
-    let internal addJsonSummary() =
-      summaries <- Json.summary :: summaries
 
     let internal initSummary() =
       summaries <- [ standardSummary ]
@@ -543,18 +656,6 @@ module internal Runner =
                           |> Path.GetFullPath
                           |> Some
              I.addLCovSummary()))
-      ("j|jsonReport=",
-       (fun x ->
-         if CommandLine.validatePath "--jsonReport" x then
-           if Option.isSome !Json.path then
-             CommandLine.error <-
-               CommandLine.Format.Local("MultiplesNotAllowed", "--jsonReport")
-               :: CommandLine.error
-           else
-             Json.path  := x
-                           |> Path.GetFullPath
-                           |> Some
-             I.addJsonSummary()))
       ("t|threshold=",
        (fun x ->
          let ok, t = Threshold.Validate x
@@ -854,8 +955,7 @@ module internal Runner =
                inner.SetAttribute(attribute, t.ToString())
                inner.SetAttribute("vc", sprintf "%d" n))
 
-    let internal pointProcess (pt : XmlElement) tracks =
-      let (times, calls) =
+    let internal extractTracks tracks =
         tracks
         |> Seq.map (fun t ->
              match t with
@@ -865,15 +965,145 @@ module internal Runner =
              | _ -> (None, None))
         |> Seq.toList
         |> List.unzip
+
+    let internal pointProcess (pt : XmlElement) tracks =
+      let (times, calls) = extractTracks tracks
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+      Justification = "AvoidSpeculativeGenerality too")>]
+    let updateNativeJsonMethod
+      (hits:Dictionary<string, Dictionary<int, PointVisit>>)
+      (visits:Dictionary<int, PointVisit>) (m:NativeJson.Method) =
+        if m.TId.IsNotNull
+        then
+          let tidValue = m.TId.Value
+          let e1, entries = hits.TryGetValue Track.Entry
+          if e1 then
+            let e2, entrypoint = entries.TryGetValue tidValue
+            if e2
+            then entrypoint.Tracks
+                 |> Seq.iter (fun t -> match t with
+                                       | Time tx -> tx
+                                                    |> NativeJson.fromTracking
+                                                    |> m.Entry.Add
+                                       | _ -> ())
+          let e3, exits = hits.TryGetValue Track.Exit
+          if e3 then
+            let e4, exitpoint = exits.TryGetValue tidValue
+            if e4
+            then exitpoint.Tracks
+                 |> Seq.iter (fun t -> match t with
+                                       | Time tx -> tx
+                                                    |> NativeJson.fromTracking
+                                                    |> m.Exit.Add
+                                       | _ -> ())
+
+        let fillTracks tracks calls =
+          let ntrack = if tracks |> isNull && calls |> Seq.isEmpty |> not
+                       then NativeJson.Tracks()
+                       else tracks
+          if calls |> Seq.isEmpty |> not
+          then ntrack.AddRange calls
+          ntrack
+
+        let fillTimes (times:NativeJson.Times) (visits:int64 seq) =
+          let ntimes = if times |> isNull && visits |> Seq.isEmpty |> not
+                       then NativeJson.Times()
+                       else times
+          if visits |> Seq.isEmpty |> not
+          then ntimes.AddRange (visits |> Seq.map NativeJson.fromTracking)
+          ntimes
+
+        let sps = m.SeqPnts
+                  |> Seq.map(fun sp ->
+                    let b, count = visits.TryGetValue sp.Id
+                    if b then
+                       let (times', calls') = extractTracks count.Tracks
+                       let times = times' |> Seq.choose id
+                       let calls = calls' |> Seq.choose id
+                       {sp with VC = (int <| count.Total()) + Math.Max(0, sp.VC)
+                                Tracks = fillTracks sp.Tracks calls
+                                Times = fillTimes sp.Times times
+                       }
+                    else sp) |> Seq.toList
+        m.SeqPnts.Clear()
+        m.SeqPnts.AddRange sps
+
+        let bps = m.Branches
+                  |> Seq.map(fun bp ->
+                    let b, count = visits.TryGetValue (bp.Id ||| Counter.branchFlag)
+                    if b then
+                       let (times', calls') = extractTracks count.Tracks
+                       let times = times' |> Seq.choose id
+                       let calls = calls' |> Seq.choose id
+                       {bp with Hits = (int <| count.Total()) + Math.Max(0, bp.Hits)
+                                Tracks = fillTracks bp.Tracks calls
+                                Times = fillTimes bp.Times times
+                       }
+                    else bp) |> Seq.toList
+        m.Branches.Clear()
+        m.Branches.AddRange bps
+
+        m.SeqPnts
+        |> Seq.groupBy (fun s -> s.SL)
+        |> Seq.iter (fun (l,ss) -> m.Lines.[l] <- Json.lineVisits ss)
+
+    [<SuppressMessage("Gendarme.Rules.Correctness",
+     "EnsureLocalDisposalRule",
+     Justification="The reader must not close the stream")>]
+    [<SuppressMessage("Microsoft.Reliability",
+     "CA2000:DisposeObjectsBeforeLosingScope",
+     Justification="The reader must not close the stream")>]
+    let writeNativeJsonReport (hits:Dictionary<string, Dictionary<int, PointVisit>>)
+      _ (file:Stream) output =
+      let flushStart = DateTime.UtcNow
+      // do work here
+      let jsonText =
+        let reader = new StreamReader(file) // DO NOT DISPOSE
+        reader.ReadToEnd()
+
+      let json = NativeJson.fromJsonText jsonText
+
+      // do magic here
+      json
+      |> Seq.iter (fun kvp ->
+        let key = kvp.Key
+        let b, visits = hits.TryGetValue key
+        if b then
+          kvp.Value.Values
+          |> Seq.collect (fun doc -> doc.Values)
+          |> Seq.collect (fun c -> c.Values)
+          |> Seq.iter (updateNativeJsonMethod hits visits)
+      )
+
+      let encoded = NativeJson.serializeToUtf8Bytes json
+      if Option.isSome output
+      then
+        use outputFile =
+          new FileStream(output.Value, FileMode.OpenOrCreate, FileAccess.Write,
+                         FileShare.None, 4096, FileOptions.SequentialScan)
+        outputFile.Write(encoded, 0, encoded.Length)
+      else
+        file.Seek(0L, SeekOrigin.Begin) |> ignore
+        file.SetLength 0L
+        file.Write(encoded, 0, encoded.Length)
+
+      TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
     let internal writeReportBase (hits : Dictionary<string, Dictionary<int, PointVisit>>)
         format report =
       let reporter (arg: string option) =
         let (container, file) = Zip.openUpdate report
         try
-          AltCover.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
+          if format = ReportFormat.NativeJson ||
+             format = ReportFormat.NativeJsonWithTracking
+          then
+            writeNativeJsonReport hits format file arg
+          else
+            AltCover.Counter.doFlushStream (postProcess hits format) pointProcess true hits format file arg
         finally
           file.Dispose()
           if container.IsNotNull then container.Dispose()
@@ -893,7 +1123,7 @@ module internal Runner =
         Justification = "Unit test accessor")>]
     let mutable internal doReport = writeReportBase
 
-    let internal doSummaries (document : XDocument) (format : ReportFormat) result =
+    let internal doSummaries (document : DocumentType) (format : ReportFormat) result =
       let (code, t, f) =
         I.summaries |> List.fold (fun (r,t,f) summary -> let rx,t2,f2 = summary document format r
                                                          if rx > r then (rx, t2, f2)
@@ -903,9 +1133,6 @@ module internal Runner =
           [| code :> obj
              t :> obj |]
       code
-
-    let internal loadReport report =
-      if File.Exists report then XDocument.Load report else XDocument()
 
   // "Public"
   let internal doCoverage arguments options1 =
@@ -928,7 +1155,6 @@ module internal Runner =
         let value =
           CommandLine.doPathOperation (fun () ->
             let pair = J.recorderInstance()
-            use assembly = fst pair
             let instance = snd pair
 
             let report =
@@ -937,12 +1163,13 @@ module internal Runner =
               |> Path.GetFullPath
 
             let format =
-              (J.getMethod instance "get_CoverageFormat") |> J.getFirstOperandAsNumber
+              (J.getMethod instance "get_CoverageFormat")
+              |> J.getFirstOperandAsNumber
+              |> enum
             let hits = Dictionary<string, Dictionary<int, PointVisit>>()
             let payload = J.getPayload
             let result = J.getMonitor hits report payload rest
-            let format' = enum format
-            let delta = J.doReport hits format' report output
+            let delta = J.doReport hits format report output
             CommandLine.writeResourceWithFormatItems
               "Coverage statistics flushing took {0:N} seconds" [| delta.TotalSeconds |]
               false
@@ -952,8 +1179,8 @@ module internal Runner =
             Directory.GetFiles
               (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
-            let document = J.loadReport report
-            J.doSummaries document format' result) 255 true
+            let document = DocumentType.LoadReport format report
+            J.doSummaries document format result) 255 true
         CommandLine.reportErrors "Collection" false
         value
 

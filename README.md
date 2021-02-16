@@ -76,7 +76,7 @@ The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, a
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.8.1 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will many failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2019 (Community Edition) v16.8.5 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.
 
@@ -102,6 +102,8 @@ If there's a passing build on the CI servers for this commit, then it's likely t
 ### Unit Tests
 
 The tests in the `AltCover.Test` project are broadly ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
+
+Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; these tests will be marked `ignore` when running the unit tests under `net472` and `pass` without doing anything under `net5.0` (as Expecto has no `ignore` option) if the build is not complete and thus those expected assemblies are not found e.g. in Visual Studio from clean, or after a build to targets like `Analysis` that only build code to be analysed.
 
 ## Thanks to
 

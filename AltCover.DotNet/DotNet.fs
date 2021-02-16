@@ -103,14 +103,14 @@ module DotNet =
     let internal toPrepareFromArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
-        fromArg, "XmlReport", prepare.XmlReport //=`"path to the xml report" default: `coverage.xml` in the project directory)
-        fromArg, "ReportFormat", prepare.ReportFormat //=`"NCover" or default "OpenCover"
+        fromArg, "Report", prepare.Report //=`"path to the report" default: `coverage.xml` or 'coverage.json' in the project directory)
+        fromArg, "ReportFormat", prepare.ReportFormat //=`"Json", "NCover" or default "OpenCover"
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
     let internal toPrepareArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
-        (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
+        (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
         (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
         (arg, "Single", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
@@ -128,7 +128,6 @@ module DotNet =
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
         fromArg, "SummaryFormat", collect.SummaryFormat //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
-        fromArg, "JsonReport", collect.JsonReport //=`"path to JSON format result"
       ]
 
     let internal toSharedFromValueArgumentList (verbosity : System.Diagnostics.TraceLevel)  :

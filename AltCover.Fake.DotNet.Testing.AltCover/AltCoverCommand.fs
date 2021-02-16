@@ -40,8 +40,7 @@ module AltCoverCommand =
                      CommandLine = a.CommandLine
                      ExposeReturnCode = a.ExposeReturnCode
                      SummaryFormat = a.SummaryFormat
-                     Verbosity = a.Verbosity
-                     JsonReport = a.JsonReport}
+                     Verbosity = a.Verbosity}
         AltCover.Primitive copy
 
   let internal setCollectCommandLine (args : string seq) collect =
@@ -60,8 +59,7 @@ module AltCoverCommand =
                      CommandLine = args |> toSeq
                      ExposeReturnCode = a.ExposeReturnCode
                      SummaryFormat = a.SummaryFormat
-                     Verbosity = a.Verbosity
-                     JsonReport = a.JsonReport }
+                     Verbosity = a.Verbosity }
         AltCover.Primitive copy
       | AltCover.TypeSafe t ->
           AltCover.TypeSafe
@@ -87,7 +85,7 @@ module AltCoverCommand =
             Dependencies = a.Dependencies;
             Keys = a.Keys;
             StrongNameKey = a.StrongNameKey;
-            XmlReport = a.XmlReport;
+            Report = a.Report;
             FileFilter = a.FileFilter;
             AssemblyFilter = a.AssemblyFilter;
             AssemblyExcludeFilter = a.AssemblyExcludeFilter;
@@ -273,8 +271,8 @@ module AltCoverCommand =
     runCore options withMono
 
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@255T.#monoPath", Justification="Generated code")>]
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@253T.#monoPath", Justification="Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@255T.#options", Justification="Generated code")>]
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@253T.#options", Justification="Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@215T.#options", Justification="Generated code")>]()
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@213T.#options", Justification="Generated code")>]()

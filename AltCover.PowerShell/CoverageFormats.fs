@@ -456,3 +456,63 @@ type WriteOpenCoverDerivedStateCommand() =
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
+
+/// <summary>
+/// <para type="synopsis">Creates an OpenCover-style XML document from coverlet or AltCover JSON.</para>
+/// <para type="description">Takes either coverlet or AltCover JSON input as file path, or a string as an argument or from the object pipeline.</para>
+/// <para type="description">Writes the XML report to the object pipeline as an `XDocument`, and optionally to a file.</para>
+/// <example>
+///   <code>ConvertFrom-CoverageJson -InputFile "./Tests/Sample4.coverlet.json" -OutputFile "./_Packaging/Sample4.coverlet.json"</code>
+/// </example>
+/// </summary>
+[<Cmdlet(VerbsData.ConvertFrom, "CoverageJson")>]
+[<OutputType(typeof<XDocument>); AutoSerializable(false)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Json is a name")>]
+[<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Json is a name")>]
+type ConvertFromCoverageJsonCommand() =
+  inherit PSCmdlet()
+
+  /// <summary>
+  /// <para type="description">Input as `string` value</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "json", Mandatory = true, Position = 1,
+              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val Json : string = null with get, set
+
+  /// <summary>
+  /// <para type="description">Input as file path</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile : string = null with get, set
+
+  /// <summary>
+  /// <para type="description">Output as file path</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "json", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile : string = String.Empty with get, set
+
+  /// <summary>
+  /// <para type="description">Create transformed document</para>
+  /// </summary>
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+      if self.ParameterSetName = "FromFile" then
+        self.Json <- File.ReadAllText self.InputFile
+
+      let rewrite = AltCover.OpenCover.JsonToXml self.Json
+
+      if self.OutputFile
+         |> String.IsNullOrWhiteSpace
+         |> not
+      then rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
+    finally
+      Directory.SetCurrentDirectory here

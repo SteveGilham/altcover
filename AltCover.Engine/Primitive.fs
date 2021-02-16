@@ -32,10 +32,7 @@ module Primitive =
       CommandLine : String seq
       ExposeReturnCode : bool
       SummaryFormat : String
-      Verbosity : System.Diagnostics.TraceLevel
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="LJson is a name")>]
-      JsonReport : String }
+      Verbosity : System.Diagnostics.TraceLevel }
     static member Create() =
       { RecorderDirectory = String.Empty
         WorkingDirectory = String.Empty
@@ -47,8 +44,7 @@ module Primitive =
         CommandLine = []
         ExposeReturnCode = true
         SummaryFormat = String.Empty
-        Verbosity = System.Diagnostics.TraceLevel.Info
-        JsonReport = String.Empty}
+        Verbosity = System.Diagnostics.TraceLevel.Info}
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",
@@ -62,7 +58,7 @@ module Primitive =
       Dependencies : String seq
       Keys : String seq
       StrongNameKey : String
-      XmlReport : String
+      Report : String
       FileFilter : String seq
       AssemblyFilter : String seq
       AssemblyExcludeFilter : String seq
@@ -98,7 +94,7 @@ module Primitive =
         Dependencies = Seq.empty
         Keys = Seq.empty
         StrongNameKey = String.Empty
-        XmlReport = String.Empty
+        Report = String.Empty
         FileFilter = Seq.empty
         AssemblyFilter = Seq.empty
         AssemblyExcludeFilter = Seq.empty
@@ -146,28 +142,20 @@ module Primitive =
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel,System.String)",
+  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="cobertura", Justification="Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel,System.String)",
+  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="lcov", Justification="LCov is a name")>]
-[<assembly: SuppressMessage("Microsoft.Naming",
-  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel,System.String)",
-  MessageId="json", Justification="Json is a name")>]
 #else
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel,System.String)",
+  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="cobertura", Justification="Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel,System.String)",
+  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="lcov", Justification="LCov is a name")>]
-[<assembly: SuppressMessage("Microsoft.Naming",
-  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel,System.String)",
-  MessageId="json", Justification="Json is a name")>]
 #endif
 ()

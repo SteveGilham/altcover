@@ -79,10 +79,6 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option ` -q`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
-        ///<summary>
-        /// Corresponds to command line option `-j, --jsonReport=VALUE`
-        ///</summary>
-        JsonReport: System.String
       }
       with
         ///<summary>
@@ -135,9 +131,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         StrongNameKey: System.String
         ///<summary>
-        /// Corresponds to command line option `-x, --xmlReport=VALUE`
+        /// Corresponds to command line option `-r, --report=VALUE`
         ///</summary>
-        XmlReport: System.String
+        Report: System.String
         ///<summary>
         /// Corresponds to command line option `-f, --fileFilter=VALUE`
         ///</summary>

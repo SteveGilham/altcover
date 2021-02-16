@@ -296,7 +296,7 @@ In detail
 
 $glue | Out-File -Encoding UTF8 -Append $mdfile
 
-Get-Content "./Tests/AltCover.Usage.txt" | % { $_ | Out-File -Encoding UTF8 -Append $mdfile }
+Get-Content "./AltCover.Tests/AltCover.Usage.txt" | % { $_ | Out-File -Encoding UTF8 -Append $mdfile }
 
 $glue = @"
 -- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
@@ -307,7 +307,7 @@ or
 
 $glue | Out-File -Encoding UTF8 -Append $mdfile
 
-Get-Content "./Tests/AltCover.Runner.Usage.txt" | % { $_  | Out-File -Encoding UTF8 -Append $mdfile }
+Get-Content "./AltCover.Tests/AltCover.Runner.Usage.txt" | % { $_  | Out-File -Encoding UTF8 -Append $mdfile }
 
 
 $footer = @"

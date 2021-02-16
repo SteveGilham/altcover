@@ -50,7 +50,7 @@ type Prepare() =
       Justification = "MSBuild tasks use arrays")>]
   member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
-  member val XmlReport = String.Empty with get, set
+  member val Report = String.Empty with get, set
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
@@ -134,7 +134,7 @@ type Prepare() =
           Dependencies = self.Dependencies
           Keys = self.Keys
           StrongNameKey = self.StrongNameKey
-          XmlReport = self.XmlReport
+          Report = self.Report
           FileFilter = self.FileFilter
           AssemblyFilter = self.AssemblyFilter
           AssemblyExcludeFilter = self.AssemblyExcludeFilter
@@ -196,9 +196,6 @@ type Collect() =
   member val SummaryFormat = String.Empty with get, set
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
-  [<SuppressMessage("Microsoft.Naming", "CA1704",
-    Justification="'Json' is jargon")>]
-  member val JsonReport = String.Empty with get, set
 
   [<Output>]
   [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
@@ -226,7 +223,6 @@ type Collect() =
           WorkingDirectory = self.WorkingDirectory
           Executable = self.Executable
           LcovReport = self.LcovReport
-          JsonReport = self.JsonReport
           Threshold = self.Threshold
           Cobertura = self.Cobertura
           OutputFile = self.OutputFile
@@ -429,4 +425,22 @@ type ContingentCopy() =
       //base.Log.LogMessage(MessageImportance.High, sprintf "copy %A => %A" from toFile)
       if File.Exists from
       then File.Copy(from, toFile, true)
+    true
+
+type RetryDelete() =
+  inherit Task(null)
+
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val Files : string array = [||] with get, set
+
+  member internal self.Write message =
+    base.Log.LogMessage(MessageImportance.High, message)
+
+  override self.Execute() =
+    if self.Files.IsNotNull then
+      self.Files
+      |> Seq.filter File.Exists
+      |> Seq.iter (CommandLine.I.doRetry File.Delete self.Write 10 1000 0)
     true

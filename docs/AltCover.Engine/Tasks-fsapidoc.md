@@ -78,6 +78,7 @@ type Collect =
     member ExposeReturnCode : bool with get, set
     member SummaryFormat : string with get, set
     member Verbosity : string with get, set
+    member JsonReport : string with get, set
   end
 ```
 ## Task `AltCover.PowerShell`

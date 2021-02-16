@@ -125,14 +125,6 @@ module AltCover =
       | Abstract a -> a.Verbosity
       | TypeSafe t -> t.Verbosity
 
-    [<SuppressMessage("Microsoft.Naming", "CA1704",
-        Justification="'Json' is jargon")>]
-    member self.JsonReport =
-      match self with
-      | Primitive p -> p.JsonReport
-      | Abstract a -> a.JsonReport
-      | TypeSafe t -> t.JsonReport.AsString()
-
     interface Abstract.ICollectOptions with
       member self.RecorderDirectory = self.RecorderDirectory
       member self.WorkingDirectory = self.WorkingDirectory
@@ -145,7 +137,6 @@ module AltCover =
       member self.ExposeReturnCode = self.ExposeReturnCode
       member self.SummaryFormat = self.SummaryFormat
       member self.Verbosity = self.Verbosity
-      member self.JsonReport = self.JsonReport
 
 #if RUNNER
     member self.Validate afterPreparation =
@@ -169,7 +160,6 @@ module AltCover =
         [ ("--executable", self.Executable)
           ("--lcovReport", self.LcovReport)
           ("--cobertura", self.Cobertura)
-          ("--jsonReport", self.JsonReport)
           ("--outputFile", self.OutputFile) ]
         |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
         validate Threshold.Validate self.Threshold
@@ -235,11 +225,11 @@ module AltCover =
       | Abstract a -> a.StrongNameKey
       | TypeSafe t -> t.StrongNameKey.AsString()
 
-    member self.XmlReport =
+    member self.Report =
       match self with
-      | Primitive p -> p.XmlReport
-      | Abstract a -> a.XmlReport
-      | TypeSafe t -> t.XmlReport.AsString()
+      | Primitive p -> p.Report
+      | Abstract a -> a.Report
+      | TypeSafe t -> t.Report.AsString()
 
     member self.FileFilter =
       match self with
@@ -420,7 +410,7 @@ module AltCover =
       member self.Dependencies = self.Dependencies |> PrepareOptions.ToSeq
       member self.Keys = self.Keys |> PrepareOptions.ToSeq
       member self.StrongNameKey = self.StrongNameKey
-      member self.XmlReport = self.XmlReport
+      member self.Report = self.Report
       member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
       member self.AssemblyFilter = self.AssemblyFilter |> PrepareOptions.ToSeq
       member self.AssemblyExcludeFilter = self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
@@ -493,8 +483,8 @@ module AltCover =
           "--outputDirectory"
         PrepareOptions.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
           self.StrongNameKey
-        PrepareOptions.ValidateOptional CommandLine.validatePath "--xmlReport"
-          self.XmlReport
+        PrepareOptions.ValidateOptional CommandLine.validatePath "--report"
+          self.Report
         PrepareOptions.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
           "--symbolDirectory"
         PrepareOptions.ValidateArray self.Dependencies CommandLine.validateAssembly

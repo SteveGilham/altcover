@@ -16,6 +16,8 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <!-- If static linking, fix up in the Unpack documentation stage!!-->
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <!-- Maybe this to publish -->
+    <!-- CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -45,6 +47,7 @@
     <Compile Include="Report.fs" />
     <Compile Include="Gendarme.fs" />
     <Compile Include="OpenCover.fs" />
+    <Compile Include="NativeJson.fs" />
     <Compile Include="CommandLine.fs" />
     <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
@@ -88,6 +91,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.0" />
     <PackageReference Include="System.ValueTuple" />
     <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
     <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
@@ -97,6 +101,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <!-- Maybe this to publish -->
+    <!-- PackageReference Include="System.Buffers" version="4.5.1">
+        <PrivateAssets>All</PrivateAssets>
+        <Publish>true</Publish>
+      </PackageReference -->
   </ItemGroup>
 
   <ItemGroup>

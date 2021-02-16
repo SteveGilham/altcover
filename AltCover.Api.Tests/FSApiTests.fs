@@ -128,8 +128,36 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.lcov")
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
-
+    // printfn "%s" result
+    //Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
+
+  [<Test>]
+  let JsonToOpenCover() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.json")
+
+    let doc = use reader = new StreamReader(stream)
+              reader.ReadToEnd()
+
+    let result = (OpenCover.JsonToXml doc).ToString()
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.xml")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    printfn "%s" result
+    Assert.That(result
+                  .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                  .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+                  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
 
   [<Test>]
   let OpenCoverToJson() =
@@ -143,13 +171,26 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    test <@ result = expected @>
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
 
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
   [<Test>]
   let NCoverToJson() =
     use stream=
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.Xml")
     let doc = XDocument.Load(stream)
+    // fix up file path
+    let exe = Path.Combine(SolutionRoot.location, "Sample19", "ConsoleApplication1.exe")
+    doc.Root.Descendants(XName.Get "module")
+    |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
     let result = CoverageFormats.ConvertToJson doc
 
     use stream3 =
@@ -157,7 +198,17 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    test <@ result = expected @>
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
 
   [<Test>]
   let OpenCoverToBarChart() =
@@ -206,8 +257,12 @@ module FSApiTests =
     let reporter, doc = AltCover.Report.reportGenerator()
     let visitors = [ reporter ]
     Visitor.visit visitors [ { AssemblyPath = sample; Destinations = [] } ]
-    use mstream = new MemoryStream()
-    let rewrite = CoverageFormats.ConvertFromNCover doc [ sample ]
+    let document =
+        use stash = new MemoryStream()
+        stash |> doc
+        stash.Position <- 0L
+        XDocument.Load stash
+    let rewrite = CoverageFormats.ConvertFromNCover document [ sample ]
     test <@ rewrite |> isNull |> not @>
 
   [<Test>]
@@ -272,6 +327,7 @@ module FSApiTests =
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
+    // printfn "FSApi.NCoverToCobertura\r\n%s" result
 
     use stream3 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")

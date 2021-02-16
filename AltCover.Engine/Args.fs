@@ -60,7 +60,7 @@ module internal Args =
   let internal plainItems(args : Abstract.IPrepareOptions) =
     [ ("--sn", args.StrongNameKey)
       ("--reportFormat", args.ReportFormat)
-      ("-x", args.XmlReport) ]
+      ("-r", args.Report) ]
 
   let internal items(args : Abstract.IPrepareOptions) =
     args
@@ -142,7 +142,6 @@ module internal Args =
       item "-t" args.Threshold
       item "-c" args.Cobertura
       item "-o" args.OutputFile
-      item "-j" args.JsonReport
       flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       optionalItem "--summary" args.SummaryFormat []

@@ -73,6 +73,7 @@ The members correspond to the like-named command line options for `AltCover Runn
         member ExposeReturnCode : bool
         member SummaryFormat : System.String
         member Verbosity : System.Diagnostics.TraceLevel
+        member JsonReport : System.String
 ```
 
 

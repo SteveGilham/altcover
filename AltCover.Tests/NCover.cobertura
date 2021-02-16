@@ -9,7 +9,7 @@
       <classes>
         <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.8" branch-rate="1" complexity="1">
           <methods>
-            <method name="Main" signature="System.Void System.String[])" line-rate="0.8" branch-rate="1" complexity="1">
+            <method name="Main" signature="System.Void (System.String[])" line-rate="0.8" branch-rate="1" complexity="1">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />

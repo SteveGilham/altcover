@@ -44,6 +44,11 @@ module AltCoverRunnerTests =
       AltCover.Main.init()
 
     [<Test>]
+    let ShouldFailXmlDataForNativeJson() =
+      Assert.Throws<NotSupportedException>(fun () -> ReportFormat.NativeJson
+                                                     |> Counter.I.xmlByFormat
+                                                     |> ignore) |> ignore
+    [<Test>]
     let MaxTimeFirst () =
       let now = DateTime.Now
       let ago = now - TimeSpan(1,0,0,0)
@@ -302,6 +307,10 @@ module AltCoverRunnerTests =
         |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.Xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      // fix up file path
+      let exe = Path.Combine(SolutionRoot.location, "Sample19", "ConsoleApplication1.exe")
+      baseline.Root.Descendants(XName.Get "module")
+      |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
@@ -312,9 +321,8 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Json.summary baseline ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
-        let result = File.ReadAllText unique
+        Assert.That(unique |> File.Exists, Is.False)
+        let result = Json.xmlToJson baseline ReportFormat.NCover
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("GenuineNCover158.json", StringComparison.Ordinal))
@@ -323,13 +331,21 @@ module AltCoverRunnerTests =
         let expected = reader.ReadToEnd()
         //printfn "%s" result
         //Assert.That
-        //  (result, Is.EqualTo expected)
-        test <@ result = expected @>
+        //  (result.Replace("\r",String.Empty).Replace("\n",String.Empty),
+        //  Is.EqualTo <| expected.Replace("\r",String.Empty).Replace("\n",String.Empty))
+        test <@ result.Replace("\r",String.Empty).Replace("\n",String.Empty) =
+                     expected.Replace("\r",String.Empty).Replace("\n",String.Empty) @>
       finally
         Json.path := None
 
     [<Test>]
     let OpenCoverShouldGeneratePlausibleJson() =
+      let jsontype = typeof<AltCover.CollectOptions>.Assembly.GetTypes()
+                     |> Seq.find (fun t -> t.Name = "NativeJson")
+      let bw = jsontype.GetNestedTypes(BindingFlags.NonPublic)
+               |> Seq.find (fun t -> t.Name = "BuildWriter")
+      use dummy = Activator.CreateInstance(bw, true) :?> TextWriter
+      test <@ dummy.Encoding = System.Text.Encoding.Unicode @>
       Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -347,11 +363,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        Runner.I.addJsonSummary()
-        let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
-        let result = File.ReadAllText unique
+        let result = Json.xmlToJson baseline ReportFormat.OpenCover
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find (fun n -> n.EndsWith("OpenCover.json", StringComparison.Ordinal))
@@ -360,8 +372,14 @@ module AltCoverRunnerTests =
         let expected = reader.ReadToEnd()
         //printfn "%s" result
         //Assert.That
-        //  (result, Is.EqualTo expected)
-        test <@ result = expected @>
+        //  (result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+        //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+        //  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+        //                 .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+        test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
       finally
         Json.path := None
 
@@ -398,6 +416,7 @@ module AltCoverRunnerTests =
     let ShouldLaunchWithExpectedOutput() =
       Runner.init()
       let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () ->  path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -449,7 +468,7 @@ module AltCoverRunnerTests =
     let ShouldHaveExpectedOptions() =
       Runner.init()
       let options = Runner.declareOptions()
-      let optionCount = 12
+      let optionCount = 11
       let optionNames = options
                         |> Seq.map (fun o -> (o.GetNames() |> Seq.maxBy(fun n -> n.Length)).ToLowerInvariant())
                         |> Seq.sort
@@ -915,73 +934,6 @@ module AltCoverRunnerTests =
         finally
           Runner.I.initSummary()
           LCov.path := None)
-
-    [<Test>]
-    let ParsingJsonGivesJson() =
-      Runner.init()
-      lock Json.path (fun () ->
-        try
-          Json.path := None
-          Runner.I.initSummary()
-          let options = Runner.declareOptions()
-          let unique = "some exe"
-          let input = [| "-j"; unique |]
-          let parse = CommandLine.parseCommandLine input options
-          match parse with
-          | Right(x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.Empty)
-          match !Json.path with
-          | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
-          Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
-        finally
-          Runner.I.initSummary()
-          Json.path := None)
-
-    [<Test>]
-    let ParsingMultipleJsonGivesFailure() =
-      Runner.init()
-      lock Json.path (fun () ->
-        try
-          Json.path := None
-          Runner.I.initSummary()
-          let options = Runner.declareOptions()
-          let unique = Guid.NewGuid().ToString()
-
-          let input =
-            [| "-j"
-               unique
-               "/j"
-               unique.Replace("-", "+") |]
-
-          let parse = CommandLine.parseCommandLine input options
-          match parse with
-          | Left(x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--jsonReport : specify this only once")
-        finally
-          Runner.I.initSummary()
-          Json.path := None)
-
-    [<Test>]
-    let ParsingNoJsonGivesFailure() =
-      Runner.init()
-      lock Json.path (fun () ->
-        try
-          Json.path := None
-          Runner.I.initSummary()
-          let options = Runner.declareOptions()
-          let blank = " "
-          let input = [| "-j"; blank |]
-          let parse = CommandLine.parseCommandLine input options
-          match parse with
-          | Left(x, y) ->
-            Assert.That(y, Is.SameAs options)
-            Assert.That(x, Is.EqualTo "UsageError")
-        finally
-          Runner.I.initSummary()
-          Json.path := None)
 
     [<Test>]
     let ParsingThresholdGivesThreshold() =
@@ -1707,6 +1659,7 @@ module AltCoverRunnerTests =
     let ShouldProcessTrailingArguments() =
       Runner.init()
       let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () ->  path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -1830,6 +1783,7 @@ module AltCoverRunnerTests =
     let ShouldProcessPayload() =
       Runner.init()
       let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () ->  path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -1900,12 +1854,8 @@ module AltCoverRunnerTests =
                                  ("2017-12-29T16:33:40.9564026+00:00", "o", null)
         use stream =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
-        let size = int stream.Length
-        let buffer = Array.create size 0uy
-        Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
         do use worker = new FileStream(reportFile, FileMode.CreateNew)
-           worker.Write(buffer, 0, size)
-           ()
+           stream.CopyTo worker
         let hits = List<string * int * Track>()
         [ 0..9 ]
         |> Seq.iter (fun i ->
@@ -1922,7 +1872,7 @@ module AltCoverRunnerTests =
         // degenerate case
         Assert.That(junkfile |> File.Exists |> not)
         do use junkworker = new FileStream(junkfile, FileMode.CreateNew)
-           junkworker.Write(buffer, 0, 0)
+           junkworker.Write([| |], 0, 0)
            ()
         Runner.J.doReport counts AltCover.ReportFormat.NCover junkfile None |> ignore
 
@@ -1951,6 +1901,83 @@ module AltCoverRunnerTests =
         maybeIOException (fun () -> Directory.Delete(unique))
 
     [<Test>]
+    let WriteJsonLeavesExpectedTraces() =
+      Runner.init()
+      let saved = Console.Out
+      let here = Directory.GetCurrentDirectory()
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let reportFile = Path.Combine(unique, "WriteJsonLeavesExpectedTraces.json")
+      let junkFile = (reportFile + "." + (Path.GetFileName unique))
+      try
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Directory.CreateDirectory(unique) |> ignore
+        Directory.SetCurrentDirectory(unique)
+        let nativeJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
+        use stream =
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
+        do use worker = new FileStream(reportFile, FileMode.CreateNew)
+           stream.CopyTo worker
+
+        let tracks t = [| Null; Call 0; Time t; Both { Time = t; Call = 0 } |]
+        let t0 = tracks 0L
+
+        let hits = List<string * int * Track>()
+        [ 0..9 ]
+        |> Seq.iter (fun i ->
+             for j = 1 to i + 1 do
+               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
+               ignore j)
+
+        let counts = Dictionary<string, Dictionary<int, PointVisit>>()
+        hits
+        |> Seq.iter
+             (fun (moduleId, hitPointId, hit) ->
+             AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+
+        let entries = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        pv.Track(Time 512L)
+        tracks(1L) |> Seq.iter pv.Track
+        entries.Add (1, pv)
+        counts.Add(Track.Entry, entries)
+
+        let exits = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        tracks(2L) |> Seq.iter pv.Track
+        pv.Track(Time 1024L)
+        exits.Add (1, pv)
+        exits.Add (2, pv)
+        counts.Add(Track.Exit, exits)
+
+        Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile (Some junkFile) |> ignore
+
+        let jsonText =
+          use worker' = new FileStream(junkFile, FileMode.Open)
+          use reader = new StreamReader(worker')
+          reader.ReadToEnd()
+        // saved.WriteLine jsonText  // NOT printfn "%s" jsonText
+
+        let visitedJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        use stream =
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
+        use reader = new StreamReader(stream)
+        let expected = reader.ReadToEnd()
+                         .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |])
+        Assert.That(jsonText.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]), Is.EqualTo expected)
+      finally
+        maybeDeleteFile reportFile
+        maybeDeleteFile junkFile
+        Console.SetOut saved
+        Directory.SetCurrentDirectory(here)
+        maybeIOException (fun () -> Directory.Delete(unique))
+
+    [<Test>]
     let ZipWriteLeavesExpectedTraces() =
       Runner.init()
       let saved = Console.Out
@@ -1971,7 +1998,7 @@ module AltCoverRunnerTests =
           Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
         let doc = XDocument.Load stream
-        Zip.save doc reportFile true
+        Zip.save (fun s -> doc.Save s) reportFile true  // fsharplint:disable-line
 
         let hits = List<string * int * Track>()
         [ 0..9 ]
@@ -1990,6 +2017,24 @@ module AltCoverRunnerTests =
         Assert.That(junkfile |> File.Exists |> not)
         let (c0, w0) = Zip.openUpdate junkfile
         try
+          Assert.That(c0 |> isNull)
+          Assert.That(w0, Is.InstanceOf<MemoryStream>())
+          Assert.That(w0.Length, Is.EqualTo 0L)
+        finally
+          w0.Dispose()
+
+        // degenerate case 1a
+        let junkzip = junkfile + ".zip"
+        Assert.That(junkzip |> File.Exists |> not)
+        do
+          use archive = ZipFile.Open(junkzip, ZipArchiveMode.Create)
+          let entry = Guid.NewGuid().ToString() |> archive.CreateEntry
+          use sink = entry.Open()
+          sink.Write([| 0uy |], 0 ,1 )
+          ()
+
+        let (c0, w0) = Zip.openUpdate junkfile
+        try
           Assert.That(c0.IsNotNull)
           Assert.That(w0, Is.InstanceOf<MemoryStream>())
           Assert.That(w0.Length, Is.EqualTo 0L)
@@ -2004,11 +2049,10 @@ module AltCoverRunnerTests =
         Assert.That(junkfile2 |> File.Exists |> not)
         let (c1, w1) = Zip.openUpdate junkfile2
         try
-          Assert.That(c1.IsNotNull)
+          Assert.That(c1 |> isNull)
           Assert.That(w1, Is.InstanceOf<MemoryStream>())
           Assert.That(w1.Length, Is.EqualTo 0L)
         finally
-          c0.Dispose()
           w0.Dispose()
           Assert.That(junkfile2 |> File.Exists |> not)
 
@@ -2023,6 +2067,96 @@ module AltCoverRunnerTests =
            |> Seq.cast<XmlElement>
            |> Seq.map (fun x -> x.GetAttribute("visitcount")),
            Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
+      finally
+        Assert.That(junkfile |> File.Exists |> not)
+        Assert.That(junkfile2 |> File.Exists |> not)
+        maybeDeleteFile reportFile
+        Console.SetOut saved
+        Directory.SetCurrentDirectory(here)
+        maybeIOException (fun () -> Directory.Delete(unique))
+
+    [<Test>]
+    let ZipWriteJsonLeavesExpectedTraces() =
+      Runner.init()
+      let saved = Console.Out
+      let here = Directory.GetCurrentDirectory()
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let reportFile = Path.Combine(unique, "WriteJsonLeavesExpectedTraces.json")
+      let junkfile = (reportFile + "." + (Path.GetFileName unique))
+      let junkfile2 = junkfile + ".json"
+      try
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Directory.CreateDirectory(unique) |> ignore
+        Directory.SetCurrentDirectory(unique)
+
+        let nativeJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample4.native.json", StringComparison.Ordinal))
+        use stream =
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(nativeJson)
+        Zip.save (stream.CopyTo) reportFile true  // fsharplint:disable-line
+
+        let tracks t = [| Null; Call 0; Time t; Both { Time = t; Call = 0 } |]
+        let t0 = tracks 0L
+
+        let hits = List<string * int * Track>()
+        [ 0..9 ]
+        |> Seq.iter (fun i ->
+             for j = 1 to i + 1 do
+               hits.Add("Sample4.dll", i ||| (Counter.branchFlag * (i % 2)), t0.[i % 4])
+               ignore j)
+
+        let counts = Dictionary<string, Dictionary<int, PointVisit>>()
+        hits
+        |> Seq.iter
+             (fun (moduleId, hitPointId, hit) ->
+             AltCover.Counter.addVisit counts moduleId hitPointId hit |> ignore)
+
+        let entries = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        pv.Track(Time 512L)
+        tracks(1L) |> Seq.iter pv.Track
+        entries.Add (1, pv)
+        entries.Add (2, pv)
+        counts.Add(Track.Entry, entries)
+
+        let exits = Dictionary<int, PointVisit>()
+        let pv = PointVisit.Create()
+        tracks(2L) |> Seq.iter pv.Track
+        pv.Track(Time 1024L)
+        exits.Add (1, pv)
+        counts.Add(Track.Exit, exits)
+
+        // degenerate case 1
+        Assert.That(junkfile |> File.Exists |> not)
+        let (c0, w0) = Zip.openUpdate junkfile
+        try
+          Assert.That(c0 |> isNull)
+          Assert.That(w0, Is.InstanceOf<MemoryStream>())
+          Assert.That(w0.Length, Is.EqualTo 0L)
+        finally
+          w0.Dispose()
+
+        Runner.J.doReport counts AltCover.ReportFormat.NativeJson reportFile None |> ignore
+        let (container, worker) = Zip.openUpdate reportFile
+        use container' = container
+
+        let jsonText =
+          use worker' = worker
+          use reader = new StreamReader(worker')
+          reader.ReadToEnd()
+
+        let visitedJson = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+        use stream =
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(visitedJson)
+        use reader = new StreamReader(stream)
+        let expected = reader.ReadToEnd()
+                         .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |])
+        Assert.That(jsonText.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]), Is.EqualTo expected)
       finally
         Assert.That(junkfile |> File.Exists |> not)
         Assert.That(junkfile2 |> File.Exists |> not)
@@ -2119,8 +2253,8 @@ module AltCoverRunnerTests =
             [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
-        let doc = Runner.J.loadReport(unique + ".acv")
-        Assert.That(doc.Nodes(), Is.Empty)
+        let doc = DocumentType.LoadReport ReportFormat.OpenCover (unique + ".acv")
+        Assert.That(doc, Is.EqualTo DocumentType.Unknown)
         Assert.That(counts, Is.Empty)
       finally
         Runner.collect := false
@@ -2474,17 +2608,11 @@ module AltCoverRunnerTests =
       after.DocumentElement.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
       |> Seq.toList
-      |> List.iter (fun el ->
-           el
-           |> el.ParentNode.RemoveChild
-           |> ignore)
+      |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore)  // fsharplint:disable-line
       after.DocumentElement.SelectNodes("//MethodPoint")
       |> Seq.cast<XmlElement>
       |> Seq.toList
-      |> List.iter (fun el ->
-           el
-           |> el.ParentNode.RemoveChild
-           |> ignore)
+      |> List.iter (fun el -> el |> el.ParentNode.RemoveChild |> ignore)  // fsharplint:disable-line
       let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
       after.DocumentElement.SelectNodes("//Summary")
       |> Seq.cast<XmlElement>
@@ -2543,10 +2671,7 @@ module AltCoverRunnerTests =
       after.DocumentElement.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
       |> Seq.toList
-      |> List.iter (fun el ->
-           el
-           |> el.ParentNode.RemoveChild
-           |> ignore)
+      |> List.iter (fun el -> el|> el.ParentNode.RemoveChild |> ignore)  // fsharplint:disable-line
       after.DocumentElement.SelectNodes("//MethodPoint")
       |> Seq.cast<XmlElement>
       |> Seq.iter (fun el -> el.SetAttribute("vc", "0"))
@@ -2680,7 +2805,7 @@ module AltCoverRunnerTests =
           Runner.summaryFormat <- Default
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
           Assert.That
@@ -2706,7 +2831,7 @@ module AltCoverRunnerTests =
           Runner.summaryFormat <- B
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2734,7 +2859,7 @@ module AltCoverRunnerTests =
           Runner.summaryFormat <- Many [ B; O; C]
           let task = Collect()
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.NCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
           let result = builder.ToString()
@@ -2772,7 +2897,7 @@ module AltCoverRunnerTests =
                                          Crap = 0uy
                                          AltMethods = 0uy
                                          AltCrap = 0uy }
-              Runner.I.standardSummary baseline ReportFormat.NCover 42
+              Runner.I.standardSummary (XML baseline) ReportFormat.NCover 42
             finally
               Runner.threshold <- None
           // 80% coverage > threshold so expect return code coming in
@@ -2800,7 +2925,7 @@ module AltCoverRunnerTests =
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Default
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2826,7 +2951,7 @@ module AltCoverRunnerTests =
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- B
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2856,7 +2981,7 @@ module AltCoverRunnerTests =
         lock Runner.summaryFormat (fun () ->
           Runner.summaryFormat <- Many [ R; O; C]
           Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-          let r = Runner.I.standardSummary report ReportFormat.OpenCover 0
+          let r = Runner.I.standardSummary (XML report) ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo (0, 0, String.Empty))
           Assert.That
             (builder.ToString(),
@@ -2925,7 +3050,7 @@ module AltCoverRunnerTests =
             let r =
               try
                 Runner.threshold <- Some threshold
-                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+                Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
               finally
                 Runner.threshold <- None
             // 70% coverage < threshold so expect shortfall
@@ -2974,7 +3099,7 @@ module AltCoverRunnerTests =
             Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
             let r =
               try
-                Runner.I.standardSummary baseline ReportFormat.OpenCover 23
+                Runner.I.standardSummary (XML baseline) ReportFormat.OpenCover 23
               finally
                 Runner.threshold <- None
             let elementO =
@@ -3025,6 +3150,199 @@ module AltCoverRunnerTests =
           resetInfo())
 
     [<Test>]
+    let EmptyJsonGeneratesExpectedSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+                     |> NativeJson.fromJsonText
+      let builder = System.Text.StringBuilder()
+      Runner.summary.Clear() |> ignore
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Default
+          let task = Collect()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+          let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||"
+          // printfn "%s" <| builder.ToString()
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo expected
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let EmptyJsonGeneratesExpectedTCSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+                     |> NativeJson.fromJsonText
+      let builder = System.Text.StringBuilder()
+      Runner.summary.Clear() |> ignore
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- B
+          let task = Collect()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+          let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+          let result = builder.ToString()
+          // printfn "%s" result
+          Assert.That
+            (result,
+             Is.EqualTo expected,
+             result
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected, collected))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let EmptyJsonGeneratesExpectedSummaries() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let report = """{"Sample4.dll": {"Tests.fs": {}}}"""
+                     |> NativeJson.fromJsonText
+      let builder = System.Text.StringBuilder()
+      Runner.summary.Clear() |> ignore
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ B; O; C]
+          let task = Collect()
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.I.standardSummary (JSON report) ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+          let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
+          let result = builder.ToString()
+          // printfn "%s" result
+          Assert.That
+            (result,
+             Is.EqualTo expected,
+             result
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected, collected))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let SimpleJsonShouldGeneratePlausibleSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      use reader = new StreamReader(stream)
+      let baseline = reader.ReadToEnd()
+                     |> NativeJson.fromJsonText
+      let builder = System.Text.StringBuilder()
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ R; O; C]
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r =
+            try
+              Runner.threshold <- Some { Statements = 25uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy
+                                         AltMethods = 0uy
+                                         AltCrap = 0uy }
+              Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
+            finally
+              Runner.threshold <- None
+          //printfn "%s" <| builder.ToString()
+
+          // 60% coverage > threshold so expect return code coming in
+          Assert.That(r, Is.EqualTo (42, 0, String.Empty))
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 6 of 10 (60)|Visited Branches 0 of 0 (n/a)|" +
+                "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|")
+            ))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let ComplexJsonShouldGeneratePlausibleSummary() =
+      let resetInfo () = Output.info <- ignore
+      resetInfo()
+      Output.info "info"
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample4.syntheticvisits.native.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      use reader = new StreamReader(stream)
+      let baseline = reader.ReadToEnd()
+                     |> NativeJson.fromJsonText
+      let builder = System.Text.StringBuilder()
+      try
+        lock Runner.summaryFormat (fun () ->
+          Runner.summaryFormat <- Many [ R; O; C]
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r =
+            try
+              Runner.threshold <- Some { Statements = 25uy
+                                         Branches = 0uy
+                                         Methods = 0uy
+                                         Crap = 0uy
+                                         AltMethods = 0uy
+                                         AltCrap = 0uy }
+              Runner.I.standardSummary (JSON baseline) ReportFormat.NativeJson 42
+            finally
+              Runner.threshold <- None
+          //printfn "%s" <| builder.ToString()
+
+          // 60% coverage > threshold so expect return code coming in
+          Assert.That(r, Is.EqualTo (42, 0, String.Empty))
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 4 of 6 (66.67)|Visited Methods 5 of 10 (50)|Visited Points 5 of 19 (26.32)|Visited Branches 5 of 10 (50)|" +
+                "|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='6']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='4']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='19']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='5']|##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='5']|")
+            ))
+      finally
+        resetInfo()
+
+    [<Test>]
+    let DegenerateCasesShouldNotGenerateLcov() =
+      Runner.init()
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/None.lcov")
+      LCov.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addLCovSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize Unknown ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        Assert.That(unique |> File.Exists |> not)
+      finally
+        LCov.path := None
+
+    [<Test>]
     let OpenCoverShouldGeneratePlausibleLcov() =
       Runner.init()
       let resource =
@@ -3045,7 +3363,7 @@ module AltCoverRunnerTests =
       try
         Runner.I.addLCovSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline ReportFormat.OpenCover 0
+        let r = summarize (XML baseline) ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -3053,6 +3371,7 @@ module AltCoverRunnerTests =
           |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
+        //printfn "%A" result
         let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected)
@@ -3077,7 +3396,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline ReportFormat.NCover 0
+        let r = LCov.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -3086,6 +3405,75 @@ module AltCoverRunnerTests =
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+        Assert.That
+          (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected)
+      finally
+        LCov.path := None
+
+    [<Test>]
+    let NCoverShouldGenerateMorePlausibleLcov() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample5.ncover.lcov")
+      LCov.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        let r = LCov.summary (XML baseline) ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        // printfn "%s" result
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.lcov", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+        Assert.That
+          (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected)
+      finally
+        LCov.path := None
+
+    [<Test>]
+    let JsonShouldGeneratePlausibleLcov() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample4.coverlet.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline =
+        use r = new StreamReader(stream)
+        r.ReadToEnd() |> NativeJson.fromJsonText
+
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample4.coverlet.lcov")
+      LCov.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        let r = LCov.summary (JSON baseline) ReportFormat.NativeJson 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result = File.ReadAllText unique
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+        //printfn "%s" result
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected)
       finally
@@ -3114,7 +3502,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.summary baseline ReportFormat.NCover 0
+        let r = LCov.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result = File.ReadAllText unique
         let resource2 =
@@ -3196,17 +3584,12 @@ module AltCoverRunnerTests =
         xmlDocument.Validate(null)
 
     [<Test>]
-    let NCoverShouldGeneratePlausibleCobertura() =
+    let DegenerateCasesShouldNotGenerateCobertura() =
       Runner.init()
-      let resource =
-        Assembly.GetExecutingAssembly().GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
-      let baseline = XDocument.Load(stream)
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-           Guid.NewGuid().ToString() + "/NCover.cobertura")
+           Guid.NewGuid().ToString() + "/None.cobertura")
       Cobertura.path := Some unique
       unique
       |> Path.GetDirectoryName
@@ -3215,14 +3598,41 @@ module AltCoverRunnerTests =
       try
         Runner.I.addCoberturaSummary()
         let summarize = Runner.I.summaries |> Seq.head
-        let r = summarize baseline ReportFormat.NCover 0
+        let r = summarize Unknown ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        Assert.That(unique |> File.Exists |> not)
+      finally
+        Cobertura.path := None
+
+    [<Test>]
+    let NCoverShouldGeneratePlausibleCobertura() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("NCover122.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/NCover122.cobertura")
+      Cobertura.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addCoberturaSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
                         """timestamp="xx">""").Replace("\\", "/")
+        //printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
-          |> Seq.find (fun n -> n.EndsWith("NCover.cobertura", StringComparison.Ordinal))
+          |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected =
@@ -3234,6 +3644,174 @@ module AltCoverRunnerTests =
         Validate result
       finally
         Cobertura.path := None
+
+    [<Test>]
+    let NCoverShouldGenerateMorePlausibleCobertura() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.xml", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline = XDocument.Load(stream)
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample5.ncover.cobertura")
+      Cobertura.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addCoberturaSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize (XML baseline) ReportFormat.NCover 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result =
+          Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
+                        """timestamp="xx">""").Replace("\\", "/")
+        // printfn "%s" result
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("Sample5.ncover.cobertura", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected =
+          reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+                .Replace("""version="3.0.0.0""",
+                         "version=\""
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+        Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+        Validate result
+      finally
+        Cobertura.path := None
+
+    [<Test>]
+    let JsonShouldGeneratePlausibleCobertura() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline =
+        use r = new StreamReader(stream)
+        r.ReadToEnd() |> NativeJson.fromJsonText
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample4FullTracking.cobertura")
+      Cobertura.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addCoberturaSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize (JSON baseline) ReportFormat.NativeJson 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result =
+          Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
+                        """timestamp="xx">""").Replace("\\", "/")
+        //printfn "%s" result
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected =
+          reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+                .Replace("""version="3.0.0.0""",
+                         "version=\""
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+        Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+        Validate result
+      finally
+        Cobertura.path := None
+
+    [<Test>]
+    let JsonFromComplexNestingShouldGeneratePlausibleCobertura() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample5.native.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline =
+        use r = new StreamReader(stream)
+        r.ReadToEnd() |> NativeJson.fromJsonText
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample5.native.cobertura")
+      Cobertura.path := Some unique
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+      try
+        Runner.I.addCoberturaSummary()
+        let summarize = Runner.I.summaries |> Seq.head
+        let r = summarize (JSON baseline) ReportFormat.NativeJson 0
+        Assert.That(r, Is.EqualTo (0, 0, String.Empty))
+        let result =
+          Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
+                        """timestamp="xx">""").Replace("\\", "/")
+        // printfn "%s" result
+        let resource2 =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("Sample5.native.cobertura", StringComparison.Ordinal))
+        use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+        use reader = new StreamReader(stream2)
+        let expected =
+          reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
+                .Replace("""version="3.0.0.0""",
+                         "version=\""
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+        Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+        Validate result
+      finally
+        Cobertura.path := None
+
+    [<Test>]
+    let JsonShouldGeneratePlausibleXml() =
+      Runner.init()
+      let resource =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample5.native.json", StringComparison.Ordinal))
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+      let baseline =
+        use r = new StreamReader(stream)
+        r.ReadToEnd() |> NativeJson.fromJsonText
+      let xml = baseline |> NativeJson.jsonToXml  |> NativeJson.orderXml
+
+      let unique =
+        Path.Combine
+          (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+           Guid.NewGuid().ToString() + "/Sample5.native.xml")
+
+      unique
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+
+      xml.Save(unique)
+      let result = File.ReadAllText unique
+      let resource2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("Sample5.native.xml", StringComparison.Ordinal))
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd()
+      //printfn "%s" result
+      Assert.That
+        (result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                       .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+        Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                       .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+      test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                    expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
 
     [<Test>]
     let NCoverShouldGeneratePlausibleCoberturaWithMissingFullName() =
@@ -3258,7 +3836,7 @@ module AltCoverRunnerTests =
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline ReportFormat.NCover 0
+        let r = Cobertura.summary (XML baseline) ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -3285,28 +3863,29 @@ module AltCoverRunnerTests =
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
-             (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+             (fun n -> n.EndsWith("issue122.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-           Guid.NewGuid().ToString() + "/OpenCover.cobertura")
+           Guid.NewGuid().ToString() + "/issue122.cobertura")
       Cobertura.path := Some unique
       unique
       |> Path.GetDirectoryName
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.summary baseline ReportFormat.OpenCover 0
+        let r = Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo (0, 0, String.Empty))
         let result =
           Regex.Replace
             (File.ReadAllText unique, """timestamp=\"\d*\">""", """timestamp="xx">""")
+        //printfn "%s" result
         let resource2 =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
-               (fun n -> n.EndsWith("OpenCover.cobertura", StringComparison.Ordinal))
+               (fun n -> n.EndsWith("issue122.cobertura", StringComparison.Ordinal))
         use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
         use reader = new StreamReader(stream2)
         let expected =
@@ -3333,7 +3912,7 @@ module AltCoverRunnerTests =
                                 (fun _ _ _ -> (23, 42uy, "Statements"))
                                 (fun _ _ a  -> (a, 0uy, String.Empty))]
         Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let delta = Runner.J.doSummaries (XDocument()) ReportFormat.NCover 0
+        let delta = Runner.J.doSummaries (XML <| XDocument()) ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
         Assert.That
           (builder.ToString(),

@@ -10,7 +10,8 @@ module MonitorTests =
   [<Test>]
   let ShouldRecordPointTotals() =
     let (a, b) = AltCover.Monitor.TryGetPointTotals()
-    test'<@ a @> "should be running under AltCover"
+    maybeIgnore (fun () -> not a)
+
     let code = b.Code
     let branch = b.Branch
 
@@ -33,12 +34,11 @@ module MonitorTests =
   let ShouldRecordVisitTotals() =
     let (a0, _) = AltCover.Monitor.TryGetPointTotals()
     let (a, b) = AltCover.Monitor.TryGetVisitTotals()
-
-    test'<@ a && a0 @> "should be running under AltCover"
+    maybeIgnore (fun () -> not (a && a0))
     let code = b.Code
     let branch = b.Branch
 #if BUILD_ON_APPVEYOR
-    test <@ (code, branch) = (70, 9) @>
+    test <@ (code, branch) = (78, 11) @>
 #else
-    test <@ (code, branch) = (137, 34) @>
+    test <@ (code, branch) = (145, 36) @>
 #endif

@@ -41,6 +41,7 @@ The members correspond to the like-named command line options for `AltCover Runn
         ExposeReturnCode: bool
         SummaryFormat: System.String
         Verbosity : System.Diagnostics.TraceLevel
+        JsonReport: System.String
       }
       with
         static member Create : unit -> CollectOptions

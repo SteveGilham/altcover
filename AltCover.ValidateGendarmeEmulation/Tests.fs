@@ -94,6 +94,7 @@ module ValidateGendarmeEmulation =
       Path.Combine(
         SolutionRoot.location,
         "_Mono/Sample3/Sample3.dll")
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 

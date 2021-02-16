@@ -36,6 +36,18 @@
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
     <EmbeddedResource Include="Sample4FullTracking.xml" />
+    <EmbeddedResource Include="Sample4.native.json" />
+    <EmbeddedResource Include="Sample4.syntheticvisits.native.json" />
+    <EmbeddedResource Include="Sample4FullTracking.json" />
+    <EmbeddedResource Include="Sample4FullTracking.cobertura" />
+    <EmbeddedResource Include="Sample4.coverlet.json" />
+    <EmbeddedResource Include="Sample4.coverlet.lcov" />
+    <EmbeddedResource Include="Sample5.native.json" />
+    <EmbeddedResource Include="Sample5.native.xml" />
+    <EmbeddedResource Include="Sample5.native.cobertura" />
+    <EmbeddedResource Include="Sample5.ncover.lcov" />
+    <EmbeddedResource Include="Sample5.ncover.xml" />
+    <EmbeddedResource Include="Sample5.ncover.cobertura" />    
     <EmbeddedResource Include="GenuineNCover158.json" />
     <EmbeddedResource Include="GenuineNCover158.Xml" />
     <EmbeddedResource Include="OpenCover.json" />
@@ -46,7 +58,10 @@
     <EmbeddedResource Include="Sample1WithNCover.xml" />
     <EmbeddedResource Include="NCoverBugFix.lcov" />
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
+    <EmbeddedResource Include="SimpleCoverage.json" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <EmbeddedResource Include="NCover122.xml" />
+    <EmbeddedResource Include="NCover122.cobertura" />
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
@@ -60,6 +75,8 @@
     <EmbeddedResource Include="SwitchSample.pd_" />
     <EmbeddedResource Include="issue37.dl_" />
     <EmbeddedResource Include="issue37.pd_" />
+    <EmbeddedResource Include="issue122.xml" />
+    <EmbeddedResource Include="issue122.cobertura" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,7 +110,7 @@
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" 
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0"
                       Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -104,7 +121,7 @@
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
   </ItemGroup>
 

@@ -16,6 +16,7 @@ public sealed class CollectOptions : IEquatable<CollectOptions>, IStructuralEqua
 | [CommandLine](TypeSafe.CollectOptions/CommandLine-apidoc) { get; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
 | [Executable](TypeSafe.CollectOptions/Executable-apidoc) { get; } | Corresponds to command line option `-x, --executable=VALUE` |
 | [ExposeReturnCode](TypeSafe.CollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
+| [JsonReport](TypeSafe.CollectOptions/JsonReport-apidoc) { get; } | Corresponds to command line option `-j, --jsonReport=VALUE` |
 | [LcovReport](TypeSafe.CollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](TypeSafe.CollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
 | [RecorderDirectory](TypeSafe.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |

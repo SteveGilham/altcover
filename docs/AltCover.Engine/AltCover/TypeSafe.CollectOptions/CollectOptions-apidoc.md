@@ -4,7 +4,7 @@
 public CollectOptions(DirectoryPath recorderDirectory, DirectoryPath workingDirectory, 
     FilePath executable, FilePath lcovReport, Threshold threshold, FilePath cobertura, 
     FilePath outputFile, CommandLine commandLine, Flag exposeReturnCode, 
-    SummaryFormat summaryFormat, TraceLevel verbosity)
+    SummaryFormat summaryFormat, TraceLevel verbosity, FilePath jsonReport)
 ```
 
 ## See Also

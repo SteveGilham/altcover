@@ -166,12 +166,12 @@ module internal Main =
                CoverageParameters.defaultStrongNameKey <- Some pair
                CoverageParameters.add pair))
 
-        ("x|xmlReport=",
+        ("r|report=",
          (fun x ->
-           if CommandLine.validatePath "--xmlReport" x then
+           if CommandLine.validatePath "--report" x then
              if Option.isSome CoverageParameters.theReportPath then
                CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--report")
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
@@ -203,6 +203,7 @@ module internal Main =
            else
              CoverageParameters.theReportFormat <- Some (match x with
                                                          | Select "NCover" _ -> ReportFormat.NCover
+                                                         | Select "Json" _ -> ReportFormat.NativeJson
                                                          | _ ->  ReportFormat.OpenCover)))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
@@ -443,6 +444,14 @@ module internal Main =
       |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
       |> Option.defaultValue false
 
+    let internal selectReportGenerator() =
+      match CoverageParameters.reportKind() with
+      | ReportFormat.OpenCoverWithTracking
+      | ReportFormat.OpenCover -> OpenCover.reportGenerator()
+      | ReportFormat.NativeJsonWithTracking
+      | ReportFormat.NativeJson -> NativeJson.reportGenerator()
+      | _ -> Report.reportGenerator()
+
     [<SuppressMessage("Gendarme.Rules.BadPractice",
       "GetEntryAssemblyMayReturnNullRule",
       Justification="That is the whole point of the call.")>]
@@ -479,10 +488,7 @@ module internal Main =
                   (CoverageParameters.instrumentDirectories())
               Output.info
               <| CommandLine.Format.Local("reportingto", report)
-              let reporter, document =
-                match CoverageParameters.reportKind() with
-                | ReportFormat.OpenCover -> OpenCover.reportGenerator()
-                | _ -> Report.reportGenerator()
+              let reporter, document = selectReportGenerator()
 
               let visitors =
                 [ reporter

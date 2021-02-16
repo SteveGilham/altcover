@@ -1,6 +1,5 @@
 ﻿namespace Tests
 
-open AltCover
 open Expecto
 
 module ExpectoMain =

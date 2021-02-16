@@ -1,0 +1,84 @@
+TN:
+SF:C:\Users\steve\source\repos\ClassLibrary1\Sample4\Program.fs
+FN:1,System.Int32 Program/Program::main(System.String[])
+FNDA:0,System.Int32 Program/Program::main(System.String[])
+FNF:1
+FNH:0
+BRF:0
+BRH:0
+DA:1,0
+LH:0
+LF:1
+end_of_record
+TN:
+SF:C:\Users\steve\source\repos\ClassLibrary1\Sample4\Tests.fs
+FN:49,Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)
+FN:50,Tests.DU/MyUnion Tests.DU::returnBar(System.String)
+FN:54,System.Void Tests.DU::testMakeUnion()
+FN:36,Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()
+FN:44,Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()
+FN:47,System.Int32 Tests.DU/MyClass::get_Property()
+FN:46,System.Void Tests.DU/MyClass::.ctor()
+FN:20,Tests.M/Thing Tests.M::makeThing(System.String)
+FN:24,System.Void Tests.M::testMakeThing()
+FN:18,System.Byte[] Tests.M/Thing::bytes()
+FNDA:1,Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)
+FNDA:1,Tests.DU/MyUnion Tests.DU::returnBar(System.String)
+FNDA:1,System.Void Tests.DU::testMakeUnion()
+FNDA:1,Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()
+FNDA:0,Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()
+FNDA:0,System.Int32 Tests.DU/MyClass::get_Property()
+FNDA:0,System.Void Tests.DU/MyClass::.ctor()
+FNDA:2,Tests.M/Thing Tests.M::makeThing(System.String)
+FNDA:1,System.Void Tests.M::testMakeThing()
+FNDA:1,System.Byte[] Tests.M/Thing::bytes()
+FNF:10
+FNH:0
+BRDA:54,0,0,1
+BRDA:54,0,1,-
+BRDA:54,0,0,1
+BRDA:54,0,1,-
+BRDA:55,0,0,1
+BRDA:55,0,1,-
+BRDA:55,0,0,1
+BRDA:55,0,1,-
+BRDA:56,0,0,1
+BRDA:56,0,1,-
+BRDA:56,0,0,1
+BRDA:56,0,1,-
+BRDA:36,0,0,-
+BRDA:36,0,1,1
+BRDA:36,0,2,-
+BRDA:36,0,3,-
+BRDA:36,0,4,-
+BRDA:24,0,0,1
+BRDA:24,0,1,-
+BRDA:24,0,0,1
+BRDA:24,0,1,-
+BRDA:25,0,0,1
+BRDA:25,0,1,-
+BRDA:25,0,0,1
+BRDA:25,0,1,-
+BRF:25
+BRH:11
+DA:18,1
+DA:20,2
+DA:24,1
+DA:25,1
+DA:36,1
+DA:37,1
+DA:38,0
+DA:39,0
+DA:41,0
+DA:42,0
+DA:44,0
+DA:46,0
+DA:47,0
+DA:49,1
+DA:50,1
+DA:54,1
+DA:55,1
+DA:56,1
+LH:11
+LF:18
+end_of_record

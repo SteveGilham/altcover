@@ -97,11 +97,13 @@ nuget Markdown >= 2.2.1
 nuget Manatee.Json >= 13.0.4
 nuget NUnit >= 3.12.0
 nuget Fuchu >= 1.1.0
+nuget System.Text.Json >= 5.0.1
 nuget Unquote >= 5.0.0
 nuget YamlDotNet >= 8.1.2 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
+#load "../AltCover.Engine/NativeJson.fs"
 #load "../AltCover.Engine/Abstract.fs"
 #load "../AltCover.Engine/Primitive.fs"
 #load "../AltCover.Engine/TypeSafe.fs"

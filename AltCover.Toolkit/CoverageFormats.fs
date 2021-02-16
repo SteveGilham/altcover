@@ -27,10 +27,7 @@ module CoverageFormats =
 
   let ConvertToJson (document:XDocument) =
     let format = XmlUtilities.discoverFormat document
-    (document.Root
-            |> (match format with
-                | ReportFormat.NCover -> Json.ncoverToJson
-                | _ -> Json.opencoverToJson)).ToString()
+    Json.xmlToJson document format
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
@@ -38,7 +35,7 @@ module CoverageFormats =
   [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
     Justification = "AvoidSpeculativeGenerality too")>]
   let ConvertFromNCover (document:XDocument) (assemblies : string seq) =
-    let reporter, rewrite = AltCover.OpenCover.reportGenerator()
+    let reporter, rewritten = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
     let identities = Dictionary<string, XElement>()
     document.Descendants(XName.Get "module")
@@ -68,6 +65,12 @@ module CoverageFormats =
       Int32.TryParse
         (s, System.Globalization.NumberStyles.Integer,
          System.Globalization.CultureInfo.InvariantCulture) |> snd
+    let rewrite =
+      use stash = new MemoryStream()
+      stash |> rewritten
+      stash.Position <- 0L
+      XDocument.Load stash
+
     // Match modules
     rewrite.Descendants(XName.Get "Module")
     |> Seq.iter (fun target ->

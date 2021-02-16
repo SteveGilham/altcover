@@ -14,9 +14,11 @@ module internal Cobertura =
   module internal I =
 
     let internal setRate hits total (rate : string) (target : XElement) =
-      if total > 0 then
-        let ratio = (float hits) / (float total)
-        target.SetAttributeValue(rate.X, String.Format(CultureInfo.InvariantCulture,
+
+      let ratio = if total > 0
+                  then (float hits) / (float total)
+                  else 0.0
+      target.SetAttributeValue(rate.X, String.Format(CultureInfo.InvariantCulture,
                                                        "{0:0.##}", ratio))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -68,11 +70,19 @@ module internal Cobertura =
              let key, signature =
                let fna = m.Attribute("fullname".X)
                if fna |> isNull then
-                 (m.Attribute("class".X).Value + "." + m.Attribute("name".X).Value,
-                  String.Empty)
+                 (m.Attribute("name".X).Value,
+                  "ReturnType (Arguments)")
                else
-                 let fn = fna.Value.Split([| ' '; '(' |]) |> Array.toList
-                 (fn.[1].Substring(n.Length + 1), fn.[0] + " " + fn.[2])
+                 let fn = fna.Value
+                 let cname = m.Attribute("class".X).Value
+                 let mname = m.Attribute("name".X).Value
+                 let classAt = fn.IndexOf (cname, StringComparison.Ordinal)
+                 let returnType = fn.Substring(0, classAt)
+                 let methodAt = fn.IndexOf (mname, classAt + cname.Length, StringComparison.Ordinal)
+                 let argsAt = methodAt + mname.Length
+                 let args = fn.Substring(argsAt)
+                 let signature = returnType + args
+                 (mname, signature)
              (key, (signature, m)))
         |> LCov.sortByFirst
         |> Seq.fold (processMethod methods) (0, 0)
@@ -161,34 +171,30 @@ module internal Cobertura =
              XAttribute("coverage".X, sprintf "%d%%" pc))
         cc.Add co
 
-      let copySeqPnt (lines : XElement) (s : XElement) =
-        let vc = s.Attribute("vc".X)
-
-        let vx =
-          (vc
-           |> Option.ofObj
-           |> Option.defaultValue (XAttribute("dummy".X, "0"))).Value
-
-        let bec =
-          s.Attribute("bec".X).Value
-          |> Int32.TryParse
+      let copySeqPnt (lines : XElement) (s : int * XElement seq) =
+        let rep = s |> snd |> Seq.head
+        let (vcn, bec, bev) =
+          s
           |> snd
+          |> Seq.fold (fun  (v, c, n) sp ->
+            (
+              v + (sp.Attribute("vc".X).Value |> Int32.TryParse |> snd),
+              c + (sp.Attribute("bec".X).Value |> Int32.TryParse |> snd),
+              n + (sp.Attribute("bev".X).Value |> Int32.TryParse |> snd)
+            )) (0, 0, 0)
 
-        let bev =
-          s.Attribute("bev".X).Value
-          |> Int32.TryParse
-          |> snd
+        let vx = vcn.ToString(CultureInfo.InvariantCulture)
 
         let line =
           XElement
-            ("line".X, XAttribute("number".X, s.Attribute("sl".X).Value),
+            ("line".X, XAttribute("number".X, rep.Attribute("sl".X).Value),
              XAttribute("hits".X, vx),
              XAttribute
                ("branch".X,
                 (if bec = 0 then "false" else "true")))
 
         if bec > 0 then
-          let uspid = s.Attribute("uspid".X).Value // KISS approach
+          let uspid = rep.Attribute("uspid".X).Value // KISS approach
           doBranch bec bev uspid line
         lines.Add line
 
@@ -212,7 +218,11 @@ module internal Cobertura =
         let mtx, lines = addMethod (methods : XElement) (key, signature)
         extract method mtx
         mtx.Add(XAttribute("complexity".X, ccplex))
-        method.Descendants("SequencePoint".X) |> Seq.iter (copySeqPnt lines)
+        method.Descendants("SequencePoint".X)
+        |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+        |> Seq.sortBy fst
+        |> Seq.iter (copySeqPnt lines)
+
         let summary = method.Elements("Summary".X) |> Seq.head
         (b |> provideAttributeValue summary "numBranchPoints",
          bv |> provideAttributeValue summary "visitedBranchPoints",
@@ -222,11 +232,15 @@ module internal Cobertura =
       let arrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
         methodSet
         |> Seq.map (fun method ->
-             let fn =
-               (method.Descendants("Name".X) |> Seq.head).Value.Split([| ' '; '(' |])
-               |> Array.toList
-             let key = fn.[1].Substring(name.Length + 2)
-             let signature = fn.[0] + " " + fn.[2]
+             let fn = (method.Descendants("Name".X) |> Seq.head).Value
+             let cplus = name + "::"
+             let marker = fn.IndexOf (cplus, StringComparison.Ordinal)
+             let returntype = fn.Substring(0, marker)
+             let start = marker + cplus.Length
+             let argsAt = fn.IndexOf('(', start)
+             let args = fn.Substring(argsAt)
+             let signature = returntype + args
+             let key = fn.Substring(start, argsAt - start)
              (key, (signature, method)))
         |> LCov.sortByFirst
         |> Seq.filter (fun (_, (_, mt)) ->
@@ -310,9 +324,9 @@ module internal Cobertura =
     let packages = XElement("packages".X)
     element.Add(packages)
 
-    match format with
-    | ReportFormat.NCover -> I.nCover report packages
-    | _ -> I.openCover report packages
+    (match format with
+     | ReportFormat.NCover -> I.nCover
+     | _ -> I.openCover) report packages // Maybe later
 
     // lines reprise
     packages.Descendants("class".X)
@@ -332,7 +346,16 @@ module internal Cobertura =
               reprise.Add copy))
     rewrite
 
-  let internal summary (report : XDocument) (format : ReportFormat) result =
-    let rewrite = convertReport report format
-    rewrite.Save(!path |> Option.get)
+  let convertJson document =
+    let x = document |> NativeJson.jsonToXml  |> NativeJson.orderXml
+    convertReport x ReportFormat.OpenCover
+
+  let internal summary (report : DocumentType) (format : ReportFormat) result =
+    let rewrite = match report with
+                  | Unknown -> null
+                  | XML document -> convertReport document format
+                  | JSON modules -> convertJson modules
+    rewrite
+    |> Option.ofObj
+    |> Option.iter(fun d -> d.Save(!path |> Option.get))
     (result, 0uy, String.Empty)

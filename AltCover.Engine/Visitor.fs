@@ -100,6 +100,7 @@ type internal ModuleEntry =
 type internal TypeEntry =
   {
     Type : TypeDefinition
+    VisibleType : TypeDefinition
     Inspection : Inspections
     DefaultVisitCount : Exemption
   }
@@ -108,6 +109,7 @@ type internal TypeEntry =
 type internal MethodEntry =
   {
     Method : MethodDefinition
+    VisibleMethod : MethodDefinition
     Inspection : Inspections
     Track : (int * string) option
     DefaultVisitCount : Exemption
@@ -327,9 +329,6 @@ module internal CoverageParameters =
 
   let mutable internal theReportPath : Option<string> = None
   let internal zipReport = ref false // ddFlag
-  let internal defaultReportPath = "coverage.xml"
-  let internal reportPath() = Path.GetFullPath(Option.defaultValue defaultReportPath theReportPath)
-
   let mutable internal theInterval : Option<int> = None
   let internal defaultInterval = 0
   let internal interval() = (Option.defaultValue defaultInterval theInterval)
@@ -339,11 +338,29 @@ module internal CoverageParameters =
 
   let internal reportKind() = (Option.defaultValue ReportFormat.OpenCover theReportFormat)
 
+  let internal defaultReportPath () = if reportKind() = ReportFormat.NativeJson
+                                      then "coverage.json"
+                                      else "coverage.xml"
+
+  let internal reportPath() = Path.GetFullPath(Option.defaultValue (defaultReportPath()) theReportPath)
+
   let internal reportFormat() =
     let fmt = reportKind()
     if fmt = ReportFormat.OpenCover && (trackingNames.Any() || interval() > 0)
     then ReportFormat.OpenCoverWithTracking
-    else fmt
+    else
+      if fmt = ReportFormat.NativeJson && (trackingNames.Any() || interval() > 0)
+      then ReportFormat.NativeJsonWithTracking
+      else fmt
+
+  let internal isTracking() =
+    match reportFormat() with
+    | ReportFormat.OpenCoverWithTracking
+    | ReportFormat.NativeJsonWithTracking -> true
+    | _ -> false
+
+  let withBranches() =
+    reportFormat() <> ReportFormat.NCover
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyData> = None
   let mutable internal recorderStrongNameKey : option<StrongNameKeyData> = None
@@ -533,7 +550,8 @@ module internal Visitor =
 
              let included =
                inspection ||| if inspection = Inspections.Instrument
-                                 && CoverageParameters.reportFormat() = ReportFormat.OpenCoverWithTracking then
+                                 && CoverageParameters.isTracking()
+                               then
                                 Inspections.Track
                               else
                                 Inspections.Ignore
@@ -610,6 +628,7 @@ module internal Visitor =
                else
                  Exemption.None
              Type { Type = t
+                    VisibleType = (t::types) |> List.last
                     Inspection = inclusion
                     DefaultVisitCount = visitcount })
             >> buildSequence)
@@ -790,6 +809,16 @@ module internal Visitor =
       else if !CoverageParameters.showGenerated then selectAutomatic items exemption
       else exemption
 
+    let internal containingMethods m =
+      Seq.unfold (fun (state : MethodDefinition option) ->
+                      match state with
+                      | None -> None
+                      | Some x -> Some(x, if CoverageParameters.topLevel
+                                            |> Seq.exists (Filter.``match`` x)
+                                          then None
+                                          else containingMethod x)) (Some m)
+                    |> Seq.toList
+
     let private visitType (t : TypeEntry) (buildSequence : Node -> seq<Node>) =
       t.Type.Methods
       |> Seq.cast
@@ -805,25 +834,23 @@ module internal Visitor =
                | Some f -> f
            (m, key))
       |> Seq.filter (fun (m, k) -> k <> StaticFilter.Hidden)
-      |> Seq.map (fun (m, k) -> let methods =
-                                 Seq.unfold (fun (state : MethodDefinition option) ->
-                                   match state with
-                                   | None -> None
-                                   | Some x -> Some(x, if CoverageParameters.topLevel
-                                                          |> Seq.exists (Filter.``match`` x)
-                                                       then None
-                                                       else containingMethod x)) (Some m)
-                                 |> Seq.toList
-                                (m, k, methods))
+      |> Seq.map (fun (m, k) -> let methods = containingMethods m
+                                let top = methods |> Seq.last
+                                let topped = methods
+                                             |> List.takeWhile (fun x -> CoverageParameters.topLevel
+                                                                         |> Seq.exists (Filter.``match`` x)
+                                                                         |> not)
+                                (m, k, topped, top))
       // Skip nested methods when in method-point mode
-      |> Seq.filter (fun (_,_,methods) -> !CoverageParameters.methodPoint |> not ||
-                                          methods |> List.tail |> List.isEmpty)
+      |> Seq.filter (fun (_,_,methods, _) -> !CoverageParameters.methodPoint |> not ||
+                                             methods |> List.tail |> List.isEmpty)
       |> Seq.collect
-           ((fun (m, k, methods) ->
+           ((fun (m, k, methods, top) ->
              let visitcount = selectExemption k methods t.DefaultVisitCount
 
              let inclusion = Seq.fold updateInspection t.Inspection methods
              Method { Method = m
+                      VisibleMethod = top
                       Inspection = inclusion
                       Track = track m
                       DefaultVisitCount = visitcount })
@@ -1062,7 +1089,7 @@ module internal Visitor =
         |> Seq.filter (fun (x : Instruction) ->
              if dbg.HasSequencePoints then
                let s = dbg.GetSequencePoint x
-               (not << isNull) s && (s.IsHidden |> not)
+               s.IsNotNull && (s.IsHidden |> not)
              else
                false)
         |> Seq.toList
@@ -1110,7 +1137,7 @@ module internal Visitor =
                    DefaultVisitCount = m.DefaultVisitCount})
 
       let includeBranches() =
-        instructions.Any() && CoverageParameters.reportKind() = ReportFormat.OpenCover
+        instructions.Any() && CoverageParameters.withBranches()
         && (CoverageParameters.coverstyle <> CoverStyle.LineOnly)
         && (!CoverageParameters.methodPoint |> not)
 

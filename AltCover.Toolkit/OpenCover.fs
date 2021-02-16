@@ -311,6 +311,10 @@ module OpenCover =
     PostProcess xmlDocument BranchOrdinal.Offset
     xmlDocument
 
+  [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
+  let JsonToXml (document:string) =
+    document |> NativeJson.fromJsonText |> NativeJson.jsonToXml  |> NativeJson.orderXml
+
 [<assembly: SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline",
   Scope="member", Target="<StartupCode$AltCover-Toolkit>.$OpenCover.#.cctor()",
   Justification="Compiler Generated")>]

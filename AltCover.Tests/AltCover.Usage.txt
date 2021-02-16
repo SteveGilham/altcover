@@ -18,8 +18,9 @@
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
-                                coverage.xml in the current directory)
+  -r, --report=VALUE         Optional: The output report template file (default:
+                                'coverage.xml' or 'coverage.json' in the
+                               current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
   -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
@@ -70,25 +71,24 @@
                                names (fully qualified if the string contains
                                any "." characters).
       --reportFormat=VALUE   Optional: Generate the report in the specified
-                               format (NCover or the default OpenCover)
+                               format (Json, NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
-      --zipfile              Optional: Emit the XML report inside a zip archive.
+      --zipfile              Optional: Emit the coverage report inside a zip
+                               archive.
       --methodpoint          Optional: record only whether a method has been
                                visited or not.  Overrides the --linecover and --
                                branchcover options.
       --single               Optional: only record the first hit at any
                                location, or first hit for each context if --
                                callContext is operating.
-      --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
+      --linecover            Optional: Do not record branch coverage.  Ignored
+                               for the --reportFormat=NCover option.
                                    Incompatible with --branchcover.
-      --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
+      --branchcover          Optional: Do not record line coverage.  Ignored
+                               for the --reportFormat=NCover option.
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.

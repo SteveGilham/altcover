@@ -40,6 +40,7 @@ The members correspond to the like-named command line options for `AltCover Runn
     abstract member ExposeReturnCode : bool with get
     abstract member SummaryFormat : String with get
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
+    abstract member JsonReport : String with get
   end
 ```
 ### interface `IPrepareOptions`

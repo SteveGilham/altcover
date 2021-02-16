@@ -130,8 +130,8 @@ Vidu ankaŭ '--inplace'</value>
   <data name="sn|strongNameKey=" xml:space="preserve">
     <value>Laŭvola: la defaŭlta forta-nomo ŝlosilo por apliki al asembleaj instrumentoj (defaŭlte: Neniu)</value>
   </data>
-  <data name="x|xmlReport=" xml:space="preserve">
-    <value>Laŭvola: La eliga raporta ŝablono-dosiero (defaŭlte: 'coverage.xml' en la aktuala dosierujo)</value>
+  <data name="r|report=" xml:space="preserve">
+    <value>Laŭvola: La eliga raporta ŝablono-dosiero (defaŭlte: 'coverage.xml' aŭ 'coverage.json' en la aktuala dosierujo)</value>
   </data>
   <data name="f|fileFilter=" xml:space="preserve">
     <value>Laŭvola, multobla: fonta dosiernomo por ekskludi de instrumentado</value>
@@ -155,9 +155,9 @@ Vidu ankaŭ '--inplace'</value>
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/d[ependency]=VALO] [/k[ey]=VALO] [/sn|strongNameKey=VALO] [/r[eport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/e|assemblyExcludeFilter=VALO] [/t[ypeFilter]=VALO] [/m[ethodFilter]=VALO] [/a[ttributeFilter]=VALO] [/attributetoplevel=VALO] [/typetoplevel=VALO] [/methodtoplevel=VALO] [--l[ocalSource]] [/c[allContext]=VALO] [/reportFormat=VALO] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALO]] [--showGenerated] [--?|help|h] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/j[sonReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/summary|teamcity[=VALO]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x|executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/summary|teamcity[=VALO]] [--?|help|h] [-- ] [...]
 aŭ
 AltCover ImportModule
 aŭ
@@ -218,7 +218,7 @@ Kovra Raporto: {0}
                                asociita PowerShell-modulo</value>
   </data>
   <data name="reportFormat=" xml:space="preserve">
-    <value>Laŭvola: Generu la raporton en la specifita formato (NCover aŭ la defaŭlta OpenCover)</value>
+    <value>Laŭvola: Generu la raporton en la specifita formato (Json, NCover aŭ la defaŭlta OpenCover)</value>
   </data>
   <data name="CommandLine" xml:space="preserve">
     <value>Komandlinio: '{0} {1}'</value>
@@ -360,11 +360,11 @@ Nuloj / forestantaj valoroj estas ignorataj. Se priraportada rezulto estas sub s
     <value>Laŭvola: registru la unuan trafon nur en iu ajn loko, aŭ unue trafu por ĉiu kunteksto se --callContext funkcias.</value>
   </data>
   <data name="linecover" xml:space="preserve">
-    <value>Laŭvola: Ne registru branĉan kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.
+    <value>Laŭvola: Ne registru branĉan kovradon. Ignorita en la kazo de la opcio --reportFormat = NCover. 
     Nekongrua kun --branchcover.</value>
   </data>
   <data name="branchcover" xml:space="preserve">
-    <value>Ne registru linion-kovradon. Implikas, kaj estas kongrua kun, la --reportFormat=opencover opcio.
+    <value>Ne registru linion-kovradon. Ignorita en la kazo de la opcio --reportFormat = NCover. 
      Nekongrua kun --linecover.</value>
   </data>
   <data name="p|pathFilter=" xml:space="preserve">
@@ -406,7 +406,7 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
     <value>Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
   </data>
   <data name="zipfile" xml:space="preserve">
-    <value>Laŭvola: Resendu la XML-raporton ene de zip-arkivo.</value>
+    <value>Laŭvola: Resendu la kovra-raporton ene de zip-arkivo.</value>
   </data>
   <data name="methodpoint" xml:space="preserve">
     <value>Laŭvola: registru nur ĉu metodo estis vizitita aŭ ne. Nuligas la --linecover kaj --branchcover elektojn.</value>
@@ -452,8 +452,5 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   </data>
   <data name="q" xml:space="preserve">
     <value>Laŭvola, multnombra: Kvieta reĝimo - unufoje por malŝalti informajn mesaĝojn, dufoje por malŝalti ankaŭ avertojn, tri (aŭ pli) fojojn por malŝalti ĉiujn mesaĝojn.</value>
-  </data>
-  <data name="j|jsonReport=" xml:space="preserve">
-    <value>Laŭvola: Dosiero por la versio de formato JSON de la datumoj kolektitaj</value>
   </data>
 </root>

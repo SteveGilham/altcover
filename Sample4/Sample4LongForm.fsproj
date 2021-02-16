@@ -104,7 +104,7 @@
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
-      XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
+      Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
       AssemblyFilter="@(AssemblyFilter)"
       />  
   </Target>

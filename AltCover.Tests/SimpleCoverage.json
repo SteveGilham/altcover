@@ -1,0 +1,115 @@
+{
+  "Sample1.exe": {
+    "altcover/Sample1/Program.cs": {
+      "TouchTest.Program": {
+        "ReturnType1 TouchTest.Program::Main(Argument List1)": {
+          "Lines": {
+            "11": 1,
+            "12": 1,
+            "13": 1,
+            "14": 1,
+            "15": 1,
+            "16": 1,
+            "18": 0,
+            "19": 0,
+            "20": 0,
+            "21": -1
+          },
+          "Branches": [],
+          "SeqPnts": [
+            {
+              "VC": 1,
+              "SL": 11,
+              "SC": 9,
+              "EL": 11,
+              "EC": 10,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 1,
+              "SL": 12,
+              "SC": 13,
+              "EL": 12,
+              "EC": 36,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 1,
+              "SL": 13,
+              "SC": 13,
+              "EL": 13,
+              "EC": 33,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 1,
+              "SL": 14,
+              "SC": 13,
+              "EL": 14,
+              "EC": 14,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 1,
+              "SL": 15,
+              "SC": 17,
+              "EL": 15,
+              "EC": 89,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 1,
+              "SL": 16,
+              "SC": 13,
+              "EL": 16,
+              "EC": 14,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 0,
+              "SL": 18,
+              "SC": 13,
+              "EL": 18,
+              "EC": 14,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 0,
+              "SL": 19,
+              "SC": 17,
+              "EL": 19,
+              "EC": 62,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": 0,
+              "SL": 20,
+              "SC": 13,
+              "EL": 20,
+              "EC": 14,
+              "Offset": 0,
+              "Id": 0
+            },
+            {
+              "VC": -1,
+              "SL": 21,
+              "SC": 9,
+              "EL": 21,
+              "EC": 10,
+              "Offset": 0,
+              "Id": 0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

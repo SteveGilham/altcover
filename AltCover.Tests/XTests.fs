@@ -435,7 +435,7 @@ module AltCoverXTests =
   let PrepareOptionsCanBeValidatedWithErrors() =
     let subject =
       { Primitive.PrepareOptions.Create() with
-                                              XmlReport =
+                                              Report =
                                                 String(Path.GetInvalidPathChars())
                                               CallContext = [| "0"; "1" |] }
 
@@ -465,7 +465,7 @@ module AltCoverXTests =
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
     Directory.CreateDirectory unique' |> ignore
-    let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.xml")
+    let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.json")
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     let outputSaved = CoverageParameters.theOutputDirectories |> Seq.toList
     let inputSaved = CoverageParameters.theInputDirectories |> Seq.toList
@@ -483,7 +483,8 @@ module AltCoverXTests =
       Console.SetOut stdout
       Console.SetError stderr
       let args =
-        [| "-i"; input; "-o"; output; "-x"; report;
+        [| "-i"; input; "-o"; output; "-r"; report;
+           "--reportFormat"; "Json"
            "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
@@ -532,6 +533,9 @@ module AltCoverXTests =
         |> Seq.toList
 
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
+      let recordedJson = match DocumentType.LoadReport CoverageParameters.theReportFormat.Value report with
+                         | JSON j -> j
+      Assert.That(recordedJson.Keys |> Seq.toList, Is.EqualTo ["Sample4.dll"] )
     finally
       CoverageParameters.trackingNames.Clear()
       CoverageParameters.theReportFormat <- None
@@ -547,6 +551,7 @@ module AltCoverXTests =
       CoverageParameters.nameFilters.Clear()
       Output.error <- snd save2
       Output.info <- fst save2
+
     let before = File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
     test <@ before.IndexOf("AltCover.Recorder.g") =  -1 @>
     let o = JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
@@ -589,6 +594,7 @@ module AltCoverXTests =
   let ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let path = monoSample1path |> Path.GetDirectoryName |> Path.GetFullPath
+    maybeIgnore (fun () -> path |> Directory.Exists |> not)
     let key = Path.Combine(SolutionDir(), "Build/SelfTest.snk")
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
@@ -610,7 +616,7 @@ module AltCoverXTests =
       use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
-      let args = [| "-i"; path; "-o"; output; "-x"; report
+      let args = [| "-i"; path; "-o"; output; "-r"; report
                     "--reportFormat"; "ncov"
                     "-sn"; key
                  |]
@@ -653,7 +659,8 @@ module AltCoverXTests =
       test <@ actual = theFiles @>
       let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
       let expectedXml = XDocument.Load(new StringReader(expectedText))
-      let recordedXml = Runner.J.loadReport report
+      let recordedXml = match DocumentType.LoadReport ReportFormat.OpenCover report with
+                        | XML x -> x
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
       CoverageParameters.theOutputDirectories.Clear()
@@ -711,6 +718,7 @@ module AltCoverXTests =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recpath = Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
     let recdef = Mono.Cecil.AssemblyDefinition.ReadAssembly recpath
@@ -866,19 +874,26 @@ module AltCoverXTests =
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMono() =
-    let visitor, document = Report.reportGenerator()
+    let visitor, documentSource = Report.reportGenerator()
     let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
     Visitor.visit [ visitor ] (Visitor.I.toSeq  { AssemblyPath = path; Destinations = [] } )
     let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path |> Path.GetFullPath) + "\"")
     let baseline = XDocument.Load(new System.IO.StringReader(expectedText))
+    let document =
+      use stash = new MemoryStream()
+      stash |> documentSource
+      stash.Position <- 0L
+      XDocument.Load stash
     let result = document.Elements()
     let expected = baseline.Elements()
     RecursiveValidate result expected 0 true
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
-    let visitor, document = OpenCover.reportGenerator()
+    let visitor, documentSource = OpenCover.reportGenerator()
     let path = monoSample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -895,6 +910,11 @@ module AltCoverXTests =
        |> baseline.Descendants
        |> Seq.head).SetValue path
 
+      let document =
+        use stash = new MemoryStream()
+        stash |> documentSource
+        stash.Position <- 0L
+        XDocument.Load stash
       let result = document.Elements()
       let expected = baseline.Elements()
       RecursiveValidateOpenCover result expected 0 true false

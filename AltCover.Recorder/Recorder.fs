@@ -333,8 +333,9 @@ module Instance =
           else traceVisit
         adder moduleId hitPointId context
 
-    let internal isOpenCoverRunner() =
-      (CoverageFormat = ReportFormat.OpenCoverWithTracking) && isRunner
+    let internal isTrackingRunner() =
+      (CoverageFormat = ReportFormat.OpenCoverWithTracking ||
+       CoverageFormat = ReportFormat.NativeJsonWithTracking) && isRunner
     let internal granularity() = Timer
     let internal clock() = DateTime.UtcNow.Ticks
 
@@ -392,18 +393,17 @@ module Instance =
   let Visit moduleId hitPointId =
     if I.recording then
       I.visitSelection
-        (if CoverageFormat = ReportFormat.OpenCoverWithTracking
-          then I.payloadSelector I.isOpenCoverRunner
+        (if (CoverageFormat = ReportFormat.OpenCoverWithTracking  ||
+             CoverageFormat = ReportFormat.NativeJsonWithTracking)
+          then I.payloadSelector I.isTrackingRunner
           else Null) moduleId hitPointId
 
   // The moduleId strings are not the hash or guids normally found there
   let Push caller = I.push caller
-                    if CoverageFormat = ReportFormat.OpenCoverWithTracking &&
-                       I.isOpenCoverRunner()
+                    if I.isTrackingRunner()
                     then I.visitSelection (Time DateTime.UtcNow.Ticks) Track.Entry caller
   let Pop() = let caller = I.pop()
-              if CoverageFormat = ReportFormat.OpenCoverWithTracking &&
-                I.isOpenCoverRunner() &&
+              if I.isTrackingRunner() &&
                 caller.IsSome
               then I.visitSelection (Time DateTime.UtcNow.Ticks) Track.Exit caller.Value
 

@@ -12,8 +12,6 @@
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
-  -j, --jsonReport=VALUE     Optional: File for JSON format version of the
-                               collected data
   -t, --threshold=VALUE      Optional: one or more of minimum acceptable
                                statement (S), branch (B) or method (M/AM)
                                coverage percentage (integer, 1 to 100) or

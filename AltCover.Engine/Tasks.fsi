@@ -54,9 +54,9 @@ type Prepare =
     ///</summary>
     member StrongNameKey : string with get, set
     ///<summary>
-    /// Corresponds to command line option `-x, --xmlReport=VALUE`
+    /// Corresponds to command line option `-r, --report=VALUE`
     ///</summary>
-    member XmlReport : string with get, set
+    member Report : string with get, set
     ///<summary>
     /// Corresponds to command line option `-f, --fileFilter=VALUE`
     ///</summary>
@@ -239,10 +239,6 @@ type Collect =
     /// Corresponds to command line option ` -q` (expects names of `System.Diagnostics.TraceLevel` values)
     ///</summary>
     member Verbosity : string with get, set
-    ///<summary>
-    /// Corresponds to command line option `-j, --jsonReport=VALUE`
-    ///</summary>
-    member JsonReport : string with get, set
   end
 // ```
 // ## Task `AltCover.PowerShell`
@@ -354,7 +350,7 @@ type RunSettings =
     member Verbosity : string with get, set
   end
 // ```
-// ## Task `AltCover.Copy`
+// ## Task `AltCover.ContingentCopy`
 // Used by the .net core implementation to copy files copied relative to the output directory to the same locations relative to the instrumented files folder
 //
 // Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
@@ -393,10 +389,36 @@ type ContingentCopy =
     [<Required>]
     member BuildOutputDirectory : string with get, set
     ///<summary>
-    /// The base of the relatuve to directory
+    /// The base of the relative to directory
     ///</summary>
     [<Required>]
     member InstrumentDirectory : string with get, set
   end
-
+// ```
+// ## Task `AltCover.RetryDelete`
+// Used by the .net core implementation to safely delete files
+//
+// Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
+// ```
+///<summary>
+/// <para>Used by the .net core implementation to tidy files that may be in a lingering 'in use' state</para>
+/// <para>Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.</para>
+///</summary>
+type RetryDelete =
+  class
+    inherit Task
+    ///<summary>
+    /// <para>The default constructor</para>
+    ///</summary>
+    new : unit -> RetryDelete
+    ///<summary>
+    /// <para>Perform the operation</para>
+    /// <returns>The success of the outcome.</returns>
+    ///</summary>
+    override Execute : unit -> bool
+    ///<summary>
+    /// The file relative location (if empty, then no-op)
+    ///</summary>
+    member Files : string array with get, set
+  end
 // ```

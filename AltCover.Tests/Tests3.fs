@@ -15,12 +15,12 @@ open Mono.Cecil.Cil
 
 module AltCoverTests3 =
     // AltCover.fs and CommandLine.fs
-
     [<Test>]
     let ShouldLaunchWithExpectedOutput() =
       Main.init()
       let path =
         Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      maybeIgnore (fun () -> path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -523,7 +523,7 @@ module AltCoverTests3 =
         CoverageParameters.nameFilters.Clear()
 
     [<Test>]
-    let ParsingXmlGivesXml() =
+    let ParsingReportGivesReport() =
       Main.init()
       try
         CoverageParameters.theReportPath <- None
@@ -531,7 +531,7 @@ module AltCoverTests3 =
         let unique = Guid.NewGuid().ToString()
         let where = Assembly.GetExecutingAssembly().Location
         let path = Path.Combine(Path.GetDirectoryName(where), unique)
-        let input = [| "-x"; path |]
+        let input = [| "-r"; path |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right(x, y) ->
@@ -543,7 +543,7 @@ module AltCoverTests3 =
         CoverageParameters.theReportPath <- None
 
     [<Test>]
-    let ParsingMultipleXmlGivesFailure() =
+    let ParsingMultipleReportGivesFailure() =
       Main.init()
       try
         CoverageParameters.theReportPath <- None
@@ -551,9 +551,9 @@ module AltCoverTests3 =
         let unique = Guid.NewGuid().ToString()
 
         let input =
-          [| "-x"
+          [| "-r"
              unique
-             "/x"
+             "/r"
              unique.Replace("-", "+") |]
 
         let parse = CommandLine.parseCommandLine input options
@@ -561,12 +561,12 @@ module AltCoverTests3 =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
-          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--xmlReport : specify this only once")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--report : specify this only once")
       finally
         CoverageParameters.theReportPath <- None
 
     [<Test>]
-    let ParsingBadXmlGivesFailure() =
+    let ParsingBadReportGivesFailure() =
       Main.init()
       try
         CoverageParameters.theReportPath <- None
@@ -574,7 +574,7 @@ module AltCoverTests3 =
         let unique = Guid.NewGuid().ToString()
 
         let input =
-          [| "-x"
+          [| "-r"
              unique.Replace("-", Path.GetInvalidPathChars() |> String) |]
 
         let parse = CommandLine.parseCommandLine input options
@@ -586,13 +586,13 @@ module AltCoverTests3 =
         CoverageParameters.theReportPath <- None
 
     [<Test>]
-    let ParsingNoXmlGivesFailure() =
+    let ParsingNoReportGivesFailure() =
       Main.init()
       try
         CoverageParameters.theReportPath <- None
         let options = Main.I.declareOptions()
         let unique = Guid.NewGuid().ToString()
-        let input = [| "-x" |]
+        let input = [| "-r" |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left(x, y) ->
@@ -602,13 +602,13 @@ module AltCoverTests3 =
         CoverageParameters.theReportPath <- None
 
     [<Test>]
-    let ParsingEmptyXmlGivesFailure() =
+    let ParsingEmptyReportGivesFailure() =
       Main.init()
       try
         CoverageParameters.theReportPath <- None
         let options = Main.I.declareOptions()
         let unique = Guid.NewGuid().ToString()
-        let input = [| "-x"; " " |]
+        let input = [| "-r"; " " |]
         let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left(x, y) ->
@@ -1429,6 +1429,23 @@ module AltCoverTests3 =
         CoverageParameters.theReportFormat <- None
 
     [<Test>]
+    let ParsingJsonFormatGivesJson() =
+      Main.init()
+      try
+        CoverageParameters.theReportFormat <- None
+        let options = Main.I.declareOptions()
+        let input = [| "--reportFormat"; "Json" |]
+        let parse = CommandLine.parseCommandLine input options
+        match parse with
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        match CoverageParameters.theReportFormat with
+        | Some x -> Assert.That(x, Is.EqualTo AltCover.ReportFormat.NativeJson)
+      finally
+        CoverageParameters.theReportFormat <- None
+
+    [<Test>]
     let ParsingOpenCoverFormatGivesOpenCover() =
       Main.init()
       try
@@ -2143,6 +2160,7 @@ module AltCoverTests3 =
     let ShouldProcessTrailingArguments() =
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let path = Path.Combine(SolutionDir(), "_Mono/Sample1")
+      maybeIgnore (fun () -> path |> Directory.Exists |> not)
       let files = Directory.GetFiles(path)
 
       let program =
@@ -2949,4 +2967,41 @@ module AltCoverTests3 =
       let target = Path.Combine(subject.InstrumentDirectory, relative, subject.FileName)
       test <@ target |> File.Exists @>
 
+    [<Test>]
+    let RetryDeleteTest() =
+      Main.init()
+      let subject = RetryDelete()
+      let unique = Guid.NewGuid().ToString()
+
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let from = Path.Combine (where,  "Sample2.pdb")
+      let target = Path.Combine (where, unique)
+      File.Copy(from, target, true)
+      test <@ File.Exists target @>
+      subject.Files <- [| target |]
+      test <@ subject.Execute ()  @>
+      test <@ target |> File.Exists |> not @>
+
+      [
+        IOException() :> Exception
+        System.Security.SecurityException()  :> Exception
+        UnauthorizedAccessException() :> Exception
+      ]
+      |> List.iter (fun ex ->
+        let builder = System.Text.StringBuilder()
+        CommandLine.I.doRetry (fun _ -> raise ex) (builder.Append >> ignore) 2 0 0 target
+        test <@ builder.ToString().StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>
+      )
+
+      let builder = System.Text.StringBuilder()
+      Assert.Throws<InvalidDataException>(fun () ->
+        CommandLine.I.doRetry (fun _ -> raise <| InvalidDataException()) (builder.Append >> ignore) 2 0 0 target
+      ) |> ignore
+
+      test <@ builder.ToString() |> String.IsNullOrEmpty @>
+
+      let write = subject.GetType().GetMethod("Write", BindingFlags.NonPublic ||| BindingFlags.Instance)
+
+      let ex = Assert.Throws<TargetInvocationException>(fun () -> write.Invoke(subject, [| "xx" |]) |> ignore)
+      test <@ ex.InnerException.GetType().FullName = "System.InvalidOperationException" @>
   // Recorder.fs => Recorder.Tests

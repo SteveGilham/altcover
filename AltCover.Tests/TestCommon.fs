@@ -31,6 +31,10 @@ module TestCommon =
   let SolutionDir() =
     AltCover.SolutionRoot.location
 
+  let maybeIgnore f =
+    if f()
+    then Assert.Ignore()
+
   let maybeIOException f =
     try
       f()
@@ -63,6 +67,15 @@ module TestCommon =
     | fail -> Swensen.Unquote.AssertionFailedException(message + Environment.NewLine + fail.Message, fail) |> raise
 
 module TestCommonTests =
+    [<Test>]
+    let TestIgnoredTests() =
+      let allOK = (fun () -> true)
+      Assert.Throws<NUnit.Framework.IgnoreException>(fun () -> maybeIgnore allOK)
+      |> ignore
+#if !NET472
+      maybeIgnore allOK
+#endif
+
     [<Test>]
     let ExerciseItAll() =
 #if !NET472
@@ -158,5 +171,9 @@ module ExpectoTestCommon =
     <| (((check, "ConsistencyCheck") :: regular
         |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
                                                               pretest()
-                                                              f())))) @ specials)
+                                                              try
+                                                                f()
+                                                              with
+                                                              | :? NUnit.Framework.IgnoreException -> ()
+        )))) @ specials)
 #endif

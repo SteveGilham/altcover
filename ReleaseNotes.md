@@ -2,6 +2,29 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.0.815 (Habu series release 1)
+* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
+* [NEW] Native JSON report formatting (`--reportFormat=Json` or equivalents), a superset of coverlet's JSON
+  * AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
+  * `ConvertFrom-CoverageJson` cmdlet to convert from coverlet or AltCover JSON to a miminal OpenCover format
+  * Preparing as Native JSON, to generate an LCov or Cobertura report at collection is supported
+* [VISUALIZER] Both versions will now consume and display from coverlet and AltCover JSON output
+* [BREAKING] the `-x, --xmlReport` argument or equivalent becomes just `-r, --report` since not all reports are XML
+* [BREAKING] the stop-gap `--jsonReport` collection option from v7.6 is withdrawn, and the related `ConvertTo-CoverageJson` cmdlet now produces the AltCover native JSON format
+* For both LCov and Cobertura output, coalesce cases of multiple sequence points per line into one entry per line
+* Extensions to coverlet's JSON format are as follows
+  * `Method` has optional fields
+    * `SeqPnts` (array of `SeqPnt`) 
+    * `TId` (integer tracking ID) 
+    * `Entry` and
+    * `Exit` (arrays of timestamps)
+  * `BranchInfo` has optional fields
+   * `Id` (integer unique ID)
+   * `Times` (array of timestamps) and
+   * `Tracks` (array of tracking IDs)
+  * `SeqPnt` is `VC` (visit count), `SL` (start line), `SC` (start column), `EL`, `EC` (ditto for end), `Offset`, `Id`, all integers, and optional `Times` and `Tracks` as for `BranchInfo`
+  * Because int64 doesn't fit as a double, tracking-related timestamps are represented as Base64Encoded strings of the ticks count as a network byte order quantity `Convert.ToBase64String(BitConverter.GetBytes(IPAddresss.HostToNetworkOrder(ticks)))`
+
 # 7.6.812 (Genbu series release 15)
 * [VISUALIZER] Move the global tool to the new 0.10 AvaloniaUI release
 * Monitor API
@@ -15,17 +38,4 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [NEW] AltCover.Monitor API to track current coverage from running unit tests.  Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
 * [BUGFIX] In OpenCover format output, only emit `<File />` records relevant to the respective module, not for all source files encountered so far.
 
-# 7.4.808 (Genbu series release 13)
-* [BUGFIX] In some use cases, the error `The "AltCover.ContingentCopy" task was not given a value for the required parameter "FileName".` could be provoked by `dotnet test` (Issue #113)
-* Extend  to other Build Action types (at least all those that my VS2019 Community Edition was prepared to mention) the "If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<[Action] Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files" behaviour added for the `None` action in the previous release.  File an issue report if you have yet another build action type that you need copying for a not-in-place test scenario.
-
-# 7.4.807 (Genbu series release 12)
-* [MAYBE BREAKING] Set `InPlace` default to `false` uniformly across the API
-  * Add `dotnet test` command line option `/p:AltCoverInPlace=true|false` (default false)
-  * If  `/p:AltCoverInPlace=true` then `/p:AltCoverForce=true` has its pre-v7.3.805 meaning
-  * Wire up "InPlace" to the Fake `DotNet.test` driver for the above
-  * If `/p:AltCoverInPlace` is not `true`, then copy all files in the project included as `<None Include="./[some subdirectory]/..."` with `CopyToOutputDirectory` of `Always` or `PreserveNewest` to the appropriate relative location wrt the intrumented files
-  * **NB** `/p:AltCoverInPlace=true` will not play well with the concurrent instrument-and-test behaviour of `dotnet test [multipletestprojects].sln /p:AltCover="true" --output [commonArtifactsFolder]`
-* Allow `--callContext` and `--single` together, which will log at most one visit _per context_ per location, not just one visit per location
-
-For previous releases (7.3.x and earlier) [go here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md)
+For previous releases (7.4.x and earlier) [go here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md)

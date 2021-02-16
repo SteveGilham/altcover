@@ -10,7 +10,7 @@ The full command line is
 ```
 AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/j[sonReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
@@ -154,6 +154,8 @@ or
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
+  -j, --jsonReport=VALUE     Optional: File for JSON format version of the
                                collected data
   -t, --threshold=VALUE      Optional: one or more of minimum acceptable
                                statement (S), branch (B) or method (M/AM)

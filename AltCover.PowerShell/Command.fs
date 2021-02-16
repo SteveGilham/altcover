@@ -86,7 +86,7 @@ type ReportFormat =
 /// <para type="description">Summary information is also written to the object pipeline.</para>
 /// <para type="description">**Note**: `-WhatIf` includes validation for the command line arguments.  It is ignored for the purely read-only `-Version` option </para>
 /// <example>
-///   <code>        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue</code>
+///   <code>        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover", SupportsShouldProcess = true,
@@ -136,14 +136,6 @@ type InvokeAltCoverCommand() =
               ValueFromPipelineByPropertyName = false)>]
   [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Lcov is a name")>]
   member val LcovReport = String.Empty with get, set
-
-  /// <summary>
-  /// <para type="description">File path for JSON format version of the collected data</para>
-  /// </summary>
-  [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
-              ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "Json is a name")>]
-  member val JsonReport = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">One or more of minimum acceptable statement (S), branch (B) or method (M)/alternative method (AM) coverage percentage (integer, 1 to 100) or maximum acceptable CRAP/alternative CRAP score (C/AC followed by integer, 1 to 255) e.g. M80AM70C40AC100B50. If the value starts with a number, a leading S is assumed. If any threshold is specified more than once, the last instance is assumed -- so 25S50 counts as S50. Zero/absent values are ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the process is the largest abs(threshold - actual) rounded up to the nearest integer.</para>
@@ -249,11 +241,11 @@ type InvokeAltCoverCommand() =
   member val StrongNameKey = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">The output report template file (default: coverage.xml in the current directory)</para>
+  /// <para type="description">The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val XmlReport = String.Empty with get, set
+  member val Report = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Source file names to exclude from instrumentation</para>
@@ -545,8 +537,7 @@ type InvokeAltCoverCommand() =
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
         SummaryFormat = String(formatString)
-        Verbosity = self.Verbosity
-        JsonReport = self.JsonReport }
+        Verbosity = self.Verbosity }
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
@@ -557,7 +548,7 @@ type InvokeAltCoverCommand() =
         Dependencies = self.Dependency
         Keys = self.Key
         StrongNameKey = self.StrongNameKey
-        XmlReport = self.XmlReport
+        Report = self.Report
         FileFilter = self.FileFilter
         AssemblyFilter = self.AssemblyFilter
         AssemblyExcludeFilter = self.AssemblyExcludeFilter
