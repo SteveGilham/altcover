@@ -515,6 +515,7 @@ module AltCoverXTests =
       let expected =
         [ "AltCover.Recorder.g.dll"
           "AltCover.Recorder.g.pdb";
+          "FSharp.Core.xml"; // @ F# 5.0.1
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
           "xunit.runner.reporters.netcoreapp10.dll";
