@@ -93,6 +93,10 @@ module Abstract =
     /// Corresponds to command line option `--teamcity[=VALUE]`
     ///</summary>
     abstract member SummaryFormat : String with get
+    ///<summary>
+    /// Corresponds to command line option ` -q`
+    ///</summary>
+    abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
 // ```
 // ### interface `IPrepareOptions`
@@ -145,9 +149,9 @@ module Abstract =
     ///</summary>
     abstract member StrongNameKey : String with get
     ///<summary>
-    /// Corresponds to command line option `-x, --xmlReport=VALUE`
+    /// Corresponds to command line option `-r, --report=VALUE`
     ///</summary>
-    abstract member XmlReport : String with get
+    abstract member Report : String with get
     ///<summary>
     /// Corresponds to command line option `-f, --fileFilter=VALUE`
     ///</summary>
@@ -256,6 +260,10 @@ module Abstract =
     /// Corresponds to command line option ` --showGenerated`
     ///</summary>
     abstract member ShowGenerated : bool with get
+    ///<summary>
+    /// Corresponds to command line option ` -q`
+    ///</summary>
+    abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
 // ```
 #if RUNNER

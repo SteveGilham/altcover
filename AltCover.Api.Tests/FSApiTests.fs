@@ -10,6 +10,7 @@ open System.Xml.Schema
 
 open AltCover
 open Microsoft.FSharp.Reflection
+open System.Diagnostics
 
 module FSApiTests =
 
@@ -105,7 +106,7 @@ module FSApiTests =
             |> not
           then setAttribute el "crapScore" "0")
     OpenCover.PostProcess after BranchOrdinal.Offset
-//#if ! NET5_0
+//#if !NET472
 //    NUnit.Framework.Assert.That(after.ToString(),
 //        NUnit.Framework.Is.EqualTo(before.ToString()))
 //#endif
@@ -127,8 +128,87 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.lcov")
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd().Replace("\r", String.Empty)
-
+    // printfn "%s" result
+    //Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
+
+  [<Test>]
+  let JsonToOpenCover() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.json")
+
+    let doc = use reader = new StreamReader(stream)
+              reader.ReadToEnd()
+
+    let result = (OpenCover.JsonToXml doc).ToString()
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.xml")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    Assert.That(result
+                  .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                  .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+                  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
+
+  [<Test>]
+  let OpenCoverToJson() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")
+    let doc = XDocument.Load(stream)
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCover.json")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
+  [<Test>]
+  let NCoverToJson() =
+    use stream=
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.Xml")
+    let doc = XDocument.Load(stream)
+    // fix up file path
+    let exe = Path.Combine(SolutionRoot.location, "Sample19", "ConsoleApplication1.exe")
+    doc.Root.Descendants(XName.Get "module")
+    |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.json")
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test <@ result.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                   .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) =
+                     expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                         .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]) @>
 
   [<Test>]
   let OpenCoverToBarChart() =
@@ -176,9 +256,13 @@ module FSApiTests =
     let sample = typeof<M.Thing>.Assembly.Location
     let reporter, doc = AltCover.Report.reportGenerator()
     let visitors = [ reporter ]
-    Visitor.visit visitors [(sample, [])]
-    use mstream = new MemoryStream()
-    let rewrite = CoverageFormats.ConvertFromNCover doc [ sample ]
+    Visitor.visit visitors [ { AssemblyPath = sample; Destinations = [] } ]
+    let document =
+        use stash = new MemoryStream()
+        stash |> doc
+        stash.Position <- 0L
+        XDocument.Load stash
+    let rewrite = CoverageFormats.ConvertFromNCover document [ sample ]
     test <@ rewrite |> isNull |> not @>
 
   [<Test>]
@@ -234,7 +318,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     doc.Descendants()
     |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
-    |> Seq.filter (fun a -> a |> isNull |> not)
+    |> Seq.filter (isNull >> not)
     |> Seq.iter (fun a -> a.Value <- "false")
 
     let cob = CoverageFormats.ConvertToCobertura doc
@@ -243,6 +327,7 @@ module FSApiTests =
     use stream2a = new MemoryStream(stream2.GetBuffer())
     use rdr = new StreamReader(stream2a)
     let result = rdr.ReadToEnd().Replace("\r", String.Empty)
+    // printfn "FSApi.NCoverToCobertura\r\n%s" result
 
     use stream3 =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")
@@ -307,7 +392,7 @@ module FSApiTests =
     let force = DotNet.CLIOptions.Force true
     let fail = DotNet.CLIOptions.Fail true
     let summary = DotNet.CLIOptions.Summary "R"
-    let combined =DotNet.CLIOptions.Many [ force; fail; summary ]
+    let combined = DotNet.CLIOptions.Many [ force; fail; summary ]
 
     let pprep = Primitive.PrepareOptions.Create()
     let prep = AltCover.PrepareOptions.Primitive pprep
@@ -331,13 +416,14 @@ module FSApiTests =
                        |> Seq.toList
 
     let prepareFragments = [DotNet.I.toPrepareListArgumentList >> (List.map (fun (_,n,_) -> n))
+                            (fun p -> p.Verbosity) >> DotNet.I.toSharedFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             DotNet.I.toPrepareFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
                             DotNet.I.toPrepareArgArgumentList >> (List.map (fun (_,n,_,_) -> n))]
                             |> List.collect (fun f -> f prep)
                             |> List.sort
 
-    // not input and output directories
-//#if ! NET5_0
+    // not input and output directories  (inplace now allowed)
+//#if !NET472
 //    NUnit.Framework.Assert.That(prepareFragments |> List.length, NUnit.Framework.Is.EqualTo ((prepareNames |> List.length) - 2),
 //                "expected " + String.Join("; ", prepareNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", prepareFragments))
@@ -354,13 +440,14 @@ module FSApiTests =
 
     let collectFragments = [//DotNet.I.toCollectListArgumentList >> (List.map (fun (_,n,_) -> n))
                             DotNet.I.toCollectFromArgArgumentList >> (List.map (fun (_,n,_) -> n))
+                            (fun c -> c.Verbosity) >> DotNet.I.toSharedFromValueArgumentList >> (List.map (fun (_,n,_,_) -> n))
                             //DotNet.I.toCollectArgArgumentList >> (List.map (fun (_,n,_,_) -> n))
                            ]
                             |> List.collect (fun f -> f coll)
                             |> List.sort
 
     // not recorder directory
-//#if ! NET5_0
+//#if !NET472
 //    NUnit.Framework.Assert.That(collectFragments |> List.length, NUnit.Framework.Is.EqualTo ((collectNames |> List.length) - 1),
 //                "expected " + String.Join("; ", collectNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", collectFragments))
@@ -383,7 +470,7 @@ module FSApiTests =
                             |> List.sort
 
     // ignore Is<CaseName> and Tag
-//#if ! NET5_0
+//#if !NET472
 //    NUnit.Framework.Assert.That(optionsFragments |> List.length, NUnit.Framework.Is.EqualTo ((optionNames |> List.length) - (1 + optionCases)),
 //                "expected " + String.Join("; ", optionNames) + Environment.NewLine +
 //                "but got  " + String.Join("; ", optionsFragments))
@@ -417,6 +504,18 @@ module FSApiTests =
 
     test <@ DotNet.ToTestArguments prep coll combined =
       "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+
+    let coll1 = {pcoll with Verbosity = TraceLevel.Verbose }
+                |> AltCover.AltCover.CollectOptions.Primitive
+    test <@ DotNet.ToTestArguments prep coll1 combined =
+      "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
+
+    let coll2 = {pcoll with Verbosity = TraceLevel.Warning }
+                |> AltCover.AltCover.CollectOptions.Primitive
+    let prep2 = {pprep with Verbosity = TraceLevel.Error }
+                |> AltCover.AltCover.PrepareOptions.Primitive
+    test <@ DotNet.ToTestArguments prep2 coll2 combined =
+      "/p:AltCover=\"true\" /p:AltCoverReportFormat=\"OpenCover\" /p:AltCoverShowStatic=\"-\" /p:AltCoverVerbosity=\"Error\" /p:AltCoverShowSummary=\"R\" /p:AltCoverForce=\"true\" /p:AltCoverFailFast=\"true\"" @>
 
   [<Test>]
   let MergeRejectsNonCoverage() =

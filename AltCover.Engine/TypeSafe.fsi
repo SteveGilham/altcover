@@ -358,28 +358,44 @@ namespace AltCoverFake.DotNet.Testing
     ///<summary>
     /// Corresponds to a summary format choice
     ///</summary>
-    [<NoComparison>]
+    [<NoComparison; AutoSerializable(false)>]
     type SummaryFormat =
-      ///<summary>
-      /// OpenCover style
-      ///</summary>
-      | Default (* OpenCover style *)
-      ///<summary>
-      /// TeamCity `bRanch` style
-      ///</summary>
-      | R (* TeamCity bRanch only *)
-      ///<summary>
-      /// TeamCity `Block` style
-      ///</summary>
-      | B (* TeamCity Block only *)
-      ///<summary>
-      /// TeamCity `bRanch` style + OpenCover style
-      ///</summary>
-      | RPlus (* R + default *)
-      ///<summary>
-      /// TeamCity `Block` style + OpenCover style
-      ///</summary>
-      | BPlus (* B + default *)
+      /// <summary>
+      /// <para type="description">OpenCover format with CRAP score, equivalent to Many [O; C] if no other values given </para>
+      /// </summary>
+      | Default  (* O + C *)
+      /// <summary>
+      /// <para type="description">No summary, overriding any other value given</para>
+      /// </summary>
+      | N (* No summary -- overrides all other choices *)
+      /// <summary>
+      /// <para type="description">OpenCover classic summary only</para>
+      /// </summary>
+      | O  (* OpenCover style *)
+      /// <summary>
+      /// <para type="description">Change Risk Anti-Patterns score only</para>
+      /// </summary>
+      | C  (* Change Risk Anti-Pattern score *)
+      /// <summary>
+      /// <para type="description">TeamCity with R for bRanch</para>
+      /// </summary>
+      | R  (* TeamCity bRanch only *)
+      /// <summary>
+      /// <para type="description">TeamCity with B for Block representing branch coverage</para>
+      /// </summary>
+      | B  (* TeamCity Block only *)
+      /// <summary>
+      /// <para type="description">OpenCover plus CRAP score plus TeamCity with R for bRanch, equivalent to Many [B; O; C]</para>
+      /// </summary>
+      | RPlus (* R + O + C *)
+      /// <summary>
+      /// <para type="description">OpenCover plus CRAP score plus TeamCity with B for Block representing branch coverage, equivalent to Many [R; O; C]</para>
+      /// </summary>
+      | BPlus (* B + O + C *)
+      /// <summary>
+      /// <para type="description">Aggregation of the above</para>
+      /// </summary>
+      | Many of SummaryFormat seq
       with
         ///<summary>
         /// Returns the string to use in the command line
@@ -484,7 +500,12 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to command line option `--teamcity[=VALUE]`
         ///</summary>
-        SummaryFormat: SummaryFormat }
+        SummaryFormat: SummaryFormat
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        Verbosity : System.Diagnostics.TraceLevel
+      }
       with
         ///<summary>
         /// Returns an instance with all fields empty save `ExposeReturnCode` being `Set`
@@ -536,9 +557,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         StrongNameKey: FilePath
         ///<summary>
-        /// Corresponds to command line option `-x, --xmlReport=VALUE`
+        /// Corresponds to command line option `-r, --report=VALUE`
         ///</summary>
-        XmlReport: FilePath
+        Report: FilePath
         ///<summary>
         /// Corresponds to command line option `-f, --fileFilter=VALUE`
         ///</summary>
@@ -646,7 +667,12 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to command line option ` --showGenerated`
         ///</summary>
-        ShowGenerated: Flag }
+        ShowGenerated: Flag
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        Verbosity : System.Diagnostics.TraceLevel
+ }
       with
         ///<summary>
         /// returns an instance that has all fields unset/default except `ExposeReturnCode`, `InPlace` and `Save` are `Set`

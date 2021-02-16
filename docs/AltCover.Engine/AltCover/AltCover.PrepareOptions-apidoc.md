@@ -34,6 +34,7 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [MethodTopLevel](AltCover.PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](AltCover.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](AltCover.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Report](AltCover.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](AltCover.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](AltCover.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](AltCover.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
@@ -44,8 +45,8 @@ public abstract class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEq
 | [SymbolDirectories](AltCover.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [TypeFilter](AltCover.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](AltCover.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [Verbosity](AltCover.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [VisibleBranches](AltCover.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
-| [XmlReport](AltCover.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](AltCover.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
 | [Validate](AltCover.PrepareOptions/Validate-apidoc)() | Does simple checking of the arguments without causing any changes to the system |
 | class [Abstract](AltCover.PrepareOptions.Abstract-apidoc) | Options expressed as an interface |

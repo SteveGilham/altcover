@@ -3,6 +3,7 @@
   <Import Project="..\packages\FSharp.Compiler.Tools.10.2.3\build\FSharp.Compiler.Tools.props" Condition="Exists('..\packages\FSharp.Compiler.Tools.10.2.3\build\FSharp.Compiler.Tools.props')" />
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+      <Import Project="..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets" Condition="Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" />
   <UsingTask TaskName="AltCover.Prepare"  
              Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')" 
              AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll"/>  
@@ -15,17 +16,15 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Sample4</RootNamespace>
     <AssemblyName>Sample4</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Sample4</Name>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <PathTerminal Condition="'$(OS)' == 'Windows_NT'">legacy\</PathTerminal>
-    <PathTerminal Condition="'$(OS)' != 'Windows_NT'">net47\</PathTerminal>
-    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\$(PathTerminal)</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\$(PathTerminal)</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\legacy</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\legacy</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -84,6 +83,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.4.1\build\xunit.core.props'))" />
     <Error Condition="!Exists('..\packages\xunit.core.2.4.1\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.4.1\build\xunit.core.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets'))" />
   </Target>
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.targets" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
@@ -104,7 +104,7 @@
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
-      XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
+      Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
       AssemblyFilter="@(AssemblyFilter)"
       />  
   </Target>

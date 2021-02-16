@@ -75,6 +75,8 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Api.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder2.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
 #else
@@ -140,7 +142,8 @@ do ()"""
     let ystream = new YamlStream()
     ystream.Load(yreader)
     let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
-    string mapping.Children.[YamlScalarNode("version")]
+    (mapping.Children :> System.Collections.Generic.IDictionary<YamlNode, YamlNode>).[YamlScalarNode("version")]
+    |> string
 
   let LocalVersion appveyor (version : string) =
     let now = DateTimeOffset.UtcNow
@@ -293,7 +296,7 @@ do ()"""
       AltCover.PrepareOptions.Primitive
         { Primitive.PrepareOptions.Create() with
             TypeFilter = [ """System\.""" ]
-            XmlReport = simpleReport
+            Report = simpleReport
             OutputDirectories = [| "./" + instrumented |]
             ReportFormat = "NCover"
             InPlace = false
@@ -337,7 +340,7 @@ do ()"""
           AltCover.PrepareOptions.Primitive
             { Primitive.PrepareOptions.Create() with
                 TypeFilter = [ """System\.""" ]
-                XmlReport = simpleReport
+                Report = simpleReport
                 OutputDirectories = [| "./" + instrumented |]
                 ReportFormat = "NCover"
                 InPlace = false

@@ -5,6 +5,8 @@
     <TargetFrameworks>netcoreapp2.0;net20</TargetFrameworks>
     <AssemblyName>Sample1</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

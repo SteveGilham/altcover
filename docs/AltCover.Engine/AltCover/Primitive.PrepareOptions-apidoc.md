@@ -33,6 +33,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [MethodTopLevel](Primitive.PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Primitive.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](Primitive.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Report](Primitive.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Primitive.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Primitive.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](Primitive.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
@@ -43,8 +44,8 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [SymbolDirectories](Primitive.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [TypeFilter](Primitive.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](Primitive.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [Verbosity](Primitive.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [VisibleBranches](Primitive.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
-| [XmlReport](Primitive.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](Primitive.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
 
 ## See Also

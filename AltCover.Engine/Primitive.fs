@@ -31,7 +31,8 @@ module Primitive =
       OutputFile : String
       CommandLine : String seq
       ExposeReturnCode : bool
-      SummaryFormat : String }
+      SummaryFormat : String
+      Verbosity : System.Diagnostics.TraceLevel }
     static member Create() =
       { RecorderDirectory = String.Empty
         WorkingDirectory = String.Empty
@@ -42,7 +43,8 @@ module Primitive =
         OutputFile = String.Empty
         CommandLine = []
         ExposeReturnCode = true
-        SummaryFormat = String.Empty }
+        SummaryFormat = String.Empty
+        Verbosity = System.Diagnostics.TraceLevel.Info}
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",
@@ -56,7 +58,7 @@ module Primitive =
       Dependencies : String seq
       Keys : String seq
       StrongNameKey : String
-      XmlReport : String
+      Report : String
       FileFilter : String seq
       AssemblyFilter : String seq
       AssemblyExcludeFilter : String seq
@@ -83,7 +85,8 @@ module Primitive =
       LocalSource : bool
       VisibleBranches : bool
       ShowStatic : string
-      ShowGenerated : bool }
+      ShowGenerated : bool
+      Verbosity : System.Diagnostics.TraceLevel }
     static member Create() =
       { InputDirectories = Seq.empty
         OutputDirectories = Seq.empty
@@ -91,7 +94,7 @@ module Primitive =
         Dependencies = Seq.empty
         Keys = Seq.empty
         StrongNameKey = String.Empty
-        XmlReport = String.Empty
+        Report = String.Empty
         FileFilter = Seq.empty
         AssemblyFilter = Seq.empty
         AssemblyExcludeFilter = Seq.empty
@@ -104,7 +107,7 @@ module Primitive =
         MethodTopLevel = Seq.empty
         CallContext = Seq.empty
         ReportFormat = String.Empty
-        InPlace = true
+        InPlace = false
         Save = true
         ZipFile = false
         MethodPoint = false
@@ -118,7 +121,8 @@ module Primitive =
         LocalSource = false
         VisibleBranches = false
         ShowStatic = "-"
-        ShowGenerated = false }
+        ShowGenerated = false
+        Verbosity = System.Diagnostics.TraceLevel.Info }
 
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false)>]
@@ -138,20 +142,20 @@ module Primitive =
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="cobertura", Justification="Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="lcov", Justification="LCov is a name")>]
 #else
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="cobertura", Justification="Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
   "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String)",
+  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
   MessageId="lcov", Justification="LCov is a name")>]
 #endif
 ()

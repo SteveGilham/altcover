@@ -18,10 +18,10 @@ namespace AltCover.FontSupport
   {
     public static IEnumerable<string> Wish()
     {
-#if NETSTANDARD2_0
-      return Fake.Core.ProcessUtils.findFilesOnPath("wish");
-#else
+#if NET472
       return Enumerable.Empty<string>();
+#else
+      return Fake.Core.ProcessUtils.findFilesOnPath("wish");
 #endif
     }
 
@@ -86,8 +86,10 @@ namespace AltCover.FontSupport
       }
     }
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Gendarme.Rules.Design", "Generic.AvoidMethodWithUnusedGenericTypeRule",
       Justification = "private method, not for morts.")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     private static IntPtr Allocate<T>()
     {
       var size = Marshal.SizeOf<T>();
@@ -147,6 +149,7 @@ namespace AltCover.FontSupport
   }
 
   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi),
+#pragma warning disable IDE0079 // Remove unnecessary suppression
    SuppressMessage("Gendarme.Rules.Performance", "AvoidUnusedPrivateFieldsRule",
     Justification = "Represents a native structure"),
    SuppressMessage("Gendarme.Rules.Design", "AvoidVisibleFieldsRule",
@@ -155,6 +158,7 @@ namespace AltCover.FontSupport
     Justification = "Represents a native structure"),
    SuppressMessage("Gendarme.Rules.BadPractice", "PreferSafeHandleRule",
     Justification = "Represents a native structure")
+#pragma warning restore IDE0079 // Remove unnecessary suppression
   ]
   public class ChooseFont
   {
@@ -162,15 +166,21 @@ namespace AltCover.FontSupport
     public int structSize;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public IntPtr owner;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public IntPtr dc;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public IntPtr logFont;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
@@ -179,23 +189,31 @@ namespace AltCover.FontSupport
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int options; //flags
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Justification = "Queen's English, m80")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public int colours;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public IntPtr customData;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public IntPtr hook;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
     public string templateName;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible", Justification = "Represents a native structure")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public IntPtr instance;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
@@ -232,16 +250,20 @@ namespace AltCover.FontSupport
     ScriptsOnly = AnsiOnly,
     NoVectorFonts = 0x00000800,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     NoOemFonts = NoVectorFonts,
 
     NoSimulations = 0x00001000,
     LimitSize = 0x00002000,
     FixedPitchOnly = 0x00004000,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Wysiwyg = 0x00008000,
 
     ForceFontExist = 0x00010000,
@@ -257,10 +279,12 @@ namespace AltCover.FontSupport
   }
 
   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi),
+#pragma warning disable IDE0079 // Remove unnecessary suppression
    SuppressMessage("Gendarme.Rules.Design", "AvoidVisibleFieldsRule",
     Justification = "Represents a native structure"),
    SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
     Justification = "Seriously, u wot m8!?")
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     ]
   public class LogFont
   {
@@ -286,8 +310,10 @@ namespace AltCover.FontSupport
     public byte underline;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public byte strikeOut;
 
     [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Represents a native structure")]
@@ -319,16 +345,20 @@ namespace AltCover.FontSupport
       height = 10;
     }
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
       Justification = "Preferred overload, no comparison exists in netstd2.0/net472")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     private static int CharIndexOf(string name, char token)
     {
       return name.IndexOf(token);
     }
 
     // Pango-style text
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods",
       Justification = "validate local variable ''(*decode)'', which was reassigned from parameter 'decode', before using it -- u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static bool TryParse(string encoded, out LogFont decode)
     {
       decode = new LogFont();
@@ -497,8 +527,10 @@ namespace AltCover.FontSupport
     }
 
     // Tcl/Tk-style text like {Consolas} 12 bold roman
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods",
       Justification = "validate local variable ''(*decode)'', which was reassigned from parameter 'decode', before using it -- u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public static bool TryWishParse(string encoded, out LogFont decode)
     {
       decode = new LogFont();
@@ -568,41 +600,53 @@ namespace AltCover.FontSupport
     DoNotCare = 0,
     Thin = 100,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Ultralight = 200,
 
     Light = 300,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Semilight = 350,
 
     Book = 380,
     Normal = 400, //aka Regular
     Medium = 500,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Semibold = 600,
 
     Bold = 700,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Ultrabold = 800,
 
     Heavy = 900,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Ultraheavy = 1000
   }
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
+#pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontCharSet : byte
   {
@@ -610,21 +654,29 @@ namespace AltCover.FontSupport
     Default = 1,
     Symbol = 2,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     ShiftJIS = 128,
 
     Hangeul = 129,
+#pragma warning disable CA1069 // Enums values should not be duplicated
     Hangul = 129,
+#pragma warning restore CA1069 // Enums values should not be duplicated
     GB2312 = 134,
     ChineseBig5 = 136,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Oem = 255,
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     Johab = 130,
 
     Hebrew = 177,
@@ -639,10 +691,12 @@ namespace AltCover.FontSupport
     Baltic = 186,
   }
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
+#pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontPrecision : byte
   {
@@ -659,10 +713,12 @@ namespace AltCover.FontSupport
     PSOnly = 10,
   }
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
+#pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontClipPrecision : byte
   {
@@ -673,17 +729,21 @@ namespace AltCover.FontSupport
     LHAngles = (1 << 4),
     TTAlways = (2 << 4),
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly",
       Justification = "Seriously, u wot m8!?")]
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     DFADisable = (4 << 4),
 
     Embedded = (8 << 4),
   }
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
+#pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontQuality : byte
   {
@@ -697,23 +757,27 @@ namespace AltCover.FontSupport
   }
 
   [Flags,
+#pragma warning disable IDE0079 // Remove unnecessary suppression
    SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue",
     Justification = "Seriously, u wot m8!?"),
+#pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontPitchAndFamilyOptions : byte
   {
     Default = 0,
     Fixed = 1,
     Variable = 2,
-    DoNotCare = (0 << 4),
-    Roman = (1 << 4),
-    Swiss = (2 << 4),
-    Modern = (3 << 4),
-    Script = (4 << 4),
-    Decorative = (5 << 4),
+#pragma warning disable CA1069 // Enums values should not be duplicated
+    DoNotCare = 0 << 4,
+#pragma warning restore CA1069 // Enums values should not be duplicated
+    Roman = 1 << 4,
+    Swiss = 2 << 4,
+    Modern = 3 << 4,
+    Script = 4 << 4,
+    Decorative = 5 << 4,
   }
 }

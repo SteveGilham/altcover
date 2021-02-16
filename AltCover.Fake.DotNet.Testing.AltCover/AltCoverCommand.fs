@@ -9,8 +9,6 @@ open Fake.DotNet
 [<RequireQualifiedAccess>]
 [<SuppressMessage("Gendarme.Rules.Smells", "RelaxedAvoidCodeDuplicatedInSameClassRule",
   Justification="Two match statements aren't worth bothering with")>]
-[<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-  Justification="This is where it all comes together")>]
 module AltCoverCommand =
   let private toSeq(s : String seq) =
     match s with
@@ -41,7 +39,8 @@ module AltCoverCommand =
                      OutputFile = a.OutputFile
                      CommandLine = a.CommandLine
                      ExposeReturnCode = a.ExposeReturnCode
-                     SummaryFormat = a.SummaryFormat }
+                     SummaryFormat = a.SummaryFormat
+                     Verbosity = a.Verbosity}
         AltCover.Primitive copy
 
   let internal setCollectCommandLine (args : string seq) collect =
@@ -59,7 +58,8 @@ module AltCoverCommand =
                      OutputFile = a.OutputFile
                      CommandLine = args |> toSeq
                      ExposeReturnCode = a.ExposeReturnCode
-                     SummaryFormat = a.SummaryFormat }
+                     SummaryFormat = a.SummaryFormat
+                     Verbosity = a.Verbosity }
         AltCover.Primitive copy
       | AltCover.TypeSafe t ->
           AltCover.TypeSafe
@@ -85,7 +85,7 @@ module AltCoverCommand =
             Dependencies = a.Dependencies;
             Keys = a.Keys;
             StrongNameKey = a.StrongNameKey;
-            XmlReport = a.XmlReport;
+            Report = a.Report;
             FileFilter = a.FileFilter;
             AssemblyFilter = a.AssemblyFilter;
             AssemblyExcludeFilter = a.AssemblyExcludeFilter;
@@ -112,7 +112,8 @@ module AltCoverCommand =
             LocalSource = a.LocalSource;
             VisibleBranches = a.VisibleBranches;
             ShowStatic = a.ShowStatic;
-            ShowGenerated = a.ShowGenerated }
+            ShowGenerated = a.ShowGenerated
+            Verbosity = a.Verbosity }
         AltCover.PrepareOptions.Primitive copy
       | AltCover.PrepareOptions.TypeSafe t ->
           AltCover.PrepareOptions.TypeSafe
@@ -269,6 +270,9 @@ module AltCoverCommand =
 
     runCore options withMono
 
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@252T.#monoPath", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@252T.#options", Justification="Generated code")>]
-[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member", Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@212T.#options", Justification="Generated code")>]()
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@253T.#monoPath", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@253T.#options", Justification="Generated code")>]
+[<assembly: SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Scope="member",
+  Target="AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@213T.#options", Justification="Generated code")>]()

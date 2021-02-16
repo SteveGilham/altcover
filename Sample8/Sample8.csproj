@@ -10,6 +10,7 @@
     <IntermediateOutputPath>$(ProjectDir)../_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>

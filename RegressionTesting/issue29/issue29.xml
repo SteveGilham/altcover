@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-
+    <RollForward>Major</RollForward>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

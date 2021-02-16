@@ -12,9 +12,11 @@ which unpeels the wrapper around the file path.  Just substitute in the appropri
 ## Cmdlets
 * [Add-Accelerator](#add-accelerator)
 * [Compress-Branching](#compress-branching)
+* [ConvertFrom-CoverageJson](#convertfrom-coveragejson)
 * [ConvertFrom-NCover](#convertfrom-ncover)
 * [ConvertTo-BarChart](#convertto-barchart)
 * [ConvertTo-Cobertura](#convertto-cobertura)
+* [ConvertTo-CoverageJson](#convertto-coveragejson)
 * [ConvertTo-Lcov](#convertto-lcov)
 * [ConvertTo-NCover](#convertto-ncover)
 * [ConvertTo-XDocument](#convertto-xdocument)
@@ -254,7 +256,99 @@ System.Xml.Linq.XDocument
 
 
 ```
-$xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+$xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile
+```
+"./_Packaging/CompressInterior.xml"
+
+
+###    ConvertFrom-CoverageJson
+
+NAME
+
+```
+ConvertFrom-CoverageJson
+
+```
+SYNOPSIS
+
+Creates an OpenCover-style XML document from coverlet or AltCover JSON.
+
+
+SYNTAX
+
+```
+ConvertFrom-CoverageJson [-Json] <string> [[-OutputFile] <string>] [<CommonParameters>]
+
+ConvertFrom-CoverageJson [-InputFile] <string> [[-OutputFile] <string>] [<CommonParameters>]
+
+
+```
+DESCRIPTION
+
+Takes either coverlet or AltCover JSON input as file path, or a string as an argument or from the object pipeline.
+
+Writes the XML report to the object pipeline as an `XDocument`, and optionally to a file.
+
+
+PARAMETERS
+#### `-Json <string>` 
+Input as `string` value
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `-InputFile <string>` 
+Input as file path
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-OutputFile <string>` 
+Output as file path
+
+```
+Required?                    false
+Position?                    2
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `<CommonParameters>` 
+This cmdlet supports the common parameters: Verbose, Debug,
+ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+OutBuffer, PipelineVariable, and OutVariable. For more information, see
+about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216).
+
+INPUTS
+```
+System.String
+```
+Input as `string` value
+
+
+OUTPUTS
+```
+System.Xml.Linq.XDocument
+```
+
+
+----------  EXAMPLE 1  ----------
+
+
+```
+ConvertFrom-CoverageJson -InputFile "./Tests/Sample4.coverlet.json" -OutputFile" ./_Packaging/Sample4.coverlet.json"
+
 ```
 
 
@@ -553,6 +647,89 @@ System.Xml.Linq.XDocument
 
 ```
 ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
+```
+
+
+###    ConvertTo-CoverageJson
+
+NAME
+
+```
+ConvertTo-CoverageJson
+
+```
+SYNOPSIS
+
+Creates a JSON format report from other report formats.
+
+
+SYNTAX
+
+```
+ConvertTo-CoverageJson [-XDocument] <XDocument> [<CommonParameters>]
+
+ConvertTo-CoverageJson [-InputFile] <string> [<CommonParameters>]
+
+
+```
+DESCRIPTION
+
+Takes either OpenCover or classic NCover format input as an `XDocument`, as an argument or from the object
+pipeline. Writes the JSON report to a string.
+
+
+PARAMETERS
+#### `-XDocument <XDocument>` 
+Input as `XDocument` value
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `-InputFile <string>` 
+Input as file path
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `<CommonParameters>` 
+This cmdlet supports the common parameters: Verbose, Debug,
+ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+OutBuffer, PipelineVariable, and OutVariable. For more information, see
+about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216).
+
+INPUTS
+```
+System.Xml.Linq.XDocument
+```
+Input as `XDocument` value
+
+```
+System.String
+```
+Input as file path
+
+
+OUTPUTS
+```
+System.String
+```
+
+
+----------  EXAMPLE 1  ----------
+
+
+```
+ConvertTo-CoverageJson -InputFile "./Tests/HandRolledMonoCoverage.xml"
 ```
 
 
@@ -941,19 +1118,20 @@ SYNTAX
 ```
 Invoke-AltCover [-Runner] <SwitchParameter> -RecorderDirectory <string> [-Cobertura <string>] [-CommandLine
 <string[]>] [-DropReturnCode <SwitchParameter>] [-Executable <string>] [-LcovReport <string>] [-OutputFile
-<string>] [-SummaryFormat {Default | R | B | RPlus | BPlus}] [-Threshold <string>] [-WorkingDirectory <string>]
-[<CommonParameters>]
+<string>] [-SummaryFormat {Default | N | O | C | R | B | RPlus | BPlus}] [-Threshold <string>] [-Verbosity {Off |
+Error | Warning | Info | Verbose}] [-WorkingDirectory <string>] [<CommonParameters>]
 
 Invoke-AltCover [-AssemblyExcludeFilter <string[]>] [-AssemblyFilter <string[]>] [-AttributeFilter <string[]>]
 [-AttributeTopLevel <string[]>] [-BranchCover <SwitchParameter>] [-CallContext <string[]>] [-CommandLine
 <string[]>] [-Defer <SwitchParameter>] [-Dependency <string[]>] [-DropReturnCode <SwitchParameter>] [-FileFilter
 <string[]>] [-InPlace <SwitchParameter>] [-InputDirectory <string[]>] [-Key <string[]>] [-LineCover
 <SwitchParameter>] [-LocalSource <SwitchParameter>] [-MethodFilter <string[]>] [-MethodPoint <SwitchParameter>]
-[-MethodTopLevel <string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-ReportFormat {NCover |
-OpenCover}] [-Save <SwitchParameter>] [-ShowGenerated <SwitchParameter>] [-ShowStatic {KeepHidden | Mark |
-Reveal}] [-Single <SwitchParameter>] [-SourceLink <SwitchParameter>] [-StrongNameKey <string>] [-SymbolDirectory
-<string[]>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>] [-VisibleBranches <SwitchParameter>] [-XmlReport
-<string>] [-ZipFile <SwitchParameter>] [<CommonParameters>]
+[-MethodTopLevel <string[]>] [-OutputDirectory <string[]>] [-PathFilter <string[]>] [-Report <string>]
+[-ReportFormat {NCover | OpenCover}] [-Save <SwitchParameter>] [-ShowGenerated <SwitchParameter>] [-ShowStatic
+{KeepHidden | Mark | Reveal}] [-Single <SwitchParameter>] [-SourceLink <SwitchParameter>] [-StrongNameKey
+<string>] [-SymbolDirectory <string[]>] [-TypeFilter <string[]>] [-TypeTopLevel <string[]>] [-Verbosity {Off |
+Error | Warning | Info | Verbose}] [-VisibleBranches <SwitchParameter>] [-ZipFile <SwitchParameter>]
+[<CommonParameters>]
 
 Invoke-AltCover [-Version] <SwitchParameter> [<CommonParameters>]
 
@@ -1149,8 +1327,8 @@ Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
 
-#### `-XmlReport <string>` 
-The output report template file (default: coverage.xml in the current directory)
+#### `-Report <string>` 
+The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)
 
 ```
 Required?                    false
@@ -1282,8 +1460,6 @@ the full name of the attribute type.
 
 Other strings are interpreted as method names (fully qualified if the string contains any "." characters).
 
-Incompatible with -Single
-
 ```
 Required?                    false
 Position?                    named
@@ -1350,7 +1526,7 @@ Accept wildcard characters?  false
 ```
 
 #### `-Single <SwitchParameter>` 
-only record the first hit at any location. Incompatible with `-CallContext`.
+only record the first hit at any location (or first for that context if `-CallContext` is operating).
 
 ```
 Required?                    false
@@ -1475,15 +1651,28 @@ Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
 
-#### `-SummaryFormat <Summary>` 
+#### `-SummaryFormat <Summary[]>` 
 Selects summary format
 
-Possible values: Default, R, B, RPlus, BPlus
+Possible values: Default, N, O, C, R, B, RPlus, BPlus
 
 ```
 Required?                    false
 Position?                    named
-Default value                Default
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `-Verbosity <TraceLevel>` 
+Selects output level of the command
+
+Possible values: Off, Error, Warning, Info, Verbose
+
+```
+Required?                    false
+Position?                    named
+Default value                Info
 Accept pipeline input?       false
 Accept wildcard characters?  false
 ```
@@ -1510,7 +1699,7 @@ None
 
 
 ```
-Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
+Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
 ```
 
 

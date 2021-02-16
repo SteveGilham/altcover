@@ -28,6 +28,7 @@ module internal Main =
       None
 
   let internal init() =
+    CommandLine.verbosity <- 0
     CommandLine.error <- []
     CommandLine.dropReturnCode := false // ddFlag
     CoverageParameters.defer := false // ddflag
@@ -93,11 +94,7 @@ module internal Main =
             "--callContext", x) :: CommandLine.error
       (false, Left None)
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-    Justification="It's perfectly maintainable.")>]
   module internal I =
-    [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-      Justification="It's perfectly maintainable.")>]
     let internal declareOptions() =
       let makeRegex (x : String) =
         x.Replace(char 0, '\\').Replace(char 1, '|')
@@ -169,12 +166,12 @@ module internal Main =
                CoverageParameters.defaultStrongNameKey <- Some pair
                CoverageParameters.add pair))
 
-        ("x|xmlReport=",
+        ("r|report=",
          (fun x ->
-           if CommandLine.validatePath "--xmlReport" x then
+           if CommandLine.validatePath "--report" x then
              if Option.isSome CoverageParameters.theReportPath then
                CommandLine.error <-
-                 CommandLine.Format.Local("MultiplesNotAllowed", "--xmlReport")
+                 CommandLine.Format.Local("MultiplesNotAllowed", "--report")
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
@@ -192,11 +189,6 @@ module internal Main =
         (CommandLine.ddFlag "l|localSource" CoverageParameters.local)
         ("c|callContext=",
          (fun x ->
-           if CoverageParameters.single then
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible",
-                  "--single", "--callContext") :: CommandLine.error
-           else
              let (ok, selection) = validateCallContext (Option.isSome CoverageParameters.theInterval) x
              if ok then
                match selection with
@@ -211,6 +203,7 @@ module internal Main =
            else
              CoverageParameters.theReportFormat <- Some (match x with
                                                          | Select "NCover" _ -> ReportFormat.NCover
+                                                         | Select "Json" _ -> ReportFormat.NativeJson
                                                          | _ ->  ReportFormat.OpenCover)))
         (CommandLine.ddFlag "inplace" CoverageParameters.inplace)
         (CommandLine.ddFlag "save" CoverageParameters.collect)
@@ -222,10 +215,6 @@ module internal Main =
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--single")
                :: CommandLine.error
-           else if Option.isSome CoverageParameters.theInterval || CoverageParameters.trackingNames.Any() then
-             CommandLine.error <-
-               CommandLine.Format.Local("Incompatible",
-                  "--single", "--callContext") :: CommandLine.error
            else
              CoverageParameters.single <- true))
         ("linecover",
@@ -273,6 +262,7 @@ module internal Main =
                CommandLine.Format.Local("MultiplesNotAllowed", "--showstatic")
                :: CommandLine.error))
         (CommandLine.ddFlag "showGenerated" CoverageParameters.showGenerated)
+        ("q", (fun _ -> CommandLine.verbosity <- CommandLine.verbosity + 1))
         ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
         ("<>",
@@ -315,6 +305,8 @@ module internal Main =
           else
             Seq.zip toDirectories fromDirectories
             |> Seq.iter (fun (toDirectory, fromDirectory) ->
+               if CommandLine.verbosity < 1 // implement it early here
+               then
                  if !CoverageParameters.inplace then
                    Output.info
                    <| CommandLine.Format.Local("savingto", toDirectory)
@@ -443,7 +435,7 @@ module internal Main =
              let proto = a.Path.Head
              let targets =
                a.Path |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
-             ((proto, targets), a.Name))
+             ({ AssemblyPath = proto; Destinations = targets}, a.Name))
 
       List.unzip sorted
 
@@ -451,6 +443,14 @@ module internal Main =
       assembly
       |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
       |> Option.defaultValue false
+
+    let internal selectReportGenerator() =
+      match CoverageParameters.reportKind() with
+      | ReportFormat.OpenCoverWithTracking
+      | ReportFormat.OpenCover -> OpenCover.reportGenerator()
+      | ReportFormat.NativeJsonWithTracking
+      | ReportFormat.NativeJson -> NativeJson.reportGenerator()
+      | _ -> Report.reportGenerator()
 
     [<SuppressMessage("Gendarme.Rules.BadPractice",
       "GetEntryAssemblyMayReturnNullRule",
@@ -474,6 +474,8 @@ module internal Main =
               Options2 = Runner.declareOptions() }
           255
       | Right(rest, fromInfo, toInfo, targetInfo) ->
+          CommandLine.applyVerbosity()
+
           let report = CoverageParameters.reportPath()
 
           let result =
@@ -486,10 +488,7 @@ module internal Main =
                   (CoverageParameters.instrumentDirectories())
               Output.info
               <| CommandLine.Format.Local("reportingto", report)
-              let reporter, document =
-                match CoverageParameters.reportKind() with
-                | ReportFormat.OpenCover -> OpenCover.reportGenerator()
-                | _ -> Report.reportGenerator()
+              let reporter, document = selectReportGenerator()
 
               let visitors =
                 [ reporter

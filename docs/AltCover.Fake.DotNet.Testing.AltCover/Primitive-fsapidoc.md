@@ -39,7 +39,9 @@ The members correspond to the like-named command line options for `AltCover Runn
         OutputFile: System.String
         CommandLine: seq<System.String>
         ExposeReturnCode: bool
-        SummaryFormat: System.String }
+        SummaryFormat: System.String
+        Verbosity : System.Diagnostics.TraceLevel
+      }
       with
         static member Create : unit -> CollectOptions
       end
@@ -65,7 +67,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Dependencies: seq<System.String>
         Keys: seq<System.String>
         StrongNameKey: System.String
-        XmlReport: System.String
+        Report: System.String
         FileFilter: seq<System.String>
         AssemblyFilter: seq<System.String>
         AssemblyExcludeFilter: seq<System.String>
@@ -92,7 +94,9 @@ The members correspond to the like-named command line options for `AltCover`, ex
         LocalSource: bool
         VisibleBranches: bool
         ShowStatic: string
-        ShowGenerated: bool }
+        ShowGenerated: bool
+        Verbosity : System.Diagnostics.TraceLevel
+}
       with
         static member Create : unit -> PrepareOptions
       end

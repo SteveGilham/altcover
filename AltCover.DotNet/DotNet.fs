@@ -77,6 +77,7 @@ module DotNet =
 
     let private fromList name (s : String seq) = (listArg name s, s.Any())
     let internal fromArg name s = (arg name s, isSet s)
+    let internal fromValue name (s:obj) (b:bool) = (arg name <| s.ToString(), b)
     let internal join(l : string seq) = String.Join(" ", l)
 
     [<SuppressMessage("Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
@@ -102,14 +103,14 @@ module DotNet =
     let internal toPrepareFromArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
         fromArg, "StrongNameKey", prepare.StrongNameKey //=`"path to default strong-name key for assemblies"
-        fromArg, "XmlReport", prepare.XmlReport //=`"path to the xml report" default: `coverage.xml` in the project directory)
-        fromArg, "ReportFormat", prepare.ReportFormat //=`"NCover" or default "OpenCover"
+        fromArg, "Report", prepare.Report //=`"path to the report" default: `coverage.xml` or `coverage.json` in the project directory
+        fromArg, "ReportFormat", prepare.ReportFormat //=`"Json", "NCover" or default "OpenCover"
         fromArg, "ShowStatic", prepare.ShowStatic //=-|+|++` to mark simple code like auto-properties in the coverage file
       ]
 
     let internal toPrepareArgArgumentList (prepare : Abstract.IPrepareOptions) =
       [
-        (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the report in a `.zip` archive
+        (arg, "ZipFile", "false", prepare.ZipFile) //="true|false"` - set "true" to store the coverage report in a `.zip` archive
         (arg, "MethodPoint", "false", prepare.MethodPoint)  //="true|false"` - set "true" to record only the first point of each method
         (arg, "Single", "false", prepare.SingleVisit) //="true|false"` - set "true" to record only the first visit to each point
         (arg, "LineCover", "true", prepare.LineCover) //="true|false"` - set "true" to record only line coverage in OpenCover format
@@ -118,6 +119,7 @@ module DotNet =
         (arg, "LocalSource", "true", prepare.LocalSource) //=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
         (arg, "VisibleBranches", "true", prepare.VisibleBranches) //=true|false` to ignore compiler generated internal `switch`/`match` branches
         (arg, "ShowGenerated", "true", prepare.ShowGenerated) //=true|false` to mark generated code in the coverage file
+        (arg, "InPlace", "true", prepare.InPlace) //=true|false` to test in-place (meaning extra file copies)
       ]
 
     let internal toCollectFromArgArgumentList (collect : Abstract.ICollectOptions) =
@@ -125,7 +127,14 @@ module DotNet =
         fromArg, "LcovReport", collect.LcovReport //=`"path to lcov format result"
         fromArg, "Cobertura", collect.Cobertura //=`"path to cobertura format result"
         fromArg, "Threshold", collect.Threshold //=`"coverage threshold required"
-        fromArg, "SummaryFormat", collect.SummaryFormat //=[+][B|R]` to opt for a TeamCity summary with either `B` or `R` for branch coverage accordingly, with the OpenCover format summary also present if `+` is given
+        fromArg, "SummaryFormat", collect.SummaryFormat //=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
+      ]
+
+    let internal toSharedFromValueArgumentList (verbosity : System.Diagnostics.TraceLevel)  :
+       ((string -> obj -> bool -> string*bool) * string * obj * bool) list =
+      [
+        // poss s <> Info
+        fromValue, "Verbosity", verbosity :> obj, verbosity <> System.Diagnostics.TraceLevel.Info //=`"Levels of output -- Info (default), Warning, Error, or Off"
       ]
 
     [<SuppressMessage("Gendarme.Rules.Naming", "AvoidRedundancyInMethodNameRule",
@@ -139,7 +148,7 @@ module DotNet =
                        Justification="Internal implementation detail")>]
     let internal toCLIOptionsArgArgumentList (options : ICLIOptions) =
       [
-        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Saved` folders from previous runs
+        arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
         arg, "FailFast", "true", options.FailFast //=true|false` to skip coverage collection if the unit tests fail
       ]
 
@@ -169,6 +178,11 @@ module DotNet =
       collect
       |> I.toCollectFromArgArgumentList
       |> List.map(fun (f,n,a) -> f n a)
+
+      Math.Min(int prepare.Verbosity, int collect.Verbosity)
+      |> enum<System.Diagnostics.TraceLevel>
+      |> I.toSharedFromValueArgumentList
+      |> List.map(fun (f,n,a,b) -> f n a b)
 
       options
       |> I.toCLIOptionsFromArgArgumentList

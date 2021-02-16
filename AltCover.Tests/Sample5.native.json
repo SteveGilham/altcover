@@ -1,0 +1,1055 @@
+{
+ "Sample5.dll": {
+   "altcover/Sample5/Class1.cs": {
+     "Sample5.Class1": {
+       "System.Int32 Sample5.Class1::F1(System.String)": {
+         "Lines": {
+           "12": 0,
+           "14": 0,
+           "18": 0,
+           "21": 0,
+           "22": 0,
+           "23": 0,
+           "25": 0,
+           "26": 0,
+           "30": 0,
+           "31": 0,
+           "32": 0,
+           "33": 0,
+           "34": 0,
+           "35": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 35,
+            "SC": 5,
+            "EL": 35,
+            "EC": 6,
+            "Offset": 71,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 30,
+            "SC": 7,
+            "EL": 34,
+            "EC": 16,
+            "Offset": 45,
+            "Id": 1
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 7,
+            "EL": 14,
+            "EC": 53,
+            "Offset": 7,
+            "Id": 2
+           },
+           {
+            "VC": 0,
+            "SL": 12,
+            "SC": 5,
+            "EL": 12,
+            "EC": 6,
+            "Offset": 6,
+            "Id": 3
+           },
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 7,
+            "EL": 26,
+            "EC": 8,
+            "Offset": 13,
+            "Id": 4
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 9,
+            "EL": 25,
+            "EC": 33,
+            "Offset": 2,
+            "Id": 5
+           },
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 7,
+            "EL": 18,
+            "EC": 8,
+            "Offset": 0,
+            "Id": 6
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 9,
+            "EL": 23,
+            "EC": 10,
+            "Offset": 7,
+            "Id": 7
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 11,
+            "EL": 22,
+            "EC": 24,
+            "Offset": 1,
+            "Id": 8
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 9,
+            "EL": 21,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 9
+           },
+           {
+            "VC": 0,
+            "SL": 34,
+            "SC": 7,
+            "EL": 34,
+            "EC": 8,
+            "Offset": 41,
+            "Id": 54
+           },
+           {
+            "VC": 0,
+            "SL": 33,
+            "SC": 9,
+            "EL": 33,
+            "EC": 48,
+            "Offset": 15,
+            "Id": 55
+           },
+           {
+            "VC": 0,
+            "SL": 32,
+            "SC": 9,
+            "EL": 32,
+            "EC": 38,
+            "Offset": 1,
+            "Id": 56
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 7,
+            "EL": 31,
+            "EC": 8,
+            "Offset": 0,
+            "Id": 57
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 50,
+            "EL": 14,
+            "EC": 51,
+            "Offset": 5,
+            "Id": 58
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 35,
+            "EL": 14,
+            "EC": 49,
+            "Offset": 1,
+            "Id": 59
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 33,
+            "EL": 14,
+            "EC": 34,
+            "Offset": 0,
+            "Id": 60
+           }
+          ]
+        }
+      }
+    },
+   "altcover/Sample5/Class1a.cs": {
+     "Sample5.Class1/Inner": {
+       "System.Int32 Sample5.Class1/Inner::G1(System.String)": {
+         "Lines": {
+           "37": 0,
+           "39": 0,
+           "42": 0,
+           "43": 0,
+           "44": 0,
+           "48": 0,
+           "51": 0,
+           "52": 0,
+           "53": 0,
+           "55": 0,
+           "56": 0,
+           "60": 0,
+           "61": 0,
+           "62": 0,
+           "63": 0,
+           "64": 0,
+           "65": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 65,
+            "SC": 7,
+            "EL": 65,
+            "EC": 8,
+            "Offset": 72,
+            "Id": 10
+           },
+           {
+            "VC": 0,
+            "SL": 60,
+            "SC": 9,
+            "EL": 64,
+            "EC": 18,
+            "Offset": 46,
+            "Id": 11
+           },
+           {
+            "VC": 0,
+            "SL": 39,
+            "SC": 9,
+            "EL": 39,
+            "EC": 59,
+            "Offset": 7,
+            "Id": 12
+           },
+           {
+            "VC": 0,
+            "SL": 37,
+            "SC": 7,
+            "EL": 37,
+            "EC": 8,
+            "Offset": 6,
+            "Id": 13
+           },
+           {
+            "VC": 0,
+            "SL": 44,
+            "SC": 9,
+            "EL": 44,
+            "EC": 10,
+            "Offset": 18,
+            "Id": 23
+           },
+           {
+            "VC": 0,
+            "SL": 43,
+            "SC": 11,
+            "EL": 43,
+            "EC": 30,
+            "Offset": 1,
+            "Id": 24
+           },
+           {
+            "VC": 0,
+            "SL": 42,
+            "SC": 9,
+            "EL": 42,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 25
+           },
+           {
+            "VC": 0,
+            "SL": 56,
+            "SC": 9,
+            "EL": 56,
+            "EC": 10,
+            "Offset": 13,
+            "Id": 26
+           },
+           {
+            "VC": 0,
+            "SL": 55,
+            "SC": 11,
+            "EL": 55,
+            "EC": 35,
+            "Offset": 2,
+            "Id": 27
+           },
+           {
+            "VC": 0,
+            "SL": 48,
+            "SC": 9,
+            "EL": 48,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 28
+           },
+           {
+            "VC": 0,
+            "SL": 53,
+            "SC": 11,
+            "EL": 53,
+            "EC": 12,
+            "Offset": 16,
+            "Id": 29
+           },
+           {
+            "VC": 0,
+            "SL": 52,
+            "SC": 13,
+            "EL": 52,
+            "EC": 54,
+            "Offset": 1,
+            "Id": 30
+           },
+           {
+            "VC": 0,
+            "SL": 51,
+            "SC": 11,
+            "EL": 51,
+            "EC": 12,
+            "Offset": 0,
+            "Id": 31
+           },
+           {
+            "VC": 0,
+            "SL": 64,
+            "SC": 9,
+            "EL": 64,
+            "EC": 10,
+            "Offset": 41,
+            "Id": 32
+           },
+           {
+            "VC": 0,
+            "SL": 63,
+            "SC": 11,
+            "EL": 63,
+            "EC": 50,
+            "Offset": 15,
+            "Id": 33
+           },
+           {
+            "VC": 0,
+            "SL": 62,
+            "SC": 11,
+            "EL": 62,
+            "EC": 40,
+            "Offset": 1,
+            "Id": 34
+           },
+           {
+            "VC": 0,
+            "SL": 61,
+            "SC": 9,
+            "EL": 61,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 35
+           },
+           {
+            "VC": 0,
+            "SL": 39,
+            "SC": 56,
+            "EL": 39,
+            "EC": 57,
+            "Offset": 7,
+            "Id": 36
+           },
+           {
+            "VC": 0,
+            "SL": 39,
+            "SC": 37,
+            "EL": 39,
+            "EC": 55,
+            "Offset": 1,
+            "Id": 37
+           },
+           {
+            "VC": 0,
+            "SL": 39,
+            "SC": 35,
+            "EL": 39,
+            "EC": 36,
+            "Offset": 0,
+            "Id": 38
+           }
+          ]
+        },
+       "System.Void Sample5.Class1/Inner::G1(System.Int32)": {
+         "Lines": {
+           "68": 0,
+           "69": 0,
+           "70": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 70,
+            "SC": 7,
+            "EL": 70,
+            "EC": 8,
+            "Offset": 10,
+            "Id": 14
+           },
+           {
+            "VC": 0,
+            "SL": 69,
+            "SC": 9,
+            "EL": 69,
+            "EC": 38,
+            "Offset": 1,
+            "Id": 15
+           },
+           {
+            "VC": 0,
+            "SL": 68,
+            "SC": 7,
+            "EL": 68,
+            "EC": 8,
+            "Offset": 0,
+            "Id": 16
+           }
+          ]
+        },
+       "System.Void Sample5.Class1/Inner::G2(System.Int32)": {
+         "Lines": {
+           "84": 0,
+           "85": 0,
+           "86": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 86,
+            "SC": 7,
+            "EL": 86,
+            "EC": 8,
+            "Offset": 10,
+            "Id": 17
+           },
+           {
+            "VC": 0,
+            "SL": 85,
+            "SC": 9,
+            "EL": 85,
+            "EC": 38,
+            "Offset": 1,
+            "Id": 18
+           },
+           {
+            "VC": 0,
+            "SL": 84,
+            "SC": 7,
+            "EL": 84,
+            "EC": 8,
+            "Offset": 0,
+            "Id": 19
+           }
+          ]
+        },
+       "System.Void Sample5.Class1/Inner::G3(System.Int32)": {
+         "Lines": {
+           "98": 0,
+           "99": 0,
+           "100": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 100,
+            "SC": 7,
+            "EL": 100,
+            "EC": 8,
+            "Offset": 10,
+            "Id": 20
+           },
+           {
+            "VC": 0,
+            "SL": 99,
+            "SC": 9,
+            "EL": 99,
+            "EC": 38,
+            "Offset": 1,
+            "Id": 21
+           },
+           {
+            "VC": 0,
+            "SL": 98,
+            "SC": 7,
+            "EL": 98,
+            "EC": 8,
+            "Offset": 0,
+            "Id": 22
+           }
+          ]
+        },
+       "System.Collections.Generic.IEnumerable\u00601\u003CT\u003E Sample5.Class1/Inner::G2(T)": {
+         "Lines": {
+           "74": 0,
+           "76": 0,
+           "77": 0,
+           "78": 0,
+           "79": 0,
+           "80": 0,
+           "81": 0
+          },
+         "Branches": [
+           {
+            "Line": 77,
+            "Offset": 172,
+            "EndOffset": 174,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 4
+           },
+           {
+            "Line": 77,
+            "Offset": 172,
+            "EndOffset": 79,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 5
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 81,
+            "SC": 7,
+            "EL": 81,
+            "EC": 8,
+            "Offset": 181,
+            "Id": 39
+           },
+           {
+            "VC": 0,
+            "SL": 77,
+            "SC": 24,
+            "EL": 77,
+            "EC": 26,
+            "Offset": 158,
+            "Id": 40
+           },
+           {
+            "VC": 0,
+            "SL": 80,
+            "SC": 9,
+            "EL": 80,
+            "EC": 10,
+            "Offset": 131,
+            "Id": 41
+           },
+           {
+            "VC": 0,
+            "SL": 79,
+            "SC": 11,
+            "EL": 79,
+            "EC": 26,
+            "Offset": 103,
+            "Id": 42
+           },
+           {
+            "VC": 0,
+            "SL": 78,
+            "SC": 9,
+            "EL": 78,
+            "EC": 10,
+            "Offset": 102,
+            "Id": 43
+           },
+           {
+            "VC": 0,
+            "SL": 77,
+            "SC": 18,
+            "EL": 77,
+            "EC": 23,
+            "Offset": 79,
+            "Id": 44
+           },
+           {
+            "VC": 0,
+            "SL": 77,
+            "SC": 27,
+            "EL": 77,
+            "EC": 33,
+            "Offset": 58,
+            "Id": 45
+           },
+           {
+            "VC": 0,
+            "SL": 77,
+            "SC": 9,
+            "EL": 77,
+            "EC": 16,
+            "Offset": 57,
+            "Id": 46
+           },
+           {
+            "VC": 0,
+            "SL": 76,
+            "SC": 9,
+            "EL": 76,
+            "EC": 38,
+            "Offset": 32,
+            "Id": 47
+           },
+           {
+            "VC": 0,
+            "SL": 74,
+            "SC": 7,
+            "EL": 74,
+            "EC": 8,
+            "Offset": 31,
+            "Id": 48
+           }
+          ]
+        },
+       "System.Threading.Tasks.Task\u00601\u003CSystem.String\u003E Sample5.Class1/Inner::G3(System.String)": {
+         "Lines": {
+           "90": 0,
+           "92": 0,
+           "93": 0,
+           "94": 0,
+           "95": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 95,
+            "SC": 7,
+            "EL": 95,
+            "EC": 8,
+            "Offset": 211,
+            "Id": 49
+           },
+           {
+            "VC": 0,
+            "SL": 94,
+            "SC": 9,
+            "EL": 94,
+            "EC": 18,
+            "Offset": 162,
+            "Id": 50
+           },
+           {
+            "VC": 0,
+            "SL": 93,
+            "SC": 9,
+            "EL": 93,
+            "EC": 42,
+            "Offset": 37,
+            "Id": 51
+           },
+           {
+            "VC": 0,
+            "SL": 92,
+            "SC": 9,
+            "EL": 92,
+            "EC": 56,
+            "Offset": 15,
+            "Id": 52
+           },
+           {
+            "VC": 0,
+            "SL": 90,
+            "SC": 7,
+            "EL": 90,
+            "EC": 8,
+            "Offset": 14,
+            "Id": 53
+           }
+          ]
+        }
+      },
+     "Sample5.Class1": {
+       "System.Collections.Generic.IEnumerable\u00601\u003CSystem.Int32\u003E Sample5.Class1::F2(System.String)": {
+         "Lines": {
+           "15": 0,
+           "17": 0,
+           "18": 0,
+           "19": 0,
+           "20": 0,
+           "21": 0
+          },
+         "Branches": [
+           {
+            "Line": 17,
+            "Offset": 138,
+            "EndOffset": 140,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 6
+           },
+           {
+            "Line": 17,
+            "Offset": 138,
+            "EndOffset": 54,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 7
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 5,
+            "EL": 21,
+            "EC": 6,
+            "Offset": 147,
+            "Id": 61
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 23,
+            "EL": 17,
+            "EC": 25,
+            "Offset": 121,
+            "Id": 62
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 7,
+            "EL": 20,
+            "EC": 8,
+            "Offset": 106,
+            "Id": 63
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 9,
+            "EL": 19,
+            "EC": 24,
+            "Offset": 78,
+            "Id": 64
+           },
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 7,
+            "EL": 18,
+            "EC": 8,
+            "Offset": 77,
+            "Id": 65
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 16,
+            "EL": 17,
+            "EC": 22,
+            "Offset": 54,
+            "Id": 66
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 26,
+            "EL": 17,
+            "EC": 31,
+            "Offset": 33,
+            "Id": 67
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 7,
+            "EL": 17,
+            "EC": 14,
+            "Offset": 32,
+            "Id": 68
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 5,
+            "EL": 15,
+            "EC": 6,
+            "Offset": 31,
+            "Id": 69
+           }
+          ]
+        },
+       "System.Threading.Tasks.Task\u00601\u003CSystem.String\u003E Sample5.Class1::F3(System.String)": {
+         "Lines": {
+           "25": 0,
+           "27": 0,
+           "28": 0,
+           "29": 0,
+           "30": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 30,
+            "SC": 5,
+            "EL": 30,
+            "EC": 6,
+            "Offset": 211,
+            "Id": 70
+           },
+           {
+            "VC": 0,
+            "SL": 29,
+            "SC": 7,
+            "EL": 29,
+            "EC": 16,
+            "Offset": 162,
+            "Id": 71
+           },
+           {
+            "VC": 0,
+            "SL": 28,
+            "SC": 7,
+            "EL": 28,
+            "EC": 40,
+            "Offset": 37,
+            "Id": 72
+           },
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 7,
+            "EL": 27,
+            "EC": 54,
+            "Offset": 15,
+            "Id": 73
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 5,
+            "EL": 25,
+            "EC": 6,
+            "Offset": 14,
+            "Id": 74
+           }
+          ]
+        }
+      },
+     "Sample5.RecursiveSyntheticInvocation\u00602": {
+       "System.Collections.Generic.IEnumerable\u00601\u003CT\u003E Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IReadOnlyDictionary\u003CT,K\u003E.get_Keys()": {
+         "Lines": {
+           "137": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 137,
+            "SC": 24,
+            "EL": 137,
+            "EC": 60,
+            "Offset": 15,
+            "Id": 75
+           },
+           {
+            "VC": 0,
+            "SL": 137,
+            "SC": 13,
+            "EL": 137,
+            "EC": 23,
+            "Offset": 1,
+            "Id": 76
+           },
+           {
+            "VC": 0,
+            "SL": 137,
+            "SC": 11,
+            "EL": 137,
+            "EC": 12,
+            "Offset": 0,
+            "Id": 77
+           }
+          ]
+        },
+       "K Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IReadOnlyDictionary\u003CT,K\u003E.get_Item(T)": {
+         "Lines": {
+           "143": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 143,
+            "SC": 48,
+            "EL": 143,
+            "EC": 83,
+            "Offset": 0,
+            "Id": 78
+           }
+          ]
+        },
+       "System.Int32 Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IReadOnlyCollection\u003CSystem.Collections.Generic.KeyValuePair\u003CT,K\u003E\u003E.get_Count()": {
+         "Lines": {
+           "144": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 144,
+            "SC": 58,
+            "EL": 144,
+            "EC": 93,
+            "Offset": 0,
+            "Id": 79
+           }
+          ]
+        },
+       "System.Boolean Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IReadOnlyDictionary\u003CT,K\u003E.ContainsKey(T)": {
+         "Lines": {
+           "146": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 146,
+            "SC": 58,
+            "EL": 146,
+            "EC": 93,
+            "Offset": 0,
+            "Id": 80
+           }
+          ]
+        },
+       "System.Collections.Generic.IEnumerator\u00601\u003CSystem.Collections.Generic.KeyValuePair\u00602\u003CT,K\u003E\u003E Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IEnumerable\u003CSystem.Collections.Generic.KeyValuePair\u003CT,K\u003E\u003E.GetEnumerator()": {
+         "Lines": {
+           "148": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 148,
+            "SC": 88,
+            "EL": 148,
+            "EC": 123,
+            "Offset": 0,
+            "Id": 81
+           }
+          ]
+        },
+       "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.IEnumerable.GetEnumerator()": {
+         "Lines": {
+           "150": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 150,
+            "SC": 48,
+            "EL": 150,
+            "EC": 83,
+            "Offset": 0,
+            "Id": 82
+           }
+          ]
+        },
+       "System.Boolean Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IReadOnlyDictionary\u003CT,K\u003E.TryGetValue(T,K\u0026)": {
+         "Lines": {
+           "152": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 152,
+            "SC": 71,
+            "EL": 152,
+            "EC": 106,
+            "Offset": 0,
+            "Id": 83
+           }
+          ]
+        },
+       "System.Collections.Generic.IEnumerable\u00601\u003CK\u003E Sample5.RecursiveSyntheticInvocation\u00602::System.Collections.Generic.IReadOnlyDictionary\u003CT,K\u003E.get_Values()": {
+         "Lines": {
+           "117": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 117,
+            "SC": 13,
+            "EL": 117,
+            "EC": 25,
+            "Offset": 24,
+            "Id": 84
+           },
+           {
+            "VC": 0,
+            "SL": 117,
+            "SC": 11,
+            "EL": 117,
+            "EC": 12,
+            "Offset": 23,
+            "Id": 85
+           }
+          ]
+        },
+       "System.Collections.Generic.IEnumerable\u00601\u003CK\u003E Sample5.RecursiveSyntheticInvocation\u00602::get_ValuesWorks()": {
+         "Lines": {
+           "126": 0,
+           "127": 0,
+           "128": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 128,
+            "SC": 9,
+            "EL": 128,
+            "EC": 21,
+            "Offset": 60,
+            "Id": 86
+           },
+           {
+            "VC": 0,
+            "SL": 127,
+            "SC": 9,
+            "EL": 127,
+            "EC": 33,
+            "Offset": 32,
+            "Id": 87
+           },
+           {
+            "VC": 0,
+            "SL": 126,
+            "SC": 7,
+            "EL": 126,
+            "EC": 8,
+            "Offset": 31,
+            "Id": 88
+           }
+          ]
+        }
+      }
+    }
+  }
+}

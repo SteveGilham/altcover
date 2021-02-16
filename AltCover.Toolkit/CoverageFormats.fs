@@ -25,15 +25,17 @@ module CoverageFormats =
     let format = XmlUtilities.discoverFormat document
     AltCover.Cobertura.convertReport document format
 
+  let ConvertToJson (document:XDocument) =
+    let format = XmlUtilities.discoverFormat document
+    Json.xmlToJson document format
+
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   [<SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
     Justification = "AvoidSpeculativeGenerality too")>]
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-     Justification="That's XML + code reuse for you.")>]
   let ConvertFromNCover (document:XDocument) (assemblies : string seq) =
-    let reporter, rewrite = AltCover.OpenCover.reportGenerator()
+    let reporter, rewritten = AltCover.OpenCover.reportGenerator()
     let visitors = [ reporter ]
     let identities = Dictionary<string, XElement>()
     document.Descendants(XName.Get "module")
@@ -51,7 +53,7 @@ module CoverageFormats =
       assemblies
       |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
-      |> Seq.map (fun p -> (p, []))
+      |> Seq.map (fun p -> { AssemblyPath = p; Destinations = [] })
 
     // ensure default state
     AltCover.Main.init()
@@ -63,6 +65,12 @@ module CoverageFormats =
       Int32.TryParse
         (s, System.Globalization.NumberStyles.Integer,
          System.Globalization.CultureInfo.InvariantCulture) |> snd
+    let rewrite =
+      use stash = new MemoryStream()
+      stash |> rewritten
+      stash.Position <- 0L
+      XDocument.Load stash
+
     // Match modules
     rewrite.Descendants(XName.Get "Module")
     |> Seq.iter (fun target ->

@@ -9,7 +9,6 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
-open System.Resources
 
 open Manatee.Json
 open Mono.Cecil
@@ -32,6 +31,34 @@ type internal RecorderRefs =
       Push = null
       Pop = null }
 
+[<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+type internal AsyncSupport =
+  { TaskAssembly : AssemblyDefinition // kept for context
+    Wait : MethodDefinition
+    LocalWait : MethodReference }
+  static member private DisposeAssemblyDefinition (def:IDisposable) =
+    def.Dispose()
+  member self.Close() =
+   self.TaskAssembly
+   |> Option.ofObj
+   |> Option.iter AsyncSupport.DisposeAssemblyDefinition
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Correctness", "EnsureLocalDisposalRule",
+    Justification = "Disposed on exit")>]
+  static member Update(m:IMemberDefinition) =
+    // Maybe get version of assembly being used by m?  Probably not important
+    let def = typeof<System.Threading.Tasks.Task>.Assembly.Location
+              |> AssemblyDefinition.ReadAssembly
+    let task = def.MainModule.GetType("System.Threading.Tasks.Task")
+    let wait = task.Methods
+               |> Seq.filter (fun f -> f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
+               |> Seq.head
+    {
+      TaskAssembly = def
+      Wait = wait
+      LocalWait = wait |> m.DeclaringType.Module.ImportReference
+    }
+
 // State object passed from visit to visit
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal InstrumentContext =
@@ -41,7 +68,8 @@ type internal InstrumentContext =
     RecordingMethod : MethodDefinition list // initialised once
     RecordingMethodRef : RecorderRefs // updated each module
     MethodBody : MethodBody
-    MethodWorker : ILProcessor }
+    MethodWorker : ILProcessor
+    AsyncSupport : AsyncSupport option }
   static member Build assemblies =
     { InstrumentedAssemblies = assemblies
       ModuleId = String.Empty
@@ -49,31 +77,15 @@ type internal InstrumentContext =
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
       MethodBody = null
-      MethodWorker = null } // to save fetching repeatedly
+      MethodWorker = null // to save fetching repeatedly
+      AsyncSupport = None } // also a signal once initialised
 
 // Module to handle instrumentation visitor
 module internal Instrument =
-  let private resources =
-    ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
-  [<SuppressMessage("Microsoft.Maintainability", "CA1506",
-                    Justification = "partitioned into closures")>]
   module internal I =
-
-    //let monoRuntime =
-    //  ("Mono.Runtime"
-    //  |> Type.GetType).IsNotNull
-
-    let dependencies =
-      (resources.GetString "frameworkDependencies").Replace("version", version)
-    let runtime =
-      (resources.GetString "frameworkRuntime")
-        .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-    let newLibraries =
-      (resources.GetString "frameworkLibraries")
-        .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
@@ -150,11 +162,7 @@ module internal Instrument =
 
     // Create the new assembly that will record visits, based on the prototype.
     // returns>A representation of the assembly used to record all coverage visits.</returns>
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-           "EnsureLocalDisposalRule",
-           Justification="Return confusing Gendarme -- TODO")>]
-    let internal prepareAssembly(location : string) =
-      let definition = AssemblyDefinition.ReadAssembly(location)
+    let internal prepareAssemblyDefinition(definition : AssemblyDefinition) =
       guard definition (fun () ->  // set the timer interval in ticks
 
         //if monoRuntime |> not then
@@ -208,6 +216,13 @@ module internal Instrument =
              worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
              worker.InsertBefore(head, worker.Create(OpCodes.Ret))
              initialBody |> Seq.iter worker.Remove))
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+           "EnsureLocalDisposalRule",
+           Justification="Return confusing Gendarme -- TODO")>]
+    let internal prepareAssembly(location : string) =
+      let definition = AssemblyDefinition.ReadAssembly(location)
+      prepareAssemblyDefinition definition
 
     let private nugetCache =
       Path.Combine
@@ -293,10 +308,6 @@ module internal Instrument =
         |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
         |> Option.isSome
 
-      // Once Cecil 0.10 beta6 is taken out of the equation, this works
-      // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
-      // or for assemblies with embedded .pdb information (on *nix)
-      // 8-AUG-2020
       //Non-windows embedded symbols => do not write, else
       //Unhandled exception. System.Runtime.InteropServices.MarshalDirectiveException: Cannot marshal 'parameter #2': Invalid managed/unmanaged type combination (Marshaling to and from COM interface pointers isn't supported).
       //   at Mono.Cecil.Pdb.SymWriter.CoCreateInstance(Guid& rclsid, Object pUnkOuter, UInt32 dwClsContext, Guid& riid, Object& ppv)
@@ -325,53 +336,17 @@ module internal Instrument =
       finally
         Directory.SetCurrentDirectory(here)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-       "VariableNamesShouldNotMatchFieldNamesRule",
-       Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" );
-      AutoSerializable(false); Sealed>]
-    type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
-      // Adjust the IL for exception handling
-      // param name="handler">The exception handler</param>
-      // param name="oldBoundary">The uninstrumented location</param>
-      // param name="newBoundary">Where it has moved to</param>
-      member this.SubstituteExceptionBoundary(handler : ExceptionHandler) =
-        if handler.FilterStart = oldValue then handler.FilterStart <- newValue
-        if handler.HandlerEnd = oldValue then handler.HandlerEnd <- newValue
-        if handler.HandlerStart = oldValue then handler.HandlerStart <- newValue
-        if handler.TryEnd = oldValue then handler.TryEnd <- newValue
-        if handler.TryStart = oldValue then handler.TryStart <- newValue
-
-      // Adjust the IL to substitute an opcode
-      // param name="instruction">Instruction being processed</param>
-      // param name="oldOperand">Type we are looking for</param>
-      // param name="newOperand">Type to replace it with</param>
-      member this.SubstituteInstructionOperand(instruction : Instruction) =
-        // Performance reasons - only 3 types of operators have operands of Instruction types
-        // instruction.Operand getter - is rather slow to execute it for every operator
-        match instruction.OpCode.OperandType with
-        | OperandType.InlineBrTarget
-        | OperandType.ShortInlineBrTarget ->
-            if instruction.Operand = (oldValue :> Object) then
-              instruction.Operand <- newValue
-        // At this point instruction.Operand will be either Operand != oldOperand
-        // or instruction.Operand will be of type Instruction[]
-        // (in other words - it will be a switch operator's operand)
-        | OperandType.InlineSwitch ->
-            let operands = instruction.Operand :?> Instruction array
-            operands
-            |> Array.iteri
-                 (fun i x -> if x = oldValue then Array.set operands i newValue)
-        | _ -> ()
-
     let internal insertVisit (instruction : Instruction) (methodWorker : ILProcessor)
         (recordingMethodRef : MethodReference) (moduleId : string) (point : int) =
-      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
-      let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
-      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point)
-      methodWorker.InsertBefore(instruction, instrLoadModuleId)
-      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId)
-      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
-      instrLoadModuleId
+      bulkInsertBefore
+        methodWorker
+        instruction
+        [
+          methodWorker.Create(OpCodes.Ldstr, moduleId)
+          methodWorker.Create(OpCodes.Ldc_I4, point)
+          methodWorker.Create(OpCodes.Call, recordingMethodRef)
+        ]
+        true
 
     // Determine new names for input strong-named assemblies; if we have a key and
     // the assembly was already strong-named then give it the new key token, otherwise
@@ -417,37 +392,18 @@ module internal Instrument =
     [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
             Justification="No suitable overload in netstandard2.0/net472")>]
     let internal injectJSON (json:String) =
-      //let o = JObject.Parse json
       let o = JsonValue.Parse json
       let oo = o.Object
-      //let x = StringComparison.Ordinal
       let x = StringComparison.Ordinal
-      //let target =
-      //  ((o.Property("runtimeTarget", x)).Value :?> JObject).Property("name", x)
-      //    .Value.ToString()
       let target = oo.["runtimeTarget"].Object.["name"].String
-      //let targets =
-      //  (o.Properties() |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
       let targets = (oo |> Seq.find(fun kv -> kv.Key = "targets")).Value.Object
-      //let targeted =
-      //  (targets.Properties() |> Seq.find (fun p -> p.Name = target)).Value :?> JObject
       let targeted =
         (targets |> Seq.find (fun p -> p.Key = target)).Value.Object
-      //let app = (targeted.PropertyValues() |> Seq.head) :?> JObject
       let app = (targeted.Values |> Seq.head).Object
 
-      //let existingDependencies =
-      //  app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
       let existingDependencies =
         app |> Seq.tryFind (fun p -> p.Key = "dependencies")
 
-      //let prior =
-      //  match existingDependencies with
-      //  | None -> Set.empty<string>
-      //  | Some p ->
-      //      (p.Value :?> JObject).Properties()
-      //      |> Seq.map (fun p -> p.Name)
-      //      |> Set.ofSeq
       let prior =
         match existingDependencies with
         | None -> Set.empty<string>
@@ -455,13 +411,6 @@ module internal Instrument =
             p.Value.Object
             |> Seq.map (fun p -> p.Key)
             |> Set.ofSeq
-
-      //let rawDependencies =
-      //  (JObject.Parse dependencies).Properties()
-      //  |> Seq.find (fun p -> p.Name = "dependencies")
-      let rawDependencies =
-        (JsonValue.Parse dependencies).Object
-        |> Seq.find (fun p -> p.Key = "dependencies")
 
       let addFirst (properties : KeyValuePair<string, JsonValue> seq) (jsonObject:JsonObject)  =
         let existing = jsonObject |> Seq.toList
@@ -474,96 +423,84 @@ module internal Instrument =
         |> Seq.concat
         |> Seq.iter (fun l -> jsonObject.Add(l.Key, l.Value))
 
-      //match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
-      //| None -> app.AddFirst(rawDependencies)
-      //| Some p ->
-      //    (rawDependencies.Value :?> JObject).Properties()
-      //    |> Seq.filter (fun r ->
-      //         prior
-      //         |> Set.contains r.Name
-      //         |> not)
-      //    |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
-      match app |> Seq.tryFind (fun p -> p.Key = "dependencies") with
-      | None ->  app
-                 |> addFirst [rawDependencies]
-      | Some p ->
-          rawDependencies.Value.Object
-          |> Seq.filter (fun r ->
-               prior
-               |> Set.contains r.Key
-               |> not)
-          |> Seq.iter (fun r -> (p.Value.Object).Add(r.Key, r.Value))
+      do
 
-      //let rt = JObject.Parse runtime
-      //rt.Properties()
-      //|> Seq.filter (fun r ->
-      //     prior
-      //     |> Set.contains (r.Name.Split('/') |> Seq.head)
-      //     |> not
-      //     && targeted.ContainsKey(r.Name) |> not)
-      //|> Seq.iter (fun r -> targeted.Add(r))
-      (JsonValue.Parse runtime).Object
-      |> Seq.filter (fun r ->
-           prior
-           |> Set.contains (r.Key.Split('/') |> Seq.head)
-           |> not
-           && targeted.ContainsKey(r.Key) |> not)
-      |> Seq.iter (fun r -> targeted.Add(r.Key, r.Value))
+        let dependencies = version |> sprintf """{"dependencies": {"AltCover.Recorder.g": "%s"}}"""
+        let updateDependencies () =
+          let rawDependencies =
+            (JsonValue.Parse dependencies).Object
+            |> Seq.find (fun p -> p.Key = "dependencies")
 
-      //let libraries =
-      //  (o.Properties() |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
+          match app |> Seq.tryFind (fun p -> p.Key = "dependencies") with
+          | None ->  app
+                     |> addFirst [rawDependencies]
+          | Some p ->
+              let recorder = rawDependencies.Value.Object |> Seq.head
+              p.Value.Object.[recorder.Key] <- recorder.Value
+        updateDependencies()
+
+      let stripRecorderRefs (j:JsonObject) =
+        j.Keys
+        |> Seq.filter (fun k -> k.StartsWith("AltCover.Recorder.g/",
+                                              StringComparison.Ordinal))
+        |> Seq.toList
+        |> List.iter (j.Remove >> ignore)
+
+      do
+        let runtime = version |> sprintf """{"AltCover.Recorder.g/%s": {"runtime": { "AltCover.Recorder.g.dll": {}}}}"""
+        let updateRuntime() =
+          let runtimeObject = (JsonValue.Parse runtime).Object
+          stripRecorderRefs targeted
+          let recorder = runtimeObject |> Seq.head
+          targeted.[recorder.Key] <- recorder.Value
+        updateRuntime()
+
       let libraries =
         (oo |> Seq.find (fun p -> p.Key = "libraries")).Value.Object
 
-      //(JObject.Parse newLibraries).Properties()
-      //|> Seq.filter (fun r ->
-      //     prior
-      //     |> Set.contains (r.Name.Split('/') |> Seq.head)
-      //     |> not
-      //     && libraries.ContainsKey(r.Name) |> not)
-      //|> Seq.rev
-      //|> Seq.iter (libraries.AddFirst)
-      let newlibs = (JsonValue.Parse newLibraries).Object
-                    |> Seq.filter (fun r -> prior
-                                            |> Set.contains (r.Key.Split('/') |> Seq.head)
-                                            |> not
-                                            && libraries.ContainsKey(r.Key) |> not)
-                    |> Seq.rev
+      do
+        let newLibraries =  version |> sprintf """{"AltCover.Recorder.g/%s": {"type": "project", "serviceable": false, "sha512": "" }}"""
+        let updateLibraries () =
+          let newlibs = (JsonValue.Parse newLibraries).Object
+          stripRecorderRefs libraries
+          libraries
+          |> addFirst newlibs
+        updateLibraries()
 
-      libraries
-      |> addFirst newlibs
-
-      //o.ToString()
       o.GetIndentedString().Replace("\t\t", "  ").Replace("\t", "  ").Replace(" :", ":")
 
-    let private visitModule (state : InstrumentContext) (m : ModuleDefinition) included =
+    let private visitModule (state : InstrumentContext) (m : ModuleEntry)  =
       let restate =
-        match included <> Inspections.Ignore with
+        match m.Inspection <> Inspections.Ignore with
         | true ->
             let recordingMethod =
               match state.RecordingMethod with
               | [] -> recordingMethod state.RecordingAssembly
               | _ -> state.RecordingMethod
 
-            let refs = recordingMethod |> List.map m.ImportReference
+            let refs = recordingMethod |> List.map m.Module.ImportReference
             { state with
                 RecordingMethodRef =
                   { Visit = refs.[0]
                     Push = refs.[1]
                     Pop = refs.[2] }
-                RecordingMethod = recordingMethod }
+                RecordingMethod = recordingMethod
+                AsyncSupport = state.AsyncSupport
+                               |> Option.map (fun a -> { a with LocalWait =
+                                                                  a.Wait |> m.Module.ImportReference })
+            }
         | _ -> state
       { restate with
           ModuleId =
             match CoverageParameters.reportKind() with
-            | ReportFormat.OpenCover -> KeyStore.hashFile m.FileName
-            | _ -> m.Mvid.ToString() }
+            | ReportFormat.OpenCover -> KeyStore.hashFile m.Module.FileName
+            | ReportFormat.NativeJson -> m.Module.FileName |> Path.GetFileName
+            | _ -> m.Module.Mvid.ToString() }
 
-    let private visitMethod (state : InstrumentContext) (m : MethodDefinition)
-                            (included : Inspections) =
-      match included.IsInstrumented with
+    let private visitMethod (state : InstrumentContext) m =
+      match m.Inspection.IsInstrumented with
       | true ->
-          let body = m.Body
+          let body = m.Method.Body
           { state with
               MethodBody = body
               MethodWorker = body.GetILProcessor() }
@@ -571,16 +508,15 @@ module internal Instrument =
 
     let private updateBranchReferences (body : MethodBody) instruction injected =
       // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
-      let subs = SubstituteInstruction(instruction, injected)
-      body.Instructions |> Seq.iter subs.SubstituteInstructionOperand
-      body.ExceptionHandlers |> Seq.iter subs.SubstituteExceptionBoundary
+      body.Instructions |> Seq.iter (substituteInstructionOperand instruction injected)
+      body.ExceptionHandlers |> Seq.iter (substituteExceptionBoundary instruction injected)
 
-    let private visitMethodPoint (state : InstrumentContext) instruction point included =
-      if included then
+    let private visitMethodPoint (state : InstrumentContext) e =
+      if e.Interesting then
         let instrLoadModuleId =
-          insertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-            state.ModuleId point
-        updateBranchReferences state.MethodBody instruction instrLoadModuleId
+          insertVisit e.Instruction state.MethodWorker state.RecordingMethodRef.Visit
+            state.ModuleId e.Uid
+        updateBranchReferences state.MethodBody e.Instruction instrLoadModuleId
       state
 
     let internal visitBranchPoint (state : InstrumentContext) branch =
@@ -666,10 +602,133 @@ module internal Instrument =
               CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
            File.Copy(first, pathn, true))
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.BadRecursiveInvocationRule", "BadRecursiveInvocationRule",
+      Justification = "False positive")>]
+    let private invokePredicate (f:unit -> bool) =
+      f()
+
+    let internal doTrack state (m : MethodEntry) =
+      m.Track
+      |> Option.fold (fun (s:InstrumentContext) (n, _)  ->
+           let body =
+             [ m.Method.Body; state.MethodBody ].[(m.Inspection.IsInstrumented).ToInt32]
+           let methodWorker = body.GetILProcessor()
+           removeTailInstructions methodWorker
+           let (endFinally, rtype, leave) = encapsulateWithTryFinally methodWorker
+
+           bulkInsertBefore
+             methodWorker
+             endFinally
+             [methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)]
+             true
+           |> ignore
+
+           bulkInsertBefore
+             methodWorker
+             (methodWorker.Body.Instructions |> Seq.head)
+             [
+              methodWorker.Create(OpCodes.Ldc_I4, n)
+              methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
+             ]
+             true
+           |> ignore
+
+           let e = rtype.GetElementType().FullName
+           let isTaskType () = [
+                                  "System.Threading.Tasks.Task"
+                                  "System.Threading.Tasks.Task`1"
+                               ] |> Seq.exists (fun n -> n = e)
+           let isStateMachine () = m.Method.CustomAttributes // could improve this
+                                   |> Seq.exists (fun a -> a.AttributeType.FullName =
+                                                               "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+           let asyncChecks =
+             [
+               isTaskType
+               isStateMachine
+             ]
+
+           if asyncChecks
+              |> Seq.forall invokePredicate
+           then
+              // the instruction list is
+              // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
+              // IL_0000: stloc V_1 <<== This one
+              // IL_0045: leave IL_0000
+
+              // Want to insert
+              //+IL_0045: ldloc V_xx <<== whatever
+              //  and either
+              //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+              //  or
+              //+IL_0046: ldc.i4 65535
+              //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
+              //+IL_0050: pop                    // = discard the return value
+              // ahead of the leave opcode
+
+              let newstate = { state with AsyncSupport = Some
+                                            (Option.defaultWith (fun () -> AsyncSupport.Update m.Method)
+                                              state.AsyncSupport) }
+
+              let injectWait ilp (i:Instruction) =
+                bulkInsertBefore
+                  ilp
+                  i.Next
+                  [
+                    ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                    ilp.Create(OpCodes.Ldc_I4, 65535)
+                    ilp.Create(OpCodes.Callvirt,
+                               newstate.AsyncSupport.Value.LocalWait)
+                    ilp.Create(OpCodes.Pop)
+                  ]
+                  true
+
+              leave
+              |> Seq.iter ((injectWait methodWorker) >> ignore)
+              newstate
+           else state) state
+
+    let private visitAfterMethod state (m:MethodEntry) =
+      if m.Inspection.IsInstrumented then
+        let body = state.MethodBody
+        // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
+        body.SimplifyMacros()
+        // changes "long" conditional operators to their short representation where possible
+        body.OptimizeMacros()
+      doTrack state m
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+      Justification = "AvoidSpeculativeGenerality too")>]
+    let private visitAfterAssembly (state:InstrumentContext) (assembly : AssemblyEntry) =
+      let originalFileName = Path.GetFileName assembly.Assembly.MainModule.FileName
+      writeAssemblies assembly.Assembly originalFileName assembly.Destinations Output.info
+      state
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+           "EnsureLocalDisposalRule",
+           Justification="Record return confusing Gendarme -- TODO")>]
+    let private visitStart state =
+      let recorder = typeof<AltCover.Recorder.Tracer>
+      let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
+      { state with RecordingAssembly = recordingAssembly }
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+           "EnsureLocalDisposalRule",
+           Justification="Return confusing Gendarme -- TODO")>]
+    let private loadClr4AssemblyFromResources (stream:Stream) =
+      AssemblyDefinition.ReadAssembly(stream)
+      |> prepareAssemblyDefinition
+
     let private finishVisit(state : InstrumentContext) =
       try
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.AltCover.Recorder.dll")
+        let clr4 = state.AsyncSupport
+                   |> Option.map (fun _ -> loadClr4AssemblyFromResources stream)
+
+        let recorder = Option.defaultValue state.RecordingAssembly clr4
         let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
-        writeAssemblies (state.RecordingAssembly) recorderFileName
+        writeAssemblies recorder recorderFileName
           (CoverageParameters.instrumentDirectories()) ignore
 
         CoverageParameters.instrumentDirectories()
@@ -685,82 +744,9 @@ module internal Instrument =
                       |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
-      { state with RecordingAssembly = null }
-
-    let internal doTrack state (m : MethodDefinition) (included:Inspections)
-                               (track : (int * string) option) =
-      track
-      |> Option.iter (fun (n, _) ->
-           let body =
-             [ m.Body; state.MethodBody ].[(included.IsInstrumented).ToInt32]
-           let instructions = body.Instructions
-           let methodWorker = body.GetILProcessor()
-           let nop = methodWorker.Create(OpCodes.Nop)
-
-           let rets =
-             instructions
-             |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
-             |> Seq.toList
-
-           let tailcalls =
-             instructions
-             |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
-             |> Seq.toList
-
-           let tail = instructions |> Seq.last
-           let popper = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)
-           methodWorker.InsertAfter(tail, popper)
-           let enfin = methodWorker.Create(OpCodes.Endfinally)
-           methodWorker.InsertAfter(popper, enfin)
-           let ret = methodWorker.Create(OpCodes.Ret)
-           methodWorker.InsertAfter(enfin, ret)
-           rets
-           |> Seq.iter (fun i ->
-                let leave = methodWorker.Create(OpCodes.Leave, ret)
-                updateBranchReferences body i leave
-                methodWorker.Replace(i, leave))
-           tailcalls
-           |> Seq.iter (fun i ->
-                updateBranchReferences body i i.Next
-                methodWorker.Remove i)
-           let handler = ExceptionHandler(ExceptionHandlerType.Finally)
-           handler.TryStart <- instructions |> Seq.head
-           handler.TryEnd <- popper
-           handler.HandlerStart <- popper
-           handler.HandlerEnd <- ret
-           body.ExceptionHandlers.Add handler
-           let pushMethodCall =
-             methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
-           let instrLoadId = methodWorker.Create(OpCodes.Ldc_I4, n)
-           methodWorker.InsertBefore(handler.TryStart, pushMethodCall)
-           methodWorker.InsertBefore(pushMethodCall, instrLoadId))
-
-    let private visitAfterMethod state m (included : Inspections) track =
-      if included.IsInstrumented then
-        let body = state.MethodBody
-        // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
-        body.SimplifyMacros()
-        // changes "long" conditional operators to their short representation where possible
-        body.OptimizeMacros()
-      doTrack state m included track
-      state
-
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-      Justification = "AvoidSpeculativeGenerality too")>]
-    let private visitAfterAssembly state (assembly : AssemblyDefinition)
-        (paths : string list) =
-      let originalFileName = Path.GetFileName assembly.MainModule.FileName
-      writeAssemblies assembly originalFileName paths Output.info
-      state
-
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-           "EnsureLocalDisposalRule",
-           Justification="Record return confusing Gendarme -- TODO")>]
-    let private visitStart state =
-      let recorder = typeof<AltCover.Recorder.Tracer>
-      let recordingAssembly = prepareAssembly(recorder.Assembly.Location)
-      { state with RecordingAssembly = recordingAssembly }
+        state.AsyncSupport |> Option.iter (fun a -> a.Close())
+      { state with RecordingAssembly = null
+                   AsyncSupport = None}
 
     // Perform visitor operations
     // param name="state">Contextual information for the visit</param>
@@ -769,21 +755,20 @@ module internal Instrument =
     let internal instrumentationVisitorCore (state : InstrumentContext) (node : Node) =
       match node with
       | Start _ -> visitStart state
-      | Assembly(assembly, included, _) ->
-          updateStrongReferences assembly state.InstrumentedAssemblies |> ignore
-          if included <> Inspections.Ignore then
-            assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+      | Assembly assembly ->
+          updateStrongReferences assembly.Assembly state.InstrumentedAssemblies |> ignore
+          if assembly.Inspection <> Inspections.Ignore then
+            assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
           state
-      | Module(m, included) -> visitModule state m included
+      | Module m -> visitModule state m
       | Type _ -> state
-      | Method(m, included, _, _) -> visitMethod state m included
-      | MethodPoint(instruction, _, point, included, _) ->
-          visitMethodPoint state instruction point included
+      | Method m -> visitMethod state m
+      | MethodPoint m  -> visitMethodPoint state m
       | BranchPoint branch -> visitBranchPoint state branch
-      | AfterMethod(m, included, track) -> visitAfterMethod state m included track
+      | AfterMethod m -> visitAfterMethod state m
       | AfterType -> state
       | AfterModule -> state
-      | AfterAssembly(assembly, paths) -> visitAfterAssembly state assembly paths
+      | AfterAssembly assembly -> visitAfterAssembly state assembly
       | Finish -> finishVisit state
 
     let internal instrumentationVisitorWrapper (core : InstrumentContext -> Node -> InstrumentContext)
@@ -798,6 +783,7 @@ module internal Instrument =
                |> isNull
                |> not
             then (state.RecordingAssembly :> IDisposable).Dispose()
+                 state.AsyncSupport |> Option.iter (fun a -> a.Close())
         reraise()
 
     let internal instrumentationVisitor (state : InstrumentContext) (node : Node) =

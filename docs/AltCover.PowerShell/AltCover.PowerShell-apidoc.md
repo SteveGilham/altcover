@@ -6,9 +6,11 @@
 | --- | --- |
 | class [AddAcceleratorCommand](AltCover.Commands/AddAcceleratorCommand-apidoc) | Add one or more type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`. |
 | class [CompressBranchingCommand](AltCover.Commands/CompressBranchingCommand-apidoc) | Removes compiler-generated hidden branches from OpenCover. |
+| class [ConvertFromCoverageJsonCommand](AltCover.Commands/ConvertFromCoverageJsonCommand-apidoc) | Creates an OpenCover-style XML document from coverlet or AltCover JSON. |
 | class [ConvertFromNCoverCommand](AltCover.Commands/ConvertFromNCoverCommand-apidoc) | Converts classic NCover format and returns OpenCover format. |
 | class [ConvertToBarChartCommand](AltCover.Commands/ConvertToBarChartCommand-apidoc) | Generates a simple HTML report from coverage data. |
 | class [ConvertToCoberturaCommand](AltCover.Commands/ConvertToCoberturaCommand-apidoc) | Creates a Cobertura format report from other report formats. |
+| class [ConvertToCoverageJsonCommand](AltCover.Commands/ConvertToCoverageJsonCommand-apidoc) | Creates a JSON format report from other report formats. |
 | class [ConvertToLcovCommand](AltCover.Commands/ConvertToLcovCommand-apidoc) | Creates an Lcov format report from other report formats. |
 | class [ConvertToNCoverCommand](AltCover.Commands/ConvertToNCoverCommand-apidoc) | Converts OpenCover format to NCover format. |
 | class [ConvertToXDocumentCommand](AltCover.Commands/ConvertToXDocumentCommand-apidoc) | Converts `[xml]` to `XDocument`. |

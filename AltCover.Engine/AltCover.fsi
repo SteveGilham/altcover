@@ -115,6 +115,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option `--teamcity[=VALUE]`
         ///</summary>
         member SummaryFormat : System.String
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        member Verbosity : System.Diagnostics.TraceLevel
 // ```
 #if RUNNER
 // ```
@@ -189,9 +193,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         member StrongNameKey : System.String
         ///<summary>
-        /// Corresponds to command line option `-x, --xmlReport=VALUE`
+        /// Corresponds to command line option `-r, --report=VALUE`
         ///</summary>
-        member XmlReport : System.String
+        member Report : System.String
         ///<summary>
         /// Corresponds to command line option `-f, --fileFilter=VALUE`
         ///</summary>
@@ -300,6 +304,10 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option ` --showGenerated`
         ///</summary>
         member ShowGenerated : bool
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        member Verbosity : System.Diagnostics.TraceLevel
 // ```
 #if RUNNER
 // ```

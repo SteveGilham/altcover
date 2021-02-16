@@ -56,10 +56,10 @@ FN:4,(anonymous_0)
   // it looks like TN: records precede every SF: record
 
   // from e.g. https://manpages.debian.org/unstable/lcov/geninfo.1.en.html
-  // Following is a quick description of the tracefile format as used by 
+  // Following is a quick description of the tracefile format as used by
   // genhtml, geninfo and lcov.
 
-  // A tracefile is made up of several human-readable lines of text, divided into sections.   
+  // A tracefile is made up of several human-readable lines of text, divided into sections.
 
   let internal convertReport (report : XDocument) (format : ReportFormat) (stream : Stream) =
     doWithStream (fun () -> new StreamWriter(stream)) (fun writer ->
@@ -165,7 +165,7 @@ FN:4,(anonymous_0)
                 //
                 // end_of_record
                 writer.WriteLine "end_of_record")
-      | _ ->  // ReportFormat.OpenCover, ReportFormat.OpenCoverWithTracking
+      | _ ->
           report.Descendants("File".X)
           |> Seq.iter (fun f ->
                 //If available, a tracefile begins with the testname which
@@ -199,7 +199,6 @@ FN:4,(anonymous_0)
                       |> Seq.tryHead
                       |> Option.iter (fun s ->
                             let n = (m.Descendants("Name".X) |> Seq.head).Value
-                            let mp = m.Descendants("MethodPoint".X) |> Seq.head
                             let sl = s.Attribute("sl".X).Value
                             if sl
                               |> String.IsNullOrWhiteSpace
@@ -287,12 +286,18 @@ FN:4,(anonymous_0)
                       b.Attribute("sl".X).Value
                       |> String.IsNullOrWhiteSpace
                       |> not)
-                  |> Seq.fold (fun (f, h) b ->
-                      let sl = b.Attribute("sl".X).Value
-                      let vc = b.Attribute("vc".X).Value
-                      writer.WriteLine("DA:" + sl + "," + vc)
+                  |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
+                  |> Seq.sortBy fst
+                  |> Seq.fold (fun (f, h) (line, points) ->
+                      let sl = line.ToString(CultureInfo.InvariantCulture)
+                      let vc = points
+                               |> Seq.fold (fun total point ->
+                                total + (point.Attribute("vc".X).Value |> Int32.TryParse |> snd)
+                               ) 0
+                      let vcs = vc.ToString(CultureInfo.InvariantCulture)
+                      writer.WriteLine("DA:" + sl + "," + vcs)
                       (f + 1,
-                        h + if vc = "0" then 0 else 1)) (0, 0)
+                        h + if vcs = "0" then 0 else 1)) (0, 0)
                 // At  the  end of a section, there is a summary about how many lines were
                 // found and how many were actually instrumented:
                 //
@@ -305,7 +310,15 @@ FN:4,(anonymous_0)
                 // end_of_record
                 writer.WriteLine "end_of_record"))
 
-  let internal summary (report : XDocument) (format : ReportFormat) result =
-    doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
-      (convertReport report format)
+  let convertJson document s =
+    let x = document |> NativeJson.jsonToXml  |> NativeJson.orderXml
+    convertReport x ReportFormat.OpenCover s
+
+  let internal summary (report : DocumentType) (format : ReportFormat) result =
+    match report with
+       | Unknown -> ()
+       | XML document -> doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
+                                     (convertReport document format)
+       | JSON x -> doWithStream(fun () -> File.OpenWrite(!path |> Option.get))
+                                     (convertJson x)
     (result, 0uy, String.Empty)

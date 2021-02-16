@@ -13,6 +13,7 @@ An index of which nuget packages contain which assemblies, and which have APIs
 | [AltCover.Engine](./AltCover.Engine) | ✔️ | ✔️ | ✔️ | ✓ .net core |   |   |
 | [AltCover.Fake](./AltCover.Fake/Fake-fsapidoc) | ✔️ |   | ✔️ |   |   |   |
 | [AltCover.Fake.DotNet.Testing](./AltCover.Fake.DotNet.Testing.AltCover) | ✔️ |   |   |   |   | ✔️ |
+| [AltCover.Monitor](./AltCover.Monitor) | ✔️ | ✔️ | ✔️ | ✓ .net core |   |   |
 | AltCover.NetCoreApp |   | ✔️ | ✔️ | ✓ .net core |   |   |
 | [AltCover.PowerShell](./AltCover.PowerShell/AltCover.PowerShell-apidoc) | ✔️ | ✔️ | ✔️ | ✓ .net core |   |   |
 | [AltCover.Toolkit](./AltCover.Toolkit) | ✔️ | ✔️ | ✔️ | ✓ .net core |   |   |
@@ -30,4 +31,5 @@ Assembly names link to the related API documentation.
 * [The utilities APIs](AltCover.Toolkit) -- behind the PowerShell
 * [Fake and Cake integration](Fake-and-Cake-integration)
 * [The `AltCover.Fake` package](AltCover.Fake.DotNet.Testing.AltCover/)
+* [Test coverage monitor](AltCover.Monitor/)
 

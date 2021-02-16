@@ -74,7 +74,12 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to command line option `--teamcity[=VALUE]`
         ///</summary>
-        SummaryFormat: System.String }
+        SummaryFormat: System.String
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        Verbosity : System.Diagnostics.TraceLevel
+      }
       with
         ///<summary>
         /// Returns an instance with all fields empty save `ExposeReturnCode` being `true`
@@ -126,9 +131,9 @@ namespace AltCoverFake.DotNet.Testing
         ///</summary>
         StrongNameKey: System.String
         ///<summary>
-        /// Corresponds to command line option `-x, --xmlReport=VALUE`
+        /// Corresponds to command line option `-r, --report=VALUE`
         ///</summary>
-        XmlReport: System.String
+        Report: System.String
         ///<summary>
         /// Corresponds to command line option `-f, --fileFilter=VALUE`
         ///</summary>
@@ -236,7 +241,12 @@ namespace AltCoverFake.DotNet.Testing
         ///<summary>
         /// Corresponds to command line option ` --showGenerated`
         ///</summary>
-        ShowGenerated: bool }
+        ShowGenerated: bool
+        ///<summary>
+        /// Corresponds to command line option ` -q`
+        ///</summary>
+        Verbosity : System.Diagnostics.TraceLevel
+}
       with
         ///<summary>
         /// Returns an instance with all fields empty that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`

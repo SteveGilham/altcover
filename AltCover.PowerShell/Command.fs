@@ -11,9 +11,24 @@ open AltCover
 /// </summary>
 type Summary =
   /// <summary>
-  /// <para type="description">OpenCover format</para>
+  /// <para type="description">OpenCover format with CRAP score, equivalent to (O, C) if no other values given </para>
   /// </summary>
   | Default = 0
+  /// <summary>
+  /// <para type="description">No summary, overriding any other value given</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "N is what is expected")>]
+    N = 5
+  /// <summary>
+  /// <para type="description">OpenCover classic summary only</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "O is what is expected")>]
+    O = 6
+  /// <summary>
+  /// <para type="description">Change Risk Anti-Patterns score only</para>
+  /// </summary>
+  | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "C is what is expected")>]
+    C = 7
   /// <summary>
   /// <para type="description">TeamCity with R for bRanch</para>
   /// </summary>
@@ -25,11 +40,11 @@ type Summary =
   | [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "B is what is expected")>]
     B = 2
   /// <summary>
-  /// <para type="description">OpenCover plus TeamCity with R for bRanch</para>
+  /// <para type="description">OpenCover plus CRAP score plus TeamCity with R for bRanch, equivalent to (B, O, C)</para>
   /// </summary>
   | RPlus = 3
   /// <summary>
-  /// <para type="description">OpenCover plus TeamCity with B for Block representing branch coverage</para>
+  /// <para type="description">OpenCover plus CRAP score plus TeamCity with B for Block representing branch coverage, equivalent to (R, O, C)</para>
   /// </summary>
   | BPlus = 4
 
@@ -71,7 +86,7 @@ type ReportFormat =
 /// <para type="description">Summary information is also written to the object pipeline.</para>
 /// <para type="description">**Note**: `-WhatIf` includes validation for the command line arguments.  It is ignored for the purely read-only `-Version` option </para>
 /// <example>
-///   <code>        Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue</code>
+///   <code>        Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover", SupportsShouldProcess = true,
@@ -226,11 +241,11 @@ type InvokeAltCoverCommand() =
   member val StrongNameKey = String.Empty with get, set
 
   /// <summary>
-  /// <para type="description">The output report template file (default: coverage.xml in the current directory)</para>
+  /// <para type="description">The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val XmlReport = String.Empty with get, set
+  member val Report = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Source file names to exclude from instrumentation</para>
@@ -357,7 +372,6 @@ type InvokeAltCoverCommand() =
   /// <para type="description">A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow</para>
   /// <para type="description">A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.</para>
   /// <para type="description">Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</para>
-  /// <para type="description">Incompatible with -Single</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -404,7 +418,7 @@ type InvokeAltCoverCommand() =
   member val MethodPoint : SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
-  /// <para type="description">only record the first hit at any location.  Incompatible with `-CallContext`.</para>
+  /// <para type="description">only record the first hit at any location (or first for that context if `-CallContext` is operating).</para>
   /// </summary>
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -487,12 +501,31 @@ type InvokeAltCoverCommand() =
   /// </summary>
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val SummaryFormat : Summary = Summary.Default with get, set
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays",
+      Justification="Same as above.")>]
+  member val SummaryFormat : Summary array = [| |] with get, set
+
+  /// <summary>
+  /// <para type="description">Selects output level of the command</para>
+  /// </summary>
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Verbosity = System.Diagnostics.TraceLevel.Info with get, set
 
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
-    let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]
+    let formats = [| String.Empty; "R"; "B"; "ROC"; "BOC"; "N"; "O"; "C" |]
+    let formatString = String.Join(String.Empty,self.SummaryFormat
+                                                |> Seq.map (fun f -> formats.[ f|> int]))
+                       |> Seq.distinct
+                       |> Seq.toArray
+
     AltCover.CollectOptions.Primitive
       { RecorderDirectory = self.RecorderDirectory
         WorkingDirectory = self.WorkingDirectory
@@ -503,7 +536,8 @@ type InvokeAltCoverCommand() =
         OutputFile = self.OutputFile
         CommandLine = self.CommandLine
         ExposeReturnCode = not self.DropReturnCode.IsPresent
-        SummaryFormat = formats.[self.SummaryFormat |> int] }
+        SummaryFormat = String(formatString)
+        Verbosity = self.Verbosity }
 
   member private self.Prepare() =
     let showStatic = [| "-"; "+"; "++ " |]
@@ -514,7 +548,7 @@ type InvokeAltCoverCommand() =
         Dependencies = self.Dependency
         Keys = self.Key
         StrongNameKey = self.StrongNameKey
-        XmlReport = self.XmlReport
+        Report = self.Report
         FileFilter = self.FileFilter
         AssemblyFilter = self.AssemblyFilter
         AssemblyExcludeFilter = self.AssemblyExcludeFilter
@@ -541,7 +575,8 @@ type InvokeAltCoverCommand() =
         LocalSource = self.LocalSource.IsPresent
         VisibleBranches = self.VisibleBranches.IsPresent
         ShowStatic = showStatic.[self.ShowStatic |> int]
-        ShowGenerated = self.ShowGenerated.IsPresent }
+        ShowGenerated = self.ShowGenerated.IsPresent
+        Verbosity = self.Verbosity  }
 
   member private self.Log() =
     AltCover.LoggingOptions.Primitive

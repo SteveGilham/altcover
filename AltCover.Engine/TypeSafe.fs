@@ -185,9 +185,18 @@ module TypeSafe =
           |> Seq.map (fun a -> a.AsString())
           |> Seq.toList
 
-  [<ExcludeFromCodeCoverage; NoComparison>]
+  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type SummaryFormat =
     | Default
+    | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Consistent notation")>]
+      N
+    | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Consistent notation")>]
+      O
+    | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+      Justification="Consistent notation")>]
+      C
     | [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
       Justification="TeamCity notation")>]
       R
@@ -196,13 +205,22 @@ module TypeSafe =
       B
     | RPlus
     | BPlus
+    | Many of SummaryFormat seq
     member self.AsString() =
       match self with
       | Default -> String.Empty
+      | N -> "N"
+      | O -> "O"
+      | C -> "C"
       | B -> "B"
       | R -> "R"
-      | BPlus -> "+B"
-      | RPlus -> "+R"
+      | BPlus -> "BOC"
+      | RPlus -> "ROC"
+      | Many s ->
+        let raw = String.Join(String.Empty, s |> Seq.map (fun x -> x.AsString()))
+                  |> Seq.distinct
+                  |> Seq.toArray
+        String(raw)
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type StaticFormat =
@@ -237,7 +255,8 @@ module TypeSafe =
       OutputFile : FilePath
       CommandLine : CommandLine
       ExposeReturnCode : Flag
-      SummaryFormat : SummaryFormat }
+      SummaryFormat : SummaryFormat
+      Verbosity : System.Diagnostics.TraceLevel}
     static member Create() =
       { RecorderDirectory = NoDirectory
         WorkingDirectory = NoDirectory
@@ -248,7 +267,8 @@ module TypeSafe =
         OutputFile = NoFile
         CommandLine = NoCommand
         ExposeReturnCode = Set
-        SummaryFormat = SummaryFormat.Default }
+        SummaryFormat = SummaryFormat.Default
+        Verbosity = System.Diagnostics.TraceLevel.Info }
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",
@@ -260,7 +280,7 @@ module TypeSafe =
       Dependencies : FilePaths
       Keys : FilePaths
       StrongNameKey : FilePath
-      XmlReport : FilePath
+      Report : FilePath
       FileFilter : Filters
       AssemblyFilter : Filters
       AssemblyExcludeFilter : Filters
@@ -287,7 +307,8 @@ module TypeSafe =
       LocalSource : Flag
       VisibleBranches : Flag
       ShowStatic : StaticFormat
-      ShowGenerated : Flag }
+      ShowGenerated : Flag
+      Verbosity : System.Diagnostics.TraceLevel }
     static member Create() =
       { InputDirectories = NoDirectories
         OutputDirectories = NoDirectories
@@ -295,7 +316,7 @@ module TypeSafe =
         Dependencies = NoPaths
         Keys = NoPaths
         StrongNameKey = NoFile
-        XmlReport = NoFile
+        Report = NoFile
         FileFilter = Unfiltered
         AssemblyFilter = Unfiltered
         AssemblyExcludeFilter = Unfiltered
@@ -308,7 +329,7 @@ module TypeSafe =
         MethodTopLevel = Unfiltered
         CallContext = NoContext
         ReportFormat = ReportFormat.OpenCover
-        InPlace = Set
+        InPlace = Clear
         Save = Set
         ZipFile = Clear
         MethodPoint = Clear
@@ -322,14 +343,17 @@ module TypeSafe =
         LocalSource = Clear
         VisibleBranches = Clear
         ShowStatic = StaticFormat.Default
-        ShowGenerated = Clear }
+        ShowGenerated = Clear
+        Verbosity = System.Diagnostics.TraceLevel.Info }
 
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="member", Target="AltCover.TypeSafe+CollectOptions.#.ctor(AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+Threshold,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+CommandLine,AltCover.TypeSafe+Flag,AltCover.TypeSafe+SummaryFormat)",
+  Scope="member",
+  Target="AltCover.TypeSafe+CollectOptions.#.ctor(AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+Threshold,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+CommandLine,AltCover.TypeSafe+Flag,AltCover.TypeSafe+SummaryFormat,System.Diagnostics.TraceLevel)",
   MessageId="cobertura", Justification="Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="member", Target="AltCover.TypeSafe+CollectOptions.#.ctor(AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+Threshold,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+CommandLine,AltCover.TypeSafe+Flag,AltCover.TypeSafe+SummaryFormat)",
+  Scope="member",
+  Target="AltCover.TypeSafe+CollectOptions.#.ctor(AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+DirectoryPath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+Threshold,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+FilePath,AltCover.TypeSafe+CommandLine,AltCover.TypeSafe+Flag,AltCover.TypeSafe+SummaryFormat,System.Diagnostics.TraceLevel)",
   MessageId="lcov", Justification="LCov is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="type", Target="AltCover.TypeSafe+Flag", MessageId="Flag", Justification="It's a flag, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="member", Target="AltCover.TypeSafe+Flag.#NewFlag(System.Boolean)", MessageId="Flag", Justification="It's a flag, damn it.")>]
@@ -337,14 +361,19 @@ module TypeSafe =
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="member", Target="AltCover.TypeSafe+Flag+Tags.#Flag", MessageId="Flag", Justification="It's a flag, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#B", MessageId="B", Justification="TeamCity notation")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#R", MessageId="R", Justification="TeamCity notation")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#N", MessageId="N", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#O", MessageId="O", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCover.TypeSafe+SummaryFormat+Tags.#C", MessageId="C", Justification="Consistent naming")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", Scope="member", Target="AltCover.TypeSafe+Flag.#AsBool()", MessageId="bool",
   Justification="But ToString() and AsString() are OK??")>]
 #else
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+CollectOptions.#.ctor(AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+Threshold,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+CommandLine,AltCoverFake.DotNet.Testing.TypeSafe+Flag,AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat)",
+  Scope="member",
+  Target="AltCoverFake.DotNet.Testing.TypeSafe+CollectOptions.#.ctor(AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+Threshold,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+CommandLine,AltCoverFake.DotNet.Testing.TypeSafe+Flag,AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat,System.Diagnostics.TraceLevel)",
   MessageId="cobertura", Justification="Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-  Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+CollectOptions.#.ctor(AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+Threshold,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+CommandLine,AltCoverFake.DotNet.Testing.TypeSafe+Flag,AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat)",
+  Scope="member",
+  Target="AltCoverFake.DotNet.Testing.TypeSafe+CollectOptions.#.ctor(AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+DirectoryPath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+Threshold,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+FilePath,AltCoverFake.DotNet.Testing.TypeSafe+CommandLine,AltCoverFake.DotNet.Testing.TypeSafe+Flag,AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat,System.Diagnostics.TraceLevel)",
   MessageId="lcov", Justification="LCov is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="type", Target="AltCoverFake.DotNet.Testing.TypeSafe+Flag", MessageId="Flag", Justification="It's a flag, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+Flag.#NewFlag(System.Boolean)", MessageId="Flag", Justification="It's a flag, damn it.")>]
@@ -352,6 +381,9 @@ module TypeSafe =
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+Flag+Tags.#Flag", MessageId="Flag", Justification="It's a flag, damn it.")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#B", MessageId="B", Justification="TeamCity notation")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#R", MessageId="R", Justification="TeamCity notation")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#N", MessageId="N", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#O", MessageId="O", Justification="Consistent naming")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+SummaryFormat+Tags.#C", MessageId="C", Justification="Consistent naming")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", Scope="member", Target="AltCoverFake.DotNet.Testing.TypeSafe+Flag.#AsBool()", MessageId="bool",
   Justification="But ToString() and AsString() are OK??")>]
 #endif

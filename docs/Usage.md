@@ -8,9 +8,9 @@
 
 The full command line is 
 ```
-AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
+AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
 or
-AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/teamcity[=VALUE]] [--?|help|h] [-- ] [...]
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
 or
 AltCover ImportModule
 or
@@ -41,8 +41,9 @@ In detail
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
-                                coverage.xml in the current directory)
+  -r, --report=VALUE         Optional: The output report template file (default:
+                                'coverage.xml' or 'coverage.json' in the
+                               current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
   -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
@@ -92,27 +93,25 @@ In detail
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
-                                   Incompatible with --single
       --reportFormat=VALUE   Optional: Generate the report in the specified
-                               format (NCover or the default OpenCover)
+                               format (Json, NCover or the default OpenCover)
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
-      --zipfile              Optional: Emit the XML report inside a zip archive.
+      --zipfile              Optional: Emit the coverage report inside a zip
+                               archive.
       --methodpoint          Optional: record only whether a method has been
                                visited or not.  Overrides the --linecover and --
                                branchcover options.
       --single               Optional: only record the first hit at any
-                               location.
-                                   Incompatible with --callContext.
-      --linecover            Optional: Do not record branch coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
+                               location, or first hit for each context if --
+                               callContext is operating.
+      --linecover            Optional: Do not record branch coverage.  Ignored
+                               for the --reportFormat=NCover option.
                                    Incompatible with --branchcover.
-      --branchcover          Optional: Do not record line coverage.  Implies,
-                               and is compatible with, the --reportFormat=
-                               opencover option.
+      --branchcover          Optional: Do not record line coverage.  Ignored
+                               for the --reportFormat=NCover option.
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
@@ -133,6 +132,10 @@ In detail
                                unvisited count to zero.
       --showGenerated        Mark generated code with a visit count of -2 (
                                Automatic) for the Visualizer if unvisited
+  -q                         Optional, multiple: Quiet mode -- once to switch
+                               off informational messages, twice to switch off
+                               warnings as well, three (or more) times to
+                               switch off all messages.
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
 ```
@@ -174,11 +177,28 @@ or
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
-      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
-                               as/instead of the OpenCover summary.  No value,
-                               or the value 'B' means TeamCity Block format, 'R'
-                                is bRanch format; add a '+' to include the
-                               OpenCover style summary as well.
+      --summary, --teamcity[=VALUE]
+                             Optional: Defines the format of any summary; an
+                               optional string value consisting of the tokens :
+                               
+                               'N' = No summary at all, regardless of other
+                               values
+                               'B' = TeamCity format, with branches as Block
+                               items
+                               'R' = TeamCity format, with branches as bRanch
+                               items
+                               'O' = Classic OpenCover format
+                               'C' = Change Risk Anti-Pattern score
+                               '+' is the same as "OC" (special case - "+" by
+                               itself is the same as 'BOC')
+                               If the option is present, but has no value, this
+                               is the same as 'B'
+                               If the option is not present, then the default
+                               is 'OC'.
+  -q                         Optional, multiple: Quiet mode -- once to switch
+                               off informational messages, twice to switch off
+                               warnings as well, three (or more) times to
+                               switch off all messages.
   -?, --help, -h             Prints out the options.
 -- ...                 Anything on the command line after a free-standing "--" is considered arguments for the executable to run.
 ```
@@ -213,7 +233,7 @@ or, for the global tool only
 
 * Filter values are semi-colon (`;`) separated regular expressions, applied by type in the order as they are defined in the command line; any item whose name matches the expression will be excluded from the coverage reporting.  In the simplest case, with no special regex items, this means that a name containing the filter item as a sub-string will be excluded.  In v6.0.700 or later, should the need ever arise to have a semi-colon in a regex, then escape it in by doubling (`;;`); if a triplet `;;;` or longer is present, doubling gets grouped from the left.
 
-* Except where being driven by AltCover in "runner" mode, coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
+* Except where being driven by AltCover in "runner" mode, coverage statistics are written to the file nominated by the `r|report=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
 * valid arguments for `--teamcity` are `B`, `R`, `+B`, `+R` or nothing at all (same as `B`).  The letter indicates which symbol to use in the TeamCity format for branch coverage (`B` is for `Block`, which by experiment did show in the build report, and `R` is for `bRanch` which is documented, but did not show when I tried it), the optional `+` indicates that the OpenCover summary should also be emitted.
 

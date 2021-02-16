@@ -35,10 +35,10 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverMethodTopLevel=`"pipe `'|'` separated list of method name regexs"
 * `/p:AltCoverCallContext=`"pipe `'|'` separated list of names or numbers"
 * `/p:AltCoverStrongNameKey=`"path to default strong-name key for assemblies"
-* `/p:AltCoverXmlReport=`"path to the xml report" default: `coverage.xml` in the project directory)
-* `/p:AltCoverReportFormat=`"NCover" or default "OpenCover"
+* `/p:AltCoverReport=`"path to the report" default: `coverage.xml` or `coverage.json` in the project directory
+* `/p:AltCoverReportFormat=`"Json", "NCover" or default "OpenCover"
 * `/p:AltCoverShowStatic=-|+|++` to mark simple code like auto-properties in the coverage file
-* `/p:AltCoverZipFile="true|false"` - set "true" to store the report in a `.zip` archive
+* `/p:AltCoverZipFile="true|false"` - set "true" to store the coverage report in a `.zip` archive
 * `/p:AltCoverMethodPoint="true|false"` - set "true" to record only the first point of each method
 * `/p:AltCoverSingle="true|false"` - set "true" to record only the first visit to each point
 * `/p:AltCoverLineCover="true|false"` - set "true" to record only line coverage in OpenCover format
@@ -47,12 +47,14 @@ And if you want more control over what happens to the files, then is is still po
 * `/p:AltCoverLocalSource=true|false` to ignore assemblies with `.pdb`s that don't refer to local source
 * `/p:AltCoverVisibleBranches=true|false` to ignore compiler generated internal `switch`/`match` branches
 * `/p:AltCoverShowGenerated=true|false` to mark generated code in the coverage file
+* `/p:AltCoverInPlace=true|false` to test in-place (meaning extra file copies)
 * `/p:AltCoverLcovReport=`"path to lcov format result"
 * `/p:AltCoverCobertura=`"path to cobertura format result"
 * `/p:AltCoverThreshold=`"coverage threshold required"
-* `/p:AltCoverSummaryFormat=[+][B|R]` to opt for a TeamCity summary with either `B` or `R` for branch coverage accordingly, with the OpenCover format summary also present if `+` is given
+* `/p:AltCoverSummaryFormat=[BROCN+]` one or more of TeamCity Block format/TeamCity bRanch format/Classic OpenCover/CRAP score or none at all; `+` means the same as `OC` which is also the default
+* `/p:AltCoverVerbosity=`"Levels of output -- Info (default), Warning, Error, or Off"
 * `/p:AltCoverShowSummary=true|[ConsoleColor]` to echo the coverage summary to stdout (in the colour of choice, modulo what else your build process might be doing) if the string is a valid ConsoleColor name) N.B. if this option is present, with any non-empty value then the summary will be echoed
-* `/p:AltCoverForce=true|false` to force delete any left-over `__Saved` folders from previous runs
+* `/p:AltCoverForce=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
 * `/p:AltCoverFailFast=true|false` to skip coverage collection if the unit tests fail
 * `/p:AltCoverImportModule=true` to emit the `Import-Module` command needed to register the `pwsh` support
 * `/p:AltCoverGetVersion=true|false` to emit the current AltCover version
@@ -61,10 +63,10 @@ And if you want more control over what happens to the files, then is is still po
 
 **Note**: As MSBuild informational output is suppressed by default with `dotnet test`, and log verbosity has no fine-grained control, the `-v m` (`--verbosity minimal`) option is needed to show the progress and summary information for the instrumentation and collection process if this is desired.
 
-**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in `/p:AltCoverXmlReport` just as for the default `coverage.xml` name.
+**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in `/p:AltCoverReport` just as for the default `coverage.xml` or `coverage.json` name.
 
 ## Example
 ```
-dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAssemblyFilter=NUnit
+dotnet test /p:AltCover=true /p:AltCoverReport=".\altcover.xml" /p:AltCoverAssemblyExcludeFilter=NUnit
 ```
 Chooses a different report name, and excludes the `NUnit3.TestAdapter` assembly that comes with its pdb files, and gets instrumented by default.

@@ -15,6 +15,8 @@ type internal ReportFormat =
   | NCover = 0
   | OpenCover = 1
   | OpenCoverWithTracking = 2
+  | NativeJson = 3
+  | NativeJsonWithTracking = 4
 
 #if !RUNNER
 open ICSharpCode.SharpZipLib.Zip
@@ -94,6 +96,15 @@ module internal Counter =
 
   let internal branchMask = 0x7FFFFFFF
 
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Access by reflection in the monitor")>]
+  let mutable internal totalVisits = 0L
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Access by reflection in the monitor")>]
+  let mutable internal branchVisits = 0L
+
   // Implementation details
 #if DEBUG
   module internal I =
@@ -148,7 +159,8 @@ module internal Counter =
       match format with
       | ReportFormat.OpenCoverWithTracking
       | ReportFormat.OpenCover -> openCoverXml
-      | _ -> nCoverXml
+      | ReportFormat.NCover -> nCoverXml
+      | _ -> format |> (sprintf "%A") |> NotSupportedException |> raise
 
     let internal minTime (t1:DateTime) (t2:DateTime) =
       if t1 < t2
@@ -184,6 +196,7 @@ module internal Counter =
         (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
         (outputFile : Stream) =
       let flushStart = DateTime.UtcNow
+      let (m, i, m', s, v) = xmlByFormat format // throw early on unsupported
       let coverageDocument = readXDocument coverageFile
       let root = coverageDocument.DocumentElement
       let startTimeNode = root.GetAttributeNode("startTime")
@@ -209,8 +222,6 @@ module internal Counter =
            "AltCover.Recorder "
            + System.Diagnostics.FileVersionInfo.GetVersionInfo(
                System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
-
-      let (m, i, m', s, v) = xmlByFormat format
 
       let moduleNodes = selectNodes coverageDocument m
       moduleNodes
@@ -274,7 +285,11 @@ module internal Counter =
       if not (counts.ContainsKey hitPointId) then
         lock counts (fun () ->
         if not (counts.ContainsKey hitPointId)
-        then counts.Add(hitPointId, PointVisit.Create()))
+        then
+          System.Threading.Interlocked.Increment(&totalVisits) |> ignore
+          if hitPointId < 0
+          then System.Threading.Interlocked.Increment(&branchVisits) |> ignore
+          counts.Add(hitPointId, PointVisit.Create()))
 
 #if RUNNER
     let internal addTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
@@ -327,8 +342,8 @@ module internal Counter =
    "AvoidLongParameterListsRule",
    Justification="Most of this gets curried away")>]
   [<SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'target' is disposed")>]
+    "CA2000:DisposeObjectsBeforeLosingScope",
+    Justification = "'target' is disposed")>]
   let internal doFlushStream postProcess pointProcess own counts format coverageFile output =
     use target =
       match output with

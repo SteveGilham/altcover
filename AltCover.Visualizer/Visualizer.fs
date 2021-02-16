@@ -27,7 +27,7 @@ module private Gui =
   let private initializeHandler() =
     let handler = Handler()
     [ "mainWindow"; "fileOpenMenu"; "aboutVisualizer" ]
-#if NETCOREAPP2_1
+#if !NET472
     |> List.iter (fun name ->
          use b =
            new Builder(System.Reflection.Assembly.GetExecutingAssembly()
@@ -71,7 +71,7 @@ module private Gui =
     active
 
   let private prepareAboutDialog(handler : Handler) =
-#if NETCOREAPP2_1
+#if !NET472
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
     AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl (Uri link)) |> ignore
@@ -122,23 +122,21 @@ module private Gui =
                           typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
                           typeof<Gdk.Pixbuf>)
 
-#if NETCOREAPP2_1
+#if !NET472
   let private prepareOpenFileDialog(handler : Handler) =
     let openFileDialog =
       new FileChooserDialog(Resource.GetResourceString "OpenFile", handler.mainWindow,
                             FileChooserAction.Open, Resource.GetResourceString "OpenFile.Open",
                             ResponseType.Ok, Resource.GetResourceString "OpenFile.Cancel",
                             ResponseType.Cancel, null)
-    let data = Resource.GetResourceString("SelectXml").Replace("%", "|*.").Split([| '|' |])
-    let filter = new FileFilter()
-    filter.Name <- data.[0]
-    filter.AddPattern data.[1]
-    openFileDialog.AddFilter filter
-
-    let filter = new FileFilter()
-    filter.Name <- data.[2]
-    filter.AddPattern data.[3]
-    openFileDialog.AddFilter filter
+    let data = Resource.GetResourceString("SelectXml").Split([| '|' |])
+    data
+    |> Seq.iter (fun t ->
+      let filter = new FileFilter()
+      let data = t.Split([| '%' |])
+      filter.Name <- data.[0]
+      filter.AddPattern ("*." + data.[1])
+      openFileDialog.AddFilter filter)
     openFileDialog
 #else
   [<SuppressMessage("Microsoft.Reliability",
@@ -171,7 +169,7 @@ module private Gui =
             doUpdateMRU handler info.FullName false)
         UpdateUISuccess = fun info ->
           let updateUI (theModel:
-#if NETCOREAPP2_1
+#if !NET472
                                   ITreeModel
 #else
                                   TreeModel
@@ -209,8 +207,7 @@ module private Gui =
     async { CoverageFileTree.DoSelected environment index } |> Async.Start
 
   let private handleOpenClicked (handler : Handler)
-#if NETCOREAPP2_1
-
+#if !NET472
       (openFileDialogFactory : Handler -> FileChooserDialog) =
     let openFileDialog = openFileDialogFactory handler
     let makeSelection (ofd : FileChooserDialog) x =
@@ -218,7 +215,7 @@ module private Gui =
       try
         if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType =
              ResponseType.Ok then
-          let file = new FileInfo(ofd.Filename)
+          let file = FileInfo(ofd.Filename)
           let dir = file.Directory.FullName
 #else
       (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
@@ -233,7 +230,7 @@ module private Gui =
           Some file
         else
           None
-#if NETCOREAPP2_1
+#if !NET472
       finally
         ofd.Hide()
 #endif
@@ -372,14 +369,11 @@ module private Gui =
     Handler.InvokeOnGuiThread(fun () -> balanceLines h
                                         va.Value <- adjust)
 
-#if NETCOREAPP2_1
+#if !NET472
   // fsharplint:disable-next-line RedundantNewKeyword
   let latch = new Threading.ManualResetEvent false
 #endif
 
-  [<SuppressMessage("Microsoft.Maintainability",
-                    "CA1506:AvoidExcessiveClassCoupling",
-                    Justification = "I see no problem here")>]
   let private onRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let hitFilter (activated : RowActivatedArgs) (path : TreePath) =
       activated.Path.Compare(path) = 0
@@ -471,7 +465,7 @@ module private Gui =
   let private setToolButtons(h : Handler) =
     let g = new AccelGroup()
     h.mainWindow.AddAccelGroup(g)
-#if NETCOREAPP2_1
+#if !NET472
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
     let prov = new CssProvider()
     let nl = Environment.NewLine
@@ -513,7 +507,7 @@ module private Gui =
     handler.separator1.Expand <- true
     handler.separator1.Homogeneous <- false
     handler.codeView.Editable <- false
-#if !NETCOREAPP2_1
+#if NET472
     let whiteSmoke = Color(245uy, 245uy, 245uy)
     seq { 0..4 }
     |> Seq.iter (fun i -> let state = i |> enum
@@ -555,8 +549,8 @@ module private Gui =
          (fun _ ->
            Persistence.clearGeometry()
            Persistence.save <- false))
-#if NETCOREAPP2_1
-        ("schemadir:", (fun s -> Persistence.saveSchemaDir s))
+#if !NET472
+        ("schemadir:", Persistence.saveSchemaDir)
 #endif
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
@@ -569,7 +563,7 @@ module private Gui =
     parseCommandLine arguments
     Application.Init()
     let handler = prepareGui()
-#if NETCOREAPP2_1
+#if !NET472
     handler.codeView.Drawn |> Event.add (fun _ -> latch.Set() |> ignore)
     let schemaDir = Persistence.readSchemaDir()
     if schemaDir
@@ -612,7 +606,7 @@ module private Gui =
     handler.fontButton.Clicked
     |> Event.add (fun x ->
          let format = Resource.GetResourceString "SelectFont"
-#if NETCOREAPP2_1
+#if !NET472
          use selector = new FontChooserDialog(format, handler.mainWindow)
          selector.Font <- Persistence.readFont()
          if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
@@ -642,7 +636,7 @@ module private Gui =
             }
             |> Async.Start
 
-#if NETCOREAPP2_1
+#if !NET472
          ) // implicit Dispose()
 #else
          selector.Destroy())
@@ -652,20 +646,12 @@ module private Gui =
     Application.Run()
     0 // needs an int return
 
-#if !NETCOREAPP2_1
+#if NET472
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope="member",
                             Target="<StartupCode$AltCover-Visualizer>.$Visualizer.#.cctor()",
                             Justification="Compiler generated")>]
-[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-                            Scope="type",
-                            Target="AltCover.Gui",
-                            Justification="That's the way things are")>]
-[<assembly: SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
-                            Scope="member",
-                            Target="AltCover.Gui.#main(System.String[])",
-                            Justification="That's the way things are")>]
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope="member",

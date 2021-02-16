@@ -3,7 +3,7 @@
 Corresponds to a summary format choice
 
 ```csharp
-public sealed class SummaryFormat : IEquatable<SummaryFormat>, IStructuralEquatable
+public class SummaryFormat : IEquatable<SummaryFormat>, IStructuralEquatable
 ```
 
 ## Public Members
@@ -12,10 +12,15 @@ public sealed class SummaryFormat : IEquatable<SummaryFormat>, IStructuralEquata
 | --- | --- |
 | static [get_B](TypeSafe.SummaryFormat/get_B-apidoc)() |  |
 | static [get_BPlus](TypeSafe.SummaryFormat/get_BPlus-apidoc)() |  |
+| static [get_C](TypeSafe.SummaryFormat/get_C-apidoc)() |  |
 | static [get_Default](TypeSafe.SummaryFormat/get_Default-apidoc)() |  |
+| static [get_N](TypeSafe.SummaryFormat/get_N-apidoc)() |  |
+| static [get_O](TypeSafe.SummaryFormat/get_O-apidoc)() |  |
 | static [get_R](TypeSafe.SummaryFormat/get_R-apidoc)() |  |
 | static [get_RPlus](TypeSafe.SummaryFormat/get_RPlus-apidoc)() |  |
+| static [NewMany](TypeSafe.SummaryFormat/NewMany-apidoc)(…) |  |
 | [AsString](TypeSafe.SummaryFormat/AsString-apidoc)() | Returns the string to use in the command line |
+| class [Many](TypeSafe.SummaryFormat.Many-apidoc) | Aggregation of the above |
 | static class [Tags](TypeSafe.SummaryFormat.Tags-apidoc) |  |
 
 ## See Also

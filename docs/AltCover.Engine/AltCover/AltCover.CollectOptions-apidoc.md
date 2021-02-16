@@ -22,6 +22,7 @@ public abstract class CollectOptions : IEquatable<CollectOptions>, IStructuralEq
 | [RecorderDirectory](AltCover.CollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |
 | [SummaryFormat](AltCover.CollectOptions/SummaryFormat-apidoc) { get; } | Corresponds to command line option `--teamcity[=VALUE]` |
 | [Threshold](AltCover.CollectOptions/Threshold-apidoc) { get; } | Corresponds to command line option `-t, --threshold=VALUE` |
+| [Verbosity](AltCover.CollectOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [WorkingDirectory](AltCover.CollectOptions/WorkingDirectory-apidoc) { get; } | Corresponds to command line option `-w, --workingDirectory=VALUE` |
 | [Validate](AltCover.CollectOptions/Validate-apidoc)(…) | Does simple checking of the arguments without causing any changes to the system |
 | class [Abstract](AltCover.CollectOptions.Abstract-apidoc) | Options expressed as an interface |

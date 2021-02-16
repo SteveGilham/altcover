@@ -25,7 +25,7 @@ type Prepare =
     member Dependencies : string array with get, set
     member Keys : string array with get, set
     member StrongNameKey : string with get, set
-    member XmlReport : string with get, set
+    member Report : string with get, set
     member FileFilter : string array with get, set
     member AssemblyFilter : string array with get, set
     member AssemblyExcludeFilter : string array with get, set
@@ -53,6 +53,7 @@ type Prepare =
     member VisibleBranches : bool with get, set
     member ShowStatic : string with get, set
     member ShowGenerated : bool with get, set
+    member Verbosity : string with get, set
   end
 ```
 ## Task `AltCover.Collect`
@@ -76,6 +77,7 @@ type Collect =
     member CommandLine : string array with get, set
     member ExposeReturnCode : bool with get, set
     member SummaryFormat : string with get, set
+    member Verbosity : string with get, set
   end
 ```
 ## Task `AltCover.PowerShell`
@@ -109,6 +111,7 @@ type Echo =
     member Colour : string with get, set
     [<Required>]
     member Text : string with get, set
+    member Verbosity : string with get, set
   end
 ```
 ## Task `AltCover.RunSettings`
@@ -124,5 +127,38 @@ type RunSettings =
     [<Output>]
     member Extended : string with get, set
     member TestSetting : string with get, set
+    member Verbosity : string with get, set
+  end
+```
+## Task `AltCover.ContingentCopy`
+Used by the .net core implementation to copy files copied relative to the output directory to the same locations relative to the instrumented files folder
+
+Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
+```
+type ContingentCopy =
+  class
+    inherit Task
+    new : unit -> ContingentCopy
+    override Execute : unit -> bool
+    member RelativeDir : string with get, set
+    member CopyToOutputDirectory : string with get, set
+    member FileName : string with get, set
+    [<Required>]
+    member BuildOutputDirectory : string with get, set
+    [<Required>]
+    member InstrumentDirectory : string with get, set
+  end
+```
+## Task `AltCover.RetryDelete`
+Used by the .net core implementation to safely delete files
+
+Not intended for general use, but see the `AltCover.targets` file for how it is used around the test stage.
+```
+type RetryDelete =
+  class
+    inherit Task
+    new : unit -> RetryDelete
+    override Execute : unit -> bool
+    member Files : string array with get, set
   end
 ```

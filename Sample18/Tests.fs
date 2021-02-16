@@ -79,7 +79,7 @@ module DU =
     let discr = if bs < spread then failwith "no real roots" else Math.Sqrt (bs - spread)
     compute a b discr
 
-#if NETCOREAPP2_1
+#if !NET472
 module Program =
   [<EntryPoint>]
   let main _ = 0

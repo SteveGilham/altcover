@@ -45,16 +45,21 @@ module internal Process =
 open Process
 
 module internal Zip =
-  let internal save (document : XDocument) (report : string) (zip : bool) =
+  let internal save (document : Stream -> unit) (report : string) (zip : bool) =
     if zip
     then
-      use archive = ZipFile.Open(report + ".zip", ZipArchiveMode.Create)
+      use file = File.OpenWrite (report + ".zip")
+      file.SetLength 0L
+      use archive = new ZipArchive(file, ZipArchiveMode.Create)
       let entry = report
                   |> Path.GetFileName
                   |> archive.CreateEntry
       use sink = entry.Open()
-      document.Save(sink)
-    else document.Save(report)
+      document sink
+    else
+      use file = File.OpenWrite report
+      file.SetLength 0L
+      document file
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
                     "EnsureLocalDisposalRule",
@@ -62,12 +67,8 @@ module internal Zip =
   [<SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
                     Justification="ditto, ditto.")>]
   let internal openUpdate (report : string) =
-    if File.Exists report
+    if File.Exists (report + ".zip")
     then
-      let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-      (null, stream :> Stream)
-    else
       let zip = ZipFile.Open(report + ".zip", ZipArchiveMode.Update)
       let entry = report
                   |> Path.GetFileName
@@ -76,6 +77,13 @@ module internal Zip =
                    then entry.Open()
                    else new MemoryStream() :> Stream
       (zip, stream)
+    else if File.Exists report
+      then
+        let stream = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+        (null, stream :> Stream)
+      else
+        (null, new MemoryStream() :> Stream)
 
 type internal StringSink = Action<String> // delegate of string -> unit
 
@@ -119,6 +127,7 @@ module internal Output =
 
 module internal CommandLine =
 
+  let mutable internal verbosity = 0
   let mutable internal help = false
   let mutable internal error : string list = []
   let mutable internal exceptions : Exception list = []
@@ -208,7 +217,29 @@ module internal CommandLine =
       | :? NotSupportedException as n -> n :> Exception |> (logException store)
       | :? IOException as i -> i :> Exception |> (logException store)
       | :? System.Security.SecurityException as s -> s :> Exception |> (logException store)
+      | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
       result
+
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Long enough but no longer")>]
+    let rec internal doRetry action log limit (rest:int) depth f  =
+      try
+        action f
+      with
+      | x ->
+        match x with
+        | :? IOException
+        | :? System.Security.SecurityException
+        | :? UnauthorizedAccessException ->
+          if depth < limit
+          then
+            Threading.Thread.Sleep(rest)
+            doRetry action log limit rest (depth + 1) f
+          else
+            x.ToString() |> log
+
+        | _ -> reraise()
 
     let logExceptionsToFile name extend =
       let path = Path.Combine(CoverageParameters.outputDirectories() |> Seq.head, name)
@@ -307,6 +338,16 @@ module internal CommandLine =
         if help then Left("HelpText", options) else parse
     | fail -> fail
 
+  let internal applyVerbosity () =
+    if verbosity >= 1
+    then Output.info <- ignore
+         Output.echo <- ignore
+    if verbosity >= 2
+    then Output.warn <- ignore
+    if verbosity >= 3
+    then Output.error <- ignore
+         Output.usage <- ignore
+
   let internal reportErrors (tag : string) extend =
     I.conditionalOutput (fun () ->
       tag
@@ -400,8 +441,10 @@ module internal CommandLine =
       directory
       |> Directory.Exists
       |> not) (fun () ->
-      Output.info
-      <| Format.Local("CreateFolder", directory)
+      if verbosity < 1 // implement it early here
+      then
+        Output.info
+        <| Format.Local("CreateFolder", directory)
       Directory.CreateDirectory(directory) |> ignore)
 
   let internal validatePath path x =
@@ -441,3 +484,4 @@ module internal CommandLine =
     Output.usage <- usageBase
     Output.echo <- writeErr
     Output.info <- writeOut
+    Output.warn <- writeOut

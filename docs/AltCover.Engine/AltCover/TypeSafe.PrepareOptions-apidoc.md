@@ -33,6 +33,7 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [MethodTopLevel](TypeSafe.PrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](TypeSafe.PrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](TypeSafe.PrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
+| [Report](TypeSafe.PrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](TypeSafe.PrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](TypeSafe.PrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](TypeSafe.PrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
@@ -43,8 +44,8 @@ public sealed class PrepareOptions : IEquatable<PrepareOptions>, IStructuralEqua
 | [SymbolDirectories](TypeSafe.PrepareOptions/SymbolDirectories-apidoc) { get; } | Corresponds to command line option `-y, --symbolDirectory=VALUE` |
 | [TypeFilter](TypeSafe.PrepareOptions/TypeFilter-apidoc) { get; } | Corresponds to command line option `-t, --typeFilter=VALUE` |
 | [TypeTopLevel](TypeSafe.PrepareOptions/TypeTopLevel-apidoc) { get; } | Corresponds to command line option `--typetoplevel=VALUE` |
+| [Verbosity](TypeSafe.PrepareOptions/Verbosity-apidoc) { get; } | Corresponds to command line option ` -q` |
 | [VisibleBranches](TypeSafe.PrepareOptions/VisibleBranches-apidoc) { get; } | Corresponds to command line option ` -v, --visibleBranches` |
-| [XmlReport](TypeSafe.PrepareOptions/XmlReport-apidoc) { get; } | Corresponds to command line option `-x, --xmlReport=VALUE` |
 | [ZipFile](TypeSafe.PrepareOptions/ZipFile-apidoc) { get; } | Corresponds to command line option `--zipfile` |
 
 ## See Also

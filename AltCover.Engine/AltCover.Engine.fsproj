@@ -11,13 +11,13 @@
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
-    <!-- https://github.com/dotnet/sdk/issues/987 -->
-    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <!-- If static linking, fix up in the Unpack documentation stage!!-->
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <!-- Maybe this to publish -->
+    <!-- CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -47,10 +47,13 @@
     <Compile Include="Report.fs" />
     <Compile Include="Gendarme.fs" />
     <Compile Include="OpenCover.fs" />
+    <Compile Include="NativeJson.fs" />
     <Compile Include="CommandLine.fs" />
+    <Compile Include="CecilEx.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="LCov.fs" />
     <Compile Include="Cobertura.fs" />
+    <Compile Include="Json.fs" />
     <Compile Include="PostProcess.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="Main.fs" />
@@ -76,6 +79,9 @@
     <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="$(SolutionDir)_Binaries\AltCover.Recorder\Release+AnyCPU\net46\AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -85,15 +91,22 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.0" />
     <PackageReference Include="System.ValueTuple" />
     <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
     <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
-    <PackageReference Include="Manatee.Json" Version="13.0.3" />
+    <PackageReference Include="Manatee.Json" Version="13.0.5" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <!-- Maybe this to publish -->
+    <!-- PackageReference Include="System.Buffers" version="4.5.1">
+        <PrivateAssets>All</PrivateAssets>
+        <Publish>true</Publish>
+      </PackageReference -->
   </ItemGroup>
 
   <ItemGroup>
@@ -111,7 +124,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

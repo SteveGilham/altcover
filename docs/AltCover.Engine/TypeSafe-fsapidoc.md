@@ -146,13 +146,17 @@ This holds the strongly-typed equivalent of the command line options
 ```
 ### Display formats
 ```
-    [<NoComparison>]
+    [<NoComparison; AutoSerializable(false)>]
     type SummaryFormat =
-      | Default (* OpenCover style *)
-      | R (* TeamCity bRanch only *)
-      | B (* TeamCity Block only *)
-      | RPlus (* R + default *)
-      | BPlus (* B + default *)
+      | Default  (* O + C *)
+      | N (* No summary -- overrides all other choices *)
+      | O  (* OpenCover style *)
+      | C  (* Change Risk Anti-Pattern score *)
+      | R  (* TeamCity bRanch only *)
+      | B  (* TeamCity Block only *)
+      | RPlus (* R + O + C *)
+      | BPlus (* B + O + C *)
+      | Many of SummaryFormat seq
       with
         member AsString : unit -> string
       end
@@ -191,7 +195,9 @@ The members correspond to the like-named command line options for `AltCover Runn
         OutputFile: FilePath
         CommandLine: CommandLine
         ExposeReturnCode: Flag
-        SummaryFormat: SummaryFormat }
+        SummaryFormat: SummaryFormat
+        Verbosity : System.Diagnostics.TraceLevel
+      }
       with
         static member Create : unit -> CollectOptions
       end
@@ -217,7 +223,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Dependencies: FilePaths
         Keys: FilePaths
         StrongNameKey: FilePath
-        XmlReport: FilePath
+        Report: FilePath
         FileFilter: Filters
         AssemblyFilter: Filters
         AssemblyExcludeFilter: Filters
@@ -244,7 +250,9 @@ The members correspond to the like-named command line options for `AltCover`, ex
         LocalSource: Flag
         VisibleBranches: Flag
         ShowStatic: StaticFormat
-        ShowGenerated: Flag }
+        ShowGenerated: Flag
+        Verbosity : System.Diagnostics.TraceLevel
+ }
       with
         static member Create : unit -> PrepareOptions
       end

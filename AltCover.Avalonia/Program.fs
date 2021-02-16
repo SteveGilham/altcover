@@ -3,14 +3,13 @@ namespace AltCover
 open Avalonia
 open Avalonia.Controls
 open Avalonia.Logging
-open Avalonia.Logging.Serilog
 
 open Mono.Options
 
 module VisualizerMain =
   let BuildAvaloniaApp() =
     AppBuilderBase<AppBuilder>.Configure<App>().UsePlatformDetect()
-      .LogToDebug(LogEventLevel.Warning)
+      .LogToTrace(LogEventLevel.Warning)
 
   [<EntryPoint>]
   let main arguments =

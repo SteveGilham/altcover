@@ -119,6 +119,12 @@ module AltCover =
       | Abstract a -> a.SummaryFormat
       | TypeSafe t -> t.SummaryFormat.AsString()
 
+    member self.Verbosity =
+      match self with
+      | Primitive p -> p.Verbosity
+      | Abstract a -> a.Verbosity
+      | TypeSafe t -> t.Verbosity
+
     interface Abstract.ICollectOptions with
       member self.RecorderDirectory = self.RecorderDirectory
       member self.WorkingDirectory = self.WorkingDirectory
@@ -130,6 +136,7 @@ module AltCover =
       member self.CommandLine = self.CommandLine
       member self.ExposeReturnCode = self.ExposeReturnCode
       member self.SummaryFormat = self.SummaryFormat
+      member self.Verbosity = self.Verbosity
 
 #if RUNNER
     member self.Validate afterPreparation =
@@ -218,11 +225,11 @@ module AltCover =
       | Abstract a -> a.StrongNameKey
       | TypeSafe t -> t.StrongNameKey.AsString()
 
-    member self.XmlReport =
+    member self.Report =
       match self with
-      | Primitive p -> p.XmlReport
-      | Abstract a -> a.XmlReport
-      | TypeSafe t -> t.XmlReport.AsString()
+      | Primitive p -> p.Report
+      | Abstract a -> a.Report
+      | TypeSafe t -> t.Report.AsString()
 
     member self.FileFilter =
       match self with
@@ -390,6 +397,12 @@ module AltCover =
       | Abstract a -> a.ShowGenerated
       | TypeSafe t -> t.ShowGenerated.AsBool()
 
+    member self.Verbosity =
+      match self with
+      | Primitive p -> p.Verbosity
+      | Abstract a -> a.Verbosity
+      | TypeSafe t -> t.Verbosity
+
     interface Abstract.IPrepareOptions with
       member self.InputDirectories = self.InputDirectories |> PrepareOptions.ToSeq
       member self.OutputDirectories = self.OutputDirectories |> PrepareOptions.ToSeq
@@ -397,7 +410,7 @@ module AltCover =
       member self.Dependencies = self.Dependencies |> PrepareOptions.ToSeq
       member self.Keys = self.Keys |> PrepareOptions.ToSeq
       member self.StrongNameKey = self.StrongNameKey
-      member self.XmlReport = self.XmlReport
+      member self.Report = self.Report
       member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
       member self.AssemblyFilter = self.AssemblyFilter |> PrepareOptions.ToSeq
       member self.AssemblyExcludeFilter = self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
@@ -425,6 +438,7 @@ module AltCover =
       member self.VisibleBranches = self.VisibleBranches
       member self.ShowStatic = self.ShowStatic
       member self.ShowGenerated = self.ShowGenerated
+      member self.Verbosity = self.Verbosity
 
 #if RUNNER
     static member private ValidateArray a f key =
@@ -439,14 +453,6 @@ module AltCover =
       then f key x |> ignore
 
     member private self.Consistent() =
-      if self.SingleVisit && self.CallContext.Any() then
-        CommandLine.error <-
-          String.Format
-            (System.Globalization.CultureInfo.CurrentCulture,
-             CommandLine.resources.GetString "Incompatible", "--single", "--callContext")
-          :: CommandLine.error
-
-    member private self.Consistent'() =
       if self.LineCover && self.BranchCover then
         CommandLine.error <-
           String.Format
@@ -477,8 +483,8 @@ module AltCover =
           "--outputDirectory"
         PrepareOptions.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
           self.StrongNameKey
-        PrepareOptions.ValidateOptional CommandLine.validatePath "--xmlReport"
-          self.XmlReport
+        PrepareOptions.ValidateOptional CommandLine.validatePath "--report"
+          self.Report
         PrepareOptions.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
           "--symbolDirectory"
         PrepareOptions.ValidateArray self.Dependencies CommandLine.validateAssembly
@@ -494,7 +500,6 @@ module AltCover =
         |> Seq.iter
              (fun a -> PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
         self.Consistent()
-        self.Consistent'()
         validateContext self.CallContext
         CommandLine.error |> List.toArray
       finally

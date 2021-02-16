@@ -15,6 +15,8 @@
     <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
+    <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -61,6 +63,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
   </ItemGroup>
 </Project>

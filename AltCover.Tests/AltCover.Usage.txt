@@ -1,0 +1,116 @@
+﻿  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
+  -o, --outputDirectory=VALUE
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
+                               See also '--inplace'
+  -y, --symbolDirectory=VALUE
+                             Optional, multiple: Additional directory to search
+                               for matching symbols for the assemblies in the
+                               input directory
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
+                               missing reference.
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+                               use
+      --sn, --strongNameKey=VALUE
+                             Optional: The default strong naming key to apply
+                               to instrumented assemblies (default: None)
+  -r, --report=VALUE         Optional: The output report template file (default:
+                                'coverage.xml' or 'coverage.json' in the
+                               current directory)
+  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
+                               from instrumentation
+  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
+                               instrumentation
+  -e, --assemblyExcludeFilter=VALUE
+                             Optional, multiple: assembly which links other
+                               instrumented assemblies but for which internal
+                               details may be excluded
+  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
+                               instrumentation
+  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
+                               instrumentation
+  -a, --attributeFilter=VALUE
+                             Optional, multiple: attribute name to exclude from
+                               instrumentation
+      --attributetoplevel=VALUE
+                             Optional, multiple: Types marked with an attribute
+                               of a type that matches the regex are considered
+                               top-level, and are not excluded from coverage on
+                               the basis of any type which textually encloses
+                               them.
+      --typetoplevel=VALUE   Optional, multiple: Types with a name that matches
+                               the regex are considered top-level, and are not
+                               excluded from coverage on the basis of any type
+                               which textually encloses them.
+      --methodtoplevel=VALUE Optional, multiple: Methods with a name that
+                               matches the regex are considered top-level, and
+                               are not excluded from coverage on the basis of
+                               any method which textually encloses them.
+  -l, --localSource          Don't instrument code for which the source file is
+                               not present.
+  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
+                               visits in ticks or designated method calls
+                               leading to the visits.
+                                   A single digit 0-7 gives the number of
+                               decimal places of seconds to report; everything
+                               else is at the mercy of the system clock
+                               information available through DateTime.UtcNow
+                                   A string in brackets "[]" is interpreted as
+                               an attribute type name (the trailing "Attribute"
+                               is optional), so [Test] or [TestAttribute] will
+                               match; if the name contains one or more ".",
+                               then it will be matched against the full name of
+                               the attribute type.
+                                   Other strings are interpreted as method
+                               names (fully qualified if the string contains
+                               any "." characters).
+      --reportFormat=VALUE   Optional: Generate the report in the specified
+                               format (Json, NCover or the default OpenCover)
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
+      --zipfile              Optional: Emit the coverage report inside a zip
+                               archive.
+      --methodpoint          Optional: record only whether a method has been
+                               visited or not.  Overrides the --linecover and --
+                               branchcover options.
+      --single               Optional: only record the first hit at any
+                               location, or first hit for each context if --
+                               callContext is operating.
+      --linecover            Optional: Do not record branch coverage.  Ignored
+                               for the --reportFormat=NCover option.
+                                   Incompatible with --branchcover.
+      --branchcover          Optional: Do not record line coverage.  Ignored
+                               for the --reportFormat=NCover option.
+                                   Incompatible with --linecover.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
+      --sourcelink           Optional: Display sourcelink URLs rather than file
+                               paths if present.
+      --defer                Optional, defers writing runner-mode coverage data
+                               until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
+  -q                         Optional, multiple: Quiet mode -- once to switch
+                               off informational messages, twice to switch off
+                               warnings as well, three (or more) times to
+                               switch off all messages.
+  -?, --help, -h             Prints out the options.

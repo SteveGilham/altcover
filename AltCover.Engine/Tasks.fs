@@ -11,6 +11,12 @@ open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open TaskIO
 
+module internal TaskHelpers =
+  let parse v =
+    match Enum.TryParse<System.Diagnostics.TraceLevel>(v, true) with
+    | (false, _) -> System.Diagnostics.TraceLevel.Info
+    | (_, x) -> x
+
 [<SuppressMessage(
   "Gendarme.Rules.Smells",
   "AvoidLargeClassesRule",
@@ -44,7 +50,7 @@ type Prepare() =
       Justification = "MSBuild tasks use arrays")>]
   member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
-  member val XmlReport = String.Empty with get, set
+  member val Report = String.Empty with get, set
   [<SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
       Justification = "MSBuild tasks use arrays")>]
@@ -91,7 +97,7 @@ type Prepare() =
   member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
   member val ReportFormat = "OpenCover" with get, set
-  member val InPlace = true with get, set
+  member val InPlace = false with get, set
   member val Save = true with get, set
   member val ZipFile = false with get, set
   member val MethodPoint = false with get, set
@@ -108,6 +114,7 @@ type Prepare() =
   member val ShowStatic = "-" with get, set
   member val ShowGenerated = false with get, set
   member val ExposeReturnCode = true with get, set
+  member val Verbosity = "Info" with get, set
 
   member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
   override self.Execute() =
@@ -127,7 +134,7 @@ type Prepare() =
           Dependencies = self.Dependencies
           Keys = self.Keys
           StrongNameKey = self.StrongNameKey
-          XmlReport = self.XmlReport
+          Report = self.Report
           FileFilter = self.FileFilter
           AssemblyFilter = self.AssemblyFilter
           AssemblyExcludeFilter = self.AssemblyExcludeFilter
@@ -154,7 +161,8 @@ type Prepare() =
           LocalSource = self.LocalSource
           VisibleBranches = self.VisibleBranches
           ShowStatic = self.ShowStatic
-          ShowGenerated = self.ShowGenerated }
+          ShowGenerated = self.ShowGenerated
+          Verbosity = TaskHelpers.parse self.Verbosity }
 
     Command.Prepare task log = 0
 
@@ -187,6 +195,7 @@ type Collect() =
   member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
   member val ExposeReturnCode = true with get, set
+  member val Verbosity = "Info" with get, set
 
   [<Output>]
   [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
@@ -219,7 +228,8 @@ type Collect() =
           OutputFile = self.OutputFile
           CommandLine = self.CommandLine
           ExposeReturnCode = self.ExposeReturnCode
-          SummaryFormat = self.SummaryFormat }
+          SummaryFormat = self.SummaryFormat
+          Verbosity = TaskHelpers.parse self.Verbosity }
 
     Command.Collect task log = 0
 
@@ -264,15 +274,20 @@ type Echo() =
 
   [<Required>]
   member val Text = String.Empty with get, set
+  member val Verbosity = "Info" with get, set
 
   [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
     Justification="Queen's English, m80!")>]
   member val Colour = String.Empty with get, set
+  // member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
     if self.Text
        |> String.IsNullOrWhiteSpace
        |> not
+       && (self.Verbosity
+           |> TaskHelpers.parse
+           |> int) >= int System.Diagnostics.TraceLevel.Info
     then
       let original = Console.ForegroundColor
       try
@@ -287,6 +302,7 @@ type RunSettings() =
   inherit Task(null)
 
   member val TestSetting = String.Empty with get, set
+  member val Verbosity = "Info" with get, set
 
   [<Output>]
   member val Extended = String.Empty with get, set
@@ -296,7 +312,23 @@ type RunSettings() =
       Justification = "Unit test accessor")>]
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
+  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
+  member val internal MessageIO : (string -> unit) option = None  with get, set
+
   override self.Execute() =
+    let signal = Option.defaultValue self.Message self.MessageIO
+    let logIt = (self.Verbosity
+                 |> TaskHelpers.parse
+                 |> int) >= int System.Diagnostics.TraceLevel.Info
+    if logIt
+    then self.TestSetting
+         |> sprintf "Settings Before: %s"
+         |> signal
+
     let tempFile = Path.GetTempFileName()
 
     try
@@ -352,4 +384,63 @@ type RunSettings() =
 
       result
     finally
+      if logIt
+      then self.Extended
+           |> sprintf "Settings After: %s"
+           |> signal
       File.Delete(tempFile)
+
+type ContingentCopy() =
+  inherit Task(null)
+  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification="The name of the MSBuild property to use")>]
+  member val RelativeDir = String.Empty with get, set
+  member val CopyToOutputDirectory = String.Empty with get, set
+  member val FileName = String.Empty with get, set
+
+  [<Required>]
+  member val BuildOutputDirectory = String.Empty with get, set
+
+  [<Required>]
+  member val InstrumentDirectory = String.Empty with get, set
+
+  override self.Execute() =
+    //base.Log.LogMessage(MessageImportance.High, sprintf "Relative dir %A" self.RelativeDir)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "CopyToOutputDirectory %A" self.CopyToOutputDirectory)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "FileName %A" self.FileName)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "BuildOutputDirectory %A" self.BuildOutputDirectory)
+    //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
+
+    if (self.CopyToOutputDirectory = "Always" || self.CopyToOutputDirectory = "PreserveNewest") &&
+        (self.RelativeDir |> Path.IsPathRooted |> not) &&
+        (self.RelativeDir |> String.IsNullOrWhiteSpace |> not) &&
+        (self.FileName |> String.IsNullOrWhiteSpace |> not)
+    then
+      let toDir = Path.Combine(self.InstrumentDirectory, self.RelativeDir)
+      let filename = self.FileName |> Path.GetFileName
+      let toFile = Path.Combine(toDir, filename)
+      if toDir |> Directory.Exists |> not
+      then toDir |> Directory.CreateDirectory |> ignore
+      let from = Path.Combine(self.BuildOutputDirectory, self.RelativeDir, filename)
+      //base.Log.LogMessage(MessageImportance.High, sprintf "copy %A => %A" from toFile)
+      if File.Exists from
+      then File.Copy(from, toFile, true)
+    true
+
+type RetryDelete() =
+  inherit Task(null)
+
+  [<SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
+      Justification = "MSBuild tasks use arrays")>]
+  member val Files : string array = [||] with get, set
+
+  member internal self.Write message =
+    base.Log.LogMessage(MessageImportance.High, message)
+
+  override self.Execute() =
+    if self.Files.IsNotNull then
+      self.Files
+      |> Seq.filter File.Exists
+      |> Seq.iter (CommandLine.I.doRetry File.Delete self.Write 10 1000 0)
+    true

@@ -74,6 +74,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Engine\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
+    <Compile Include="..\AltCover.Engine\NativeJson.fs" Link="NativeJson.fs" />
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />
     <Compile Include="Resource.fs" />
@@ -86,10 +87,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Manatee.Json" Version="13.0.5" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
   </ItemGroup>
 </Project>

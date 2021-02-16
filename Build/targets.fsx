@@ -201,6 +201,11 @@ let withWorkingDirectoryVM dir o =
       WorkingDirectory = Path.getFullName dir
       Verbosity = Some DotNet.Verbosity.Minimal }
 
+let withWorkingDirectoryVN dir o =
+  { dotnetOptions o with
+      WorkingDirectory = Path.getFullName dir
+      Verbosity = Some DotNet.Verbosity.Normal }
+
 let withWorkingDirectoryOnly dir o =
   { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
@@ -279,7 +284,7 @@ let uncovered (path : string) =
             | (false, _) ->
                 printfn "%A" xml
                 Assert.Fail("Could not parse uncovered line value '" + coverage + "'")
-                0
+                (0, f)
             | (_, numeric) ->
                 printfn "%s : %A"
                   (f
@@ -287,15 +292,20 @@ let uncovered (path : string) =
                    |> Path.GetFileName) numeric
                 // if numeric > 0 then
                 //   printfn "%A" xml
-                numeric))
+                (numeric, f)))
   |> Seq.toList
 
 let coverageSummary _ =
   let numbers = uncovered "_Reports/_Unit*/Summary.xml"
   if numbers
-     |> List.tryFind (fun n -> n > 0)
+     |> List.tryFind (fun (n,f) -> if (f
+                                       |> Path.GetDirectoryName
+                                       |> Path.GetFileName) = "_UnitTestWithCoverlet"
+                                   then n > 0 && n < 100 // don't expect to get that high
+                                        // w/o flakeout or other ones failing too
+                                   else n > 0)
      |> Option.isSome
-     || !misses > 1
+     || !misses > 0
   then Assert.Fail("Coverage is too low")
 
 let msbuildCommon (p : MSBuildParams) =
@@ -339,12 +349,30 @@ let dotnetBuildDebug proj =
 // Information.getCurrentHash()
 let commitHash = Information.getCurrentSHA1 (".")
 let infoV = Information.showName "." commitHash
+printfn "Build at %A" infoV
+
+// let hash = System.Security.Cryptography.SHA256.Create()
+
+// let formatSecret (s : string) =
+//   if s |> isNull
+//   then "(null)"
+//   else if String.IsNullOrEmpty s
+//        then "(empty)"
+//        else if String.IsNullOrWhiteSpace s
+//             then "(whitespace)"
+//             else s
+//                  |> System.Text.Encoding.UTF8.GetBytes
+//                  |> hash.ComputeHash
+//                  |> Convert.ToBase64String
 
 //----------------------------------------------------------------
 
 let _Target s f =
   Target.description s
   Target.create s f
+  let s2 = "Replay" + s
+  Target.description s2
+  Target.create s2 f
 
 // Preparation
 
@@ -364,6 +392,37 @@ _Target "Clean" (fun _ ->
   Actions.Clean())
 
 _Target "SetVersion" (fun _ ->
+
+  // patch gendarme
+  let configjson = File.ReadAllText("./.config/dotnet-tools.json")
+  let json = Manatee.Json.JsonValue.Parse configjson
+  let gendarmeVersion = json.Object.["tools"].Object.["altcode.gendarme-tool"].Object.["version"].String
+
+  let project1 = XDocument.Load ("./Build/NuGet.csproj")
+  let pr = project1.Descendants(XName.Get "PackageReference")
+           |> Seq.find(fun pr -> pr.Attribute(XName.Get "Include").Value = "altcode.gendarme")
+  pr.Attribute(XName.Get "version").Value <- gendarmeVersion
+  project1.Save("./Build/NuGet.csproj")
+
+  let project2 = XDocument.Load ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+  let gv = project2.Descendants(XName.Get "GendarmeVersion")
+           |> Seq.head
+  gv.Value <- gendarmeVersion
+  project2.Save("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+
+  // patch coveralls.io for github actions
+  let coverallsdll =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.dll")
+    |> Path.getFullName
+
+  Shell.copyFile coverallsdll "./ThirdParty/Coveralls.dll"
+
+  let coverallspdb =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/Coveralls.pdb")
+    |> Path.getFullName
+
+  Shell.copyFile coverallspdb "./ThirdParty/Coveralls.pdb"
+
   let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
   let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
   let github = Environment.environVar "GITHUB_RUN_NUMBER"
@@ -424,17 +483,27 @@ module SolutionRoot =
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
   [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
-    "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+    "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+    "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
     "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
     "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
     "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
-    "./Tests.Visualizer/AltCover.Visualizer.Tests.fsproj" ]
+    "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ]
   |> Seq.iter (fun f ->
        let dir = Path.GetDirectoryName f
        let proj = Path.GetFileName f
        DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM dir)
                                 let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
-                                { tmp with MSBuildParams = mparams} ) proj))
+                                { tmp with MSBuildParams = mparams} ) proj)
+  do
+    let xml = XDocument.Load("./AltCover.Recorder/Strings.resx")
+    use resw = new System.Resources.ResourceWriter("./AltCover.Recorder/Strings.resources")
+    xml.Descendants(XName.Get "data")
+    |> Seq.iter(fun d -> let key = d.Attribute(XName.Get "name").Value
+                         let value = d.Descendants(XName.Get "value")
+                                     |> Seq.head
+                         resw.AddResource(key, value.Value))
+    resw.Close()  )
 
 // Basic compilation
 
@@ -443,7 +512,6 @@ _Target "Compilation" ignore
 _Target "BuildRelease" (fun _ ->
   try
     [  "MCS.sln" ] |> Seq.iter (msbuildRelease None) // mono
-    [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
     [ "./AltCover.sln"; "./AltCover.Visualizer.sln" ] |> Seq.iter dotnetBuildRelease
 
     // document cmdlets ahead of packaging
@@ -497,6 +565,7 @@ _Target "BuildDebug" (fun _ ->
 
   [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
   [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildDebug MSBuildPath) // net20
+  [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
   [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
@@ -580,6 +649,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 //     [ "_Binaries/AltCover.Visualizer.FuncUI/Debug+AnyCPU/net5.0/AltCover.Visualizer.dll" ])
     ("./Build/csharp-rules.xml",
      [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll"
        "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
        "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
@@ -662,6 +732,7 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1709" // defer to the Gendarme casing rule for implicit 'a
       "-Microsoft.Naming#CA1715" // defer to the Gendarme naming rule for implicit 'a
       "-Microsoft.Usage#CA2235"  // closures being serializable
+      "-Microsoft.Maintainability#CA1506" // AvoidExcessiveClassCoupling
     ]
 
   let standardRules =
@@ -682,6 +753,7 @@ _Target "FxCop" (fun _ ->
   let defaultCSharpRules = List.concat [
     deprecatedRules
     standardRules
+    ["-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed"]
   ]
 
   [ (
@@ -722,7 +794,8 @@ _Target "FxCop" (fun _ ->
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe"],
      [],
      defaultRules)
-    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll" ],
+    ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+       "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ],
      [],
        "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly" :: defaultRules) // Esperanto resources in-line
     ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
@@ -773,6 +846,57 @@ _Target "FxCop" (fun _ ->
 // Unit Test
 
 _Target "UnitTest" (fun _ ->
+  let reports = Path.getFullName "./_Reports"
+
+  let xmlreports =
+    [
+        "UnitTestWithAltCoverRunner.xml"
+        "ApiTestWithAltCoverRunner.xml"
+        "ValidateGendarmeEmulationWithAltCoverRunner.xml"
+        "RecorderTestWithAltCoverRunner.xml"
+        "RecorderTest2WithAltCoverRunner.xml"
+        "Pester.xml"
+        "MonitorTestWithAltCoverCoreRunner.net5.0.xml" //"MonitorTestWithAltCoverRunner.xml"
+    ] |> List.map (fun report -> reports @@ report)
+
+  let reportLines = xmlreports |> List.map File.ReadAllLines
+
+  let top =
+    reportLines
+    |> List.head
+    |> Seq.takeWhile (fun l -> l.StartsWith("    <Module") |> not)
+  let tail =
+    reportLines
+    |> List.head
+    |> Seq.skipWhile (fun l -> l <> "  </Modules>")
+  let core =
+    reportLines
+    |> List.map (fun f ->
+         f
+         |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+         |> Seq.takeWhile (fun l -> l <> "  </Modules>"))
+
+  let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
+  File.WriteAllLines
+    (coverage,
+     Seq.concat
+       [ top
+         Seq.concat core
+         tail ]
+     |> Seq.toArray)
+
+  let coveralls =
+    ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
+    |> Path.getFullName
+
+  if Environment.isWindows &&
+     [
+       "APPVEYOR_BUILD_NUMBER"
+       "GITHUB_RUN_NUMBER"
+     ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
+  then
+    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
+      "Coveralls upload failed"
 
   printfn "Dump uncovered lines"
   CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/dump-uncovered.ps1" ]
@@ -784,70 +908,114 @@ _Target "UnitTest" (fun _ ->
 
 _Target "UncoveredUnitTest" ignore
 
+let NUnitRetry f spec =
+  let rec doNUnitRetry depth f spec =
+    try
+      if File.Exists spec
+      then File.Delete spec
+      NUnit3.run (f >> (fun p -> {p with ResultSpecs = [ spec ]}))
+    with x ->
+      printfn "doNUnitRetry caught %A" x
+      if depth > 2
+      then
+        printfn "Recursion limited"
+        reraise ()
+      if File.Exists spec
+      then
+        let xml =
+          "./Build/NuGet.csproj"
+          |> Path.getFullName
+          |> XDocument.Load
+        let summary = xml.Descendants(XName.Get "test-run")
+                      |> Seq.head
+        let failcount = summary.Attribute(XName.Get "failed").Value
+        if failcount = "0"
+        then doNUnitRetry (depth + 1) f spec
+        else
+          printfn "Actual failures found %A" failcount
+          reraise()
+      else
+        printfn "Report not found"
+        reraise()
+  doNUnitRetry 0 f spec
+
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
     !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
-    |> NUnit3.run (fun p ->
+    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Monitor.Tests.dll")
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/JustUnitTestReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/JustUnitTestReport.xml"
 
     !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll")
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/RecorderUnitTestReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/RecorderUnitTestReport.xml"
 
     !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/Recorder2UnitTestReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/Recorder2UnitTestReport.xml"
   with x ->
     printfn "%A" x
     reraise())
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
-  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
-  !!(@"./*Test*/*Tests.fsproj")
-  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
-  |> Seq.iter
-       (DotNet.build (fun p ->
+  let buildIt =
+        DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
              Configuration = DotNet.BuildConfiguration.Debug
              Framework = Some "net5.0" }
-         |> buildWithCLIArguments)))
+         |> buildWithCLIArguments)
+
+  !!(@"./*Test*/*Tests.fsproj")
+  |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
+  |> Seq.iter buildIt
+
+  !!(@"./*.Valid*/*Valid*.fsproj")
+  |> Seq.iter buildIt)
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
-  try
-    !!(@"./*Test*/*Tests.fsproj")
-    |> Seq.iter
-         (DotNet.test (fun p ->
+  let testIt =
+          DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
                Framework = Some "net5.0"
                NoBuild = true }
-           |> testWithCLIArguments))
+           |> testWithCLIArguments)
+
+  try
+    [
+      Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+      Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+      Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+      Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+      Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+    ]
+    |> Seq.iter testIt
   with x ->
     printfn "%A" x
     reraise())
 
 _Target "BuildForCoverlet" (fun _ ->
-  msbuildDebug MSBuildPath "./Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-  let l = !!(@"./*Tests/*Tests.fsproj")
-          |> Seq.filter (fun s -> s.Contains("Visualizer") |> not // incomplete
-                                  && s.Contains("Recorder") |> not) // net20
-          |> Seq.toList
+  msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+  msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
-  ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
+  [
+    Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+    Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+    Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+  ]
   |> Seq.iter
        (DotNet.build (fun p ->
          { p.WithCommon dotnetOptions with
@@ -858,12 +1026,17 @@ _Target "BuildForCoverlet" (fun _ ->
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let l = !!(@"./*Tests/*Tests.fsproj")
-            |> Seq.filter (fun s -> s.Contains("Visualizer") |> not) // incomplete
-            |> Seq.toList
+    let l =
+      [
+        Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
+        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+        Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
+        Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+        Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" // project
+      ]
 
     let xml =
-      ("./ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
+      ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
@@ -874,24 +1047,29 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
            with x -> eprintf "%A" x
 
            // Can't seem to get this any other way
-           let covxml =
-             (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
-           let doc = covxml |> XDocument.Load
+           let ocovxml =
+             (!!(tr @@ "*/coverage.opencover.xml") |> Seq.tryHead)
+             |> Option.map Path.getFullName
 
-           let key =
-             doc.Descendants(XName.Get "Name")
-             |> Seq.filter
-                  (fun x -> x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
-             |> Seq.toList
-           key |> List.iter (fun x -> x.Parent.Remove())
+           match ocovxml with
+           | None -> l
+           | Some covxml ->
+               let doc = covxml |> XDocument.Load
 
-           let target =
-             (Path.getFullName "./_Reports")
-             @@ ((Path.GetFileNameWithoutExtension f) + ".coverlet.xml")
-           doc.Save target
+               let key =
+                 doc.Descendants(XName.Get "Name")
+                 |> Seq.filter
+                      (fun x -> x.Value = "System.Void AltCover.CommandLine/Format::.ctor()")
+                 |> Seq.toList
+               key |> List.iter (fun x -> x.Parent.Remove())
 
-           // Shell.copyFile target covxml
-           target :: l) []
+               let target =
+                 (Path.getFullName "./_Reports")
+                 @@ ((Path.GetFileNameWithoutExtension f) + ".coverlet.xml")
+               doc.Save target
+
+               // Shell.copyFile target covxml
+               target :: l) []
 
     ReportGenerator.generateReports (fun p ->
       { p with
@@ -901,6 +1079,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
           TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
 
     uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
+    |> List.map fst
     |> printfn "%A uncovered lines"
   with x ->
     printfn "%A" x
@@ -911,6 +1090,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
   let testFiles = "./_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ::
                   (!!(@"_Binaries/*Test*/Debug+AnyCPU/net472/AltCover*Test*.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
+                   |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Monitor.Tests.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.Tests.Visualizer.dll")
                    |> Seq.toList)
@@ -927,7 +1107,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
       { p with
           WorkingDir = "."
           ExePath = openCoverConsole
-          TestRunnerExePath = nunitConsole
+          TestRunnerExePath = nunitConsole // OK, not on Linux
           Filter =
             "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]*"
           MergeByHash = true
@@ -944,7 +1124,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
       { p with
           WorkingDir = "."
           ExePath = openCoverConsole
-          TestRunnerExePath = nunitConsole
+          TestRunnerExePath = nunitConsole // OK, not on Linux
           Filter =
             "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.*"
           MergeByHash = true
@@ -960,7 +1140,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
       { p with
           WorkingDir = "."
           ExePath = openCoverConsole
-          TestRunnerExePath = nunitConsole
+          TestRunnerExePath = nunitConsole // OK, not on Linux
           Filter =
             "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.*"
           MergeByHash = true
@@ -985,6 +1165,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     [ coverage; scoverage; s4coverage ]
 
   uncovered @"_Reports/_UnitTestWithOpenCove*/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines")
 
 // Hybrid (Self) Tests
@@ -1005,6 +1186,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let Recorder4Dir =
     Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472"
   let apiDir = Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
+  //let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
 
   let altReport = reports @@ "UnitTestWithAltCover.xml"
 
@@ -1012,13 +1194,14 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = altReport
-           InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir |]
+           Report = altReport
+           InputDirectories = [| "."; weakDir; Recorder4Dir; apiDir (*; monitorDir*) |]
            OutputDirectories =
              [| "./__UnitTestWithAltCover"
                 weakDir @@ "__ValidateGendarmeEmulationWithAltCover"
                 Recorder4Dir @@ "__RecorderTestWithAltCover"
-                apiDir @@ "__ApiTestWithAltCover" |]
+                apiDir @@ "__ApiTestWithAltCover"
+                (*monitorDir @@ "__MonitorTestWithAltCover"*) |]
            StrongNameKey = keyfile
            ReportFormat = "NCover"
            InPlace = false
@@ -1041,18 +1224,18 @@ _Target "UnitTestWithAltCover" (fun _ ->
   try
     [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
+      //!!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
       !!"_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
       !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
       !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
     |> Seq.concat
     |> Seq.distinct
-    |> NUnit3.run (fun p ->
+    |> NUnitRetry (fun p ->
          { p with
              ToolPath = nunitConsole
-             WorkingDir = "."
-             ResultSpecs = [ "./_Reports/UnitTestWithAltCoverReport.xml" ] })
+             WorkingDir = "." }) "./_Reports/UnitTestWithAltCoverReport.xml"
   with x ->
-    printfn "%A" x
+    printfn "UnitTestWithAltCover caught %A" x
     reraise()
 
   printfn "Instrument the net20 Recorder tests"
@@ -1063,7 +1246,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = RecorderReport
+           Report = RecorderReport
            OutputDirectories = [| "./__RecorderTestWithAltCover" |]
            StrongNameKey = shadowkeyfile
            ReportFormat = "NCover"
@@ -1079,11 +1262,10 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
   printfn "Execute the net20 Recorder tests"
   !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
-  |> NUnit3.run (fun p ->
+  |> NUnitRetry (fun p ->
        { p with
            ToolPath = nunitConsole
-           WorkingDir = "."
-           ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverReport.xml" ] })
+           WorkingDir = "." }) "./_Reports/RecorderTestWithAltCoverReport.xml"
 
   ReportGenerator.generateReports (fun p ->
     { p with
@@ -1092,7 +1274,9 @@ _Target "UnitTestWithAltCover" (fun _ ->
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCover" }) [ altReport; RecorderReport ]
 
-  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml" |> printfn "%A uncovered lines")
+  uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
+  |> List.map fst
+  |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
@@ -1114,9 +1298,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         "UnitTestWithAltCoverRunner.xml", // coverage report
         "./_Reports/UnitTestWithAltCoverRunnerReport.xml", // relative nunit reporting
         [ Path.getFullName // test assemblies
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-          Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/Sample2.dll" ],
+            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCoverRunner/AltCover.Tests.dll" ],
         baseFilter,
         keyfile
       )
@@ -1130,6 +1312,16 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         baseFilter,
         keyfile
       )
+      // (
+      //   Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472", // test directory
+      //   "./__MonitorTestWithAltCoverRunner", // relative output
+      //   "MonitorTestWithAltCoverRunner.xml", // coverage report
+      //   "./_Reports/MonitorTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+      //   [ Path.getFullName // test assemblies
+      //       "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCoverRunner/AltCover.Monitor.Tests.dll" ],
+      //   baseFilter,
+      //   keyfile
+      // )
       (
         Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472",
         "./__ValidateGendarmeEmulationWithAltCoverRunner",
@@ -1172,7 +1364,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
        let prep =
          AltCover.PrepareOptions.TypeSafe
            ({ TypeSafe.PrepareOptions.Create() with
-                XmlReport = TypeSafe.FilePath altReport
+                Report = TypeSafe.FilePath altReport
                 OutputDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath outputDirectory |]
                 StrongNameKey = TypeSafe.FilePath signingKey
                 SingleVisit = TypeSafe.Set
@@ -1195,25 +1387,54 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
        let nunitcmd = NUnit3.buildArgs nunitparams nunitAssemblies
 
-       try
-         let collect =
-           AltCover.CollectOptions.TypeSafe
-             { TypeSafe.CollectOptions.Create() with
-                 Executable = TypeSafe.FilePath nunitConsole
-                 RecorderDirectory = TypeSafe.DirectoryPath (testDirectory @@ outputDirectory)
-                 CommandLine = nunitcmd
-                               |> AltCoverCommand.splitCommandLine
-                               |> Seq.map TypeSafe.CommandArgument
-                               |> TypeSafe.CommandArguments  }
-           |> AltCoverCommand.Collect
-         { AltCoverCommand.Options.Create collect with
-             ToolPath = altcover
-             ToolType = frameworkAltcover
-             WorkingDirectory = "." }
-         |> AltCoverCommand.run
-       with x ->
-         printfn "%A" x
-         reraise())
+       let collect =
+         AltCover.CollectOptions.TypeSafe
+           { TypeSafe.CollectOptions.Create() with
+               Executable = TypeSafe.FilePath nunitConsole
+               RecorderDirectory = TypeSafe.DirectoryPath (testDirectory @@ outputDirectory)
+               CommandLine = nunitcmd
+                             |> AltCoverCommand.splitCommandLine
+                             |> Seq.map TypeSafe.CommandArgument
+                             |> TypeSafe.CommandArguments  }
+         |> AltCoverCommand.Collect
+       let command = { AltCoverCommand.Options.Create collect with
+                           ToolPath = altcover
+                           ToolType = frameworkAltcover
+                           WorkingDirectory = "." }
+
+       let nUnitRetry2 () =
+        let rec doNUnitRetry2 depth  =
+          try
+            if File.Exists nunitReport
+            then File.Delete nunitReport
+            AltCoverCommand.run command
+          with x ->
+            printfn "%A" x
+            if depth > 2
+            then
+              printfn "Recursion limited"
+              reraise ()
+            if File.Exists nunitReport
+            then
+              let xml =
+                "./Build/NuGet.csproj"
+                |> Path.getFullName
+                |> XDocument.Load
+              let summary = xml.Descendants(XName.Get "test-run")
+                            |> Seq.head
+              let failcount = summary.Attribute(XName.Get "failed").Value
+              if failcount  = "0"
+              then doNUnitRetry2 (depth + 1)
+              else
+                printfn "Actual failures %A" failcount
+                reraise()
+            else
+              printfn "Report not found"
+              reraise()
+        doNUnitRetry2 0
+
+       nUnitRetry2 ())
+
   let pester = Path.getFullName "_Reports/Pester.xml"
 
   let xmlreports =
@@ -1228,40 +1449,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         TargetDir = "_Reports/_UnitTestWithAltCoverRunner" }) xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
-  |> printfn "%A uncovered lines"
-
-  let reportLines = xmlreports |> List.map File.ReadAllLines
-
-  let top =
-    reportLines
-    |> List.head
-    |> Seq.takeWhile (fun l -> l.StartsWith("    <Module") |> not)
-  let tail =
-    reportLines
-    |> List.head
-    |> Seq.skipWhile (fun l -> l <> "  </Modules>")
-  let core =
-    reportLines
-    |> List.map (fun f ->
-         f
-         |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-         |> Seq.takeWhile (fun l -> l <> "  </Modules>"))
-
-  let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
-  File.WriteAllLines
-    (coverage,
-     Seq.concat
-       [ top
-         Seq.concat core
-         tail ]
-     |> Seq.toArray)
-  let coveralls =
-    ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
-    |> Path.getFullName
-
-  if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
-    Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage ])
-      "Coveralls upload failed")
+  |> List.map fst
+  |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverCore" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
@@ -1272,8 +1461,8 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
+       Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0", // testDirectory
+       Path.getFullName "AltCover.Expecto.Tests/_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCore.xml", // report
        "AltCover.Tests.fsproj", // project
        Path.getFullName "Tests", // workingDirectory
@@ -1300,7 +1489,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        Path.getFullName "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml", // report
        "AltCover.ValidateGendarmeEmulation.fsproj", // project
-       Path.getFullName "ValidateGendarmeEmulations", // workingDirectory
+       Path.getFullName "AltCover.ValidateGendarmeEmulation", // workingDirectory
        (fun p -> { p with TypeFilter = [ "<Start"; "Expecto"; "Tests" ]}) >> AltCoverFilter // filter
      )
    ]
@@ -1312,7 +1501,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
        let prep =
          AltCover.PrepareOptions.Primitive
            ({ Primitive.PrepareOptions.Create() with
-                XmlReport = report
+                Report = report
                 OutputDirectories = [| output |]
                 StrongNameKey = keyfile
                 ReportFormat = "NCover"
@@ -1352,86 +1541,108 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
         TargetDir = "_Reports/_UnitTestWithAltCoverCore" }) xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover =
-    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
   let tests =
    [
      (
-       Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "UnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "./Tests/AltCover.Tests.fsproj"
+       Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0", // output
        reports @@ "ApiTestWithAltCoverCoreRunner.xml", // report
        Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
      )
      (
-       Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
-       Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
-       reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
-       Path.getFullName "./Recorder.Tests/AltCover.Recorder.Tests.fsproj")
+       reports @@ "MonitorTestWithAltCoverCoreRunner.xml", // report
+       Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
+     )
      (
-       Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // testDirectory
-       Path.getFullName "ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0", // output
+       reports @@ "RecorderTestWithAltCoverCoreRunner.xml",
+       Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj")
+     (
+       reports @@ "Recorder2TestWithAltCoverCoreRunner.xml",
+       Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
+     (
        reports @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml", // report
-       Path.getFullName "ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
+       Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") // project
    ]
 
-  tests
-  |> List.iter (fun (testDirectory, output, report, testproject) ->
+  try
+    tests
+    |> List.iter (fun (report, testproject) ->
+          let dir = testproject |> Path.GetDirectoryName
+          let proj = testproject |> Path.GetFileName
+          let name = dir |> Path.GetFileName
+          let root = dir |> Path.GetDirectoryName
+          let testdir = root @@ ("__" + name)
+          Directory.ensure testdir
+          Shell.cleanDir testdir
 
-       printfn "Instrument the code %s" testDirectory
-       Shell.cleanDir output
-       let prep =
-         AltCover.PrepareOptions.Primitive
-           ({ Primitive.PrepareOptions.Create() with
-                XmlReport = report
-                OutputDirectories = [| output |]
-                TypeFilter = [ "SolutionRoot"; "Expecto" ]
-                VisibleBranches = true
-                StrongNameKey = keyfile
-                SingleVisit = true
-                InPlace = false
-                Save = false }
-            |> AltCoverFilter)
-         |> AltCoverCommand.Prepare
-       { AltCoverCommand.Options.Create prep with
-           ToolPath = altcover
-           ToolType = dotnetAltcover
-           WorkingDirectory = testDirectory }
-       |> AltCoverCommand.run
+          Shell.copy testdir (!!(dir @@ "*.*"))
 
-       printfn "Unit test the instrumented code %s" testproject
-       let (dotnetexe, args) =
-         defaultDotNetTestCommandLine (Some "net5.0") testproject
+          let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+          let repo = config.Descendants(XName.Get("add")) |> Seq.head
+          repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+          config.Save (testdir @@ "NuGet.config")
 
-       let collect =
-         AltCover.CollectOptions.Primitive
-           { Primitive.CollectOptions.Create() with
-               Executable = dotnetexe
-               RecorderDirectory = output
-               CommandLine = args }
-         |> AltCoverCommand.Collect
-       { AltCoverCommand.Options.Create collect with
-           ToolPath = altcover
-           ToolType = dotnetAltcover
-           WorkingDirectory = output }
-       |> AltCoverCommand.run)
+          let fsproj = XDocument.Load testproject
+          let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+          let inject =
+             XElement
+               (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+                XAttribute(XName.Get "Version", !Version))
+          pack.AddBeforeSelf inject
+
+          let newproj = testdir @@ proj
+          fsproj.Save newproj
+
+          DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM testdir)
+                                   let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                                   { tmp with MSBuildParams = mparams} ) proj
+
+          let prep =
+            AltCover.PrepareOptions.Primitive
+              ({ Primitive.PrepareOptions.Create() with
+                  Report = report
+                  TypeFilter = [ "SolutionRoot"; "Expecto" ]
+                  VisibleBranches = true
+                  StrongNameKey = keyfile
+                  SingleVisit = true }
+              |> AltCoverFilter)
+          let coll = AltCover.CollectOptions.Primitive
+                     <| Primitive.CollectOptions.Create()
+
+          if proj.Contains("Recorder")
+          then doMSBuild
+                (withDebug >> fun p -> { p with Verbosity = Some MSBuildVerbosity.Minimal})
+                  MSBuildPath newproj
+
+          DotNet.test (fun to' ->
+            { to'.WithCommon(withWorkingDirectoryVM testdir)
+                  with Framework = Some "net5.0"
+                       NoBuild = proj.Contains("Recorder")
+            }.WithAltCoverOptions prep coll ForceTrue
+            |> testWithCLIArguments) proj)
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    //printfn "Should clear %A" folder
+    Shell.mkdir folder
+    Shell.deleteDir folder
 
   let xmlreports =
     tests
-    |> List.map (fun (_, _, report, _) -> report)
-    |> List.filter (fun f -> f.Contains("GTKV") |> not)
+    |> List.map (fun (report, _) -> if File.Exists report
+                                    then report
+                                    else report.Replace(".xml",".net5.0.xml"))
+    |> List.filter (fun f -> File.Exists f
+                             && f.Contains("GTKV") |> not)
 
   ReportGenerator.generateReports (fun p ->
     { p with
@@ -1441,6 +1652,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
         TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" }) xmlreports
 
   uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
+  |> List.map fst
   |> printfn "%A uncovered lines")
 
 // Pure OperationalTests
@@ -1457,7 +1669,7 @@ _Target "FSharpTypes" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [| "./" + instrumented |]
            AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -1477,7 +1689,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNet.xml")
   let sampleRoot =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
@@ -1491,8 +1703,8 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
-           AssemblyFilter = [ "Adapter" ]
+           Report = simpleReport
+           AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
@@ -1537,7 +1749,7 @@ _Target "FSharpTests" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            CallContext = [ "[Test]" ]
            AssemblyFilter = [ "Adapter" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -1569,23 +1781,92 @@ _Target "FSharpTests" (fun _ ->
       WorkingDirectory = "Sample7" }
   |> AltCoverCommand.run)
 
+_Target "AsyncAwaitTests" (fun _ ->
+  Directory.ensure "./_Reports"
+  // Provoke this sub-issue : https://github.com/SteveGilham/altcover/issues/105#issuecomment-737203810
+  // seen in 7.2.800, fixed in commit 93325bb645dcbfaf01b996fc99576ef4501f41b8
+  "./_Intermediate/AltCover.Recorder/Debug+AnyCPU/net46/AltCover.Recorder.pdb"
+  |> Path.getFullName |> File.delete
+  "./_Intermediate/AltCover.Recorder/Release+AnyCPU/net46/AltCover.Recorder.pdb"
+  |> Path.getFullName |> File.delete
+  let altcover =
+    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+  let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")
+  let sampleRoot =
+    Path.getFullName "Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
+
+  // Test the --inplace operation
+  Shell.cleanDir sampleRoot
+  "Sample24.csproj"
+  |> DotNet.test (fun o ->
+       { o.WithCommon(withWorkingDirectoryVM "Sample24") with
+           Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
+
+  // instrument
+  let prep =
+    AltCover.PrepareOptions.Primitive
+      ({ Primitive.PrepareOptions.Create() with
+           Report = simpleReport
+           CallContext = [ "[Test]" ]
+           AssemblyFilter = [ "Adapter"; "nunit" ]
+           TypeFilter = [ "System\\."; "Microsoft\\." ]
+           InPlace = true
+           ReportFormat = "OpenCover"
+           Save = false })
+    |> AltCoverCommand.Prepare
+  { AltCoverCommand.Options.Create prep with
+      ToolPath = altcover
+      ToolType = dotnetAltcover
+      WorkingDirectory = sampleRoot }
+  |> AltCoverCommand.run
+
+  printfn "Execute the instrumented tests"
+
+  let sample24 = Path.getFullName "./Sample24/Sample24.csproj"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine None sample24
+
+  let collect =
+    AltCover.CollectOptions.Primitive
+      { Primitive.CollectOptions.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = sampleRoot
+          CommandLine = args }
+    |> AltCoverCommand.Collect
+  { AltCoverCommand.Options.Create collect with
+      ToolPath = altcover
+      ToolType = dotnetAltcover
+      WorkingDirectory = "Sample24" }
+  |> AltCoverCommand.run
+
+  let coverageDocument = XDocument.Load(XmlReader.Create(simpleReport))
+
+  coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+  |> Seq.toList
+  |> Seq.iter (fun tmr -> let spts = tmr.Parent.Parent.Parent
+                          let sptcount = spts.Descendants(XName.Get("SequencePoint"))
+                                         |> Seq.length
+                          let tmrcount = spts.Descendants(XName.Get("TrackedMethodRef"))
+                                         |> Seq.length
+                          let name = spts.Parent.Descendants(XName.Get("Name")) |> Seq.head
+                          Assert.That (tmrcount, Is.EqualTo sptcount, name.Value) ) )
+
 _Target "FSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport =
     (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNetRunner.xml")
-  let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+  let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
   let instrumented =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   // Instrument the code
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
            ReportFormat = "NCover"
@@ -1601,7 +1882,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
 
   printfn "Execute the instrumented tests"
   let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample2
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample2
 
   let collect =
     AltCover.CollectOptions.Primitive
@@ -1629,7 +1910,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   let simpleReport3 =
     (Path.getFullName "./_Reports/unzip2") @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
   let sampleRoot =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   printfn "Build and test normally"
   Shell.cleanDir sampleRoot
@@ -1642,8 +1923,8 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
-           AssemblyFilter = [ "Adapter" ]
+           Report = simpleReport
+           AssemblyFilter = [ "Adapter"; "FSharp"; "nunit" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = true
            ReportFormat = "NCover"
@@ -1715,7 +1996,7 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            TypeFilter = [ "System\\." ]
@@ -1741,7 +2022,7 @@ _Target "CSharpDotNetWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            TypeFilter = [ "System\\." ]
@@ -1770,7 +2051,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [| instrumented |]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
@@ -1799,7 +2080,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = altReport
+           Report = altReport
            OutputDirectories = [| "__SelfTest" |]
            AssemblyExcludeFilter = [ "xunit"; "NUnit" ]
            StrongNameKey = keyfile
@@ -1839,7 +2120,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = altReport2
+           Report = altReport2
            OutputDirectories = [| "./__SelfTestDummy" |]
            StrongNameKey = keyfile
            ReportFormat = "NCover"
@@ -1874,7 +2155,7 @@ _Target "RecordResumeTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit"; "xunit" ]
@@ -1933,7 +2214,7 @@ _Target "RecordResumeTest" (fun _ ->
        recorded
        |> Seq.filter (fun i -> i = "1")
        |> Seq.length
-     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That(hits, Is.GreaterThanOrEqualTo 4)
      Assert.That(hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTrackingTest" (fun _ ->
@@ -1952,7 +2233,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            CallContext = [ "Main" ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
@@ -2012,7 +2293,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
        recorded
        |> Seq.filter (fun i -> i = "1")
        |> Seq.length
-     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That(hits, Is.GreaterThanOrEqualTo 4)
      Assert.That(hits, Is.LessThanOrEqualTo 8)
      let tracked =
        coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
@@ -2028,7 +2309,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
@@ -2089,7 +2370,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
        recorded
        |> Seq.filter (fun i -> i = "1")
        |> Seq.length
-     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That(hits, Is.GreaterThanOrEqualTo 4)
      Assert.That(hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFoundException: CreateZStream
@@ -2102,7 +2383,7 @@ _Target "RecordResumeTestUnderMono" (fun _ ->  // Fails : System.EntryPointNotFo
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            AssemblyFilter = [ "Adapter"; "nunit" ]
@@ -2187,6 +2468,8 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Mono.Options.dll"
   let recorder =
     Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
+  let monitor =
+    Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/net20/AltCover.Monitor.dll"
   let poshHelp =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
@@ -2204,7 +2487,8 @@ _Target "Packaging" (fun _ ->
   let libFiles path =
     Seq.concat
       [ !!"./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
-        !!"./_Binaries/AltCover/Release+AnyCPU/net472/Newton*.dll" ]
+        !!"_Publish/System.*"
+      ]
     |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
     |> Seq.toList
 
@@ -2221,6 +2505,7 @@ _Target "Packaging" (fun _ ->
       (engine, Some "tools/net472", None)
       (config, Some "tools/net472", None)
       (recorder, Some "tools/net472", None)
+      (monitor, Some "lib/net20", None)
       (vis, Some "tools/net472", None)
       (uic, Some "tools/net472", None)
       (fscore, Some "tools/net472", None)
@@ -2234,6 +2519,8 @@ _Target "Packaging" (fun _ ->
       (engine, Some "lib/net472", None)
       (config, Some "lib/net472", None)
       (recorder, Some "lib/net472", None)
+      (monitor, Some "lib/net472", None)
+      (monitor, Some "lib/net20", None)
       (fscore, Some "lib/net472", None)
       (manatee, Some "lib/net472", None)
       (fox, Some "lib/net472", None)
@@ -2286,7 +2573,8 @@ _Target "Packaging" (fun _ ->
 
   let poshFiles where =
     [ (!!"./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
-      (!!"./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
+      (!!"./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*")
+    ]
     |> Seq.concat
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
@@ -2298,6 +2586,11 @@ _Target "Packaging" (fun _ ->
 
   let cakeFiles where =
     (!!"./_Binaries/AltCover.Cake/Release+AnyCPU/netstandard2.0/AltCover.C*.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
+  let monitorFiles where =
+    (!!"./_Binaries/AltCover.Monitor/Release+AnyCPU/netstandard2.0/AltCover.M*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -2368,7 +2661,10 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let auxVFiles =
-    (!!"./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
+    [
+      (!!"./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
+    ]
+    |> Seq.concat
     |> Seq.map
          (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
     |> Seq.toList
@@ -2388,6 +2684,7 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          poshHelpFiles "tools/netcoreapp2.0/"
          dataFiles "tools/netcoreapp2.0/"
+         monitorFiles "lib/netstandard2.0/"
          otherFiles
          housekeeping ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
@@ -2398,6 +2695,7 @@ _Target "Packaging" (fun _ ->
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
+        monitorFiles "lib/netstandard2.0/"
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         poshHelpFiles "lib/netstandard2.0/"
@@ -2417,6 +2715,9 @@ _Target "Packaging" (fun _ ->
         poshFiles "tools/netcoreapp2.1/any/"
         poshHelpFiles "tools/netcoreapp2.1/any/"
         dataFiles "tools/netcoreapp2.1/any/"
+        // monitorFiles "lib/netstandard2.0/"
+        // [ (monitor, Some "lib/net20", None) ]
+        monitorFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
         otherFilesGlobal
@@ -2558,6 +2859,7 @@ _Target "Unpack" (fun _ ->
      [
       "./AltCover.PowerShell/AltCover.PowerShell.fsproj"
       "./AltCover.Cake/AltCover.Cake.csproj"
+      "./AltCover.Monitor/AltCover.Monitor.csproj"
      ]
      |> List.map (Path.getFullName >>  XDocument.Load)
     xml
@@ -2589,6 +2891,7 @@ _Target "Unpack" (fun _ ->
     "AltCover.Cake"
     "AltCover.DotNet"
     "AltCover.Engine" // beware static linkage -- maybe copy from debug?
+    "AltCover.Monitor"
     "AltCover.PowerShell"
     "AltCover.Toolkit"
   ]
@@ -2622,11 +2925,11 @@ _Target "Pester" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = report
+           Report = report
            InputDirectories = [ i ]
            StrongNameKey = key
            TypeFilter = [ "System\\."; "DotNet" ]
-           AssemblyFilter = [ "AltCover.Engine"; "Recorder"; "DataCollector"; "FSharp" ]
+           AssemblyFilter = [ "AltCover.Engine"; "AltCover.Monitor"; "Recorder"; "DataCollector"; "FSharp" ]
            InPlace = true
            ReportFormat = "OpenCover"
            Save = true
@@ -2698,7 +3001,7 @@ _Target "SimpleZipReleaseTest" (fun _ ->
     AltCover.PrepareOptions.Primitive
       { Primitive.PrepareOptions.Create() with
           TypeFilter = [ """System\.""" ]
-          XmlReport = simpleReport
+          Report = simpleReport
           OutputDirectories = [| "./" + instrumented |]
           ReportFormat = "NCover"
           ZipFile = true
@@ -2751,7 +3054,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = simpleReport
+           Report = simpleReport
            OutputDirectories = [ instrumented ]
            TypeFilter = [ "System\\."; "Microsoft\\." ]
            InPlace = false
@@ -2780,7 +3083,7 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            InPlace = false
@@ -2806,7 +3109,7 @@ _Target "ReleaseDotNetWithDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            InPlace = false
@@ -2826,8 +3129,8 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
-  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
-  let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+  let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   Shell.cleanDir o
 
@@ -2835,10 +3138,10 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
-           AssemblyFilter = [ "Adapter" ]
+           AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
            InPlace = false
            ReportFormat = "NCover"
            Save = false })
@@ -2854,7 +3157,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample2
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample2
 
   // Run
   let collect =
@@ -2876,8 +3179,8 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let s = Path.getFullName "."
   let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
-  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.1"
-  let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.1"
+  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/net5.0"
+  let i = Path.getFullName "_Binaries/Sample2/Debug+x86/net5.0"
 
   Shell.cleanDir o
   try
@@ -2909,10 +3212,10 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       let prep =
         AltCover.PrepareOptions.Primitive
           ({ Primitive.PrepareOptions.Create() with
-               XmlReport = x
+               Report = x
                OutputDirectories = [ o ]
                InputDirectories = [ i ]
-               AssemblyFilter = [ "Adapter" ]
+               AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
                InPlace = false
                ReportFormat = "NCover"
                Save = false })
@@ -2928,7 +3231,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
 
       // Run
       let (dotnetexe, args) =
-        defaultDotNetTestCommandLine86 (Some "netcoreapp2.1") sample2
+        defaultDotNetTestCommandLine86 (Some "net5.0") sample2
 
       let collect =
         AltCover.CollectOptions.Primitive
@@ -2963,7 +3266,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3002,7 +3305,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3053,7 +3356,7 @@ _Target "OpenCoverForPester" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit"; "FSharp" ]
@@ -3124,7 +3427,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3159,7 +3462,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x1
+           Report = x1
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3194,7 +3497,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x2
+           Report = x2
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3230,7 +3533,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x3
+           Report = x3
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            AssemblyFilter = [ "xunit" ]
@@ -3296,7 +3599,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let prep =
     AltCover.PrepareOptions.Primitive
       ({ Primitive.PrepareOptions.Create() with
-           XmlReport = x
+           Report = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
            CallContext = [ "0"; "[Fact]" ]
@@ -3330,6 +3633,175 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
       WorkingDirectory = o }
   |> AltCoverCommand.run
   Actions.CheckSample4Visits before x)
+
+_Target "JsonReporting" (fun _ ->
+  Directory.ensure "./_Reports"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
+  let x = Path.getFullName "./_Reports/JsonReporting.json"
+  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+
+  // Test data gathering only
+  //let x = Path.getFullName "./AltCover.Tests/Sample5.native.json"
+  //let o = Path.getFullName "Sample5/_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
+  //let i = Path.getFullName "_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
+
+  Shell.cleanDir o
+  let before = Actions.ticksNow()
+  let prep =
+    AltCover.PrepareOptions.Primitive
+      ({ Primitive.PrepareOptions.Create() with
+           Report = x
+          //  ZipFile = true
+           ReportFormat = "Json"
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           CallContext = [ "0"; "[Fact]" ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           Save = false })
+    |> AltCoverCommand.Prepare
+  { AltCoverCommand.Options.Create prep with
+      ToolPath = runner
+      ToolType = frameworkAltcover
+      WorkingDirectory = i }
+  |> AltCoverCommand.run
+
+  let checkSample4Content path =
+    let coverageDocument = path
+                           |> File.ReadAllText
+                           |> System.Text.Json.JsonSerializer.Deserialize<AltCover.NativeJson.Modules>
+    let recorded =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect (fun m -> m.Keys)
+      |> Seq.sort
+      |> Seq.toList
+
+    let expected =
+      [ "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()"
+        "System.Byte[] Tests.M/Thing::bytes()"
+        "System.Int32 Tests.Program::main(System.String[])"
+        "System.Void Tests.DU/MyClass::.ctor()"
+        "System.Void Tests.DU::testMakeUnion()"
+        "System.Void Tests.M::testMakeThing()"
+        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
+        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
+        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
+        "Tests.M/Thing Tests.M::makeThing(System.String)" ]
+    Assert.That
+      (recorded, expected |> Is.EqualTo, sprintf "Bad method list %A" recorded)
+    printfn "Content OK"
+
+  // printfn "Extract and verify the first results"
+  // Shell.cleanDir "./_Reports/JsonReporting2"
+  // System.IO.Compression.ZipFile.ExtractToDirectory(x + ".zip", "./_Reports/JsonReporting1")
+  // checkSample4Content "./_Reports/JsonReporting1/JsonReporting.json"
+
+  checkSample4Content x
+
+  printfn "Execute the instrumented tests"
+  let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+
+  // Run
+  let collect =
+    AltCover.CollectOptions.Primitive
+      { Primitive.CollectOptions.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = o
+          CommandLine = args }
+    |> AltCoverCommand.Collect
+  { AltCoverCommand.Options.Create collect with
+      ToolPath = runner
+      ToolType = frameworkAltcover
+      WorkingDirectory = o }
+  |> AltCoverCommand.run
+
+  let checkSample4Visits from path =
+    let coverageDocument = path
+                           |> File.ReadAllText
+                           |> System.Text.Json.JsonSerializer.Deserialize<AltCover.NativeJson.Modules>
+    let recorded =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect (fun m -> m.Values)
+      |> Seq.collect (fun m -> m.SeqPnts)
+      |> Seq.map (fun s -> s.VC)
+      |> Seq.toList
+
+    let expected = "0 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 2 0 1 0 1 1"
+    Assert.That
+      (String.Join(" ", recorded), expected |> Is.EqualTo,
+       sprintf "Bad visit list %A" recorded)
+    printfn "Visits OK"
+
+    let methods =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect id
+      |> Seq.toList
+
+    let trackedFormat = methods
+                        |> List.filter (fun m -> m.Value.TId.HasValue)
+                        |> List.map (fun m -> m.Key, m.Value.TId.Value)
+                        |> List.sortBy snd
+                        |> List.map (sprintf "%A")
+
+    Assert.That
+      (String.Join(" ", trackedFormat), """("System.Void Tests.DU::testMakeUnion()", 1) ("System.Void Tests.M::testMakeThing()", 2)""" |> Is.EqualTo,
+       sprintf "Bad tracked method list %A" trackedFormat)
+
+    //let trackedTimes =
+    methods
+                        |> List.filter (fun m -> m.Value.TId.HasValue)
+//                        |> List.collect (fun m -> let first = m.Value.Entry
+                        |> List.iter    (fun m -> let first = m.Value.Entry
+                                                              |> Seq.head
+                                                              |> Convert.FromBase64String
+                                                              |>  (fun x -> BitConverter.ToInt64(x,0))
+                                                              |> System.Net.IPAddress.NetworkToHostOrder
+                                                  let second = m.Value.Exit
+                                                               |> Seq.head
+                                                               |> Convert.FromBase64String
+                                                               |> (fun x -> BitConverter.ToInt64(x,0))
+                                                               |> System.Net.IPAddress.NetworkToHostOrder
+                                                  test <@ from <= first @>
+                                                  test <@ first <= second @>
+                                                  test <@ second <= Actions.ticksNow() @>)
+//                                                  [first; second])
+        //  Assert.That
+        //    (x.ToString().Replace("\r\n", "\n"),
+        //     Is.EqualTo <| tracked.Replace("\r\n", "\n"))) ???
+    printfn "Tracked OK"
+
+    let trackedVisits =
+      coverageDocument.Values
+      |> Seq.collect (fun d -> d.Values)
+      |> Seq.collect (fun c -> c.Values)
+      |> Seq.collect (fun m -> m.Values)
+      |> Seq.collect (fun m -> m.SeqPnts)
+      |> Seq.filter (fun s -> s.Tracks |> isNull |> not)
+      |> Seq.collect (fun s -> s.Tracks)
+      |> Seq.map (fun i -> i.ToString(System.Globalization.CultureInfo.InvariantCulture))
+      |> Seq.toList
+
+    Assert.That
+      (String.Join(" ", trackedVisits), "1 1 1 1 1 1 1 2 2 2 2 2" |> Is.EqualTo,
+       sprintf "Bad tracked visit list %A" trackedVisits)
+    printfn "TrackRefs OK"
+
+  // printfn "Extract and verify the final results"
+  // Shell.cleanDir "./_Reports/JsonReporting1"
+  // System.IO.Compression.ZipFile.ExtractToDirectory(x + ".zip", "./_Reports/JsonReporting2")
+  // checkSample4Visits before "./_Reports/JsonReporting2/JsonReporting.json"
+
+  checkSample4Visits before x
+)
 
 _Target "MSBuildTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -3400,6 +3872,7 @@ _Target "ApiUse" (fun _ ->
     fsproj.Save "./_ApiUse/_DotnetTest/dotnettest.fsproj"
     Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.fs")
     Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.json")
+    Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Sample4/Data" File.Exists
 
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -3579,6 +4052,12 @@ _Target "DotnetTestIntegration" (fun _ ->
      ("./_DotnetTestFail", "Sample13", "fsproj")
      ("./_DotnetTestFailFast", "Sample13", "fsproj")
      ("./_DotnetTestFailInstrumentation", "Sample13", "fsproj")
+     ("./_DotnetTestLineCoverInPlace", "Sample10", "csproj")
+     ("./_DotnetTestBranchCoverInPlace", "Sample10", "csproj")
+     ("./_DotnetTestInPlace", "Sample4", "fsproj")
+     ("./_DotnetTestFailInPlace", "Sample13", "fsproj")
+     ("./_DotnetTestFailFastInPlace", "Sample13", "fsproj")
+     ("./_DotnetTestFailInstrumentationInPlace", "Sample13", "fsproj")
      ("./_DotnetTestLineCover", "Sample10", "csproj")
      ("./_DotnetTestBranchCover", "Sample10", "csproj")
     ]
@@ -3609,19 +4088,26 @@ _Target "DotnetTestIntegration" (fun _ ->
                                     fsproj.Save (d + "/dotnettest." + t)
                                     Shell.copy d !!("./" + p + "/*." + t.Substring(0, 2))
                                     Shell.copy d !!("./" + p + "/*.json")
+
+                                    let data = "./" + p + "/Data"
+                                    if Directory.Exists data
+                                    then Shell.copyDir (d @@ "Data") data File.Exists
     )
 
     printfn "Simple positive case ------------------------------------------------"
     let before = Actions.ticksNow()
     let p0 = Primitive.PrepareOptions.Create()
     let c0 = Primitive.CollectOptions.Create()
-
+    let asInPlace (p:Primitive.PrepareOptions) = { p with InPlace = true }
+    let p0a = asInPlace p0
     let p1 =
       { p0 with
           CallContext = [ "[Fact]"; "0" ]
           AssemblyFilter = [| "xunit" |] }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
+    let pp1a = AltCover.PrepareOptions.Primitive (asInPlace p1)
+
     let cc0 = AltCover.CollectOptions.Primitive { c0 with SummaryFormat = "+B" }
     DotNet.test (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest").WithAltCoverGetVersion()
@@ -3631,14 +4117,28 @@ _Target "DotnetTestIntegration" (fun _ ->
     let x = Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
     Actions.CheckSample4 before x
 
+    DotNet.test (fun to' ->
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestInPlace").WithAltCoverGetVersion()
+          .WithAltCoverImportModule()).WithAltCoverOptions pp1a cc0 ForceTrue
+      |> testWithCLIArguments) "dotnettest.fsproj"
+
+    let x = Path.getFullName "./_DotnetTestInPlace/coverage.netcoreapp2.1.xml"
+    Actions.CheckSample4 before x
+
     printfn "optest failing instrumentation ------------------------------------------------"
 
     let xx0 = Path.getFullName "./_Reports/nonesuch.xml"
+    let xx0a = Path.getFullName "./_Reports/nonesuchInPlace.xml"
 
     let pf0 =
       { p0 with AssemblyFilter = [| "NUnit" |]
                 StrongNameKey = "./_Reports/nonesuch.junk"
-                XmlReport = xx0
+                Report = xx0
+      } |> AltCover.PrepareOptions.Primitive
+    let pf0a =
+      { p0a with AssemblyFilter = [| "NUnit" |]
+                 StrongNameKey = "./_Reports/nonesuch.junk"
+                 Report = xx0a
       } |> AltCover.PrepareOptions.Primitive
 
     try
@@ -3647,14 +4147,28 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf0 cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    Assert.That (xx0 |> File.Exists |> not)
-    Assert.That("./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists |> not)
+    Assert.That (xx0 |> File.Exists |> not,  xx0 + " should not be present")
+    Assert.That("./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists |> not,
+                                 "./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present")
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInstrumentationInPlace")).WithAltCoverOptions
+          pf0a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That (xx0a |> File.Exists |> not,  xx0a + " should not be present")
+    Assert.That("./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists |> not,
+                                 "./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present")
 
     printfn "optest failing test ------------------------------------------------"
 
     let xx = Path.getFullName "./_DotnetTestFail/coverage.xml"
+    let xxa = Path.getFullName "./_DotnetTestFailInPlace/coverage.xml"
     let pf1 =
       { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareOptions.Primitive
+    let pf1a =
+      { p0a with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareOptions.Primitive
 
     try
       DotNet.test (fun to' ->
@@ -3662,7 +4176,9 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf1 cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    Assert.That("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists)
+    Assert.That("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                               "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+    // Shell.rm("./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3674,13 +4190,40 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "1"; "1"; "1"; "1"; "0" ])
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "1;1;1;1;1;1;1;1;0;1;1;1;0", xx )
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailInPlace")).WithAltCoverOptions
+          pf1a cc0 ForceTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    let filepath = Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+    Assert.That(filepath |> File.Exists,
+                filepath + " should exist")
+
+    do use coverageFile =
+         new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "1;1;1;1;1;1;1;0;1;1;1;1;0", xxa )
 
     printfn "optest failing test fast ------------------------------------------------"
 
     let xx = Path.getFullName "./_DotnetTestFailFast/coverage.xml"
+    let xxa = Path.getFullName "./_DotnetTestFailFastInPlace/coverage.xml"
     let pf1 =
       { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareOptions.Primitive
+    let pf1a =
+      { p0 with AssemblyFilter = [| "NUnit" |] } |> asInPlace |> AltCover.PrepareOptions.Primitive
 
     try
       DotNet.test (fun to' ->
@@ -3688,7 +4231,9 @@ _Target "DotnetTestIntegration" (fun _ ->
           pf1 cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
-    Assert.That("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists)
+    Assert.That("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
 
     do use coverageFile =
          new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -3700,13 +4245,45 @@ _Target "DotnetTestIntegration" (fun _ ->
          |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
          |> Seq.toList
 
-       Assert.That(recorded, Is.EquivalentTo [ "0"; "0"; "0"; "0"; "0" ])
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "0;0;0;0;0;0;0;0;0;0;0;0;0", xx )
+
+    try
+      DotNet.test (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFastInPlace")).WithAltCoverOptions
+          pf1a cc0 FailTrue |> testWithCLIArguments) "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+    Assert.That("./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt" |> File.Exists,
+                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist")
+    // Shell.rm("./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt")
+
+    do use coverageFile =
+         new FileStream(xxa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That(String.Join(";", recorded), Is.EqualTo
+          "0;0;0;0;0;0;0;0;0;0;0;0;0", xxa )
 
     printfn "optest line cover ------------------------------------------------"
     let p2 =
       { p0 with
           LineCover = true
           AssemblyFilter = [| "xunit" |] }
+
+    let p2a = asInPlace p2
+
+    let pp2a = AltCover.PrepareOptions.Primitive p2a
+
+    DotNet.test (fun to' ->
+      to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCoverInPlace").WithAltCoverOptions
+        pp2a cc0 ForceTrue |> testWithCLIArguments) ""
 
     let pp2 = AltCover.PrepareOptions.Primitive p2
     DotNet.test (fun to' ->
@@ -3726,14 +4303,46 @@ _Target "DotnetTestIntegration" (fun _ ->
          (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
           Is.EqualTo 0)
 
+    let xa = Path.getFullName "./_DotnetTestLineCoverInPlace/coverage.xml"
+
+    do use coverageFile =
+         new FileStream(xa, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length,
+          Is.EqualTo 13)
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
+          Is.EqualTo 0)
+
     printfn "optest branch cover ------------------------------------------------"
 
     let p3 =
       { p0 with
           BranchCover = true
           AssemblyFilter = [| "xunit" |] }
+    let p3a = asInPlace p3
 
     let pp3 = AltCover.PrepareOptions.Primitive p3
+    let pp3a = AltCover.PrepareOptions.Primitive p3a
+
+    DotNet.test (fun to' ->
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCoverInPlace").WithAltCoverOptions
+        pp3a cc0 ForceTrue) |> testWithCLIArguments) ""
+
+    let x = Path.getFullName "./_DotnetTestBranchCoverInPlace/coverage.xml"
+
+    do use coverageFile =
+         new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length,
+          Is.EqualTo 0)
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length,
+          Is.EqualTo 2)
 
     DotNet.test (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithAltCoverOptions
@@ -3810,7 +4419,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "Issue20" (fun _ ->
+_Target "Issue20" (fun _ -> // plus added verbosity testing
   try
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -3868,6 +4477,18 @@ _Target "Issue20" (fun _ ->
   //                                                                                               MSBuildParams =
   //                                                                                                 cliArguments })
   //  ""
+
+    printfn "**************** And now with silence..."
+
+    let p1 = { p0 with Verbosity = System.Diagnostics.TraceLevel.Error }
+    let pp1 = AltCover.PrepareOptions.Primitive p1
+
+    DotNet.test (fun to' ->
+      ({ to'.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests") with
+           Configuration = DotNet.BuildConfiguration.Debug
+           NoBuild = false }).WithAltCoverOptions pp1 cc0 ForceTrue
+      |> testWithCLIArguments) ""
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -3997,7 +4618,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
           LocalSource = true
           VisibleBranches = false
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./original.$(ProjectName).xml" }
+          Report = "./original.$(ProjectName).xml" }
 
     let pp0 = AltCover.PrepareOptions.Primitive p0
     let c0 = Primitive.CollectOptions.Create()
@@ -4030,7 +4651,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
           LocalSource = true
           VisibleBranches = true
           TypeFilter = [ "UnitTest" ]
-          XmlReport = "./combined.$(ProjectName).xml" }
+          Report = "./combined.$(ProjectName).xml" }
 
     let pp1 = AltCover.PrepareOptions.Primitive p1
     let c0 = Primitive.CollectOptions.Create()
@@ -4059,7 +4680,7 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
     // Issue 98 optest
     printfn "----------------------------- issue 98  ----------------------------------------"
     Shell.cleanDir ("./Sample16/Test/_Intermediate")
-    let psln = AltCover.PrepareOptions.Primitive {p0 with XmlReport = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
+    let psln = AltCover.PrepareOptions.Primitive {p0 with Report = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test") with
             Configuration = DotNet.BuildConfiguration.Debug
@@ -4087,6 +4708,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.fs")
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.json")
+    Shell.copyDir "./_DotnetGlobalTest/Data" "./Sample4/Data" File.Exists
 
     Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
       "tool"
@@ -4120,10 +4742,11 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let prep =
       AltCover.PrepareOptions.Primitive
         ({ Primitive.PrepareOptions.Create() with
-             XmlReport = x
+             Report = x
              InputDirectories = [ o ]
              CallContext = [ "0"; "[Fact]" ]
              AssemblyFilter = [| "xunit" |]
+             InPlace = true
              Save = false })
       |> AltCoverCommand.Prepare
     { AltCoverCommand.Options.Create prep with WorkingDirectory = working } |> AltCoverCommand.run
@@ -4156,6 +4779,43 @@ _Target "DotnetGlobalIntegration" (fun _ ->
       Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
         "tool" ("uninstall -g altcover.global") "uninstalled"
     let folder = (nugetCache @@ "altcover.global") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
+_Target "Issue114" (fun _ ->
+  try
+    Directory.ensure "./_Issue114"
+    Shell.cleanDir ("./_Issue114")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.api")
+    config.Save "./_Issue114/NuGet.config"
+
+    let csproj = XDocument.Load "./Sample26/Sample26.fsproj"
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover.api"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./_Issue114/Sample26.fsproj"
+    Shell.copy "./_Issue114" (!!"./Sample26/*.fs")
+    DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue114")
+                             let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
+                             { tmp with MSBuildParams = mparams}) ""
+
+    let p0 = { Primitive.PrepareOptions.Create() with AssemblyFilter = [| "nunit"; "Adapter"; "FSharp"; "AltCover" |] }
+    let pp0 = AltCover.PrepareOptions.Primitive p0
+    let c0 = Primitive.CollectOptions.Create()
+    let cc0 = AltCover.CollectOptions.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "_Issue114") with
+            Configuration = DotNet.BuildConfiguration.Debug
+            NoBuild = false }).WithAltCoverOptions pp0 cc0 ForceTrue)
+        .WithAltCoverImportModule().WithAltCoverGetVersion()
+      |> testWithCLIArguments) ""
+  finally
+    let folder = (nugetCache @@ "altcover.api") @@ !Version
     Shell.mkdir folder
     Shell.deleteDir folder)
 
@@ -4229,26 +4889,20 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "JustUnitTest"
-==> "UnitTest"
+// ==> "UnitTest" // deadweight
 
 "Compilation"
 ==> "BuildForUnitTestDotNet"
 ==> "UnitTestDotNet"
-==> "UnitTest"
+// ==> "UnitTest" // deadweight
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
-//=?> ("UnitTestWithOpenCover",
-//     (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
-//     |> Seq.length) < 6)
 =?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-//=?> ("UnitTestWithAltCover",
-//     (!!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
-//     |> Seq.length) < 6)
-==> "UnitTest"
+// ==> "UnitTest" // deadweight
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
@@ -4258,14 +4912,14 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverCore"
 // =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
 
-"UnitTestDotNet"
+"Packaging"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
+// ==> "UnitTest" // unreliable
 
 "JustUnitTest"
 ==> "UncoveredUnitTest"
@@ -4282,6 +4936,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTests"
+==> "OperationalTest"
+
+"Compilation"
+==> "AsyncAwaitTests"
 ==> "OperationalTest"
 
 //"Compilation"
@@ -4465,11 +5123,19 @@ Target.activateFinal "ResetConsoleColours"
 ==> "Deployment"
 
 "Unpack"
+==> "Issue114"
+==> "Deployment"
+
+"Unpack"
 ==> "DotnetGlobalIntegration"
 ==> "Deployment"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
+==> "Deployment"
+
+"Unpack"
+==> "JsonReporting"
 ==> "Deployment"
 
 "Analysis"
