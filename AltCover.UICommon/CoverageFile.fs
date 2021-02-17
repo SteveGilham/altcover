@@ -58,19 +58,22 @@ module Transformer =
     use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
                                        .GetManifestResourceStream("AltCover.UICommon.NCover.xsd"))
 
-// LCov : TN:
+// LCov : TN:  // line-based; branches
 // JSON : {
 // XML : <
 
 // XML formats after any preamble (skip <? and <!)
-// NCover : <coverage profilerVersion=
-// OpenCover : <CoverageSession xmlns:xsd=
-// Cobertura : <coverage line-rate=
-// dotCover : <Root CoveredStatements=
-// PartCover : <PartCoverReport version= // many versions
-// Dynamic : <results>
-// mprof : <coverage version="0.3">
-// Visual Studio : <CoverageDSPriv>
+// + NCover : <coverage profilerVersion= // have schema .xsd; SeqPnt based
+// + OpenCover : <CoverageSession xmlns:xsd= // have  schema .xsd; SeqPnt based; branches
+
+// Cobertura : <coverage line-rate= // have schema .dtd; line-based; branches
+// dotCover : <Root CoveredStatements= // seqpnt based
+
+// Blue sky time
+// PartCover : <PartCoverReport version= // many versions; seqpnt based
+// Dynamic : <results> // Seqpnt based
+// mprof : <coverage version="0.3">  // line based
+// Visual Studio : <CoverageDSPriv> // many versions; Seqpnt based
 
     use ncreader = XmlReader.Create(sr2)
     try
