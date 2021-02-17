@@ -322,13 +322,20 @@ let withDebug (p : MSBuildParams) =
 let withRelease (p : MSBuildParams) =
  { p with Properties = ("Configuration", "Release") :: p.Properties }
 
+let splitCommandLine line =
+  line
+  |> if Environment.isWindows
+     then BlackFox.CommandLine.MsvcrCommandLine.parse
+     else BlackFox.CommandLine.MonoUnixCommandLine.parse
+  |> Seq.toList
+
 let doMSBuild config overrider proj =
   let f = msbuildCommon >> config
   match overrider with
   | None -> MSBuild.build f proj
-    // hacky -- maybe BlackFox the append
   | Some dll -> let (_, args) = MSBuild.buildArgs f
-                CreateProcess.fromRawCommandLine dll (args + " " + proj)
+                let arglist = (splitCommandLine args) @ [proj]
+                CreateProcess.fromRawCommand dll arglist
                 |> DotNet.prefixProcess dotnetOptions [dll]
                 |> Proc.run
                 |> fun p -> Assert.That(p.ExitCode, Is.EqualTo 0)
