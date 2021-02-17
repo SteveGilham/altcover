@@ -7,7 +7,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [VISUALIZER] For formats with only line-level information (e.g. from coverlet), colour the whole line, and not just the line number gutter
 
 # 8.0.815 (Habu series release 1)
-* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature extraction in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
+* [BUGFIX] Issue 122 -- rework the method name tokenization for extracting the `returnType (argumentList)` signature values in the Cobertura output, fixing an off-by-one error that generated `returnType argumentList)` without the `(` as well as the headline exception.
 * [NEW] Native JSON report formatting (`--reportFormat=Json` or equivalents), a superset of coverlet's JSON
   * AltCover `classic` mode -- just running the instrumented code and collecting results in the `ProcessExit` handler -- is not supported with `--reportFormat=Json`
   * `ConvertFrom-CoverageJson` cmdlet to convert from coverlet or AltCover JSON to a miminal OpenCover format
