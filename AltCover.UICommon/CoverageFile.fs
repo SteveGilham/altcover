@@ -65,7 +65,23 @@ module Transformer =
       transformFromOtherCover document "AltCover.UICommon.OpenCoverToNCoverEx.xsl"
     report
 
-  let internal transformFromCobertura(document : XNode) =
+  let internal transformFromCobertura(document : XDocument) =
+    // normalize file names
+    let sources = document.Descendants(XName.Get "source")
+                  |> Seq.map (fun x -> x.Value)
+                  |> Seq.toList
+
+    document.Descendants(XName.Get "class")
+    |> Seq.iter (fun x ->
+        let name = x.Attribute(XName.Get "filename")
+        let value = name.Value
+        let fixup = sources
+                    |> Seq.map (fun s -> let p1 = Path.Combine(s, value)
+                                         Path.GetFullPath p1)
+                    |> Seq.tryFind File.Exists
+        fixup
+        |> Option.iter (fun f -> name.Value <- f))
+
     let report =
       transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl"
     report
