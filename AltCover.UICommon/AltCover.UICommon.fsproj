@@ -35,6 +35,7 @@
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
     <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\Cobertura.xsd" Link="Cobertura.xsd" />
     <EmbeddedResource Include="CollapseChevronDown_16x.png" />
     <EmbeddedResource Include="config.xsd" />
     <EmbeddedResource Include="Effects_16x.png" />
