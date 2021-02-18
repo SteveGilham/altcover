@@ -3,10 +3,10 @@
   <Import Project="..\packages\FSharp.Compiler.Tools.10.2.3\build\FSharp.Compiler.Tools.props" Condition="Exists('..\packages\FSharp.Compiler.Tools.10.2.3\build\FSharp.Compiler.Tools.props')" />
   <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-      <Import Project="..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets" Condition="Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" />
-  <UsingTask TaskName="AltCover.Prepare"  
+  <Import Project="..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets" Condition="Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net472.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net472.targets')" />
+  <UsingTask TaskName="AltCover.Prepare"
              Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')" 
-             AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll"/>  
+             AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll"/>
   <PropertyGroup>
     <SolutionDir Condition="'$(SolutionDir)' == ''">$(ProjectDir)../</SolutionDir>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -93,19 +93,25 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup Condition="'$(MSBuildTest)' == 'true'">
-    <AssemblyFilter Include="xunit" />
-  </ItemGroup>
-  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'">
+  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' != 'true'">
     <ItemGroup>
+      <FSharpXml Include="$(OutputPath)/FSharp.*.xml" />
+    </ItemGroup>
+    <Delete Files="@(FSharpXml)" />
+  </Target>
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <AssemblyFilter Include="xunit" />
+      <FSharpXml Include="$(OutputPath)/FSharp.*.xml" />
       <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
       <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>
-    <AltCover.Prepare
-      InputDirectories="@(InputDirectory)"
-      OutputDirectories= "@(OutputDirectory)"
-      Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
-      AssemblyFilter="@(AssemblyFilter)"
-      />  
+    <Delete Files="@(FSharpXml)" />
+    <AltCover.Prepare 
+        Condition="'$(MSBuildTest)' == 'true'"
+        InputDirectories="@(InputDirectory)"
+        OutputDirectories="@(OutputDirectory)"
+        Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
+        AssemblyFilter="@(AssemblyFilter)" />
   </Target>
 </Project>
