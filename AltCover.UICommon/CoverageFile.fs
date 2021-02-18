@@ -124,6 +124,13 @@ type CoverageFile =
             { Fault = x
               File = file }
       | Right doc ->
+          let lineOnly = doc.Descendants(XName.Get "seqpnt")
+                         |> Seq.forall(fun s -> s.Attribute(XName.Get "line").Value =
+                                                   s.Attribute(XName.Get "endline").Value &&
+                                                s.Attribute(XName.Get "column").Value = "1" &&
+                                                s.Attribute(XName.Get "endcolumn").Value = "2")
+          if lineOnly
+          then doc.Root.Add(XAttribute(XName.Get "lineonly", "true"))
           Right
             { File = file
               Document = doc }

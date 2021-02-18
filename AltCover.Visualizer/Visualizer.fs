@@ -305,7 +305,7 @@ module private Gui =
     let endchars = endline.CharsInLine
 
     // coverlet-like case w/o column data
-    let ec = if n.Line = n.EndLine && n.Column = 1 && n.EndColumn = 2
+    let ec = if n.LineOnly
              then endchars
              else n.EndColumn
 

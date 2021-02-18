@@ -140,7 +140,7 @@ type MainWindow() as this =
                       (lines |> Seq.take (n.Line - 1) |> Seq.sumBy (fun l -> l.Length))
 
           // coverlet-like case w/o column data
-          let ec = if n.Line = n.EndLine && n.Column = 1 && n.EndColumn = 2
+          let ec = if n.LineOnly
                    then lines.[n.EndLine - 1].Length
                    else n.EndColumn
 
