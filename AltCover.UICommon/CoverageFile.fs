@@ -67,7 +67,7 @@ module Transformer =
 
   let internal transformFromCobertura(document : XNode) =
     let report =
-      transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl" //TODO
+      transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl"
     report
 
   // PartCover to NCover style sheet

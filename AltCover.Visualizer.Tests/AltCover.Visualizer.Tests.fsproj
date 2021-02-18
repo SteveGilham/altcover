@@ -42,6 +42,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Reports\Cobertura_altcover.xml" />
+    <EmbeddedResource Include="Reports\Cobertura_coverlet.xml" />
     <EmbeddedResource Include="Reports\NCover1.5.8.xml" />
     <EmbeddedResource Include="Reports\OpenCover.xml" />
     <EmbeddedResource Include="Reports\OpenCoverWithTrackedMethods.xml" />
@@ -57,6 +59,10 @@
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="UICommonTests.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
   </ItemGroup>
 
   <ItemGroup>

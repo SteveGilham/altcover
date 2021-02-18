@@ -1,5 +1,9 @@
 namespace Tests
 
+open System.IO
+open System.Reflection
+open System.Xml.Linq
+
 open AltCover
 
 module VisualizerTests =
@@ -22,3 +26,12 @@ module VisualizerTests =
     [<Test>]
     let DefaultHelperPassesThrough() =
       test <@ Transformer.defaultHelper null null |> isNull @>
+
+    [<Test>]
+    let CoberturaToNCoverIsOK() =
+      use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
+                                         .GetManifestResourceStream("AltCover.Visualizer.Tests.Reports.Cobertura_altcover.xml"))
+      let before = XDocument.Load sr1
+      let after = Transformer.transformFromCobertura before
+      printfn "%s" <| after.ToString()
+      test <@ false @>

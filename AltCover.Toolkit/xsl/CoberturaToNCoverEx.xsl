@@ -2,13 +2,13 @@
 
   <xsl:output method="xml" />
 
-  <xsl:template match="CoverageSession">
-    <coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="now" measureTime="now">
+  <xsl:template match="coverage">
+    <coverage profilerVersion="Cobertura" driverVersion="Cobertura" startTime="now" measureTime="now">
 
-      <xsl:for-each select="//Module[not(@skippedDueTo)]">
-        <xsl:variable name="module" select="./ModulePath" />
-        <xsl:variable name="moduleName" select="./ModuleName" />
-        <module moduleId="{@hash}">
+      <xsl:for-each select="//package">
+        <xsl:variable name="module" select="@name" />
+        <xsl:variable name="moduleName" select="@name" />
+        <module moduleId="{@name}">
           <xsl:attribute name="name">
             <xsl:value-of select="$module" />
           </xsl:attribute>
