@@ -3,7 +3,7 @@
   <xsl:output method="xml" />
 
   <xsl:template match="coverage">
-    <coverage profilerVersion="Cobertura" driverVersion="Cobertura" startTime="now" measureTime="now">
+    <coverage profilerVersion="Cobertura" driverVersion="Cobertura" startTime="now" measureTime="now" lineonly="true">
 
       <xsl:for-each select="//package">
         <xsl:variable name="module" select="@name" />
@@ -18,11 +18,10 @@
           <xsl:attribute name="assemblyIdentity">
             <xsl:value-of select="$moduleName" />
           </xsl:attribute>
-          <xsl:for-each select="descendant::Method[not(@skippedDueTo)]">
-            <xsl:variable name="class" select="../../FullName" />
-            <xsl:variable name="fileRef" select="./FileRef/@uid" />
-            <xsl:variable name="file" select="//File[@uid = $fileRef]/@fullPath" />
-            <xsl:variable name="method" select="./Name" />
+          <xsl:for-each select="descendant::method">
+            <xsl:variable name="class" select="../../@name" />
+            <xsl:variable name="file" select="../../@filename" />
+            <xsl:variable name="method" select="@name" />
 
             <method excluded="false" instrumented="true">
               <xsl:attribute name="name">
@@ -32,7 +31,7 @@
                 <xsl:value-of select="$class" />
               </xsl:attribute>
               <xsl:attribute name="fullname">
-                <xsl:value-of select="$method" />
+                <xsl:value-of select="concat($class, '::', $method, '(...)')" />
               </xsl:attribute>
               <xsl:attribute name="document">
                 <xsl:value-of select="$file" />
