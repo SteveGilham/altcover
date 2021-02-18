@@ -22,9 +22,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
     <NoWarn>988</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
@@ -60,6 +57,10 @@
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
     <Compile Include="UICommonTests.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
   </ItemGroup>
 
   <ItemGroup>
