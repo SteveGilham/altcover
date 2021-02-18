@@ -49,6 +49,7 @@
     <EmbeddedResource Include="Reports\OpenCoverWithTrackedMethods.xml" />
     <EmbeddedResource Include="Reports\OpenCover_altcover.xml" />
     <EmbeddedResource Include="Reports\OpenCover_coverlet.xml" />
+    <EmbeddedResource Include="Results\Cobertura_coverlet.ncover.xml" />
     <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>

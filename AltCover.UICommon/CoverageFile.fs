@@ -65,7 +65,7 @@ module Transformer =
       transformFromOtherCover document "AltCover.UICommon.OpenCoverToNCoverEx.xsl"
     report
 
-  let internal transformFromCobertura(document : XDocument) =
+  let internal transformFromCobertura(document : XContainer) =
     // normalize file names
     let sources = document.Descendants(XName.Get "source")
                   |> Seq.map (fun x -> x.Value)
@@ -121,8 +121,8 @@ module Transformer =
     use ncreader = XmlReader.Create(sr2)
     try
       // identify coverage type
-      if document.Root.Name.LocalName = "CoverageSession"
-      then
+      match document.Root.Name.LocalName with
+      | x when x = "CoverageSession" ->
         // Assume OpenCover
         schemas.Add
           (String.Empty, ocreader)
@@ -147,7 +147,7 @@ module Transformer =
         then fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
 
         Right fixedup
-      else
+      | _ ->
         let root = document.Root
         if root.Name.LocalName = "coverage" &&
            root.Attribute(XName.Get "line-rate").IsNotNull
