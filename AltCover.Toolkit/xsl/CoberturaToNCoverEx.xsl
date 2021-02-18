@@ -45,6 +45,16 @@
                       </xsl:attribute>
                     </seqpnt>
               </xsl:for-each>
+              
+              <xsl:for-each select="descendant::branch">
+                <xsl:sort select="@line" data-type="number" />
+                    <branch visitcount="{@visitcount}" line="{@number}"  path="{@number}" offset="{@number}" offsetend="{@number}">
+                      <xsl:attribute name="document">
+                        <xsl:value-of select="$file" />
+                      </xsl:attribute>
+                    </branch>
+              </xsl:for-each>
+              
             </method>
           </xsl:for-each>
         </module>

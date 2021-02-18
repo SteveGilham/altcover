@@ -82,6 +82,28 @@ module Transformer =
         fixup
         |> Option.iter (fun f -> name.Value <- f))
 
+    // interpret branches
+    document.Descendants(XName.Get "line")
+    |> Seq.filter (fun x -> x.Attribute(XName.Get "condition-coverage").IsNotNull)
+    |> Seq.iter (fun x ->
+        let line = x.Attribute(XName.Get "number").Value
+        let coverage = x.Attribute(XName.Get "condition-coverage").Value
+        let start = Math.Max(0, coverage.IndexOf('(')) + 1
+        let mid = Math.Max(0, coverage.IndexOf('/', start)) + 1
+        let finish = Math.Max(0, coverage.IndexOf(')', mid))
+        let first = coverage.Substring(start, (mid - start) - 1) |> Int32.TryParse |> snd
+        let second = coverage.Substring(mid, finish - mid) |> Int32.TryParse |> snd
+        {1..second}
+        |> Seq.iteri (fun i _ ->
+          let vc = if i < first
+                   then "1"
+                   else "0"
+          let branch = XElement(XName.Get "branch",
+                                XAttribute(XName.Get "number", line),
+                                XAttribute(XName.Get "visitcount", vc))
+          x.AddAfterSelf(branch))
+    )
+
     let report =
       transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl"
     report
