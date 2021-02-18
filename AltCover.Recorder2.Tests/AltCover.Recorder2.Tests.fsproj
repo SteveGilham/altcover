@@ -31,7 +31,9 @@
     <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.0.2">
