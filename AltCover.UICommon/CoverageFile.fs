@@ -39,6 +39,7 @@ type InvalidFile =
     Fault : Exception }
 
 module Transformer =
+  // now, what was this for??
   let internal defaultHelper (_ : XDocument) (document : XDocument) = document
 
   let internal loadTransform(path : string) =
@@ -62,6 +63,11 @@ module Transformer =
   let internal transformFromOpenCover(document : XNode) =
     let report =
       transformFromOtherCover document "AltCover.UICommon.OpenCoverToNCoverEx.xsl"
+    report
+
+  let internal transformFromCobertura(document : XNode) =
+    let report =
+      transformFromOtherCover document "AltCover.UICommon.CoberturaToNCoverEx.xsl" //TODO
     report
 
   // PartCover to NCover style sheet
@@ -104,12 +110,36 @@ module Transformer =
 
         Right fixedup
       else
-        // Assume NCover
-        schemas.Add
-          (String.Empty, ncreader)
-        |> ignore
-        document.Validate(schemas, null)
-        Right document
+        let root = document.Root
+        if root.Name.LocalName = "coverage" &&
+           root.Attribute(XName.Get "line-rate").IsNotNull
+        then
+          // Cobertura
+          use cr = new StreamReader(Assembly.GetExecutingAssembly()
+                                            .GetManifestResourceStream("AltCover.UICommon.Cobertura.xsd"))
+
+          use creader = XmlReader.Create(cr)
+          schemas.Add
+            (String.Empty, creader)
+          |> ignore
+          document.Validate(schemas, null)
+          let report = transformFromCobertura document
+
+          let fixedup = helper XmlCoverageType.Cobertura document report
+          // Consistency check our XSLT
+          let schemas2 = XmlSchemaSet()
+          schemas2.Add
+            (String.Empty, ncreader)
+          |> ignore
+          fixedup.Validate(schemas2, null)
+          Right fixedup
+        else
+          // Assume NCover
+          schemas.Add
+            (String.Empty, ncreader)
+          |> ignore
+          document.Validate(schemas, null)
+          Right document
     with
     | :? ArgumentNullException as x -> Left(x :> Exception)
     | :? NullReferenceException as x -> Left(x :> Exception)
