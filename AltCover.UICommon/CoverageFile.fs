@@ -248,6 +248,10 @@ type CoverageFile =
         Left
           { Fault = e
             File = file }
+    | :? Lcov.LcovParseException as e ->
+        Left
+          { Fault = e
+            File = file }
     | :? IOException as e ->
         Left
           { Fault = e

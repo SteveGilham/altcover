@@ -48,11 +48,17 @@ module internal Lcov =
     |> Seq.fold (fun x r ->
       match r with
       | FN (_,n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
+        let endclass = n.IndexOf("::",StringComparison.Ordinal)
+        let startclass = n.LastIndexOf(' ', endclass) + 1
+        let c = n.Substring(startclass, endclass - startclass)
+        let endname = n.IndexOf('(', endclass)
+        let name = n.Substring(endclass + 2, endname - endclass - 2)
+
         let mt = XElement(XName.Get "method",
                           XAttribute(XName.Get "excluded", "false"),
                           XAttribute(XName.Get "instrumented", "true"),
-                          XAttribute(XName.Get "name", "todo"),
-                          XAttribute(XName.Get "class", "todo"),
+                          XAttribute(XName.Get "name", name),
+                          XAttribute(XName.Get "class", c),
                           XAttribute(XName.Get "fullname", n),
                           XAttribute(XName.Get "document", result.Attribute(XName.Get "assembly").Value))
         result.Add mt
@@ -91,7 +97,10 @@ module internal Lcov =
         | l when l.StartsWith("SF:", StringComparison.Ordinal) ->
           SF (l.Substring 3)
         | l when l.StartsWith("FN:", StringComparison.Ordinal) ->
-          let n::name::_ = (l.Substring 3).Split(',') |> Array.toList
+          let trim = l.Substring 3
+          let comma = trim.IndexOf ','
+          let n = trim.Substring(0, comma)
+          let name = trim.Substring(comma + 1)
           FN (n |> Int32.TryParse |> snd, name)
         | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
           let n::v::_ = (l.Substring 3).Split(',') |> Array.toList
