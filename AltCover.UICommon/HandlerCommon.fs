@@ -58,7 +58,7 @@ module HandlerCommon =
     | (_, true) -> Exemption.Excluded
     | _ -> Exemption.None
 
-  let private coverageToTag(n : XPathNavigator) =
+  let private coverageToTag lineOnly (n : XPathNavigator) =
     let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
     let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
     let line = n.GetAttribute("line", String.Empty)
@@ -76,6 +76,7 @@ module HandlerCommon =
         | Exemption.StaticAnalysis -> Exemption.StaticAnalysis
         | Exemption.Excluded -> Exemption.Excluded
         | _ -> Exemption.Visited
+      LineOnly = lineOnly
       VisitCount = visitcount
       Line = Int32.TryParse(line) |> snd
       Column = (Int32.TryParse(column) |> snd)
@@ -87,9 +88,13 @@ module HandlerCommon =
   [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification="Ditto, ditto")>]
   let TagCoverage (methodPath:XPathNavigator) (fileName:string) (sourceLines:int) =
+    let lineOnly = methodPath.Select("//coverage[@lineonly]")
+                   |> Seq.cast<XPathNavigator>
+                   |> Seq.isEmpty
+                   |> not
     methodPath.Select("//seqpnt[@document='" + fileName + "']")
     |> Seq.cast<XPathNavigator>
-    |> Seq.map coverageToTag
+    |> Seq.map (coverageToTag lineOnly)
     |> Seq.filter (filterCoverage sourceLines)
     |> Seq.sortByDescending (fun t -> t.VisitCount)
     |> Seq.toList

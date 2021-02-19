@@ -73,7 +73,6 @@ The members correspond to the like-named command line options for `AltCover Runn
         member ExposeReturnCode : bool
         member SummaryFormat : System.String
         member Verbosity : System.Diagnostics.TraceLevel
-        member JsonReport : System.String
 ```
 
 
@@ -117,7 +116,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         member Dependencies : System.String list
         member Keys : System.String list
         member StrongNameKey : System.String
-        member XmlReport : System.String
+        member Report : System.String
         member FileFilter : System.String list
         member AssemblyFilter : System.String list
         member AssemblyExcludeFilter : System.String list

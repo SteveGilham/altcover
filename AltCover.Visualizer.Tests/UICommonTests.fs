@@ -1,5 +1,10 @@
 namespace Tests
 
+open System
+open System.IO
+open System.Reflection
+open System.Xml.Linq
+
 open AltCover
 
 module VisualizerTests =
@@ -22,3 +27,33 @@ module VisualizerTests =
     [<Test>]
     let DefaultHelperPassesThrough() =
       test <@ Transformer.defaultHelper null null |> isNull @>
+
+    [<Test>]
+    let CoberturaToNCoverIsOK() =
+      let root = Path.Combine(SolutionRoot.location, "Sample20")
+                 |> Path.GetFullPath
+
+      use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
+                                         .GetManifestResourceStream("AltCover.Visualizer.Tests.Reports.Cobertura_coverlet.xml"))
+      let before = XDocument.Load sr1
+      before.Descendants(XName.Get "source")
+      |> Seq.iter(fun x -> x.Value <- root)
+      let after = Transformer.transformFromCobertura before
+
+      use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
+                                         .GetManifestResourceStream("AltCover.Visualizer.Tests.Results.Cobertura_coverlet.ncover.xml"))
+      let expect = XDocument.Load sr2
+      [
+        expect.Descendants(XName.Get "method")
+        expect.Descendants(XName.Get "seqpnt")
+        expect.Descendants(XName.Get "branch")
+      ]
+      |> Seq.collect id
+      |> Seq.iter(fun x -> let a = x.Attribute(XName.Get "document")
+                           a.Value <- Path.Combine(root, a.Value)
+                           |> Path.GetFullPath)
+
+      //Assert.That(after.ToString().Replace("\r", String.Empty),
+      //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
+      test <@ after.ToString().Replace("\r", String.Empty) =
+                expect.ToString().Replace("\r", String.Empty)@>

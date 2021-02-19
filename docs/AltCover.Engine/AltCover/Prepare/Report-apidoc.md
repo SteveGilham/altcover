@@ -1,9 +1,9 @@
-# Prepare.XmlReport property
+# Prepare.Report property
 
-Corresponds to command line option `-x, --xmlReport=VALUE`
+Corresponds to command line option `-r, --report=VALUE`
 
 ```csharp
-public string XmlReport { get; set; }
+public string Report { get; set; }
 ```
 
 ## See Also

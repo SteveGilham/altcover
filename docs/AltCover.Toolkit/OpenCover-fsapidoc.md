@@ -27,3 +27,10 @@ Adds summary data and other items to report in `coverlet`'s OpenCover dialect, p
         withinSequencePoint:bool -> sameSpan:bool -> System.Xml.Linq.XDocument
 ```
 Takes output from the OpenCover program, and adjust from OpenCover's liberal idea of significant branches towards AltCover's more restricted approach -- chose either or both of `sameSpan` to unify branches that go from the same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and `withinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807 being instances of this).
+```
+    val JsonToXml :
+      document:string -> System.Xml.Linq.XDocument
+```
+Takes JSON output from coverlet of AltCover's own native JSON format and converts it to a minimal OpenCover style XML document.
+```
+

@@ -151,23 +151,6 @@ _Target "FxCop" (fun _ ->
        let rules = target @@ "Rules"
        Shell.copyDir rules dixon (fun _ -> true)))
 
-// Set up the Visuailzer test data
-_Target "AttachReports" ( fun _ ->
-  let tr = "./Tests.Visualizer/Reports"
-  Directory.ensure tr
-  Shell.cleanDir tr
-
-  let sample20 = "./Sample20" |> Path.getFullName
-
-  (!!"./Sample20/Reports/*")
-  |> Seq.iter (fun f ->
-    let name = f |> Path.GetFileName
-    let text = f |> File.ReadAllText
-    let report = tr @@ name
-    File.WriteAllText (report, text.Replace(@"C:\temp\", sample20 + "/"))
-  )
-)
-
 // Restore the NuGet packages used by the build and the Framework version
 _Target "Preparation" (fun _ -> RestoreMSSolutionPackages restore "./MCS.sln")
 
@@ -177,8 +160,5 @@ let defaultTarget() =
 
 "FxCop"
 =?> ("Preparation", Environment.isWindows)
-
-"AttachReports"
-==> "Preparation"
 
 Target.runOrDefault <| defaultTarget()

@@ -23,6 +23,7 @@ module GuiCommon =
       Column : int
       EndLine : int
       EndColumn : int
+      LineOnly : bool
       Style : Exemption}
 
   type MethodType =

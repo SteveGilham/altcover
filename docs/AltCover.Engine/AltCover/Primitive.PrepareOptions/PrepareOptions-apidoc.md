@@ -3,16 +3,15 @@
 ```csharp
 public PrepareOptions(IEnumerable<string> inputDirectories, IEnumerable<string> outputDirectories, 
     IEnumerable<string> symbolDirectories, IEnumerable<string> dependencies, 
-    IEnumerable<string> keys, string strongNameKey, string xmlReport, 
-    IEnumerable<string> fileFilter, IEnumerable<string> assemblyFilter, 
-    IEnumerable<string> assemblyExcludeFilter, IEnumerable<string> typeFilter, 
-    IEnumerable<string> methodFilter, IEnumerable<string> attributeFilter, 
-    IEnumerable<string> pathFilter, IEnumerable<string> attributeTopLevel, 
-    IEnumerable<string> typeTopLevel, IEnumerable<string> methodTopLevel, 
-    IEnumerable<string> callContext, string reportFormat, bool inPlace, bool save, bool zipFile, 
-    bool methodPoint, bool singleVisit, bool lineCover, bool branchCover, 
-    IEnumerable<string> commandLine, bool exposeReturnCode, bool sourceLink, bool defer, 
-    bool localSource, bool visibleBranches, string showStatic, bool showGenerated, 
+    IEnumerable<string> keys, string strongNameKey, string report, IEnumerable<string> fileFilter, 
+    IEnumerable<string> assemblyFilter, IEnumerable<string> assemblyExcludeFilter, 
+    IEnumerable<string> typeFilter, IEnumerable<string> methodFilter, 
+    IEnumerable<string> attributeFilter, IEnumerable<string> pathFilter, 
+    IEnumerable<string> attributeTopLevel, IEnumerable<string> typeTopLevel, 
+    IEnumerable<string> methodTopLevel, IEnumerable<string> callContext, string reportFormat, 
+    bool inPlace, bool save, bool zipFile, bool methodPoint, bool singleVisit, bool lineCover, 
+    bool branchCover, IEnumerable<string> commandLine, bool exposeReturnCode, bool sourceLink, 
+    bool defer, bool localSource, bool visibleBranches, string showStatic, bool showGenerated, 
     TraceLevel verbosity)
 ```
 

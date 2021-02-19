@@ -27,7 +27,9 @@
     <Compile Include="Tests.fs" />
   </ItemGroup>
 
-  <ItemGroup />
+  <ItemGroup>
+    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.0.2">
@@ -56,17 +58,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(MSBuildTest)' == 'true'">
-    <AssemblyFilter Include="xunit" />
-  </ItemGroup>
-  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'">
+  <Target Name="AfterBuild">
     <ItemGroup>
+      <AssemblyFilter Include="xunit" />
+      <FSharpXml Include="$(OutputPath)/$(TargetFramework)/FSharp.*.xml" />
       <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
       <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>
-    <AltCover.Prepare InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" />
+    <Delete Files="@(FSharpXml)" />
+    <AltCover.Prepare Condition="'$(MSBuildTest)' == 'true'"
+                      InputDirectories="@(InputDirectory)"
+                      OutputDirectories="@(OutputDirectory)"
+                      Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
+                      AssemblyFilter="@(AssemblyFilter)" />
   </Target>
 </Project>
