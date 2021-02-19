@@ -42,11 +42,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Reports\NCover1.5.8.xml" />
-    <EmbeddedResource Include="Reports\OpenCover.xml" />
-    <EmbeddedResource Include="Reports\OpenCoverWithTrackedMethods.xml" />
-    <EmbeddedResource Include="Reports\OpenCover_altcover.xml" />
-    <EmbeddedResource Include="Reports\OpenCover_coverlet.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\Cobertura_altcover.xml" Link="Reports\Cobertura_altcover.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\Cobertura_coverlet.xml" Link="Reports\Cobertura_coverlet.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\NCover1.5.8.xml" Link="Reports\NCover1.5.8.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\OpenCover.xml" Link="Reports\OpenCover.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\OpenCoverWithTrackedMethods.xml" Link="Reports\OpenCoverWithTrackedMethods.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\OpenCover_altcover.xml" Link="Reports\OpenCover_altcover.xml" />
+    <EmbeddedResource Include="..\Sample20\Reports\OpenCover_coverlet.xml" Link="Reports\OpenCover_coverlet.xml" />
+    <EmbeddedResource Include="Results\Cobertura_coverlet.ncover.xml" />
     <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
@@ -60,7 +63,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>

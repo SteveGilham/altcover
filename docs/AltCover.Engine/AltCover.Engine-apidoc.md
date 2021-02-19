@@ -16,6 +16,7 @@
 | class [Prepare](AltCover/Prepare-apidoc) | Description of the `AltCover` command |
 | static class [PrepareExtension](AltCover/PrepareExtension-apidoc) | no doc &lt;summary&gt; `Abstract.IPrepareOptions` extension methods &lt;/summary&gt; |
 | static class [Primitive](AltCover/Primitive-apidoc) | This represents the weakly ("stringly") typed equivalent of the command line options. It is primarily for F# use. Undocumented methods are compiler generated. |
+| class [RetryDelete](AltCover/RetryDelete-apidoc) | Used by the .net core implementation to tidy files that may be in a lingering 'in use' state |
 | class [RunSettings](AltCover/RunSettings-apidoc) | Used by the .net core implementation to inject an AltCover data collector, by creating a temporary run-settings file that includes AltCover as well as any user-defined settings. |
 | static class [TypeSafe](AltCover/TypeSafe-apidoc) | This represents the strongly-typed equivalent of the command line options, with the strong types expressed as F# discriminated unions. It is not recommented for consumption from C# code. |
 | static class [WhatIfExtension](AltCover/WhatIfExtension-apidoc) | F#-style I&lt;Whatever&gt;Options extension methods |

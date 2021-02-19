@@ -12,6 +12,7 @@ public static class OpenCover
 | --- | --- |
 | static [CompressBranching](OpenCover/CompressBranching-apidoc)(…) | Removes compiler-generated hidden branches from OpenCover. |
 | static [FormatFromCoverlet](OpenCover/FormatFromCoverlet-apidoc)(…) | Fills in gaps in `coverlet`'s OpenCover dialect. |
+| static [JsonToXml](OpenCover/JsonToXml-apidoc)(…) | Takes JSON output from coverlet of AltCover's own native JSON format and converts it to a minimal OpenCover style XML document. |
 | static [PostProcess](OpenCover/PostProcess-apidoc)(…) | Updates summary and related coverage-derived data based on visit counts. |
 
 ## See Also

@@ -42,7 +42,7 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 | | | | |
 | --- | --- | --- | --- | 
-| **Build** | <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)| <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)  ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
+| **Build** | <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)| <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)  ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover)](https://travis-ci.org/SteveGilham/altcover/builds)|
 | **Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) | <sup>AppVeyor</sup> [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)
 
 ## Usage
@@ -53,7 +53,7 @@ See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for deta
 
 See the [current project](https://github.com/SteveGilham/altcover/projects/8) and [long term research items](https://github.com/SteveGilham/altcover/projects/9) for details; though _ad hoc_ items not in the projects will get added as inspiration or need arise.
 
-All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
+All `To do` and  `On Hold` items are implicitly `up for grabs` and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
 
 ### Possible retirement/obsolescence of support
 

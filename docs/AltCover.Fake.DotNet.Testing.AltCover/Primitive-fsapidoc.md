@@ -41,7 +41,6 @@ The members correspond to the like-named command line options for `AltCover Runn
         ExposeReturnCode: bool
         SummaryFormat: System.String
         Verbosity : System.Diagnostics.TraceLevel
-        JsonReport: System.String
       }
       with
         static member Create : unit -> CollectOptions
@@ -68,7 +67,7 @@ The members correspond to the like-named command line options for `AltCover`, ex
         Dependencies: seq<System.String>
         Keys: seq<System.String>
         StrongNameKey: System.String
-        XmlReport: System.String
+        Report: System.String
         FileFilter: seq<System.String>
         AssemblyFilter: seq<System.String>
         AssemblyExcludeFilter: seq<System.String>

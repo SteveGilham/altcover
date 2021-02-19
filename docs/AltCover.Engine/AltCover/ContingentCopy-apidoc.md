@@ -16,7 +16,7 @@ public class ContingentCopy : Task
 | [BuildOutputDirectory](ContingentCopy/BuildOutputDirectory-apidoc) { get; set; } | The base of the relative from directory |
 | [CopyToOutputDirectory](ContingentCopy/CopyToOutputDirectory-apidoc) { get; set; } | The file copying property (if empty, then no-op) |
 | [FileName](ContingentCopy/FileName-apidoc) { get; set; } | The name of the file |
-| [InstrumentDirectory](ContingentCopy/InstrumentDirectory-apidoc) { get; set; } | The base of the relatuve to directory |
+| [InstrumentDirectory](ContingentCopy/InstrumentDirectory-apidoc) { get; set; } | The base of the relative to directory |
 | [RelativeDir](ContingentCopy/RelativeDir-apidoc) { get; set; } | The file relative location (if empty, then no-op) |
 | override [Execute](ContingentCopy/Execute-apidoc)() | Perform the operation |
 

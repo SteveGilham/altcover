@@ -1,9 +1,9 @@
-# Primitive.PrepareOptions.XmlReport property
+# Primitive.PrepareOptions.Report property
 
-Corresponds to command line option `-x, --xmlReport=VALUE`
+Corresponds to command line option `-r, --report=VALUE`
 
 ```csharp
-public string XmlReport { get; }
+public string Report { get; }
 ```
 
 ## See Also

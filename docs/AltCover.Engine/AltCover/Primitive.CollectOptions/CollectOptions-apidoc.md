@@ -4,7 +4,7 @@
 public CollectOptions(string recorderDirectory, string workingDirectory, string executable, 
     string lcovReport, string threshold, string cobertura, string outputFile, 
     IEnumerable<string> commandLine, bool exposeReturnCode, string summaryFormat, 
-    TraceLevel verbosity, string jsonReport)
+    TraceLevel verbosity)
 ```
 
 ## See Also

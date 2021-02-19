@@ -1,9 +1,9 @@
-# InvokeAltCoverCommand.JsonReport property
+# InvokeAltCoverCommand.Report property
 
-File path for JSON format version of the collected data
+The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)
 
 ```csharp
-public string JsonReport { get; set; }
+public string Report { get; set; }
 ```
 
 ## See Also

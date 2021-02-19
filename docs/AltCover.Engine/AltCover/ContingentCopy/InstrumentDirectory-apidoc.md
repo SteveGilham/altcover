@@ -1,6 +1,6 @@
 # ContingentCopy.InstrumentDirectory property
 
-The base of the relatuve to directory
+The base of the relative to directory
 
 ```csharp
 public string InstrumentDirectory { get; set; }

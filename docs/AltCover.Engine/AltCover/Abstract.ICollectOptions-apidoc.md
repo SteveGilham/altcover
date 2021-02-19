@@ -28,7 +28,6 @@ public interface ICollectOptions
 | [CommandLine](Abstract.ICollectOptions/CommandLine-apidoc) { get; } | Corresponds to the command line arguments for the executable, given after a `-- ` |
 | [Executable](Abstract.ICollectOptions/Executable-apidoc) { get; } | Corresponds to command line option `-x, --executable=VALUE` |
 | [ExposeReturnCode](Abstract.ICollectOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
-| [JsonReport](Abstract.ICollectOptions/JsonReport-apidoc) { get; } | Corresponds to command line option `-j, --jsonReport=VALUE` |
 | [LcovReport](Abstract.ICollectOptions/LcovReport-apidoc) { get; } | Corresponds to command line option `-l, --lcovReport=VALUE` |
 | [OutputFile](Abstract.ICollectOptions/OutputFile-apidoc) { get; } | Corresponds to command line option `-o, --outputFile=VALUE` |
 | [RecorderDirectory](Abstract.ICollectOptions/RecorderDirectory-apidoc) { get; } | Corresponds to command line option `-r, --recorderDirectory=VALUE` |

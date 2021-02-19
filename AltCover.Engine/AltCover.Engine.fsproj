@@ -32,6 +32,9 @@
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
     <!-- OtherFlags>- -keyfile:$(SolutionDir)Build\Infrastructure.snk - -staticlink:Manatee.Json</OtherFlags -->
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
@@ -124,7 +127,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

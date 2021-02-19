@@ -528,6 +528,7 @@ module AltCoverXTests =
         |> Seq.map Path.GetFileName
         |> Seq.filter (fun f -> f.EndsWith(".tmp", StringComparison.Ordinal) |> not)
         |> Seq.filter (fun f -> Path.GetFileNameWithoutExtension f <> "testhost")
+        |> Seq.filter (fun f -> Path.GetFileName f <> "FSharp.Core.xml")
         |> Seq.filter (fun f -> (Path.GetFileNameWithoutExtension f).StartsWith("Microsoft.", StringComparison.Ordinal) |> not)
         |> Seq.sortBy (fun f -> f.ToUpperInvariant())
         |> Seq.toList
