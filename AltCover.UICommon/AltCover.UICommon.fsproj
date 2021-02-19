@@ -79,6 +79,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Engine\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
+    <Compile Include="Lcov.fs" />
     <Compile Include="..\AltCover.Engine\NativeJson.fs" Link="NativeJson.fs" />
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />

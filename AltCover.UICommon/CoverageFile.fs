@@ -219,7 +219,7 @@ type CoverageFile =
 
       let rawDocument = match filetype with
                         | Json -> name |> NativeJson.fileToJson |> NativeJson.jsonToXml
-                        // | Lcov -> // TODO
+                        | LCov -> Lcov.toXml name
                         | _ -> XDocument.Load name  // let invalid files throw XML parse errors
 
       match Transformer.convertFile helper rawDocument with
