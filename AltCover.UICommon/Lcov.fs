@@ -1,26 +1,35 @@
 ﻿namespace AltCover
-#nowarn "25"
+
+open System.Diagnostics.CodeAnalysis
 
 open System
-open System.Diagnostics.CodeAnalysis
 open System.IO
-open System.Linq
-open System.Reflection
-open System.Xml
-open System.Xml.Xsl
 open System.Xml.Linq
-open System.Xml.Schema
-open System.Xml.XPath
 
 module internal Lcov =
 
+  [<SuppressMessage("Gendarme.Rules.Serialization", "MissingSerializationConstructorRule",
+    Justification = "Would not be used")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions", "MissingExceptionConstructorsRule",
+    Justification = "Would not be used")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions", "ExceptionShouldBeVisibleRule",
+    Justification = "Would not be used")>]
+  [<SuppressMessage("Microsoft.Design", "CA1064:ExceptionsShouldBePublic",
+    Justification = "Would not be used")>]
+  [<SuppressMessage("Microsoft.Design", "CA1032:ImplementStandardExceptionConstructors",
+    Justification = "Would not be used")>]
+  [<Sealed>]
   type LcovParseException (e:exn) =
     inherit exn(e.Message, e)
 
   type LRecord =
+    //SF:<absolute path to the source file>
     | SF of string
+    //FN:<line number of function start>,<function name>
     | FN of (int * string)
+    //DA:<line number>,<execution count>
     | DA of (int * int)
+    //BRDA:<line number>,<block number>,<branch number>,<taken>
     | BRDA of (int * int * int * int)
     | Other
 
@@ -39,12 +48,16 @@ module internal Lcov =
                               |]
                               |> result.Add
                               false
-                            | _ -> true)
+                            | FN _
+                            | DA _
+                            | BRDA _ -> true
+                            | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
     |> Seq.sortBy (fun r ->
       match r with
       | FN (a,_) -> 4 * a
       | DA (a,_) -> (4 * a) + 1
-      | BRDA (a,_,_,_) -> (4 * a) + 2)
+      | BRDA (a,_,_,_) -> (4 * a) + 2
+      | _ ->  r |> sprintf "%A" |> InvalidDataException |> raise)
     |> Seq.fold (fun x r ->
       match r with
       | FN (_,n) -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
@@ -75,8 +88,8 @@ module internal Lcov =
                           XAttribute(XName.Get "document", result.Attribute(XName.Get "assembly").Value))
         x.Add sp
         x
+      // BRDA:<line number>,<block number>,<branch number>,<taken>
       | BRDA (l,_,n,v) ->
-// BRDA:<line number>,<block number>,<branch number>,<taken>
         let br = XElement(XName.Get "branch",
                           XAttribute(XName.Get "visitcount", v),
                           XAttribute(XName.Get "line", l),
@@ -85,10 +98,13 @@ module internal Lcov =
                           XAttribute(XName.Get "offsetend", l),
                           XAttribute(XName.Get "document", result.Attribute(XName.Get "assembly").Value))
         x.Add br
-        x) null
+        x
+      | _ -> r |> sprintf "%A" |> InvalidDataException |> raise) null
     |> ignore
     result
 
+  [<SuppressMessage("Gendarme.Rules.Exceptions", "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+    Justification = "Wrapped and rethrown")>]
   let ofLines (lines: string array) =
     try
       lines
@@ -103,12 +119,16 @@ module internal Lcov =
           let name = trim.Substring(comma + 1)
           FN (n |> Int32.TryParse |> snd, name)
         | l when l.StartsWith("DA:", StringComparison.Ordinal) ->
-          let n::v::_ = (l.Substring 3).Split(',') |> Array.toList
-          DA (n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
+          match (l.Substring 3).Split(',') |> Array.toList with
+          | n::v::_ ->
+            DA (n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
+          | _ ->  line |> sprintf "%A" |> InvalidDataException |> raise
         | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
-          let n::v::x::y::_ = (l.Substring 5).Split(',') |> Array.toList
-          BRDA (n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd,
-                x |> Int32.TryParse |> snd, y |> Int32.TryParse |> snd)
+          match (l.Substring 5).Split(',') |> Array.toList with
+          | n::v::x::y::_ ->
+            BRDA (n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd,
+                  x |> Int32.TryParse |> snd, y |> Int32.TryParse |> snd)
+          | _ ->  line |> sprintf "%A" |> InvalidDataException |> raise
         | _ -> Other)
       |> Seq.fold (fun (i,l) r ->
         match r with
