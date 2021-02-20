@@ -329,6 +329,85 @@ module OpenCover =
         Uid : int
     }
 
+  let percent v n =
+    if n = 0 then "0"
+    else
+      let v1 = v |> float
+      let n1 = n |> float
+      Math.Round(v1 * 100.0 / n1, 2).ToString(CultureInfo.InvariantCulture)
+
+  type Summary = {
+      NumSequencePoints : int
+      VisitedSequencePoints : int
+      NumBranchPoints : int
+      VisitedBranchPoints : int
+      //sequenceCoverage="39.29"
+      //branchCoverage="33.33"
+      MaxCyclomaticComplexity : int
+      MinCyclomaticComplexity : int
+      VisitedClasses : int
+      NumClasses : int
+      VisitedMethods : int
+      NumMethods : int
+      MinCrapScore : int
+      MaxCrapScore : int
+  }
+  with member this.SequenceCoverage
+           with get() = percent this.VisitedSequencePoints this.NumSequencePoints
+       member this.BranchCoverage
+           with get() = percent this.VisitedBranchPoints this.NumBranchPoints
+       member this.Xml
+           with get() = XElement(XName.Get "Summary",
+                         XAttribute(XName.Get "numSequencePoints", this.NumSequencePoints),
+                         XAttribute(XName.Get "visitedSequencePoints", this.VisitedSequencePoints),
+                         XAttribute(XName.Get "numBranchPoints", this.NumBranchPoints),
+                         XAttribute(XName.Get "visitedBranchPoints", this.VisitedBranchPoints),
+                         XAttribute(XName.Get "sequenceCoverage", this.SequenceCoverage),
+                         XAttribute(XName.Get "branchCoverage", this.BranchCoverage),
+                         XAttribute(XName.Get "maxCyclomaticComplexity", this.MaxCyclomaticComplexity),
+                         XAttribute(XName.Get "minCyclomaticComplexity", this.MinCyclomaticComplexity),
+                         XAttribute(XName.Get "visitedClasses", this.VisitedClasses),
+                         XAttribute(XName.Get "numClasses", this.NumClasses),
+                         XAttribute(XName.Get "visitedMethods", this.VisitedMethods),
+                         XAttribute(XName.Get "numMethods", this.NumMethods),
+                         XAttribute(XName.Get "minCrapScore", this.MinCrapScore),
+                         XAttribute(XName.Get "maxCrapScore", this.MaxCrapScore) )
+       member this.Add (other:Summary) =
+                      let maybeMin a b =
+                        match (a,b) with
+                        | (0,_) -> b
+                        | (_,0) -> a
+                        | _ -> Math.Min(a, b)
+                      {
+                        NumSequencePoints = this.NumSequencePoints + other.NumSequencePoints
+                        VisitedSequencePoints = this.VisitedSequencePoints + other.VisitedSequencePoints
+                        NumBranchPoints = this.NumBranchPoints + other.NumBranchPoints
+                        VisitedBranchPoints = this.VisitedBranchPoints + other.VisitedBranchPoints
+                        MaxCyclomaticComplexity = Math.Max(this.MaxCyclomaticComplexity, other.MaxCyclomaticComplexity)
+                        MinCyclomaticComplexity = maybeMin this.MinCyclomaticComplexity other.MinCyclomaticComplexity
+                        VisitedClasses = this.VisitedClasses + other.VisitedClasses
+                        NumClasses = this.NumClasses + other.NumClasses
+                        VisitedMethods = this.VisitedMethods + other.VisitedMethods
+                        NumMethods = this.NumMethods + other.NumMethods
+                        MinCrapScore = maybeMin this.MinCrapScore other.MinCrapScore
+                        MaxCrapScore = Math.Max(this.MaxCrapScore, other.MaxCrapScore)
+                      }
+       static member Create() =
+                      {
+                        NumSequencePoints = 0
+                        VisitedSequencePoints = 0
+                        NumBranchPoints = 0
+                        VisitedBranchPoints = 0
+                        MaxCyclomaticComplexity = 0
+                        MinCyclomaticComplexity = 0
+                        VisitedClasses = 0
+                        NumClasses = 0
+                        VisitedMethods = 0
+                        NumMethods = 0
+                        MinCrapScore = 0
+                        MaxCrapScore = 0
+                      }
+
   let attributeOrEmpty name (x:XElement) =
     x.Attribute(XName.Get name)
     |> Option.ofObj
@@ -342,7 +421,14 @@ module OpenCover =
     |> Seq.mapi (fun i name -> name, (i+1))
     |> Map.ofSeq
 
-  let mergeModules (tracked: Map<string*string, TrackedMethod>) (modules:XElement seq) =
+  let mergeClasses (files : Map<string, int>)
+                   (tracked : Map<string*string, TrackedMethod>)
+                   (classes : (string * XElement seq) seq)  =
+    (Summary.Create().Xml, [||])
+
+  let mergeModules (files : Map<string, int>)
+                   (tracked : Map<string*string, TrackedMethod>)
+                   (modules:XElement seq) =
     let useful = modules
                  |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
                  |> Seq.toList
@@ -356,21 +442,8 @@ module OpenCover =
       let hash = XName.Get "hash"
       let hashValue = r.Attribute(hash).Value
       merge.Add(XAttribute(hash, hashValue))
-      merge.Add(XElement(XName.Get "Summary",
-                         XAttribute(XName.Get "numSequencePoints", 0),
-                         XAttribute(XName.Get "visitedSequencePoints", 0),
-                         XAttribute(XName.Get "numBranchPoints", 0),
-                         XAttribute(XName.Get "visitedBranchPoints", 0),
-                         XAttribute(XName.Get "sequenceCoverage", 0),
-                         XAttribute(XName.Get "branchCoverage", 0),
-                         XAttribute(XName.Get "maxCyclomaticComplexity", 0),
-                         XAttribute(XName.Get "minCyclomaticComplexity", 0),
-                         XAttribute(XName.Get "visitedClasses", 0),
-                         XAttribute(XName.Get "numClasses", 0),
-                         XAttribute(XName.Get "visitedMethods", 0),
-                         XAttribute(XName.Get "numMethods", 0),
-                         XAttribute(XName.Get "minCrapScore", 0),
-                         XAttribute(XName.Get "maxCrapScore", 0) ))
+      let summary = XElement(XName.Get "Summary")
+      merge.Add summary
 
       [
         "ModulePath"
@@ -383,19 +456,31 @@ module OpenCover =
       let f = XElement(XName.Get "Files")
       merge.Add f
 
-      let files = useful
-                  |> Seq.collect(fun m -> m.Descendants(XName.Get "File"))
-                  |> mergeFiles
-      files
-      |> Seq.iter (fun kvp ->
+      let foundFiles = useful
+                       |> Seq.collect(fun m -> m.Descendants(XName.Get "File"))
+                       |> Seq.map (attributeOrEmpty "fullPath")
+                       |> Seq.distinct
+                       |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                       |> Seq.sort
+
+      foundFiles
+      |> Seq.iter (fun file ->
         XElement(XName.Get "File",
-                 XAttribute(XName.Get "uid", kvp.Value),
-                 XAttribute(XName.Get "fullPath", kvp.Key))
+                 XAttribute(XName.Get "uid", Map.find file files),
+                 XAttribute(XName.Get "fullPath", file))
         |> f.Add)
 
       let c = XElement(XName.Get "Classes")
       merge.Add c
-      //c.Add mergeClasses files, tracked in, summary update out
+
+      let classes = useful
+                    |> Seq.collect(fun m -> m.Descendants(XName.Get "Class"))
+                    |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
+                    |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
+
+      let msummary, merged = mergeClasses files tracked classes
+      c.Add merged
+      msummary.Attributes() |> Seq.map XAttribute |> Seq.toArray |> summary.Add
 
       let t = XElement(XName.Get "TrackedMethods")
       merge.Add t
@@ -481,12 +566,16 @@ module OpenCover =
         |> List.mapi (fun i (k,v) -> (k, mergeTrackedMethods i v))
         |> Map.ofList
 
+    let files = inputs
+                |> Seq.collect(fun m -> m.Descendants(XName.Get "File"))
+                |> mergeFiles
+
     let modules =
       inputs
       |> List.collect
            (fun x -> x.Descendants(XName.Get "Module") |> Seq.toList)
       |> List.groupBy (fun x -> x.Attribute(hash).Value)
-      |> List.map (snd >> (mergeModules tracked))
+      |> List.map (snd >> (mergeModules files tracked))
       |> List.choose id
       |> List.toArray
 
