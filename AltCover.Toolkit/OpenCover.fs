@@ -313,7 +313,7 @@ module OpenCover =
 
 //-----------------------------------------------------------------------------------------
 
-  let blankOpenCover () =
+  let blankOpenCover() =
     use reader = // fsharplint:disable-next-line  RedundantNewKeyword
       new StringReader("""<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>""")
     XDocument.Load(reader)
@@ -426,10 +426,19 @@ module OpenCover =
                    (tracked : Map<string*string, TrackedMethod>)
                    (classes : (string * XElement seq) seq) : (XElement * XElement array) =
 
-    printfn "todo %A %A %A" files tracked classes
-    let s1 = Summary.Create()
-    let s2 = Summary.Create()
-    (s1.Add(s2).Xml, [||])
+    printfn "todo %A %A" files tracked
+    let s, x = classes
+               |> Seq.fold (fun (ss:Summary,xx) c ->
+                 let sm = XElement(XName.Get "Summary")
+                 let mm = XElement(XName.Get "Methods")
+                 let mc = XElement(XName.Get "Class",
+                                   sm,
+                                   XElement(XName.Get "FullName", fst c),
+                                   mm)
+                 (ss.Add(Summary.Create()), mc::xx))
+                   (Summary.Create(), [])
+
+    (s.Xml, x |> List.toArray)
 
   let mergeModules (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
