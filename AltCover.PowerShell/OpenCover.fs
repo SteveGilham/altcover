@@ -98,19 +98,19 @@ type CompressBranchingCommand() =
       Directory.SetCurrentDirectory here
 
 /// <summary>
-/// <para type="synopsis">Merges coverage documents.</para>
-/// <para type="description">Takes a set of coverage documents and crates a composite</para>
+/// <para type="synopsis">Merges OpenCover reports.</para>
+/// <para type="description">Takes a set of OpenCover reports and crates a composite</para>
 /// <example>
-///   <code>    $xml = $docs | Merge-Coverage -OutputFile "./_Packaging/Combined.xml"</code>
+///   <code>    $xml = $docs | Merge-OpenCover -OutputFile "./_Packaging/Combined.xml"</code>
 /// </example>
 /// </summary>
-[<Cmdlet(VerbsData.Merge, "Coverage")>]
+[<Cmdlet(VerbsData.Merge, "OpenCover")>]
 [<OutputType(typeof<XDocument>); AutoSerializable(false)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
   Justification="The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1003:DoNotAccessPipelineParametersOutsideProcessRecord",
   Justification="The rule gets confused by EndProcessing calling whileInCurrentDirectory")>]
-type MergeCoverageCommand() =
+type MergeOpenCoverCommand() =
   inherit PSCmdlet()
 
   let whileInCurrentDirectory (self:PSCmdlet) f =
@@ -155,12 +155,6 @@ type MergeCoverageCommand() =
               ValueFromPipelineByPropertyName = false)>]
   member val OutputFile : string = String.Empty with get, set
 
-  /// <summary>
-  /// <para type="description">Select NCover rather than OpenCover if set</para>
-  /// </summary>
-  [<Parameter(Mandatory = false)>]
-  member val AsNCover : SwitchParameter = SwitchParameter(false) with get, set
-
   member val private Files = new List<XDocument>()
 
   override self.BeginProcessing() = self.Files.Clear()
@@ -181,7 +175,7 @@ type MergeCoverageCommand() =
   override self.EndProcessing() =
     whileInCurrentDirectory self (fun _ ->
       let xmlDocument =
-        AltCover.OpenCover.MergeCoverage self.Files self.AsNCover.IsPresent
+        AltCover.OpenCover.Merge self.Files
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not

@@ -526,18 +526,8 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.cob.xml")
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.MergeCoverage [doc1; doc2] false
+    let merge = AltCover.OpenCover.Merge [doc1; doc2]
     test <@ merge.ToString() = String.Empty @>
-
-  [<Test>]
-  let MergePassesSingleNCover() =
-    use stream1 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.GenuineNCover158.Xml")
-    let doc1 = XDocument.Load stream1
-
-    let merge = AltCover.OpenCover.MergeCoverage [doc1] true
-    NUnit.Framework.Assert.That(merge.ToString(), NUnit.Framework.Is.EqualTo <| doc1.ToString())
-    test <@ merge.ToString() = doc1.ToString() @>
 
   [<Test>]
   let MergePassesSingleOpenCover() =
@@ -545,7 +535,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
     let doc1 = XDocument.Load stream1
 
-    let merge = AltCover.OpenCover.MergeCoverage [doc1] false
+    let merge = AltCover.OpenCover.Merge [doc1]
     test <@ merge.ToString() = doc1.ToString() @>
 
   [<Test>]
@@ -557,7 +547,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample4.Prepare.xml")
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.MergeCoverage [doc1; doc2] false
+    let merge = AltCover.OpenCover.Merge [doc1; doc2]
     let summary = merge.Descendants(XName.Get "Summary") |> Seq.head
     test <@ summary.ToString() = """<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />""" @>
 

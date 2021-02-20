@@ -311,123 +311,164 @@ module OpenCover =
     PostProcess xmlDocument BranchOrdinal.Offset
     xmlDocument
 
-  let mergeNCover (inputs : XDocument list) =
-    let doc = XDocument()
-    XComment(inputs.ToString())
-    |> doc.AddFirst
-    doc
+//-----------------------------------------------------------------------------------------
 
-  let mergeOpenCover(inputs : XDocument list) =
-    let loadFromString() =
-      use reader = // fsharplint:disable-next-line  RedundantNewKeyword
-        new StringReader("""<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>""")
-      let doc = XDocument.Load(reader)
-      doc
+  let blankOpenCover () =
+    use reader = // fsharplint:disable-next-line  RedundantNewKeyword
+      new StringReader("""<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>""")
+    XDocument.Load(reader)
 
-    let doc = loadFromString()
+  let mergeModules (modules:XElement seq) =
+    let useful = modules
+                 |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
+                 |> Seq.toList
+
+    match useful with
+    | [] -> None
+    | [r] -> r |> XElement |> Some
+    | r::_ ->
+      let merge = XElement(XName.Get "Module")
+
+      let hash = XName.Get "hash"
+      merge.Add(XAttribute(hash, r.Attribute(hash).Value))
+      merge.Add(XElement(XName.Get "Summary",
+                         XAttribute(XName.Get "numSequencePoints", 0),
+                         XAttribute(XName.Get "visitedSequencePoints", 0),
+                         XAttribute(XName.Get "numBranchPoints", 0),
+                         XAttribute(XName.Get "visitedBranchPoints", 0),
+                         XAttribute(XName.Get "sequenceCoverage", 0),
+                         XAttribute(XName.Get "branchCoverage", 0),
+                         XAttribute(XName.Get "maxCyclomaticComplexity", 0),
+                         XAttribute(XName.Get "minCyclomaticComplexity", 0),
+                         XAttribute(XName.Get "visitedClasses", 0),
+                         XAttribute(XName.Get "numClasses", 0),
+                         XAttribute(XName.Get "visitedMethods", 0),
+                         XAttribute(XName.Get "numMethods", 0),
+                         XAttribute(XName.Get "minCrapScore", 0),
+                         XAttribute(XName.Get "maxCrapScore", 0) ))
+
+      [
+        "ModulePath"
+        "ModuleTime"
+        "ModuleName"
+      ]
+      |> List.iter(fun n -> let x = XName.Get n
+                            merge.Add(XElement x, r.Element(x).Value))
+
+      let f = XElement(XName.Get "Files")
+      merge.Add f
+      //f.Add mergeFiles
+
+      let c = XElement(XName.Get "Classes")
+      merge.Add c
+      //c.Add mergeClasses
+
+      let t = XElement(XName.Get "TrackedMethods")
+      merge.Add t
+      //t.Add mergeTracked
+      Some merge
+
+  let mergeDocuments(inputs : XDocument list) =
+    let doc = blankOpenCover()
 
     let modules =
       inputs
       |> List.collect
            (fun x -> x.Descendants(XName.Get "Module") |> Seq.toList)
       |> List.groupBy (fun x -> x.Attribute(XName.Get "hash").Value)
+      |> List.map (snd >> mergeModules)
+      |> List.choose id
+      |> List.toArray
 
-    let results = Dictionary<string, XElement>()
-    let classes = Dictionary<string, XElement>()
-    let summaries = List<XElement>()
-    modules
-    |> List.iter (fun (h, l) ->
-         let m = XElement(XName.Get "Module")
-         results.Add(h, m)
-         m.SetAttribute("hash", h)
-         let s =
-           l
-           |> List.map (fun x -> let a = x.Attribute(XName.Get "skippedDueTo")
-                                 if a |> isNull
-                                 then String.Empty
-                                 else a.Value)
-           |> List.distinct
-         if s |> List.exists String.IsNullOrWhiteSpace then ()
-         else m.SetAttribute("skippedDueTo", String.Join(";", s))
-         match l
-               |> List.map (fun x ->
-                    x.Descendants(XName.Get "Summary")
-                    |> Seq.tryHead)
-               |> List.choose id
-               |> List.tryHead with
-         | Some n ->
-           summaries.Add n
-           let copy = XElement(n)
-           m.Add copy
-         | None -> ()
-         (l |> List.head).Descendants()
-         |> Seq.filter (fun n -> n.Name.LocalName.StartsWith("Module", StringComparison.Ordinal))
-         |> Seq.iter (fun n ->
-              let copy = XElement(n)
-              m.Add copy)
-         // Maybe Files
-         let c = XElement(XName.Get "Classes")
-         classes.Add(h, c)
-         c
-         |> m.Add)
-    // Maybe TrackedMethods
-    let (numSequencePoints, numBranchPoints, maxCyclomaticComplexity,
-         minCyclomaticComplexity, numClasses, numMethods) =
-      summaries
-      |> Seq.fold
-           (fun x summary ->
-           let (s, b, xcc, ncc, c, m) = x
-           (s + (Int32.TryParse(summary.Attribute(XName.Get "numSequencePoints").Value) |> snd),
-            b + (Int32.TryParse(summary.Attribute(XName.Get "numBranchPoints").Value) |> snd),
-            Math.Max
-              (xcc, Int32.TryParse(summary.Attribute(XName.Get "maxCyclomaticComplexity").Value) |> snd),
-            Math.Min
-              (ncc, Int32.TryParse(summary.Attribute(XName.Get "minCyclomaticComplexity").Value) |> snd),
-            c + (Int32.TryParse(summary.Attribute(XName.Get "numClasses").Value) |> snd),
-            m + (Int32.TryParse(summary.Attribute(XName.Get "numMethods").Value) |> snd)))
-           (0, 0, 1, Int32.MaxValue, 0, 0)
+    doc.Root.Element(XName.Get "Modules").Add(modules)
 
-    let summary = doc.Descendants(XName.Get "Summary") |> Seq.head
-    summary.SetAttribute
-      ("numSequencePoints", numSequencePoints.ToString(CultureInfo.InvariantCulture))
-    summary.SetAttribute
-      ("numBranchPoints", numBranchPoints.ToString(CultureInfo.InvariantCulture))
-    summary.SetAttribute
-      ("maxCyclomaticComplexity",
-       Math.Max(1, maxCyclomaticComplexity).ToString(CultureInfo.InvariantCulture))
-    summary.SetAttribute
-      ("minCyclomaticComplexity",
-       Math.Max(1, Math.Min(minCyclomaticComplexity, maxCyclomaticComplexity))
-           .ToString(CultureInfo.InvariantCulture))
-    summary.SetAttribute("numClasses", numClasses.ToString(CultureInfo.InvariantCulture))
-    summary.SetAttribute("numMethods", numMethods.ToString(CultureInfo.InvariantCulture))
+    //let results = Dictionary<string, XElement>()
+    //let classes = Dictionary<string, XElement>()
+    //let summaries = List<XElement>()
+    //modules
+    //|> List.iter (fun (h, l) ->
+    //     let m = XElement(XName.Get "Module")
+    //     results.Add(h, m)
+    //     m.SetAttribute("hash", h)
+    //     let s =
+    //       l
+    //       |> List.map (fun x -> let a = x.Attribute(XName.Get "skippedDueTo")
+    //                             if a |> isNull
+    //                             then String.Empty
+    //                             else a.Value)
+    //       |> List.distinct
+    //     if s |> List.exists String.IsNullOrWhiteSpace then ()
+    //     else m.SetAttribute("skippedDueTo", String.Join(";", s))
+    //     match l
+    //           |> List.map (fun x ->
+    //                x.Descendants(XName.Get "Summary")
+    //                |> Seq.tryHead)
+    //           |> List.choose id
+    //           |> List.tryHead with
+    //     | Some n ->
+    //       summaries.Add n
+    //       let copy = XElement(n)
+    //       m.Add copy
+    //     | None -> ()
+    //     (l |> List.head).Descendants()
+    //     |> Seq.filter (fun n -> n.Name.LocalName.StartsWith("Module", StringComparison.Ordinal))
+    //     |> Seq.iter (fun n ->
+    //          let copy = XElement(n)
+    //          m.Add copy)
+    //     // Maybe Files
+    //     let c = XElement(XName.Get "Classes")
+    //     classes.Add(h, c)
+    //     c
+    //     |> m.Add)
+    //// Maybe TrackedMethods
+    //let (numSequencePoints, numBranchPoints, maxCyclomaticComplexity,
+    //     minCyclomaticComplexity, numClasses, numMethods) =
+    //  summaries
+    //  |> Seq.fold
+    //       (fun x summary ->
+    //       let (s, b, xcc, ncc, c, m) = x
+    //       (s + (Int32.TryParse(summary.Attribute(XName.Get "numSequencePoints").Value) |> snd),
+    //        b + (Int32.TryParse(summary.Attribute(XName.Get "numBranchPoints").Value) |> snd),
+    //        Math.Max
+    //          (xcc, Int32.TryParse(summary.Attribute(XName.Get "maxCyclomaticComplexity").Value) |> snd),
+    //        Math.Min
+    //          (ncc, Int32.TryParse(summary.Attribute(XName.Get "minCyclomaticComplexity").Value) |> snd),
+    //        c + (Int32.TryParse(summary.Attribute(XName.Get "numClasses").Value) |> snd),
+    //        m + (Int32.TryParse(summary.Attribute(XName.Get "numMethods").Value) |> snd)))
+    //       (0, 0, 1, Int32.MaxValue, 0, 0)
 
-    // tidy up here
-    PostProcess doc BranchOrdinal.Offset
+    //let summary = doc.Descendants(XName.Get "Summary") |> Seq.head
+    //summary.SetAttribute
+    //  ("numSequencePoints", numSequencePoints.ToString(CultureInfo.InvariantCulture))
+    //summary.SetAttribute
+    //  ("numBranchPoints", numBranchPoints.ToString(CultureInfo.InvariantCulture))
+    //summary.SetAttribute
+    //  ("maxCyclomaticComplexity",
+    //   Math.Max(1, maxCyclomaticComplexity).ToString(CultureInfo.InvariantCulture))
+    //summary.SetAttribute
+    //  ("minCyclomaticComplexity",
+    //   Math.Max(1, Math.Min(minCyclomaticComplexity, maxCyclomaticComplexity))
+    //       .ToString(CultureInfo.InvariantCulture))
+    //summary.SetAttribute("numClasses", numClasses.ToString(CultureInfo.InvariantCulture))
+    //summary.SetAttribute("numMethods", numMethods.ToString(CultureInfo.InvariantCulture))
+
+    //// tidy up here
+    //PostProcess doc BranchOrdinal.Offset
     doc
 
-  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-    Justification="NCover is a name")>]
-  let MergeCoverage (documents : XDocument seq) ncover =
+  let Merge (documents : XDocument seq) =
     let inputs =
       documents
-      |> Seq.map (fun x ->
+      |> Seq.filter (fun x ->
            try
              let format = XmlUtilities.discoverFormat x
-             match (ncover, format) with
-             | (true, ReportFormat.NCover)
-             | (false, ReportFormat.OpenCover) ->
-               Some x
-             | _ -> None
-           with :? XmlSchemaValidationException -> None)
-      |> Seq.choose id
+             format = ReportFormat.OpenCover
+           with :? XmlSchemaValidationException -> false)
       |> Seq.toList
     match inputs with
-    | [] -> XDocument()
-    | [ x ] -> x
-    | _ ->
-      if ncover then mergeNCover inputs
-      else mergeOpenCover inputs
+    | [] -> blankOpenCover()
+    | [ x ] -> XDocument x
+    | _ -> mergeDocuments inputs
 
   [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
   let JsonToXml (document:string) =
