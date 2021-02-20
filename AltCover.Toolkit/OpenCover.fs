@@ -334,8 +334,9 @@ module OpenCover =
     else
       let v1 = v |> float
       let n1 = n |> float
-      Math.Round(v1 * 100.0 / n1, 2).ToString(CultureInfo.InvariantCulture)
+      (v1 * 100.0 / n1).ToString("F2", CultureInfo.InvariantCulture)
 
+  [<NoEquality; NoComparison; ExcludeFromCodeCoverage>]
   type Summary = {
       NumSequencePoints : int
       VisitedSequencePoints : int
@@ -344,13 +345,13 @@ module OpenCover =
       //sequenceCoverage="39.29"
       //branchCoverage="33.33"
       MaxCyclomaticComplexity : int
-      MinCyclomaticComplexity : int
+      MinCyclomaticComplexity : int Option
       VisitedClasses : int
       NumClasses : int
       VisitedMethods : int
       NumMethods : int
-      MinCrapScore : int
-      MaxCrapScore : int
+      MinCrapScore : float Option
+      MaxCrapScore : float
   }
   with member this.SequenceCoverage
            with get() = percent this.VisitedSequencePoints this.NumSequencePoints
@@ -365,31 +366,31 @@ module OpenCover =
                          XAttribute(XName.Get "sequenceCoverage", this.SequenceCoverage),
                          XAttribute(XName.Get "branchCoverage", this.BranchCoverage),
                          XAttribute(XName.Get "maxCyclomaticComplexity", this.MaxCyclomaticComplexity),
-                         XAttribute(XName.Get "minCyclomaticComplexity", this.MinCyclomaticComplexity),
+                         XAttribute(XName.Get "minCyclomaticComplexity", (Option.defaultValue 1 this.MinCyclomaticComplexity)),
                          XAttribute(XName.Get "visitedClasses", this.VisitedClasses),
                          XAttribute(XName.Get "numClasses", this.NumClasses),
                          XAttribute(XName.Get "visitedMethods", this.VisitedMethods),
                          XAttribute(XName.Get "numMethods", this.NumMethods),
-                         XAttribute(XName.Get "minCrapScore", this.MinCrapScore),
-                         XAttribute(XName.Get "maxCrapScore", this.MaxCrapScore) )
+                         XAttribute(XName.Get "minCrapScore", (Option.defaultValue 1.0 this.MinCrapScore).ToString("F2", CultureInfo.InvariantCulture)),
+                         XAttribute(XName.Get "maxCrapScore", this.MaxCrapScore.ToString("F2", CultureInfo.InvariantCulture)) )
        member this.Add (other:Summary) =
-                      let maybeMin a b =
-                        match (a,b) with
-                        | (0,_) -> b
-                        | (_,0) -> a
-                        | _ -> Math.Min(a, b)
+                      let maybeMin a b compare =
+                        match (a, b) with
+                        | (None, _) -> b
+                        | (_, None) -> a
+                        | (Some aa, Some bb) -> compare(aa, bb) |> Some
                       {
                         NumSequencePoints = this.NumSequencePoints + other.NumSequencePoints
                         VisitedSequencePoints = this.VisitedSequencePoints + other.VisitedSequencePoints
                         NumBranchPoints = this.NumBranchPoints + other.NumBranchPoints
                         VisitedBranchPoints = this.VisitedBranchPoints + other.VisitedBranchPoints
                         MaxCyclomaticComplexity = Math.Max(this.MaxCyclomaticComplexity, other.MaxCyclomaticComplexity)
-                        MinCyclomaticComplexity = maybeMin this.MinCyclomaticComplexity other.MinCyclomaticComplexity
+                        MinCyclomaticComplexity = maybeMin this.MinCyclomaticComplexity other.MinCyclomaticComplexity Math.Min
                         VisitedClasses = this.VisitedClasses + other.VisitedClasses
                         NumClasses = this.NumClasses + other.NumClasses
                         VisitedMethods = this.VisitedMethods + other.VisitedMethods
                         NumMethods = this.NumMethods + other.NumMethods
-                        MinCrapScore = maybeMin this.MinCrapScore other.MinCrapScore
+                        MinCrapScore = maybeMin this.MinCrapScore other.MinCrapScore Math.Min
                         MaxCrapScore = Math.Max(this.MaxCrapScore, other.MaxCrapScore)
                       }
        static member Create() =
@@ -399,13 +400,13 @@ module OpenCover =
                         NumBranchPoints = 0
                         VisitedBranchPoints = 0
                         MaxCyclomaticComplexity = 0
-                        MinCyclomaticComplexity = 0
+                        MinCyclomaticComplexity = None
                         VisitedClasses = 0
                         NumClasses = 0
                         VisitedMethods = 0
                         NumMethods = 0
-                        MinCrapScore = 0
-                        MaxCrapScore = 0
+                        MinCrapScore = None
+                        MaxCrapScore = 0.0
                       }
 
   let attributeOrEmpty name (x:XElement) =
@@ -423,8 +424,12 @@ module OpenCover =
 
   let mergeClasses (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
-                   (classes : (string * XElement seq) seq)  =
-    (Summary.Create().Xml, [||])
+                   (classes : (string * XElement seq) seq) : (XElement * XElement array) =
+
+    printfn "todo %A %A %A" files tracked classes
+    let s1 = Summary.Create()
+    let s2 = Summary.Create()
+    (s1.Add(s2).Xml, [||])
 
   let mergeModules (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
