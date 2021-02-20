@@ -515,7 +515,6 @@ module AltCoverXTests =
       let expected =
         [ "AltCover.Recorder.g.dll"
           "AltCover.Recorder.g.pdb";
-          "FSharp.Core.xml"; // @ F# 5.0.1
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
           "xunit.runner.reporters.netcoreapp10.dll";
@@ -529,6 +528,7 @@ module AltCoverXTests =
         |> Seq.map Path.GetFileName
         |> Seq.filter (fun f -> f.EndsWith(".tmp", StringComparison.Ordinal) |> not)
         |> Seq.filter (fun f -> Path.GetFileNameWithoutExtension f <> "testhost")
+        |> Seq.filter (fun f -> Path.GetFileName f <> "FSharp.Core.xml")
         |> Seq.filter (fun f -> (Path.GetFileNameWithoutExtension f).StartsWith("Microsoft.", StringComparison.Ordinal) |> not)
         |> Seq.sortBy (fun f -> f.ToUpperInvariant())
         |> Seq.toList
