@@ -583,7 +583,7 @@ module OpenCover =
         )
         |> List.filter (fun t -> (t.Name |> String.IsNullOrWhiteSpace ||
                                   t.Hash |> String.IsNullOrWhiteSpace ||
-                                  t.Token |> String.IsNullOrWhiteSpace))
+                                  t.Token |> String.IsNullOrWhiteSpace) |> not)
         |> List.groupBy (fun t -> (t.Hash, t.Token))
         |> List.mapi (fun i (k,v) -> (k, mergeTrackedMethods i v))
         |> Map.ofList
