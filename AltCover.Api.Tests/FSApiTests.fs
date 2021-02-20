@@ -520,19 +520,23 @@ module FSApiTests =
   [<Test>]
   let MergeRejectsNonCoverage() =
     use stream1 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.OpenCoverStrict.xsd")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.OpenCoverStrict.xsd")
     let doc1 = XDocument.Load stream1
     use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample1WithNCover.cob.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")
     let doc2 = XDocument.Load stream2
 
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
-    test <@ merge.ToString() = String.Empty @>
+    let ma = typeof<AltCover.BranchOrdinal>.Assembly
+    let mi = ma.GetType("AltCover.OpenCover").GetMethod("blankOpenCover",
+                         BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Static)
+    let expected = mi.Invoke(null, [||])
+    test <@ merge.ToString() = expected.ToString() @>
 
   [<Test>]
   let MergePassesSingleOpenCover() =
     use stream1 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Compressible.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Compressible.xml")
     let doc1 = XDocument.Load stream1
 
     let merge = AltCover.OpenCover.Merge [doc1]
@@ -541,10 +545,10 @@ module FSApiTests =
   [<Test>]
   let MergeCombinesSummaryCoverage() =
     use stream1 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.HandRolledMonoCoverage.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.xml")
     let doc1 = XDocument.Load stream1
     use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.api.tests.core.Sample4.Prepare.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4.Prepare.xml")
     let doc2 = XDocument.Load stream2
 
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
