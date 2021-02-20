@@ -318,6 +318,23 @@ module OpenCover =
       new StringReader("""<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>""")
     XDocument.Load(reader)
 
+  type TrackedMethod =
+    {
+        Hash : string
+        Token : string
+        Name : string
+        Strategy : string list
+        Entry : string list
+        Exit : string list
+        Uid : int
+    }
+
+  let attributeOrEmpty name (x:XElement) =
+    x.Attribute(XName.Get name)
+    |> Option.ofObj
+    |> Option.map (fun m -> m.Value)
+    |> Option.defaultValue String.Empty
+
   let mergeFiles (files:XElement seq) =
     files
     |> Seq.map( fun x -> x.Attribute(XName.Get "fullPath").Value)
@@ -325,7 +342,7 @@ module OpenCover =
     |> Seq.mapi (fun i name -> name, (i+1))
     |> Map.ofSeq
 
-  let mergeModules (modules:XElement seq) =
+  let mergeModules (tracked: Map<string*string, TrackedMethod>) (modules:XElement seq) =
     let useful = modules
                  |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
                  |> Seq.toList
@@ -337,7 +354,8 @@ module OpenCover =
       let merge = XElement(XName.Get "Module")
 
       let hash = XName.Get "hash"
-      merge.Add(XAttribute(hash, r.Attribute(hash).Value))
+      let hashValue = r.Attribute(hash).Value
+      merge.Add(XAttribute(hash, hashValue))
       merge.Add(XElement(XName.Get "Summary",
                          XAttribute(XName.Get "numSequencePoints", 0),
                          XAttribute(XName.Get "visitedSequencePoints", 0),
@@ -377,23 +395,98 @@ module OpenCover =
 
       let c = XElement(XName.Get "Classes")
       merge.Add c
-      //c.Add mergeClasses files in, summary update out
+      //c.Add mergeClasses files, tracked in, summary update out
 
       let t = XElement(XName.Get "TrackedMethods")
       merge.Add t
-      //t.Add mergeTracked
+
+      let trackedMethods = useful
+                           |> Seq.collect(fun m -> m.Descendants(XName.Get "TrackedMethod"))
+                           |> Seq.groupBy (attributeOrEmpty "token")
+                           |> Seq.map (fun grouped -> let key = (hashValue, fst grouped)
+                                                      let data = Map.find key tracked
+                                                      XElement(XName.Get "TrackedMethod",
+                                                               XAttribute(XName.Get "uid", data.Uid),
+                                                               XAttribute(XName.Get "token", data.Token),
+                                                               XAttribute(XName.Get "name", data.Name),
+                                                               XAttribute(XName.Get "strategy", String.Join(";", data.Strategy)),
+                                                               XAttribute(XName.Get "entry", String.Join(";", data.Entry)),
+                                                               XAttribute(XName.Get "exit", String.Join(";", data.Exit))))
+      trackedMethods
+      |> Seq.toArray
+      |> t.Add
 
       Some merge
 
+  let accumulateOrFail r s rvalue svalue =
+    if svalue |> String.IsNullOrWhiteSpace
+    then rvalue
+    else if svalue <> rvalue
+         then let message = sprintf "%A <> %A" s r
+              message |> InvalidDataException |> raise
+         else svalue
+
+  let mergeTrackedMethods index records =
+    records
+    |> Seq.fold (fun state r ->
+      { state with
+            Hash = accumulateOrFail r state r.Hash state.Hash
+            Token = accumulateOrFail r state r.Token state.Token
+            Name = accumulateOrFail r state r.Name state.Name
+            Strategy = r.Strategy @ state.Strategy
+            Entry = r.Entry @ state.Entry
+            Exit = r.Exit @ state.Exit
+            Uid = index + 1
+      })
+          {
+            Hash = String.Empty
+            Token = String.Empty
+            Name = String.Empty
+            Strategy = []
+            Entry = []
+            Exit = []
+            Uid = index + 1
+          }
+
   let mergeDocuments(inputs : XDocument list) =
     let doc = blankOpenCover()
+    let hash = XName.Get "hash"
+
+    let tracked =
+      inputs
+        |> List.collect
+            (fun x -> x.Descendants(XName.Get "TrackedMethod") |> Seq.toList)
+        |> List.map (fun x ->
+          {
+            Hash = x.Parent.Parent
+                   |> attributeOrEmpty "hash"
+            Token = x |> attributeOrEmpty "token"
+            Name = x |> attributeOrEmpty "name"
+            Strategy = (x |> attributeOrEmpty "strategy")
+                        .Split(';')
+                       |> Seq.toList
+            Entry = (x |> attributeOrEmpty "entry")
+                        .Split(';')
+                       |> Seq.toList
+            Exit = (x |> attributeOrEmpty "exit")
+                        .Split(';')
+                       |> Seq.toList
+            Uid = 0
+          }
+        )
+        |> List.filter (fun t -> (t.Name |> String.IsNullOrWhiteSpace ||
+                                  t.Hash |> String.IsNullOrWhiteSpace ||
+                                  t.Token |> String.IsNullOrWhiteSpace))
+        |> List.groupBy (fun t -> (t.Hash, t.Token))
+        |> List.mapi (fun i (k,v) -> (k, mergeTrackedMethods i v))
+        |> Map.ofList
 
     let modules =
       inputs
       |> List.collect
            (fun x -> x.Descendants(XName.Get "Module") |> Seq.toList)
-      |> List.groupBy (fun x -> x.Attribute(XName.Get "hash").Value)
-      |> List.map (snd >> mergeModules)
+      |> List.groupBy (fun x -> x.Attribute(hash).Value)
+      |> List.map (snd >> (mergeModules tracked))
       |> List.choose id
       |> List.toArray
 
