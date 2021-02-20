@@ -549,7 +549,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.xml")
     let doc1 = XDocument.Load stream1
     use stream2 =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4.Prepare.xml")
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")
     let doc2 = XDocument.Load stream2
 
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
