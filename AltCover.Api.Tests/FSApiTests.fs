@@ -528,6 +528,7 @@ module FSApiTests =
 
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
     let ma = typeof<AltCover.BranchOrdinal>.Assembly
+    // not part of the API exposed by the .fsi file
     let mi = ma.GetType("AltCover.OpenCover").GetMethod("blankOpenCover",
                          BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Static)
     let expected = mi.Invoke(null, [||])
