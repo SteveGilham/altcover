@@ -422,11 +422,16 @@ module OpenCover =
     |> Seq.mapi (fun i name -> name, (i+1))
     |> Map.ofSeq
 
+  let mergeMethods (files : Map<string, int>)
+                   (tracked : Map<string*string, TrackedMethod>)
+                   (methods : (string * XElement seq) seq) : (Summary * XElement array) =
+    printfn "todo %A %A %A" files tracked methods
+    (Summary.Create(), [||])
+
   let mergeClasses (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
-                   (classes : (string * XElement seq) seq) : (XElement * XElement array) =
+                   (classes : (string * XElement seq) seq) : (Summary * XElement array) =
 
-    printfn "todo %A %A" files tracked
     let s, x = classes
                |> Seq.fold (fun (ss:Summary,xx) c ->
                  let sm = XElement(XName.Get "Summary")
@@ -435,10 +440,19 @@ module OpenCover =
                                    sm,
                                    XElement(XName.Get "FullName", fst c),
                                    mm)
-                 (ss.Add(Summary.Create()), mc::xx))
+                 let methods = c |> snd
+                                 |> Seq.collect(fun m -> m.Descendants(XName.Get "Method"))
+                                 |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
+                                 |> Seq.groupBy (fun x -> x.Element(XName.Get "Name").Value)
+
+                 let (msum, merged) = mergeMethods files tracked methods
+                 mm.Add merged
+                 msum.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> sm.Add
+
+                 (ss.Add(msum), mc::xx))
                    (Summary.Create(), [])
 
-    (s.Xml, x |> List.toArray)
+    (s, x |> List.toArray)
 
   let mergeModules (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
@@ -494,7 +508,7 @@ module OpenCover =
 
       let msummary, merged = mergeClasses files tracked classes
       c.Add merged
-      msummary.Attributes() |> Seq.map XAttribute |> Seq.toArray |> summary.Add
+      msummary.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> summary.Add
 
       let t = XElement(XName.Get "TrackedMethods")
       merge.Add t
@@ -593,6 +607,7 @@ module OpenCover =
       |> List.choose id
       |> List.toArray
 
+    // TODO summary info
     doc.Root.Element(XName.Get "Modules").Add(modules)
     doc
 
