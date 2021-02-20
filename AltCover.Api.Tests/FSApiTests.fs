@@ -553,7 +553,10 @@ module FSApiTests =
     let doc2 = XDocument.Load stream2
 
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
-    let summary = merge.Descendants(XName.Get "Summary") |> Seq.head
+    let summary = merge.Root.Element(XName.Get "Summary")
+
+    printfn "%A" merge
+
     test <@ summary.ToString() = """<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />""" @>
 
 #if SOURCEMAP

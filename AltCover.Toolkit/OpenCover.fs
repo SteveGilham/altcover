@@ -457,79 +457,73 @@ module OpenCover =
   let mergeModules (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
                    (modules:XElement seq) =
-    let useful = modules
-                 |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-                 |> Seq.toList
+    let r = modules |> Seq.head
 
-    match useful with
-    | [] -> None
-    | [r] -> r |> XElement |> Some
-    | r::_ ->
-      let merge = XElement(XName.Get "Module")
+    let merge = XElement(XName.Get "Module")
 
-      let hash = XName.Get "hash"
-      let hashValue = r.Attribute(hash).Value
-      merge.Add(XAttribute(hash, hashValue))
-      let summary = XElement(XName.Get "Summary")
-      merge.Add summary
+    let hash = XName.Get "hash"
+    let hashValue = r.Attribute(hash).Value
+    merge.Add(XAttribute(hash, hashValue))
+    let summary = XElement(XName.Get "Summary")
+    merge.Add summary
 
-      [
-        "ModulePath"
-        "ModuleTime"
-        "ModuleName"
-      ]
-      |> List.iter(fun n -> let x = XName.Get n
-                            merge.Add(XElement x, r.Element(x).Value))
+    [
+      "ModulePath"
+      "ModuleTime"
+      "ModuleName"
+    ]
+    |> List.iter(fun n -> let x = XName.Get n
+                          merge.Add(XElement (x, r.Element(x).Value)))
 
-      let f = XElement(XName.Get "Files")
-      merge.Add f
+    let f = XElement(XName.Get "Files")
+    merge.Add f
 
-      let foundFiles = useful
-                       |> Seq.collect(fun m -> m.Descendants(XName.Get "File"))
-                       |> Seq.map (attributeOrEmpty "fullPath")
-                       |> Seq.distinct
-                       |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-                       |> Seq.sort
+    let foundFiles = modules
+                     |> Seq.collect(fun m -> m.Descendants(XName.Get "File"))
+                     |> Seq.map (attributeOrEmpty "fullPath")
+                     |> Seq.distinct
+                     |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                     |> Seq.sort
 
-      foundFiles
-      |> Seq.iter (fun file ->
-        XElement(XName.Get "File",
-                 XAttribute(XName.Get "uid", Map.find file files),
-                 XAttribute(XName.Get "fullPath", file))
-        |> f.Add)
+    foundFiles
+    |> Seq.iter (fun file ->
+      XElement(XName.Get "File",
+                XAttribute(XName.Get "uid", Map.find file files),
+                XAttribute(XName.Get "fullPath", file))
+      |> f.Add)
 
-      let c = XElement(XName.Get "Classes")
-      merge.Add c
+    let c = XElement(XName.Get "Classes")
+    merge.Add c
 
-      let classes = useful
-                    |> Seq.collect(fun m -> m.Descendants(XName.Get "Class"))
-                    |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-                    |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
+    let classes = modules
+                  |> Seq.collect(fun m -> m.Descendants(XName.Get "Class"))
+                  |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
+                  |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
 
-      let msummary, merged = mergeClasses files tracked classes
-      c.Add merged
-      msummary.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> summary.Add
+    let msummary, merged = mergeClasses files tracked classes
+    c.Add merged
+    msummary.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> summary.Add
 
-      let t = XElement(XName.Get "TrackedMethods")
-      merge.Add t
+    let t = XElement(XName.Get "TrackedMethods")
+    merge.Add t
 
-      let trackedMethods = useful
-                           |> Seq.collect(fun m -> m.Descendants(XName.Get "TrackedMethod"))
-                           |> Seq.groupBy (attributeOrEmpty "token")
-                           |> Seq.map (fun grouped -> let key = (hashValue, fst grouped)
-                                                      let data = Map.find key tracked
-                                                      XElement(XName.Get "TrackedMethod",
-                                                               XAttribute(XName.Get "uid", data.Uid),
-                                                               XAttribute(XName.Get "token", data.Token),
-                                                               XAttribute(XName.Get "name", data.Name),
-                                                               XAttribute(XName.Get "strategy", String.Join(";", data.Strategy)),
-                                                               XAttribute(XName.Get "entry", String.Join(";", data.Entry)),
-                                                               XAttribute(XName.Get "exit", String.Join(";", data.Exit))))
-      trackedMethods
-      |> Seq.toArray
-      |> t.Add
+    let trackedMethods = modules
+                         |> Seq.collect(fun m -> m.Descendants(XName.Get "TrackedMethod"))
+                         |> Seq.groupBy (attributeOrEmpty "token")
+                         |> Seq.map (fun grouped -> let key = (hashValue, fst grouped)
+                                                    let data = Map.find key tracked
+                                                    XElement(XName.Get "TrackedMethod",
+                                                             XAttribute(XName.Get "uid", data.Uid),
+                                                             XAttribute(XName.Get "token", data.Token),
+                                                             XAttribute(XName.Get "name", data.Name),
+                                                             XAttribute(XName.Get "strategy", String.Join(";", data.Strategy)),
+                                                             XAttribute(XName.Get "entry", String.Join(";", data.Entry)),
+                                                             XAttribute(XName.Get "exit", String.Join(";", data.Exit))))
+    trackedMethods
+    |> Seq.toArray
+    |> t.Add
 
-      Some merge
+    (msummary, merge)
 
   let accumulateOrFail r s rvalue svalue =
     if svalue |> String.IsNullOrWhiteSpace
@@ -598,17 +592,25 @@ module OpenCover =
                 |> Seq.collect(fun m -> m.Descendants(XName.Get "File"))
                 |> mergeFiles
 
-    let modules =
+    let (summary, modules) =
       inputs
       |> List.collect
            (fun x -> x.Descendants(XName.Get "Module") |> Seq.toList)
+      |> List.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
       |> List.groupBy (fun x -> x.Attribute(hash).Value)
       |> List.map (snd >> (mergeModules files tracked))
-      |> List.choose id
-      |> List.toArray
+      |> List.fold (fun (states:Summary, statem) (locals, localm) ->
+           states.Add(locals), localm :: statem)
+           (Summary.Create(), [])
 
     // TODO summary info
-    doc.Root.Element(XName.Get "Modules").Add(modules)
+    doc.Root.Element(XName.Get "Modules").Add(modules |> List.toArray)
+    let sm = doc.Root.Element(XName.Get "Summary")
+
+    summary.Xml.Attributes()
+    |> Seq.map XAttribute
+    |> Seq.iter (fun a -> sm.Attribute(a.Name).Value <- a.Value)
+
     doc
 
   let Merge (documents : XDocument seq) =
