@@ -390,7 +390,7 @@ module OpenCover =
                         NumClasses = this.NumClasses + other.NumClasses
                         VisitedMethods = this.VisitedMethods + other.VisitedMethods
                         NumMethods = this.NumMethods + other.NumMethods
-                        MinCrapScore = maybeMin this.MinCrapScore other.MinCrapScore Math.Min
+                        MinCrapScore = maybeMin other.MinCrapScore this.MinCrapScore  Math.Min
                         MaxCrapScore = Math.Max(this.MaxCrapScore, other.MaxCrapScore)
                       }
        static member Create() =
@@ -425,8 +425,35 @@ module OpenCover =
   let mergeMethods (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
                    (methods : (string * XElement seq) seq) : (Summary * XElement array) =
-    printfn "todo %A %A %A" files tracked methods
-    (Summary.Create(), [||])
+    printfn "todo %A %A" files tracked
+    let s,x = methods
+              |> Seq.fold (fun (ss:Summary,xx) group ->
+                 let sm = XElement(XName.Get "Summary")
+                 let mt = XElement(XName.Get "MetadataToken")
+                 let name = XElement(XName.Get "Name", fst group)
+                 let fr = XElement(XName.Get "FileRef")
+                 let sp = XElement(XName.Get "SequencePoints")
+                 let bp = XElement(XName.Get "BranchPoints")
+                 let mp = XElement(XName.Get "MethodPoint")
+
+                 let merge = XElement(XName.Get "Method",
+                                      sm, mt, name, fr, sp, bp, mp)
+
+                 // todo
+
+                 (ss.Add(Summary.Create()), merge :: xx))
+
+            //<Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+            //  <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
+            //  <MetadataToken>100663355</MetadataToken>
+            //  <Name>System.Byte[] Tests.M/Thing::bytes()</Name>
+            //  <FileRef uid="1" />
+            //  <SequencePoints>
+            //  <BranchPoints />
+            //  <MethodPoint xsi:type="SequencePoint" vc="1" uspid="27" ordinal="0" offset="0" sl="18" sc="27" el="18" ec="73" bec="0" bev="0" fileid="1" />
+                   (Summary.Create(), [])
+
+    (s, x |> List.toArray)
 
   let mergeClasses (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
@@ -603,7 +630,6 @@ module OpenCover =
            states.Add(locals), localm :: statem)
            (Summary.Create(), [])
 
-    // TODO summary info
     doc.Root.Element(XName.Get "Modules").Add(modules |> List.toArray)
     let sm = doc.Root.Element(XName.Get "Summary")
 
