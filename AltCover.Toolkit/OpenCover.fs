@@ -421,7 +421,7 @@ module OpenCover =
     |> Map.ofSeq
 
   let mergeCounts (records:XElement seq) =
-    let combined =
+    let mmin, total =
         records
         |> Seq.fold (fun (low, total) item ->
           let vc = item
@@ -432,11 +432,13 @@ module OpenCover =
           (Math.Min(vc, low), total + Math.Max(vc, 0)))
           (0, 0)
 
-    let fallback = snd combined
-    let summed = fst combined
-    if summed > 0
-    then summed
-    else fallback
+    [
+      total
+      mmin
+    ]
+    |> List.filter (fun n -> n <> 0)
+    |> List.tryHead
+    |> Option.defaultValue 0
 
   [<SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
