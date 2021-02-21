@@ -417,40 +417,110 @@ module OpenCover =
 
   let mergeFiles (files:XElement seq) =
     files
-    |> Seq.map( fun x -> x.Attribute(XName.Get "fullPath").Value)
+    |> Seq.map (fun x -> x.Attribute(XName.Get "fullPath").Value)
     |> Seq.distinct
     |> Seq.mapi (fun i name -> name, (i+1))
     |> Map.ofSeq
 
+  let mergeCounts (records:XElement seq) =
+    let combined =
+        records
+        |> Seq.fold (fun (low, total) item ->
+          let vc = item
+                   |> (attributeOrEmpty "vc")
+                   |> Int32.TryParse
+                   |> snd
+
+          (Math.Min(vc, low), total + Math.Max(vc, 0)))
+          (0, 0)
+
+    let fallback = snd combined
+    let summed = fst combined
+    if summed > 0
+    then summed
+    else fallback
+
+  let mapFile (files : Map<string, int>) (a:XAttribute) (modu:XElement) =
+      let oldfile = a.Value
+      let source = modu.Descendants(XName.Get "File")
+                  |> Seq.find(fun f -> f.Attribute(XName.Get "uid").Value = oldfile)
+      Map.find (source.Attribute(XName.Get "fullPath").Value) files
+
   let mergeMethods (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
                    (methods : (string * XElement seq) seq) : (Summary * XElement array) =
-    printfn "todo %A %A" files tracked
+    printfn "todo %A" tracked
     let s,x = methods
               |> Seq.fold (fun (ss:Summary,xx) group ->
+                 let rep = group |> snd |> Seq.head
+
                  let sm = XElement(XName.Get "Summary")
                  let mt = XElement(XName.Get "MetadataToken")
+
+                 group |> snd
+                 |> Seq.map (fun m -> m.Element(XName.Get "MetadataToken").Value)
+                 |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
+                 |> Option.iter(fun t -> mt.Value <- t)
+
                  let name = XElement(XName.Get "Name", fst group)
-                 let fr = XElement(XName.Get "FileRef")
+                 let modu = rep.Parent.Parent.Parent.Parent
+
+                 let fr = group |> snd
+                           |> Seq.collect (fun x -> x.Elements(XName.Get "FileRef"))
+                           |> Seq.map (fun f -> f.Attribute(XName.Get "uid"))
+                           |> Seq.filter (isNull >> not)
+                           |> Seq.tryHead
+                           |> Option.map (fun a ->
+                             let fr0 = XElement(XName.Get "FileRef")
+                             let newfile = mapFile files a modu
+                             fr0.SetAttributeValue(XName.Get "uid", newfile)
+                             fr0)
                  let sp = XElement(XName.Get "SequencePoints")
                  let bp = XElement(XName.Get "BranchPoints")
-                 let mp = XElement(XName.Get "MethodPoint")
 
-                 let merge = XElement(XName.Get "Method",
-                                      sm, mt, name, fr, sp, bp, mp)
+                 let mpn = XName.Get "MethodPoint"
+                 let methodPoints = group |> snd
+                                    |> Seq.collect (fun x -> x.Elements mpn)
+                 let mpv = methodPoints
+                           |> mergeCounts
 
-                 // todo
+                 let mp = methodPoints
+                          |> Seq.tryHead
+                          |> Option.map (fun r ->
+                            let mp0 = XElement r
+                            mp0.SetAttributeValue(XName.Get "vc", mpv)
+                            r.Attribute(XName.Get "fileid")
+                            |> Option.ofObj
+                            |> Option.iter(fun a ->
+                                 let newfile = mapFile files a modu
+                                 mp0.SetAttributeValue(XName.Get "fileid", newfile))
+                            mp0)
+
+                 let merge = XElement(XName.Get "Method")
+                 [
+                  Some sm
+                  Some mt
+                  Some name
+                  fr
+                  Some sp
+                  Some bp
+                  mp
+                 ]
+                 |> Seq.choose id
+                 |> merge.Add
+
+                 rep.Attributes()
+                 |> Seq.map XAttribute
+                 |> Seq.toArray
+                 |> merge.Add
+
+                 merge.SetAttributeValue(XName.Get "visited",
+                    if mpv > 0 then "true" else "false")
 
                  (ss.Add(Summary.Create()), merge :: xx))
 
             //<Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
             //  <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
-            //  <MetadataToken>100663355</MetadataToken>
-            //  <Name>System.Byte[] Tests.M/Thing::bytes()</Name>
-            //  <FileRef uid="1" />
-            //  <SequencePoints>
-            //  <BranchPoints />
-            //  <MethodPoint xsi:type="SequencePoint" vc="1" uspid="27" ordinal="0" offset="0" sl="18" sc="27" el="18" ec="73" bec="0" bev="0" fileid="1" />
                    (Summary.Create(), [])
 
     (s, x |> List.toArray)
@@ -552,21 +622,18 @@ module OpenCover =
 
     (msummary, merge)
 
-  let accumulateOrFail r s rvalue svalue =
+  let accumulate r s rvalue svalue =
     if svalue |> String.IsNullOrWhiteSpace
     then rvalue
-    else if svalue <> rvalue
-         then let message = sprintf "%A <> %A" s r
-              message |> InvalidDataException |> raise
-         else svalue
+    else svalue
 
   let mergeTrackedMethods index records =
     records
     |> Seq.fold (fun state r ->
       { state with
-            Hash = accumulateOrFail r state r.Hash state.Hash
-            Token = accumulateOrFail r state r.Token state.Token
-            Name = accumulateOrFail r state r.Name state.Name
+            Hash = accumulate r state r.Hash state.Hash
+            Token = accumulate r state r.Token state.Token
+            Name = accumulate r state r.Name state.Name
             Strategy = r.Strategy @ state.Strategy
             Entry = r.Entry @ state.Entry
             Exit = r.Exit @ state.Exit
@@ -635,7 +702,7 @@ module OpenCover =
 
     summary.Xml.Attributes()
     |> Seq.map XAttribute
-    |> Seq.iter (fun a -> sm.Attribute(a.Name).Value <- a.Value)
+    |> Seq.iter (fun a -> sm.SetAttributeValue(a.Name, a.Value))
 
     doc
 
