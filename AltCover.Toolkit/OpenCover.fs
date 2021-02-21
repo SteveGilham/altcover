@@ -466,6 +466,17 @@ module OpenCover =
     ignore tracked
 
     (mc, np0)
+(*
+OpenCover on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCoverState@2619-4::Invoke
+<SequencePoint vc="5" uspid="10914" ordinal="6" offset="96" sl="2626" sc="12" el="2629" ec="16" bec="2" bev="1" fileid="876" />
+<BranchPoint vc="5" uspid="10917" ordinal="0" offset="116" sl="2626" path="0" offsetchain="118" offsetend="122" fileid="876" />
+AltCover on ditto
+<SequencePoint vc="5" uspid="8578" ordinal="6" offset="96" sl="2626" sc="12" el="2629" ec="16" bec="2" bev="1" fileid="37" />
+<BranchPoint vc="5" uspid="1687" ordinal="0" offset="116" sl="2626" path="0" offsetchain="118" offsetend="122" fileid="37" />
+Coverlet onAltCover.Recorder.Counter::addSingleVisit
+<SequencePoint vc="20" uspid="328" ordinal="4" sl="328" sc="1" el="328" ec="2" bec="2" bev="2" fileid="1" />
+<BranchPoint vc="10" uspid="328" ordinal="0" path="0" offset="41" offsetend="47" sl="328" fileid="1" />
+*)
 
   let mergePoints files modu tracked (sps:('a*XElement seq) seq) =
     let (vc, np) = sps

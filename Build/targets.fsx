@@ -1019,7 +1019,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
       ]
 
     let xml =
-      ("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" :: l)
+      l
       |> Seq.fold (fun l f ->
            let here = Path.GetDirectoryName f
            let tr = here @@ "TestResults"
