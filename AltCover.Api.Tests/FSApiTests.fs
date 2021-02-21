@@ -555,9 +555,9 @@ module FSApiTests =
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
     let summary = merge.Root.Element(XName.Get "Summary")
 
-    printfn "%A" merge
+    // printfn "%A" merge
 
-    test <@ summary.ToString() = """<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />""" @>
+    test <@ summary.ToString() = "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />" @>
 
 #if SOURCEMAP
   let SolutionDir() =

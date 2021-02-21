@@ -5,7 +5,6 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
-open System.Linq
 open System.Xml.Linq
 open System.Xml.Schema
 
@@ -342,8 +341,6 @@ module OpenCover =
       VisitedSequencePoints : int
       NumBranchPoints : int
       VisitedBranchPoints : int
-      //sequenceCoverage="39.29"
-      //branchCoverage="33.33"
       MaxCyclomaticComplexity : int
       MinCyclomaticComplexity : int Option
       VisitedClasses : int
@@ -440,17 +437,41 @@ module OpenCover =
     then summed
     else fallback
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let mapFile (files : Map<string, int>) (a:XAttribute) (modu:XElement) =
       let oldfile = a.Value
       let source = modu.Descendants(XName.Get "File")
                   |> Seq.find(fun f -> f.Attribute(XName.Get "uid").Value = oldfile)
       Map.find (source.Attribute(XName.Get "fullPath").Value) files
 
-  let mergePoints files modu tracked sps =
-    [||]
+  let fixPoint files modu tracked (group:XElement seq) =
+    let r = group |> Seq.head
+    let mc = group |> mergeCounts
+    let np0 = XElement r
+    np0.SetAttributeValue(XName.Get "vc", mc)
+    group
+    |> Seq.map (fun x -> x.Attribute(XName.Get "fileid"))
+    |> Seq.filter (isNull >> not)
+    |> Seq.tryHead
+    |> Option.iter (fun a ->
+    let newfile = mapFile files a modu
+    np0.SetAttributeValue(XName.Get "fileid", newfile))
 
-  let mergeBranches files modu tracked bps =
-    [||]
+    // TODO tracking
+    ignore tracked
+
+    (mc, np0)
+
+  let mergePoints files modu tracked (sps:('a*XElement seq) seq) =
+    let (vc, np) = sps
+                   |> Seq.fold(fun (count, points) group ->
+                     let g = group |> snd
+                     let (mc, np0) = fixPoint files modu tracked g
+                     (count + if mc > 0 then 1 else 0), np0::points
+                   ) (0, [])
+    (vc, np |> Seq.toArray)
 
   let mergeMethods (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
@@ -488,7 +509,7 @@ module OpenCover =
                                                     s |> attributeOrEmpty "sc"
                                                     |> Int32.TryParse |> snd)
 
-                 let newsps = mergePoints files modu tracked sps
+                 let (vs, newsps) = mergePoints files modu tracked sps
                  sp.Add newsps
 
                  let bp = XElement(XName.Get "BranchPoints")
@@ -497,8 +518,10 @@ module OpenCover =
                            |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
                            |> Seq.groupBy ((attributeOrEmpty "offset") >> Int32.TryParse >> snd)
 
-                 let newbps = mergeBranches files modu tracked bps
+                 let (vb, newbps) = mergePoints files modu tracked bps
                  bp.Add newbps
+
+                 // TODO bec, bev
 
                  let mpn = XName.Get "MethodPoint"
                  let methodPoints = group |> snd
@@ -539,10 +562,42 @@ module OpenCover =
                  merge.SetAttributeValue(XName.Get "visited",
                     if mpv > 0 then "true" else "false")
 
-                 (ss.Add(Summary.Create()), merge :: xx))
+                 merge.SetAttributeValue (XName.Get "sequenceCoverage",
+                   percent vs newsps.Length)
 
-            //<Method visited="true" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
-            //  <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="1" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
+                 merge.SetAttributeValue (XName.Get "branchCoverage",
+                   percent vb newbps.Length)
+
+                 let cc = attributeOrEmpty "cyclomaticComplexity" rep
+                          |> Int32.TryParse |> snd
+
+                 let ratio = if newsps.Length = 0
+                             then 0.0
+                             else (float vs) / (float newsps.Length)
+
+                 let crap = Math.Pow(float cc, 2.0) *
+                            Math.Pow((1.0 - ratio), 3.0)
+                            + (float cc)
+
+                 let summary =
+                      {
+                        NumSequencePoints = newsps.Length
+                        VisitedSequencePoints = vs
+                        NumBranchPoints = newbps.Length
+                        VisitedBranchPoints = vb
+                        MaxCyclomaticComplexity = cc
+                        MinCyclomaticComplexity = Some cc
+                        VisitedClasses = 0
+                        NumClasses = 0
+                        VisitedMethods = if mpv > 0 then 1 else 0
+                        NumMethods = 1
+                        MinCrapScore = Some crap
+                        MaxCrapScore = crap
+                      }
+
+                 summary.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> sm.Add
+
+                 (ss.Add summary, merge :: xx))
                    (Summary.Create(), [])
 
     (s, x |> List.toArray)
@@ -566,9 +621,15 @@ module OpenCover =
 
                  let (msum, merged) = mergeMethods files tracked methods
                  mm.Add merged
-                 msum.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> sm.Add
 
-                 (ss.Add(msum), mc::xx))
+                 let classVisit = { msum with
+                                           NumClasses = 1
+                                           VisitedClasses = if msum.VisitedMethods > 0
+                                                            then 1 else 0 }
+
+                 classVisit.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> sm.Add
+
+                 (ss.Add(classVisit), mc::xx))
                    (Summary.Create(), [])
 
     (s, x |> List.toArray)
@@ -644,7 +705,7 @@ module OpenCover =
 
     (msummary, merge)
 
-  let accumulate r s rvalue svalue =
+  let accumulate rvalue svalue =
     if svalue |> String.IsNullOrWhiteSpace
     then rvalue
     else svalue
@@ -653,9 +714,9 @@ module OpenCover =
     records
     |> Seq.fold (fun state r ->
       { state with
-            Hash = accumulate r state r.Hash state.Hash
-            Token = accumulate r state r.Token state.Token
-            Name = accumulate r state r.Name state.Name
+            Hash = accumulate r.Hash state.Hash
+            Token = accumulate r.Token state.Token
+            Name = accumulate r.Name state.Name
             Strategy = r.Strategy @ state.Strategy
             Entry = r.Entry @ state.Entry
             Exit = r.Exit @ state.Exit
