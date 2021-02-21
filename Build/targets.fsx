@@ -855,17 +855,6 @@ _Target "FxCop" (fun _ ->
 _Target "UnitTest" (fun _ ->
   let reports = Path.getFullName "./_Reports"
 
-  let xmlreports =
-    [
-        "UnitTestWithAltCoverRunner.xml"
-        "ApiTestWithAltCoverRunner.xml"
-        "ValidateGendarmeEmulationWithAltCoverRunner.xml"
-        "RecorderTestWithAltCoverRunner.xml"
-        "RecorderTest2WithAltCoverRunner.xml"
-        "Pester.xml"
-        "MonitorTestWithAltCoverCoreRunner.net5.0.xml" //"MonitorTestWithAltCoverRunner.xml"
-    ] |> List.map (fun report -> reports @@ report)
-
   CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/merge-coverage.ps1" ]
   |> CreateProcess.withWorkingDirectory "."
   |> Proc.run
