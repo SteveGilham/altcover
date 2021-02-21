@@ -446,10 +446,15 @@ module OpenCover =
                   |> Seq.find(fun f -> f.Attribute(XName.Get "uid").Value = oldfile)
       Map.find (source.Attribute(XName.Get "fullPath").Value) files
 
+  let mergePoints files modu tracked sps =
+    [||]
+
+  let mergeBranches files modu tracked bps =
+    [||]
+
   let mergeMethods (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
                    (methods : (string * XElement seq) seq) : (Summary * XElement array) =
-    printfn "todo %A" tracked
     let s,x = methods
               |> Seq.fold (fun (ss:Summary,xx) group ->
                  let rep = group |> snd |> Seq.head
@@ -476,7 +481,24 @@ module OpenCover =
                              fr0.SetAttributeValue(XName.Get "uid", newfile)
                              fr0)
                  let sp = XElement(XName.Get "SequencePoints")
+                 let sps = group |> snd
+                           |> Seq.collect (fun m -> m.Descendants(XName.Get "SequencePoint"))
+                           |> Seq.groupBy (fun s -> s |> attributeOrEmpty "sl"
+                                                    |> Int32.TryParse |> snd,
+                                                    s |> attributeOrEmpty "sc"
+                                                    |> Int32.TryParse |> snd)
+
+                 let newsps = mergePoints files modu tracked sps
+                 sp.Add newsps
+
                  let bp = XElement(XName.Get "BranchPoints")
+
+                 let bps = group |> snd
+                           |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
+                           |> Seq.groupBy ((attributeOrEmpty "offset") >> Int32.TryParse >> snd)
+
+                 let newbps = mergeBranches files modu tracked bps
+                 bp.Add newbps
 
                  let mpn = XName.Get "MethodPoint"
                  let methodPoints = group |> snd
