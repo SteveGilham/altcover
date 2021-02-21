@@ -667,24 +667,32 @@ Describe "ConvertFrom-CoverageJson" {
 
 Describe "MergeOpenCover" {
   It "Absorbs Unsupported Xml Files" {
-    $xml = dir -recurse "./Tests/*.cobertura" | Merge-MergeOpenCover
+    $xml = dir -recurse "./AltCover.Tests/*.cobertura" | Merge-OpenCover
     $xml | Should -BeOfType [xdoc]
-    $xml.ToString() | Should -BeFalse
+
+    $expected = @"
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" />
+  <Modules />
+</CoverageSession>
+"@
+
+    $xml.ToString().Replace("`r", "") | Should -BeExactly $expected.Trim().Replace("`r", "")
   }
 
   It "Selects Single OpenCover Files" {
-    $files = ("./Tests/HandRolledMonoCoverage.xml", "./Tests/Sample1WithNCover.xml","./Tests/OpenCover.cobertura")
-    $xml = $files | Merge-MergeOpenCover
+    $files = ("./AltCover.Tests/HandRolledMonoCoverage.xml", "./AltCover.Tests/Sample1WithNCover.xml","./AltCover.Tests/OpenCover.cobertura")
+    $xml = $files | Merge-OpenCover
        $xml | Should -BeOfType [xdoc]
-       $expected = [xdoc]::Load("./Tests/HandRolledMonoCoverage.xml")
+       $expected = [xdoc]::Load("./AltCover.Tests/HandRolledMonoCoverage.xml")
        $xml.ToString() | Should -BeExactly $expected.ToString().Replace(' standalone="yes"', '')
   }
 
   It "Combines Top Level Summaries" {
-    $files = ("./Tests/HandRolledMonoCoverage.xml", "./Tests/Sample4.Prepare.xml")
-    $xml = $files | Merge-MergeOpenCover -OutputFile "./_Packaging/OpenCoverCombination-1.xml"
+    $files = ("./AltCover.Tests/HandRolledMonoCoverage.xml", "./AltCover.Tests/Sample4FullTracking.xml")
+    $xml = $files | Merge-OpenCover -OutputFile "./_Packaging/OpenCoverCombination-1.xml"
     $xml | Should -BeOfType [xdoc]
     $summary = ($xml.Descendants("Summary") | Select-Object -First 1).ToString()
-    $summary | Should -BeExactly '<Summary numSequencePoints="36" visitedSequencePoints="0" numBranchPoints="17" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="7" visitedMethods="0" numMethods="11" minCrapScore="0" maxCrapScore="0" />'
+    $summary | Should -BeExactly '<Summary numSequencePoints="35" visitedSequencePoints="21" numBranchPoints="5" visitedBranchPoints="5" sequenceCoverage="60.00" branchCoverage="100.00" maxCyclomaticComplexity="7" minCyclomaticComplexity="1" visitedClasses="5" numClasses="8" visitedMethods="9" numMethods="13" minCrapScore="1.00" maxCrapScore="14.11" />'
   }
 }

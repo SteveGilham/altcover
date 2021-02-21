@@ -54,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		.github\workflows\main.yml = .github\workflows\main.yml
 		Build\msbuildtest.proj = Build\msbuildtest.proj
 		Build\pester.ps1 = Build\pester.ps1
+		Build\merge-coverage.ps1 = Build\merge-coverage.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\prepareDocumentation.ps1 = Build\prepareDocumentation.ps1
 		Build\Recorder.snk = Build\Recorder.snk

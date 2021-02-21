@@ -317,6 +317,7 @@ module OpenCover =
       new StringReader("""<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" /><Modules /></CoverageSession>""")
     XDocument.Load(reader)
 
+  [<NoComparison;NoEquality>]
   type TrackedMethod =
     {
         Hash : string
@@ -706,9 +707,9 @@ module OpenCover =
     (msummary, merge)
 
   let accumulate rvalue svalue =
-    if svalue |> String.IsNullOrWhiteSpace
-    then rvalue
-    else svalue
+    [svalue; rvalue]
+    |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+    |> Seq.head
 
   let mergeTrackedMethods index records =
     records

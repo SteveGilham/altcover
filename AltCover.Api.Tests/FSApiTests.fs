@@ -527,11 +527,13 @@ module FSApiTests =
     let doc2 = XDocument.Load stream2
 
     let merge = AltCover.OpenCover.Merge [doc1; doc2]
-    let ma = typeof<AltCover.BranchOrdinal>.Assembly
-    // not part of the API exposed by the .fsi file
-    let mi = ma.GetType("AltCover.OpenCover").GetMethod("blankOpenCover",
-                         BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Static)
-    let expected = mi.Invoke(null, [||])
+    let lines =  [
+                        """<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">"""
+                        """  <Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" />"""
+                        """  <Modules />"""
+                        """</CoverageSession>"""
+                    ]
+    let expected = String.Join(Environment.NewLine, lines)
     test <@ merge.ToString() = expected.ToString() @>
 
   [<Test>]

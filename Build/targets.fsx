@@ -866,35 +866,19 @@ _Target "UnitTest" (fun _ ->
         "MonitorTestWithAltCoverCoreRunner.net5.0.xml" //"MonitorTestWithAltCoverRunner.xml"
     ] |> List.map (fun report -> reports @@ report)
 
-  let reportLines = xmlreports |> List.map File.ReadAllLines
-
-  let top =
-    reportLines
-    |> List.head
-    |> Seq.takeWhile (fun l -> l.StartsWith("    <Module") |> not)
-  let tail =
-    reportLines
-    |> List.head
-    |> Seq.skipWhile (fun l -> l <> "  </Modules>")
-  let core =
-    reportLines
-    |> List.map (fun f ->
-         f
-         |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-         |> Seq.takeWhile (fun l -> l <> "  </Modules>"))
+  CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/merge-coverage.ps1" ]
+  |> CreateProcess.withWorkingDirectory "."
+  |> Proc.run
+  |> (Actions.AssertResult "pwsh")
 
   let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
-  File.WriteAllLines
-    (coverage,
-     Seq.concat
-       [ top
-         Seq.concat core
-         tail ]
-     |> Seq.toArray)
 
-  let coveralls =
-    ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
-    |> Path.getFullName
+  ReportGenerator.generateReports (fun p ->
+      { p with
+          ToolType = ToolType.CreateLocalTool()
+          ReportTypes =
+            [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+          TargetDir = "_Reports/_Coveralls" }) [ coverage ]
 
   if Environment.isWindows &&
      [
@@ -902,6 +886,9 @@ _Target "UnitTest" (fun _ ->
        "GITHUB_RUN_NUMBER"
      ] |> List.exists (Environment.environVar >> String.IsNullOrWhiteSpace >> not)
   then
+    let coveralls =
+      ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
+      |> Path.getFullName
     Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage; "--debug" ])
       "Coveralls upload failed"
 
