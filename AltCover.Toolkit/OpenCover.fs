@@ -449,6 +449,19 @@ module OpenCover =
                   |> Seq.find(fun f -> f.Attribute(XName.Get "uid").Value = oldfile)
       Map.find (source.Attribute(XName.Get "fullPath").Value) files
 
+                             //  hash, token
+  let mapTracking (tracked : Map<string*string, TrackedMethod>) (x:XElement)=
+    let key = attributeOrEmpty "uid" x
+    let tm = x.Ancestors(XName.Get "CoverageSession")
+             |> Seq.collect (fun c -> c.Descendants(XName.Get "TrackedMethod"))
+             |> Seq.find (fun t -> (attributeOrEmpty "uid" t) = key)
+    let token = attributeOrEmpty "token" tm
+    let hash = attributeOrEmpty "hash" tm.Parent.Parent
+    let tm = Map.find (hash, token) tracked
+    let result = XElement(x)
+    result.SetAttributeValue(XName.Get "uid", tm.Uid)
+    result
+
   let fixPoint files modu tracked (group:XElement seq) =
     let r = group |> Seq.head
     let mc = group |> mergeCounts
@@ -462,8 +475,48 @@ module OpenCover =
     let newfile = mapFile files a modu
     np0.SetAttributeValue(XName.Get "fileid", newfile))
 
-    // TODO tracking
-    ignore tracked
+    let times = group
+                |> Seq.collect (fun p -> p.Descendants(XName.Get "Time"))
+                |> Seq.groupBy (attributeOrEmpty "time")
+                |> Seq.map (fun (t, x) -> t, x |> mergeCounts)
+                |> Seq.filter (fun (_, x) -> x > 0)
+                |> Seq.map (fun (t, x) -> XElement(XName.Get "Time",
+                                                   XAttribute(XName.Get "time", t),
+                                                   XAttribute(XName.Get "vc", x)))
+
+    np0.Elements(XName.Get "Times")
+    |> Seq.toList
+    |> Seq.iter (fun t -> t.Remove())
+
+    let tracks = group
+                 |> Seq.collect (fun p -> p.Descendants(XName.Get "TrackedMethodRef"))
+                 |> Seq.map (mapTracking tracked)
+                 |> Seq.groupBy (attributeOrEmpty "uid")
+                 |> Seq.map (fun (t, x) -> t, x |> mergeCounts)
+                 |> Seq.filter (fun (_, x) -> x > 0)
+                 |> Seq.map (fun (t, x) -> XElement(XName.Get "TrackedMethodRef",
+                                                    XAttribute(XName.Get "uid", t),
+                                                    XAttribute(XName.Get "vc", x)))
+
+    np0.Elements(XName.Get "TrackedMethodRefs")
+    |> Seq.toList
+    |> Seq.iter (fun t -> t.Remove())
+
+    if times |> Seq.isEmpty |> not
+    then
+      let t = XElement(XName.Get "Times")
+      times
+      |> Seq.toArray
+      |> t.Add
+      np0.Add t
+
+    if tracks |> Seq.isEmpty |> not
+    then
+      let t = XElement(XName.Get "TrackedMethodRefs")
+      times
+      |> Seq.toArray
+      |> t.Add
+      np0.Add t
 
     (mc, np0)
 (*
@@ -530,7 +583,10 @@ Coverlet onAltCover.Recorder.Counter::addSingleVisit
 
                  let bps = group |> snd
                            |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
-                           |> Seq.groupBy ((attributeOrEmpty "offset") >> Int32.TryParse >> snd)
+                           |> Seq.groupBy (fun s -> s |> attributeOrEmpty "offset"
+                                                    |> Int32.TryParse |> snd,
+                                                    s |> attributeOrEmpty "endoffset"
+                                                    |> Int32.TryParse |> snd)
 
                  let (vb, newbps) = mergePoints files modu tracked bps
                  bp.Add newbps
