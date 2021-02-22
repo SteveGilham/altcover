@@ -540,6 +540,42 @@ Coverlet onAltCover.Recorder.Counter::addSingleVisit
                    ) (0, [])
     (vc, np |> Seq.toArray)
 
+  let branchEntryHeuristic newsps newbps =
+    let lines = newsps
+                |> Seq.groupBy (attributeOrEmpty "sl")
+                |> Seq.map (fun (l,x) ->
+                l |> Int32.TryParse |> snd,
+                x
+                |> Seq.sortBy ((attributeOrEmpty "sc") >> Int32.TryParse >> snd)
+                |> Seq.head)
+
+    let branches = newbps
+                  |> Seq.map (fun b ->
+                      (b |> (attributeOrEmpty "sl") |> Int32.TryParse |> snd), b)
+
+    let interleave = [
+                      lines
+                      branches
+                     ]
+                     |> Seq.concat
+                     |> Seq.sortBy (fun (n, x) ->
+                       (n <<< 1) + (if x.Name.LocalName = "SequencePoint"
+                                    then 0 else 1))
+                     |> Seq.map snd
+                     |> Seq.toList
+
+    interleave
+    |> Seq.fold (fun (bev, sq:XElement) x ->
+          match x.Name.LocalName with
+          | "SequencePoint" ->
+              sq.SetAttributeValue(XName.Get "bev", bev)
+              (0, x)
+          | _ ->
+              (bev + (if attributeOrEmpty "vc" x
+                        |> Int32.TryParse |> snd > 0 then 1 else 0), sq))
+          (0, interleave |> Seq.head)
+    |> ignore
+
   let mergeMethods (files : Map<string, int>)
                    (tracked : Map<string*string, TrackedMethod>)
                    (methods : (string * XElement seq) seq) : (Summary * XElement array) =
@@ -591,7 +627,15 @@ Coverlet onAltCover.Recorder.Counter::addSingleVisit
                  let (vb, newbps) = mergePoints files modu tracked bps
                  bp.Add newbps
 
-                 // TODO bec, bev
+                 // bec, bev heuristic
+                 newsps
+                 |> Seq.iter(fun s -> s.SetAttributeValue(XName.Get "bec", 0)
+                                      s.SetAttributeValue(XName.Get "bev", 0))
+
+                 if newsps |> Seq.isEmpty |> not &&
+                    newbps |> Seq.isEmpty |> not
+                 then
+                    branchEntryHeuristic newsps newbps
 
                  let mpn = XName.Get "MethodPoint"
                  let methodPoints = group |> snd
