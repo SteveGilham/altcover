@@ -188,6 +188,9 @@ let nunitConsole =
 let xmldoc2cmdletdoc =
   ("./packages/" + (packageVersion "XmlDoc2CmdletDoc") + "/tools/netcoreapp2.1/XmlDoc2CmdletDoc.dll")
   |> Path.getFullName
+let coverletcollector =
+  ("./packages/" + (packageVersion "coverlet.collector") + "/build/netstandard1.0/coverlet.collector.dll")
+  |> Path.getFullName
 
 let cliArguments =
   { MSBuild.CliArguments.Create() with
@@ -257,7 +260,7 @@ let coverletTestOptions (o : DotNet.TestOptions) =
       Configuration = DotNet.BuildConfiguration.Debug
       NoBuild = true
       Framework = Some "net5.0"
-      Settings = Some "./Build/coverletArgs.runsettings" }
+      Settings = Some "./_Generated/coverletArgs.runsettings" }
   |> testWithCLIArguments
 
 let coverletTestOptionsSample (o : DotNet.TestOptions) =
@@ -510,7 +513,13 @@ module SolutionRoot =
                          let value = d.Descendants(XName.Get "value")
                                      |> Seq.head
                          resw.AddResource(key, value.Value))
-    resw.Close()  )
+    resw.Close()
+
+  let text = File.ReadAllText "./Build/coverletArgs.runsettings"
+  let name = System.Reflection.AssemblyName.GetAssemblyName coverletcollector
+  let newtext = String.Format(text, name.Version, name.FullName, coverletcollector)
+  File.WriteAllText("./_Generated/coverletArgs.runsettings" , newtext)
+)
 
 // Basic compilation
 
@@ -4902,7 +4911,7 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-// ==> "UnitTest" // unreliable
+==> "UnitTest"
 
 "JustUnitTest"
 ==> "UncoveredUnitTest"
