@@ -526,9 +526,10 @@ OpenCover on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCov
 AltCover on ditto
 <SequencePoint vc="5" uspid="8578" ordinal="6" offset="96" sl="2626" sc="12" el="2629" ec="16" bec="2" bev="1" fileid="37" />
 <BranchPoint vc="5" uspid="1687" ordinal="0" offset="116" sl="2626" path="0" offsetchain="118" offsetend="122" fileid="37" />
-Coverlet onAltCover.Recorder.Counter::addSingleVisit
-<SequencePoint vc="20" uspid="328" ordinal="4" sl="328" sc="1" el="328" ec="2" bec="2" bev="2" fileid="1" />
-<BranchPoint vc="10" uspid="328" ordinal="0" path="0" offset="41" offsetend="47" sl="328" fileid="1" />
+coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCoverState@2619-4::Invoke -- empty class
+coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCoverState
+<SequencePoint vc="5" uspid="2626" ordinal="41" sl="2626" sc="1" el="2626" ec="2" bec="0" bev="0" fileid="37" /> (flattened, lambda branch lost)
+<BranchPoint vc="1" uspid="2612" ordinal="3" path="1" offset="301" offsetend="338" sl="2612" fileid="37" />(sample branch)
 *)
 
   let mergePoints files modu tracked (sps:('a*XElement seq) seq) =
