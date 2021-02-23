@@ -821,7 +821,9 @@ module AltCoverTests =
 
       CoverageParameters.local := false
       CoverageParameters.nameFilters.Clear()
-      let fscore = Path.Combine(SolutionDir(), "packages/FSharp.Core.4.5.2/lib/net45") // stable retro version
+      let fscore = Path.Combine(SolutionDir(), "packages/FSharp.Core." +
+                                                      (libPackages.Item "fsharp.core") +
+                                                      "/lib/net40")
       let mono = Path.Combine(SolutionDir(), "packages/Mono.Cecil." +
                                                       (libPackages.Item "mono.cecil") +
                                                       "/lib/net40")
