@@ -4902,7 +4902,7 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-// ==> "UnitTest" // unreliable
+==> "UnitTest"
 
 "JustUnitTest"
 ==> "UncoveredUnitTest"
