@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.1">
-      <IncludeAssets>build</IncludeAssets>
+      <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 </Project>
