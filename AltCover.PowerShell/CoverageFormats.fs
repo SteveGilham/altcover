@@ -356,10 +356,10 @@ type ConvertFromNCoverCommand() =
 /// <para type="description">Adds or updates summary data and other computed items in the OpenCover format report.</para>
 /// <para type="description">In  `-Coverlet` mode, also fills in some of the gaps left by `coverlet`'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.</para>
 /// <example>
-///   <code>    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"</code>
+///   <code>    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"</code>
 /// </example>
 /// <example>
-///   <code>    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"</code>
+///   <code>    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"</code>
 /// </example>
 /// </summary>
 [<Cmdlet(VerbsCommunications.Write, "OpenCoverDerivedState")>]

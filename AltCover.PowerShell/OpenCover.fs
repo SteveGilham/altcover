@@ -99,7 +99,12 @@ type CompressBranchingCommand() =
 
 /// <summary>
 /// <para type="synopsis">Merges OpenCover reports.</para>
-/// <para type="description">Takes a set of OpenCover reports and crates a composite</para>
+/// <para type="description">Takes a set of OpenCover reports and crates a composite.  It handles
+/// both strict (`OpenCover`, `AltCover --reportFormat=OpenCover`) and more relaxed (`coverlet`,
+/// `ConvertFrom-CoverageJson`, `Write-OpenCoverDerivedState -Coverlet`) interpretations of the
+/// format, which may lead to a not-quite strict result.  Note -- Module records are merged only
+/// if their hash values match, so output from different builds & possibly different source will
+/// be kept distinct.</para>
 /// <example>
 ///   <code>    $xml = $docs | Merge-OpenCover -OutputFile "./_Packaging/Combined.xml"</code>
 /// </example>
