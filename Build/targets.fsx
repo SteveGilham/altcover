@@ -1262,7 +1262,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   |> printfn "%A uncovered lines")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
-  Directory.ensure "./_Reports/_UnitTestWithAltCover"
+  Directory.ensure "./_Reports/_UnitTestWithAltCoverRunner"
 
   // Tools
   let keyfile = Path.getFullName "Build/SelfTest.snk"

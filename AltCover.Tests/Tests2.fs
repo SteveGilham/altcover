@@ -1352,12 +1352,11 @@ module AltCoverTests2 =
       finally
         CoverageParameters.nameFilters.Clear()
         CoverageParameters.theReportFormat <- None
-#if !COVERLET
+
     [<Test>]
     let StartShouldLoadRecordingAssembly () =
       let def = Instrument.I.instrumentationVisitor (InstrumentContext.Build []) (Start [])
       Assert.That (def.RecordingAssembly.Name.Name, Is.EqualTo "AltCover.Recorder.g")
-#endif
 
     [<Test>]
     let TypeShouldNotChangeState() =
