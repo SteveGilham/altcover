@@ -17,4 +17,16 @@
       </DataCollector>
     </DataCollectors>
   </DataCollectionRunSettings>
+  <InProcDataCollectionRunSettings>
+    <InProcDataCollectors>
+      <InProcDataCollector friendlyName="XPlat code coverage" 
+                           uri="InProcDataCollector://coverlet/collector/3.0.0.0"
+                           assemblyQualifiedName="Coverlet.Collector.DataCollection.CoverletInProcDataCollector, coverlet.collector, Version=3.0.0.0, Culture=neutral, PublicKeyToken=4beb1ad7f05a1c71"
+                           codebase="C:\Users\steve\.nuget\packages\coverlet.collector\3.0.3\build\netstandard1.0\coverlet.collector.dll">
+        <Configuration>
+          <Offload>true</Offload>
+        </Configuration>
+      </InProcDataCollector>
+    </InProcDataCollectors>
+  </InProcDataCollectionRunSettings>
 </RunSettings>
