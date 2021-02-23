@@ -99,7 +99,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
