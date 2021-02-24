@@ -10,6 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
+    </Compile>
     <Compile Include="..\AltCover.Tests\Expecto.fs" Link="Expecto.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
