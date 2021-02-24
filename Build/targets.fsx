@@ -464,27 +464,46 @@ _Target "SetVersion" (fun _ ->
   let v' = !Version
 
   [ "./_Generated/AssemblyVersion.fs"; "./_Generated/AssemblyVersion.cs" ]
-  |> List.iter (fun file ->
-       AssemblyInfoFile.create file
-         [ AssemblyInfo.Product "AltCover"
-           AssemblyInfo.Version(majmin + ".0.0")
-           AssemblyInfo.FileVersion v'
-           AssemblyInfo.Company "Steve Gilham"
-           AssemblyInfo.Trademark ""
-           AssemblyInfo.InformationalVersion(infoV)
-           AssemblyInfo.Copyright copy ] (Some AssemblyInfoFileConfig.Default))
-  printfn "%A" AssemblyInfoFileConfig.Default
-  let lite = AssemblyInfoFileConfig(false)
-  [ "./_Generated/AssemblyVersionLite.fs"; "./_Generated/AssemblyVersionList.cs" ]
-  |> List.iter (fun file ->
-       AssemblyInfoFile.create file
-         [ AssemblyInfo.Product "AltCover"
-           AssemblyInfo.Version(majmin + ".0.0")
-           AssemblyInfo.FileVersion v'
-           AssemblyInfo.Company "Steve Gilham"
-           AssemblyInfo.Trademark ""
-           AssemblyInfo.InformationalVersion(infoV)
-           AssemblyInfo.Copyright copy ] (Some lite))
+  |> List.iter (fun f ->
+    let from = ("./Build" @@ (Path.GetFileName f)) + ".txt"
+    let text = File.ReadAllText from
+    let newtext = String.Format(text,
+                                  majmin,
+                                  v',
+                                  commitHash,
+                                  Information.getBranchName("."),
+                                  y)
+    File.WriteAllText(f , newtext)
+  )
+
+  //let assemblyAttributes =
+  //       [ AssemblyInfo.Product "AltCover"
+  //         AssemblyInfo.Version(majmin + ".0.0")
+  //         AssemblyInfo.FileVersion v'
+  //         AssemblyInfo.Company "Steve Gilham"
+  //         AssemblyInfo.Trademark ""
+  //         AssemblyInfo.InformationalVersion(infoV)
+  //         AssemblyInfo.Copyright copy
+  //         // Not available in net20 for recorder
+  //         // .fs would need post-processing
+  //         AssemblyInfo.Metadata("RepositoryUrl", "https://github.com/SteveGilham/altcover")
+  //         AssemblyInfo.Metadata("CommitHash", commitHash)
+  //         AssemblyInfo.Metadata("Branch", Information.getBranchName("."))
+  //       ]
+  //assemblyAttributes
+  //|> List.map (fun a -> a.GetType().FullName)
+  //|> List.iter (printfn "%A")
+
+  //[ "./_Generated/AssemblyVersion.fs"; "./_Generated/AssemblyVersion.cs" ]
+  //|> List.iter (fun file ->
+  //     AssemblyInfoFile.create file assemblyAttributes (Some AssemblyInfoFileConfig.Default))
+  //printfn "%A" AssemblyInfoFileConfig.Default
+
+  //let lite = AssemblyInfoFileConfig(false)
+  //[ "./_Generated/AssemblyVersionLite.fs"; "./_Generated/AssemblyVersionLite.cs" ]
+  //|> List.iter (fun file ->
+  //     AssemblyInfoFile.create file assemblyAttributes (Some lite))
+
   let hack = """namespace AltCover
 module SolutionRoot =
   let location = """ + "\"\"\"" + (Path.getFullName ".") + "\"\"\""
