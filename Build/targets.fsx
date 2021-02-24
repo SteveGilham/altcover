@@ -461,7 +461,6 @@ _Target "SetVersion" (fun _ ->
   Directory.ensure "./_Generated"
   Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
   Actions.InternalsVisibleTo(!Version)
-  let v' = !Version
 
   [ "./_Generated/AssemblyVersion.fs"; "./_Generated/AssemblyVersion.cs" ]
   |> List.iter (fun f ->
@@ -469,13 +468,14 @@ _Target "SetVersion" (fun _ ->
     let text = File.ReadAllText from
     let newtext = String.Format(text,
                                   majmin,
-                                  v',
+                                  (!Version).Split([| '-' |]).[0],
                                   commitHash,
                                   Information.getBranchName("."),
                                   y)
     File.WriteAllText(f , newtext)
   )
 
+  //let v' = !Version
   //let assemblyAttributes =
   //       [ AssemblyInfo.Product "AltCover"
   //         AssemblyInfo.Version(majmin + ".0.0")
