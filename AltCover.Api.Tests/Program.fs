@@ -29,7 +29,7 @@ module ExpectoMain =
           Tests.FSApiTests.MergeRejectsNonCoverage, "FSApiTests.MergeRejectsNonCoverage"
           Tests.FSApiTests.MergePassesSingleOpenCover, "FSApiTests.MergePassesSingleOpenCover"
           Tests.FSApiTests.MergeCombinesSummaryCoverage, "FSApiTests.MergeCombinesSummaryCoverage"
-          Tests.FSApiTests.MergeCombinesSummaryCoverage, "FSApiTests.MergeCombinesRepeatCoverage"
+          Tests.FSApiTests.MergeCombinesRepeatCoverage, "FSApiTests.MergeCombinesRepeatCoverage"
 #if SOURCEMAP
           Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
           Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
