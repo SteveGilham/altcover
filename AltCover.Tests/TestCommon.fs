@@ -168,7 +168,7 @@ module ExpectoTestCommon =
 
   let makeTests name (check:unit -> unit) (regular:((unit -> unit)*string) list) specials pretest =
     testList name
-    <| (((check, "ConsistencyCheck") :: regular
+    <| (((check, "TestCommonTests.ConsistencyCheck") :: regular
         |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
                                                               pretest()
                                                               try
