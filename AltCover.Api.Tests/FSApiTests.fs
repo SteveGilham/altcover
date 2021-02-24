@@ -554,12 +554,34 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.Merge [doc1; doc2]
+    let merge = AltCover.OpenCover.Merge [doc1; doc2; doc1; doc2]
     let summary = merge.Root.Element(XName.Get "Summary")
 
     // printfn "%A" merge
 
     test <@ summary.ToString() = "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />" @>
+
+    // TODO -- recursive validation
+
+  [<Test>]
+  let MergeCombinesRepeatCoverage() =
+    use stream1 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4.Prepare.xml")
+    let doc1 = XDocument.Load stream1
+
+    // relabelled data from a different build -- but it still merges togother plausibly
+    use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.Sample4FullTracking.xml")
+    let doc2 = XDocument.Load stream2
+
+    let merge = AltCover.OpenCover.Merge [doc1; doc2]
+    let summary = merge.Root.Element(XName.Get "Summary")
+
+    // printfn "%A" merge
+
+    test <@ summary.ToString() = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"4\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />" @>
+
+    // TODO -- recursive validation
 
 #if SOURCEMAP
   let SolutionDir() =

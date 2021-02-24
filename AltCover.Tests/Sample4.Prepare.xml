@@ -2,13 +2,13 @@
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Summary numSequencePoints="22" visitedSequencePoints="0" numBranchPoints="14" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="6" visitedMethods="0" numMethods="10" minCrapScore="0" maxCrapScore="0" />
   <Modules>
-    <Module hash="29-1D-19-F6-F3-E2-3E-33-08-36-71-2D-53-09-BD-DA-B2-35-AF-08">
+    <Module hash="69-07-14-0A-DA-02-C9-7E-E3-C7-EC-B3-F9-96-79-0E-A4-AF-2A-8D">
       <Summary numSequencePoints="22" visitedSequencePoints="0" numBranchPoints="14" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="0" numClasses="6" visitedMethods="0" numMethods="10" minCrapScore="0" maxCrapScore="0" />
-      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\_Binaries\Sample4\Debug+AnyCPU\__Saved18-09-2018+13-34-47\Sample4.dll</ModulePath>
-      <ModuleTime>2018-09-18T13:21:42.434Z</ModuleTime>
+      <ModulePath>altcover/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll</ModulePath>
+      <ModuleTime>2021-01-23T09:14:51.5044232Z</ModuleTime>
       <ModuleName>Sample4</ModuleName>
       <Files>
-        <File uid="1" fullPath="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+        <File uid="1" fullPath="altcover/Sample4/Tests.fs"/>
       </Files>
       <Classes>
         <Class>

@@ -25,14 +25,15 @@ module ExpectoMain =
           Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
           Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
           Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
-#if SOURCEMAP
-          Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
-          Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
-#endif
           Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
           Tests.FSApiTests.MergeRejectsNonCoverage, "FSApiTests.MergeRejectsNonCoverage"
           Tests.FSApiTests.MergePassesSingleOpenCover, "FSApiTests.MergePassesSingleOpenCover"
           Tests.FSApiTests.MergeCombinesSummaryCoverage, "FSApiTests.MergeCombinesSummaryCoverage"
+          Tests.FSApiTests.MergeCombinesSummaryCoverage, "FSApiTests.MergeCombinesRepeatCoverage"
+#if SOURCEMAP
+          Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
+          Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
+#endif
         ]
 
   let specials =

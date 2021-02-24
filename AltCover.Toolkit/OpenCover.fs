@@ -744,7 +744,10 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
                  classVisit.Xml.Attributes() |> Seq.map XAttribute |> Seq.toArray |> sm.Add
 
-                 (ss.Add(classVisit), mc::xx))
+                 // skip trivial classes
+                 if mm.Descendants() |> Seq.isEmpty
+                 then (ss, xx)
+                 else (ss.Add(classVisit), mc::xx))
                    (Summary.Create(), [])
 
     (s, x |> List.toArray)
