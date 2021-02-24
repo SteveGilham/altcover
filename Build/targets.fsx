@@ -4912,7 +4912,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
-=?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support
+// =?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support; deadweight
 
 "Compilation"
 ==> "UnitTestWithAltCover"
@@ -4920,7 +4920,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
-==> "UnitTest"
+==> "UnitTest" // PoSh coverage
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
@@ -4928,12 +4928,12 @@ Target.activateFinal "ResetConsoleColours"
 
 "Packaging"
 ==> "UnitTestWithAltCoverCoreRunner"
-==> "UnitTest"
+==> "UnitTest" // Monitor coverage
 
 "Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
+==> "UnitTest" // Third party check
 
 "JustUnitTest"
 ==> "UncoveredUnitTest"
