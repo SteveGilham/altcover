@@ -76,7 +76,7 @@
     <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
     <ProjectReference Include="..\AltCover.Toolkit\AltCover.Toolkit.fsproj" />
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
-    <ProjectReference Include="..\Sample18\Sample18.fsproj" />
+    <ProjectReference Include="..\Samples\Sample18\Sample18.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -42,13 +42,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Sample20\Reports\Cobertura_altcover.xml" Link="Reports\Cobertura_altcover.xml" />
-    <EmbeddedResource Include="..\Sample20\Reports\Cobertura_coverlet.xml" Link="Reports\Cobertura_coverlet.xml" />
-    <EmbeddedResource Include="..\Sample20\Reports\NCover1.5.8.xml" Link="Reports\NCover1.5.8.xml" />
-    <EmbeddedResource Include="..\Sample20\Reports\OpenCover.xml" Link="Reports\OpenCover.xml" />
-    <EmbeddedResource Include="..\Sample20\Reports\OpenCoverWithTrackedMethods.xml" Link="Reports\OpenCoverWithTrackedMethods.xml" />
-    <EmbeddedResource Include="..\Sample20\Reports\OpenCover_altcover.xml" Link="Reports\OpenCover_altcover.xml" />
-    <EmbeddedResource Include="..\Sample20\Reports\OpenCover_coverlet.xml" Link="Reports\OpenCover_coverlet.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\Cobertura_altcover.xml" Link="Reports\Cobertura_altcover.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\Cobertura_coverlet.xml" Link="Reports\Cobertura_coverlet.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\NCover1.5.8.xml" Link="Reports\NCover1.5.8.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover.xml" Link="Reports\OpenCover.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCoverWithTrackedMethods.xml" Link="Reports\OpenCoverWithTrackedMethods.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover_altcover.xml" Link="Reports\OpenCover_altcover.xml" />
+    <EmbeddedResource Include="..\Samples\Sample20\Reports\OpenCover_coverlet.xml" Link="Reports\OpenCover_coverlet.xml" />
     <EmbeddedResource Include="Results\Cobertura_coverlet.ncover.xml" />
     <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>

@@ -591,29 +591,28 @@ _Target "BuildRelease" (fun _ ->
 
 _Target "BuildDebug" (fun _ ->
   Directory.ensure "./_SourceLink"
-  Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  if Environment.isWindows then
+  Shell.copyFile "./_SourceLink/Class2.cs" "./Samples/Sample14/Sample14/Class2.txt"
+  (if Environment.isWindows then
     let temp = Environment.environVar "TEMP"
     Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs")
-      "./Sample14/Sample14/Class3.txt"
-  else
+   else
     Directory.ensure "/tmp/.AltCover_SourceLink"
-    Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
-      "./Sample14/Sample14/Class3.txt"
+    Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
+      "./Samples/Sample14/Sample14/Class3.txt"
 
   [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
   [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildDebug MSBuildPath) // net20
   [ "./AltCover.Recorder.sln" ] |> Seq.iter (msbuildRelease MSBuildPath) // net20
-  [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
+  [ "./AltCover.sln"; "./AltCover.Visualizer.sln"; "./Samples/Sample14/Sample14.sln" ] |> Seq.iter dotnetBuildDebug
 
-  Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
+  Shell.copy "./_SourceLink" (!!"./Samples/Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
 
 _Target "BuildMonoSamples" (fun _ ->
-  [ "./Sample8/Sample8.csproj" ] |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
+  [ "./Samples/Sample8/Sample8.csproj" ] |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
 
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1",
-     [ "-debug"; "-out:./_Mono/Sample1/Sample1.exe"; "./Sample1/Program.cs" ])
+     [ "-debug"; "-out:./_Mono/Sample1/Sample1.exe"; "./Samples/Sample1/Program.cs" ])
 
     ("./_Mono/Sample3",
      [ "-target:library"
@@ -621,7 +620,7 @@ _Target "BuildMonoSamples" (fun _ ->
        "-out:./_Mono/Sample3/Sample3.dll"
        "-lib:./packages/Mono.Cecil.0.11.1/lib/net40"
        "-r:Mono.Cecil.dll"
-       "./Sample3/Class1.cs" ]) ]
+       "./Samples/Sample3/Class1.cs" ]) ]
   |> Seq.iter (fun (dir, cmd) ->
        Directory.ensure dir
        ("Mono compilation of '" + String.Join(" ", cmd) + "' failed")
@@ -1709,7 +1708,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   Shell.cleanDir sampleRoot
   "Sample2.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample2") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug
            Framework = Some "netcoreapp2.1" }
        |> testWithCLIArguments)
@@ -1737,7 +1736,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   printfn "Execute the instrumented tests"
   "Sample2.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample2") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug
            Framework = Some "netcoreapp2.1"
            NoBuild = true }
@@ -1756,7 +1755,7 @@ _Target "FSharpTests" (fun _ ->
   Shell.cleanDir sampleRoot
   "Sample7.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample7") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample7") with
            Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
 
   // inplace instrument
@@ -1779,7 +1778,7 @@ _Target "FSharpTests" (fun _ ->
 
   printfn "Execute the instrumented tests"
 
-  let sample7 = Path.getFullName "./Sample7/Sample7.fsproj"
+  let sample7 = Path.getFullName "./Samples/Sample7/Sample7.fsproj"
   let (dotnetexe, args) = defaultDotNetTestCommandLine None sample7
 
   let collect =
@@ -1792,7 +1791,7 @@ _Target "FSharpTests" (fun _ ->
   { AltCoverCommand.Options.Create collect with
       ToolPath = altcover
       ToolType = dotnetAltcover
-      WorkingDirectory = "Sample7" }
+      WorkingDirectory = "Samples/Sample7" }
   |> AltCoverCommand.run)
 
 _Target "AsyncAwaitTests" (fun _ ->
@@ -1807,13 +1806,13 @@ _Target "AsyncAwaitTests" (fun _ ->
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverAsyncAwaitTests.xml")
   let sampleRoot =
-    Path.getFullName "Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
+    Path.getFullName "Samples/Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
   "Sample24.csproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample24") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample24") with
            Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
 
   // instrument
@@ -1836,7 +1835,7 @@ _Target "AsyncAwaitTests" (fun _ ->
 
   printfn "Execute the instrumented tests"
 
-  let sample24 = Path.getFullName "./Sample24/Sample24.csproj"
+  let sample24 = Path.getFullName "./Samples/Sample24/Sample24.csproj"
   let (dotnetexe, args) = defaultDotNetTestCommandLine None sample24
 
   let collect =
@@ -1849,7 +1848,7 @@ _Target "AsyncAwaitTests" (fun _ ->
   { AltCoverCommand.Options.Create collect with
       ToolPath = altcover
       ToolType = dotnetAltcover
-      WorkingDirectory = "Sample24" }
+      WorkingDirectory = "Samples/Sample24" }
   |> AltCoverCommand.run
 
   let coverageDocument = XDocument.Load(XmlReader.Create(simpleReport))
@@ -1872,7 +1871,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
     (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNetRunner.xml")
   let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
   let instrumented =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+    Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   // Instrument the code
   let prep =
@@ -1895,7 +1894,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
   Actions.ValidateFSharpTypes simpleReport [ "main" ]
 
   printfn "Execute the instrumented tests"
-  let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
+  let sample2 = Path.getFullName "./Samples/Sample2/Sample2.fsproj"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample2
 
   let collect =
@@ -1924,13 +1923,13 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   let simpleReport3 =
     (Path.getFullName "./_Reports/unzip2") @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
   let sampleRoot =
-    Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+    Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   printfn "Build and test normally"
   Shell.cleanDir sampleRoot
   "Sample2.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample2") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug } |> testWithCLIArguments)
 
   printfn  "inplace instrument and save"
@@ -1959,7 +1958,7 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   printfn "Execute the instrumented tests"
   "Sample2.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample2") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug
            NoBuild = true }
        |> testWithCLIArguments)
@@ -3143,7 +3142,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
-  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+  let o = Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
   let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
 
   Shell.cleanDir o
@@ -3169,7 +3168,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   Actions.ValidateFSharpTypes x [ "main" ]
 
   printfn "Execute the instrumented tests"
-  let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
+  let sample2 = Path.getFullName "./Samples/Sample2/Sample2.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample2
 
@@ -3193,7 +3192,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let s = Path.getFullName "."
   let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
-  let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/net5.0"
+  let o = Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+x86/net5.0"
   let i = Path.getFullName "_Binaries/Sample2/Debug+x86/net5.0"
 
   Shell.cleanDir o
@@ -3241,7 +3240,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       |> AltCoverCommand.run
       Actions.ValidateFSharpTypes x [ "main" ]
       printfn "Execute the instrumented tests"
-      let sample2 = Path.getFullName "./Sample2/Sample2.fsproj"
+      let sample2 = Path.getFullName "./Samples/Sample2/Sample2.fsproj"
 
       // Run
       let (dotnetexe, args) =
@@ -3271,7 +3270,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNet.xml"
-  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
@@ -3299,7 +3298,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   printfn "Execute the instrumented tests"
   "Sample4.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample4") with
+       { o.WithCommon(withWorkingDirectoryVM "Samples/Sample4") with
            Configuration = DotNet.BuildConfiguration.Debug
            Framework = Some "netcoreapp2.1"
            NoBuild = true }
@@ -3310,7 +3309,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
-  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
@@ -3336,7 +3335,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   Actions.ValidateFSharpTypes x [ "main" ]
 
   printfn "Execute the instrumented tests"
-  let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
+  let sample4 = Path.getFullName "./Samples/Sample4/Sample4.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
@@ -3361,7 +3360,7 @@ _Target "OpenCoverForPester" (fun _ ->
   Directory.ensure reportDir
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
-  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/net5.0"
+  let o = Path.getFullName "Samples/Sample18/_Binaries/Sample18/Debug+AnyCPU/net5.0"
   let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net5.0"
 
   Shell.cleanDir o
@@ -3385,7 +3384,7 @@ _Target "OpenCoverForPester" (fun _ ->
   |> AltCoverCommand.run
 
   printfn "Execute the instrumented tests"
-  let sample = Path.getFullName "./Sample18/Sample18.fsproj"
+  let sample = Path.getFullName "./Samples/Sample18/Sample18.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "net5.0") sample
 
@@ -3432,7 +3431,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   let x1 = Path.getFullName "./_Reports/ShowStaticPP.xml"
   let x2 = Path.getFullName "./_Reports/ShowGenerated.xml"
   let x3 = Path.getFullName "./_Reports/ShowGeneratedRun.xml"
-  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
@@ -3563,7 +3562,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   |> AltCoverCommand.run
 
   printfn "Execute the instrumented tests"
-  let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
+  let sample4 = Path.getFullName "./Samples/Sample4/Sample4.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
@@ -3605,7 +3604,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
-  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   Shell.cleanDir o
@@ -3629,7 +3628,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   Actions.CheckSample4Content x
 
   printfn "Execute the instrumented tests"
-  let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
+  let sample4 = Path.getFullName "./Samples/Sample4/Sample4.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
@@ -3652,12 +3651,12 @@ _Target "JsonReporting" (fun _ ->
   Directory.ensure "./_Reports"
   let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
   let x = Path.getFullName "./_Reports/JsonReporting.json"
-  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
   // Test data gathering only
   //let x = Path.getFullName "./AltCover.Tests/Sample5.native.json"
-  //let o = Path.getFullName "Sample5/_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
+  //let o = Path.getFullName "Samples/Sample5/_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
   //let i = Path.getFullName "_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
 
   Shell.cleanDir o
@@ -3716,7 +3715,7 @@ _Target "JsonReporting" (fun _ ->
   checkSample4Content x
 
   printfn "Execute the instrumented tests"
-  let sample4 = Path.getFullName "./Sample4/Sample4.fsproj"
+  let sample4 = Path.getFullName "./Samples/Sample4/Sample4.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/net472/AltCover.exe"
   let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
@@ -3820,7 +3819,7 @@ _Target "JsonReporting" (fun _ ->
 _Target "MSBuildTest" (fun _ ->
   Directory.ensure "./_Reports"
   let build = Path.getFullName "Build"
-  let sample = Path.getFullName "Sample4"
+  let sample = Path.getFullName "Samples/Sample4"
   let x = Path.getFullName "./_Reports/MSBuildTest.xml"
 
   // Run
@@ -3850,7 +3849,7 @@ _Target "MSBuildTest" (fun _ ->
             "MSBuildTest", "true"
             "CheckEolTargetFramework", "false"
             "AltCoverPath", unpack.Replace('\\', '/')
-            "DebugSymbols", "True" ] }) "./Sample4/Sample4LongForm.fsproj")
+            "DebugSymbols", "True" ] }) "./Samples/Sample4/Sample4LongForm.fsproj")
 
 _Target "ApiUse" (fun _ ->
   let before = Actions.ticksNow()
@@ -3874,7 +3873,7 @@ _Target "ApiUse" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./_ApiUse/_DotnetTest/NuGet.config"
 
-    let fsproj = XDocument.Load "./Sample4/Sample4.fsproj"
+    let fsproj = XDocument.Load "./Samples/Sample4/Sample4.fsproj"
     let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
     targets.SetValue "netcoreapp2.1"
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -3884,9 +3883,9 @@ _Target "ApiUse" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     fsproj.Save "./_ApiUse/_DotnetTest/dotnettest.fsproj"
-    Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.fs")
-    Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.json")
-    Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Sample4/Data" File.Exists
+    Shell.copy "./_ApiUse/_DotnetTest" (!!"./Samples/Sample4/*.fs")
+    Shell.copy "./_ApiUse/_DotnetTest" (!!"./Samples/Sample4/*.json")
+    Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
 
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -4082,7 +4081,7 @@ _Target "DotnetTestIntegration" (fun _ ->
                                     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
                                     config.Save (d @@ "NuGet.config")
 
-                                    let projpath = "./" + p + "/" + p + "." + t
+                                    let projpath = "./Samples/" + p + "/" + p + "." + t
                                     printfn "%s -> %s" d projpath
 
                                     let fsproj = XDocument.Load projpath
@@ -4412,19 +4411,19 @@ _Target "DotnetTestIntegration" (fun _ ->
     Assert.That(cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
 
     // printfn "Regression test issue 94 ------------------------------------------------"
-    // let proj = XDocument.Load "./Sample22/Sample22.xml"
+    // let proj = XDocument.Load "./Samples/Sample22/Sample22.xml"
     // let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
     // let inject =
     //   XElement
     //     (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
     //      XAttribute(XName.Get "Version", !Version))
     // pack.AddBeforeSelf inject
-    // proj.Save "./Sample22/Sample22.fsproj"
+    // proj.Save "./Samples/Sample22/Sample22.fsproj"
 
     // let p4 = { p0 with AssemblyFilter = [ "NUnit" ] }
     // let pp4 = AltCover.PrepareOptions.Primitive p4
     // DotNet.test (fun to' ->
-    //   { ((to'.WithCommon(withWorkingDirectoryVM "Sample22")).WithAltCoverOptions
+    //   { ((to'.WithCommon(withWorkingDirectoryVM "Samples/Sample22")).WithAltCoverOptions
     //       pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
     //   |> testWithCLIArguments) ""
 
@@ -4517,7 +4516,7 @@ _Target "Issue23" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./_Issue23/NuGet.config"
 
-    let csproj = XDocument.Load "./Sample9/sample9.csproj"
+    let csproj = XDocument.Load "./Samples/Sample9/sample9.csproj"
     let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -4525,8 +4524,8 @@ _Target "Issue23" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue23/sample9.csproj"
-    Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
-    Shell.copy "./_Issue23" (!!"./Sample9/*.json")
+    Shell.copy "./_Issue23" (!!"./Samples/Sample9/*.cs")
+    Shell.copy "./_Issue23" (!!"./Samples/Sample9/*.json")
     DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue23")
                              let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
                              { tmp with MSBuildParams = mparams}) ""
@@ -4555,7 +4554,7 @@ _Target "Issue67" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./_Issue67/NuGet.config"
 
-    let csproj = XDocument.Load "./Sample9/sample9.csproj"
+    let csproj = XDocument.Load "./Samples/Sample9/sample9.csproj"
     let target = csproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
     target.SetValue "netcoreapp2.1"
 
@@ -4566,8 +4565,8 @@ _Target "Issue67" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue67/sample9.csproj"
-    Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
-    Shell.copy "./_Issue67" (!!"./Sample9/*.json")
+    Shell.copy "./_Issue67" (!!"./Samples/Sample9/*.cs")
+    Shell.copy "./_Issue67" (!!"./Samples/Sample9/*.json")
     DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue67")
                              let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
                              { tmp with MSBuildParams = mparams}) ""
@@ -4600,23 +4599,23 @@ _Target "Issue67" (fun _ ->
 
 _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.com/SteveGilham/altcover/issues/72
   try
-    Directory.ensure "./Sample16/Test/_Issue72"
-    Shell.cleanDir ("./Sample16/Test/_Issue72")
-    Directory.ensure "./Sample16/Test/_Issue72b"
-    Shell.cleanDir ("./Sample16/Test/_Issue72b")
+    Directory.ensure "./Samples/Sample16/Test/_Issue72"
+    Shell.cleanDir ("./Samples/Sample16/Test/_Issue72")
+    Directory.ensure "./Samples/Sample16/Test/_Issue72b"
+    Shell.cleanDir ("./Samples/Sample16/Test/_Issue72b")
 
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
-    config.Save "./Sample16/Test/_Issue72/NuGet.config"
-    config.Save "./Sample16/Test/_Issue72b/NuGet.config"
+    config.Save "./Samples/Sample16/Test/_Issue72/NuGet.config"
+    config.Save "./Samples/Sample16/Test/_Issue72b/NuGet.config"
 
-    Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
-    Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.json")
-    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.cs")
-    Shell.copy "./Sample16/Test/_Issue72b" (!!"./Sample16/Test/Test/*.json")
+    Shell.copy "./Samples/Sample16/Test/_Issue72" (!!"./Samples/Sample16/Test/Test/*.cs")
+    Shell.copy "./Samples/Sample16/Test/_Issue72" (!!"./Samples/Sample16/Test/Test/*.json")
+    Shell.copy "./Samples/Sample16/Test/_Issue72b" (!!"./Samples/Sample16/Test/Test/*.cs")
+    Shell.copy "./Samples/Sample16/Test/_Issue72b" (!!"./Samples/Sample16/Test/Test/*.json")
 
-    let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
+    let csproj = XDocument.Load "./Samples/Sample16/Test/Test/Test.csproj"
 
     let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
@@ -4624,8 +4623,8 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
         (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
-    csproj.Save "./Sample16/Test/_Issue72/Test.csproj"
-    csproj.Save "./Sample16/Test/_Issue72b/Test2.csproj"
+    csproj.Save "./Samples/Sample16/Test/_Issue72/Test.csproj"
+    csproj.Save "./Samples/Sample16/Test/_Issue72b/Test2.csproj"
 
     let p0 =
       { Primitive.PrepareOptions.Create() with
@@ -4638,14 +4637,14 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
     let c0 = Primitive.CollectOptions.Create()
     let cc0 = AltCover.CollectOptions.Primitive c0
     DotNet.test (fun p ->
-      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with
+      (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverOptions pp0 cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/original.Test.xml", FileMode.Open,
+         new FileStream("./Samples/Sample16/Test/_Issue72/original.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -4671,14 +4670,14 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
     let c0 = Primitive.CollectOptions.Create()
     let cc0 = AltCover.CollectOptions.Primitive c0
     DotNet.test (fun p ->
-      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with
+      (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test/_Issue72") with
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverOptions pp1 cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
       |> testWithCLIArguments) ""
 
     do use coverageFile =
-         new FileStream("./Sample16/Test/_Issue72/combined.Test.xml", FileMode.Open,
+         new FileStream("./Samples/Sample16/Test/_Issue72/combined.Test.xml", FileMode.Open,
                         FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
@@ -4693,16 +4692,16 @@ _Target "Issue72" (fun _ -> // Confusing switch case coverage @ https://github.c
 
     // Issue 98 optest
     printfn "----------------------------- issue 98  ----------------------------------------"
-    Shell.cleanDir ("./Sample16/Test/_Intermediate")
+    Shell.cleanDir ("./Samples/Sample16/Test/_Intermediate")
     let psln = AltCover.PrepareOptions.Primitive {p0 with Report = "$(SolutionDir)/_Reports/solution.$(ProjectName).xml"}
     DotNet.test (fun p ->
-      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test") with
+      (({ p.WithCommon(withWorkingDirectoryVM "./Samples/Sample16/Test") with
             Configuration = DotNet.BuildConfiguration.Debug
             NoBuild = false }).WithAltCoverOptions psln cc0 ForceTrue)
         .WithAltCoverImportModule().WithAltCoverGetVersion()
       |> testWithCLIArguments) "Issue72.sln"
-    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test.xml") @>
-    test <@ File.Exists ("./Sample16/Test/_Reports/solution.Test2.xml") @>
+    test <@ File.Exists ("./Samples/Sample16/Test/_Reports/solution.Test.xml") @>
+    test <@ File.Exists ("./Samples/Sample16/Test/_Reports/solution.Test2.xml") @>
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -4716,13 +4715,13 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Directory.ensure working
     Shell.cleanDir working
 
-    let fsproj = XDocument.Load "./Sample4/Sample4.fsproj"
+    let fsproj = XDocument.Load "./Samples/Sample4/Sample4.fsproj"
     let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
     targets.SetValue "netcoreapp2.1"
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
-    Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.fs")
-    Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.json")
-    Shell.copyDir "./_DotnetGlobalTest/Data" "./Sample4/Data" File.Exists
+    Shell.copy "./_DotnetGlobalTest" (!!"./Samples/Sample4/*.fs")
+    Shell.copy "./_DotnetGlobalTest" (!!"./Samples/Sample4/*.json")
+    Shell.copyDir "./_DotnetGlobalTest/Data" "./Samples/Sample4/Data" File.Exists
 
     Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
       "tool"
@@ -4805,7 +4804,7 @@ _Target "Issue114" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.api")
     config.Save "./_Issue114/NuGet.config"
 
-    let csproj = XDocument.Load "./Sample26/Sample26.fsproj"
+    let csproj = XDocument.Load "./Samples/Sample26/Sample26.fsproj"
     let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -4813,7 +4812,7 @@ _Target "Issue114" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue114/Sample26.fsproj"
-    Shell.copy "./_Issue114" (!!"./Sample26/*.fs")
+    Shell.copy "./_Issue114" (!!"./Samples/Sample26/*.fs")
     DotNet.restore (fun o -> let tmp = o.WithCommon(withWorkingDirectoryVM "_Issue114")
                              let mparams = { tmp.MSBuildParams with Properties = ("CheckEolTargetFramework", "false") :: tmp.MSBuildParams.Properties}
                              { tmp with MSBuildParams = mparams}) ""

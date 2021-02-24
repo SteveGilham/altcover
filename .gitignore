@@ -72,8 +72,8 @@ AltCover.Visualizer.Tests/Reports/
 .fake
 .ionide
 AltCover.Engine/Abstract.fsi
-Sample22/Sample22.fsproj
-Sample22/coverage.xml
+Samples/Sample22/Sample22.fsproj
+Samples/Sample22/coverage.xml
 buildsample*.fsx.lock
 AltCover.Recorder/Strings.resources
 coverage.xml

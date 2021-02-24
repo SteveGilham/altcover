@@ -5,9 +5,9 @@
     <TargetFrameworks>netcoreapp2.0;net20</TargetFrameworks>
     <AssemblyName>Sample8</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <ApplicationIcon>$(ProjectDir)../AltCover/AltCover.ico</ApplicationIcon>
-    <OutputPath>$(ProjectDir)../_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(ProjectDir)../_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <ApplicationIcon>$(ProjectDir)../../AltCover/AltCover.ico</ApplicationIcon>
+    <OutputPath>$(ProjectDir)../../_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(ProjectDir)../../_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <RollForward>Major</RollForward>
