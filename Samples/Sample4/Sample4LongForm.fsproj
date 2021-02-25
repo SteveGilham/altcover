@@ -8,7 +8,7 @@
              Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')"
              AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll" />
   <PropertyGroup>
-    <SolutionDir Condition="'$(SolutionDir)' == ''">$(ProjectDir)../</SolutionDir>
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(ProjectDir)../../</SolutionDir>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
@@ -106,8 +106,8 @@
     <ItemGroup>
       <AssemblyFilter Include="xunit" />
       <FSharpXml Include="$(OutputPath)/FSharp.*.xml" />
-      <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
-      <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
+      <InputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/Sample4/Debug+AnyCPU" />
+      <OutputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>
     <Delete Files="@(FSharpXml)" />
     <AltCover.Prepare

@@ -2378,7 +2378,7 @@ module AltCoverTests =
         use reader = new StreamReader(stream)
         let expected = reader.ReadToEnd()
                          .Replace("Tests.fs",
-                         Path.Combine(SolutionRoot.location, "Sample4", "Tests.fs").Replace("\\", "\\\\"))
+                         Path.GetFullPath(Path.Combine(SolutionRoot.location, "Samples/Sample4", "Tests.fs")).Replace("\\", "\\\\"))
                          .Replace('\r','\u00FF').Replace('\n','\u00FF')
                          .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |])
         //printfn "%s" result
@@ -2676,8 +2676,8 @@ module AltCoverTests =
                     |> Seq.sort
                     |> Seq.toList
         let expected = [
-                         url.Replace("*", "Sample14/Sample14/Program.cs")
-                         url.Replace("*", "Sample5/Class1.cs")
+                         url.Replace("*", "Samples/Sample14/Sample14/Program.cs")
+                         url.Replace("*", "Samples/Sample5/Class1.cs")
                        ]
         Assert.That (files, Is.EquivalentTo expected)
 
@@ -2938,7 +2938,7 @@ module AltCoverTests =
                   ()
                 | "fullPath" ->
                   Assert.That
-                    (a1.Value.Replace("\\", "/").Replace("altcover", "AltCover"),
+                    (a1.Value.Replace("\\", "/").Replace("Samples/", String.Empty).Replace("altcover", "AltCover"),
                      Does.EndWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover")),
                      a1.Name.ToString() + " : " + r.ToString() + " -> document")
                 | "vc" ->
@@ -2974,8 +2974,8 @@ module AltCoverTests =
                     |> Seq.sort
                     |> Seq.toList
         let expected = [
-                         url.Replace("*", "Sample14/Sample14/Program.cs")
-                         url.Replace("*", "Sample5/Class1.cs")
+                         url.Replace("*", "Samples/Sample14/Sample14/Program.cs")
+                         url.Replace("*", "Samples/Sample5/Class1.cs")
                        ]
         Assert.That (files, Is.EquivalentTo expected)
 
@@ -3345,7 +3345,7 @@ module AltCoverTests =
     let ShouldGenerateExpectedXmlReportWithTraditionalInterfacesOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
       let sample21trad = Path.Combine(SolutionDir(),
-                                       "./Sample21/bin/Debug/net472/Sample21.dll")
+                                       "./Samples/Sample21/bin/Debug/net472/Sample21.dll")
       Assert.That(File.Exists sample21trad, "Test file Sample21 for net47 not built")
       try
         "Program"
@@ -3383,7 +3383,7 @@ module AltCoverTests =
     [<Test>]
     let ShouldGenerateExpectedXmlReportWithModernInterfacesOpenCoverStyle() =
       let visitor, document = OpenCover.reportGenerator()
-      let sample21 = Path.Combine(SolutionDir(), "./Sample21/bin/Debug/net5.0/Sample21.dll")
+      let sample21 = Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net5.0/Sample21.dll")
       Assert.That(File.Exists sample21, "Test file Sample21 for net5.0 not built")
       try
         "Program"

@@ -42,7 +42,7 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         $i = "./_Binaries/Sample2/Debug+AnyCPU/net5.0"
         if (Test-Path $o) {
@@ -70,7 +70,7 @@ Describe "Invoke-Altcover" {
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
         $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
@@ -81,7 +81,7 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
@@ -105,12 +105,12 @@ Describe "Invoke-Altcover" {
         Start-Transcript -Path "./_Packaging/WhatIf.txt"
         Invoke-AltCover -WhatIf -ShowStatic "mark"
         Invoke-AltCover -WhatIf -ShowStatic $m
-        Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
+        Invoke-AltCover -Runner -RecorderDirectory "./Samples/Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
                     ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:+".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:++ ".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Samples/Sample2 --collect".'))
 
         $lines = Get-Content "./_Packaging/WhatIf.txt"
         $ll = $lines | ? { $_ -like "What if: *" }
@@ -567,7 +567,7 @@ Describe "Write-OpenCoverDerivedState" {
     $expected.CoverageSession.Modules.Module.hash = $hactual
     $expected.CoverageSession.Modules.Module.ModulePath = $assembly
     $expected.CoverageSession.Modules.Module.ModuleTime = $doc.CoverageSession.Modules.Module.ModuleTime
-    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Sample18/Tests.fs").Path
+    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Samples/Sample18/Tests.fs").Path
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -611,7 +611,7 @@ Describe "ConvertTo-CoverageJson" {
         $xd = [xdoc]::Load("./AltCover.Tests/GenuineNCover158.Xml")
 
         ## fix up file path
-        $exe = [System.IO.Path]::Combine("./Sample19", "ConsoleApplication1.exe")
+        $exe = [System.IO.Path]::Combine("./Samples/Sample19", "ConsoleApplication1.exe")
         $xd.Root.Descendants("module") | % {
           $_.Attribute("name").Value = [System.IO.Path]::GetFullPath($exe)
         }

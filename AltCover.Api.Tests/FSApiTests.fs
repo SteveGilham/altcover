@@ -188,7 +188,7 @@ module FSApiTests =
         Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.Xml")
     let doc = XDocument.Load(stream)
     // fix up file path
-    let exe = Path.Combine(SolutionRoot.location, "Sample19", "ConsoleApplication1.exe")
+    let exe = Path.Combine(SolutionRoot.location, "Samples/Sample19", "ConsoleApplication1.exe")
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
     let result = CoverageFormats.ConvertToJson doc
