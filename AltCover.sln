@@ -30,10 +30,11 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample7", "Samples\Sample7\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample10", "Samples\Sample10\Sample10.csproj", "{6D52273D-097D-4C30-82D1-5F276FAB4187}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples\Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.travis.yml = .travis.yml
 		Build\actions.fsx = Build\actions.fsx
 		Build\AddStrongName.fsx = Build\AddStrongName.fsx
@@ -108,7 +109,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AltCover.Monitor", "AltCove
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Monitor.Tests", "AltCover.Monitor.Tests\AltCover.Monitor.Tests.fsproj", "{CF022111-D220-4514-83B6-5CE46E4B83A7}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Sample27", "Samples\Sample27\Sample27.fsproj", "{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample27", "Samples\Sample27\Sample27.fsproj", "{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -12,17 +12,20 @@ module internal TaskIO =
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
+
   let internal logToStore =
-    AltCover.LoggingOptions.Primitive { Primitive.LoggingOptions.Create() with Info = writeToStore }
+    AltCover.LoggingOptions.Primitive
+      { Primitive.LoggingOptions.Create() with
+          Info = writeToStore }
 
   let internal getStringValue s =
     writeToStore String.Empty
     logToStore.Apply()
-    [| s |]
-    |> Main.effectiveMain
-    |> ignore
+    [| s |] |> Main.effectiveMain |> ignore
     store
 
   let internal colourize name =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
-    if ok then Console.ForegroundColor <- colour
+
+    if ok then
+      Console.ForegroundColor <- colour

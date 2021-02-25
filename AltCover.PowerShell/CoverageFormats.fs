@@ -23,9 +23,12 @@ type ConvertToXmlDocumentCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
@@ -50,11 +53,15 @@ type ConvertToXDocumentCommand() =
   /// <summary>
   /// <para type="description">Input as `[xml]` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes",
-    Justification = "AvoidSpeculativeGenerality too")>]
-  member val XmlDocument : XmlDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Microsoft.Design",
+                    "CA1059:MembersShouldNotExposeCertainConcreteTypes",
+                    Justification = "AvoidSpeculativeGenerality too")>]
+  member val XmlDocument: XmlDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
@@ -81,37 +88,56 @@ type ConvertToLcovCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = String.Empty with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
+
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
-      use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
+
+      use stream =
+        File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
+
       AltCover.CoverageFormats.ConvertToLcov self.XDocument stream
     finally
       Directory.SetCurrentDirectory here
@@ -133,27 +159,38 @@ type ConvertToCoverageJsonCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
+
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
+
       AltCover.CoverageFormats.ConvertToJson self.XDocument
       |> self.WriteObject
     finally
@@ -177,43 +214,60 @@ type ConvertToCoberturaCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = String.Empty with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
+
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.ConvertToCobertura self.XDocument
+      let rewrite =
+        AltCover.CoverageFormats.ConvertToCobertura self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
-         |> not
-      then rewrite.Save(self.OutputFile)
+         |> not then
+        rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
     finally
@@ -235,43 +289,59 @@ type ConvertToNCoverCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = String.Empty with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
+
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = AltCover.CoverageFormats.ConvertToNCover self.XDocument
+      let rewrite =
+        AltCover.CoverageFormats.ConvertToNCover self.XDocument
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
-         |> not
-      then
+         |> not then
         rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
@@ -294,48 +364,69 @@ type ConvertFromNCoverCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">Assemblies to use for generating the output</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
-  [<SuppressMessage("Microsoft.Performance", "CA1819",
-                    Justification = "ditto, ditto")>]
-  member val Assembly : string array = [||] with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
+  member val Assembly: string array = [||] with get, set
 
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = String.Empty with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = false,
+              Position = 3,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 3,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
+
       if self.ParameterSetName = "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
@@ -344,8 +435,8 @@ type ConvertFromNCoverCommand() =
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
-         |> not
-      then converted.Save(self.OutputFile)
+         |> not then
+        converted.Save(self.OutputFile)
 
       self.WriteObject converted
     finally
@@ -370,88 +461,135 @@ type WriteOpenCoverDerivedStateCommand() =
   /// <summary>
   /// <para type="description">Input as `XDocument` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XDocument : XDocument = null with get, set
+  [<Parameter(ParameterSetName = "XmlDocCoverlet",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val XDocument: XDocument = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFileCoverlet",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">The data source was generated by `coverlet`, so needs more work doing.</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = true, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = true, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Coverlet : SwitchParameter = SwitchParameter(false) with get, set
+  [<Parameter(ParameterSetName = "XmlDocCoverlet",
+              Mandatory = true,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileCoverlet",
+              Mandatory = true,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Coverlet: SwitchParameter = SwitchParameter(false) with get, set
 
   /// <summary>
   /// <para type="description">The data source was generated by `coverlet`, so needs more work doing.</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val BranchOrdinal : AltCover.BranchOrdinal = AltCover.BranchOrdinal.Offset with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val BranchOrdinal: AltCover.BranchOrdinal =
+    AltCover.BranchOrdinal.Offset with get, set
 
   /// <summary>
   /// <para type="description">Assemblies to use for generating the output</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = true, Position = 3,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = true, Position = 3,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
-  [<SuppressMessage("Microsoft.Performance", "CA1819",
-                    Justification = "ditto, ditto")>]
-  member val Assembly : string array = [||] with get, set
+  [<Parameter(ParameterSetName = "XmlDocCoverlet",
+              Mandatory = true,
+              Position = 3,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileCoverlet",
+              Mandatory = true,
+              Position = 3,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Cannot convert 'System.Object[]' to the type 'System.Collections.Generic.IEnumerable`1[System.String]'")>]
+  [<SuppressMessage("Microsoft.Performance", "CA1819", Justification = "ditto, ditto")>]
+  member val Assembly: string array = [||] with get, set
 
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "XmlDocCoverlet", Mandatory = false, Position = 4,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFileCoverlet", Mandatory = false, Position = 4,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = String.Empty with get, set
+  [<Parameter(ParameterSetName = "XmlDoc",
+              Mandatory = false,
+              Position = 3,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 3,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "XmlDocCoverlet",
+              Mandatory = false,
+              Position = 4,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileCoverlet",
+              Mandatory = false,
+              Position = 4,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
 
       if self.ParameterSetName.StartsWith("FromFile", StringComparison.Ordinal) then
         self.XDocument <- XDocument.Load self.InputFile
 
-      let rewrite = if self.Coverlet.IsPresent
-                    then AltCover.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
-                    else let temp = XDocument(self.XDocument)
-                         AltCover.OpenCover.PostProcess temp self.BranchOrdinal
-                         temp
+      let rewrite =
+        if self.Coverlet.IsPresent then
+          AltCover.OpenCover.FormatFromCoverlet self.XDocument self.Assembly
+        else
+          let temp = XDocument(self.XDocument)
+          AltCover.OpenCover.PostProcess temp self.BranchOrdinal
+          temp
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
-         |> not
-      then rewrite.Save(self.OutputFile)
+         |> not then
+        rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
     finally
@@ -475,34 +613,50 @@ type ConvertFromCoverageJsonCommand() =
   /// <summary>
   /// <para type="description">Input as `string` value</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "json", Mandatory = true, Position = 1,
-              ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val Json : string = null with get, set
+  [<Parameter(ParameterSetName = "json",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = true,
+              ValueFromPipelineByPropertyName = false)>]
+  member val Json: string = null with get, set
 
   /// <summary>
   /// <para type="description">Input as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile : string = null with get, set
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = true,
+              Position = 1,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val InputFile: string = null with get, set
 
   /// <summary>
   /// <para type="description">Output as file path</para>
   /// </summary>
-  [<Parameter(ParameterSetName = "json", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile : string = String.Empty with get, set
+  [<Parameter(ParameterSetName = "json",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile",
+              Mandatory = false,
+              Position = 2,
+              ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile: string = String.Empty with get, set
 
   /// <summary>
   /// <para type="description">Create transformed document</para>
   /// </summary>
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+
     try
-      let where = self.SessionState.Path.CurrentLocation.Path
+      let where =
+        self.SessionState.Path.CurrentLocation.Path
+
       Directory.SetCurrentDirectory where
+
       if self.ParameterSetName = "FromFile" then
         self.Json <- File.ReadAllText self.InputFile
 
@@ -510,8 +664,8 @@ type ConvertFromCoverageJsonCommand() =
 
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
-         |> not
-      then rewrite.Save(self.OutputFile)
+         |> not then
+        rewrite.Save(self.OutputFile)
 
       self.WriteObject rewrite
     finally

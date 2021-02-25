@@ -2,7 +2,7 @@
 
 open System.Diagnostics.CodeAnalysis
 
-[<assembly:System.CLSCompliant(true)>]
-[<assembly:System.Runtime.InteropServices.ComVisible(false)>]
+[<assembly: System.CLSCompliant(true)>]
+[<assembly: System.Runtime.InteropServices.ComVisible(false)>]
 
 do ()
