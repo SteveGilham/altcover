@@ -424,10 +424,24 @@ module AltCoverTests2 =
       //| x -> Assert.Fail("null expected for non-.pdb but got " + x.GetType().FullName)
 
 #if !NET472
-    type TestAssemblyLoadContext () =
+    type TestAssemblyLoadContext (_dummy:string, _dummy2:string) =
       inherit System.Runtime.Loader.AssemblyLoadContext(true)
       override self.Load(name : AssemblyName) =
         null
+      member self.CreateObject() =
+        let proxyObject = ProxyObject()
+        proxyObject.Context <- self
+        proxyObject
+#else
+    type TestAssemblyLoadContext (domain:string, where:string) =
+      let ad = AppDomain.CreateDomain(domain, null,
+                                      let setup = AppDomainSetup()
+                                      setup.ApplicationBase <- Path.GetDirectoryName(where)
+                                      setup)
+      member self.CreateObject() =
+        ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+      member self.Unload() =
+        AppDomain.Unload(ad)
 #endif
 
     [<Test>]
@@ -478,20 +492,9 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"), "wrong token")
-#if !NET472
-          let alc = new TestAssemblyLoadContext()
-#else
-          let setup = AppDomainSetup()
-          setup.ApplicationBase <- Path.GetDirectoryName(where)
-          let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
-#endif
+          let alc = new TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
           try
-#if !NET472
-            let proxyObject = ProxyObject()
-            proxyObject.Context <- alc
-#else
-            let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
-#endif
+            let proxyObject = alc.CreateObject()
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique), "report path " + report + " not " + unique)
@@ -502,11 +505,7 @@ module AltCoverTests2 =
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
             Assert.That (report4, AltCover.Sampling.Single |> int |> Is.EqualTo, "wrong outro sampling")
           finally
-#if !NET472
             alc.Unload()
-#else
-            AppDomain.Unload(ad)
-#endif
         finally
           CoverageParameters.single <- false
           CoverageParameters.theReportPath <- save
@@ -551,29 +550,14 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
-#if !NET472
-          let alc = new TestAssemblyLoadContext()
-#else
-          let setup = AppDomainSetup()
-          setup.ApplicationBase <- Path.GetDirectoryName(where)
-          let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
-#endif
+          let alc = new TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
           try
-#if !NET472
-            let proxyObject = ProxyObject()
-            proxyObject.Context <- alc
-#else
-            let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
-#endif
+            let proxyObject = alc.CreateObject()
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           finally
-#if !NET472
             alc.Unload()
-#else
-            AppDomain.Unload(ad)
-#endif
         finally
           CoverageParameters.theReportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
@@ -616,22 +600,10 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.I.knownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"), "wrong token")
-#if !NET472
-          let alc = new TestAssemblyLoadContext()
-          try
-#else
           let where = Assembly.GetExecutingAssembly().Location
-          let setup = AppDomainSetup()
-          setup.ApplicationBase <- Path.GetDirectoryName(where)
-          let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+          let alc = new TestAssemblyLoadContext("ShouldGetNewFilePathFromPreparedAssembly", where)
           try
-#endif
-#if !NET472
-            let proxyObject = ProxyObject()
-            proxyObject.Context <- alc
-#else
-            let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
-#endif
+            let proxyObject = alc.CreateObject()
             proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
             let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
             Assert.That (setting, Is.Null, "bad setting")
@@ -640,12 +612,10 @@ module AltCoverTests2 =
             let isWindows =
 #if !NET472
                             true
-            let proxyObject' = ProxyObject()
-            proxyObject'.Context <- alc
 #else
                             System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-            let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
 #endif
+            let proxyObject' = alc.CreateObject()
             proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
             let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
                       |> Seq.toList
@@ -655,11 +625,7 @@ module AltCoverTests2 =
 
             Assert.That (result, Is.EquivalentTo[(unique, 42)], "bad call")
           finally
-#if !NET472
             alc.Unload()
-#else
-            AppDomain.Unload(ad)
-#endif
         finally
           CoverageParameters.theReportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
