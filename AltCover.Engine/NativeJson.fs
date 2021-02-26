@@ -16,7 +16,11 @@ open System.Globalization
 open Manatee.Json
 #endif
 
-module internal NativeJson =
+module
+#if GUI || RUNNER
+       internal
+#endif
+                NativeJson =
 
   type internal TimeStamp = string
 
@@ -36,9 +40,11 @@ module internal NativeJson =
   [<SuppressMessage("Gendarme.Rules.Design.Generic",
                     "DoNotExposeGenericListsRule",
                     Justification = "Harmless in context")>]
+  type
 #if GUI || RUNNER
+      internal
 #endif
-  type internal SeqPnt =
+                SeqPnt =
     { VC: int
       SL: int
       SC: int
@@ -63,9 +69,11 @@ module internal NativeJson =
   [<SuppressMessage("Gendarme.Rules.Design.Generic",
                     "DoNotExposeGenericListsRule",
                     Justification = "Harmless in context")>]
+  type
 #if GUI || RUNNER
+      internal
 #endif
-  type internal BranchInfo =
+                BranchInfo =
     { Line: int
       Offset: int
       EndOffset: int
@@ -91,9 +99,11 @@ module internal NativeJson =
   [<SuppressMessage("Gendarme.Rules.Design.Generic",
                     "DoNotExposeGenericListsRule",
                     Justification = "Harmless in context")>]
+  type
 #if GUI || RUNNER
+      internal
 #endif
-  type internal Method =
+                Method =
     { Lines: Lines
       [<SuppressMessage("Gendarme.Rules.Design.Generic",
                         "DoNotExposeGenericListsRule",
@@ -120,7 +130,7 @@ module internal NativeJson =
   type internal Methods = Dictionary<string, Method>
   type internal Classes = Dictionary<string, Methods>
   type internal Documents = SortedDictionary<string, Classes>
-  type internal Modules = SortedDictionary<string, Documents>
+  type internal Modules = SortedDictionary<string, Documents> // <= serialize this
 
 #if RUNNER || GUI
   // Deserialization ---------------------------------------------------------
