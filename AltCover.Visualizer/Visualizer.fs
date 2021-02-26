@@ -181,15 +181,22 @@ module private Gui =
 
 #if !NET472
   type FileOpenDialog(dialog: FileChooserDialog) =
-    member self.SetCurrentFolder(where: string) = dialog.SetCurrentFolder where
-    member self.Run() = dialog.Run()
+    member self.Run() =
+      dialog.SetCurrentFolder(Persistence.readFolder ())
+      |> ignore
+
+      try
+        dialog.Run()
+      finally
+        dialog.Hide()
+
     member self.FileName = dialog.Filename
 
     member self.InitialDirectory
       with set (_) = ()
 
     interface IDisposable with
-      member self.Dispose() = dialog.Hide()
+      member self.Dispose() = ()
 
   let private prepareOpenFileDialog (handler: Handler) =
     let openFileDialog =
@@ -317,9 +324,6 @@ module private Gui =
     let makeSelection (ofd: FileOpenDialog) x =
 
 #if !NET472
-      openFileDialog.SetCurrentFolder(Persistence.readFolder ())
-      |> ignore
-
       if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
 #else
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
