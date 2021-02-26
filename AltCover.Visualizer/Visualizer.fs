@@ -180,6 +180,13 @@ module private Gui =
       )
 
 #if !NET472
+  [<AutoSerializable(false); Sealed>]
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "DisposableFieldsShouldBeDisposedRule",
+                    Justification = "Whole program lifetime")>]
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "VariableNamesShouldNotMatchFieldNamesRule",
+                    Justification = "Compiler generated")>]
   type FileOpenDialog(dialog: FileChooserDialog) =
     member self.Run() =
       dialog.SetCurrentFolder(Persistence.readFolder ())
@@ -192,12 +199,21 @@ module private Gui =
 
     member self.FileName = dialog.Filename
 
+    [<SuppressMessage("Gendarme.Rules.Design",
+                      "AvoidPropertiesWithoutGetAccessorRule",
+                      Justification = "No use case exists")>]
     member self.InitialDirectory
-      with set (_) = ()
+      with set (value) = dialog.SetCurrentFolder(value) |> ignore
 
     interface IDisposable with
+      [<SuppressMessage("Gendarme.Rules.Design",
+                        "DoNotDeclareVirtualMethodsInSealedTypeRule",
+                        Justification = "Compiler generated virtual")>]
       member self.Dispose() = ()
 
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "Value is returned")>]
   let private prepareOpenFileDialog (handler: Handler) =
     let openFileDialog =
       new FileChooserDialog(
@@ -861,7 +877,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@105.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target = "AltCover.Gui+prepareTreeView@141.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification = "Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
