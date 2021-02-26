@@ -1845,12 +1845,9 @@ _Target
 
                 nUnitRetry2 ())
 
-        let pester = Path.getFullName "_Reports/Pester.xml"
-
         let xmlreports =
-            pester
-            :: (tests
-                |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report))
+            tests
+            |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report)
 
         ReportGenerator.generateReports
             (fun p ->
@@ -2098,6 +2095,7 @@ _Target
                     else
                         report.Replace(".xml", ".net5.0.xml"))
             |> List.filter (fun f -> File.Exists f && f.Contains("GTKV") |> not)
+        let pester = Path.getFullName "_Reports/Pester.xml"
 
         ReportGenerator.generateReports
             (fun p ->
@@ -2107,7 +2105,7 @@ _Target
                           [ ReportGenerator.ReportType.Html
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
-            xmlreports
+            (pester :: xmlreports)
 
         uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
         |> List.map fst
@@ -3838,6 +3836,8 @@ _Target
         Directory.ensure "./_Documentation"
 
         let v = (!Version).Split([| '-' |]).[0]
+        let unpackapi =
+            Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
 
         CreateProcess.fromRawCommand
             "powershell.exe"
@@ -3848,7 +3848,7 @@ _Target
               "-ReportName"
               "PoshReport"
               "-FolderName"
-              "Unpack" ]
+              unpackapi ]
         |> CreateProcess.withWorkingDirectory "."
         |> Proc.run
         |> (Actions.AssertResult "powershell"))
@@ -3857,15 +3857,13 @@ _Target
     "Pester"
     (fun _ ->
         Directory.ensure "./_Reports"
-        let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
-        let ``module`` = Path.getFullName "_Packaging/Module"
-        System.IO.Compression.ZipFile.ExtractToDirectory(nugget, ``module``)
 
         let unpack =
             Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+        let unpackapi =
+            Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
 
         let report = Path.getFullName "_Reports/Pester.xml"
-        let i = ``module`` @@ "tools/netcoreapp2.0"
         let v = (!Version).Split([| '-' |]).[0]
 
         let key =
@@ -3875,16 +3873,18 @@ _Target
             AltCover.PrepareOptions.Primitive(
                 { Primitive.PrepareOptions.Create() with
                       Report = report
-                      InputDirectories = [ i ]
+                      InputDirectories = [ unpackapi ]
                       StrongNameKey = key
-                      TypeFilter = [ "System\\."; "DotNet" ]
+                      TypeFilter = [ "System\\."; "DotNet"; "EntryPoint" ]
                       AssemblyFilter =
                           [ "AltCover.Engine"
                             "AltCover.Monitor"
+                            "AltCover.Fake"
+                            "AltCover.Cake"
                             "Recorder"
                             "DataCollector"
                             "FSharp" ]
-                      InPlace = true
+                      InPlace = false
                       ReportFormat = "OpenCover"
                       Save = true
                       VisibleBranches = true }
@@ -3908,7 +3908,7 @@ _Target
               "-ReportName"
               "PesterReport"
               "-FolderName"
-              "Module" ]
+              unpackapi @@ "__Instrumented" ]
         |> CreateProcess.withWorkingDirectory "."
         |> Proc.run
         |> (Actions.AssertResult "pwsh")
@@ -3916,7 +3916,7 @@ _Target
         let collect =
             AltCover.CollectOptions.Primitive
                 { Primitive.CollectOptions.Create() with
-                      RecorderDirectory = i }
+                      RecorderDirectory = unpackapi @@ "__Instrumented" }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -6756,14 +6756,14 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
-==> "UnitTest" // PoSh coverage
+==> "UnitTest" // no special coverage
 
 "UnitTestDotNet" ==> "UnitTestWithAltCoverCore"
 // =?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant; possibly flaky due to timeouts
 
 "Packaging"
 ==> "UnitTestWithAltCoverCoreRunner"
-==> "UnitTest" // Monitor coverage
+==> "UnitTest" // Monitor & pwsh coverage
 
 "Compilation"
 ==> "BuildForCoverlet"
@@ -6861,7 +6861,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Pester"
-==> "UnitTestWithAltCoverRunner"
+==> "UnitTestWithAltCoverCoreRunner"
 
 "FSharpTests" ==> "Pester"
 
@@ -6874,7 +6874,7 @@ Target.activateFinal "ResetConsoleColours"
 "ReleaseXUnitFSharpTypesDotNetRunner"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
-"Unpack" ==> "OpenCoverForPester"
+"OpenCoverForPester"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
 "Unpack"
