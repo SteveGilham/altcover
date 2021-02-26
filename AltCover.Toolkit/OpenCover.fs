@@ -767,12 +767,10 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                sq.SetAttributeValue(XName.Get "bev", bev)
                (0, x)
            | _ ->
-               (bev
-                + (if attributeOrEmpty "vc" x |> Int32.TryParse |> snd > 0 then
-                     1
-                   else
-                     0),
-                sq))
+               let mutable v = bev
+               if attributeOrEmpty "vc" x |> Int32.TryParse |> snd > 0
+               then v <- v + 1
+               (v, sq))
          (0, interleave |> Seq.head)
     |> ignore
 

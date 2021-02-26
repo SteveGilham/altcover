@@ -4524,12 +4524,13 @@ module AltCoverTests3 =
                .StartsWith(ex.GetType().FullName, StringComparison.Ordinal) @>)
 
     let builder = System.Text.StringBuilder()
+    let monitor (s:string) = s |> builder.Append |> ignore
 
     Assert.Throws<InvalidDataException>
       (fun () ->
         CommandLine.I.doRetry
           (fun _ -> raise <| InvalidDataException())
-          (builder.Append >> ignore)
+          monitor
           2
           0
           0
@@ -4537,6 +4538,9 @@ module AltCoverTests3 =
     |> ignore
 
     test <@ builder.ToString() |> String.IsNullOrEmpty @>
+
+    monitor ("Hello")
+    test <@ builder.ToString() = "Hello" @>
 
     let write =
       subject
