@@ -45,9 +45,12 @@ module private Gui =
 
            b.Autoconnect handler)
 #else
-    |> List.iter (fun name ->
-         use xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
-         xml.Autoconnect(handler))
+    |> List.iter
+         (fun name ->
+           use xml =
+             new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
+
+           xml.Autoconnect(handler))
 #endif
 
     handler.coverageFiles <- []
@@ -91,15 +94,19 @@ module private Gui =
 #if !NET472
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl (Uri link)) |> ignore
-    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl (Uri link)) |> ignore
+    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl(Uri link))
+    |> ignore
+
+    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl(Uri link))
+    |> ignore
+
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
-    |> Seq.iter (fun w ->
-         let t = Resource.GetResourceString w.Label
-         if t
-            |> String.IsNullOrWhiteSpace
-            |> not
-         then w.Label <- t)
+    |> Seq.iter
+         (fun w ->
+           let t = Resource.GetResourceString w.Label
+
+           if t |> String.IsNullOrWhiteSpace |> not then
+             w.Label <- t)
 #endif
 
     handler.aboutVisualizer.Title <- Resource.GetResourceString("aboutVisualizer.Title")
@@ -173,6 +180,17 @@ module private Gui =
       )
 
 #if !NET472
+  type FileOpenDialog(dialog: FileChooserDialog) =
+    member self.SetCurrentFolder(where: string) = dialog.SetCurrentFolder where
+    member self.Run() = dialog.Run()
+    member self.FileName = dialog.Filename
+
+    member self.InitialDirectory
+      with set (_) = ()
+
+    interface IDisposable with
+      member self.Dispose() = dialog.Hide()
+
   let private prepareOpenFileDialog (handler: Handler) =
     let openFileDialog =
       new FileChooserDialog(
@@ -200,18 +218,27 @@ module private Gui =
            filter.AddPattern("*." + data.[1])
            openFileDialog.AddFilter filter)
 
-    openFileDialog
+    new FileOpenDialog(openFileDialog)
 #else
+  type FileOpenDialog = System.Windows.Forms.OpenFileDialog
+
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "'openFileDialog' is returned")>]
   [<SuppressMessage("Microsoft.Globalization",
                     "CA1303:Do not pass literals as localized parameters",
-                     Justification="It's furniture, not user visible text")>]
-  let private prepareOpenFileDialog() =
-    let openFileDialog = new System.Windows.Forms.OpenFileDialog()
-    openFileDialog.InitialDirectory <- Persistence.readFolder()
-    openFileDialog.Filter <- Resource.GetResourceString("SelectXml").Replace("%", "|*.")
+                    Justification = "It's furniture, not user visible text")>]
+  let private prepareOpenFileDialog _ =
+    let openFileDialog =
+      new System.Windows.Forms.OpenFileDialog()
+
+    openFileDialog.InitialDirectory <- Persistence.readFolder ()
+
+    openFileDialog.Filter <-
+      Resource
+        .GetResourceString("SelectXml")
+        .Replace("%", "|*.")
+
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
     openFileDialog
@@ -220,6 +247,12 @@ module private Gui =
   let mappings =
     new Dictionary<TreePath, XPathNavigator>()
   // -------------------------- Event handling  ---------------------------
+#if !NET472
+  type TheTreeModel = ITreeModel
+#else
+  type TheTreeModel = TreeModel
+#endif
+
   let private doSelected (handler: Handler) doUpdateMRU index =
     let environment =
       { Icons = icons
@@ -239,17 +272,7 @@ module private Gui =
             Handler.InvokeOnGuiThread(fun () -> doUpdateMRU handler info.FullName false)
         UpdateUISuccess =
           fun info ->
-            let updateUI
-              (theModel:
-#if !NET472
-                         ITreeModel
-#else
-                         TreeModel
-#endif
-              )
-              (info: FileInfo)
-              ()
-              =
+            let updateUI (theModel: TheTreeModel) (info: FileInfo) () =
               // File is good so enable the refresh button
               handler.refreshButton.Sensitive <- true
               // Do real UI work here
@@ -283,40 +306,34 @@ module private Gui =
     async { CoverageFileTree.DoSelected environment index }
     |> Async.Start
 
+  type OpenFileDialogFactory = Handler -> FileOpenDialog
+
   let private handleOpenClicked
     (handler: Handler)
-#if !NET472
-    (openFileDialogFactory: Handler -> FileChooserDialog)
+    (openFileDialogFactory: OpenFileDialogFactory)
     =
-    let openFileDialog = openFileDialogFactory handler
+    use openFileDialog = openFileDialogFactory handler
 
-    let makeSelection (ofd: FileChooserDialog) x =
+    let makeSelection (ofd: FileOpenDialog) x =
+
+#if !NET472
       openFileDialog.SetCurrentFolder(Persistence.readFolder ())
       |> ignore
 
-      try
-        if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
-          let file = FileInfo(ofd.Filename)
-          let dir = file.Directory.FullName
+      if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
 #else
-      (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
-    use openFileDialog = openFileDialogFactory()
-    let makeSelection (ofd: System.Windows.Forms.OpenFileDialog) x =
-        if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
-          let file = FileInfo(ofd.FileName)
-          let dir = file.Directory.FullName
-          ofd.InitialDirectory <- dir
+      if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
 #endif
-          if Persistence.save then
-            Persistence.saveFolder dir
+        let file = FileInfo(ofd.FileName)
+        let dir = file.Directory.FullName
+        ofd.InitialDirectory <- dir
 
-          Some file
-        else
-          None
-#if !NET472
-      finally
-        ofd.Hide()
-#endif
+        if Persistence.save then
+          Persistence.saveFolder dir
+
+        Some file
+      else
+        None
 
     handler.openButton.Clicked
     |> Event.map (makeSelection openFileDialog)
@@ -659,11 +676,14 @@ module private Gui =
     handler.codeView.Editable <- false
 #if NET472
     let whiteSmoke = Color(245uy, 245uy, 245uy)
-    seq { 0..4 }
-    |> Seq.iter (fun i -> let state = i |> enum
-                          handler.viewport1.ModifyBg(state, whiteSmoke)
-                          handler.codeView.ModifyBase(state, whiteSmoke)
-                          handler.codeView.ModifyBg(state, whiteSmoke))
+
+    seq { 0 .. 4 }
+    |> Seq.iter
+         (fun i ->
+           let state = i |> enum
+           handler.viewport1.ModifyBg(state, whiteSmoke)
+           handler.codeView.ModifyBase(state, whiteSmoke)
+           handler.codeView.ModifyBg(state, whiteSmoke))
 #else
     let prov = new CssProvider()
 
@@ -791,9 +811,11 @@ module private Gui =
              let font = selector.Font
 #else
            use selector = new FontSelectionDialog(format)
-           selector.SetFontName(Persistence.readFont()) |> ignore
-           if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType =
-              ResponseType.Ok then
+
+           selector.SetFontName(Persistence.readFont ())
+           |> ignore
+
+           if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
              let font = selector.FontName
 #endif
 
@@ -815,7 +837,7 @@ module private Gui =
              |> Async.Start
 
 #if !NET472
-         ) // implicit Dispose()
+           ) // implicit Dispose()
 #else
            selector.Destroy())
 #endif
