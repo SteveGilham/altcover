@@ -685,14 +685,14 @@ module AltCoverTests2 =
         let expectedSymbols =
           maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
 
-        let isWindows =
+        let isSymbols =
 #if NET472
           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #else
           false // recorder symbols not read here
 #endif
         Assert.That(
-          (isWindows |> not)
+          (isSymbols |> not)
           || // HACK HACK HACK
           File.Exists(outputdll.Replace(".dll", expectedSymbols)),
           "unexpected symbols"
@@ -904,15 +904,16 @@ module AltCoverTests2 =
         let expectedSymbols =
           maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
 
-        let isWindows =
+        let isSymbols =
 #if !NET472
           true
 #else
           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        if isWindows then
-          Assert.That(
-            File.Exists(outputdll.Replace(".dll", expectedSymbols)),
+        Assert.That(
+          (isSymbols |> not)
+          || // HACK HACK HACK
+          File.Exists(outputdll.Replace(".dll", expectedSymbols)),
             "bad symbols"
           )
 
@@ -948,7 +949,7 @@ module AltCoverTests2 =
 
           Assert.That(getting, Is.EqualTo 17, "bad getting")
 
-          let isWindows =
+          let isMsft =
 #if !NET472
             true
 #else
@@ -963,7 +964,7 @@ module AltCoverTests2 =
 
           let result =
             maybe
-              isWindows // HACK HACK HACK
+              isMsft // HACK HACK HACK
               log
               [ (unique, 42) ]
 
