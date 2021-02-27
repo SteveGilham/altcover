@@ -897,7 +897,7 @@ module FSApiTests =
 
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.Merge [ doc1; doc2 ]
+    let merge = AltCover.OpenCover.Merge [ doc1; doc2; doc1; doc2 ]
     let summary = merge.Root.Element(XName.Get "Summary")
 
     // printfn "%A" merge
@@ -905,7 +905,7 @@ module FSApiTests =
     test
       <@ summary
         .ToString()
-        .Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"4\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />" @>
+        .Replace("minCrapScore=\"1.12\"", "minCrapScore=\"1.13\"") = "<Summary numSequencePoints=\"41\" visitedSequencePoints=\"11\" numBranchPoints=\"5\" visitedBranchPoints=\"4\" sequenceCoverage=\"26.83\" branchCoverage=\"80.00\" maxCyclomaticComplexity=\"11\" minCyclomaticComplexity=\"1\" visitedClasses=\"4\" numClasses=\"8\" visitedMethods=\"7\" numMethods=\"12\" minCrapScore=\"1.13\" maxCrapScore=\"87.20\" />" @>
 
 // TODO -- recursive validation
 

@@ -279,11 +279,9 @@ module OpenCover =
                          x.Attribute(XName.Get "sc").Value <- s.StartColumn.ToString(
                            CultureInfo.InvariantCulture
                          )
-
                          x.Attribute(XName.Get "ec").Value <- s.EndColumn.ToString(
                            CultureInfo.InvariantCulture
                          )
-
                          x.Attribute(XName.Get "offset").Value <- s.Offset.ToString(
                            CultureInfo.InvariantCulture
                          ))))
@@ -506,7 +504,8 @@ module OpenCover =
     member this.SequenceCoverage =
       percent this.VisitedSequencePoints this.NumSequencePoints
 
-    member this.BranchCoverage = percent this.VisitedBranchPoints this.NumBranchPoints
+    member this.BranchCoverage =
+      percent this.VisitedBranchPoints this.NumBranchPoints
 
     member this.Xml =
       XElement(
@@ -767,10 +766,11 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                sq.SetAttributeValue(XName.Get "bev", bev)
                (0, x)
            | _ ->
-               let mutable v = bev
-               if attributeOrEmpty "vc" x |> Int32.TryParse |> snd > 0
-               then v <- v + 1
-               (v, sq))
+               let visited =
+                 attributeOrEmpty "vc" x |> Int32.TryParse |> snd
+
+               let delta = if visited > 0 then 1 else 0
+               (bev + delta, sq))
          (0, interleave |> Seq.head)
     |> ignore
 
@@ -839,10 +839,14 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
                |> Seq.groupBy
                     (fun s ->
-                      s
-                      |> attributeOrEmpty "offset"
-                      |> Int32.TryParse
-                      |> snd,
+                      (s
+                       |> attributeOrEmpty "sl"
+                       |> Int32.TryParse
+                       |> snd,
+                       s
+                       |> attributeOrEmpty "offset"
+                       |> Int32.TryParse
+                       |> snd),
                       s
                       |> attributeOrEmpty "endoffset"
                       |> Int32.TryParse
