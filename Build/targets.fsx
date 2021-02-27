@@ -2382,6 +2382,97 @@ _Target
                 Assert.That(tmrcount, Is.EqualTo sptcount, name.Value)))
 
 _Target
+    "FSAsyncTests"
+    (fun _ ->
+        Directory.ensure "./_Reports"
+        let altcover =
+            Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+
+        let simpleReport =
+            (Path.getFullName "./_Reports")
+            @@ ("AltCoverFSAsyncTests.xml")
+
+        let sampleRoot =
+            Path.getFullName "Samples/Sample27/_Binaries/Sample27/Debug+AnyCPU/netcoreapp3.1"
+
+        // Test the --inplace operation
+        Shell.cleanDir sampleRoot
+
+        "Sample27.fsproj"
+        |> DotNet.test
+            (fun o ->
+                { o.WithCommon(withWorkingDirectoryVM "Samples/Sample27") with
+                      Configuration = DotNet.BuildConfiguration.Debug }
+                |> testWithCLIArguments)
+
+        // instrument
+        let prep =
+            AltCover.PrepareOptions.Primitive(
+                { Primitive.PrepareOptions.Create() with
+                      Report = simpleReport
+                      CallContext = [ "[Fact]" ]
+                      AssemblyFilter = [ "Adapter"; "xunit" ]
+                      TypeFilter = [ "System\\."; "Microsoft\\." ]
+                      InPlace = true
+                      LocalSource = true
+                      ReportFormat = "OpenCover"
+                      Save = false }
+            )
+            |> AltCoverCommand.Prepare
+
+        { AltCoverCommand.Options.Create prep with
+              ToolPath = altcover
+              ToolType = dotnetAltcover
+              WorkingDirectory = sampleRoot }
+        |> AltCoverCommand.run
+
+        printfn "Execute the instrumented tests"
+
+        let sample27 =
+            Path.getFullName "./Samples/Sample27/Sample27.fsproj"
+
+        let (dotnetexe, args) =
+            defaultDotNetTestCommandLine None sample27
+
+        let collect =
+            AltCover.CollectOptions.Primitive
+                { Primitive.CollectOptions.Create() with
+                      Executable = dotnetexe
+                      RecorderDirectory = sampleRoot
+                      CommandLine = args }
+            |> AltCoverCommand.Collect
+
+        { AltCoverCommand.Options.Create collect with
+              ToolPath = altcover
+              ToolType = dotnetAltcover
+              WorkingDirectory = "Samples/Sample27" }
+        |> AltCoverCommand.run
+
+        let coverageDocument =
+            XDocument.Load(XmlReader.Create(simpleReport))
+
+        coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+        |> Seq.toList
+        |> Seq.iter
+            (fun tmr ->
+                let spts = tmr.Parent.Parent.Parent
+
+                let sptcount =
+                    spts.Descendants(XName.Get("SequencePoint"))
+                    |> Seq.filter (fun sp -> sp.Attribute(XName.Get "vc").Value <> "0")
+                    |> Seq.length
+
+                let tmrcount =
+                    spts.Descendants(XName.Get("TrackedMethodRef"))
+                    |> Seq.length
+
+                let name =
+                    spts.Parent.Descendants(XName.Get("Name"))
+                    |> Seq.head
+
+                Assert.That(tmrcount, Is.EqualTo sptcount, name.Value)))
+
+_Target
     "FSharpTypesDotNetRunner"
     (fun _ ->
         Directory.ensure "./_Reports"
@@ -6786,6 +6877,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "AsyncAwaitTests"
+==> "OperationalTest"
+
+"Compilation"
+==> "FSAsyncTests"
 ==> "OperationalTest"
 
 //"Compilation"
