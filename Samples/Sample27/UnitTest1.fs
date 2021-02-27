@@ -1,7 +1,6 @@
-module Sample27
+namespace Sample27
 
 open Xunit
-open System.Threading.Tasks
 open Swensen.Unquote
 
 module Tests =
@@ -13,11 +12,11 @@ module Tests =
   let AddSynch(x, y) = x + y
 
   let AddAsync(x, y) = async {
-      do! Task.Delay(100).ConfigureAwait(false);
-      do! Task.Delay(100);
-      do! Task.Delay(100);
-      do! Task.Delay(100);
-      return! AddSynch(x, y);
+      do! Async.Sleep(100)
+      do! Async.Sleep(100)
+      do! Async.Sleep(100)
+      do! Async.Sleep(100)
+      return AddSynch(x, y)
   }
 
   [<Fact>]
