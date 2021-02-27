@@ -1,11 +1,34 @@
 module Sample27
 
-open NUnit.Framework
+open Xunit
+open System.Threading.Tasks
+open Swensen.Unquote
 
-[<SetUp>]
-let Setup () =
-    ()
+module Tests =
 
-[<Test>]
-let Test1 () =
-    Assert.Pass()
+  [<Fact>]
+  let Test1() =
+    test <@ true @>
+
+  let AddSynch(x, y) = x + y
+
+  let AddAsync(x, y) = async {
+      do! Task.Delay(100).ConfigureAwait(false);
+      do! Task.Delay(100);
+      do! Task.Delay(100);
+      do! Task.Delay(100);
+      return! AddSynch(x, y);
+  }
+
+  [<Fact>]
+  let AddAsyncReturnsTheSumOfXAndY() = async {
+    let! result = AddAsync(1, 1)
+    test <@ AddSynch(1, 1) = result @>
+  }
+
+    //public IEnumerable<int> Yielder()
+    //{
+    //  yield return 1;
+    //  yield return 2;
+    //  yield return 3;
+    //}

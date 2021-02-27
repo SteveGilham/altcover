@@ -9,7 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="_Binaries\**" />
     <Compile Remove="_Intermediate\**" />
+    <EmbeddedResource Remove="_Binaries\**" />
+    <EmbeddedResource Remove="_Intermediate\**" />
+    <None Remove="_Binaries\**" />
+    <None Remove="_Intermediate\**" />
   </ItemGroup>
 
   <ItemGroup>
