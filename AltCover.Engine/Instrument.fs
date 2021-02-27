@@ -829,6 +829,18 @@ module internal Instrument =
                //+IL_0050: pop                    // = discard the return value
                // ahead of the leave opcode
 
+// For F# async
+               //IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
+               //IL_0028: stloc 1
+               //IL_002c: leave IL_0038
+// put
+               //IL_0013: ldloc.1
+               //IL_0014: ldnull
+               //IL_0015: ldnull
+               //IL_0016: call !!0 [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync::RunSynchronously<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<valuetype [System.Runtime]System.Threading.CancellationToken>)
+               //IL_001b: pop
+// ahead of the leave
+
                let newstate =
                  { state with
                      AsyncSupport =
