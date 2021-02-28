@@ -39,21 +39,34 @@ type internal AsyncSupport =
     AsyncAssembly: AssemblyDefinition // kept for context
     Wait: MethodDefinition
     LocalWait: MethodReference
-    RunSynch: MethodDefinition  }
+    RunSynch: MethodDefinition }
   static member private DisposeAssemblyDefinition(def: IDisposable) = def.Dispose()
-  member self.RunSynchronously (m:MethodDefinition) types = //TODO
-    //(self.RunSynch :?> GenericInstanceType).MakeGenericInstanceType(types |> Seq.toArray)
 
-    self.RunSynch
-    |> m.DeclaringType.Module.ImportReference
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "AvoidUnnecessarySpecializationRule",
+                    Justification = "AvoidSpeculativeGenerality too")>]
+  member self.RunSynchronously (m: MethodDefinition) (asyncOf: TypeReference) =
+    let r1 =
+      self.RunSynch
+      |> m.DeclaringType.Module.ImportReference
+
+    let gm = GenericInstanceMethod(r1)
+    let ga = gm.GenericArguments
+    ga.Clear()
+    ga.Add asyncOf
+    gm
 
   member self.Close() =
-    [ self.TaskAssembly; self.AsyncAssembly]
-    |> List.iter( Option.ofObj >> (Option.iter AsyncSupport.DisposeAssemblyDefinition))
+    [ self.TaskAssembly
+      self.AsyncAssembly ]
+    |> List.iter (
+      Option.ofObj
+      >> (Option.iter AsyncSupport.DisposeAssemblyDefinition)
+    )
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-                                                    "EnsureLocalDisposalRule",
-                                                    Justification = "Disposed on exit")>]
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "Disposed on exit")>]
   static member Update(m: IMemberDefinition) =
     // Maybe get version of assembly being used by m?  Probably not important
     let def =
@@ -83,9 +96,7 @@ type internal AsyncSupport =
 
     let runsynch =
       fsasync.Methods
-      |> Seq.filter
-           (fun f ->
-             f.Name = "RunSynchronously")
+      |> Seq.filter (fun f -> f.Name = "RunSynchronously")
       |> Seq.head
 
     { TaskAssembly = def
@@ -837,7 +848,7 @@ module internal Instrument =
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
-             let processAsyncAwait (s:InstrumentContext) =
+             let processAsyncAwait (s: InstrumentContext) =
 
                if asyncChecks |> Seq.forall invokePredicate then
                  // the instruction list is
@@ -885,10 +896,12 @@ module internal Instrument =
                [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
                |> Seq.exists (fun n -> n = e)
 
-             let processFSAsync (s:InstrumentContext) =
+             let processFSAsync (s: InstrumentContext) =
 
-               if isAsyncType() then
-                 let asyncOf = (rtype :?> GenericInstanceType).GenericArguments
+               if isAsyncType () then
+                 let asyncOf =
+                   (rtype :?> GenericInstanceType).GenericArguments
+                   |> Seq.head // only one
 
                  // the instruction list is
                  // IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
@@ -919,7 +932,10 @@ module internal Instrument =
                      [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
                        ilp.Create(OpCodes.Ldnull)
                        ilp.Create(OpCodes.Ldnull)
-                       ilp.Create(OpCodes.Call, newstate.AsyncSupport.Value.RunSynchronously m.Method asyncOf)
+                       ilp.Create(
+                         OpCodes.Call,
+                         newstate.AsyncSupport.Value.RunSynchronously m.Method asyncOf
+                       )
                        ilp.Create(OpCodes.Pop) ]
                      true
 
@@ -930,11 +946,9 @@ module internal Instrument =
                else
                  s
 
-             state
-             |> processAsyncAwait
-             |> processFSAsync
+             state |> processAsyncAwait |> processFSAsync
 
-           )
+             )
            state
 
     let private visitAfterMethod state (m: MethodEntry) =

@@ -2451,26 +2451,23 @@ _Target
         let coverageDocument =
             XDocument.Load(XmlReader.Create(simpleReport))
 
-        coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+        coverageDocument.Descendants(XName.Get("Method"))
         |> Seq.toList
         |> Seq.iter
-            (fun tmr ->
-                let spts = tmr.Parent.Parent.Parent
-
-                let sptcount =
-                    spts.Descendants(XName.Get("SequencePoint"))
-                    |> Seq.filter (fun sp -> sp.Attribute(XName.Get "vc").Value <> "0")
-                    |> Seq.length
+            (fun m ->
+                let spts = m.Element(XName.Get "SequencePoints")
+                let visited = spts.Elements()
+                              |> Seq.filter (fun sp -> sp.Attribute(XName.Get "vc").Value <> "0")
+                              |> Seq.length
 
                 let tmrcount =
                     spts.Descendants(XName.Get("TrackedMethodRef"))
                     |> Seq.length
 
                 let name =
-                    spts.Parent.Descendants(XName.Get("Name"))
-                    |> Seq.head
+                    m.Element(XName.Get("Name"))
 
-                Assert.That(tmrcount, Is.EqualTo sptcount, name.Value)))
+                Assert.That(tmrcount, Is.EqualTo visited, name.Value)))
 
 _Target
     "FSharpTypesDotNetRunner"
