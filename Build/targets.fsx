@@ -2313,6 +2313,7 @@ _Target
         |> DotNet.test
             (fun o ->
                 { o.WithCommon(withWorkingDirectoryVM "Samples/Sample24") with
+                      Framework = Some "netcoreapp3.1"
                       Configuration = DotNet.BuildConfiguration.Debug }
                 |> testWithCLIArguments)
 
@@ -2342,7 +2343,7 @@ _Target
             Path.getFullName "./Samples/Sample24/Sample24.csproj"
 
         let (dotnetexe, args) =
-            defaultDotNetTestCommandLine None sample24
+            defaultDotNetTestCommandLine (Some "netcoreapp3.1") sample24
 
         let collect =
             AltCover.CollectOptions.Primitive
@@ -2402,6 +2403,7 @@ _Target
         |> DotNet.test
             (fun o ->
                 { o.WithCommon(withWorkingDirectoryVM "Samples/Sample27") with
+                      Framework = Some "netcoreapp3.1"
                       Configuration = DotNet.BuildConfiguration.Debug }
                 |> testWithCLIArguments)
 
@@ -2432,7 +2434,7 @@ _Target
             Path.getFullName "./Samples/Sample27/Sample27.fsproj"
 
         let (dotnetexe, args) =
-            defaultDotNetTestCommandLine None sample27
+            defaultDotNetTestCommandLine (Some "netcoreapp3.1") sample27
 
         let collect =
             AltCover.CollectOptions.Primitive
