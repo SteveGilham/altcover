@@ -508,6 +508,8 @@ module ExpectoTestManifest =
       "Tests2.ShouldBeAbleToTrackAMethodWithNonVoidReturn"
       Tests.AltCoverTests2.ShouldBeAbleToTrackAnAsyncMethod,
       "Tests2.ShouldBeAbleToTrackAnAsyncMethod"
+      Tests.AltCoverTests2.ShouldBeAbleToTrackAnFSAsyncMethod,
+      "Tests2.ShouldBeAbleToTrackAnFSAsyncMethod"
       Tests.AltCoverTests2.ShouldBeAbleToInstrumentASwitchForNCover,
       "Tests2.ShouldBeAbleToInstrumentASwitchForNCover"
       Tests.AltCoverTests2.ShouldNotChangeAnUntrackedMethod,

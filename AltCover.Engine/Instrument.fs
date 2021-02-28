@@ -36,14 +36,21 @@ type internal RecorderRefs =
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AsyncSupport =
   { TaskAssembly: AssemblyDefinition // kept for context
+    AsyncAssembly: AssemblyDefinition // kept for context
     Wait: MethodDefinition
-    LocalWait: MethodReference }
+    LocalWait: MethodReference
+    RunSynch: MethodDefinition  }
   static member private DisposeAssemblyDefinition(def: IDisposable) = def.Dispose()
+  member self.RunSynchronously (m:MethodDefinition) types = //TODO
+    self.RunSynch.GenericParameters.Clear()
+    types
+    |> Seq.iter self.RunSynch.GenericParameters.Add
+    self.RunSynch
+    |> m.DeclaringType.Module.ImportReference
 
   member self.Close() =
-    self.TaskAssembly
-    |> Option.ofObj
-    |> Option.iter AsyncSupport.DisposeAssemblyDefinition
+    [ self.TaskAssembly; self.AsyncAssembly]
+    |> List.iter( Option.ofObj >> (Option.iter AsyncSupport.DisposeAssemblyDefinition))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                     "EnsureLocalDisposalRule",
@@ -66,9 +73,27 @@ type internal AsyncSupport =
              f.FullName = "System.Boolean System.Threading.Tasks.Task::Wait(System.Int32)")
       |> Seq.head
 
+    let def2 =
+      typeof<Microsoft.FSharp.Control.AsyncReturn>
+        .Assembly
+        .Location
+      |> AssemblyDefinition.ReadAssembly
+
+    let fsasync =
+      def2.MainModule.GetType("Microsoft.FSharp.Control.FSharpAsync")
+
+    let runsynch =
+      fsasync.Methods
+      |> Seq.filter
+           (fun f ->
+             f.Name = "RunSynchronously`1")
+      |> Seq.head
+
     { TaskAssembly = def
+      AsyncAssembly = def2
       Wait = wait
-      LocalWait = wait |> m.DeclaringType.Module.ImportReference }
+      LocalWait = wait |> m.DeclaringType.Module.ImportReference
+      RunSynch = runsynch }
 
 // State object passed from visit to visit
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -813,59 +838,104 @@ module internal Instrument =
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
-             if asyncChecks |> Seq.forall invokePredicate then
-               // the instruction list is
-               // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
-               // IL_0000: stloc V_1 <<== This one
-               // IL_0045: leave IL_0000
+             let processAsyncAwait (s:InstrumentContext) =
 
-               // Want to insert
-               //+IL_0045: ldloc V_xx <<== whatever
-               //  and either
-               //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
-               //  or
-               //+IL_0046: ldc.i4 65535
-               //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
-               //+IL_0050: pop                    // = discard the return value
-               // ahead of the leave opcode
+               if asyncChecks |> Seq.forall invokePredicate then
+                 // the instruction list is
+                 // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
+                 // IL_0000: stloc V_1 <<== This one
+                 // IL_0045: leave IL_0000
 
-// For F# async
-               //IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
-               //IL_0028: stloc 1
-               //IL_002c: leave IL_0038
-// put
-               //IL_0013: ldloc.1
-               //IL_0014: ldnull
-               //IL_0015: ldnull
-               //IL_0016: call !!0 [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync::RunSynchronously<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<valuetype [System.Runtime]System.Threading.CancellationToken>)
-               //IL_001b: pop
-// ahead of the leave
+                 // Want to insert
+                 //+IL_0045: ldloc V_xx <<== whatever
+                 //  and either
+                 //+IL_0046: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+                 //  or
+                 //+IL_0046: ldc.i4 65535
+                 //+IL_004b: callvirt instance bool [System.Runtime]System.Threading.Tasks.Task::Wait(int32)
+                 //+IL_0050: pop                    // = discard the return value
+                 // ahead of the leave opcode
 
-               let newstate =
-                 { state with
-                     AsyncSupport =
-                       Some(
-                         Option.defaultWith
-                           (fun () -> AsyncSupport.Update m.Method)
-                           state.AsyncSupport
-                       ) }
+                 let newstate =
+                   { s with
+                       AsyncSupport =
+                         Some(
+                           Option.defaultWith
+                             (fun () -> AsyncSupport.Update m.Method)
+                             state.AsyncSupport
+                         ) }
 
-               let injectWait ilp (i: Instruction) =
-                 bulkInsertBefore
-                   ilp
-                   i.Next
-                   [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
-                     ilp.Create(OpCodes.Ldc_I4, 65535)
-                     ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
-                     ilp.Create(OpCodes.Pop) ]
-                   true
+                 let injectWait ilp (i: Instruction) =
+                   bulkInsertBefore
+                     ilp
+                     i.Next
+                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                       ilp.Create(OpCodes.Ldc_I4, 65535)
+                       ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
+                       ilp.Create(OpCodes.Pop) ]
+                     true
 
-               leave
-               |> Seq.iter ((injectWait methodWorker) >> ignore)
+                 leave
+                 |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-               newstate
-             else
-               state)
+                 newstate
+               else
+                 s
+
+             let isAsyncType () =
+               [ "SMicrosoft.FSharp.Control.FSharpAsync`1" ]
+               |> Seq.exists (fun n -> n = e)
+
+             let processFSAsync (s:InstrumentContext) =
+
+               if isAsyncType() then
+                 let asyncOf = rtype.GenericParameters
+
+                 // the instruction list is
+                 // IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
+                 // IL_0000: stloc V_1 <<== This one
+                 // IL_0045: leave IL_0000
+
+                 // Want to insert
+                 //+IL_0045: ldloc V_xx <<== whatever
+                 //IL_0014: ldnull
+                 //IL_0015: ldnull
+                 //IL_0016: call !!0 [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync::RunSynchronously<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<int32>, class [FSharp.Core]Microsoft.FSharp.Core.FSharpOption`1<valuetype [System.Runtime]System.Threading.CancellationToken>)
+                 //IL_001b: pop
+                 // ahead of the leave opcode
+
+                 let newstate =
+                   { s with
+                       AsyncSupport =
+                         Some(
+                           Option.defaultWith
+                             (fun () -> AsyncSupport.Update m.Method) // TODO
+                             state.AsyncSupport
+                         ) }
+
+                 let injectWait ilp (i: Instruction) =
+                   bulkInsertBefore
+                     ilp
+                     i.Next
+                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                       ilp.Create(OpCodes.Ldnull)
+                       ilp.Create(OpCodes.Ldnull)
+                       ilp.Create(OpCodes.Call, newstate.AsyncSupport.Value.RunSynchronously m.Method asyncOf)
+                       ilp.Create(OpCodes.Pop) ]
+                     true
+
+                 leave
+                 |> Seq.iter ((injectWait methodWorker) >> ignore)
+
+                 newstate
+               else
+                 s
+
+             state
+             |> processAsyncAwait
+             |> processFSAsync
+
+           )
            state
 
     let private visitAfterMethod state (m: MethodEntry) =
