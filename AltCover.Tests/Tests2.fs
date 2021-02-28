@@ -1661,7 +1661,7 @@ module AltCoverTests2 =
 
     Assert.That( // Adding the return value, too
       target.Body.Instructions.Count,
-      Is.EqualTo(countBefore + 9 + 4)
+      Is.EqualTo(countBefore + 9 + 5)
     )
 
     Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))

@@ -42,9 +42,8 @@ type internal AsyncSupport =
     RunSynch: MethodDefinition  }
   static member private DisposeAssemblyDefinition(def: IDisposable) = def.Dispose()
   member self.RunSynchronously (m:MethodDefinition) types = //TODO
-    self.RunSynch.GenericParameters.Clear()
-    types
-    |> Seq.iter self.RunSynch.GenericParameters.Add
+    //(self.RunSynch :?> GenericInstanceType).MakeGenericInstanceType(types |> Seq.toArray)
+
     self.RunSynch
     |> m.DeclaringType.Module.ImportReference
 
@@ -86,7 +85,7 @@ type internal AsyncSupport =
       fsasync.Methods
       |> Seq.filter
            (fun f ->
-             f.Name = "RunSynchronously`1")
+             f.Name = "RunSynchronously")
       |> Seq.head
 
     { TaskAssembly = def
@@ -883,13 +882,13 @@ module internal Instrument =
                  s
 
              let isAsyncType () =
-               [ "SMicrosoft.FSharp.Control.FSharpAsync`1" ]
+               [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
                |> Seq.exists (fun n -> n = e)
 
              let processFSAsync (s:InstrumentContext) =
 
                if isAsyncType() then
-                 let asyncOf = rtype.GenericParameters
+                 let asyncOf = (rtype :?> GenericInstanceType).GenericArguments
 
                  // the instruction list is
                  // IL_0023: callvirt instance class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0> [FSharp.Core]Microsoft.FSharp.Control.FSharpAsyncBuilder::Delay<class [FSharp.Core]Microsoft.FSharp.Core.Unit>(class [FSharp.Core]Microsoft.FSharp.Core.FSharpFunc`2<class [FSharp.Core]Microsoft.FSharp.Core.Unit, class [FSharp.Core]Microsoft.FSharp.Control.FSharpAsync`1<!!0>>)
