@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.1.8xx (Habu series release 2)
+# 8.1.817 (Habu series release 3)
 * `Merge-OpenCover` cmdlet and `OpenCover.Merge` API.  It should handle both strict (`OpenCover`, `AltCover --reportFormat=OpenCover`) and more relaxed (`coverlet`, `ConvertFrom-CoverageJson`, `Write-OpenCoverDerivedState -Coverlet`) interpretations
 * When `--callContext` indicates a method returning an F# `async` computation, then track all calls within the same async flow, just as with C# `async` methods from v7.2.800
 
