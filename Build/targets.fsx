@@ -1245,19 +1245,14 @@ _Target
         Directory.ensure "./_Reports"
 
         try
-            !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/AltCover*Test*.dll")
-            |> Seq.filter
-                (fun f ->
-                    Path.GetFileName(f)
-                    <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
-            |> Seq.filter
-                (fun f ->
-                    Path.GetFileName(f)
-                    <> "AltCover.Recorder.Tests.dll")
-            |> Seq.filter
-                (fun f ->
-                    Path.GetFileName(f)
-                    <> "AltCover.Monitor.Tests.dll")
+            [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
+              // Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
+              // Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
+              Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
+              Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
+              Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
             |> NUnitRetry
                 (fun p ->
                     { p with
@@ -1322,9 +1317,11 @@ _Target
         try
             [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
               Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+              // Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
               Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
               Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-              Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" ] // project
+              Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
+              Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ] // project
             |> Seq.iter testIt
         with x ->
             printfn "%A" x
@@ -1338,7 +1335,9 @@ _Target
 
         [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
           Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-          Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" ] // project
+          // Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
+          Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
+          Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ] // project
         |> Seq.iter (
             DotNet.build
                 (fun p ->
@@ -1357,8 +1356,10 @@ _Target
             let l =
                 [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
                   Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
+                  // Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
                   Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
                   Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
+                  Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj"
                   Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj" ] // project
 
             let xml =
@@ -1411,7 +1412,7 @@ _Target
                               [ ReportGenerator.ReportType.Html
                                 ReportGenerator.ReportType.XmlSummary ]
                           TargetDir = "_Reports/_UnitTestWithCoverlet" })
-                xml
+                (xml |> List.filter (fun p -> not <| p.Contains("Visualizer")))
 
             uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
             |> List.map fst
@@ -1426,31 +1427,23 @@ _Target
         Directory.ensure "./_Reports/_UnitTestWithOpenCover"
 
         let testFiles =
-            "./_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll"
-            :: (!!(@"_Binaries/*Test*/Debug+AnyCPU/net472/AltCover*Test*.dll")
-                |> Seq.filter
-                    (fun f ->
-                        Path.GetFileName(f)
-                        <> "AltCover.Fake.DotNet.Testing.AltCover.dll")
-                |> Seq.filter
-                    (fun f ->
-                        Path.GetFileName(f)
-                        <> "AltCover.Monitor.Tests.dll")
-                |> Seq.filter
-                    (fun f ->
-                        Path.GetFileName(f)
-                        <> "AltCover.Recorder.Tests.dll")
-                |> Seq.filter
-                    (fun f ->
-                        Path.GetFileName(f)
-                        <> "AltCover.Tests.Visualizer.dll")
-                |> Seq.toList)
+            [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
+              // Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
+              // Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
+              Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
+              Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
 
         let Recorder4Files =
             !!(@"_Binaries/*Tests/Debug+AnyCPU/net472/*Recorder.Tests.dll")
 
         let RecorderFiles =
             !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
+
+        let VisualizerFiles =
+            !!(@"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Test*.dll")
 
         let coverage =
             Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
@@ -1460,6 +1453,9 @@ _Target
 
         let s4coverage =
             Path.getFullName "_Reports/Recorder4TestWithOpenCover.xml"
+
+        let vcoverage =
+            Path.getFullName "_Reports/VisualizerTestWithOpenCover.xml"
 
         try
             OpenCover.run
@@ -1476,8 +1472,26 @@ _Target
                           Register = OpenCover.RegisterType.Path64
                           Output = coverage
                           TimeOut = TimeSpan(0, 10, 0) })
+                (String.Join(" ", VisualizerFiles)
+                 + " --result=./_Reports/VisualizerTestWithOpenCoverReport.xml")
+
+            OpenCover.run
+                (fun p ->
+                    { p with
+                          WorkingDir = "."
+                          ExePath = openCoverConsole
+                          TestRunnerExePath = nunitConsole // OK, not on Linux
+                          Filter =
+                              "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]*"
+                          MergeByHash = true
+                          ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
+                          OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+                          Register = OpenCover.RegisterType.Path64
+                          Output = coverage
+                          TimeOut = TimeSpan(0, 10, 0) })
                 (String.Join(" ", testFiles)
                  + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
+
 
             OpenCover.run
                 (fun p ->
@@ -1562,6 +1576,9 @@ _Target
             Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
         //let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
 
+        let visDir =
+              Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
+
         let altReport = reports @@ "UnitTestWithAltCover.xml"
 
         printfn "Instrument the net4x code"
@@ -1574,13 +1591,14 @@ _Target
                           [| "."
                              weakDir
                              Recorder4Dir
-                             apiDir (*; monitorDir*)  |]
+                             apiDir (*; visDir ; monitorDir*)  |]
                       OutputDirectories =
                           [| "./__UnitTestWithAltCover"
                              weakDir
                              @@ "__ValidateGendarmeEmulationWithAltCover"
                              Recorder4Dir @@ "__RecorderTestWithAltCover"
-                             apiDir @@ "__ApiTestWithAltCover" (*monitorDir @@ "__MonitorTestWithAltCover"*)  |]
+                             apiDir @@ "__ApiTestWithAltCover"
+                             (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*)  |]
                       StrongNameKey = keyfile
                       ReportFormat = "NCover"
                       InPlace = false
@@ -1609,6 +1627,7 @@ _Target
             [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
               !! "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
               //!!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
+              //!!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.*.dll"
               !! "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
               !! "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
               !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
@@ -1721,6 +1740,16 @@ _Target
               //   baseFilter,
               //   keyfile
               // )
+              (
+                Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472", // test directory
+                "./__VisualizerTestWithAltCoverRunner", // relative output
+                "VisualizerTestWithAltCoverRunner.xml", // coverage report
+                "./_Reports/VisualizerTestWithAltCoverRunnerReport.xml", // relative nunit reporting
+                [ Path.getFullName // test assemblies
+                    "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/__VisualizerTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ],
+                baseFilter,
+                keyfile
+              )
               (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472",
                "./__ValidateGendarmeEmulationWithAltCoverRunner",
                "ValidateGendarmeEmulationWithAltCoverRunner.xml",
@@ -1848,6 +1877,7 @@ _Target
         let xmlreports =
             tests
             |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report)
+            |> List.filter (fun r -> not <| r.Contains("Visualizer"))
 
         ReportGenerator.generateReports
             (fun p ->
@@ -1873,7 +1903,7 @@ _Target
         let altcover =
             Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
-        let tests =
+        let tests = // TODo monitor!not, Visualizer
             [ (Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0",  // testDirectory
                Path.getFullName "AltCover.Expecto.Tests/_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0",  // output
                reports @@ "UnitTestWithAltCoverCore.xml",  // report
@@ -1987,6 +2017,9 @@ _Target
                @@ "Recorder2TestWithAltCoverCoreRunner.xml",
                Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj")
               (reports
+               @@ "VisualizerTestWithAltCoverCoreRunner.xml",
+               Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj")
+              (reports
                @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.xml",  // report
                Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj") ] // project
 
@@ -2094,7 +2127,8 @@ _Target
                         report
                     else
                         report.Replace(".xml", ".net5.0.xml"))
-            |> List.filter (fun f -> File.Exists f && f.Contains("GTKV") |> not)
+            |> List.filter (fun f -> File.Exists f && f.Contains("Visualizer") |> not)
+
         let pester = Path.getFullName "_Reports/Pester.xml"
 
         ReportGenerator.generateReports
@@ -2106,6 +2140,16 @@ _Target
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
             (pester :: xmlreports)
+
+        ReportGenerator.generateReports
+            (fun p ->
+                { p with
+                      ToolType = ToolType.CreateLocalTool()
+                      ReportTypes =
+                          [ ReportGenerator.ReportType.Html ]
+                      TargetDir = "_Reports/_VisualizerTestWithAltCoverCoreRunner" })
+            [reports
+               @@ "VisualizerTestWithAltCoverCoreRunner.xml"]
 
         uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
         |> List.map fst
