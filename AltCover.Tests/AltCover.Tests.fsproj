@@ -13,9 +13,9 @@
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
+    <WarningsAsErrors>3239;0058</WarningsAsErrors>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
@@ -51,7 +51,7 @@
     <EmbeddedResource Include="Sample5.native.cobertura" />
     <EmbeddedResource Include="Sample5.ncover.lcov" />
     <EmbeddedResource Include="Sample5.ncover.xml" />
-    <EmbeddedResource Include="Sample5.ncover.cobertura" />    
+    <EmbeddedResource Include="Sample5.ncover.cobertura" />
     <EmbeddedResource Include="GenuineNCover158.json" />
     <EmbeddedResource Include="GenuineNCover158.Xml" />
     <EmbeddedResource Include="OpenCover.json" />
@@ -86,19 +86,20 @@
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
     <ProjectReference Include="..\AltCover\AltCover.fsproj" />
-    <ProjectReference Include="..\Sample11\Sample11.csproj" />
-    <ProjectReference Include="..\Sample16\Sample16.csproj" />
-    <ProjectReference Include="..\Sample17\Sample17.fsproj" />
-    <ProjectReference Include="..\Sample1\Sample1.csproj" Condition="'$(TargetFramework)' != 'net472'" />
-    <ProjectReference Include="..\Sample21\Sample21.csproj" />
-    <ProjectReference Include="..\Sample23\Sample23.csproj" />
-    <ProjectReference Include="..\Sample24\Sample24.csproj" />
-    <ProjectReference Include="..\Sample2\Sample2.fsproj" />
-    <ProjectReference Include="..\Sample3\Sample3.csproj" />
-    <ProjectReference Include="..\Sample4\Sample4.fsproj" />
-    <ProjectReference Include="..\Sample5\Sample5.csproj" />
-    <ProjectReference Include="..\Sample6\Sample6.fsproj" />
-    <ProjectReference Include="..\Sample12\Sample12.csproj" />
+    <ProjectReference Include="..\Samples\Sample11\Sample11.csproj" />
+    <ProjectReference Include="..\Samples\Sample16\Sample16.csproj" />
+    <ProjectReference Include="..\Samples\Sample17\Sample17.fsproj" />
+    <ProjectReference Include="..\Samples\Sample1\Sample1.csproj" Condition="'$(TargetFramework)' != 'net472'" />
+    <ProjectReference Include="..\Samples\Sample21\Sample21.csproj" />
+    <ProjectReference Include="..\Samples\Sample23\Sample23.csproj" />
+    <ProjectReference Include="..\Samples\Sample24\Sample24.csproj" />
+    <ProjectReference Include="..\Samples\Sample27\Sample27.fsproj" />
+    <ProjectReference Include="..\Samples\Sample2\Sample2.fsproj" />
+    <ProjectReference Include="..\Samples\Sample3\Sample3.csproj" />
+    <ProjectReference Include="..\Samples\Sample4\Sample4.fsproj" />
+    <ProjectReference Include="..\Samples\Sample5\Sample5.csproj" />
+    <ProjectReference Include="..\Samples\Sample6\Sample6.fsproj" />
+    <ProjectReference Include="..\Samples\Sample12\Sample12.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -118,7 +119,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
@@ -129,7 +130,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

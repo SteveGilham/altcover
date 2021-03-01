@@ -15,46 +15,51 @@ open Mono.Cecil.Pdb
 open Mono.Options
 
 // Command line argument parsing preamble ---------------------------------
-let (!+) (option : string * string * (string -> unit)) (options : OptionSet) =
-  let prototype, help, action = option
-  options.Add(prototype, help, new System.Action<string>(action))
+let (!+) (option: string * string * (string -> unit)) (options: OptionSet) =
+    let prototype, help, action = option
+    options.Add(prototype, help, new System.Action<string>(action))
 
-let Usage (intro : string) (options : OptionSet) =
-  Console.Error.WriteLine(intro)
-  options.WriteOptionDescriptions(Console.Error)
-  Environment.Exit(1)
+let Usage (intro: string) (options: OptionSet) =
+    Console.Error.WriteLine(intro)
+    options.WriteOptionDescriptions(Console.Error)
+    Environment.Exit(1)
 
 let assemblyName = ref ""
 let keyName = ref ""
 let cor32plus = ref false
 
 let options =
-  new OptionSet()
-  |> !+("k|key=", "The strong naming key to apply", (fun s -> keyName := s))
-  |> !+("a|assembly=", "The assembly to process", (fun s -> assemblyName := s))
-  |> !+("c|cor32", "Do what CorFlags  /32BIT+ /Force does.",
-        (fun x -> cor32plus := x |> isNull |> not))
+    new OptionSet()
+    |> !+("k|key=", "The strong naming key to apply", (fun s -> keyName := s))
+    |> !+("a|assembly=", "The assembly to process", (fun s -> assemblyName := s))
+    |> !+("c|cor32", "Do what CorFlags  /32BIT+ /Force does.", (fun x -> cor32plus := x |> isNull |> not))
 
 let rest =
-  try
-    options.Parse(fsi.CommandLineArgs)
-  with :? OptionException ->
-    Usage "Error - usage is:" options
-    new List<String>()
+    try
+        options.Parse(fsi.CommandLineArgs)
+    with :? OptionException ->
+        Usage "Error - usage is:" options
+        new List<String>()
 
 // The meat of the script starts here ---------------------------------
 // load files
-let stream = new FileStream(!keyName, FileMode.Open, FileAccess.Read)
+let stream =
+    new FileStream(!keyName, FileMode.Open, FileAccess.Read)
+
 let key = StrongNameKeyPair(stream)
-let definition = AssemblyDefinition.ReadAssembly(!assemblyName)
+
+let definition =
+    AssemblyDefinition.ReadAssembly(!assemblyName)
 
 // Do what CorFlags /32BIT+ /Force does if required
 if !cor32plus then
-  definition.MainModule.Attributes <-
-    ModuleAttributes.Required32Bit ||| definition.MainModule.Attributes
+    definition.MainModule.Attributes <-
+        ModuleAttributes.Required32Bit
+        ||| definition.MainModule.Attributes
 // The headline section : strong-naming ---------------------------------
 // (Re-)apply the strong name
 definition.Name.HasPublicKey <- true
+
 definition.Name.PublicKey <- key.PublicKey
 
 let pkey = WriterParameters()

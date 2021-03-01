@@ -9,8 +9,11 @@ open System.Diagnostics.CodeAnalysis
 open System.Linq
 #if RUNNER
 
-[<assembly: SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces",
-  Scope="type", Target="AltCover.AltCover", Justification="Design decision")>]
+[<assembly: SuppressMessage("Microsoft.Naming",
+                            "CA1724:TypeNamesShouldNotMatchNamespaces",
+                            Scope = "type",
+                            Target = "AltCover.AltCover",
+                            Justification = "Design decision")>]
 ()
 
 #else
@@ -25,32 +28,35 @@ module AltCover =
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type ValidatedCommandLine =
-    { Command : string list
-      Errors : string seq }
+    { Command: string list
+      Errors: string seq }
     override self.ToString() =
       let cl =
-        String.Join
-          (" ",
-           Seq.concat
-             [ [ "altcover" ]
-               self.Command ])
-      String.Join
-        (Environment.NewLine,
-         Seq.concat
-           [ [| cl |] |> Array.toSeq
-             self.Errors ])
+        String.Join(
+          " ",
+          Seq.concat [ [ "altcover" ]
+                       self.Command ]
+        )
+
+      String.Join(
+        Environment.NewLine,
+        Seq.concat [ [| cl |] |> Array.toSeq
+                     self.Errors ]
+      )
 #endif
 
-  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
-                    SuppressMessage("Gendarme.Rules.Smells",
-                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                    Justification = "Idiomatic F#")>]
+  [<ExcludeFromCodeCoverage;
+    NoComparison;
+    AutoSerializable(false);
+    SuppressMessage("Gendarme.Rules.Smells",
+                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                    Justification = "Idiomatic F#")>]
   type CollectOptions =
     | Primitive of Primitive.CollectOptions
     | TypeSafe of TypeSafe.CollectOptions
     | Abstract of Abstract.ICollectOptions
 
-    static member private ToSeq(s : String seq) =
+    static member private ToSeq(s: String seq) =
       match s with
       | null -> Seq.empty<string>
       | _ -> s
@@ -73,8 +79,7 @@ module AltCover =
       | Abstract a -> a.Executable
       | TypeSafe t -> t.Executable.AsString()
 
-    [<SuppressMessage("Microsoft.Naming", "CA1704",
-        Justification="'Lcov' is jargon")>]
+    [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "'Lcov' is jargon")>]
     member self.LcovReport =
       match self with
       | Primitive p -> p.LcovReport
@@ -87,8 +92,9 @@ module AltCover =
       | Abstract a -> a.Threshold
       | TypeSafe t -> t.Threshold.AsString()
 
-    [<SuppressMessage("Microsoft.Naming", "CA1704",
-        Justification="'Cobertura' is jargon")>]
+    [<SuppressMessage("Microsoft.Naming",
+                      "CA1704",
+                      Justification = "'Cobertura' is jargon")>]
     member self.Cobertura =
       match self with
       | Primitive p -> p.Cobertura
@@ -143,51 +149,58 @@ module AltCover =
       let saved = CommandLine.error
 
       let validate f x =
-        if x
-           |> String.IsNullOrWhiteSpace
-           |> not
-        then f x |> ignore
+        if x |> String.IsNullOrWhiteSpace |> not then
+          f x |> ignore
 
       let validateOptional f key x = validate (f key) x
 
       let toOption s =
-        if s |> String.IsNullOrWhiteSpace then None else Some s
+        if s |> String.IsNullOrWhiteSpace then
+          None
+        else
+          Some s
+
       try
         let recorder = self.RecorderDirectory
+
         [ ("--recorderDirectory", recorder)
           ("--workingDirectory", self.WorkingDirectory) ]
         |> List.iter (fun (n, x) -> validateOptional CommandLine.validateDirectory n x)
+
         [ ("--executable", self.Executable)
           ("--lcovReport", self.LcovReport)
           ("--cobertura", self.Cobertura)
           ("--outputFile", self.OutputFile) ]
         |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
+
         validate Threshold.Validate self.Threshold
-        if afterPreparation then Runner.requireRecorderTest (recorder |> toOption) () ()
+
+        if afterPreparation then
+          Runner.requireRecorderTest (recorder |> toOption) () ()
+
         CommandLine.error |> List.toArray
       finally
         CommandLine.error <- saved
 #else
 #endif
 
-  [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false);
-                    SuppressMessage("Gendarme.Rules.Smells",
-                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                    Justification = "Idiomatic F#")>]
+  [<ExcludeFromCodeCoverage;
+    NoComparison;
+    AutoSerializable(false);
+    SuppressMessage("Gendarme.Rules.Smells",
+                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                    Justification = "Idiomatic F#")>]
   type PrepareOptions =
     | Primitive of Primitive.PrepareOptions
     | TypeSafe of TypeSafe.PrepareOptions
     | Abstract of Abstract.IPrepareOptions
 
-    static member private ToSeq(s : 'a seq) =
+    static member private ToSeq(s: 'a seq) =
       match s with
       | null -> Seq.empty<'a>
       | _ -> s
 
-    static member private ToList(s : 'a seq) =
-      s
-      |> PrepareOptions.ToSeq
-      |> Seq.toList
+    static member private ToList(s: 'a seq) = s |> PrepareOptions.ToSeq |> Seq.toList
 
     member self.InputDirectories =
       match self with
@@ -303,9 +316,11 @@ module AltCover =
         | Primitive p -> p.ReportFormat
         | Abstract a -> a.ReportFormat
         | TypeSafe t -> t.ReportFormat.AsString()
-      if String.IsNullOrWhiteSpace simple
-      then "OpenCover"
-      else simple
+
+      if String.IsNullOrWhiteSpace simple then
+        "OpenCover"
+      else
+        simple
 
     member self.InPlace =
       match self with
@@ -404,23 +419,48 @@ module AltCover =
       | TypeSafe t -> t.Verbosity
 
     interface Abstract.IPrepareOptions with
-      member self.InputDirectories = self.InputDirectories |> PrepareOptions.ToSeq
-      member self.OutputDirectories = self.OutputDirectories |> PrepareOptions.ToSeq
-      member self.SymbolDirectories = self.SymbolDirectories |> PrepareOptions.ToSeq
-      member self.Dependencies = self.Dependencies |> PrepareOptions.ToSeq
+      member self.InputDirectories =
+        self.InputDirectories |> PrepareOptions.ToSeq
+
+      member self.OutputDirectories =
+        self.OutputDirectories |> PrepareOptions.ToSeq
+
+      member self.SymbolDirectories =
+        self.SymbolDirectories |> PrepareOptions.ToSeq
+
+      member self.Dependencies =
+        self.Dependencies |> PrepareOptions.ToSeq
+
       member self.Keys = self.Keys |> PrepareOptions.ToSeq
       member self.StrongNameKey = self.StrongNameKey
       member self.Report = self.Report
       member self.FileFilter = self.FileFilter |> PrepareOptions.ToSeq
-      member self.AssemblyFilter = self.AssemblyFilter |> PrepareOptions.ToSeq
-      member self.AssemblyExcludeFilter = self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
+
+      member self.AssemblyFilter =
+        self.AssemblyFilter |> PrepareOptions.ToSeq
+
+      member self.AssemblyExcludeFilter =
+        self.AssemblyExcludeFilter |> PrepareOptions.ToSeq
+
       member self.TypeFilter = self.TypeFilter |> PrepareOptions.ToSeq
-      member self.MethodFilter = self.MethodFilter |> PrepareOptions.ToSeq
-      member self.AttributeFilter = self.AttributeFilter |> PrepareOptions.ToSeq
+
+      member self.MethodFilter =
+        self.MethodFilter |> PrepareOptions.ToSeq
+
+      member self.AttributeFilter =
+        self.AttributeFilter |> PrepareOptions.ToSeq
+
       member self.PathFilter = self.PathFilter |> PrepareOptions.ToSeq
-      member self.AttributeTopLevel = self.AttributeTopLevel |> PrepareOptions.ToSeq
-      member self.TypeTopLevel = self.TypeTopLevel |> PrepareOptions.ToSeq
-      member self.MethodTopLevel = self.MethodTopLevel |> PrepareOptions.ToSeq
+
+      member self.AttributeTopLevel =
+        self.AttributeTopLevel |> PrepareOptions.ToSeq
+
+      member self.TypeTopLevel =
+        self.TypeTopLevel |> PrepareOptions.ToSeq
+
+      member self.MethodTopLevel =
+        self.MethodTopLevel |> PrepareOptions.ToSeq
+
       member self.CallContext = self.CallContext |> PrepareOptions.ToSeq
       member self.ReportFormat = self.ReportFormat
       member self.InPlace = self.InPlace
@@ -447,17 +487,18 @@ module AltCover =
     static member private ValidateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
 
     static member private ValidateOptional f key x =
-      if x
-         |> String.IsNullOrWhiteSpace
-         |> not
-      then f key x |> ignore
+      if x |> String.IsNullOrWhiteSpace |> not then
+        f key x |> ignore
 
     member private self.Consistent() =
       if self.LineCover && self.BranchCover then
         CommandLine.error <-
-          String.Format
-            (System.Globalization.CultureInfo.CurrentCulture,
-             CommandLine.resources.GetString "Incompatible", "--branchcover", "--linecover")
+          String.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            CommandLine.resources.GetString "Incompatible",
+            "--branchcover",
+            "--linecover"
+          )
           :: CommandLine.error
 
     member self.Validate() =
@@ -466,10 +507,12 @@ module AltCover =
       let validateContext context =
         let select state x =
           let (_, n) = Main.validateCallContext state x
+
           match (state, n) with
           | (true, _)
-          | (_, Left(Some _)) -> true
+          | (_, Left (Some _)) -> true
           | _ -> false
+
         context
         |> PrepareOptions.ToSeq
         |> Seq.fold select false
@@ -477,19 +520,36 @@ module AltCover =
 
       try
         CommandLine.error <- []
-        PrepareOptions.ValidateArray self.InputDirectories CommandLine.validateDirectory
+
+        PrepareOptions.ValidateArray
+          self.InputDirectories
+          CommandLine.validateDirectory
           "--inputDirectory"
-        PrepareOptions.ValidateArray self.OutputDirectories CommandLine.validatePath
+
+        PrepareOptions.ValidateArray
+          self.OutputDirectories
+          CommandLine.validatePath
           "--outputDirectory"
-        PrepareOptions.ValidateOptional CommandLine.validateStrongNameKey "--strongNameKey"
+
+        PrepareOptions.ValidateOptional
+          CommandLine.validateStrongNameKey
+          "--strongNameKey"
           self.StrongNameKey
-        PrepareOptions.ValidateOptional CommandLine.validatePath "--report"
-          self.Report
-        PrepareOptions.ValidateArray self.SymbolDirectories CommandLine.validateDirectory
+
+        PrepareOptions.ValidateOptional CommandLine.validatePath "--report" self.Report
+
+        PrepareOptions.ValidateArray
+          self.SymbolDirectories
+          CommandLine.validateDirectory
           "--symbolDirectory"
-        PrepareOptions.ValidateArray self.Dependencies CommandLine.validateAssembly
+
+        PrepareOptions.ValidateArray
+          self.Dependencies
+          CommandLine.validateAssembly
           "--dependency"
+
         PrepareOptions.ValidateArray self.Keys CommandLine.validateStrongNameKey "--key"
+
         [ self.FileFilter
           self.AssemblyFilter
           self.AssemblyExcludeFilter
@@ -499,29 +559,36 @@ module AltCover =
           self.PathFilter ]
         |> Seq.iter
              (fun a -> PrepareOptions.ValidateArraySimple a CommandLine.validateRegexes)
+
         self.Consistent()
         validateContext self.CallContext
         CommandLine.error |> List.toArray
       finally
         CommandLine.error <- saved
 
-  [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false);
-                    SuppressMessage("Gendarme.Rules.Smells",
-                                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
-                                    Justification = "Idiomatic F#")>]
+  [<ExcludeFromCodeCoverage;
+    NoComparison;
+    NoEquality;
+    AutoSerializable(false);
+    SuppressMessage("Gendarme.Rules.Smells",
+                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                    Justification = "Idiomatic F#")>]
   type LoggingOptions =
     | Primitive of Primitive.LoggingOptions
     | Abstract of Abstract.ILoggingOptions
 
-    static member Create() = Primitive.LoggingOptions.Create() |> Primitive
-    static member Translate (input : Abstract.ILoggingOptions) =
+    static member Create() =
+      Primitive.LoggingOptions.Create() |> Primitive
+
+    static member Translate(input: Abstract.ILoggingOptions) =
       { Primitive.LoggingOptions.Create() with
           Failure = input.Failure |> LoggingOptions.ActionAdapter
           Warn = input.Warn |> LoggingOptions.ActionAdapter
           Echo = input.Echo |> LoggingOptions.ActionAdapter
-          Info = input.Info |> LoggingOptions.ActionAdapter } |> Primitive
+          Info = input.Info |> LoggingOptions.ActionAdapter }
+      |> Primitive
 
-    static member ActionAdapter(action : Action<String>) =
+    static member ActionAdapter(action: Action<String>) =
       match action with
       | null -> ignore
       | _ -> action.Invoke

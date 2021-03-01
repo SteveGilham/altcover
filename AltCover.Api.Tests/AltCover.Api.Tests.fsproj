@@ -17,10 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\nupkg\build\netstandard2.0\AltCover.targets" Link="AltCover.targets" />
     <EmbeddedResource Include="..\AltCover.Tests\CompressBoth.xml" Link="CompressBoth.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Compressible.xml" Link="Compressible.xml" />
@@ -39,6 +35,7 @@
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.xml" Link="Sample1WithNCover.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.Prepare.xml" Link="Sample4.Prepare.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
@@ -58,11 +55,11 @@
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="coverlet.collector" Version="3.0.2">
+    <PackageReference Include="coverlet.collector" Version="3.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
     <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
@@ -79,11 +76,13 @@
     <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
     <ProjectReference Include="..\AltCover.Toolkit\AltCover.Toolkit.fsproj" />
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
-    <ProjectReference Include="..\Sample18\Sample18.fsproj" />
+    <ProjectReference Include="..\Samples\Sample18\Sample18.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

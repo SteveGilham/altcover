@@ -17,84 +17,101 @@ module internal TaskHelpers =
     | (false, _) -> System.Diagnostics.TraceLevel.Info
     | (_, x) -> x
 
-[<SuppressMessage(
-  "Gendarme.Rules.Smells",
-  "AvoidLargeClassesRule",
-  Justification="So many options available, so many compiler generated fields");
+[<SuppressMessage("Gendarme.Rules.Smells",
+                  "AvoidLargeClassesRule",
+                  Justification = "So many options available, so many compiler generated fields");
   AutoSerializable(false)>]
 type Prepare() =
   inherit Task(null)
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
-  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val InputDirectories : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val OutputDirectories : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val SymbolDirectories : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val Dependencies : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val Keys : string array = [||] with get, set
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  member val internal ACLog: AltCover.LoggingOptions option = None with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val InputDirectories: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val OutputDirectories: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val SymbolDirectories: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val Dependencies: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val Keys: string array = [||] with get, set
+
   member val StrongNameKey = String.Empty with get, set
   member val Report = String.Empty with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val FileFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val AssemblyFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val AssemblyExcludeFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val TypeFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val MethodFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val AttributeFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val PathFilter : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val AttributeTopLevel : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val TypeTopLevel : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val MethodTopLevel : string array = [||] with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val CallContext : string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val FileFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val AssemblyFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val AssemblyExcludeFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val TypeFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val MethodFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val AttributeFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val PathFilter: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val AttributeTopLevel: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val TypeTopLevel: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val MethodTopLevel: string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val CallContext: string array = [||] with get, set
+
   member val LocalSource = false with get, set
   member val ReportFormat = "OpenCover" with get, set
   member val InPlace = false with get, set
@@ -104,10 +121,12 @@ type Prepare() =
   member val SingleVisit = false with get, set
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val CommandLine : string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val CommandLine: string array = [||] with get, set
+
   member val SourceLink = false with get, set
   member val Defer = true with get, set
   member val VisibleBranches = false with get, set
@@ -116,7 +135,9 @@ type Prepare() =
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
 
-  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text =
+    base.Log.LogMessage(MessageImportance.High, text)
+
   override self.Execute() =
     let log =
       Option.defaultValue
@@ -124,7 +145,8 @@ type Prepare() =
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
               Warn = base.Log.LogWarning
-              Info = self.Message }) self.ACLog
+              Info = self.Message })
+        self.ACLog
 
     let task =
       AltCover.PrepareOptions.Primitive
@@ -170,44 +192,51 @@ type Prepare() =
 type Collect() =
   inherit Task(null)
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
-  member val internal ACLog : AltCover.LoggingOptions option = None with get, set
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  member val internal ACLog: AltCover.LoggingOptions option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
 
   member val WorkingDirectory = String.Empty with get, set
   member val Executable = String.Empty with get, set
-  [<SuppressMessage("Microsoft.Naming", "CA1704",
-    Justification="'LCov' is jargon")>]
+
+  [<SuppressMessage("Microsoft.Naming", "CA1704", Justification = "'LCov' is jargon")>]
   member val LcovReport = String.Empty with get, set
+
   member val Threshold = String.Empty with get, set
-  [<SuppressMessage("Microsoft.Naming", "CA1704",
-    Justification="'  member val Cobertura = String.Empty with get, set
+
+  [<SuppressMessage("Microsoft.Naming",
+                    "CA1704",
+                    Justification = "'  member val Cobertura = String.Empty with get, set
 ' is jargon")>]
   member val Cobertura = String.Empty with get, set
+
   member val OutputFile = String.Empty with get, set
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val CommandLine : string array = [||] with get, set
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val CommandLine: string array = [||] with get, set
+
   member val SummaryFormat = String.Empty with get, set
   member val ExposeReturnCode = true with get, set
   member val Verbosity = "Info" with get, set
 
   [<Output>]
-  [<SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
-                                                    Justification =
-                                                      "Instance property needed");
+  [<SuppressMessage("Microsoft.Performance",
+                    "CA1822:MarkMembersAsStatic",
+                    Justification = "Instance property needed");
     SuppressMessage("Gendarme.Rules.Correctness",
-                                                      "MethodCanBeMadeStaticRule",
-                                                      Justification =
-                                                       "Instance property needed")>]
+                    "MethodCanBeMadeStaticRule",
+                    Justification = "Instance property needed")>]
   member self.Summary = Command.Summary()
 
-  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text =
+    base.Log.LogMessage(MessageImportance.High, text)
+
   override self.Execute() =
     let log =
       Option.defaultValue
@@ -215,7 +244,8 @@ type Collect() =
           { Primitive.LoggingOptions.Create() with
               Failure = base.Log.LogError
               Warn = base.Log.LogWarning
-              Info = self.Message }) self.ACLog
+              Info = self.Message })
+        self.ACLog
 
     let task =
       AltCover.CollectOptions.Primitive
@@ -237,13 +267,14 @@ type Collect() =
 type PowerShell() =
   inherit Task(null)
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
-  member val internal IO = AltCover.LoggingOptions.Primitive
-                             { Primitive.LoggingOptions.Create() with
-                                 Failure = base.Log.LogError
-                                 Warn = base.Log.LogWarning } with get, set
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  member val internal IO =
+    AltCover.LoggingOptions.Primitive
+      { Primitive.LoggingOptions.Create() with
+          Failure = base.Log.LogError
+          Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Command.ImportModule()
@@ -255,13 +286,14 @@ type PowerShell() =
 type GetVersion() =
   inherit Task(null)
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
-  member val internal IO = AltCover.LoggingOptions.Primitive
-                             { Primitive.LoggingOptions.Create() with
-                                 Failure = base.Log.LogError
-                                 Warn = base.Log.LogWarning } with get, set
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  member val internal IO =
+    AltCover.LoggingOptions.Primitive
+      { Primitive.LoggingOptions.Create() with
+          Failure = base.Log.LogError
+          Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Command.FormattedVersion()
@@ -274,22 +306,21 @@ type Echo() =
 
   [<Required>]
   member val Text = String.Empty with get, set
+
   member val Verbosity = "Info" with get, set
 
-  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-    Justification="Queen's English, m80!")>]
+  [<SuppressMessage("Microsoft.Naming",
+                    "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification = "Queen's English, m80!")>]
   member val Colour = String.Empty with get, set
   // member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
 
   override self.Execute() =
-    if self.Text
-       |> String.IsNullOrWhiteSpace
-       |> not
-       && (self.Verbosity
-           |> TaskHelpers.parse
-           |> int) >= int System.Diagnostics.TraceLevel.Info
-    then
+    if self.Text |> String.IsNullOrWhiteSpace |> not
+       && (self.Verbosity |> TaskHelpers.parse |> int)
+          >= int System.Diagnostics.TraceLevel.Info then
       let original = Console.ForegroundColor
+
       try
         TaskIO.colourize self.Colour
         printfn "%s" self.Text
@@ -307,27 +338,31 @@ type RunSettings() =
   [<Output>]
   member val Extended = String.Empty with get, set
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
-  member private self.Message text = base.Log.LogMessage(MessageImportance.High, text)
+  member private self.Message text =
+    base.Log.LogMessage(MessageImportance.High, text)
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
-      Justification = "Unit test accessor")>]
-  member val internal MessageIO : (string -> unit) option = None  with get, set
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  member val internal MessageIO: (string -> unit) option = None with get, set
 
   override self.Execute() =
-    let signal = Option.defaultValue self.Message self.MessageIO
-    let logIt = (self.Verbosity
-                 |> TaskHelpers.parse
-                 |> int) >= int System.Diagnostics.TraceLevel.Info
-    if logIt
-    then self.TestSetting
-         |> sprintf "Settings Before: %s"
-         |> signal
+    let signal =
+      Option.defaultValue self.Message self.MessageIO
+
+    let logIt =
+      (self.Verbosity |> TaskHelpers.parse |> int)
+      >= int System.Diagnostics.TraceLevel.Info
+
+    if logIt then
+      self.TestSetting
+      |> sprintf "Settings Before: %s"
+      |> signal
 
     let tempFile = Path.GetTempFileName()
 
@@ -348,7 +383,7 @@ type RunSettings() =
 
       let xname n = XName.Get n
 
-      let ensureHas (parent : XContainer) childName =
+      let ensureHas (parent: XContainer) childName =
         match parent.Descendants(xname childName) |> Seq.tryHead with
         | Some child -> child
         | _ ->
@@ -357,26 +392,39 @@ type RunSettings() =
             extra
 
       let here = Assembly.GetExecutingAssembly().Location
-      let expected = Path.Combine(Path.GetDirectoryName(here), self.DataCollector)
+
+      let expected =
+        Path.Combine(Path.GetDirectoryName(here), self.DataCollector)
 
       let result = File.Exists(expected)
 
       if result then
         let rs = ensureHas settings "RunSettings"
-        let ip1 = ensureHas rs "InProcDataCollectionRunSettings"
+
+        let ip1 =
+          ensureHas rs "InProcDataCollectionRunSettings"
+
         let ip2 = ensureHas ip1 "InProcDataCollectors"
 
         let name = AssemblyName.GetAssemblyName(expected)
+
         let altcover =
-          XElement
-            (xname "InProcDataCollector", XAttribute(xname "friendlyName", "AltCover"),
-             XAttribute
-               (xname "uri",
-                "InProcDataCollector://AltCover/Recorder/" + name.Version.ToString()),
-             XAttribute
-               (xname "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
-             XAttribute(xname "codebase", expected),
-             XElement(xname "Configuration", XElement(xname "Offload", XText("true"))))
+          XElement(
+            xname "InProcDataCollector",
+            XAttribute(xname "friendlyName", "AltCover"),
+            XAttribute(
+              xname "uri",
+              "InProcDataCollector://AltCover/Recorder/"
+              + name.Version.ToString()
+            ),
+            XAttribute(
+              xname "assemblyQualifiedName",
+              "AltCover.DataCollector, " + name.FullName
+            ),
+            XAttribute(xname "codebase", expected),
+            XElement(xname "Configuration", XElement(xname "Offload", XText("true")))
+          )
+
         ip2.Add(altcover)
 
         self.Extended <- Path.ChangeExtension(tempFile, ".altcover.runsettings")
@@ -384,17 +432,21 @@ type RunSettings() =
 
       result
     finally
-      if logIt
-      then self.Extended
-           |> sprintf "Settings After: %s"
-           |> signal
+      if logIt then
+        self.Extended
+        |> sprintf "Settings After: %s"
+        |> signal
+
       File.Delete(tempFile)
 
 type ContingentCopy() =
   inherit Task(null)
-  [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                    Justification="The name of the MSBuild property to use")>]
+
+  [<SuppressMessage("Microsoft.Naming",
+                    "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification = "The name of the MSBuild property to use")>]
   member val RelativeDir = String.Empty with get, set
+
   member val CopyToOutputDirectory = String.Empty with get, set
   member val FileName = String.Empty with get, set
 
@@ -411,29 +463,37 @@ type ContingentCopy() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "BuildOutputDirectory %A" self.BuildOutputDirectory)
     //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
 
-    if (self.CopyToOutputDirectory = "Always" || self.CopyToOutputDirectory = "PreserveNewest") &&
-        (self.RelativeDir |> Path.IsPathRooted |> not) &&
-        (self.RelativeDir |> String.IsNullOrWhiteSpace |> not) &&
-        (self.FileName |> String.IsNullOrWhiteSpace |> not)
-    then
-      let toDir = Path.Combine(self.InstrumentDirectory, self.RelativeDir)
+    if (self.CopyToOutputDirectory = "Always"
+        || self.CopyToOutputDirectory = "PreserveNewest")
+       && (self.RelativeDir |> Path.IsPathRooted |> not)
+       && (self.RelativeDir
+           |> String.IsNullOrWhiteSpace
+           |> not)
+       && (self.FileName |> String.IsNullOrWhiteSpace |> not) then
+      let toDir =
+        Path.Combine(self.InstrumentDirectory, self.RelativeDir)
+
       let filename = self.FileName |> Path.GetFileName
       let toFile = Path.Combine(toDir, filename)
-      if toDir |> Directory.Exists |> not
-      then toDir |> Directory.CreateDirectory |> ignore
-      let from = Path.Combine(self.BuildOutputDirectory, self.RelativeDir, filename)
+
+      if toDir |> Directory.Exists |> not then
+        toDir |> Directory.CreateDirectory |> ignore
+
+      let from =
+        Path.Combine(self.BuildOutputDirectory, self.RelativeDir, filename)
       //base.Log.LogMessage(MessageImportance.High, sprintf "copy %A => %A" from toFile)
-      if File.Exists from
-      then File.Copy(from, toFile, true)
+      if File.Exists from then
+        File.Copy(from, toFile, true)
+
     true
 
 type RetryDelete() =
   inherit Task(null)
 
-  [<SuppressMessage(
-      "Gendarme.Rules.Performance", "AvoidReturningArraysOnPropertiesRule",
-      Justification = "MSBuild tasks use arrays")>]
-  member val Files : string array = [||] with get, set
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "MSBuild tasks use arrays")>]
+  member val Files: string array = [||] with get, set
 
   member internal self.Write message =
     base.Log.LogMessage(MessageImportance.High, message)
@@ -443,4 +503,5 @@ type RetryDelete() =
       self.Files
       |> Seq.filter File.Exists
       |> Seq.iter (CommandLine.I.doRetry File.Delete self.Write 10 1000 0)
+
     true

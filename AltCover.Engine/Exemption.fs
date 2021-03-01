@@ -1,13 +1,16 @@
 namespace AltCover
+
 open System.Diagnostics.CodeAnalysis
 
-[<SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
-  Justification="Data size is important")>]
+[<SuppressMessage("Gendarme.Rules.Design",
+                  "EnumsShouldUseInt32Rule",
+                  Justification = "Data size is important")>]
 #if !GUI
 type internal Exemption =
 #else
-[<SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
-  Justification="Data size is important")>]
+[<SuppressMessage("Microsoft.Design",
+                  "CA1028:EnumStorageShouldBeInt32",
+                  Justification = "Data size is important")>]
 type Exemption =
 #endif
   | NonCode = 2y // Grey (comments etc.) or

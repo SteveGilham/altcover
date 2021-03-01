@@ -42,7 +42,7 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         $i = "./_Binaries/Sample2/Debug+AnyCPU/net5.0"
         if (Test-Path $o) {
@@ -70,7 +70,7 @@ Describe "Invoke-Altcover" {
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
         $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
@@ -81,7 +81,7 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
@@ -105,12 +105,12 @@ Describe "Invoke-Altcover" {
         Start-Transcript -Path "./_Packaging/WhatIf.txt"
         Invoke-AltCover -WhatIf -ShowStatic "mark"
         Invoke-AltCover -WhatIf -ShowStatic $m
-        Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
+        Invoke-AltCover -Runner -RecorderDirectory "./Samples/Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
                     ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:+".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --reportFormat OpenCover --showstatic:++ ".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Samples/Sample2 --collect".'))
 
         $lines = Get-Content "./_Packaging/WhatIf.txt"
         $ll = $lines | ? { $_ -like "What if: *" }
@@ -567,7 +567,7 @@ Describe "Write-OpenCoverDerivedState" {
     $expected.CoverageSession.Modules.Module.hash = $hactual
     $expected.CoverageSession.Modules.Module.ModulePath = $assembly
     $expected.CoverageSession.Modules.Module.ModuleTime = $doc.CoverageSession.Modules.Module.ModuleTime
-    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Sample18/Tests.fs").Path
+    $expected.CoverageSession.Modules.Module.Files.File.fullPath = (Resolve-Path "./Samples/Sample18/Tests.fs").Path
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -611,7 +611,7 @@ Describe "ConvertTo-CoverageJson" {
         $xd = [xdoc]::Load("./AltCover.Tests/GenuineNCover158.Xml")
 
         ## fix up file path
-        $exe = [System.IO.Path]::Combine("./Sample19", "ConsoleApplication1.exe")
+        $exe = [System.IO.Path]::Combine("./Samples/Sample19", "ConsoleApplication1.exe")
         $xd.Root.Descendants("module") | % {
           $_.Attribute("name").Value = [System.IO.Path]::GetFullPath($exe)
         }
@@ -662,5 +662,37 @@ Describe "ConvertFrom-CoverageJson" {
     $expected = ([String]::Join("`n", (Get-Content "./AltCover.Tests/Sample5.native.xml")))
     $actual = ([String]::Join("`n", (Get-Content "./_Packaging/Sample5.native.xml")))
     $actual | Should -Be $expected
+  }
+}
+
+Describe "MergeOpenCover" {
+  It "Absorbs Unsupported Xml Files" {
+    $xml = dir -recurse "./AltCover.Tests/*.cobertura" | Merge-OpenCover
+    $xml | Should -BeOfType [xdoc]
+
+    $expected = @"
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Summary numSequencePoints="?" visitedSequencePoints="0" numBranchPoints="?" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="?" visitedMethods="0" numMethods="?" minCrapScore="0" maxCrapScore="0" />
+  <Modules />
+</CoverageSession>
+"@
+
+    $xml.ToString().Replace("`r", "") | Should -BeExactly $expected.Trim().Replace("`r", "")
+  }
+
+  It "Selects Single OpenCover Files" {
+    $files = ("./AltCover.Tests/HandRolledMonoCoverage.xml", "./AltCover.Tests/Sample1WithNCover.xml","./AltCover.Tests/OpenCover.cobertura")
+    $xml = $files | Merge-OpenCover
+       $xml | Should -BeOfType [xdoc]
+       $expected = [xdoc]::Load("./AltCover.Tests/HandRolledMonoCoverage.xml")
+       $xml.ToString() | Should -BeExactly $expected.ToString().Replace(' standalone="yes"', '')
+  }
+
+  It "Combines Top Level Summaries" {
+    $files = ("./AltCover.Tests/HandRolledMonoCoverage.xml", "./AltCover.Tests/Sample4FullTracking.xml")
+    $xml = $files | Merge-OpenCover -OutputFile "./_Packaging/OpenCoverCombination-1.xml"
+    $xml | Should -BeOfType [xdoc]
+    $summary = ($xml.Descendants("Summary") | Select-Object -First 1).ToString()
+    $summary | Should -BeExactly '<Summary numSequencePoints="35" visitedSequencePoints="21" numBranchPoints="5" visitedBranchPoints="5" sequenceCoverage="60.00" branchCoverage="100.00" maxCyclomaticComplexity="7" minCyclomaticComplexity="1" visitedClasses="5" numClasses="8" visitedMethods="9" numMethods="13" minCrapScore="1.00" maxCrapScore="14.11" />'
   }
 }
