@@ -552,8 +552,8 @@ module ExpectoTestManifest =
        "Tests2.UpdateStrongReferencesShouldTrackReferences"
        Tests.AltCoverTests2.UpdateStrongReferencesShouldTrackReferencesEvenFakes,
        "Tests2.UpdateStrongReferencesShouldTrackReferencesEvenFakes"
-       Tests.AltCoverTests2.ExcludedAssemblyRefsAreNotUpdated,
-       "Tests2.ExcludedAssemblyRefsAreNotUpdated"
+       Tests.AltCoverTests2.ExcludedAssemblyRefsAreAlsoUpdated,
+       "Tests2.ExcludedAssemblyRefsAreAlsoUpdated"
        Tests.AltCoverTests2.IncludedAssemblyRefsAreUpdated,
        "Tests2.IncludedAssemblyRefsAreUpdated"
        Tests.AltCoverTests2.ExcludedModuleJustRecordsMVid,

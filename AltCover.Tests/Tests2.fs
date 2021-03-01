@@ -2544,7 +2544,7 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
   [<Test>]
-  let ExcludedAssemblyRefsAreNotUpdated () =
+  let ExcludedAssemblyRefsAreAlsoUpdated () =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
@@ -2599,7 +2599,7 @@ module AltCoverTests2 =
       |> Seq.map (fun n -> n.FullName)
       |> Seq.sort,
       Is.EquivalentTo(
-        (refs (*@ [ recorder.Name; mscorlib2 ]*) )
+        (refs @ [ recorder.Name; mscorlib2 ] )
         |> Seq.map (fun n -> n.FullName)
         |> Seq.sort
       )
@@ -2652,16 +2652,16 @@ module AltCoverTests2 =
             RecordingAssembly = recorder }
         visited
 
-    //let mscorlib2 =
-    //  recorder.MainModule.AssemblyReferences
-    //  |> Seq.find (fun n -> n.Name = "mscorlib")
+    let mscorlib2 =
+      recorder.MainModule.AssemblyReferences
+      |> Seq.find (fun n -> n.Name = "mscorlib")
 
     Assert.That(
       def.MainModule.AssemblyReferences
       |> Seq.map (fun n -> n.FullName)
       |> Seq.sort,
       Is.EquivalentTo(
-        (refs @ [ recorder.Name (*mscorlib2*)  ])
+        (refs @ [ recorder.Name; mscorlib2  ])
         |> Seq.map (fun n -> n.FullName)
         |> Seq.sort
       )

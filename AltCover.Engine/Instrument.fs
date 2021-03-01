@@ -1123,6 +1123,15 @@ module internal Instrument =
           RecordingAssembly = null
           AsyncSupport = None }
 
+    let visitAssembly state assembly =
+      updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
+      |> ignore
+      //if included <> Inspections.Ignore then
+      assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+      // TODO -- react to source or destination being stamped
+      injectInstrumentation state.RecordingAssembly assembly
+      state
+
     // Perform visitor operations
     // param name="state">Contextual information for the visit</param>
     // param name="node">The node being visited</param>
@@ -1130,16 +1139,16 @@ module internal Instrument =
     let internal instrumentationVisitorCore (state: InstrumentContext) (node: Node) =
       match node with
       | Start _ -> visitStart state
-      | Assembly assembly ->
-          updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
-          |> ignore
-
-          if assembly.Inspection <> Inspections.Ignore then
-            assembly.Assembly.MainModule.AssemblyReferences.Add(
-              state.RecordingAssembly.Name
-            )
-
-          state
+      | Assembly assembly -> visitAssembly state assembly
+          //updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
+          //|> ignore
+          //
+          //if assembly.Inspection <> Inspections.Ignore then
+          //  assembly.Assembly.MainModule.AssemblyReferences.Add(
+          //    state.RecordingAssembly.Name
+          //  )
+          //
+          //state
       | Module m -> visitModule state m
       | Type _ -> state
       | Method m -> visitMethod state m
