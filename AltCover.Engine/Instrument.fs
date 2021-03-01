@@ -129,7 +129,7 @@ type internal InstrumentContext =
 // Module to handle instrumentation visitor
 module internal Instrument =
   let version =
-    typeof<AltCover.Recorder.Tracer>
+    typeof<AltCover.Recorder.InstrumentationAttribute>
       .Assembly.GetName()
       .Version.ToString()
 

@@ -64,7 +64,11 @@ module CoverageFormats =
       assemblies
       |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
-      |> Seq.map (fun p -> { AssemblyPath = p; Destinations = [] })
+      |> Seq.map
+           (fun p ->
+             { AssemblyPath = p
+               Destinations = []
+               Identity = AltCover.Recorder.InstrumentationAttribute() })
 
     // ensure default state
     AltCover.Main.init ()
@@ -147,7 +151,6 @@ module CoverageFormats =
                            parse <| sp.Attribute(XName.Get "vc").Value
 
                          let visits = (max 0 v) + (max 0 vc)
-
                          sp.Attribute(XName.Get "vc").Value <- visits.ToString(
                            System.Globalization.CultureInfo.InvariantCulture
                          ))))

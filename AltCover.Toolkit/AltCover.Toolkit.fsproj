@@ -64,6 +64,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
+    <Reference Include="AltCover.Recorder">
+      <HintPath>$(ProjectDir)..\_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

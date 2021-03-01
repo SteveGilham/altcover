@@ -535,7 +535,9 @@ module internal Main =
                  |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
 
                ({ AssemblyPath = proto
-                  Destinations = targets },
+                  Destinations = targets
+                  Identity = AltCover.Recorder.InstrumentationAttribute() // TODO
+                },
                 a.Name))
 
       List.unzip sorted

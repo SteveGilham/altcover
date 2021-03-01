@@ -395,7 +395,8 @@ module FSApiTests =
     Visitor.visit
       visitors
       [ { AssemblyPath = sample
-          Destinations = [] } ]
+          Destinations = []
+          Identity = AltCover.Recorder.InstrumentationAttribute() } ]
 
     let document =
       use stash = new MemoryStream()
@@ -897,7 +898,12 @@ module FSApiTests =
 
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.Merge [ doc1; doc2; doc1; doc2 ]
+    let merge =
+      AltCover.OpenCover.Merge [ doc1
+                                 doc2
+                                 doc1
+                                 doc2 ]
+
     let summary = merge.Root.Element(XName.Get "Summary")
 
     // printfn "%A" merge

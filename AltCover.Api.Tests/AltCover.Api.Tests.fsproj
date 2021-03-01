@@ -77,6 +77,9 @@
     <ProjectReference Include="..\AltCover.Toolkit\AltCover.Toolkit.fsproj" />
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
     <ProjectReference Include="..\Samples\Sample18\Sample18.fsproj" />
+    <Reference Include="AltCover.Recorder">
+      <HintPath>$(ProjectDir)..\_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

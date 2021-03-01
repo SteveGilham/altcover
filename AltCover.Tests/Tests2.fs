@@ -914,8 +914,8 @@ module AltCoverTests2 =
           (isSymbols |> not)
           || // HACK HACK HACK
           File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-            "bad symbols"
-          )
+          "bad symbols"
+        )
 
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
@@ -1616,12 +1616,7 @@ module AltCoverTests2 =
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def
-        .MainModule
-        .GetType(
-          "Sample27.Tests"
-        )
-        .Methods
+      def.MainModule.GetType("Sample27.Tests").Methods
       |> Seq.find (fun m -> m.Name = "AddAsync")
 
     let raw = AltCover.InstrumentContext.Build([])
@@ -2563,7 +2558,8 @@ module AltCoverTests2 =
       Node.Assembly
         { Assembly = def
           Inspection = Inspections.Ignore
-          Destinations = [] }
+          Destinations = []
+          Identity = AltCover.Recorder.InstrumentationAttribute() }
 
     let result =
       Instrument.I.instrumentationVisitor { state with RecordingAssembly = fake } visited
@@ -2603,7 +2599,8 @@ module AltCoverTests2 =
       Node.Assembly
         { Assembly = def
           Inspection = Inspections.Instrument
-          Destinations = [] }
+          Destinations = []
+          Identity = AltCover.Recorder.InstrumentationAttribute() }
 
     let result =
       Instrument.I.instrumentationVisitor { state with RecordingAssembly = fake } visited

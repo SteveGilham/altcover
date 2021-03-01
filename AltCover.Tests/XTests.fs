@@ -145,9 +145,12 @@ module AltCoverXTests =
                           .Replace("\\", "/")
                           .Replace("altcover", "AltCover")
                           .Replace("Samples/", String.Empty)
-                          .EndsWith(a2.Value
-                                      .Replace("\\", "/")
-                                      .Replace("altcover", "AltCover")) @>
+                          .EndsWith(
+                            a2
+                              .Value
+                              .Replace("\\", "/")
+                              .Replace("altcover", "AltCover")
+                          ) @>
                         (a1.Name.ToString()
                          + " : "
                          + r.ToString()
@@ -1063,7 +1066,8 @@ module AltCoverXTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = CoverageParameters.outputDirectories () }
+            Destinations = CoverageParameters.outputDirectories ()
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
 
       let input =
         { InstrumentContext.Build [] with
@@ -1125,7 +1129,8 @@ module AltCoverXTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = CoverageParameters.outputDirectories () }
+            Destinations = CoverageParameters.outputDirectories ()
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
 
       let input =
         { InstrumentContext.Build [] with
@@ -1351,7 +1356,8 @@ module AltCoverXTests =
       [ visitor ]
       (Visitor.I.toSeq
         { AssemblyPath = path
-          Destinations = [] })
+          Destinations = []
+          Identity = AltCover.Recorder.InstrumentationAttribute() })
 
     let expectedText =
       MonoBaseline.Replace(
@@ -1386,7 +1392,8 @@ module AltCoverXTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly

@@ -80,13 +80,15 @@ type internal GoTo =
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyDespatch =
   { AssemblyPath: string
-    Destinations: string list }
+    Destinations: string list
+    Identity: AltCover.Recorder.InstrumentationAttribute }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyEntry =
   { Assembly: AssemblyDefinition
     Inspection: Inspections
-    Destinations: string list }
+    Destinations: string list
+    Identity: AltCover.Recorder.InstrumentationAttribute }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal ModuleEntry =
@@ -396,7 +398,7 @@ module internal Inspector =
       else
         Inspections.Instrument
 
-    member nameProvider.LocalFilter: bool =
+    member nameProvider.LocalFilter : bool =
       let methodFile (m: MethodDefinition) =
         m.DebugInformation.SequencePoints
         |> Seq.tryHead // assume methods can only be in one file
@@ -592,7 +594,8 @@ module internal Visitor =
                Assembly
                  { Assembly = x
                    Inspection = included
-                   Destinations = path.Destinations }
+                   Destinations = path.Destinations
+                   Identity = path.Identity }
 
              path.AssemblyPath
              |> (AssemblyDefinition.ReadAssembly
@@ -785,7 +788,9 @@ module internal Visitor =
     let internal sameType (target: TypeReference) (candidate: TypeReference) =
       if target = candidate then
         true
-      else if target.HasGenericParameters then
+      else
+
+      if target.HasGenericParameters then
         let cname = candidate.FullName
         let last = cname.LastIndexOf('<')
 
@@ -876,7 +881,9 @@ module internal Visitor =
 
         if t.IsNested |> not then
           None
-        else if n.StartsWith("<", StringComparison.Ordinal) then
+        else
+
+        if n.StartsWith("<", StringComparison.Ordinal) then
           let name =
             if n.StartsWith("<>", StringComparison.Ordinal) then
               mname

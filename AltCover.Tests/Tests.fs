@@ -2044,7 +2044,8 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = [] }
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
         Node.Module
           { Module = null
             Inspection = Inspections.Ignore }
@@ -2075,7 +2076,8 @@ module AltCoverTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = [] }
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
         Node.Finish ]
 
     let outputs =
@@ -2087,7 +2089,8 @@ module AltCoverTests =
         [ AfterAssembly
             { Assembly = def
               Inspection = Inspections.Instrument
-              Destinations = [] } ]
+              Destinations = []
+              Identity = AltCover.Recorder.InstrumentationAttribute() } ]
         [ AfterModule ]
         [ AfterType ]
         [ AfterMethod
@@ -2152,7 +2155,8 @@ module AltCoverTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = [] }
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
         Node.Finish ]
 
     let outputs =
@@ -2527,7 +2531,8 @@ module AltCoverTests =
         <| Node.Assembly
              { Assembly = def
                Inspection = Inspections.Instrument
-               Destinations = [] }
+               Destinations = []
+               Identity = AltCover.Recorder.InstrumentationAttribute() }
         |> Seq.toList
 
       Visitor.visit [] [] // cheat reset
@@ -2563,7 +2568,8 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Start [ { AssemblyPath = path
-                          Destinations = [] } ]
+                          Destinations = []
+                          Identity = AltCover.Recorder.InstrumentationAttribute() } ]
         |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
@@ -2577,7 +2583,8 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = [] }
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
 
       let expected =
         List.concat [ [ assembly ]
@@ -2585,7 +2592,8 @@ module AltCoverTests =
                       [ AfterAssembly
                           { Assembly = def
                             Inspection = Inspections.Instrument
-                            Destinations = [] } ] ]
+                            Destinations = []
+                            Identity = AltCover.Recorder.InstrumentationAttribute() } ] ]
 
       //deeper |> Seq.map (fun x -> x.GetType().Name) |> Seq.iter (printfn "%A")
       //printfn "-----------"
@@ -2615,7 +2623,8 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Start [ { AssemblyPath = path
-                          Destinations = [] } ]
+                          Destinations = []
+                          Identity = AltCover.Recorder.InstrumentationAttribute() } ]
         |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
@@ -2629,7 +2638,8 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Ignore
-            Destinations = [] }
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
 
       let expected =
         List.concat [ [ assembly ]
@@ -2637,7 +2647,8 @@ module AltCoverTests =
                       [ AfterAssembly
                           { Assembly = def
                             Inspection = Inspections.Ignore
-                            Destinations = [] } ] ]
+                            Destinations = []
+                            Identity = AltCover.Recorder.InstrumentationAttribute() } ] ]
 
       Assert.That(deeper.Length, Is.EqualTo 4)
       Assert.That(deeper, Is.EquivalentTo expected)
@@ -2702,7 +2713,8 @@ module AltCoverTests =
 
       Visitor.visit [ fix ] [
         { AssemblyPath = path
-          Destinations = ux }
+          Destinations = ux
+          Identity = AltCover.Recorder.InstrumentationAttribute() }
       ]
       // assembly definitions care about being separate references in equality tests
       use def =
@@ -2715,17 +2727,20 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Instrument
-            Destinations = ux }
+            Destinations = ux
+            Identity = AltCover.Recorder.InstrumentationAttribute() }
 
       let expected =
         List.concat [ [ Start [ { AssemblyPath = path
-                                  Destinations = ux } ]
+                                  Destinations = ux
+                                  Identity = AltCover.Recorder.InstrumentationAttribute() } ]
                         assembly ]
                       (Visitor.I.deeper >> Seq.toList) assembly
                       [ AfterAssembly
                           { Assembly = def
                             Inspection = Inspections.Instrument
-                            Destinations = ux }
+                            Destinations = ux
+                            Identity = AltCover.Recorder.InstrumentationAttribute() }
                         Finish ] ]
 
       Assert.That(
@@ -3205,7 +3220,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -3259,7 +3275,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       Assert.That(
         CoverageParameters.reportFormat (),
@@ -3287,9 +3304,11 @@ module AltCoverTests =
           .Replace(
             "Tests.fs",
             Path
-              .GetFullPath(Path.Combine(SolutionRoot.location,
-                                        "Samples/Sample4",
-                                        "Tests.fs"))
+              .GetFullPath(Path.Combine(
+                SolutionRoot.location,
+                "Samples/Sample4",
+                "Tests.fs"
+              ))
               .Replace("\\", "\\\\")
           )
           .Replace('\r', '\u00FF')
@@ -3322,7 +3341,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       (makeDocument document)
         .Descendants(XName.Get "method")
@@ -3358,7 +3378,8 @@ module AltCoverTests =
         [ visitor1 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names1 =
         (makeDocument document1)
@@ -3388,7 +3409,8 @@ module AltCoverTests =
         [ visitor2 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names2 =
         (makeDocument document2)
@@ -3424,7 +3446,8 @@ module AltCoverTests =
         [ visitor3 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names3 =
         (makeDocument document3)
@@ -3459,7 +3482,8 @@ module AltCoverTests =
         [ visitor5 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names5 =
         (makeDocument document5)
@@ -3500,7 +3524,8 @@ module AltCoverTests =
         [ visitor6 ]
         (Visitor.I.toSeq
           { AssemblyPath = path6
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names6 =
         (makeDocument document6)
@@ -3536,7 +3561,8 @@ module AltCoverTests =
         [ visitor7 ]
         (Visitor.I.toSeq
           { AssemblyPath = path6
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names7 =
         (makeDocument document7)
@@ -3580,7 +3606,8 @@ module AltCoverTests =
         [ visitor8 ]
         (Visitor.I.toSeq
           { AssemblyPath = path5
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names8 =
         (makeDocument document8)
@@ -3615,7 +3642,8 @@ module AltCoverTests =
         [ visitor9 ]
         (Visitor.I.toSeq
           { AssemblyPath = path5
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names9 =
         (makeDocument document9)
@@ -3641,7 +3669,8 @@ module AltCoverTests =
         [ visitor4 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let names4 =
         (makeDocument document4)
@@ -3679,7 +3708,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       (makeDocument document)
         .Descendants(XName.Get "Method")
@@ -3716,7 +3746,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       Assert.That(
         Visitor.sourceLinkDocuments |> Option.isSome,
@@ -3787,7 +3818,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -3832,7 +3864,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -3879,7 +3912,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -4178,7 +4212,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       Assert.That(
         Visitor.sourceLinkDocuments |> Option.isSome,
@@ -4243,7 +4278,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly
@@ -4282,7 +4318,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly
@@ -4337,7 +4374,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly
@@ -4422,7 +4460,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let baseline =
         AddTrackingForMain "Sample1WithOpenCover.xml"
@@ -4453,7 +4492,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
@@ -4499,7 +4539,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
@@ -4548,7 +4589,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly
@@ -4597,7 +4639,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let baseline =
         AddTrackingForMain "Sample1ClassExclusion.xml"
@@ -4628,7 +4671,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly
@@ -4667,7 +4711,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let resource =
         Assembly
@@ -4727,7 +4772,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let baseline =
         AddTrackingForMain "Sample1MethodExclusion.xml"
@@ -4760,7 +4806,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = sample21trad
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let doc = makeDocument document
 
@@ -4812,7 +4859,8 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = sample21
-            Destinations = [] })
+            Destinations = []
+            Identity = AltCover.Recorder.InstrumentationAttribute() })
 
       let doc = makeDocument document
 
@@ -4874,7 +4922,8 @@ module AltCoverTests =
       [ visitor ]
       (Visitor.I.toSeq
         { AssemblyPath = path
-          Destinations = [] })
+          Destinations = []
+          Identity = AltCover.Recorder.InstrumentationAttribute() })
 
     let doc = makeDocument document
     Assert.That(doc.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
