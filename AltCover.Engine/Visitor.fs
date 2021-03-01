@@ -259,6 +259,9 @@ type internal Fix<'T> = delegate of 'T -> Fix<'T>
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =
 
+  let hash =
+    System.Security.Cryptography.SHA256.Create()
+
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
@@ -382,6 +385,13 @@ module internal CoverageParameters =
   let internal add (key: StrongNameKeyData) =
     let index = KeyStore.keyToIndex key
     keys.[index] <- KeyStore.keyToRecord key
+
+  let internal configuration =
+    lazy
+      ("TODO" //TODO
+       |> System.Text.Encoding.ASCII.GetBytes
+       |> hash.ComputeHash
+       |> Convert.ToBase64String)
 
 [<AutoOpen>]
 module internal Inspector =

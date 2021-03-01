@@ -15,7 +15,8 @@ open Mono.Options
 type internal AssemblyInfo =
   { Path: string list
     Name: string
-    Refs: string list }
+    Refs: string list
+    Hash: string }
 
 module internal Main =
   let internal (|Select|_|) (pattern: String) offered =
@@ -347,7 +348,7 @@ module internal Main =
               let found =
                 toDirectories |> Seq.filter Directory.Exists
 
-              if !CoverageParameters.inplace
+              if !CoverageParameters.inplace // Maybe barf if saving somewhere contaminated
                  && CommandLine.error |> List.isEmpty
                  && found.Any() then
                 found
@@ -365,6 +366,7 @@ module internal Main =
           if CommandLine.error |> List.isEmpty |> not then
             Left("UsageError", options)
           else
+            // we know these are sets with no duplicates and no overlap
             Seq.zip toDirectories fromDirectories
             |> Seq.iter
                  (fun (toDirectory, fromDirectory) ->
@@ -417,6 +419,7 @@ module internal Main =
              (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
+      // Copy everything from "from" to "to"
       Seq.zip fromInfos toInfos
       |> Seq.iter
            (fun (fromInfo, toInfo) ->
@@ -455,6 +458,12 @@ module internal Main =
 
                             { Path = [ fullName ]
                               Name = def.Name.Name
+                              Hash =
+                                use stream = File.OpenRead fullName
+
+                                stream
+                                |> CoverageParameters.hash.ComputeHash
+                                |> Convert.ToBase64String
                               Refs =
                                 def.MainModule.AssemblyReferences
                                 |> Seq.map (fun r -> r.Name)
@@ -466,7 +475,7 @@ module internal Main =
                     [])
         |> Seq.toList
         |> Seq.concat
-        |> Seq.groupBy (fun a -> a.Name) // assume name is unique
+        |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique
         |> Seq.map
              (fun (n, agroup) ->
                { (agroup |> Seq.head) with
@@ -530,14 +539,19 @@ module internal Main =
              (fun a ->
                let proto = a.Path.Head
 
+               let identity =
+                 AltCover.Recorder.InstrumentationAttribute()
+
+               identity.Assembly <- a.Hash
+               identity.Configuration <- CoverageParameters.configuration.Value
+
                let targets =
                  a.Path
                  |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
 
                ({ AssemblyPath = proto
                   Destinations = targets
-                  Identity = AltCover.Recorder.InstrumentationAttribute() // TODO
-                },
+                  Identity = identity },
                 a.Name))
 
       List.unzip sorted

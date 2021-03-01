@@ -2547,8 +2547,13 @@ module AltCoverTests2 =
     CoverageParameters.defaultStrongNameKey <-
       Some(StrongNameKeyData.Make(buffer.ToArray()))
 
-    use fake =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+    let here =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    use recorder =
+      Path.Combine(here, "AltCover.Recorder.dll")
+      |> Mono.Cecil.AssemblyDefinition.ReadAssembly
 
     let state =
       InstrumentContext.Build [ "nunit.framework"
@@ -2562,9 +2567,25 @@ module AltCoverTests2 =
           Identity = AltCover.Recorder.InstrumentationAttribute() }
 
     let result =
-      Instrument.I.instrumentationVisitor { state with RecordingAssembly = fake } visited
+      Instrument.I.instrumentationVisitor
+        { state with
+            RecordingAssembly = recorder }
+        visited
 
-    Assert.That(def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
+    let mscorlib2 =
+      recorder.MainModule.AssemblyReferences
+      |> Seq.find (fun n -> n.Name = "mscorlib")
+
+    Assert.That(
+      def.MainModule.AssemblyReferences
+      |> Seq.map (fun n -> n.FullName)
+      |> Seq.sort,
+      Is.EquivalentTo(
+        (refs (*@ [ recorder.Name; mscorlib2 ]*))
+        |> Seq.map (fun n -> n.FullName)
+        |> Seq.sort
+      )
+    )
 
   [<Test>]
   let IncludedAssemblyRefsAreUpdated () =
@@ -2588,8 +2609,13 @@ module AltCoverTests2 =
     CoverageParameters.defaultStrongNameKey <-
       Some(StrongNameKeyData.Make(buffer.ToArray()))
 
-    use fake =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location)
+    let here =
+      Assembly.GetExecutingAssembly().Location
+      |> Path.GetDirectoryName
+
+    use recorder =
+      Path.Combine(here, "AltCover.Recorder.dll")
+      |> Mono.Cecil.AssemblyDefinition.ReadAssembly
 
     let state =
       InstrumentContext.Build [ "nunit.framework"
@@ -2603,9 +2629,25 @@ module AltCoverTests2 =
           Identity = AltCover.Recorder.InstrumentationAttribute() }
 
     let result =
-      Instrument.I.instrumentationVisitor { state with RecordingAssembly = fake } visited
+      Instrument.I.instrumentationVisitor
+        { state with
+            RecordingAssembly = recorder }
+        visited
 
-    Assert.That(def.MainModule.AssemblyReferences, Is.EquivalentTo(refs @ [ fake.Name ]))
+    //let mscorlib2 =
+    //  recorder.MainModule.AssemblyReferences
+    //  |> Seq.find (fun n -> n.Name = "mscorlib")
+
+    Assert.That(
+      def.MainModule.AssemblyReferences
+      |> Seq.map (fun n -> n.FullName)
+      |> Seq.sort,
+      Is.EquivalentTo(
+        (refs @ [ recorder.Name; (*mscorlib2*) ])
+        |> Seq.map (fun n -> n.FullName)
+        |> Seq.sort
+      )
+    )
 
   [<Test>]
   let ExcludedModuleJustRecordsMVid () =

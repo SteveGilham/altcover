@@ -136,6 +136,65 @@ module internal Instrument =
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
   module internal I =
+    let prelude =
+      [ 0x01uy
+        0x00uy
+        0x02uy
+        0x00uy
+        0x54uy
+        0x0euy
+        0x08uy
+        0x41uy
+        0x73uy
+        0x73uy
+        0x65uy
+        0x6duy
+        0x62uy
+        0x6cuy
+        0x79uy
+        0x2cuy ]
+
+    let interlude =
+      [ 0x54uy
+        0x0euy
+        0x0duy
+        0x43uy
+        0x6fuy
+        0x6euy
+        0x66uy
+        0x69uy
+        0x67uy
+        0x75uy
+        0x72uy
+        0x61uy
+        0x74uy
+        0x69uy
+        0x6fuy
+        0x6euy
+        0x2cuy ]
+
+    let internal injectInstrumentation
+      (recorder: AssemblyDefinition)
+      (assembly: AssemblyEntry)
+      =
+      let blob =
+        [| prelude |> List.toArray
+           System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+           interlude |> List.toArray
+           System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration) |] // slight inefficiency
+        |> Array.concat
+
+      let attribute =
+        recorder.MainModule.GetType("AltCover.Recorder.InstrumentationAttribute")
+
+      let constructor =
+        attribute.GetConstructors()
+        |> Seq.head
+        |> assembly.Assembly.MainModule.ImportReference
+
+      let inject = CustomAttribute(constructor, blob)
+
+      assembly.Assembly.CustomAttributes.Add inject
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
