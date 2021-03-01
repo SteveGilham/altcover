@@ -7,11 +7,11 @@ Adds or updates summary data and other computed items in the OpenCover format re
 In `-Coverlet` mode, also fills in some of the gaps left by `coverlet`'s OpenCover dialect, particularly giving somewhat meaningful start and end column values for its line-based paradigm, as well as npath coverage and branch exits.
 
 ```csharp
-    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
 ```
 
 ```csharp
-    $xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
+    $xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
 ```
 
 ```csharp

@@ -130,9 +130,9 @@ module DotNet =
       [
         // poss s <> Info
         fromValue,
-        "Verbosity",
+        "Verbosity", //=`"Levels of output -- Info (default), Warning, Error, or Off"
         verbosity :> obj,
-        verbosity <> System.Diagnostics.TraceLevel.Info ] //=`"Levels of output -- Info (default), Warning, Error, or Off"
+        verbosity <> System.Diagnostics.TraceLevel.Info ]
 
     [<SuppressMessage("Gendarme.Rules.Naming",
                       "AvoidRedundancyInMethodNameRule",
@@ -147,7 +147,7 @@ module DotNet =
       [ arg, "Force", "true", options.ForceDelete //=true|false` to force delete any left-over `__Instrumented*` (or `__Saved*`, if `InPlace` is set) folders from previous runs
         arg, "FailFast", "true", options.FailFast ] //=true|false` to skip coverage collection if the unit tests fail
 
-  // "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
+// "ImportModule" //=true` to emit the `Import-Module` command needed to register the `pwsh` support
 // "GetVersion" //=true|false` to emit the current AltCover version
 
 #if RUNNER
