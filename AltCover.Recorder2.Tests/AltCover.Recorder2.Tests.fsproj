@@ -25,22 +25,23 @@
   <ItemGroup>
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\Sample1WithModifiedOpenCover.xml" Link="Sample1WithModifiedOpenCover.xml" />
     <EmbeddedResource Include="..\AltCover.Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
+    </Compile>
     <Compile Include="..\AltCover.Recorder.Tests\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Adapter.fs" Link="Adapter.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Tracer.Tests.fs" Link="Tracer.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Recorder.Tests.fs" Link="Recorder.Tests.fs" />
     <Compile Include="..\AltCover.Recorder.Tests\Program.fs" Link="Program.fs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
-  </ItemGroup>
+  <ItemGroup />
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.0.2">
+    <PackageReference Include="coverlet.collector" Version="3.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
     <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
       <PrivateAssets>all</PrivateAssets>
@@ -50,7 +51,9 @@
 
   <ItemGroup>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net5.0'" />
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
   </ItemGroup>
 

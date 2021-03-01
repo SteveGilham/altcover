@@ -15,24 +15,27 @@ open System.Diagnostics.CodeAnalysis
 module Primitive =
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
-  [<SuppressMessage("Gendarme.Rules.Design", "ConsiderAddingInterfaceRule",
-    Justification="Not worth the added knock-on complexity in F#")>]
+  [<SuppressMessage("Gendarme.Rules.Design",
+                    "ConsiderAddingInterfaceRule",
+                    Justification = "Not worth the added knock-on complexity in F#")>]
   type CollectOptions =
-    { RecorderDirectory : String
-      WorkingDirectory : String
-      Executable : String
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Lcov is a name")>]
-      LcovReport : String
-      Threshold : String
-      [<SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-                        Justification="Cobertura is a name")>]
-      Cobertura : String
-      OutputFile : String
-      CommandLine : String seq
-      ExposeReturnCode : bool
-      SummaryFormat : String
-      Verbosity : System.Diagnostics.TraceLevel }
+    { RecorderDirectory: String
+      WorkingDirectory: String
+      Executable: String
+      [<SuppressMessage("Microsoft.Naming",
+                        "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                        Justification = "Lcov is a name")>]
+      LcovReport: String
+      Threshold: String
+      [<SuppressMessage("Microsoft.Naming",
+                        "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                        Justification = "Cobertura is a name")>]
+      Cobertura: String
+      OutputFile: String
+      CommandLine: String seq
+      ExposeReturnCode: bool
+      SummaryFormat: String
+      Verbosity: System.Diagnostics.TraceLevel }
     static member Create() =
       { RecorderDirectory = String.Empty
         WorkingDirectory = String.Empty
@@ -44,49 +47,51 @@ module Primitive =
         CommandLine = []
         ExposeReturnCode = true
         SummaryFormat = String.Empty
-        Verbosity = System.Diagnostics.TraceLevel.Info}
+        Verbosity = System.Diagnostics.TraceLevel.Info }
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
-  [<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule",
-                    Justification="Plenty of options to support")>]
-  [<SuppressMessage("Gendarme.Rules.Design", "ConsiderAddingInterfaceRule",
-    Justification="Not worth the added knock-on complexity in F#")>]
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidLargeClassesRule",
+                    Justification = "Plenty of options to support")>]
+  [<SuppressMessage("Gendarme.Rules.Design",
+                    "ConsiderAddingInterfaceRule",
+                    Justification = "Not worth the added knock-on complexity in F#")>]
   type PrepareOptions =
-    { InputDirectories : String seq
-      OutputDirectories : String seq
-      SymbolDirectories : String seq
-      Dependencies : String seq
-      Keys : String seq
-      StrongNameKey : String
-      Report : String
-      FileFilter : String seq
-      AssemblyFilter : String seq
-      AssemblyExcludeFilter : String seq
-      TypeFilter : String seq
-      MethodFilter : String seq
-      AttributeFilter : String seq
-      PathFilter : String seq
+    { InputDirectories: String seq
+      OutputDirectories: String seq
+      SymbolDirectories: String seq
+      Dependencies: String seq
+      Keys: String seq
+      StrongNameKey: String
+      Report: String
+      FileFilter: String seq
+      AssemblyFilter: String seq
+      AssemblyExcludeFilter: String seq
+      TypeFilter: String seq
+      MethodFilter: String seq
+      AttributeFilter: String seq
+      PathFilter: String seq
       AttributeTopLevel: String seq
       TypeTopLevel: String seq
       MethodTopLevel: String seq
-      CallContext : String seq
-      ReportFormat : String
-      InPlace : bool
-      Save : bool
-      ZipFile : bool
-      MethodPoint : bool
-      SingleVisit : bool
-      LineCover : bool
-      BranchCover : bool
-      CommandLine : String seq
-      ExposeReturnCode : bool
-      SourceLink : bool
-      Defer : bool
-      LocalSource : bool
-      VisibleBranches : bool
-      ShowStatic : string
-      ShowGenerated : bool
-      Verbosity : System.Diagnostics.TraceLevel }
+      CallContext: String seq
+      ReportFormat: String
+      InPlace: bool
+      Save: bool
+      ZipFile: bool
+      MethodPoint: bool
+      SingleVisit: bool
+      LineCover: bool
+      BranchCover: bool
+      CommandLine: String seq
+      ExposeReturnCode: bool
+      SourceLink: bool
+      Defer: bool
+      LocalSource: bool
+      VisibleBranches: bool
+      ShowStatic: string
+      ShowGenerated: bool
+      Verbosity: System.Diagnostics.TraceLevel }
     static member Create() =
       { InputDirectories = Seq.empty
         OutputDirectories = Seq.empty
@@ -127,10 +132,10 @@ module Primitive =
 #if RUNNER
   [<ExcludeFromCodeCoverage; NoComparison; NoEquality; AutoSerializable(false)>]
   type LoggingOptions =
-    { Info : String -> unit
-      Warn : String -> unit
-      Failure : String -> unit
-      Echo : String -> unit }
+    { Info: String -> unit
+      Warn: String -> unit
+      Failure: String -> unit
+      Echo: String -> unit }
 
     static member Create() : LoggingOptions =
       { Info = ignore
@@ -141,21 +146,29 @@ module Primitive =
 
 #if RUNNER
 [<assembly: SuppressMessage("Microsoft.Naming",
-  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
-  MessageId="cobertura", Justification="Cobertura is a name")>]
+                            "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                            Scope = "member",
+                            Target = "AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            MessageId = "cobertura",
+                            Justification = "Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
-  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
-  MessageId="lcov", Justification="LCov is a name")>]
+                            "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                            Scope = "member",
+                            Target = "AltCover.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            MessageId = "lcov",
+                            Justification = "LCov is a name")>]
 #else
 [<assembly: SuppressMessage("Microsoft.Naming",
-  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
-  MessageId="cobertura", Justification="Cobertura is a name")>]
+                            "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                            Scope = "member",
+                            Target = "AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            MessageId = "cobertura",
+                            Justification = "Cobertura is a name")>]
 [<assembly: SuppressMessage("Microsoft.Naming",
-  "CA1704:IdentifiersShouldBeSpelledCorrectly", Scope="member",
-  Target="AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
-  MessageId="lcov", Justification="LCov is a name")>]
+                            "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                            Scope = "member",
+                            Target = "AltCoverFake.DotNet.Testing.Primitive+CollectOptions.#.ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IEnumerable`1<System.String>,System.Boolean,System.String,System.Diagnostics.TraceLevel)",
+                            MessageId = "lcov",
+                            Justification = "LCov is a name")>]
 #endif
 ()

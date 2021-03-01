@@ -21,15 +21,12 @@
     <DefineConstants>TRACE;ValidateGendarmeEmulation</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="nunit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
     <PackageReference Include="System.ValueTuple" />
     <Reference Include="Gendarme.Framework">
       <HintPath>$(GendarmeToolDir)Gendarme.Framework.dll</HintPath>
@@ -72,7 +69,7 @@
     </PackageReference>
     <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="coverlet.collector" Version="3.0.2">
+    <PackageReference Include="coverlet.collector" Version="3.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -80,7 +77,9 @@
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

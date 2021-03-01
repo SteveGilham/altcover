@@ -9,51 +9,66 @@ open AltCover
 
 module VisualizerTests =
 
-    // Augment.fs
+  // Augment.fs
 
-    [<Test>]
-    let AugmentNullableDetectNulls() =
-      let input = [ "string"; null; "another string" ]
-      let nulls = input |> List.map (fun x -> x.IsNotNull |> not)
-      test <@ nulls = [ false; true; false ] @>
+  [<Test>]
+  let AugmentNullableDetectNulls () =
+    let input = [ "string"; null; "another string" ]
 
-    [<Test>]
-    let AugmentNonNullableDetectNoNulls() =
-      let input = [ 1; 2 ;3 ]
-      test <@ input |> List.forall (fun x -> x.IsNotNull) @>
+    let nulls =
+      input |> List.map (fun x -> x.IsNotNull |> not)
 
-    // CoverageFile.fs
+    test <@ nulls = [ false; true; false ] @>
 
-    [<Test>]
-    let DefaultHelperPassesThrough() =
-      test <@ Transformer.defaultHelper null null |> isNull @>
+  [<Test>]
+  let AugmentNonNullableDetectNoNulls () =
+    let input = [ 1; 2; 3 ]
+    test <@ input |> List.forall (fun x -> x.IsNotNull) @>
 
-    [<Test>]
-    let CoberturaToNCoverIsOK() =
-      let root = Path.Combine(SolutionRoot.location, "Sample20")
-                 |> Path.GetFullPath
+  // CoverageFile.fs
 
-      use sr1 = new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.Tests.Reports.Cobertura_coverlet.xml"))
-      let before = XDocument.Load sr1
-      before.Descendants(XName.Get "source")
-      |> Seq.iter(fun x -> x.Value <- root)
-      let after = Transformer.transformFromCobertura before
+  [<Test>]
+  let DefaultHelperPassesThrough () =
+    test <@ Transformer.defaultHelper null null |> isNull @>
 
-      use sr2 = new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.Tests.Results.Cobertura_coverlet.ncover.xml"))
-      let expect = XDocument.Load sr2
-      [
-        expect.Descendants(XName.Get "method")
-        expect.Descendants(XName.Get "seqpnt")
-        expect.Descendants(XName.Get "branch")
-      ]
-      |> Seq.collect id
-      |> Seq.iter(fun x -> let a = x.Attribute(XName.Get "document")
-                           a.Value <- Path.Combine(root, a.Value)
-                           |> Path.GetFullPath)
+  [<Test>]
+  let CoberturaToNCoverIsOK () =
+    let root =
+      Path.Combine(SolutionRoot.location, "Sample20")
+      |> Path.GetFullPath
 
-      //Assert.That(after.ToString().Replace("\r", String.Empty),
-      //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
-      test <@ after.ToString().Replace("\r", String.Empty) =
-                expect.ToString().Replace("\r", String.Empty)@>
+    use sr1 =
+      new StreamReader(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(
+            "AltCover.Visualizer.Tests.Reports.Cobertura_coverlet.xml"
+          )
+      )
+
+    let before = XDocument.Load sr1
+
+    before.Descendants(XName.Get "source")
+    |> Seq.iter (fun x -> x.Value <- root)
+
+    let after =
+      Transformer.transformFromCobertura before
+
+    use sr2 =
+      new StreamReader(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(
+            "AltCover.Visualizer.Tests.Results.Cobertura_coverlet.ncover.xml"
+          )
+      )
+
+    let expect = XDocument.Load sr2
+
+    //printfn "%A" after
+    //Assert.That(after.ToString().Replace("\r", String.Empty),
+    //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
+    test
+      <@ after.ToString().Replace("\r", String.Empty) = expect
+        .ToString()
+        .Replace("\r", String.Empty) @>

@@ -63,6 +63,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

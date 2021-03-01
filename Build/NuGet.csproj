@@ -13,6 +13,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="coverlet.collector" version="3.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Mono.Options" version="6.6.0.161" />
     <PackageReference Include="coveralls.io" version="1.4.2" />
     <PackageReference Include="NUnit.ConsoleRunner" version="3.12.0" />

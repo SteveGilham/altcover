@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>Sample7</AssemblyName>
+    <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Library.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsUnit" Version="4.0.4" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

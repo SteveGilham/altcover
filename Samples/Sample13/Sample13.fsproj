@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RollForward>Major</RollForward>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nunit" Version="3.13.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="UnitTest1.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

@@ -9,7 +9,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-    <GlobalDefineConstants>GUI</GlobalDefineConstants>
+    <GlobalDefineConstants>GUI;LITEVERSION</GlobalDefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -27,9 +27,6 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="C:\Users\steve\.nuget\packages\fsharp.core\5.0.1\contentFiles\any\netstandard2.0\FSharp.Core.xml" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Assembly_6212.png" />
@@ -75,7 +72,7 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="..\_Generated\AssemblyVersionLite.fs" Link="AssemblyVersionLite.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Engine\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
@@ -98,6 +95,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1" />
+    <PackageReference Update="FSharp.Core" Version="5.0.1">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

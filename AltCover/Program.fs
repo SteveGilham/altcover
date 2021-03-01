@@ -8,40 +8,47 @@ open System.Reflection
 open AltCover.Main
 #endif
 
-[<assembly:CLSCompliant(true)>]
-[<assembly:ComVisible(false)>]
+[<assembly: CLSCompliant(true)>]
+[<assembly: ComVisible(false)>]
 ()
 
 #if DEBUG
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-  "AvoidUninstantiatedInternalClassesRule",
-  Justification="Like the name says")>]
+                                                  "AvoidUninstantiatedInternalClassesRule",
+                                                  Justification = "Like the name says")>]
 type internal Marker =
-  DummyValueForReflectiveAccess = 0
+  | DummyValueForReflectiveAccess = 0
 #endif
 
 module EntryPoint =
   [<EntryPoint>]
   let private main arguments =
-    CommandLine.toConsole()
+    CommandLine.toConsole ()
+
     let result =
 #if GLOBALTOOL
-        let first =
-          arguments
-          |> Seq.tryHead
-          |> Option.defaultValue String.Empty
-        init()
-        match first with
-        | Select "TargetsPath" _ ->
+      let first =
+        arguments
+        |> Seq.tryHead
+        |> Option.defaultValue String.Empty
+
+      init ()
+
+      match first with
+      | Select "TargetsPath" _ ->
           let here = Assembly.GetExecutingAssembly().Location
+
           let targets =
             Path.Combine(
               here |> Path.GetDirectoryName,
-              "../../../build/netstandard2.0/altcover.global.targets")
+              "../../../build/netstandard2.0/altcover.global.targets"
+            )
             |> Path.GetFullPath
+
           targets |> Output.info
           0
-        | _ ->
+      | _ ->
 #endif
-          AltCover.Main.effectiveMain arguments
+      AltCover.Main.effectiveMain arguments
+
     result
