@@ -39,6 +39,7 @@ module internal Main =
     CoverageParameters.defer := false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
+    CoverageParameters.configurationHash <- None
     ProgramDatabase.symbolFolders.Clear()
     Instrument.resolutionTable.Clear()
 
@@ -431,7 +432,14 @@ module internal Main =
                     let fullName = info.FullName
                     let filename = info.Name
                     let copy = Path.Combine(toInfo.FullName, filename)
-                    File.Copy(fullName, copy, true)))
+
+                    Instrument.I.withFileMutex
+                      fullName
+                      (fun () ->
+                        if copy |> File.Exists |> not
+                           || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
+                                                                fullName) then
+                          File.Copy(fullName, copy, true))))
 
       // Track the symbol-bearing assemblies
       let assemblies =
@@ -531,6 +539,8 @@ module internal Main =
 
             bundle next waiting (stage :: collection) (n - 1)
 
+      CoverageParameters.makeConfiguration ()
+
       let sorted =
         bundle simplified candidates [] (simplified |> List.length)
         |> List.concat
@@ -543,7 +553,7 @@ module internal Main =
                  AltCover.Recorder.InstrumentationAttribute()
 
                identity.Assembly <- a.Hash
-               identity.Configuration <- CoverageParameters.configuration.Value
+               identity.Configuration <- CoverageParameters.configurationHash.Value
 
                let targets =
                  a.Path

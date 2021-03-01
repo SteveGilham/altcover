@@ -386,12 +386,48 @@ module internal CoverageParameters =
     let index = KeyStore.keyToIndex key
     keys.[index] <- KeyStore.keyToRecord key
 
-  let internal configuration =
-    lazy
-      ("TODO" //TODO
-       |> System.Text.Encoding.ASCII.GetBytes
-       |> hash.ComputeHash
-       |> Convert.ToBase64String)
+  let mutable internal configurationHash : option<String> = None
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+                                                    "UseStringEmptyRule",
+                                                    Justification = "Probably in the 'string' inline")>]
+  let private filterString (n: FilterClass) =
+    (string n)
+      .Replace('\r', ';')
+      .Replace('\n', ';')
+      .Replace(";;", ";")
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+                                                    "UseStringEmptyRule",
+                                                    Justification = "Probably in the 'string' inline")>]
+  let internal makeConfiguration () =
+    let components =
+      [ string !methodPoint
+        String.Join("|", trackingNames)
+        String.Join("|", topLevel |> Seq.map filterString |> Seq.sort)
+        String.Join("|", nameFilters |> Seq.map filterString |> Seq.sort)
+        string staticFilter
+        string !showGenerated
+        string !coalesceBranches
+        string !local
+        string !sourcelink
+        string <| interval ()
+        string coverstyle
+        string <| reportFormat ()
+        defaultStrongNameKey
+        |> Option.map KeyStore.keyToIndex
+        |> string
+        recorderStrongNameKey
+        |> Option.map KeyStore.keyToIndex
+        |> string
+        String.Join("|", keys.Keys |> Seq.map string |> Seq.sort) ]
+
+    configurationHash <-
+      String.Join("||", components)
+      |> System.Text.Encoding.ASCII.GetBytes
+      |> hash.ComputeHash
+      |> Convert.ToBase64String
+      |> Some
 
 [<AutoOpen>]
 module internal Inspector =

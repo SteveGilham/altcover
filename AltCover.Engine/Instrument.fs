@@ -440,6 +440,28 @@ module internal Instrument =
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
       | _ -> null
 
+    let internal safeWait (mutex: System.Threading.WaitHandle) =
+      try
+        mutex.WaitOne() |> ignore
+      with :? System.Threading.AbandonedMutexException -> ()
+
+    let internal withFileMutex (p: string) f =
+      let key =
+        p
+        |> System.Text.Encoding.UTF8.GetBytes
+        |> CoverageParameters.hash.ComputeHash
+        |> Convert.ToBase64String
+
+      use mutex =
+        new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
+
+      safeWait mutex
+
+      try
+        f ()
+      finally
+        mutex.ReleaseMutex()
+
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
     // param name="path">The full path of the output file</param>
@@ -482,11 +504,17 @@ module internal Instrument =
       try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
-        let write (a: AssemblyDefinition) p pk =
-          use sink =
-            File.Open(p, FileMode.Create, FileAccess.ReadWrite)
+        let write (a: AssemblyDefinition) (p: string) pk =
+          withFileMutex
+            p
+            (fun () ->
+              if p |> File.Exists |> not
+                 || DateTime.Now.Year > 2000 // TODO -- check hashes
+              then
+                use sink =
+                  File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
-          a.Write(sink, pk)
+                a.Write(sink, pk))
 
         let resolver = assembly.MainModule.AssemblyResolver
         hookResolver resolver

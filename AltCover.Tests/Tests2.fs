@@ -38,6 +38,24 @@ module AltCoverTests2 =
 
   // Instrument.I.fs
   [<Test>]
+  let ShouldGetAbandonedMutex () =
+    use testMutex = new System.Threading.Mutex()
+    let abandon () = Instrument.I.safeWait testMutex
+
+    let t =
+      Threading.Thread(Threading.ThreadStart(abandon))
+
+    t.Start()
+    t.Join()
+
+    try
+      abandon ()
+    finally
+      testMutex.ReleaseMutex()
+
+    test <@ "Didn't lock!" |> String.IsNullOrWhiteSpace |> not @>
+
+  [<Test>]
   let ShouldBeAbleToGetTheVisitReportMethod () =
     let path =
       Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
@@ -2581,7 +2599,7 @@ module AltCoverTests2 =
       |> Seq.map (fun n -> n.FullName)
       |> Seq.sort,
       Is.EquivalentTo(
-        (refs (*@ [ recorder.Name; mscorlib2 ]*))
+        (refs (*@ [ recorder.Name; mscorlib2 ]*) )
         |> Seq.map (fun n -> n.FullName)
         |> Seq.sort
       )
@@ -2643,7 +2661,7 @@ module AltCoverTests2 =
       |> Seq.map (fun n -> n.FullName)
       |> Seq.sort,
       Is.EquivalentTo(
-        (refs @ [ recorder.Name; (*mscorlib2*) ])
+        (refs @ [ recorder.Name (*mscorlib2*)  ])
         |> Seq.map (fun n -> n.FullName)
         |> Seq.sort
       )
