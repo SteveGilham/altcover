@@ -3304,10 +3304,9 @@ module AltCoverTests =
           .Replace(
             "Tests.fs",
             Path
-              .GetFullPath(Path.Combine(
-                SolutionRoot.location,
-                "Samples/Sample4",
-                "Tests.fs"
+              .GetFullPath(Path.Combine(SolutionRoot.location,
+                                        "Samples/Sample4",
+                                        "Tests.fs"
               ))
               .Replace("\\", "\\\\")
           )

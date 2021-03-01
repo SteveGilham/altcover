@@ -145,11 +145,10 @@ module AltCoverXTests =
                           .Replace("\\", "/")
                           .Replace("altcover", "AltCover")
                           .Replace("Samples/", String.Empty)
-                          .EndsWith(
-                            a2
-                              .Value
-                              .Replace("\\", "/")
-                              .Replace("altcover", "AltCover")
+                          .EndsWith(a2
+                                      .Value
+                                      .Replace("\\", "/")
+                                      .Replace("altcover", "AltCover")
                           ) @>
                         (a1.Name.ToString()
                          + " : "
