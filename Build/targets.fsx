@@ -1414,6 +1414,15 @@ _Target
                           TargetDir = "_Reports/_UnitTestWithCoverlet" })
                 (xml |> List.filter (fun p -> not <| p.Contains("Visualizer")))
 
+            ReportGenerator.generateReports
+                (fun p ->
+                    { p with
+                          ToolType = ToolType.CreateLocalTool()
+                          ReportTypes =
+                              [ ReportGenerator.ReportType.Html ]
+                          TargetDir = "_Reports/_VisualizerWithCoverlet" })
+                (xml |> List.filter (fun p -> p.Contains("Visualizer")))
+
             uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
             |> List.map fst
             |> printfn "%A uncovered lines"
@@ -1536,6 +1545,17 @@ _Target
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_UnitTestWithOpenCover" })
             [ coverage; scoverage; s4coverage ]
+
+        ReportGenerator.generateReports
+            (fun p ->
+                { p with
+                      ToolType = ToolType.CreateLocalTool()
+                      ReportTypes =
+                          [ ReportGenerator.ReportType.Html
+                            ReportGenerator.ReportType.XmlSummary ]
+                      TargetDir = "_Reports/_VisualizerTestsWithOpenCover" })
+            [ vcoverage ]
+
 
         uncovered @"_Reports/_UnitTestWithOpenCove*/Summary.xml"
         |> List.map fst
@@ -1889,6 +1909,17 @@ _Target
                       TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
             xmlreports
 
+        ReportGenerator.generateReports
+            (fun p ->
+                { p with
+                      ToolType = ToolType.CreateLocalTool()
+                      ReportTypes =
+                          [ ReportGenerator.ReportType.Html ]
+                      TargetDir = "_Reports/_VisualizerTestsWithAltCoverRunner" })
+            (tests
+             |> List.map (fun (_, _, report, _, _, _, _) -> reports @@ report)
+             |> List.filter (fun r -> r.Contains("Visualizer")))
+
         uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
         |> List.map fst
         |> printfn "%A uncovered lines")
@@ -1924,6 +1955,18 @@ _Target
                reports @@ "ApiUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Api.Tests.fsproj",  // project
                Path.getFullName "AltCover.Api.Tests",  // workingDirectory
+               AltCoverApiFilter) // filter
+            //   (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net5.0",  // testDirectory
+            //    Path.getFullName "AltCover.Monitor.Tests/_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net5.0",  // output
+            //    reports @@ "MonitorUnitTestWithAltCoverCore.xml",  // report
+            //    "AltCover.Monitor.Tests.fsproj",  // project
+            //    Path.getFullName "AltCover.Monitor.Tests",  // workingDirectory
+            //    AltCoverApiFilter) // filter
+              (Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net5.0",  // testDirectory
+               Path.getFullName "AltCover.Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net5.0",  // output
+               reports @@ "VisualizerUnitTestWithAltCoverCore.xml",  // report
+               "AltCover.Tests.Visualizer.fsproj",  // project
+               Path.getFullName "AltCover.Tests.Visualizer",  // workingDirectory
                AltCoverApiFilter) // filter
               (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0",  // testDirectory
                Path.getFullName
@@ -1980,7 +2023,7 @@ _Target
         let xmlreports =
             tests
             |> List.map (fun (_, _, report, _, _, _) -> report)
-            |> List.filter (fun f -> f.Contains("GTKV") |> not)
+            |> List.filter (fun f -> f.Contains("Visualizer") |> not)
 
         ReportGenerator.generateReports
             (fun p ->
@@ -1991,6 +2034,19 @@ _Target
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
             xmlreports
+
+        ReportGenerator.generateReports
+            (fun p ->
+                { p with
+                      ToolType = ToolType.CreateLocalTool()
+                      ReportTypes =
+                          [ ReportGenerator.ReportType.Html
+                            ReportGenerator.ReportType.XmlSummary ]
+                      TargetDir = "_Reports/_VisializerWithAltCoverCore" })
+            (tests
+             |> List.map (fun (_, _, report, _, _, _) -> report)
+             |> List.filter (fun f -> f.Contains("Visualizer")))
+
 
         uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
         |> List.map fst
@@ -2036,6 +2092,9 @@ _Target
                     Shell.cleanDir testdir
 
                     Shell.copy testdir (!!(dir @@ "*.*"))
+                    if (Directory.Exists (dir @@ "Results")) then
+                      Directory.ensure (testdir @@ "Results")
+                      Shell.copyDir (testdir @@ "Results") (dir @@ "Results") (fun _ -> true)
 
                     let config =
                         XDocument.Load "./Build/NuGet.config.dotnettest"
@@ -2148,8 +2207,14 @@ _Target
                       ReportTypes =
                           [ ReportGenerator.ReportType.Html ]
                       TargetDir = "_Reports/_VisualizerTestWithAltCoverCoreRunner" })
-            [reports
-               @@ "VisualizerTestWithAltCoverCoreRunner.xml"]
+            (tests
+             |> List.map
+                (fun (report, _) ->
+                    if File.Exists report then
+                        report
+                    else
+                        report.Replace(".xml", ".net5.0.xml"))
+             |> List.filter (fun f -> File.Exists f && f.Contains("Visualizer")))
 
         uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
         |> List.map fst
