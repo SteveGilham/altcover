@@ -1594,10 +1594,11 @@ _Target
 
         let apiDir =
             Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
+
         //let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
 
-        let visDir =
-              Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
+        // let visDir =
+        //       Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
 
         let altReport = reports @@ "UnitTestWithAltCover.xml"
 
