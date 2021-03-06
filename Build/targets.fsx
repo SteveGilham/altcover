@@ -394,7 +394,7 @@ let uncovered (path: string) =
                         sprintf "No coverage from '%s'" f
                         |> Trace.traceImportant
 
-                        misses := 1 + !misses
+                        misses := 1 + misses.Value
                         false)
             |> Seq.map
                 (fun e ->
@@ -430,7 +430,7 @@ let coverageSummary _ =
                else
                    n > 0)
        |> Option.isSome
-       || !misses > 0 then
+       || misses.Value > 0 then
         Assert.Fail("Coverage is too low")
 
 let msbuildCommon (p: MSBuildParams) =
@@ -626,7 +626,7 @@ _Target
 
         Directory.ensure "./_Generated"
         Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"
-        Actions.InternalsVisibleTo(!Version)
+        Actions.InternalsVisibleTo(Version.Value)
 
         [ "./_Generated/AssemblyVersion.fs"
           "./_Generated/AssemblyVersion.cs" ]
@@ -641,7 +641,7 @@ _Target
                     String.Format(
                         text,
                         majmin,
-                        (!Version).Split([| '-' |]).[0],
+                        Version.Value.Split([| '-' |]).[0],
                         commitHash,
                         Information.getBranchName ("."),
                         y
@@ -649,7 +649,7 @@ _Target
 
                 File.WriteAllText(f, newtext))
 
-        //let v' = !Version
+        //let v' = Version.Value
         //let assemblyAttributes =
         //       [ AssemblyInfo.Product "AltCover"
         //         AssemblyInfo.Version(majmin + ".0.0")
@@ -1501,7 +1501,6 @@ _Target
                 (String.Join(" ", testFiles)
                  + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
 
-
             OpenCover.run
                 (fun p ->
                     { p with
@@ -1555,7 +1554,6 @@ _Target
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_VisualizerTestsWithOpenCover" })
             [ vcoverage ]
-
 
         uncovered @"_Reports/_UnitTestWithOpenCove*/Summary.xml"
         |> List.map fst
@@ -2048,7 +2046,6 @@ _Target
              |> List.map (fun (_, _, report, _, _, _) -> report)
              |> List.filter (fun f -> f.Contains("Visualizer")))
 
-
         uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
         |> List.map fst
         |> printfn "%A uncovered lines")
@@ -2116,7 +2113,7 @@ _Target
                         XElement(
                             XName.Get "PackageReference",
                             XAttribute(XName.Get "Include", "altcover"),
-                            XAttribute(XName.Get "Version", !Version)
+                            XAttribute(XName.Get "Version", Version.Value)
                         )
 
                     pack.AddBeforeSelf inject
@@ -2174,7 +2171,7 @@ _Target
                             |> testWithCLIArguments)
                         proj)
         finally
-            let folder = (nugetCache @@ "altcover") @@ !Version
+            let folder = (nugetCache @@ "altcover") @@ Version.Value
             //printfn "Should clear %A" folder
             Shell.mkdir folder
             Shell.deleteDir folder
@@ -3818,8 +3815,8 @@ _Target
                                           else
                                               path + "/" + name)
                               Dependencies = dependencies
-                              Version = !Version
-                              Copyright = (!Copyright).Replace("©", "(c)")
+                              Version = Version.Value
+                              Copyright = Copyright.Value.Replace("©", "(c)")
                               Publish = false
                               ReleaseNotes =
                                   "This build from https://github.com/SteveGilham/altcover/tree/"
@@ -3937,7 +3934,7 @@ _Target
     "PrepareReadMe"
     (fun _ ->
         Actions.PrepareReadMe(
-            (!Copyright)
+            Copyright.Value
                 .Replace("©", "&#xa9;")
                 .Replace("<", "&lt;")
                 .Replace(">", "&gt;")
@@ -4035,7 +4032,7 @@ _Target
     (fun _ ->
         Directory.ensure "./_Documentation"
 
-        let v = (!Version).Split([| '-' |]).[0]
+        let v = Version.Value.Split([| '-' |]).[0]
         let unpackapi =
             Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
 
@@ -4064,7 +4061,7 @@ _Target
             Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
 
         let report = Path.getFullName "_Reports/Pester.xml"
-        let v = (!Version).Split([| '-' |]).[0]
+        let v = Version.Value.Split([| '-' |]).[0]
 
         let key =
             Path.getFullName "Build/Infrastructure.snk"
@@ -5351,7 +5348,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover.api"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -5495,7 +5492,7 @@ _Target "DoIt"
   if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
 """
-            let vv = !Version + "-"
+            let vv = Version.Value + "-"
             let ver = vv.Split([| '-' |]) |> Seq.head
 
             File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}", "\"" + ver + "\""))
@@ -5516,7 +5513,7 @@ group NetcoreBuild
                 String.Format(
                     dependencies,
                     Path.getFullName "./_Packaging.api",
-                    !Version,
+                    Version.Value,
                     Path.getFullName "./_Packaging.fake"
                 )
             )
@@ -5537,7 +5534,7 @@ group NetcoreBuild
               "altcover.fake" ]
             |> List.iter
                 (fun f ->
-                    let folder = (nugetCache @@ f) @@ !Version
+                    let folder = (nugetCache @@ f) @@ Version.Value
                     Shell.mkdir folder
                     Shell.deleteDir folder))
 
@@ -5594,7 +5591,7 @@ _Target
                         XElement(
                             XName.Get "PackageReference",
                             XAttribute(XName.Get "Include", "altcover"),
-                            XAttribute(XName.Get "Version", !Version)
+                            XAttribute(XName.Get "Version", Version.Value)
                         )
 
                     pack.AddBeforeSelf inject
@@ -6096,7 +6093,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6130,7 +6127,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6165,7 +6162,7 @@ _Target
         // let inject =
         //   XElement
         //     (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
-        //      XAttribute(XName.Get "Version", !Version))
+        //      XAttribute(XName.Get "Version", Version.Value))
         // pack.AddBeforeSelf inject
         // proj.Save "./Samples/Sample22/Sample22.fsproj"
 
@@ -6177,7 +6174,7 @@ _Target
         //   |> testWithCLIArguments) ""
 
         finally
-            let folder = (nugetCache @@ "altcover") @@ !Version
+            let folder = (nugetCache @@ "altcover") @@ Version.Value
             Shell.mkdir folder
             Shell.deleteDir folder)
 
@@ -6205,7 +6202,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6302,7 +6299,7 @@ _Target
                 ""
 
         finally
-            let folder = (nugetCache @@ "altcover") @@ !Version
+            let folder = (nugetCache @@ "altcover") @@ Version.Value
             Shell.mkdir folder
             Shell.deleteDir folder)
 
@@ -6333,7 +6330,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6377,7 +6374,7 @@ _Target
                     |> testWithCLIArguments)
                 ""
         finally
-            let folder = (nugetCache @@ "altcover") @@ !Version
+            let folder = (nugetCache @@ "altcover") @@ Version.Value
             Shell.mkdir folder
             Shell.deleteDir folder)
 
@@ -6414,7 +6411,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6467,7 +6464,7 @@ _Target
 
             Assert.That(passed, Is.EqualTo 2)
         finally
-            let folder = (nugetCache @@ "altcover") @@ !Version
+            let folder = (nugetCache @@ "altcover") @@ Version.Value
             Shell.mkdir folder
             Shell.deleteDir folder)
 
@@ -6506,7 +6503,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6660,7 +6657,7 @@ _Target
             test <@ File.Exists("./Samples/Sample16/Test/_Reports/solution.Test2.xml") @>
 
         finally
-            let folder = (nugetCache @@ "altcover") @@ !Version
+            let folder = (nugetCache @@ "altcover") @@ Version.Value
             Shell.mkdir folder
             Shell.deleteDir folder)
 
@@ -6695,7 +6692,7 @@ _Target
                 ("install -g altcover.global --add-source "
                  + (Path.getFullName "./_Packaging.global")
                  + " --version "
-                 + !Version)
+                 + Version.Value)
                 "Installed"
 
             Actions.RunDotnet
@@ -6791,7 +6788,7 @@ _Target
                     "uninstalled"
 
             let folder =
-                (nugetCache @@ "altcover.global") @@ !Version
+                (nugetCache @@ "altcover.global") @@ Version.Value
 
             Shell.mkdir folder
             Shell.deleteDir folder)
@@ -6823,7 +6820,7 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover.api"),
-                    XAttribute(XName.Get "Version", !Version)
+                    XAttribute(XName.Get "Version", Version.Value)
                 )
 
             pack.AddBeforeSelf inject
@@ -6871,7 +6868,7 @@ _Target
                 ""
         finally
             let folder =
-                (nugetCache @@ "altcover.api") @@ !Version
+                (nugetCache @@ "altcover.api") @@ Version.Value
 
             Shell.mkdir folder
             Shell.deleteDir folder)
