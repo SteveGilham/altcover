@@ -365,14 +365,6 @@ namespace AltCoverFake.DotNet.Testing
         /// Sink for command line/usage messages
         ///</summary>
         member Echo : (System.String -> unit)
-        static member
-        ///<summary>
-        /// A helper for C# use
-        ///</summary>
-        /// <param name="action">A C# `Action` value e.g. from the `ILoggingOptions` interface</param>
-        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
-          ActionAdapter : action:System.Action<System.String> ->
-                            (System.String -> unit)
         ///<summary>
         /// Returns a pure sink (all input ignored) instance
         ///</summary>
@@ -384,6 +376,13 @@ namespace AltCoverFake.DotNet.Testing
         /// <param name="options">A C# `Action` based logging description</param>
         /// <returns>The F# function equivalent.</returns>
         static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions
+        ///<summary>
+        /// A helper for C# use
+        ///</summary>
+        /// <param name="action">A C# `Action` value e.g. from the `ILoggingOptions` interface</param>
+        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
+        static member ActionAdapter : action:System.Action<System.String> ->
+                            (System.String -> unit)
       end
 // ```
 //  Of the static methods, `Create()` returns a pure sink instance; while `ActionAdapter` and `Translate` are helpers for C# use.
