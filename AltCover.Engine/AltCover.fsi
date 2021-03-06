@@ -380,7 +380,7 @@ namespace AltCoverFake.DotNet.Testing
         /// A helper for C# use
         ///</summary>
         /// <param name="action">A C# `Action` value e.g. from the `ILoggingOptions` interface</param>
-        /// <returns>All the problems that the application command-line could report, so empty is success.</returns>
+        /// <returns>The equivalent F# function, suitable for use as a member value.</returns>
         static member ActionAdapter : action:System.Action<System.String> ->
                             (System.String -> unit)
       end

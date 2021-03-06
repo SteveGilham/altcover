@@ -1,8 +1,18 @@
 # AltCover.LoggingOptions.ActionAdapter method
 
+A helper for C# use
+
 ```csharp
 public static FSharpFunc<string, Unit> ActionAdapter(Action<string> action)
 ```
+
+| parameter | description |
+| --- | --- |
+| action | A C# `Action` value e.g. from the `ILoggingOptions` interface |
+
+## Return Value
+
+The equivalent F# function, suitable for use as a member value.
 
 ## See Also
 
