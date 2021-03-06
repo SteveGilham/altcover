@@ -10,7 +10,7 @@ public static class WhatIfExtension
 
 | name | description |
 | --- | --- |
-| static [WhatIf](WhatIfExtension/WhatIf-apidoc)(…) | Validates the supplied options (2 methods) |
+| static [WhatIf](WhatIfExtension/WhatIf-apidoc)(…) | Validates the supplied options (the `this` parameter) (2 methods) |
 
 ## See Also
 

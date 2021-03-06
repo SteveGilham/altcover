@@ -65,15 +65,7 @@ module VisualizerTests =
 
     let expect = XDocument.Load sr2
 
-    [ expect.Descendants(XName.Get "method")
-      expect.Descendants(XName.Get "seqpnt")
-      expect.Descendants(XName.Get "branch") ]
-    |> Seq.collect id
-    |> Seq.iter
-         (fun x ->
-           let a = x.Attribute(XName.Get "document")
-           a.Value <- Path.Combine(root, a.Value) |> Path.GetFullPath)
-
+    //printfn "%A" after
     //Assert.That(after.ToString().Replace("\r", String.Empty),
     //            Is.EqualTo <| expect.ToString().Replace("\r", String.Empty))
     test

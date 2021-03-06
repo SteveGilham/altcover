@@ -20,7 +20,7 @@ namespace AltCover
     /// <summary>
     /// <para type="description">Takes an `XmlDocument` in and returns an equivalent `XDocument`.</para>
     /// </summary>
-    /// <param name="document">The input document</param>
+    /// <param name="xmlDocument">The input document</param>
     /// <returns>The equivalent `XDocument`</returns>
     val ToXDocument :
       xmlDocument:System.Xml.XmlDocument -> System.Xml.Linq.XDocument

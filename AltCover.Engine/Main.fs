@@ -349,7 +349,7 @@ module internal Main =
               let found =
                 toDirectories |> Seq.filter Directory.Exists
 
-              if !CoverageParameters.inplace // Maybe barf if saving somewhere contaminated
+              if CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
                  && CommandLine.error |> List.isEmpty
                  && found.Any() then
                 found
@@ -373,7 +373,7 @@ module internal Main =
                  (fun (toDirectory, fromDirectory) ->
                    if CommandLine.verbosity < 1 // implement it early here
                    then
-                     if !CoverageParameters.inplace then
+                     if CoverageParameters.inplace.Value then
                        Output.info
                        <| CommandLine.Format.Local("savingto", toDirectory)
 
@@ -633,9 +633,9 @@ module internal Main =
                     Instrument.instrumentGenerator assemblyNames ]
 
                 Visitor.visit visitors assemblies
-                Zip.save document report !CoverageParameters.zipReport
+                Zip.save document report CoverageParameters.zipReport.Value
 
-                if !CoverageParameters.collect then
+                if CoverageParameters.collect.Value then
                   Runner.setRecordToFile report
 
                 CommandLine.processTrailingArguments rest (toInfo |> Seq.head))
@@ -644,7 +644,7 @@ module internal Main =
 
           CommandLine.reportErrors
             "Instrumentation"
-            (dotnetBuild && !CoverageParameters.inplace)
+            (dotnetBuild && CoverageParameters.inplace.Value)
 
           result
 

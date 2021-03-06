@@ -10,7 +10,8 @@ public static XDocument FormatFromCoverlet(XDocument report, string[] files)
 
 | parameter | description |
 | --- | --- |
-| document | The input report |
+| report | The input report |
+| files | The associated assembly paths |
 
 ## Return Value
 

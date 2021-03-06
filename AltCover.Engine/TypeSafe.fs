@@ -138,13 +138,13 @@ module TypeSafe =
   type Filters =
     | Filters of FilterItem seq
     | Unfiltered
-    member self.Join(items: FilterItem seq) =
+    member self.Join(filters: FilterItem seq) =
       let myItems =
         match self with
         | Unfiltered -> []
         | Filters x -> x |> Seq.toList
 
-      Seq.concat [ items
+      Seq.concat [ filters
                    myItems |> List.toSeq ]
       |> Filters
 

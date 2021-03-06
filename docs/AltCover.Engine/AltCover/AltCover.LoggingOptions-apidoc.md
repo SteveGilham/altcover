@@ -10,7 +10,7 @@ public abstract class LoggingOptions
 
 | name | description |
 | --- | --- |
-| static [Create](AltCover.LoggingOptions/Create-apidoc)() | A helper for C# use |
+| static [Create](AltCover.LoggingOptions/Create-apidoc)() | Returns a pure sink (all input ignored) instance |
 | static [NewAbstract](AltCover.LoggingOptions/NewAbstract-apidoc)(…) |  |
 | static [NewPrimitive](AltCover.LoggingOptions/NewPrimitive-apidoc)(…) |  |
 | static [Translate](AltCover.LoggingOptions/Translate-apidoc)(…) | Translates a C# style interface to the corresponding F# type |
@@ -18,7 +18,7 @@ public abstract class LoggingOptions
 | [Error](AltCover.LoggingOptions/Error-apidoc) { get; } | Sink for error messages |
 | [Info](AltCover.LoggingOptions/Info-apidoc) { get; } | Sink for informational messages |
 | [Warn](AltCover.LoggingOptions/Warn-apidoc) { get; } | Sink for warning messages |
-| static [ActionAdapter](AltCover.LoggingOptions/ActionAdapter-apidoc)(…) |  |
+| static [ActionAdapter](AltCover.LoggingOptions/ActionAdapter-apidoc)(…) | A helper for C# use |
 | class [Abstract](AltCover.LoggingOptions.Abstract-apidoc) | Options expressed as an interface |
 | class [Primitive](AltCover.LoggingOptions.Primitive-apidoc) | Options expressed as an F# "stringly" typed record |
 | static class [Tags](AltCover.LoggingOptions.Tags-apidoc) |  |

@@ -495,6 +495,6 @@ module internal Cobertura =
 
     rewrite
     |> Option.ofObj
-    |> Option.iter (fun d -> d.Save(!path |> Option.get))
+    |> Option.iter (fun d -> d.Save(path.Value |> Option.get))
 
     (result, 0uy, String.Empty)

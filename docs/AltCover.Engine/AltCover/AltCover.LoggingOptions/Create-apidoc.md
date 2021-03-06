@@ -1,20 +1,12 @@
 # AltCover.LoggingOptions.Create method
 
-A helper for C# use
-
 Returns a pure sink (all input ignored) instance
 
 ```csharp
 public static LoggingOptions Create()
 ```
 
-| parameter | description |
-| --- | --- |
-| action | A C# `Action` value e.g. from the `ILoggingOptions` interface |
-
 ## Return Value
-
-All the problems that the application command-line could report, so empty is success.
 
 a default instance
 

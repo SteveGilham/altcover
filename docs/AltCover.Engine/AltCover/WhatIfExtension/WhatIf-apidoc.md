@@ -1,14 +1,10 @@
 # WhatIfExtension.WhatIf method (1 of 2)
 
-Validates the supplied options
+Validates the supplied options (the `this` parameter)
 
 ```csharp
 public static ValidatedCommandLine WhatIf(IPrepareOptions P_0)
 ```
-
-| parameter | description |
-| --- | --- |
-| P_0 | The options |
 
 ## Return Value
 
@@ -25,7 +21,7 @@ The validation outcome.
 
 # WhatIfExtension.WhatIf method (2 of 2)
 
-Validates the supplied options
+Validates the supplied options (the `this` parameter)
 
 ```csharp
 public static ValidatedCommandLine WhatIf(ICollectOptions self, bool afterPreparation)
@@ -33,7 +29,6 @@ public static ValidatedCommandLine WhatIf(ICollectOptions self, bool afterPrepar
 
 | parameter | description |
 | --- | --- |
-| self | The options |
 | afterPreparation | Values indicating whether the instrumentation has already taken place |
 
 ## Return Value

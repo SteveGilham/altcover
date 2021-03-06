@@ -23,6 +23,7 @@ which unpeels the wrapper around the file path.  Just substitute in the appropri
 * [ConvertTo-XmlDocument](#convertto-xmldocument)
 * [Get-Accelerator](#get-accelerator)
 * [Invoke-AltCover](#invoke-altcover)
+* [Merge-OpenCover](#merge-opencover)
 * [Write-OpenCoverDerivedState](#write-opencoverderivedstate)
  
 ###    Add-Accelerator
@@ -1699,7 +1700,105 @@ None
 
 
 ```
-Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover -InformationAction Continue
+Invoke-AltCover -Report $x -OutputDirectory  $o -InputDirectory $i -AssemblyFilter "Adapter" -ReportFormat NCover
+```
+-InformationAction Continue
+
+
+###    Merge-OpenCover
+
+NAME
+
+```
+Merge-OpenCover
+
+```
+SYNOPSIS
+
+Merges OpenCover reports.
+
+
+SYNTAX
+
+```
+Merge-OpenCover [-XDocument] <XDocument[]> [-OutputFile <string>] [<CommonParameters>]
+
+Merge-OpenCover [-InputFile] <string[]> [-OutputFile <string>] [<CommonParameters>]
+
+
+```
+DESCRIPTION
+
+Takes a set of OpenCover reports and crates a composite. It handles both strict (`OpenCover`, `AltCover
+--reportFormat=OpenCover`) and more relaxed (`coverlet`, `ConvertFrom-CoverageJson`, `Write-OpenCoverDerivedState
+-Coverlet`) interpretations of the format, which may lead to a not-quite strict result. Note -- Module records are
+merged only if their hash values match, so output from different builds and possibly different source will be kept
+distinct.
+
+
+PARAMETERS
+#### `-XDocument <XDocument[]>` 
+Input as XML
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `-InputFile <string[]>` 
+Input as file paths
+
+```
+Required?                    true
+Position?                    1
+Default value
+Accept pipeline input?       true (ByValue)
+Accept wildcard characters?  false
+```
+
+#### `-OutputFile <string>` 
+Output as file path
+
+```
+Required?                    false
+Position?                    named
+Default value
+Accept pipeline input?       false
+Accept wildcard characters?  false
+```
+
+#### `<CommonParameters>` 
+This cmdlet supports the common parameters: Verbose, Debug,
+ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+OutBuffer, PipelineVariable, and OutVariable. For more information, see
+about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216).
+
+INPUTS
+```
+System.Xml.Linq.XDocument[]
+```
+Input as XML
+
+```
+System.String[]
+```
+Input as file paths
+
+
+OUTPUTS
+```
+System.Xml.Linq.XDocument
+```
+
+
+----------  EXAMPLE 1  ----------
+
+
+```
+$xml = $docs | Merge-OpenCover -OutputFile "./_Packaging/Combined.xml"
 ```
 
 
@@ -1838,13 +1937,13 @@ System.Xml.Linq.XDocument
 ----------  EXAMPLE 1  ----------
 
 ```
-$xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+$xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Coverlet -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
 ```
 
 ----------  EXAMPLE 2  ----------
 
 ```
-$xml = Write-OpenCoverComputedValues -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
+$xml = Write-OpenCoverDerivedState -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
 ```
 
 

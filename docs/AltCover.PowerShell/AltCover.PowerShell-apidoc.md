@@ -17,6 +17,7 @@
 | class [ConvertToXmlDocumentCommand](AltCover.Commands/ConvertToXmlDocumentCommand-apidoc) | Converts `XDocument` to `[xml]`. |
 | class [GetAcceleratorCommand](AltCover.Commands/GetAcceleratorCommand-apidoc) | List all type abbreviations, like the built-in `[xml]` for `System.Xml.XmlDocument`. |
 | class [InvokeAltCoverCommand](AltCover.Commands/InvokeAltCoverCommand-apidoc) | The equivalent of the `AltCover` command or `altcover` global tool. |
+| class [MergeOpenCoverCommand](AltCover.Commands/MergeOpenCoverCommand-apidoc) | Merges OpenCover reports. |
 | enum [ReportFormat](AltCover.Commands/ReportFormat-apidoc) | Values for the Invoke-AltCover -ReportFormat option |
 | enum [ShowHidden](AltCover.Commands/ShowHidden-apidoc) | Values for the Invoke-AltCover -ShowStatic option |
 | enum [Summary](AltCover.Commands/Summary-apidoc) | Values for the Invoke-AltCover -Summary option |

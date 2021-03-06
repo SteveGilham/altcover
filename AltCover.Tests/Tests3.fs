@@ -1790,7 +1790,7 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!CoverageParameters.local, Is.True)
+      Assert.That(CoverageParameters.local.Value, Is.True)
     finally
       CoverageParameters.local := false
 
@@ -1835,7 +1835,7 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!CoverageParameters.coalesceBranches, Is.True)
+      Assert.That(CoverageParameters.coalesceBranches.Value, Is.True)
     finally
       CoverageParameters.coalesceBranches := false
 
@@ -2283,7 +2283,7 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!CoverageParameters.inplace, Is.True)
+      Assert.That(CoverageParameters.inplace.Value, Is.True)
     finally
       CoverageParameters.inplace := false
 
@@ -2327,7 +2327,7 @@ module AltCoverTests3 =
       | Right (x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-          Assert.That(!CoverageParameters.collect, Is.True)
+          Assert.That(CoverageParameters.collect.Value, Is.True)
     finally
       CoverageParameters.collect := false
 
@@ -2675,7 +2675,7 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!CommandLine.dropReturnCode, Is.True)
+      Assert.That(CommandLine.dropReturnCode.Value, Is.True)
     finally
       CommandLine.dropReturnCode := false
 
@@ -2722,7 +2722,7 @@ module AltCoverTests3 =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!CoverageParameters.defer)
+      Assert.That(CoverageParameters.defer.Value)
       Assert.That(CoverageParameters.deferOpCode (), Is.EqualTo OpCodes.Ldc_I4_1)
     finally
       CoverageParameters.defer := false
@@ -3108,10 +3108,10 @@ module AltCoverTests3 =
     let two = ref false
     let set2 () = two := true
     Main.I.imageLoadResilient (fun () -> one := true) set2
-    Assert.That(!one)
-    Assert.That(!two, Is.False)
+    Assert.That(one.Value)
+    Assert.That(two.Value, Is.False)
     set2 ()
-    Assert.That(!two, Is.True)
+    Assert.That(two.Value, Is.True)
 
   [<Test>]
   let ResilientHandlesIOException () =
@@ -3126,10 +3126,10 @@ module AltCoverTests3 =
     let io () = IOException("fail") |> raise
 
     Main.I.imageLoadResilient (set1 io) (fun () -> two := true)
-    Assert.That(!one, Is.False)
-    Assert.That(!two)
+    Assert.That(one.Value, Is.False)
+    Assert.That(two.Value)
     set1 ignore ()
-    Assert.That(!one, Is.True)
+    Assert.That(one.Value, Is.True)
 
   [<Test>]
   let ResilientHandlesBadImageFormatException () =
@@ -3145,10 +3145,10 @@ module AltCoverTests3 =
       BadImageFormatException("fail") |> raise
 
     Main.I.imageLoadResilient (set1 bif) (fun () -> two := true)
-    Assert.That(!one, Is.False)
-    Assert.That(!two)
+    Assert.That(one.Value, Is.False)
+    Assert.That(two.Value)
     set1 ignore ()
-    Assert.That(!one, Is.True)
+    Assert.That(one.Value, Is.True)
 
   [<Test>]
   let ResilientHandlesArgumentException () =
@@ -3163,10 +3163,10 @@ module AltCoverTests3 =
     let arg () = ArgumentException("fail") |> raise
 
     Main.I.imageLoadResilient (set1 arg) (fun () -> two := true)
-    Assert.That(!one, Is.False)
-    Assert.That(!two)
+    Assert.That(one.Value, Is.False)
+    Assert.That(two.Value)
     set1 ignore ()
-    Assert.That(!one, Is.True)
+    Assert.That(one.Value, Is.True)
 
   [<Test>]
   let PreparingNewPlaceShouldCopyEverything () =

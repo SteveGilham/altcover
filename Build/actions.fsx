@@ -524,7 +524,7 @@ a:hover {color: #ecc;}
                     | "footer" -> keep := true
                     | _ -> ()
 
-                    if !keep then None else Some x)
+                    if keep.Value then None else Some x)
             |> Seq.toList
 
         kill

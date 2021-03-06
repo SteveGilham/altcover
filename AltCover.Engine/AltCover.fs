@@ -580,12 +580,12 @@ module AltCover =
     static member Create() =
       Primitive.LoggingOptions.Create() |> Primitive
 
-    static member Translate(input: Abstract.ILoggingOptions) =
+    static member Translate(options: Abstract.ILoggingOptions) =
       { Primitive.LoggingOptions.Create() with
-          Failure = input.Failure |> LoggingOptions.ActionAdapter
-          Warn = input.Warn |> LoggingOptions.ActionAdapter
-          Echo = input.Echo |> LoggingOptions.ActionAdapter
-          Info = input.Info |> LoggingOptions.ActionAdapter }
+          Failure = options.Failure |> LoggingOptions.ActionAdapter
+          Warn = options.Warn |> LoggingOptions.ActionAdapter
+          Echo = options.Echo |> LoggingOptions.ActionAdapter
+          Info = options.Info |> LoggingOptions.ActionAdapter }
       |> Primitive
 
     static member ActionAdapter(action: Action<String>) =

@@ -8,7 +8,7 @@ public static XDocument ToXDocument(XmlDocument xmlDocument)
 
 | parameter | description |
 | --- | --- |
-| document | The input document |
+| xmlDocument | The input document |
 
 ## Return Value
 

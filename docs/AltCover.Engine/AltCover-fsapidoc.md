@@ -159,11 +159,10 @@ command line and usage warninings only.
         member Warn : (System.String -> unit)
         member Error : (System.String -> unit)
         member Echo : (System.String -> unit)
-        static member
-          ActionAdapter : action:System.Action<System.String> ->
-                            (System.String -> unit)
         static member Create : unit -> LoggingOptions
         static member Translate : options:Abstract.ILoggingOptions -> LoggingOptions
+        static member ActionAdapter : action:System.Action<System.String> ->
+                            (System.String -> unit)
       end
 ```
  Of the static methods, `Create()` returns a pure sink instance; while `ActionAdapter` and `Translate` are helpers for C# use.
