@@ -3483,7 +3483,7 @@ _Target
 
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
-                         !! "_Publish/System.*" ]
+                         !! "./_Binaries/AltCover/Release+AnyCPU/net472/System.*" ]
             |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
             |> Seq.toList
 
@@ -5545,6 +5545,7 @@ _Target
             printfn "Initializing ------------------------------------------------"
 
             [ ("./_DotnetTest", "Sample4", "fsproj")
+              ("./_DotnetTestJson", "Sample4", "fsproj")
               ("./_DotnetTestFail", "Sample13", "fsproj")
               ("./_DotnetTestFailFast", "Sample13", "fsproj")
               ("./_DotnetTestFailInstrumentation", "Sample13", "fsproj")
@@ -5610,7 +5611,9 @@ _Target
             let p0 = Primitive.PrepareOptions.Create()
             let c0 = Primitive.CollectOptions.Create()
             let asInPlace (p: Primitive.PrepareOptions) = { p with InPlace = true }
+            let asJson (p: Primitive.PrepareOptions) = { p with ReportFormat = "Json" }
             let p0a = asInPlace p0
+            let p0b = asJson p0
 
             let p1 =
                 { p0 with
@@ -5621,6 +5624,9 @@ _Target
 
             let pp1a =
                 AltCover.PrepareOptions.Primitive(asInPlace p1)
+
+            let pp1b =
+                AltCover.PrepareOptions.Primitive(asJson p1)
 
             let cc0 =
                 AltCover.CollectOptions.Primitive { c0 with SummaryFormat = "+B" }
@@ -5637,6 +5643,19 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj"
+
+            DotNet.test
+                (fun to' ->
+                    (to'
+                        .WithCommon(withWorkingDirectoryVM "_DotnetTestJson")
+                        .WithAltCoverGetVersion()
+                        .WithAltCoverImportModule())
+                        .WithAltCoverOptions
+                        pp1b
+                        cc0
+                        ForceTrue
+                    |> testWithCLIArguments)
+                "dotnettest.fsproj" // TOD validate output as per JsonReporting
 
             let x =
                 Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
