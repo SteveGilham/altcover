@@ -231,7 +231,7 @@
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="2">
               <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100663355</MetadataToken>
+              <MetadataToken>100663353</MetadataToken>
               <Name>System.Tuple`2&lt;System.Double,System.Double&gt; Tests.DU/compute@76::Invoke(System.Double,System.Double,System.Double)</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -248,7 +248,7 @@
           <Methods>
             <Method visited="true" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="1">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
-              <MetadataToken>100663361</MetadataToken>
+              <MetadataToken>100663358</MetadataToken>
               <Name>Tests.M/Thing Tests.M::makeThing(System.String)</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -259,7 +259,7 @@
             </Method>
             <Method visited="true" cyclomaticComplexity="8" nPathComplexity="16" sequenceCoverage="100" branchCoverage="55.56" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="8">
               <Summary numSequencePoints="2" visitedSequencePoints="2" numBranchPoints="8" visitedBranchPoints="5" sequenceCoverage="100" branchCoverage="55.56" maxCyclomaticComplexity="8" minCyclomaticComplexity="8" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="8" maxCrapScore="8" />
-              <MetadataToken>100663362</MetadataToken>
+              <MetadataToken>100663359</MetadataToken>
               <Name>System.Void Tests.M::testMakeThing()</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -286,7 +286,7 @@
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="2">
               <Summary numSequencePoints="1" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" minCrapScore="2" maxCrapScore="2" />
-              <MetadataToken>100663367</MetadataToken>
+              <MetadataToken>100663364</MetadataToken>
               <Name>System.Int32 Tests.M/Thing::CompareTo(System.Object)</Name>
               <FileRef uid="1" />
               <SequencePoints>
@@ -297,7 +297,7 @@
             </Method>
             <Method visited="true" cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True" crapScore="1">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="1" maxCrapScore="1" />
-              <MetadataToken>100663372</MetadataToken>
+              <MetadataToken>100663369</MetadataToken>
               <Name>System.Byte[] Tests.M/Thing::Bytes()</Name>
               <FileRef uid="1" />
               <SequencePoints>
