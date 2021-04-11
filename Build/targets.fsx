@@ -3588,6 +3588,7 @@ _Target
 
         let poshFiles where =
             [ (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
+              (!! "./_Binaries/AltCover/Release+AnyCPU/net472/System.B*")  // HACK HACK HACK
               (!! "./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
             |> Seq.concat
             |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
