@@ -3483,7 +3483,7 @@ _Target
 
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
-                         !! "./_Binaries/AltCover/Release+AnyCPU/net472/System.*" ]
+                         !! "_Publish/System.*" ]
             |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
             |> Seq.toList
 
