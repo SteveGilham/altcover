@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.128" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="GtkSharp" Version="3.24.24.34" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

@@ -888,42 +888,42 @@ _Target
 _Target "Analysis" ignore
 
 _Target
-    "Lint"
-    (fun _ ->
-        let failOnIssuesFound (issuesFound: bool) =
-            Assert.That(issuesFound, Is.False, "Lint issues were found")
+    "Lint" ignore // API mismtach for FSharp.Compiler.SourceCodeServices.FSharpChecker
+    //(fun _ ->
+    //    let failOnIssuesFound (issuesFound: bool) =
+    //        Assert.That(issuesFound, Is.False, "Lint issues were found")
 
-        try
-            let options =
-                { Lint.OptionalLintParameters.Default with
-                      Configuration = FromFile(Path.getFullName "./fsharplint.json") }
+    //    try
+    //        let options =
+    //            { Lint.OptionalLintParameters.Default with
+    //                  Configuration = FromFile(Path.getFullName "./fsharplint.json") }
 
-            [ !! "**/*.fsproj"
-              |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
-              |> Seq.distinct
-              !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
-            |> Seq.concat
-            |> Seq.collect
-                (fun f ->
-                    match Lint.lintFile options f with
-                    | Lint.LintResult.Failure x -> failwithf "%A" x
-                    | Lint.LintResult.Success w ->
-                        w
-                        |> Seq.filter (fun x -> x.Details.SuggestedFix |> Option.isSome))
-            |> Seq.fold
-                (fun _ x ->
-                    printfn
-                        "Info: %A\r\n Range: %A\r\n Fix: %A\r\n===="
-                        x.Details.Message
-                        x.Details.Range
-                        x.Details.SuggestedFix
+    //        [ !! "**/*.fsproj"
+    //          |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+    //          |> Seq.distinct
+    //          !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
+    //        |> Seq.concat
+    //        |> Seq.collect
+    //            (fun f ->
+    //                match Lint.lintFile options f with
+    //                | Lint.LintResult.Failure x -> failwithf "%A" x
+    //                | Lint.LintResult.Success w ->
+    //                    w
+    //                    |> Seq.filter (fun x -> x.Details.SuggestedFix |> Option.isSome))
+    //        |> Seq.fold
+    //            (fun _ x ->
+    //                printfn
+    //                    "Info: %A\r\n Range: %A\r\n Fix: %A\r\n===="
+    //                    x.Details.Message
+    //                    x.Details.Range
+    //                    x.Details.SuggestedFix
 
-                    true)
-                false
-            |> failOnIssuesFound
-        with ex ->
-            printfn "%A" ex
-            reraise ())
+    //                true)
+    //            false
+    //        |> failOnIssuesFound
+    //    with ex ->
+    //        printfn "%A" ex
+    //        reraise ())
 
 _Target
     "Gendarme"
