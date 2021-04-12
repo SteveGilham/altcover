@@ -8,11 +8,11 @@ junk goes here  // remove for fantomas
 #if EXPECTO_MAIN
 module Manifest =
   let regular =
-    [
+    [|
 #else
 module ExpectoTestManifest =
   let simpleTests () =
-    [
+    [|
 #endif
       Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
       Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
@@ -258,6 +258,7 @@ module ExpectoTestManifest =
       Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported,
       "Runner.ThresholdViolationShouldBeReported"
       Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
+      Tests.AltCoverTests.ReportFileShouldBeCorrectlySuffixed, "Tests.ReportFileShouldBeCorrectlySuffixed"
       Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
       Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
       Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage,
@@ -853,7 +854,7 @@ module ExpectoTestManifest =
       Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMono,
       "XTests.ShouldGenerateExpectedXmlReportFromMono"
       Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle,
-      "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle" ]
+      "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle" |] |> Array.toList
 
 #if !EXPECTO_MAIN
   let consistencyCheck specials =

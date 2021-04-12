@@ -1029,6 +1029,37 @@ module AltCoverTests =
 
   // Visitor.fs
   [<Test>]
+  let ReportFileShouldBeCorrectlySuffixed () =
+    try
+      let path1 = Path.Combine(SolutionRoot.location, "test.xml")
+      let path2 = Path.Combine(SolutionRoot.location, "test")
+      let path3 = Path.Combine(SolutionRoot.location, "test.json")
+
+      CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+      CoverageParameters.theReportPath <- Some path1
+      test <@ CoverageParameters.reportPath () = path1 @>
+
+      CoverageParameters.theReportPath <- Some path2
+      test <@ CoverageParameters.reportPath () = path2 @>
+
+      CoverageParameters.theReportPath <- Some path3
+      test <@ CoverageParameters.reportPath () = path1 @>
+
+      CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+      CoverageParameters.theReportPath <- Some path1
+      test <@ CoverageParameters.reportPath () = path3 @>
+
+      CoverageParameters.theReportPath <- Some path2
+      test <@ CoverageParameters.reportPath () = path2 @>
+
+      CoverageParameters.theReportPath <- Some path3
+      test <@ CoverageParameters.reportPath () = path3 @>
+
+    finally
+      CoverageParameters.theReportPath <- None
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
   let CanSwitchSampling () =
     let save = CoverageParameters.single
 
