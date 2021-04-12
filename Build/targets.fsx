@@ -5613,7 +5613,6 @@ _Target
             let asInPlace (p: Primitive.PrepareOptions) = { p with InPlace = true }
             let asJson (p: Primitive.PrepareOptions) = { p with ReportFormat = "Json" }
             let p0a = asInPlace p0
-            let p0b = asJson p0
 
             let p1 =
                 { p0 with
