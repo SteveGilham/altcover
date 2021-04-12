@@ -340,7 +340,8 @@ module ExpectoTestManifest =
       Tests.AltCoverTests.ReleaseBuildTernaryTestInContextWithCoalescence,
       "Tests.ReleaseBuildTernaryTestInContextWithCoalescence"
       Tests.AltCoverTests.CSharpNestedMethods, "Tests.CSharpNestedMethods"
-      Tests.AltCoverTests.FSharpNestedMethods, "Tests.FSharpNestedMethods"
+      Tests.AltCoverTests.FSharpNestedMethodsClassic, "Tests.FSharpNestedMethodsClassic"
+      Tests.AltCoverTests.FSharpNestedMethods5x0x201, "Tests.FSharpNestedMethods_5_0_201"
       Tests.AltCoverTests.ValidateSeqPntFixUp, "Tests.ValidateSeqPntFixUp" // HACK HACK HACK
       Tests.AltCoverTests.EmptyArrayHasExpectedHash, "Tests.EmptyArrayHasExpectedHash"
       Tests.AltCoverTests.KeyHasExpectedToken, "Tests.KeyHasExpectedToken"

@@ -1814,8 +1814,8 @@ module AltCoverTests =
     )
 
   [<Test>]
-  let FSharpNestedMethods () =
-    let sample3 = Path.Combine(dir, "Sample6.dll")
+  let FSharpNestedMethodsClassic () =
+    let sample3 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6Classic.dll")
 
     use def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
@@ -1869,6 +1869,80 @@ module AltCoverTests =
 
     //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
     //Assert.That (result, Is.EquivalentTo expected)
+    result
+    |> List.zip methods
+    |> List.iteri
+         (fun i (x, y) ->
+           printfn "%A %A %d" y x i)
+
+    result
+    |> List.zip expected
+    |> List.iteri
+         (fun i (x, y) ->
+           Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
+
+  [<Test>]
+  let FSharpNestedMethods5x0x201 () =
+    let sample3 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6_5_0_201.dll")
+
+    use def =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
+
+    let methods =
+      def.MainModule.GetAllTypes()
+      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.toList
+
+    let result =
+      methods
+      |> Seq.map (
+        Visitor.I.containingMethod
+        >> (fun (mo: MethodDefinition option) ->
+          mo
+          |> Option.map (fun m -> m.DeclaringType.Name + "::" + m.Name))
+      )
+      |> Seq.toList
+
+    let expected =
+      [ None //Microsoft.FSharp.Collections.FSharpList`1<System.Int32> Sample6.Module::F1(Microsoft.FSharp.Collections.FSharpList`1<System.Object>)
+        None //Microsoft.FSharp.Core.Unit[] Sample6.Module::F2(Microsoft.FSharp.Collections.FSharpList`1<System.String>)
+        Some "Module::F1" //System.Void Sample6.Module/aux@9::.ctor()
+        Some "Module::F1" //System.Int32 Sample6.Module/aux@9::Invoke(System.Int32)
+        Some "FI@11T::Invoke" //System.Void Sample6.Module/FII@11::.ctor()
+        Some "FI@11T::Invoke" //System.Object Sample6.Module/FII@11::Specialize()
+        Some "FII@12::Specialize" //System.Void Sample6.Module/FII@11T::.ctor(Sample6.Module/FII@11)
+        Some "FII@12::Specialize" //System.Int32 Sample6.Module/FII@11T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>,System.Int32)
+        Some "Module::F1" //System.Void Sample6.Module/FI@10::.ctor()
+        Some "Module::F1" //System.Object Sample6.Module/FI@10::Specialize()
+        Some "FI@11::Specialize" //System.Void Sample6.Module/FI@10T::.ctor(Sample6.Module/FI@10)
+        Some "FI@11::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
+        Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
+        Some "Module::F1"
+        Some "fetchUrlAsync@25-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@27-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@25-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@27-5::Invoke(System.IO.StreamReader)"
+        Some "fetchUrlAsync@23-3::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@26-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@23-3::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-4::Invoke(System.IO.Stream)"
+        Some "fetchUrlAsync@23-2::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@24-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@23-2::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@24-3::Invoke(System.Net.WebResponse)"
+        Some "fetchUrlAsync@22-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@24-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@22-1::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@24-2::Invoke(System.Net.WebResponse)"
+        Some "fetchUrlAsync@22-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@24-6::.ctor(Microsoft.FSharp.Control.FSharpAsync`1<System.Net.WebResponse>,Microsoft.FSharp.Core.FSharpFunc`2<System.Net.WebResponse,Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit>>)"
+        Some "fetchUrlAsync@22-1::Invoke" //"Microsoft.FSharp.Control.AsyncReturn Sample6.Module/fetchUrlAsync@24-6::Invoke(Microsoft.FSharp.Control.AsyncActivation`1<Microsoft.FSharp.Core.Unit>)"
+        Some "fetchUrlAsync@21::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+        Some "fetchUrlAsync@21::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-1::Invoke(Microsoft.FSharp.Core.Unit)"
+        Some "Module::F2" //"System.Void Sample6.Module/fetchUrlAsync@22::.ctor()"
+        Some "Module::F2" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22::Invoke(System.String)"
+
+        ]
+
+    //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+    //Assert.That (result, Is.EquivalentTo expected)
+    result
+    |> List.zip methods
+    |> List.iteri
+         (fun i (x, y) ->
+           printfn "%A %A %d" y x i)
+
     result
     |> List.zip expected
     |> List.iteri
@@ -3374,11 +3448,7 @@ module AltCoverTests =
         .Replace("572", "472")
         .Replace("netcoreapp2.1", "netstandard2.0")
 
-    let path6 =
-      sample4path
-        .Replace("4", "6")
-        .Replace("672", "472")
-        .Replace("2.1", "2.0")
+    let path6 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6Classic.dll")
 
     try
       AltCoverRunnerTests.mainInit ()
