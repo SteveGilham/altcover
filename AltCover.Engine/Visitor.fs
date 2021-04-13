@@ -352,11 +352,11 @@ module internal CoverageParameters =
 
   let internal reportPath () =
     let r = Path.GetFullPath(Option.defaultValue (defaultReportPath ()) theReportPath)
-    let suffix = Path.GetExtension r
+    let suffix = (Path.GetExtension r).ToUpperInvariant()
     match (suffix, reportKind()) with
-    | (".xml", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
-    | (".json", ReportFormat.OpenCover)
-    | (".json", ReportFormat.NCover) -> Path.ChangeExtension(r, ".xml")
+    | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
+    | (".JSON", ReportFormat.OpenCover)
+    | (".JSON", ReportFormat.NCover) -> Path.ChangeExtension(r, ".xml")
     | _ -> r
 
   let internal reportFormat () =
