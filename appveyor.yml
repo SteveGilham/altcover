@@ -13,9 +13,9 @@ environment:
 #    secure: sU5H5yaJLCQnrQh2qrADmH2eWgKJa+GQnP2aN2P8dTwHTfhpYRN8W2XGnSmLiKNu    
 nuget:
   disable_publish_on_pr: true
-install:
+# install:
   # SDK version fix
-  - cinst dotnet-sdk --version 5.0.201
+  #   - cinst dotnet-sdk --version 5.0.201
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
