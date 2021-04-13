@@ -1883,7 +1883,8 @@ module AltCoverTests =
 
   [<Test>]
   let FSharpNestedMethods5x0x201 () =
-    let sample3 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6_5_0_201.dll")
+    // let sample3 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6_5_0_201.dll")
+    let sample3 = Path.Combine(dir, "Sample6.dll")
 
     use def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly(sample3)
@@ -3458,7 +3459,11 @@ module AltCoverTests =
         .Replace("572", "472")
         .Replace("netcoreapp2.1", "netstandard2.0")
 
-    let path6 = Path.Combine(SolutionRoot.location, "Samples/Sample6/Sample6Classic.dll")
+    let path6 =
+      sample4path
+        .Replace("4", "6")
+        .Replace("672", "472")
+        .Replace("2.1", "2.0")
 
     try
       AltCoverRunnerTests.mainInit ()
