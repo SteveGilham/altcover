@@ -3,7 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 8.1.819 (Habu series release 4)
-* Adapt to recent compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
+* Adapt to recent F# compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
 * If the report format is JSON, ensure that the coverage file doesn't end `.xml`, and if not JSON, that it doesn't end `.json` (case-blind comparison)
 
 # 8.1.817 (Habu series release 3)
