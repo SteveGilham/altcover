@@ -406,9 +406,9 @@ FN:4,(anonymous_0)
     | Unknown -> ()
     | XML document ->
         doWithStream
-          (fun () -> File.OpenWrite(!path |> Option.get))
+          (fun () -> File.OpenWrite(path.Value |> Option.get))
           (convertReport document format)
     | JSON x ->
-        doWithStream (fun () -> File.OpenWrite(!path |> Option.get)) (convertJson x)
+        doWithStream (fun () -> File.OpenWrite(path.Value |> Option.get)) (convertJson x)
 
     (result, 0uy, String.Empty)

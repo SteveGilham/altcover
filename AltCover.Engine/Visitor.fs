@@ -292,7 +292,7 @@ module internal CoverageParameters =
   let internal defer = ref false
 
   let internal deferOpCode () =
-    if !defer then
+    if defer.Value then
       OpCodes.Ldc_I4_1
     else
       OpCodes.Ldc_I4_0
@@ -307,7 +307,7 @@ module internal CoverageParameters =
       [ defaultInputDirectory ]
       |> List.map Path.GetFullPath
 
-  let internal inplaceSelection a b = if !inplace then a else b
+  let internal inplaceSelection a b = if inplace.Value then a else b
 
   let internal theOutputDirectories = List<string>()
 
@@ -351,7 +351,13 @@ module internal CoverageParameters =
       "coverage.xml"
 
   let internal reportPath () =
-    Path.GetFullPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let r = Path.GetFullPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let suffix = (Path.GetExtension r).ToUpperInvariant()
+    match (suffix, reportKind()) with
+    | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
+    | (".JSON", ReportFormat.OpenCover)
+    | (".JSON", ReportFormat.NCover) -> Path.ChangeExtension(r, ".xml")
+    | _ -> r
 
   let internal reportFormat () =
     let fmt = reportKind ()
@@ -420,7 +426,7 @@ module internal Inspector =
 
       match nameProvider with
       | :? AssemblyDefinition as a ->
-          (!CoverageParameters.local)
+          (CoverageParameters.local.Value)
           && a.MainModule
              |> moduleFiles
              |> Seq.tryHead
@@ -641,7 +647,7 @@ module internal Visitor =
 
       sourceLinkDocuments <-
         Some x.Module
-        |> Option.filter (fun _ -> !CoverageParameters.sourcelink)
+        |> Option.filter (fun _ -> CoverageParameters.sourcelink.Value)
         |> Option.map
              (fun x ->
                x.CustomDebugInformations
@@ -687,7 +693,7 @@ module internal Visitor =
             Seq.fold updateInspection x.Inspection types
 
           let visitcount =
-            if !CoverageParameters.showGenerated then
+            if CoverageParameters.showGenerated.Value then
               selectAutomatic types Exemption.None
             else
               Exemption.None
@@ -818,6 +824,16 @@ module internal Visitor =
 
              sameType t tn)
 
+    let internal methodLoadsType (t: TypeReference) (m: MethodDefinition) =
+      m.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldsfld)
+      |> Seq.exists
+           (fun i ->
+             let tn =
+               (i.Operand :?> FieldReference).FieldType
+
+             sameType t tn)
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification = "AvoidSpeculativeGenerality too")>]
@@ -831,7 +847,8 @@ module internal Visitor =
         |> Seq.filter (fun m -> m.HasBody)
 
       candidates
-      |> Seq.tryFind (methodConstructsType tx)
+      |> Seq.tryFind (fun c -> (methodConstructsType tx c) ||
+                               (methodLoadsType tx c))
 
     let internal methodCallsMethod (t: MethodReference) (m: MethodDefinition) =
       m.Body.Instructions
@@ -922,7 +939,7 @@ module internal Visitor =
     let internal selectExemption k items exemption =
       if k = StaticFilter.AsCovered then
         Exemption.StaticAnalysis
-      else if !CoverageParameters.showGenerated then
+      else if CoverageParameters.showGenerated.Value then
         selectAutomatic items exemption
       else
         exemption
@@ -984,7 +1001,7 @@ module internal Visitor =
       // Skip nested methods when in method-point mode
       |> Seq.filter
            (fun (_, _, methods, _) ->
-             !CoverageParameters.methodPoint |> not
+             CoverageParameters.methodPoint.Value |> not
              || methods |> List.tail |> List.isEmpty)
       |> Seq.collect (
         (fun (m, k, methods, top) ->
@@ -1055,7 +1072,7 @@ module internal Visitor =
                  || state.OpCode.FlowControl = FlowControl.Throw
                  || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
                  || isNull state.Next) then
-          (if !CoverageParameters.coalesceBranches
+          (if CoverageParameters.coalesceBranches.Value
               && state <> l.Head then
              state :: l
            else
@@ -1113,7 +1130,7 @@ module internal Visitor =
         // Eliminate the "all inside one SeqPnt" jumps
         // This covers a multitude of compiler generated branching cases
         // TODO can we simplify
-        match (!CoverageParameters.coalesceBranches,
+        match (CoverageParameters.coalesceBranches.Value,
                includedSequencePoint dbg toNext toJump) with
         | (true, _)
         | (_, Some _) ->
@@ -1198,13 +1215,13 @@ module internal Visitor =
 
     let private extractBranchPoints dbg rawInstructions interesting vc =
       let makeDefault i =
-        if !CoverageParameters.coalesceBranches then
+        if CoverageParameters.coalesceBranches.Value then
           -1
         else
           i
 
       let processBranches =
-        if !CoverageParameters.coalesceBranches then
+        if CoverageParameters.coalesceBranches.Value then
           coalesceBranchPoints dbg
         else
           id
@@ -1242,7 +1259,7 @@ module internal Visitor =
              |> indexList)
       |> Seq.filter
            (fun l ->
-             !CoverageParameters.coalesceBranches
+             CoverageParameters.coalesceBranches.Value
              || l.Length > 1) // TODO revisit
       |> Seq.collect id
       |> Seq.mapi
@@ -1266,7 +1283,7 @@ module internal Visitor =
                       Included = interesting
                       VisitCount = vc
                       Representative =
-                        if !CoverageParameters.coalesceBranches then
+                        if CoverageParameters.coalesceBranches.Value then
                           Reporting.Contributing
                         else
                           Reporting.Representative
@@ -1306,7 +1323,7 @@ module internal Visitor =
         && (((instructions |> Seq.isEmpty
               || CoverageParameters.coverstyle = CoverStyle.BranchOnly)
              && rawInstructions |> Seq.isEmpty |> not)
-            || !CoverageParameters.methodPoint)
+            || CoverageParameters.methodPoint.Value)
 
       let sp =
         if methodPointOnly () then
@@ -1319,7 +1336,7 @@ module internal Visitor =
                      SeqPnt =
                        dbg.GetSequencePoint(i)
                        |> Option.ofObj
-                       |> Option.filter (fun _ -> !CoverageParameters.methodPoint)
+                       |> Option.filter (fun _ -> CoverageParameters.methodPoint.Value)
                        |> Option.map SeqPnt.Build
                      Uid = m.Method.MetadataToken.ToInt32()
                      Interesting = interesting
@@ -1342,7 +1359,7 @@ module internal Visitor =
         && CoverageParameters.withBranches ()
         && (CoverageParameters.coverstyle
             <> CoverStyle.LineOnly)
-        && (!CoverageParameters.methodPoint |> not)
+        && (CoverageParameters.methodPoint.Value |> not)
 
       let bp =
         if includeBranches () then

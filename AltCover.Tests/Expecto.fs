@@ -8,11 +8,11 @@ junk goes here  // remove for fantomas
 #if EXPECTO_MAIN
 module Manifest =
   let regular =
-    [
+    [|
 #else
 module ExpectoTestManifest =
   let simpleTests () =
-    [
+    [|
 #endif
       Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
       Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
@@ -258,6 +258,7 @@ module ExpectoTestManifest =
       Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported,
       "Runner.ThresholdViolationShouldBeReported"
       Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
+      Tests.AltCoverTests.ReportFileShouldBeCorrectlySuffixed, "Tests.ReportFileShouldBeCorrectlySuffixed"
       Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
       Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
       Tests.AltCoverTests.ShouldGetEmbeddedPdbFromImage,
@@ -339,7 +340,8 @@ module ExpectoTestManifest =
       Tests.AltCoverTests.ReleaseBuildTernaryTestInContextWithCoalescence,
       "Tests.ReleaseBuildTernaryTestInContextWithCoalescence"
       Tests.AltCoverTests.CSharpNestedMethods, "Tests.CSharpNestedMethods"
-      Tests.AltCoverTests.FSharpNestedMethods, "Tests.FSharpNestedMethods"
+      Tests.AltCoverTests.FSharpNestedMethodsClassic, "Tests.FSharpNestedMethodsClassic"
+      Tests.AltCoverTests.FSharpNestedMethods5x0x201, "Tests.FSharpNestedMethods_5_0_201"
       Tests.AltCoverTests.ValidateSeqPntFixUp, "Tests.ValidateSeqPntFixUp" // HACK HACK HACK
       Tests.AltCoverTests.EmptyArrayHasExpectedHash, "Tests.EmptyArrayHasExpectedHash"
       Tests.AltCoverTests.KeyHasExpectedToken, "Tests.KeyHasExpectedToken"
@@ -853,7 +855,7 @@ module ExpectoTestManifest =
       Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMono,
       "XTests.ShouldGenerateExpectedXmlReportFromMono"
       Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle,
-      "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle" ]
+      "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle" |] |> Array.toList
 
 #if !EXPECTO_MAIN
   let consistencyCheck specials =

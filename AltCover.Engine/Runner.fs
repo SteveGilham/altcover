@@ -731,7 +731,7 @@ module internal Runner =
       ("x|executable=",
        (fun x ->
          if CommandLine.validatePath "--executable" x then
-           if Option.isSome !executable then
+           if Option.isSome executable.Value then
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--executable")
                :: CommandLine.error
@@ -741,7 +741,7 @@ module internal Runner =
       ("l|lcovReport=",
        (fun x ->
          if CommandLine.validatePath "--lcovReport" x then
-           if Option.isSome !LCov.path then
+           if Option.isSome LCov.path.Value then
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
@@ -762,7 +762,7 @@ module internal Runner =
       ("c|cobertura=",
        (fun x ->
          if CommandLine.validatePath "--cobertura" x then
-           if Option.isSome !Cobertura.path then
+           if Option.isSome Cobertura.path.Value then
              CommandLine.error <-
                CommandLine.Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
@@ -841,7 +841,7 @@ module internal Runner =
     let internal requireExe (parse: Either<string * OptionSet, string list * OptionSet>) =
       match parse with
       | Right (l, options) ->
-          match (!executable, !collect) with
+          match (executable.Value, collect.Value) with
           | (None, false)
           | (Some _, true) ->
               CommandLine.error <-
@@ -1075,7 +1075,7 @@ module internal Runner =
       (args: string list)
       =
       let result =
-        if !collect then
+        if collect.Value then
           0
         else
           runProcess report payload args

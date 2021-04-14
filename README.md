@@ -69,14 +69,16 @@ Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstanda
 
 It is assumed that the following are available
 
-.net core SDK 5.0.100 or later 5.x version (`dotnet`) -- try https://www.microsoft.com/net/download  
+.net core SDK 5.0.201 or later 5.x version (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 7.1.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
 The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net5.0` for unit tests, but does not need any pre-5.0 runtimes to be installed (roll-forward policies are in place).
 
+**Note:** F# compiler code generation changes may cause incompatibilities due to some of the IL inspection performed by AltCover and its self-tests (e.g. by, at 5.0.201, generating non-closure function objects as static fields rather than locally instantiated objects)
+
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.8.5 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.
+You will need Visual Studio VS2019 (Community Edition) v16.9.3 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.
 

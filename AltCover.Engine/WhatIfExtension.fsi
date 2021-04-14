@@ -53,9 +53,8 @@ module WhatIfExtension = begin
   ///</summary>
   type Abstract.ICollectOptions with
     ///<summary>
-    /// Validates the supplied options
+    /// Validates the supplied options (the `this` parameter)
     ///</summary>
-    /// <param name="self">The options</param>
     /// <param name="afterPreparation">Values indicating whether the instrumentation has already taken place</param>
     /// <returns>The validation outcome.</returns>
     [<CompiledName("WhatIf")>]
@@ -65,9 +64,8 @@ module WhatIfExtension = begin
   ///</summary>
   type Abstract.IPrepareOptions with
     ///<summary>
-    /// Validates the supplied options
+    /// Validates the supplied options (the `this` parameter)
     ///</summary>
-    /// <param name="P_0">The options</param>
     /// <returns>The validation outcome.</returns>
     [<CompiledName("WhatIf")>]
     member WhatIf : unit -> AltCover.AltCover.ValidatedCommandLine

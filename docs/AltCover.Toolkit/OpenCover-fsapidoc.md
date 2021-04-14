@@ -28,9 +28,19 @@ Adds summary data and other items to report in `coverlet`'s OpenCover dialect, p
 ```
 Takes output from the OpenCover program, and adjust from OpenCover's liberal idea of significant branches towards AltCover's more restricted approach -- chose either or both of `sameSpan` to unify branches that go from the same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and `withinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807 being instances of this).
 ```
+    val Merge :
+      documents:System.Xml.Linq.XDocument seq -> System.Xml.Linq.XDocument
+```
+Takes a set of OpenCover reports and creates a composite.  It handles
+both strict (`OpenCover`, `AltCover --reportFormat=OpenCover`) and more relaxed (`coverlet`,
+`ConvertFrom-CoverageJson`, `Write-OpenCoverDerivedState -Coverlet`) interpretations of the
+format, which may lead to a not-quite strict result.  Note -- Module records are merged only
+if their hash values match, so output from different builds and possibly different source will
+be kept distinct.
+```
     val JsonToXml :
       document:string -> System.Xml.Linq.XDocument
 ```
-Takes JSON output from coverlet of AltCover's own native JSON format and converts it to a minimal OpenCover style XML document.
+Takes JSON output from coverlet or AltCover's own native JSON format and converts it to a minimal OpenCover style XML document.
 ```
 
