@@ -44,15 +44,15 @@ let rest =
 // The meat of the script starts here ---------------------------------
 // load files
 let stream =
-    new FileStream(!keyName, FileMode.Open, FileAccess.Read)
+    new FileStream(keyName.Value, FileMode.Open, FileAccess.Read)
 
 let key = StrongNameKeyPair(stream)
 
 let definition =
-    AssemblyDefinition.ReadAssembly(!assemblyName)
+    AssemblyDefinition.ReadAssembly(assemblyName.Value)
 
 // Do what CorFlags /32BIT+ /Force does if required
-if !cor32plus then
+if cor32plus.Value then
     definition.MainModule.Attributes <-
         ModuleAttributes.Required32Bit
         ||| definition.MainModule.Attributes
@@ -68,6 +68,6 @@ pkey.WriteSymbols <- true
 pkey.SymbolWriterProvider <- PdbWriterProvider()
 pkey.StrongNameKeyPair <- key
 
-let file = Path.GetFileName(!assemblyName)
+let file = Path.GetFileName(assemblyName.Value)
 // Write the assembly
 definition.Write(file, pkey)

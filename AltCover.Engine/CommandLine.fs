@@ -218,7 +218,7 @@ module internal CommandLine =
       proc.BeginErrorReadLine()
       proc.BeginOutputReadLine()
       proc.WaitForExitCustom()
-      proc.ExitCode * (!dropReturnCode |> not).ToInt32
+      proc.ExitCode * (dropReturnCode.Value |> not).ToInt32
 
     let logException store (e: Exception) =
       error <- e.Message :: error
@@ -408,10 +408,10 @@ module internal CommandLine =
     reportErrors String.Empty extend
     Output.usage info
 
-  let internal ddFlag (name: string) flag =
+  let internal ddFlag (name: string) (flag:bool ref) =
     (name,
      (fun (_: string) ->
-       if !flag then
+       if flag.Value then
          error <-
            Format.Local("MultiplesNotAllowed", "--" + (name.Split('|') |> Seq.last))
            :: error

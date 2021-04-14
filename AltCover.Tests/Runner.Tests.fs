@@ -1035,7 +1035,7 @@ module AltCoverRunnerTests =
               Assert.That(y, Is.SameAs options)
               Assert.That(x, Is.Empty)
 
-          match !Runner.executable with
+          match Runner.executable.Value with
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
         finally
           Runner.executable := None)
@@ -1301,7 +1301,7 @@ module AltCoverRunnerTests =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!Runner.collect, Is.True)
+      Assert.That(Runner.collect.Value, Is.True)
     finally
       Runner.collect := false
 
@@ -1352,7 +1352,7 @@ module AltCoverRunnerTests =
               Assert.That(y, Is.SameAs options)
               Assert.That(x, Is.Empty)
 
-          match !LCov.path with
+          match LCov.path.Value with
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
 
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
@@ -1768,7 +1768,7 @@ module AltCoverRunnerTests =
               Assert.That(y, Is.SameAs options)
               Assert.That(x, Is.Empty)
 
-          match !Cobertura.path with
+          match Cobertura.path.Value with
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
 
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
@@ -1930,7 +1930,7 @@ module AltCoverRunnerTests =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
 
-      Assert.That(!CommandLine.dropReturnCode, Is.True)
+      Assert.That(CommandLine.dropReturnCode.Value, Is.True)
     finally
       CommandLine.dropReturnCode := false
 

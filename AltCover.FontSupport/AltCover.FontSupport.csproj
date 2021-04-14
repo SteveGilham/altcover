@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fake.Core.Process" Version="5.20.3" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Fake.Core.Process" Version="5.20.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
