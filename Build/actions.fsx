@@ -578,7 +578,7 @@ a:hover {color: #ecc;}
         let now = System.DateTime.UtcNow
         now.Ticks
 
-    let Check4Visits before (coverageDocument: XDocument) =
+    let Check4Visits path before (coverageDocument: XDocument) =
         let recorded =
             coverageDocument.Descendants(XName.Get("SequencePoint"))
             |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
@@ -587,7 +587,7 @@ a:hover {color: #ecc;}
         let expected =
             "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
-        Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
+        Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A in %s" recorded path)
         printfn "Visits OK"
 
         coverageDocument.Descendants(XName.Get("SequencePoint"))
@@ -666,7 +666,7 @@ a:hover {color: #ecc;}
             let coverageDocument =
                 XDocument.Load(XmlReader.Create(coverageFile))
 
-            Check4Visits before coverageDocument
+            Check4Visits x before coverageDocument
 
     let CheckSample4 before x =
         do
@@ -677,4 +677,4 @@ a:hover {color: #ecc;}
                 XDocument.Load(XmlReader.Create(coverageFile))
 
             Check4Content coverageDocument
-            Check4Visits before coverageDocument
+            Check4Visits x before coverageDocument

@@ -701,7 +701,7 @@ module SolutionRoot =
         [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
           "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
           "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-          "./Samples/Sampl25/Sample25.fsproj"
+          "./Samples/Sample25/Sample25.fsproj"
           "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
           "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
           "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
@@ -889,42 +889,42 @@ _Target
 _Target "Analysis" ignore
 
 _Target
-    "Lint"
-    (fun _ ->
-        let failOnIssuesFound (issuesFound: bool) =
-            Assert.That(issuesFound, Is.False, "Lint issues were found")
+    "Lint" ignore // API mismtach for FSharp.Compiler.SourceCodeServices.FSharpChecker
+    //(fun _ ->
+    //    let failOnIssuesFound (issuesFound: bool) =
+    //        Assert.That(issuesFound, Is.False, "Lint issues were found")
 
-        try
-            let options =
-                { Lint.OptionalLintParameters.Default with
-                      Configuration = FromFile(Path.getFullName "./fsharplint.json") }
+    //    try
+    //        let options =
+    //            { Lint.OptionalLintParameters.Default with
+    //                  Configuration = FromFile(Path.getFullName "./fsharplint.json") }
 
-            [ !! "**/*.fsproj"
-              |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
-              |> Seq.distinct
-              !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
-            |> Seq.concat
-            |> Seq.collect
-                (fun f ->
-                    match Lint.lintFile options f with
-                    | Lint.LintResult.Failure x -> failwithf "%A" x
-                    | Lint.LintResult.Success w ->
-                        w
-                        |> Seq.filter (fun x -> x.Details.SuggestedFix |> Option.isSome))
-            |> Seq.fold
-                (fun _ x ->
-                    printfn
-                        "Info: %A\r\n Range: %A\r\n Fix: %A\r\n===="
-                        x.Details.Message
-                        x.Details.Range
-                        x.Details.SuggestedFix
+    //        [ !! "**/*.fsproj"
+    //          |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+    //          |> Seq.distinct
+    //          !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
+    //        |> Seq.concat
+    //        |> Seq.collect
+    //            (fun f ->
+    //                match Lint.lintFile options f with
+    //                | Lint.LintResult.Failure x -> failwithf "%A" x
+    //                | Lint.LintResult.Success w ->
+    //                    w
+    //                    |> Seq.filter (fun x -> x.Details.SuggestedFix |> Option.isSome))
+    //        |> Seq.fold
+    //            (fun _ x ->
+    //                printfn
+    //                    "Info: %A\r\n Range: %A\r\n Fix: %A\r\n===="
+    //                    x.Details.Message
+    //                    x.Details.Range
+    //                    x.Details.SuggestedFix
 
-                    true)
-                false
-            |> failOnIssuesFound
-        with ex ->
-            printfn "%A" ex
-            reraise ())
+    //                true)
+    //            false
+    //        |> failOnIssuesFound
+    //    with ex ->
+    //        printfn "%A" ex
+    //        reraise ())
 
 _Target
     "Gendarme"
@@ -5546,6 +5546,7 @@ _Target
             printfn "Initializing ------------------------------------------------"
 
             [ ("./_DotnetTest", "Sample4", "fsproj")
+              ("./_DotnetTestJson", "Sample4", "fsproj")
               ("./_DotnetTestFail", "Sample13", "fsproj")
               ("./_DotnetTestFailFast", "Sample13", "fsproj")
               ("./_DotnetTestFailInstrumentation", "Sample13", "fsproj")
@@ -5611,6 +5612,7 @@ _Target
             let p0 = Primitive.PrepareOptions.Create()
             let c0 = Primitive.CollectOptions.Create()
             let asInPlace (p: Primitive.PrepareOptions) = { p with InPlace = true }
+            let asJson (p: Primitive.PrepareOptions) = { p with ReportFormat = "Json" }
             let p0a = asInPlace p0
 
             let p1 =
@@ -5622,6 +5624,9 @@ _Target
 
             let pp1a =
                 AltCover.PrepareOptions.Primitive(asInPlace p1)
+
+            let pp1b =
+                AltCover.PrepareOptions.Primitive(asJson p1)
 
             let cc0 =
                 AltCover.CollectOptions.Primitive { c0 with SummaryFormat = "+B" }
@@ -5638,6 +5643,19 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj"
+
+            DotNet.test
+                (fun to' ->
+                    (to'
+                        .WithCommon(withWorkingDirectoryVM "_DotnetTestJson")
+                        .WithAltCoverGetVersion()
+                        .WithAltCoverImportModule())
+                        .WithAltCoverOptions
+                        pp1b
+                        cc0
+                        ForceTrue
+                    |> testWithCLIArguments)
+                "dotnettest.fsproj" // TOD validate output as per JsonReporting
 
             let x =
                 Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"

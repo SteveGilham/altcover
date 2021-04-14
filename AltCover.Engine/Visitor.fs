@@ -356,7 +356,13 @@ module internal CoverageParameters =
       "coverage.xml"
 
   let internal reportPath () =
-    Path.GetFullPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let r = Path.GetFullPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let suffix = (Path.GetExtension r).ToUpperInvariant()
+    match (suffix, reportKind()) with
+    | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
+    | (".JSON", ReportFormat.OpenCover)
+    | (".JSON", ReportFormat.NCover) -> Path.ChangeExtension(r, ".xml")
+    | _ -> r
 
   let internal reportFormat () =
     let fmt = reportKind ()
@@ -869,6 +875,16 @@ module internal Visitor =
 
              sameType t tn)
 
+    let internal methodLoadsType (t: TypeReference) (m: MethodDefinition) =
+      m.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldsfld)
+      |> Seq.exists
+           (fun i ->
+             let tn =
+               (i.Operand :?> FieldReference).FieldType
+
+             sameType t tn)
+
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification = "AvoidSpeculativeGenerality too")>]
@@ -882,7 +898,8 @@ module internal Visitor =
         |> Seq.filter (fun m -> m.HasBody)
 
       candidates
-      |> Seq.tryFind (methodConstructsType tx)
+      |> Seq.tryFind (fun c -> (methodConstructsType tx c) ||
+                               (methodLoadsType tx c))
 
     let internal methodCallsMethod (t: MethodReference) (m: MethodDefinition) =
       m.Body.Instructions

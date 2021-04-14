@@ -90,8 +90,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Manatee.Json" Version="13.0.5" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Manatee.Json">
+      <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

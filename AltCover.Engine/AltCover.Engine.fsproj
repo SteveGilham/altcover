@@ -95,7 +95,8 @@
     <PackageReference Include="System.ValueTuple" />
     <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
     <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
-    <PackageReference Include="Manatee.Json" Version="13.0.5" />
+    <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
+    <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
@@ -110,6 +111,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Manatee.Json">
+      <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>

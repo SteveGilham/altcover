@@ -48,7 +48,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Options" Version="6.6.0.161" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
     <PackageReference Include="JaggerJo.Avalonia.FuncUI" Version="0.4.1" />
     <PackageReference Include="JaggerJo.Avalonia.FuncUI.DSL" Version="0.4.3" />
     <PackageReference Include="JaggerJo.Avalonia.FuncUI.Elmish" Version="0.4.0" />
