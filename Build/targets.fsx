@@ -5757,7 +5757,7 @@ _Target
 
             let pf1 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyExcludeFilter = [| "NUnit" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf1a =
