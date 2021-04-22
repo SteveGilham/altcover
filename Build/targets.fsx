@@ -5541,6 +5541,11 @@ group NetcoreBuild
 _Target
     "DotnetTestIntegration"
     (fun _ ->
+        let assertFile f = Assert.That(File.Exists f, f)
+        let assertCopied p = 
+           ["Data/Bar.txt"; "Data/Foo.txt"; "Data/Deeper/Bar.txt"; "Data/Deeper/Foo.txt" ]
+           |> Seq.iter (fun f -> assertFile (p @@ f))
+
         try
             printfn "Initializing ------------------------------------------------"
 
@@ -5642,6 +5647,7 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj"
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
 
             DotNet.test
                 (fun to' ->
@@ -5654,7 +5660,8 @@ _Target
                         cc0
                         ForceTrue
                     |> testWithCLIArguments)
-                "dotnettest.fsproj" // TOD validate output as per JsonReporting
+                "dotnettest.fsproj" // TODO validate output as per JsonReporting
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
 
             let x =
                 Path.getFullName "./_DotnetTest/coverage.net5.0.xml"
