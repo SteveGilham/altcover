@@ -286,7 +286,10 @@ module
 #if RUNNER
   // Serialization ---------------------------------------------------------
 
-  let allowed =
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Indexing required")>]
+  let private allowed =
     [|
         0uy
         0uy
@@ -418,6 +421,9 @@ module
         0uy
   |]
 
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "AvoidUnnecessarySpecializationRule",
+                    Justification = "AvoidSpeculativeGenerality too")>]
   let private escapeString (builder: StringBuilder) (s: String) =
     s
     |> Seq.iter (fun c ->
@@ -430,7 +436,7 @@ module
       | '\r' -> builder.Append("\\r")
       | '\t' -> builder.Append("\\t")
       | h when (int h) >= 128 || Array.get allowed (int h) = 0uy ->
-        builder.Append("\\u").Append(((int)c).ToString("X4"))
+        builder.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
       | _ -> builder.Append(c)
       |> ignore )
 
@@ -774,9 +780,6 @@ module
   let private modulesToBuilder (w: StringBuilder) (report: Modules) =
     (dictionaryToBuilder 1 documentsToBuilder w report)
 
-  [<SuppressMessage("Gendarme.Rules.Correctness",
-                    "EnsureLocalDisposalRule",
-                    Justification = "Is this a bug?")>]
   let internal toText (report: Modules) =
     let w =StringBuilder()
     w.AppendLine("{") |> ignore
