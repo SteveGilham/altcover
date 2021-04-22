@@ -552,6 +552,14 @@ module AltCoverRunnerTests =
 
   [<Test>]
   let OpenCoverShouldGeneratePlausibleJson () =
+    let dummy = SortedDictionary<string, NativeJson.Documents>()
+    dummy.Add("\"\\\b\f\n\r\tA<>\u2012", SortedDictionary<string, NativeJson.Classes>())
+    let escaped = NativeJson.toText(dummy).Replace("\r", String.Empty)
+                                          .Replace("\n", String.Empty)
+    let expectedEscapes = """{ "\"\\\b\f\n\r\tA\u003C\u003E\u2012": {  }}"""
+    Assert.That (escaped, Is.EqualTo expectedEscapes)
+    test <@ escaped = expectedEscapes @>
+
     Runner.init ()
 
     let resource =
