@@ -465,7 +465,7 @@ type ContingentCopy() =
 
     if (self.CopyToOutputDirectory = "Always"
         || self.CopyToOutputDirectory = "PreserveNewest")
-       && (self.RelativeDir |> Path.IsPathRooted |> not)
+       && (self.RelativeDir |> Path.IsPathRooted |> not) // ? Visitor.I.GetRelativePath
        && (self.RelativeDir
            |> String.IsNullOrWhiteSpace
            |> not)
