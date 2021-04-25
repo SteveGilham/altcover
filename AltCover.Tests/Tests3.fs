@@ -4490,7 +4490,7 @@ module AltCoverTests3 =
                                   "Samples/Sample4")
     let builddir = Path.Combine(SolutionRoot.location,
 #if !NET472
-                                  "_Binaries/Sample4/Debug+AnyCPU/net5.0")
+                                  "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
 #else
                                   "_Binaries/Sample4/Debug+AnyCPU/net472")
 #endif
