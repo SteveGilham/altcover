@@ -4485,6 +4485,18 @@ module AltCoverTests3 =
 
     test <@ target |> File.Exists @>
 
+    subject.FileName <- "Foo.txt"
+    subject.RelativeDir <- Path.Combine (where, "Data/Deeper")
+    subject.BuildOutputDirectory <- Path.Combine (where, "Data")
+    subject.ProjectDir <- Path.Combine (where, "Data")
+
+    let target2 =
+      Path.Combine(subject.InstrumentDirectory, "Deeper/Foo.txt")
+
+    test <@ target2 |> File.Exists |> not @>
+    test <@ subject.Execute() @>
+    test <@ target2 |> File.Exists @>
+
   [<Test>]
   let RetryDeleteTest () =
     Main.init ()
