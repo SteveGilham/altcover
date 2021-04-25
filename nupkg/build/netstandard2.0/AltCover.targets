@@ -155,6 +155,7 @@
     <AltCover.ContingentCopy
       Condition="'$(TestTargetPath)' != '$(TargetPath)' AND ('%(AltCoverBuildItem.CopyToOutputDirectory)' == 'Always' OR '%(AltCoverBuildItem.CopyToOutputDirectory)' == 'PreserveNewest' )"
       RelativeDir="%(AltCoverBuildItem.RelativeDir)"
+      ProjectDir="$(ProjectDir)"
       CopyToOutputDirectory="%(AltCoverBuildItem.CopyToOutputDirectory)"
       FileName="%(AltCoverBuildItem.FullPath)"
       BuildOutputDirectory="$(TargetDir)"

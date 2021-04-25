@@ -15,10 +15,10 @@
     <None Include="Data\Bar.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="Data\Foo.txt">
+    <Content Include="$(ProjectDir)\Data\Foo.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Data\Deeper\Bar.txt">
+    <Content Include="$(ProjectDir)\Data\Deeper\Bar.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Data\Deeper\Foo.txt">

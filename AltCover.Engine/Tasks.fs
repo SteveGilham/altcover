@@ -446,6 +446,7 @@ type ContingentCopy() =
                     "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification = "The name of the MSBuild property to use")>]
   member val RelativeDir = String.Empty with get, set
+  member val ProjectDir = String.Empty with get, set
 
   member val CopyToOutputDirectory = String.Empty with get, set
   member val FileName = String.Empty with get, set
@@ -457,32 +458,41 @@ type ContingentCopy() =
   member val InstrumentDirectory = String.Empty with get, set
 
   override self.Execute() =
+    //base.Log.LogMessage(MessageImportance.High, sprintf "Project dir %A" self.ProjectDir)
     //base.Log.LogMessage(MessageImportance.High, sprintf "Relative dir %A" self.RelativeDir)
     //base.Log.LogMessage(MessageImportance.High, sprintf "CopyToOutputDirectory %A" self.CopyToOutputDirectory)
     //base.Log.LogMessage(MessageImportance.High, sprintf "FileName %A" self.FileName)
     //base.Log.LogMessage(MessageImportance.High, sprintf "BuildOutputDirectory %A" self.BuildOutputDirectory)
     //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
 
+    let relativeDir = if self.ProjectDir |> String.IsNullOrWhiteSpace |> not &&
+                         self.ProjectDir  |> Path.IsPathRooted &&
+                         self.RelativeDir |> Path.IsPathRooted
+                      then Visitor.I.getRelativePath self.ProjectDir self.RelativeDir
+                      else self.RelativeDir
+
+    base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
+
     if (self.CopyToOutputDirectory = "Always"
         || self.CopyToOutputDirectory = "PreserveNewest")
-       && (self.RelativeDir |> Path.IsPathRooted |> not) // ? Visitor.I.GetRelativePath
-       && (self.RelativeDir
+       && (relativeDir |> Path.IsPathRooted |> not)
+//       && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
+       && (relativeDir
            |> String.IsNullOrWhiteSpace
            |> not)
        && (self.FileName |> String.IsNullOrWhiteSpace |> not) then
       let toDir =
-        Path.Combine(self.InstrumentDirectory, self.RelativeDir)
+        Path.Combine(self.InstrumentDirectory, relativeDir)
 
       let filename = self.FileName |> Path.GetFileName
       let toFile = Path.Combine(toDir, filename)
 
-      if toDir |> Directory.Exists |> not then
-        toDir |> Directory.CreateDirectory |> ignore
-
       let from =
-        Path.Combine(self.BuildOutputDirectory, self.RelativeDir, filename)
+        Path.Combine(self.BuildOutputDirectory, relativeDir, filename)
       //base.Log.LogMessage(MessageImportance.High, sprintf "copy %A => %A" from toFile)
       if File.Exists from then
+        if toDir |> Directory.Exists |> not then
+          toDir |> Directory.CreateDirectory |> ignore
         File.Copy(from, toFile, true)
 
     true
