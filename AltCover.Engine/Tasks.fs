@@ -446,6 +446,10 @@ type ContingentCopy() =
                     "CA1704:IdentifiersShouldBeSpelledCorrectly",
                     Justification = "The name of the MSBuild property to use")>]
   member val RelativeDir = String.Empty with get, set
+
+  [<SuppressMessage("Microsoft.Naming",
+                    "CA1704:IdentifiersShouldBeSpelledCorrectly",
+                    Justification = "The name of the MSBuild property to use")>]
   member val ProjectDir = String.Empty with get, set
 
   member val CopyToOutputDirectory = String.Empty with get, set
