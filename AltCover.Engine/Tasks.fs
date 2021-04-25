@@ -475,12 +475,12 @@ type ContingentCopy() =
                       then Visitor.I.getRelativePath self.ProjectDir self.RelativeDir
                       else self.RelativeDir
 
-    base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
+    // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
 
     if (self.CopyToOutputDirectory = "Always"
         || self.CopyToOutputDirectory = "PreserveNewest")
        && (relativeDir |> Path.IsPathRooted |> not)
-//       && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
+      //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
        && (relativeDir
            |> String.IsNullOrWhiteSpace
            |> not)
