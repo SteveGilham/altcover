@@ -96,8 +96,10 @@ module internal Gendarme =
                      + (Option.ofObj branch.Previous
                         |> Option.filter
                              (fun (previous: Instruction) ->
-                               previous.Previous.OpCode.Code
-                               <> OpCodes.Switch.Code
+                               let pp = previous.Previous
+                               // !previous.Previous.Is (Code.Switch)
+                               // where Is(i, code) => i != null && i.OpCode.Code == code
+                               (pp |> isNull || pp.OpCode.Code <> OpCodes.Switch.Code)
                                && branch |> targets.Contains |> not)
                         |> Option.map (fun _ -> 1)
                         |> Option.defaultValue 0)

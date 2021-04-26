@@ -376,6 +376,10 @@ type ContingentCopy =
     ///</summary>
     member RelativeDir : string with get, set
     ///<summary>
+    /// The project directory for basing relative paths from (possibly empty; ignored if not an absolute path)
+    ///</summary>
+    member ProjectDir : string with get, set
+    ///<summary>
     /// The file copying property (if empty, then no-op)
     ///</summary>
     member CopyToOutputDirectory : string with get, set

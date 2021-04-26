@@ -5541,6 +5541,11 @@ group NetcoreBuild
 _Target
     "DotnetTestIntegration"
     (fun _ ->
+        let assertFile f = Assert.That(File.Exists f, f)
+        let assertCopied p = 
+           ["Data/Bar.txt"; "Data/Foo.txt"; "Data/Deeper/Bar.txt"; "Data/Deeper/Foo.txt" ]
+           |> Seq.iter (fun f -> assertFile (p @@ f))
+
         try
             printfn "Initializing ------------------------------------------------"
 
@@ -5582,7 +5587,7 @@ _Target
                         |> Seq.concat
                         |> Seq.head
 
-                    targets.SetValue "netcoreapp2.1"
+                    targets.SetValue "net5.0"
 
                     let pack =
                         fsproj.Descendants(XName.Get("PackageReference"))
@@ -5617,7 +5622,7 @@ _Target
             let p1 =
                 { p0 with
                       CallContext = [ "[Fact]"; "0" ]
-                      AssemblyFilter = [| "xunit" |] }
+                      AssemblyFilter = [| "xunit"; "FSharp"; "Monitor" |] }
 
             let pp1 = AltCover.PrepareOptions.Primitive p1
 
@@ -5642,6 +5647,7 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj"
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
 
             DotNet.test
                 (fun to' ->
@@ -5654,10 +5660,11 @@ _Target
                         cc0
                         ForceTrue
                     |> testWithCLIArguments)
-                "dotnettest.fsproj" // TOD validate output as per JsonReporting
+                "dotnettest.fsproj" // TODO validate output as per JsonReporting
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
 
             let x =
-                Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
+                Path.getFullName "./_DotnetTest/coverage.net5.0.xml"
 
             Actions.CheckSample4 before x
 
@@ -5675,7 +5682,7 @@ _Target
                 "dotnettest.fsproj"
 
             let x =
-                Path.getFullName "./_DotnetTestInPlace/coverage.netcoreapp2.1.xml"
+                Path.getFullName "./_DotnetTestInPlace/coverage.net5.0.xml"
 
             Actions.CheckSample4 before x
 
@@ -5689,14 +5696,14 @@ _Target
 
             let pf0 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |]
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |]
                       StrongNameKey = "./_Reports/nonesuch.junk"
                       Report = xx0 }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf0a =
                 { p0a with
-                      AssemblyFilter = [| "NUnit" |]
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |]
                       StrongNameKey = "./_Reports/nonesuch.junk"
                       Report = xx0a }
                 |> AltCover.PrepareOptions.Primitive
@@ -5718,10 +5725,10 @@ _Target
             Assert.That(xx0 |> File.Exists |> not, xx0 + " should not be present")
 
             Assert.That(
-                "./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailInstrumentation/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists
                 |> not,
-                "./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present"
+                "./_DotnetTestFailInstrumentation/bin/Debug/net5.0/dotnettest.dll.txt should not be present"
             )
 
             try
@@ -5741,10 +5748,10 @@ _Target
             Assert.That(xx0a |> File.Exists |> not, xx0a + " should not be present")
 
             Assert.That(
-                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists
                 |> not,
-                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present"
+                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net5.0/dotnettest.dll.txt should not be present"
             )
 
             printfn "optest failing test ------------------------------------------------"
@@ -5757,12 +5764,13 @@ _Target
 
             let pf1 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyExcludeFilter = [| "NUnit" |]
+                      AssemblyFilter = [| "FSharp"; "Monitor" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf1a =
                 { p0a with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             try
@@ -5780,9 +5788,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFail/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist"
+                "./_DotnetTestFail/bin/Debug/net5.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5814,7 +5822,7 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             let filepath =
-                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
 
             Assert.That(filepath |> File.Exists, filepath + " should exist")
 
@@ -5849,12 +5857,12 @@ _Target
 
             let pf1 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf1a =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
                 |> asInPlace
                 |> AltCover.PrepareOptions.Primitive
 
@@ -5873,9 +5881,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailFast/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist"
+                "./_DotnetTestFailFast/bin/Debug/net5.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5907,9 +5915,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailFastInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist"
+                "./_DotnetTestFailFastInPlace/bin/Debug/net5.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5938,7 +5946,7 @@ _Target
             let p2 =
                 { p0 with
                       LineCover = true
-                      AssemblyFilter = [| "xunit" |] }
+                      AssemblyFilter = [| "xunit"; "FSharp"; "Monitor" |] }
 
             let p2a = asInPlace p2
 
@@ -6021,7 +6029,7 @@ _Target
             let p3 =
                 { p0 with
                       BranchCover = true
-                      AssemblyFilter = [| "xunit" |] }
+                      AssemblyFilter = [| "xunit"; "FSharp"; "Monitor" |] }
 
             let p3a = asInPlace p3
 
