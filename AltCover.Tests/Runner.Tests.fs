@@ -552,18 +552,14 @@ module AltCoverRunnerTests =
 
   [<Test>]
   let OpenCoverShouldGeneratePlausibleJson () =
-    let jsontype =
-      typeof<AltCover.CollectOptions>.Assembly.GetTypes ()
-      |> Seq.find (fun t -> t.Name = "NativeJson")
+    let dummy = SortedDictionary<string, NativeJson.Documents>()
+    dummy.Add("\"\\\b\f\n\r\tA<>\u2012", SortedDictionary<string, NativeJson.Classes>())
+    let escaped = NativeJson.toText(dummy).Replace("\r", String.Empty)
+                                          .Replace("\n", String.Empty)
+    let expectedEscapes = """{ "\"\\\b\f\n\r\tA\u003C\u003E\u2012": {  }}"""
+    Assert.That (escaped, Is.EqualTo expectedEscapes)
+    test <@ escaped = expectedEscapes @>
 
-    let bw =
-      jsontype.GetNestedTypes(BindingFlags.NonPublic)
-      |> Seq.find (fun t -> t.Name = "BuildWriter")
-
-    use dummy =
-      Activator.CreateInstance(bw, true) :?> TextWriter
-
-    test <@ dummy.Encoding = System.Text.Encoding.Unicode @>
     Runner.init ()
 
     let resource =

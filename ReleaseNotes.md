@@ -2,8 +2,13 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+#8.2.820 (Habu series release 5)
+* Replace System.Text.Encodings.Web for JSON-escaping module, class and method names 
+* [BUGFIX] issue #125 -- prevent an NullReferenceException is some cases of computing cyclomatic complexity (a failure to exactly copy the algorithm from Mono.Gendarme)
+* [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingetCopy` MSBuild task
+
 # 8.1.819 (Habu series release 4)
-* Adapt to recent compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
+* Adapt to recent F# compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
 * If the report format is JSON, ensure that the coverage file doesn't end `.xml`, and if not JSON, that it doesn't end `.json` (case-blind comparison)
 
 # 8.1.817 (Habu series release 3)
