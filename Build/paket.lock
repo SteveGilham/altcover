@@ -2,10 +2,10 @@
 
 GROUP NetcoreBuild
 NUGET
-  remote: C:\Users\steve\Documents\GitHub\altcover\_Packaging.api
-    altcover.api (8.2.7788.14656)
-  remote: C:\Users\steve\Documents\GitHub\altcover\_Packaging.fake
-    altcover.fake (8.2.7788.14656)
+  remote: {1}
+    altcover.api ({0})
+  remote: {2}
+    altcover.fake ({0})
       Fake.Core.Environment (>= 5.18.1)
       Fake.DotNet.Cli (>= 5.18.1)
       FSharp.Core (>= 4.7)
