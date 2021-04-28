@@ -5,7 +5,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 #8.2.820 (Habu series release 5)
 * Replace System.Text.Encodings.Web for JSON-escaping module, class and method names 
 * [BUGFIX] issue #125 -- prevent an NullReferenceException is some cases of computing cyclomatic complexity (a failure to exactly copy the algorithm from Mono.Gendarme)
-* [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingetCopy` MSBuild task
+* [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingentCopy` MSBuild task
 
 # 8.1.819 (Habu series release 4)
 * Adapt to recent F# compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
