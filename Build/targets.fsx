@@ -3480,7 +3480,7 @@ _Target
 
         let packable =
             Path.getFullName "./_Binaries/README.html"
-            
+
         let readmemd = Path.getFullName "README.md"
 
         let libFiles path =
@@ -3820,12 +3820,17 @@ _Target
                                               path + "/" + name)
                               Dependencies = dependencies
                               Version = Version.Value
-                              Copyright = Copyright.Value.Replace("©", "(c)")
+                              Copyright = Copyright.Value
                               Publish = false
                               ReleaseNotes =
                                   let source = Path.getFullName "ReleaseNotes.md"
-                                               |> File.ReadAllText
+                                               |> File.ReadAllLines
+                                               |> Seq.map (fun s -> let t = System.Text.RegularExpressions.Regex.Replace(s, "^\*\s", "* •\u00A0")
+                                                                    let u = System.Text.RegularExpressions.Regex.Replace(t, "^\s\s\*\s", "  * \u00A0\u00A0◦\u00A0")
+                                                                    System.Text.RegularExpressions.Regex.Replace(u, "^\s\s\s+\*\s", "    * \u00A0\u00A0\u00A0\u00A0⁃\u00A0"))
+                                               |> (fun s -> String.Join(Environment.NewLine, s))
                                   use w = new StringWriter()
+                                  printfn "tweaked = %A" source
                                   Markdig.Markdown.ToPlainText(source, w) |> ignore
                                   "This build from https://github.com/SteveGilham/altcover/tree/"
                                   + commitHash
@@ -5549,7 +5554,7 @@ _Target
     "DotnetTestIntegration"
     (fun _ ->
         let assertFile f = Assert.That(File.Exists f, f)
-        let assertCopied p = 
+        let assertCopied p =
            ["Data/Bar.txt"; "Data/Foo.txt"; "Data/Deeper/Bar.txt"; "Data/Deeper/Foo.txt" ]
            |> Seq.iter (fun f -> assertFile (p @@ f))
 
