@@ -3820,14 +3820,14 @@ _Target
                                               path + "/" + name)
                               Dependencies = dependencies
                               Version = Version.Value
-                              Copyright = Copyright.Value.Replace("©", "(c)")
+                              Copyright = Copyright.Value
                               Publish = false
                               ReleaseNotes =
                                   let source = Path.getFullName "ReleaseNotes.md"
                                                |> File.ReadAllLines
-                                               |> Seq.map (fun s -> let t = System.Text.RegularExpressions.Regex.Replace(s, "^\*\s", "* ~ ")
-                                                                    let u = System.Text.RegularExpressions.Regex.Replace(t, "^\s\s\*\s", "  * _ - ")
-                                                                    System.Text.RegularExpressions.Regex.Replace(u, "^\s\s\s+\*\s", "    * __ ~ "))
+                                               |> Seq.map (fun s -> let t = System.Text.RegularExpressions.Regex.Replace(s, "^\*\s", "* •\u00A0")
+                                                                    let u = System.Text.RegularExpressions.Regex.Replace(t, "^\s\s\*\s", "  * \u00A0\u00A0◦\u00A0")
+                                                                    System.Text.RegularExpressions.Regex.Replace(u, "^\s\s\s+\*\s", "    * \u00A0\u00A0\u00A0\u00A0⁃\u00A0"))
                                                |> (fun s -> String.Join(Environment.NewLine, s))
                                   use w = new StringWriter()
                                   printfn "tweaked = %A" source
