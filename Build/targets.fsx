@@ -3830,7 +3830,7 @@ _Target
                                                                     System.Text.RegularExpressions.Regex.Replace(u, "^\s\s\s+\*\s", "    * \u00A0\u00A0\u00A0\u00A0⁃\u00A0"))
                                                |> (fun s -> String.Join(Environment.NewLine, s))
                                   use w = new StringWriter()
-                                  printfn "tweaked = %A" source
+                                  // printfn "tweaked = %A" source
                                   Markdig.Markdown.ToPlainText(source, w) |> ignore
                                   "This build from https://github.com/SteveGilham/altcover/tree/"
                                   + commitHash
@@ -3845,7 +3845,22 @@ _Target
                                       |> Path.getFullName
                                   else
                                       "/usr/bin/nuget" })
-                    nuspec))
+                    nuspec
+                let nugget = outputPath @@ (project + "." + Version.Value + ".nupkg")
+                use archive = System.IO.Compression.ZipFile.Open(nugget, System.IO.Compression.ZipArchiveMode.Update)
+                let entry = archive.GetEntry(project + ".nuspec")
+                use stream = entry.Open()
+                use reader = new StreamReader(stream)
+                let sb = System.Text.StringBuilder(int ((float nuspec.Length) * 1.1))
+                reader.ReadToEnd()
+                |> Seq.fold (fun b c -> let ic = int c
+                                        if ic >= 127
+                                        then sb.AppendFormat( "&#x{0:X4};" , ic )
+                                        else sb.Append(c)) sb
+                |> ignore
+                stream.Position <- 0L
+                use writer = new StreamWriter(stream)
+                writer.Write(sb.ToString())))
 
 _Target "PrepareFrameworkBuild" ignore
 
