@@ -574,7 +574,7 @@ module
     |> append(slugs.[11])
     |> append("}")
 
-  let private seqpntToBuilder (w: StringBuilder) (s: SeqPnt) =
+  let private seqpntToBuilder (s: SeqPnt) (w: StringBuilder) =
     w
     |> append(slugs.[11])
     |> appendLine("{")
@@ -659,69 +659,53 @@ module
 
     // After SeqPnts, now Tracking
 
-    if method.TId.HasValue then
-      w
-        .AppendLine(",")
-        .Append(slugs.[9])
-        .Append("\"TId\": ")
-        .Append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
-      |> ignore
-
-      w
-        .AppendLine(",")
-        .Append(slugs.[9])
-        .Append("\"Entry\": [")
-      |> ignore
-
-      let mutable firstTime = true
-
-      if method.Entry.IsNotNull && method.Entry.Count > 0 then
-        method.Entry
-        |> Seq.iter
-             (fun t ->
-               timeToBuilder
-                 (if firstTime then
-                    firstTime <- false
-                    w.AppendLine()
-                  else
-                    w.AppendLine(","))
-                 11
-                 t)
-
-        w.AppendLine().Append(slugs.[10])
-        |> ignore
-
-      w.Append("]") |> ignore
-
-      w
-        .AppendLine(",")
-        .Append(slugs.[9])
-        .Append("\"Exit\": [")
-      |> ignore
-
-      let mutable firstTime = true
-
-      if method.Exit.IsNotNull && method.Exit.Count > 0 then
-        method.Exit
-        |> Seq.iter
-             (fun t ->
-               timeToBuilder
-                 (if firstTime then
-                    firstTime <- false
-                    w.AppendLine()
-                  else
-                    w.AppendLine(","))
-                 11
-                 t)
-
-        w.AppendLine().Append(slugs.[10])
-        |> ignore
-
-      w.AppendLine("]") |> ignore
-    else
-      w.AppendLine() |> ignore
-
-    w
+    |>
+      if method.TId.HasValue
+      then
+        appendLine(",")
+        //>> append(slugs.[9])
+        //>> append("\"TId\": ")
+        //>> append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
+        //>> appendLine(",")
+        //>> append(slugs.[9])
+        //>> append("\"Entry\": [")
+        //>> if method.Entry.IsNotNull && method.Entry.Count > 0
+        //   then
+        //     let mutable firstTime = true
+        //     fold2 (fun w t ->
+        //       timeToBuilder
+        //         (if firstTime then
+        //            firstTime <- false
+        //            w.AppendLine()
+        //          else
+        //            w.AppendLine(","))
+        //         11
+        //         t) method.Entry
+        //     >> newLine
+        //     >> append(slugs.[10])
+        //  else id
+        //>> append("]")
+        //>> appendLine(",")
+        //>> append(slugs.[9])
+        //>> append("\"Exit\": [")
+        //>> if method.Exit.IsNotNull && method.Exit.Count > 0
+        //   then
+        //     let mutable firstTime = true
+        //     fold2 (fun w t ->
+        //       timeToBuilder
+        //         (if firstTime then
+        //            firstTime <- false
+        //            w.AppendLine()
+        //          else
+        //            w.AppendLine(","))
+        //         11
+        //         t) method.Exit
+        //     >> newLine
+        //     >> append(slugs.[10])
+        //   else id
+        //>> appendLine("]")
+      else
+        newLine
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
