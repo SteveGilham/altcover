@@ -627,9 +627,9 @@ module
              (fun b branch ->
                  b
                  |> if not first
-                    then first <- false
-                         appendLine(",")
-                    else id
+                    then appendLine(",")
+                    else first <- false
+                         id
                  |>  branchToBuilder branch) method.Branches // TODO extract
           >> newLine
           >> append(slugs.[10])
@@ -637,31 +637,25 @@ module
     |> append("]")
 
     // After Branches, now SeqPnts
-
-    if method.SeqPnts.IsNotNull
-       && method.SeqPnts.Count > 0 then
-      w
-        .AppendLine(",")
-        .Append(slugs.[9])
-        .AppendLine("\"SeqPnts\": [")
-      |> ignore
-
-      let mutable first = true
-
-      method.SeqPnts
-      |> Seq.iter
-           (fun s ->
-             if not first then
-               w.AppendLine(",") |> ignore
-
-             first <- false
-             seqpntToBuilder w s)
-
-      w
-        .AppendLine()
-        .Append(slugs.[10])
-        .Append("]")
-      |> ignore
+    |>
+      if method.SeqPnts.IsNotNull
+         && method.SeqPnts.Count > 0
+      then
+        let mutable first = true
+        appendLine(",")
+        >> append(slugs.[9])
+        >> appendLine("\"SeqPnts\": [")
+        >> fold2 (fun b s ->
+                 b
+                 |> if not first
+                    then appendLine(",")
+                    else first <- false
+                         id
+                 |> seqpntToBuilder s) method.SeqPnts
+      else id
+    |> newLine
+    |> append(slugs.[10])
+    |> append("]")
 
     // After SeqPnts, now Tracking
 
