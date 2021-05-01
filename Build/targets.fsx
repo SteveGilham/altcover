@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.Tracing
 open System.IO
 open System.Reflection
+open System.Text
 open System.Xml
 open System.Xml.Linq
 
@@ -3851,13 +3852,14 @@ _Target
                 let entry = archive.GetEntry(project + ".nuspec")
                 use stream = entry.Open()
                 use reader = new StreamReader(stream)
-                let sb = System.Text.StringBuilder(int ((float nuspec.Length) * 1.1))
-                reader.ReadToEnd()
-                |> Seq.fold (fun b c -> let ic = int c
-                                        if ic >= 127
-                                        then sb.AppendFormat( "&#x{0:X4};" , ic )
-                                        else sb.Append(c)) sb
-                |> ignore
+                let sb = Seq.fold (fun (b:StringBuilder)
+                                       (c:char) -> let ic = int c
+                                                   if ic >= 127
+                                                   then b.AppendFormat( "&#x{0:X4};" , ic )
+                                                   else b.Append(c))
+                            (StringBuilder(int ((float nuspec.Length) * 1.1)))
+                            (reader.ReadToEnd())
+
                 stream.Position <- 0L
                 use writer = new StreamWriter(stream)
                 writer.Write(sb.ToString())))
