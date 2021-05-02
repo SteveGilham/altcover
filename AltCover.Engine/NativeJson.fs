@@ -290,170 +290,172 @@ module
                     "AvoidReturningArraysOnPropertiesRule",
                     Justification = "Indexing required")>]
   let private allowed =
-    [|
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        0uy
-        1uy
-        1uy
-        0uy
-        1uy
-        1uy
-        1uy
-        0uy
-        0uy
-        1uy
-        1uy
-        1uy
-        0uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        0uy
-        1uy
-        0uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        0uy
-        1uy
-        1uy
-        1uy
-        0uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        1uy
-        0uy
-  |]
+    [| 0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       0uy
+       1uy
+       1uy
+       0uy
+       1uy
+       1uy
+       1uy
+       0uy
+       0uy
+       1uy
+       1uy
+       1uy
+       0uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       0uy
+       1uy
+       0uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       0uy
+       1uy
+       1uy
+       1uy
+       0uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       1uy
+       0uy |]
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
   let private jsonEscape (s: String) (builder: StringBuilder) =
-    Seq.fold (fun (sb:StringBuilder) c ->
-      match c with
-      | '"' -> sb.Append("\\\"")
-      | '\\' -> sb.Append("\\\\")
-      | '\b' -> sb.Append("\\b")
-      | '\f' -> sb.Append("\\f")
-      | '\n' -> sb.Append("\\n")
-      | '\r' -> sb.Append("\\r")
-      | '\t' -> sb.Append("\\t")
-      | h when (int h) >= 128 || Array.get allowed (int h) = 0uy ->
-        sb.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture))
-      | _ -> sb.Append(c)) builder s
+    Seq.fold
+      (fun (sb: StringBuilder) c ->
+        match c with
+        | '"' -> sb.Append("\\\"")
+        | '\\' -> sb.Append("\\\\")
+        | '\b' -> sb.Append("\\b")
+        | '\f' -> sb.Append("\\f")
+        | '\n' -> sb.Append("\\n")
+        | '\r' -> sb.Append("\\r")
+        | '\t' -> sb.Append("\\t")
+        | h when (int h) >= 128 || Array.get allowed (int h) = 0uy ->
+            sb
+              .Append("\\u")
+              .Append(
+                ((int) c)
+                  .ToString("X4", CultureInfo.InvariantCulture)
+              )
+        | _ -> sb.Append(c))
+      builder
+      s
 
   let private slugs =
     { 0 .. 14 }
     |> Seq.map (fun i -> (i, String(' ', i)))
     |> Map.ofSeq
 
-  let private appendLine (str:string) (builder:StringBuilder) =
-    builder.AppendLine str
+  let private appendLine (str: string) (builder: StringBuilder) = builder.AppendLine str
 
-  let private newLine(builder:StringBuilder) =
-    builder.AppendLine()
+  let private newLine (builder: StringBuilder) = builder.AppendLine()
 
-  let private append (str:string) (builder:StringBuilder) =
-    builder.Append str
+  let private append (str: string) (builder: StringBuilder) = builder.Append str
 
-  let private appendCharacter (c:char) (builder:StringBuilder) =
-    builder.Append c
+  let private appendCharacter (c: char) (builder: StringBuilder) = builder.Append c
 
   let private fold2 f values state = Seq.fold f state values
 
@@ -468,74 +470,78 @@ module
     report
     |> Seq.fold
          (fun b kvp ->
-            b
-            |> (if first
-                then first <- false
-                     id
-                else appendLine ",")
-            |> append slugs.[depth]
-            |> appendCharacter '"'
-            |> jsonEscape kvp.Key
-            |> appendLine("\": {")
-            |> next kvp.Value
-            |> append slugs.[depth + 1]
-            |> appendCharacter '}') w
-     |> newLine
+           b
+           |> (if first then
+                 first <- false
+                 id
+               else
+                 appendLine ",")
+           |> append slugs.[depth]
+           |> appendCharacter '"'
+           |> jsonEscape kvp.Key
+           |> appendLine ("\": {")
+           |> next kvp.Value
+           |> append slugs.[depth + 1]
+           |> appendCharacter '}')
+         w
+    |> newLine
 
   let private lineToBuilder (kvp: KeyValuePair<int, int>) (w: StringBuilder) =
     w
-    |> append(slugs.[11])
+    |> append (slugs.[11])
     |> appendCharacter ('"')
-    |> append(kvp.Key.ToString(CultureInfo.InvariantCulture))
-    |> append("\": ")
-    |> append(kvp.Value.ToString(CultureInfo.InvariantCulture))
+    |> append (kvp.Key.ToString(CultureInfo.InvariantCulture))
+    |> append ("\": ")
+    |> append (kvp.Value.ToString(CultureInfo.InvariantCulture))
 
   [<SuppressMessage("Gendarme.Rules.Smells",
                     "AvoidMessageChainsRule",
                     Justification = "Fluent interface")>]
   let private itemToBuilder (i: int) (n: string) more (w: StringBuilder) =
     w
-    |> append(slugs.[12])
+    |> append (slugs.[12])
     |> appendCharacter ('"')
-    |> append(n)
-    |> append("\": ")
-    |> append(i.ToString(CultureInfo.InvariantCulture))
-    |> if more
-       then appendLine(",")
-       else id
+    |> append (n)
+    |> append ("\": ")
+    |> append (i.ToString(CultureInfo.InvariantCulture))
+    |> if more then appendLine (",") else id
 
   let private timeToBuilder depth (time: TimeStamp) (b: StringBuilder) =
     b
-    |> append(slugs.[depth])
-    |> appendCharacter('"')
-    |> append(time)
-    |> appendCharacter('"')
+    |> append (slugs.[depth])
+    |> appendCharacter ('"')
+    |> append (time)
+    |> appendCharacter ('"')
 
   let private timesToBuilder (times: Times) (w: StringBuilder) =
     let mutable firstTime = true
+
     if times.IsNotNull && times.Count > 0 then
       w
-      |> appendLine(",")
-      |> append(slugs.[12])
-      |> append("\"Times\": [")
+      |> appendLine (",")
+      |> append (slugs.[12])
+      |> append ("\"Times\": [")
       |> fold2
            (fun b t ->
              timeToBuilder
                14
                t
                (b
-                |> if firstTime
-                   then firstTime <- false
-                        newLine
-                   else appendLine(","))
-           ) times
+                |> if firstTime then
+                     firstTime <- false
+                     newLine
+                   else
+                     appendLine (",")))
+           times
       |> newLine
-      |> append(slugs.[13])
-      |> append("]")
-    else w
+      |> append (slugs.[13])
+      |> append ("]")
+    else
+      w
 
   let private eeToBuilder (times: Times) (w: StringBuilder) =
     let mutable firstTime = true
+
     if times.IsNotNull && times.Count > 0 then
       w
       |> fold2
@@ -544,59 +550,66 @@ module
                11
                t
                (b
-                |> if firstTime
-                   then firstTime <- false
-                        newLine
-                   else appendLine(","))
-           ) times
+                |> if firstTime then
+                     firstTime <- false
+                     newLine
+                   else
+                     appendLine (",")))
+           times
       |> newLine
-      |> append(slugs.[10])
-    else w
+      |> append (slugs.[10])
+    else
+      w
 
   let private tracksToBuilder (tracks: Tracks) (w: StringBuilder) =
     let mutable firstTime = true
+
     w
-    |> if tracks.IsNotNull && tracks.Count > 0
-       then
-        appendLine(",")
-        >> append(slugs.[12])
-        >> append("\"Tracks\": [")
-        >> fold2 (fun b (t:int) ->
-               b
-               |> if firstTime
-                  then firstTime <- false
-                       newLine
-                  else appendLine(",")
-               |> append(slugs.[14])
-               |> append(t.ToString(CultureInfo.InvariantCulture))) tracks
-        >> newLine
-        >> append(slugs.[13])
-        >> append("]")
-        else id
+    |> if tracks.IsNotNull && tracks.Count > 0 then
+         appendLine (",")
+         >> append (slugs.[12])
+         >> append ("\"Tracks\": [")
+         >> fold2
+              (fun b (t: int) ->
+                b
+                |> if firstTime then
+                     firstTime <- false
+                     newLine
+                   else
+                     appendLine (",")
+                |> append (slugs.[14])
+                |> append (t.ToString(CultureInfo.InvariantCulture)))
+              tracks
+         >> newLine
+         >> append (slugs.[13])
+         >> append ("]")
+       else
+         id
 
   let private branchToBuilder (b: BranchInfo) (w: StringBuilder) =
     w
-    |> append(slugs.[11])
-    |> appendLine("{")
+    |> append (slugs.[11])
+    |> appendLine ("{")
     |> itemToBuilder b.Line "Line" true
     |> itemToBuilder b.Offset "Offset" true
     |> itemToBuilder b.EndOffset "EndOffset" true
     |> itemToBuilder b.Path "Path" true
     |> itemToBuilder (int b.Ordinal) "Ordinal" true
     |> itemToBuilder b.Hits "Hits" (b.Id > 0)
-    |> if b.Id > 0
-       then itemToBuilder b.Id "Id" false
-       else id
+    |> if b.Id > 0 then
+         itemToBuilder b.Id "Id" false
+       else
+         id
     |> timesToBuilder b.Times
     |> tracksToBuilder b.Tracks
     |> newLine
-    |> append(slugs.[11])
-    |> append("}")
+    |> append (slugs.[11])
+    |> append ("}")
 
   let private seqpntToBuilder (s: SeqPnt) (w: StringBuilder) =
     w
-    |> append(slugs.[11])
-    |> appendLine("{")
+    |> append (slugs.[11])
+    |> appendLine ("{")
     |> itemToBuilder s.VC "VC" true
     |> itemToBuilder s.SL "SL" true
     |> itemToBuilder s.SC "SC" true
@@ -607,97 +620,81 @@ module
     |> timesToBuilder s.Times
     |> tracksToBuilder s.Tracks
     |> newLine
-    |> append(slugs.[11])
-    |> append("}")
+    |> append (slugs.[11])
+    |> append ("}")
 
   let private methodTrackingToBuilder (method: Method) (w: StringBuilder) =
     w
-    |>if method.TId.HasValue
-      then
-        appendLine(",")
-        >> append(slugs.[9])
-        >> append("\"TId\": ")
-        >> append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
-        >> appendLine(",")
-        >> append(slugs.[9])
-        >> append("\"Entry\": [")
-        >> eeToBuilder method.Entry
-        >> append("]")
-        >> appendLine(",")
-        >> append(slugs.[9])
-        >> append("\"Exit\": [")
-        >> eeToBuilder method.Exit
-        >> appendLine("]")
-      else
-        newLine
+    |> if method.TId.HasValue then
+         appendLine (",")
+         >> append (slugs.[9])
+         >> append ("\"TId\": ")
+         >> append (method.TId.Value.ToString(CultureInfo.InvariantCulture))
+         >> appendLine (",")
+         >> append (slugs.[9])
+         >> append ("\"Entry\": [")
+         >> eeToBuilder method.Entry
+         >> append ("]")
+         >> appendLine (",")
+         >> append (slugs.[9])
+         >> append ("\"Exit\": [")
+         >> eeToBuilder method.Exit
+         >> appendLine ("]")
+       else
+         newLine
 
   let private methodToBuilder (method: Method) (w: StringBuilder) =
-    w
-    |> append(slugs.[9])
-    |> appendLine("\"Lines\": {")
-    |> if method.Lines.IsNotNull && method.Lines.Count > 0
-       then
-         let mutable first = true
+    let post = newLine >> append (slugs.[10])
 
-         // TODO extract
-         fold2
+    let ifNotEmpty
+      (collection: 'a seq)
+      (operation: 'a -> StringBuilder -> StringBuilder)
+      preamble
+      postamble
+      =
+      if collection.IsNotNull
+         && collection |> Seq.isEmpty |> not then
+        let mutable first = true
+
+        preamble
+        >> fold2
              (fun b kvp ->
-                b
-                |> if first
-                   then
+               b
+               |> if first then
                     first <- false
                     id
-                   else
-                    appendLine(",")
+                  else
+                    appendLine (",")
+               |> operation kvp)
+             collection
+        >> postamble
+      else
+        id
 
-                |> lineToBuilder kvp) method.Lines
-          >> newLine
-          >> append(slugs.[10])
-       else id
-    |> appendLine("},")
+    w
+    |> append (slugs.[9])
+    |> appendLine ("\"Lines\": {")
+    |> ifNotEmpty method.Lines lineToBuilder id post
+    |> appendLine ("},")
 
     // After Lines, now Branches
 
-    |> append(slugs.[9])
-    |> append("\"Branches\": [")
-    |> if method.Branches.IsNotNull
-          && method.Branches.Count > 0
-       then
-          let mutable first = true
-          newLine
-          >> fold2
-             (fun b branch ->
-                 b
-                 |> if first
-                    then first <- false
-                         id
-                    else appendLine(",")
-                 |>  branchToBuilder branch) method.Branches // TODO extract
-          >> newLine
-          >> append(slugs.[10])
-       else id
-    |> append("]")
+    |> append (slugs.[9])
+    |> append ("\"Branches\": [")
+    |> ifNotEmpty method.Branches branchToBuilder newLine post
+    |> append ("]")
 
     // After Branches, now SeqPnts
-    |>
-      if method.SeqPnts.IsNotNull
-         && method.SeqPnts.Count > 0
-      then
-        let mutable first = true
-        appendLine(",")
-        >> append(slugs.[9])
-        >> appendLine("\"SeqPnts\": [")
-        >> fold2 (fun b s ->
-                 b
-                 |> if first
-                    then first <- false
-                         id
-                    else appendLine(",")
-                 |> seqpntToBuilder s) method.SeqPnts
-      else id
+    |> ifNotEmpty
+         method.SeqPnts
+         seqpntToBuilder
+         (appendLine (",")
+          >> append (slugs.[9])
+          >> appendLine ("\"SeqPnts\": ["))
+         id
     |> newLine
-    |> append(slugs.[10])
-    |> append("]")
+    |> append (slugs.[10])
+    |> append ("]")
 
     // After SeqPnts, now Tracking
     |> methodTrackingToBuilder method
@@ -705,7 +702,7 @@ module
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
-  let private methodsToBuilder (methods: Methods)  (w: StringBuilder)=
+  let private methodsToBuilder (methods: Methods) (w: StringBuilder) =
     (dictionaryToBuilder 7 methodToBuilder methods w)
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
@@ -728,10 +725,11 @@ module
 
   let internal toText (report: Modules) =
     let w = StringBuilder()
+
     w
-    |> appendLine("{")
+    |> appendLine ("{")
     |> modulesToBuilder report
-    |> appendLine("}")
+    |> appendLine ("}")
     |> ignore
 
     let result = w.ToString()
@@ -795,15 +793,12 @@ module
     sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(
       CultureInfo.InvariantCulture
     )
-
     sd.Attribute(XName.Get "visitedBranchPoints").Value <- vb.ToString(
       CultureInfo.InvariantCulture
     )
-
     sd.Attribute(XName.Get "numSequencePoints").Value <- ns.ToString(
       CultureInfo.InvariantCulture
     )
-
     sd.Attribute(XName.Get "visitedSequencePoints").Value <- vs.ToString(
       CultureInfo.InvariantCulture
     )
@@ -864,7 +859,6 @@ module
                x
                |> Seq.distinctBy (fun bx -> bx.EndOffset)
                |> Seq.length)
-
       m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets)
         .ToString(CultureInfo.InvariantCulture)
 
