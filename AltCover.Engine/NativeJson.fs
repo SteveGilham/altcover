@@ -424,7 +424,7 @@ module
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
-  let private escapeString (s: String) (builder: StringBuilder) =
+  let private jsonEscape (s: String) (builder: StringBuilder) =
     Seq.fold (fun (sb:StringBuilder) c ->
       match c with
       | '"' -> sb.Append("\\\"")
@@ -452,7 +452,7 @@ module
   let private append (str:string) (builder:StringBuilder) =
     builder.Append str
 
-  let private appendChar (c:char) (builder:StringBuilder) =
+  let private appendCharacter (c:char) (builder:StringBuilder) =
     builder.Append c
 
   let private fold2 f values state = Seq.fold f state values
@@ -474,18 +474,18 @@ module
                      id
                 else appendLine ",")
             |> append slugs.[depth]
-            |> appendChar '"'
-            |> escapeString kvp.Key
+            |> appendCharacter '"'
+            |> jsonEscape kvp.Key
             |> appendLine("\": {")
             |> next kvp.Value
             |> append slugs.[depth + 1]
-            |> appendChar '}') w
+            |> appendCharacter '}') w
      |> newLine
 
   let private lineToBuilder (kvp: KeyValuePair<int, int>) (w: StringBuilder) =
     w
     |> append(slugs.[11])
-    |> appendChar ('"')
+    |> appendCharacter ('"')
     |> append(kvp.Key.ToString(CultureInfo.InvariantCulture))
     |> append("\": ")
     |> append(kvp.Value.ToString(CultureInfo.InvariantCulture))
@@ -496,7 +496,7 @@ module
   let private itemToBuilder (i: int) (n: string) more (w: StringBuilder) =
     w
     |> append(slugs.[12])
-    |> appendChar ('"')
+    |> appendCharacter ('"')
     |> append(n)
     |> append("\": ")
     |> append(i.ToString(CultureInfo.InvariantCulture))
@@ -507,9 +507,9 @@ module
   let private timeToBuilder depth (time: TimeStamp) (b: StringBuilder) =
     b
     |> append(slugs.[depth])
-    |> appendChar('"')
+    |> appendCharacter('"')
     |> append(time)
-    |> appendChar('"')
+    |> appendCharacter('"')
 
   let private timesToBuilder (times: Times) (w: StringBuilder) =
     let mutable firstTime = true
@@ -610,6 +610,27 @@ module
     |> append(slugs.[11])
     |> append("}")
 
+  let private methodTrackingToBuilder (method: Method) (w: StringBuilder) =
+    w
+    |>if method.TId.HasValue
+      then
+        appendLine(",")
+        >> append(slugs.[9])
+        >> append("\"TId\": ")
+        >> append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
+        >> appendLine(",")
+        >> append(slugs.[9])
+        >> append("\"Entry\": [")
+        >> eeToBuilder method.Entry
+        >> append("]")
+        >> appendLine(",")
+        >> append(slugs.[9])
+        >> append("\"Exit\": [")
+        >> eeToBuilder method.Exit
+        >> appendLine("]")
+      else
+        newLine
+
   let private methodToBuilder (method: Method) (w: StringBuilder) =
     w
     |> append(slugs.[9])
@@ -679,26 +700,7 @@ module
     |> append("]")
 
     // After SeqPnts, now Tracking
-
-    |>
-      if method.TId.HasValue
-      then
-        appendLine(",")
-        >> append(slugs.[9])
-        >> append("\"TId\": ")
-        >> append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
-        >> appendLine(",")
-        >> append(slugs.[9])
-        >> append("\"Entry\": [")
-        >> eeToBuilder method.Entry
-        >> append("]")
-        >> appendLine(",")
-        >> append(slugs.[9])
-        >> append("\"Exit\": [")
-        >> eeToBuilder method.Exit
-        >> appendLine("]")
-      else
-        newLine
+    |> methodTrackingToBuilder method
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
