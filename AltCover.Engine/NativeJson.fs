@@ -534,6 +534,25 @@ module
       |> append("]")
     else w
 
+  let private eeToBuilder (times: Times) (w: StringBuilder) =
+    let mutable firstTime = true
+    if times.IsNotNull && times.Count > 0 then
+      w
+      |> fold2
+           (fun b t ->
+             timeToBuilder
+               11
+               t
+               (b
+                |> if firstTime
+                   then firstTime <- false
+                        newLine
+                   else appendLine(","))
+           ) times
+      |> newLine
+      |> append(slugs.[10])
+    else w
+
   let private tracksToBuilder (tracks: Tracks) (w: StringBuilder) =
     let mutable firstTime = true
     w
@@ -665,47 +684,19 @@ module
       if method.TId.HasValue
       then
         appendLine(",")
-        //>> append(slugs.[9])
-        //>> append("\"TId\": ")
-        //>> append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
-        //>> appendLine(",")
-        //>> append(slugs.[9])
-        //>> append("\"Entry\": [")
-        //>> if method.Entry.IsNotNull && method.Entry.Count > 0
-        //   then
-        //     let mutable firstTime = true
-        //     fold2 (fun w t ->
-        //       timeToBuilder
-        //         (if firstTime then
-        //            firstTime <- false
-        //            w.AppendLine()
-        //          else
-        //            w.AppendLine(","))
-        //         11
-        //         t) method.Entry
-        //     >> newLine
-        //     >> append(slugs.[10])
-        //  else id
-        //>> append("]")
-        //>> appendLine(",")
-        //>> append(slugs.[9])
-        //>> append("\"Exit\": [")
-        //>> if method.Exit.IsNotNull && method.Exit.Count > 0
-        //   then
-        //     let mutable firstTime = true
-        //     fold2 (fun w t ->
-        //       timeToBuilder
-        //         (if firstTime then
-        //            firstTime <- false
-        //            w.AppendLine()
-        //          else
-        //            w.AppendLine(","))
-        //         11
-        //         t) method.Exit
-        //     >> newLine
-        //     >> append(slugs.[10])
-        //   else id
-        //>> appendLine("]")
+        >> append(slugs.[9])
+        >> append("\"TId\": ")
+        >> append(method.TId.Value.ToString(CultureInfo.InvariantCulture))
+        >> appendLine(",")
+        >> append(slugs.[9])
+        >> append("\"Entry\": [")
+        >> eeToBuilder method.Entry
+        >> append("]")
+        >> appendLine(",")
+        >> append(slugs.[9])
+        >> append("\"Exit\": [")
+        >> eeToBuilder method.Exit
+        >> appendLine("]")
       else
         newLine
 
