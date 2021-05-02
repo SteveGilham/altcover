@@ -469,10 +469,10 @@ module
     |> Seq.fold
          (fun b kvp ->
             b
-            |> (if not first
-                then appendLine ","
-                else first <- false
-                     id)
+            |> (if first
+                then first <- false
+                     id
+                else appendLine ",")
             |> append slugs.[depth]
             |> appendChar '"'
             |> escapeString kvp.Key
@@ -603,11 +603,13 @@ module
          fold2
              (fun b kvp ->
                 b
-                |> if not first
+                |> if first
                    then
                     first <- false
+                    id
+                   else
                     appendLine(",")
-                   else id
+
                 |> lineToBuilder kvp) method.Lines
           >> newLine
           >> append(slugs.[10])
@@ -626,10 +628,10 @@ module
           >> fold2
              (fun b branch ->
                  b
-                 |> if not first
-                    then appendLine(",")
-                    else first <- false
+                 |> if first
+                    then first <- false
                          id
+                    else appendLine(",")
                  |>  branchToBuilder branch) method.Branches // TODO extract
           >> newLine
           >> append(slugs.[10])
@@ -647,10 +649,10 @@ module
         >> appendLine("\"SeqPnts\": [")
         >> fold2 (fun b s ->
                  b
-                 |> if not first
-                    then appendLine(",")
-                    else first <- false
+                 |> if first
+                    then first <- false
                          id
+                    else appendLine(",")
                  |> seqpntToBuilder s) method.SeqPnts
       else id
     |> newLine
