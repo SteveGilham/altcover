@@ -3846,23 +3846,7 @@ _Target
                                       |> Path.getFullName
                                   else
                                       "/usr/bin/nuget" })
-                    nuspec
-                let nugget = outputPath @@ (project + "." + Version.Value + ".nupkg")
-                use archive = System.IO.Compression.ZipFile.Open(nugget, System.IO.Compression.ZipArchiveMode.Update)
-                let entry = archive.GetEntry(project + ".nuspec")
-                use stream = entry.Open()
-                use reader = new StreamReader(stream)
-                let sb = Seq.fold (fun (b:StringBuilder)
-                                       (c:char) -> let ic = int c
-                                                   if ic >= 127
-                                                   then b.AppendFormat( "&#x{0:X4};" , ic )
-                                                   else b.Append(c))
-                            (StringBuilder(int ((float nuspec.Length) * 1.1)))
-                            (reader.ReadToEnd())
-
-                stream.Position <- 0L
-                use writer = new StreamWriter(stream)
-                writer.Write(sb.ToString())))
+                    nuspec))
 
 _Target "PrepareFrameworkBuild" ignore
 
