@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>    
     <RollForward>Major</RollForward>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>    
   </PropertyGroup>
 
   <ItemGroup>

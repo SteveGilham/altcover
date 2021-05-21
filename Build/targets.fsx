@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.Tracing
 open System.IO
 open System.Reflection
+open System.Text
 open System.Xml
 open System.Xml.Linq
 
@@ -3481,6 +3482,8 @@ _Target
         let packable =
             Path.getFullName "./_Binaries/README.html"
 
+        let readmemd = Path.getFullName "README.md"
+
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
                          !! "_Publish/System.*" ]
@@ -3507,6 +3510,7 @@ _Target
               (manatee, Some "tools/net472", None)
               (fox, Some "tools/net472", None)
               (options, Some "tools/net472", None)
+              (readmemd, Some "", None)
               (packable, Some "", None) ]
 
         let apiFiles =
@@ -3520,6 +3524,7 @@ _Target
               (manatee, Some "lib/net472", None)
               (fox, Some "lib/net472", None)
               (options, Some "lib/net472", None)
+              (readmemd, Some "", None)
               (packable, Some "", None) ]
 
         let resourceFiles path =
@@ -3753,7 +3758,7 @@ _Target
                          // monitorFiles "lib/netstandard2.0/"
                          // [ (monitor, Some "lib/net20", None) ]
                          monitorFiles "tools/netcoreapp2.1/any/"
-                         [ (packable, Some "", None) ]
+                         [ (readmemd, Some "", None); (packable, Some "", None) ]
                          auxFiles
                          otherFilesGlobal
                          housekeeping ],
@@ -3763,7 +3768,7 @@ _Target
            "altcover.global")
 
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
-                         [ (packable, Some "", None) ]
+                         [ (readmemd, Some "", None); (packable, Some "", None) ]
                          auxVFiles
                          housekeepingVis ],
            [],
@@ -3773,7 +3778,7 @@ _Target
 
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
-                         [ (packable, Some "", None) ]
+                         [ (readmemd, Some "", None); (packable, Some "", None) ]
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
              ("Fake.Core.Environment", "5.18.1")
@@ -3816,15 +3821,23 @@ _Target
                                               path + "/" + name)
                               Dependencies = dependencies
                               Version = Version.Value
-                              Copyright = Copyright.Value.Replace("©", "(c)")
+                              Copyright = Copyright.Value
                               Publish = false
                               ReleaseNotes =
+                                  let source = Path.getFullName "ReleaseNotes.md"
+                                               |> File.ReadAllLines
+                                               |> Seq.map (fun s -> let t = System.Text.RegularExpressions.Regex.Replace(s, "^\*\s", "* •\u00A0")
+                                                                    let u = System.Text.RegularExpressions.Regex.Replace(t, "^\s\s\*\s", "  * \u00A0\u00A0◦\u00A0")
+                                                                    System.Text.RegularExpressions.Regex.Replace(u, "^\s\s\s+\*\s", "    * \u00A0\u00A0\u00A0\u00A0⁃\u00A0"))
+                                               |> (fun s -> String.Join(Environment.NewLine, s))
+                                  use w = new StringWriter()
+                                  // printfn "tweaked = %A" source
+                                  Markdig.Markdown.ToPlainText(source, w) |> ignore
                                   "This build from https://github.com/SteveGilham/altcover/tree/"
                                   + commitHash
                                   + Environment.NewLine
                                   + Environment.NewLine
-                                  + (Path.getFullName "ReleaseNotes.md"
-                                     |> File.ReadAllText)
+                                  + w.ToString()
                               ToolPath =
                                   if Environment.isWindows then
                                       ("./packages/"
@@ -5542,7 +5555,7 @@ _Target
     "DotnetTestIntegration"
     (fun _ ->
         let assertFile f = Assert.That(File.Exists f, f)
-        let assertCopied p = 
+        let assertCopied p =
            ["Data/Bar.txt"; "Data/Foo.txt"; "Data/Deeper/Bar.txt"; "Data/Deeper/Foo.txt" ]
            |> Seq.iter (fun f -> assertFile (p @@ f))
 

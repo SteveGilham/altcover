@@ -2,10 +2,15 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-#8.2.820 (Habu series release 5)
-* Replace System.Text.Encodings.Web for JSON-escaping module, class and method names 
+# 8.2.821 (Habu series release 6)
+* Support deterministic builds `/p:ContinuousIntegrationBuild=true`, with or without `--sourcelink`/`/p:AltCoverSourceLink=true`.  Note that assemblies created by deterministic builds will be excluded by `-l`/`/p:AltCoverLocalSource=true`.
+* Experiment with the ReadMe feature recently added to NuGet
+* Internal refactoring of the JSON processing following the replacement of `System.Text.Encodings.Web` in the previous release.
+
+# 8.2.820 (Habu series release 5)
+* Replace `System.Text.Encodings.Web` for JSON-escaping module, class and method names 
 * [BUGFIX] issue #125 -- prevent an NullReferenceException is some cases of computing cyclomatic complexity (a failure to exactly copy the algorithm from Mono.Gendarme)
-* [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingetCopy` MSBuild task
+* [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingentCopy` MSBuild task
 
 # 8.1.819 (Habu series release 4)
 * Adapt to recent F# compiler optimizations that make function objects static if they don't close over their environment -- properly detect their owner functions for exclusion and for JSON format output
@@ -56,4 +61,4 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [NEW] AltCover.Monitor API to track current coverage from running unit tests.  Current implementation requires `dotnet test`, or other command-line testing with `--defer` set, in which the cumulative visit numbers are available, rather than everything having been dumped to file instead.
 * [BUGFIX] In OpenCover format output, only emit `<File />` records relevant to the respective module, not for all source files encountered so far.
 
-For previous releases (7.4.x and earlier) [go here](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md)
+For previous releases (7.4.x and earlier) go here -- [https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md)

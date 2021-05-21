@@ -1,7 +1,7 @@
 language: csharp
 mono: latest
 dist: xenial
-dotnet: 5.0.202
+dotnet: 5.0.203
 addons:
   apt:
     sources:
