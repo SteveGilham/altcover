@@ -3482,7 +3482,7 @@ _Target
         let packable =
             Path.getFullName "./_Binaries/README.html"
 
-        let readmemd = Path.getFullName "README.md"
+//        let readmemd = Path.getFullName "README.md"
 
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
@@ -3510,7 +3510,7 @@ _Target
               (manatee, Some "tools/net472", None)
               (fox, Some "tools/net472", None)
               (options, Some "tools/net472", None)
-              (readmemd, Some "", None)
+//              (readmemd, Some "", None)
               (packable, Some "", None) ]
 
         let apiFiles =
@@ -3524,7 +3524,7 @@ _Target
               (manatee, Some "lib/net472", None)
               (fox, Some "lib/net472", None)
               (options, Some "lib/net472", None)
-              (readmemd, Some "", None)
+//              (readmemd, Some "", None)
               (packable, Some "", None) ]
 
         let resourceFiles path =
@@ -3758,7 +3758,10 @@ _Target
                          // monitorFiles "lib/netstandard2.0/"
                          // [ (monitor, Some "lib/net20", None) ]
                          monitorFiles "tools/netcoreapp2.1/any/"
-                         [ (readmemd, Some "", None); (packable, Some "", None) ]
+                         [ 
+//                           (readmemd, Some "", None)
+                           (packable, Some "", None)
+                         ]
                          auxFiles
                          otherFilesGlobal
                          housekeeping ],
@@ -3768,7 +3771,10 @@ _Target
            "altcover.global")
 
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
-                         [ (readmemd, Some "", None); (packable, Some "", None) ]
+                         [ 
+//                           (readmemd, Some "", None)
+                           (packable, Some "", None)
+                         ]
                          auxVFiles
                          housekeepingVis ],
            [],
@@ -3778,7 +3784,10 @@ _Target
 
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
-                         [ (readmemd, Some "", None); (packable, Some "", None) ]
+                         [ 
+//                           (readmemd, Some "", None)
+                           (packable, Some "", None)
+                         ]
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
              ("Fake.Core.Environment", "5.18.1")
