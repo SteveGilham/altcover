@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.2.82x (Habu series release 6)
+# 8.2.821 (Habu series release 6)
 * Support deterministic builds `/p:ContinuousIntegrationBuild=true`, with or without `--sourcelink`/`/p:AltCoverSourceLink=true`.  Note that assemblies created by deterministic builds will be excluded by `-l`/`/p:AltCoverLocalSource=true`.
 * Experiment with the ReadMe feature recently added to NuGet
 * Internal refactoring of the JSON processing following the replacement of `System.Text.Encodings.Web` in the previous release.
