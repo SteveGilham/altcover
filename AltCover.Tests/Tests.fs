@@ -2197,6 +2197,7 @@ module AltCoverTests =
     let outputs =
       inputs
       |> Seq.map (fun n -> n.After() |> Seq.toList)
+      |> Seq.toList
 
     let expected =
       [ [ Finish ]
@@ -2218,7 +2219,7 @@ module AltCoverTests =
         []
         [] ]
 
-    Assert.That(outputs, Is.EquivalentTo(expected))
+    test <@ outputs = expected @>
 
   [<Test>]
   let Sample3Class1PropertyIsNotSignificant () =

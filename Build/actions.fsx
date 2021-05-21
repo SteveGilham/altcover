@@ -10,7 +10,7 @@ open Fake.IO.FileSystemOperators
 open Fake.IO
 open Fake.IO.Globbing.Operators
 
-open HeyRed.MarkdownSharp
+open Markdig
 open NUnit.Framework
 open Swensen.Unquote
 open YamlDotNet.RepresentationModel
@@ -472,7 +472,7 @@ do ()"""
     let PrepareReadMe packingCopyright =
         let readme = Path.getFullName "README.md"
         let document = File.ReadAllText readme
-        let markdown = Markdown()
+        let markdown = Markdown.ToHtml(document)
 
         let docHtml =
             """<?xml version="1.0"  encoding="utf-8"?>
@@ -492,7 +492,7 @@ a:hover {color: #ecc;}
 </head>
 <body>
 """
-            + markdown.Transform document
+            + markdown
             + """
 <footer><p style="text-align: center">"""
             + packingCopyright
