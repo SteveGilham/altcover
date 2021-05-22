@@ -5613,6 +5613,11 @@ _Target
 
                     targets.SetValue "net5.0"
 
+                    fsproj.Descendants(XName.Get("HintPath")) 
+                    |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
+                                             |> Path.getFullName
+                                             |> hint.SetValue)
+
                     let pack =
                         fsproj.Descendants(XName.Get("PackageReference"))
                         |> Seq.head
@@ -6729,6 +6734,12 @@ _Target
                 |> Seq.head
 
             targets.SetValue "netcoreapp2.1"
+
+            fsproj.Descendants(XName.Get("HintPath")) 
+            |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
+                                     |> Path.getFullName
+                                     |> hint.SetValue)
+
             fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.fs")
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.json")
