@@ -3479,11 +3479,6 @@ _Target
         let uic =
             Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/net472/AltCover.UICommon.dll"
 
-        let packable =
-            Path.getFullName "./_Binaries/README.html"
-
-//        let readmemd = Path.getFullName "README.md"
-
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
                          !! "_Publish/System.*" ]
@@ -3511,7 +3506,7 @@ _Target
               (fox, Some "tools/net472", None)
               (options, Some "tools/net472", None)
               (Path.getFullName "Build/README.core.md", Some "", None)
-              (packable, Some "", None) ]
+              (Path.getFullName "./_Binaries/README.core.html", Some "", None) ]
 
         let apiFiles =
             [ (AltCover, Some "lib/net472", None)
@@ -3525,7 +3520,7 @@ _Target
               (fox, Some "lib/net472", None)
               (options, Some "lib/net472", None)
               (Path.getFullName "Build/README.api.md", Some "", None)
-              (packable, Some "", None) ]
+              (Path.getFullName "./_Binaries/README.api.html", Some "", None) ]
 
         let resourceFiles path =
             [ "_Binaries/AltCover/Release+AnyCPU/net472"
@@ -3760,7 +3755,7 @@ _Target
                          monitorFiles "tools/netcoreapp2.1/any/"
                          [ 
                            (Path.getFullName "Build/README.global.md", Some "", None)
-                           (packable, Some "", None)
+                           (Path.getFullName "./_Binaries/README.global.html", Some "", None)
                          ]
                          auxFiles
                          otherFilesGlobal
@@ -3773,7 +3768,7 @@ _Target
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
                          [ 
                            (Path.getFullName "Build/README.visualizer.md", Some "", None)
-                           (packable, Some "", None)
+                           (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None)
                          ]
                          auxVFiles
                          housekeepingVis ],
@@ -3786,7 +3781,7 @@ _Target
                          fox2Files "lib/netstandard2.0/"
                          [ 
                            (Path.getFullName "Build/README.fake.md", Some "", None)
-                           (packable, Some "", None)
+                           (Path.getFullName "./_Binaries/README.fake.html", Some "", None)
                          ]
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
@@ -3955,12 +3950,19 @@ _Target
 _Target
     "PrepareReadMe"
     (fun _ ->
-        Actions.PrepareReadMe(
-            Copyright.Value
-                .Replace("©", "&#xa9;")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-        ))
+        let c = Copyright.Value
+                 .Replace("©", "&#xa9;")
+                 .Replace("<", "&lt;")
+                 .Replace(">", "&gt;")
+
+        [
+            "./Build/README.core.md"
+            "./Build/README.api.md"
+            "./Build/README.fake.md"
+            "./Build/README.global.md"
+            "./Build/README.visualizer.md"
+        ]
+        |> Seq.iter (Actions.PrepareReadMe c))
 
 // Post-packaging deployment touch test
 
