@@ -9,7 +9,7 @@ See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for full
 
 Install into your test project 
 ```
-dotnet add package AltCover
+dotnet add package AltCover.api
 ```
 and run
 ```
