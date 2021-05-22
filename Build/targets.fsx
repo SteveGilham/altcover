@@ -3510,7 +3510,7 @@ _Target
               (manatee, Some "tools/net472", None)
               (fox, Some "tools/net472", None)
               (options, Some "tools/net472", None)
-              (Path.getFullName "_Publish/README.md", Some "", None)
+              (Path.getFullName "Build/README.core.md", Some "", None)
               (packable, Some "", None) ]
 
         let apiFiles =
@@ -3524,7 +3524,7 @@ _Target
               (manatee, Some "lib/net472", None)
               (fox, Some "lib/net472", None)
               (options, Some "lib/net472", None)
-              (Path.getFullName "_Publish.Api/README.md", Some "", None)
+              (Path.getFullName "Build/README.api.md", Some "", None)
               (packable, Some "", None) ]
 
         let resourceFiles path =
@@ -3759,7 +3759,7 @@ _Target
                          // [ (monitor, Some "lib/net20", None) ]
                          monitorFiles "tools/netcoreapp2.1/any/"
                          [ 
-                           (Path.getFullName "_Publish.global/README.md", Some "", None)
+                           (Path.getFullName "Build/README.global.md", Some "", None)
                            (packable, Some "", None)
                          ]
                          auxFiles
@@ -3772,7 +3772,7 @@ _Target
 
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
                          [ 
-                           (Path.getFullName "_Publish.visualizer/README.md", Some "", None)
+                           (Path.getFullName "Build/README.visualizer.md", Some "", None)
                            (packable, Some "", None)
                          ]
                          auxVFiles
@@ -3785,7 +3785,7 @@ _Target
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
                          [ 
-                           (Path.getFullName "_Publish.fake/README.md", Some "", None)
+                           (Path.getFullName "Build/README.fake.md", Some "", None)
                            (packable, Some "", None)
                          ]
                          housekeeping ],
