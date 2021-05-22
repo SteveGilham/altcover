@@ -3889,27 +3889,38 @@ _Target
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
         // dotnet tooling mods
-        [ ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)", None, None)
+        [ ("DotnetTool", "./_Generated/altcover.global.nuspec", 
+           "AltCover (dotnet global tool install)", None,
+           "README.global.md",
+            None)
 
           ("DotnetTool",
            "./_Generated/altcover.visualizer.nuspec",
            "AltCover.Visualizer (dotnet global tool install)",
            Some "AltCover.UICommon/logo.png",
+           "README.visualizer.md",
            Some "codecoverage .netcore cross-platform")
 
-          (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None, None)
+          (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None,
+           "README.api.md",
+           None)
 
           (String.Empty,
            "./_Generated/altcover.fake.nuspec",
            "AltCover (FAKE task helpers)",
            None,
+           "README.fake.md",
            Some "codecoverage .net Mono .netcore cross-platform FAKE build") ]
         |> List.iter
-            (fun (ptype, path, caption, icon, tags) ->
+            (fun (ptype, path, caption, icon, readme, tags) ->
                 let x s =
                     XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
 
                 let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
+
+                dotnetNupkg.Descendants(XName.Get("readme")) 
+                |> Seq.iter (fun hint -> hint.SetValue readme)
+
 
                 let title =
                     dotnetNupkg.Descendants(x "title") |> Seq.head
