@@ -766,6 +766,7 @@ module AltCoverXTests =
           "Sample4.runtimeconfig.dev.json"
           "Sample4.runtimeconfig.json"
           "Sample4.pdb"
+          "Unquote.dll"
           "xunit.runner.reporters.netcoreapp10.dll"
           "xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]

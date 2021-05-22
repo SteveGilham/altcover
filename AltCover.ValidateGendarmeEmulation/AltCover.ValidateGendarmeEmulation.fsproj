@@ -46,7 +46,7 @@
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Unquote" Version="6.1.0" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
@@ -63,7 +63,7 @@
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

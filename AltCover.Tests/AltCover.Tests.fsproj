@@ -108,14 +108,13 @@
     </Reference>
     <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
-    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
