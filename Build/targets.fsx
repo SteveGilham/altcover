@@ -3918,7 +3918,7 @@ _Target
 
                 let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
 
-                dotnetNupkg.Descendants(XName.Get("readme")) 
+                dotnetNupkg.Descendants(x "readme")
                 |> Seq.iter (fun hint -> hint.SetValue readme)
 
 
