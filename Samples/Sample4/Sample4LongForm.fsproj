@@ -43,7 +43,7 @@
     <Tailcalls>true</Tailcalls>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup>
     <FSharpTargetsPath>$(SolutionDir)packages\FSharp.Compiler.Tools.10.2.3\tools\Microsoft.FSharp.Targets</FSharpTargetsPath>
@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
-      <HintPath>..\..\packages\FSharp.Core.4.1.18\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\..\packages\FSharp.Core.5.0.1\lib\netstandard2.0\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />

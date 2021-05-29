@@ -15,7 +15,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>
-    <!-- readme>README.core.md</readme -->
+    <readme>README.core.md</readme>
     <copyright>@copyright@</copyright>
     <tags>codecoverage .net Mono .netcore cross-platform PowerShell PSModule</tags>
     @dependencies@

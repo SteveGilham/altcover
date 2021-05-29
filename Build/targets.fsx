@@ -3753,7 +3753,7 @@ _Target
                          // monitorFiles "lib/netstandard2.0/"
                          // [ (monitor, Some "lib/net20", None) ]
                          monitorFiles "tools/netcoreapp2.1/any/"
-                         [ 
+                         [
                            (Path.getFullName "Build/README.global.md", Some "", None)
                            (Path.getFullName "./_Binaries/README.global.html", Some "", None)
                          ]
@@ -3766,7 +3766,7 @@ _Target
            "altcover.global")
 
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
-                         [ 
+                         [
                            (Path.getFullName "Build/README.visualizer.md", Some "", None)
                            (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None)
                          ]
@@ -3779,7 +3779,7 @@ _Target
 
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
-                         [ 
+                         [
                            (Path.getFullName "Build/README.fake.md", Some "", None)
                            (Path.getFullName "./_Binaries/README.fake.html", Some "", None)
                          ]
@@ -3842,14 +3842,7 @@ _Target
                                   + Environment.NewLine
                                   + Environment.NewLine
                                   + w.ToString()
-                              ToolPath =
-                                  if Environment.isWindows then
-                                      ("./packages/"
-                                       + (packageVersion "NuGet.CommandLine")
-                                       + "/tools/NuGet.exe")
-                                      |> Path.getFullName
-                                  else
-                                      "/usr/bin/nuget" })
+                              ToolPath = Path.getFullName "_Binaries/NuPacker/Release+AnyCPU/net472/NuPacker.exe" })
                     nuspec))
 
 _Target "PrepareFrameworkBuild" ignore
@@ -3889,7 +3882,7 @@ _Target
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
         // dotnet tooling mods
-        [ ("DotnetTool", "./_Generated/altcover.global.nuspec", 
+        [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
            "AltCover (dotnet global tool install)", None,
            "README.global.md",
             None)
@@ -3920,7 +3913,6 @@ _Target
 
                 dotnetNupkg.Descendants(x "readme")
                 |> Seq.iter (fun hint -> hint.SetValue readme)
-
 
                 let title =
                     dotnetNupkg.Descendants(x "title") |> Seq.head
@@ -5624,7 +5616,7 @@ _Target
 
                     targets.SetValue "net5.0"
 
-                    fsproj.Descendants(XName.Get("HintPath")) 
+                    fsproj.Descendants(XName.Get("HintPath"))
                     |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
                                              |> Path.getFullName
                                              |> hint.SetValue)
@@ -6746,7 +6738,7 @@ _Target
 
             targets.SetValue "netcoreapp2.1"
 
-            fsproj.Descendants(XName.Get("HintPath")) 
+            fsproj.Descendants(XName.Get("HintPath"))
             |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
                                      |> Path.getFullName
                                      |> hint.SetValue)
