@@ -209,6 +209,11 @@ module AltCoverTests =
              not
              <| (snd x)
                .FullName.StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase))
+      |> Seq.filter
+           (fun x ->
+             not
+             <| (snd x)
+               .FullName.StartsWith("testcentric.", StringComparison.OrdinalIgnoreCase))
       // for coverlet
       |> Seq.filter
            (fun x ->
@@ -265,6 +270,7 @@ module AltCoverTests =
              AltCover.ProgramDatabase.getPdbFromImage (snd x)
 
            match pdb with
+           //| None -> Assert.Fail(sprintf "%A" x)
            | Some name ->
                let probe = Path.ChangeExtension((fst x), ".pdb")
                let file = FileInfo(probe)
