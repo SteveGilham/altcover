@@ -22,8 +22,8 @@
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="Unquote" Version="6.1.0" Condition="'$(TargetFramework)' != 'net472'" />
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
