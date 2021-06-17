@@ -141,6 +141,7 @@ type ContingentCopy =
     new : unit -> ContingentCopy
     override Execute : unit -> bool
     member RelativeDir : string with get, set
+    member ProjectDir : string with get, set
     member CopyToOutputDirectory : string with get, set
     member FileName : string with get, set
     [<Required>]

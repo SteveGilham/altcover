@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <NuGetCache Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)\.nuget\packages</NuGetCache>
     <NuGetCache Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.nuget/packages</NuGetCache>
-    <GendarmeVersion>2020.12.14.8435-pre-release</GendarmeVersion>
+    <GendarmeVersion>2021.5.28.12260-pre-release</GendarmeVersion>
     <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
     <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/$(GendarmeVersion)/tools/netcoreapp2.1/any/</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -22,11 +22,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="nunit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0">
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="System.ValueTuple" />
     <Reference Include="Gendarme.Framework">
       <HintPath>$(GendarmeToolDir)Gendarme.Framework.dll</HintPath>
@@ -46,7 +46,7 @@
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Unquote" Version="6.1.0" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AltCover.Tests\AssemblyInfo.fs">
@@ -63,7 +63,7 @@
     <Compile Include="Program.fs" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -73,7 +73,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>

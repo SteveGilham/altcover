@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.Tracing
 open System.IO
 open System.Reflection
+open System.Text
 open System.Xml
 open System.Xml.Linq
 
@@ -3479,9 +3480,6 @@ _Target
         let uic =
             Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/net472/AltCover.UICommon.dll"
 
-        let packable =
-            Path.getFullName "./_Binaries/README.html"
-
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
                          !! "_Publish/System.*" ]
@@ -3508,7 +3506,8 @@ _Target
               (manatee, Some "tools/net472", None)
               (fox, Some "tools/net472", None)
               (options, Some "tools/net472", None)
-              (packable, Some "", None) ]
+              (Path.getFullName "Build/README.core.md", Some "", None)
+              (Path.getFullName "./_Binaries/README.core.html", Some "", None) ]
 
         let apiFiles =
             [ (AltCover, Some "lib/net472", None)
@@ -3521,7 +3520,8 @@ _Target
               (manatee, Some "lib/net472", None)
               (fox, Some "lib/net472", None)
               (options, Some "lib/net472", None)
-              (packable, Some "", None) ]
+              (Path.getFullName "Build/README.api.md", Some "", None)
+              (Path.getFullName "./_Binaries/README.api.html", Some "", None) ]
 
         let resourceFiles path =
             [ "_Binaries/AltCover/Release+AnyCPU/net472"
@@ -3754,7 +3754,10 @@ _Target
                          // monitorFiles "lib/netstandard2.0/"
                          // [ (monitor, Some "lib/net20", None) ]
                          monitorFiles "tools/netcoreapp2.1/any/"
-                         [ (packable, Some "", None) ]
+                         [
+                           (Path.getFullName "Build/README.global.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.global.html", Some "", None)
+                         ]
                          auxFiles
                          otherFilesGlobal
                          housekeeping ],
@@ -3764,7 +3767,10 @@ _Target
            "altcover.global")
 
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
-                         [ (packable, Some "", None) ]
+                         [
+                           (Path.getFullName "Build/README.visualizer.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None)
+                         ]
                          auxVFiles
                          housekeepingVis ],
            [],
@@ -3774,7 +3780,10 @@ _Target
 
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
-                         [ (packable, Some "", None) ]
+                         [
+                           (Path.getFullName "Build/README.fake.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.fake.html", Some "", None)
+                         ]
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
              ("Fake.Core.Environment", "5.18.1")
@@ -3817,23 +3826,24 @@ _Target
                                               path + "/" + name)
                               Dependencies = dependencies
                               Version = Version.Value
-                              Copyright = Copyright.Value.Replace("©", "(c)")
+                              Copyright = Copyright.Value
                               Publish = false
                               ReleaseNotes =
+                                  let source = Path.getFullName "ReleaseNotes.md"
+                                               |> File.ReadAllLines
+                                               |> Seq.map (fun s -> let t = System.Text.RegularExpressions.Regex.Replace(s, "^\*\s", "* •\u00A0")
+                                                                    let u = System.Text.RegularExpressions.Regex.Replace(t, "^\s\s\*\s", "  * \u00A0\u00A0◦\u00A0")
+                                                                    System.Text.RegularExpressions.Regex.Replace(u, "^\s\s\s+\*\s", "    * \u00A0\u00A0\u00A0\u00A0⁃\u00A0"))
+                                               |> (fun s -> String.Join(Environment.NewLine, s))
+                                  use w = new StringWriter()
+                                  // printfn "tweaked = %A" source
+                                  Markdig.Markdown.ToPlainText(source, w) |> ignore
                                   "This build from https://github.com/SteveGilham/altcover/tree/"
                                   + commitHash
                                   + Environment.NewLine
                                   + Environment.NewLine
-                                  + (Path.getFullName "ReleaseNotes.md"
-                                     |> File.ReadAllText)
-                              ToolPath =
-                                  if Environment.isWindows then
-                                      ("./packages/"
-                                       + (packageVersion "NuGet.CommandLine")
-                                       + "/tools/NuGet.exe")
-                                      |> Path.getFullName
-                                  else
-                                      "/usr/bin/nuget" })
+                                  + w.ToString()
+                              ToolPath = Path.getFullName "_Binaries/NuPacker/Release+AnyCPU/net472/NuPacker.exe" })
                     nuspec))
 
 _Target "PrepareFrameworkBuild" ignore
@@ -3873,27 +3883,37 @@ _Target
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
         // dotnet tooling mods
-        [ ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)", None, None)
+        [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
+           "AltCover (dotnet global tool install)", None,
+           "README.global.md",
+            None)
 
           ("DotnetTool",
            "./_Generated/altcover.visualizer.nuspec",
            "AltCover.Visualizer (dotnet global tool install)",
            Some "AltCover.UICommon/logo.png",
+           "README.visualizer.md",
            Some "codecoverage .netcore cross-platform")
 
-          (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None, None)
+          (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None,
+           "README.api.md",
+           None)
 
           (String.Empty,
            "./_Generated/altcover.fake.nuspec",
            "AltCover (FAKE task helpers)",
            None,
+           "README.fake.md",
            Some "codecoverage .net Mono .netcore cross-platform FAKE build") ]
         |> List.iter
-            (fun (ptype, path, caption, icon, tags) ->
+            (fun (ptype, path, caption, icon, readme, tags) ->
                 let x s =
                     XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
 
                 let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
+
+                dotnetNupkg.Descendants(x "readme")
+                |> Seq.iter (fun hint -> hint.SetValue readme)
 
                 let title =
                     dotnetNupkg.Descendants(x "title") |> Seq.head
@@ -3934,12 +3954,19 @@ _Target
 _Target
     "PrepareReadMe"
     (fun _ ->
-        Actions.PrepareReadMe(
-            Copyright.Value
-                .Replace("©", "&#xa9;")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-        ))
+        let c = Copyright.Value
+                 .Replace("©", "&#xa9;")
+                 .Replace("<", "&lt;")
+                 .Replace(">", "&gt;")
+
+        [
+            "./Build/README.core.md"
+            "./Build/README.api.md"
+            "./Build/README.fake.md"
+            "./Build/README.global.md"
+            "./Build/README.visualizer.md"
+        ]
+        |> Seq.iter (Actions.PrepareReadMe c))
 
 // Post-packaging deployment touch test
 
@@ -5542,6 +5569,11 @@ group NetcoreBuild
 _Target
     "DotnetTestIntegration"
     (fun _ ->
+        let assertFile f = Assert.That(File.Exists f, f)
+        let assertCopied p =
+           ["Data/Bar.txt"; "Data/Foo.txt"; "Data/Deeper/Bar.txt"; "Data/Deeper/Foo.txt" ]
+           |> Seq.iter (fun f -> assertFile (p @@ f))
+
         try
             printfn "Initializing ------------------------------------------------"
 
@@ -5583,7 +5615,12 @@ _Target
                         |> Seq.concat
                         |> Seq.head
 
-                    targets.SetValue "netcoreapp2.1"
+                    targets.SetValue "net5.0"
+
+                    fsproj.Descendants(XName.Get("HintPath"))
+                    |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
+                                             |> Path.getFullName
+                                             |> hint.SetValue)
 
                     let pack =
                         fsproj.Descendants(XName.Get("PackageReference"))
@@ -5618,7 +5655,7 @@ _Target
             let p1 =
                 { p0 with
                       CallContext = [ "[Fact]"; "0" ]
-                      AssemblyFilter = [| "xunit" |] }
+                      AssemblyFilter = [| "xunit"; "FSharp"; "Monitor" |] }
 
             let pp1 = AltCover.PrepareOptions.Primitive p1
 
@@ -5643,6 +5680,7 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj"
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
 
             DotNet.test
                 (fun to' ->
@@ -5655,10 +5693,11 @@ _Target
                         cc0
                         ForceTrue
                     |> testWithCLIArguments)
-                "dotnettest.fsproj" // TOD validate output as per JsonReporting
+                "dotnettest.fsproj" // TODO validate output as per JsonReporting
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
 
             let x =
-                Path.getFullName "./_DotnetTest/coverage.netcoreapp2.1.xml"
+                Path.getFullName "./_DotnetTest/coverage.net5.0.xml"
 
             Actions.CheckSample4 before x
 
@@ -5676,7 +5715,7 @@ _Target
                 "dotnettest.fsproj"
 
             let x =
-                Path.getFullName "./_DotnetTestInPlace/coverage.netcoreapp2.1.xml"
+                Path.getFullName "./_DotnetTestInPlace/coverage.net5.0.xml"
 
             Actions.CheckSample4 before x
 
@@ -5690,14 +5729,14 @@ _Target
 
             let pf0 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |]
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |]
                       StrongNameKey = "./_Reports/nonesuch.junk"
                       Report = xx0 }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf0a =
                 { p0a with
-                      AssemblyFilter = [| "NUnit" |]
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |]
                       StrongNameKey = "./_Reports/nonesuch.junk"
                       Report = xx0a }
                 |> AltCover.PrepareOptions.Primitive
@@ -5719,10 +5758,10 @@ _Target
             Assert.That(xx0 |> File.Exists |> not, xx0 + " should not be present")
 
             Assert.That(
-                "./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailInstrumentation/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists
                 |> not,
-                "./_DotnetTestFailInstrumentation/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present"
+                "./_DotnetTestFailInstrumentation/bin/Debug/net5.0/dotnettest.dll.txt should not be present"
             )
 
             try
@@ -5742,10 +5781,10 @@ _Target
             Assert.That(xx0a |> File.Exists |> not, xx0a + " should not be present")
 
             Assert.That(
-                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists
                 |> not,
-                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should not be present"
+                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net5.0/dotnettest.dll.txt should not be present"
             )
 
             printfn "optest failing test ------------------------------------------------"
@@ -5758,12 +5797,13 @@ _Target
 
             let pf1 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyExcludeFilter = [| "NUnit" |]
+                      AssemblyFilter = [| "FSharp"; "Monitor" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf1a =
                 { p0a with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             try
@@ -5781,9 +5821,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFail/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFail/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist"
+                "./_DotnetTestFail/bin/Debug/net5.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5815,7 +5855,7 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             let filepath =
-                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
 
             Assert.That(filepath |> File.Exists, filepath + " should exist")
 
@@ -5850,12 +5890,12 @@ _Target
 
             let pf1 =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
                 |> AltCover.PrepareOptions.Primitive
 
             let pf1a =
                 { p0 with
-                      AssemblyFilter = [| "NUnit" |] }
+                      AssemblyFilter = [| "NUnit"; "FSharp"; "Monitor" |] }
                 |> asInPlace
                 |> AltCover.PrepareOptions.Primitive
 
@@ -5874,9 +5914,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailFast/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFast/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist"
+                "./_DotnetTestFailFast/bin/Debug/net5.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5908,9 +5948,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt"
+                "./_DotnetTestFailFastInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFastInPlace/bin/Debug/netcoreapp2.1/dotnettest.dll.txt should exist"
+                "./_DotnetTestFailFastInPlace/bin/Debug/net5.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5939,7 +5979,7 @@ _Target
             let p2 =
                 { p0 with
                       LineCover = true
-                      AssemblyFilter = [| "xunit" |] }
+                      AssemblyFilter = [| "xunit"; "FSharp"; "Monitor" |] }
 
             let p2a = asInPlace p2
 
@@ -6022,7 +6062,7 @@ _Target
             let p3 =
                 { p0 with
                       BranchCover = true
-                      AssemblyFilter = [| "xunit" |] }
+                      AssemblyFilter = [| "xunit"; "FSharp"; "Monitor" |] }
 
             let p3a = asInPlace p3
 
@@ -6698,6 +6738,12 @@ _Target
                 |> Seq.head
 
             targets.SetValue "netcoreapp2.1"
+
+            fsproj.Descendants(XName.Get("HintPath"))
+            |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
+                                     |> Path.getFullName
+                                     |> hint.SetValue)
+
             fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.fs")
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.json")
