@@ -25,6 +25,7 @@
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
   </PropertyGroup>
 
@@ -91,6 +92,10 @@
 
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

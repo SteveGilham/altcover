@@ -33,6 +33,7 @@
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.1'">TRACE;GLOBALTOOL</DefineConstants>
   </PropertyGroup>
@@ -55,6 +56,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

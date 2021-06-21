@@ -22,6 +22,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />

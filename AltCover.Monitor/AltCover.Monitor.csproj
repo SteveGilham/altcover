@@ -26,6 +26,7 @@
     <NoWarn />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
