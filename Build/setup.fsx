@@ -164,8 +164,7 @@ _Target
                 let rules = target @@ "Rules"
                 Shell.copyDir rules dixon (fun _ -> true)))
 
-// Restore the NuGet packages used by the build and the Framework version
-_Target "Preparation" (fun _ -> RestoreMSSolutionPackages restore "./MCS.sln")
+_Target "Preparation" ignore
 
 let defaultTarget () =
     resetColours ()

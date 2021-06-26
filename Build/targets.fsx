@@ -762,10 +762,9 @@ _Target
     "BuildRelease"
     (fun _ ->
         try
-            [ "MCS.sln" ] |> Seq.iter (msbuildRelease None) // mono
-
             [ "./AltCover.sln"
-              "./AltCover.Visualizer.sln" ]
+              "./AltCover.Visualizer.sln"
+              "MCS.sln" ]
             |> Seq.iter dotnetBuildRelease
 
             // document cmdlets ahead of packaging
@@ -837,8 +836,6 @@ _Target
              Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
             "./Samples/Sample14/Sample14/Class3.txt"
 
-        [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
-
         [ "./AltCover.Recorder.sln" ]
         |> Seq.iter (msbuildDebug MSBuildPath) // net20
 
@@ -847,7 +844,8 @@ _Target
 
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
-          "./Samples/Sample14/Sample14.sln" ]
+          "./Samples/Sample14/Sample14.sln"
+          "MCS.sln" ]
         |> Seq.iter dotnetBuildDebug
 
         Shell.copy "./_SourceLink" (!! "./Samples/Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
@@ -858,7 +856,7 @@ _Target
         [ "./Samples/Sample8/Sample8.csproj" ]
         |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
 
-        let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
+        let mcs = "_Binaries/MCS/Release+AnyCPU/net472/MCS.exe"
 
         [ ("./_Mono/Sample1",
            [ "-debug"

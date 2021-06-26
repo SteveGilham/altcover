@@ -1165,37 +1165,22 @@ module AltCoverTests =
               x.Attribute(XName.Get("version")).Value))
       |> Map.ofSeq
 
-    let libPackages =
-      let xml =
-        Path.Combine(SolutionDir(), "./MCS/packages.config")
-        |> Path.GetFullPath
-        |> XDocument.Load
-
-      xml.Descendants(XName.Get("package"))
-      |> Seq.map
-           (fun x ->
-             (x
-               .Attribute(XName.Get("id"))
-                .Value.ToLowerInvariant(),
-              x.Attribute(XName.Get("version")).Value))
-      |> Map.ofSeq
-
     CoverageParameters.local := false
     CoverageParameters.nameFilters.Clear()
 
     let fscore =
       Path.Combine(
         SolutionDir(),
-        "packages/FSharp.Core."
-        + (libPackages.Item "fsharp.core")
+        "packages/fsharp.core/"
+        + "4.0.0.1" // (libPackages.Item "fsharp.core")
         + "/lib/net40"
       )
 
     let mono =
       Path.Combine(
         SolutionDir(),
-        "packages/Mono.Cecil."
-        + (libPackages.Item "mono.cecil")
+        "packages/mono.options/"
+        + (toolPackages.Item "mono.options")
         + "/lib/net40"
       )
 
@@ -1217,10 +1202,10 @@ module AltCoverTests =
     //let pdb2 = Path.Combine(fscore, "FSharp.Core.pdb")
     //Assert.That(File.Exists pdb2, Is.True, "FSharp.Core.pdb not found")
 
-    let dll = Path.Combine(mono, "Mono.Cecil.dll")
-    Assert.That(File.Exists dll, Is.True, "Mono.Cecil.dll not found")
-    let pdb3 = Path.Combine(mono, "Mono.Cecil.pdb")
-    Assert.That(File.Exists pdb3, Is.True, "Mono.Cecil.pdb not found")
+    let dll = Path.Combine(mono, "Mono.Options.dll")
+    Assert.That(File.Exists dll, Is.True, "Mono.Options.dll not found")
+    //let pdb3 = Path.Combine(mono, "Mono.Options.pdb")
+    //Assert.That(File.Exists pdb3, Is.True, "Mono.Options.pdb not found")
 
     let a = AssemblyDefinition.ReadAssembly exe
     ProgramDatabase.readSymbols a
