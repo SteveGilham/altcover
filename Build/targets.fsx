@@ -701,11 +701,7 @@ module SolutionRoot =
 
         [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
           "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-          "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-          "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
-          "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
-          "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
-          "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ]
+          "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj" ]
         |> Seq.iter
             (fun f ->
                 let dir = Path.GetDirectoryName f
