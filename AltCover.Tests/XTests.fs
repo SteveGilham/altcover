@@ -760,7 +760,6 @@ module AltCoverXTests =
 
       let expected =
         [ "AltCover.Recorder.g.dll"
-          "AltCover.Recorder.g.pdb"
           "Sample4.deps.json"
           "Sample4.dll"
           "Sample4.runtimeconfig.dev.json"
@@ -994,7 +993,6 @@ module AltCoverXTests =
 
       let theFiles =
         [ "AltCover.Recorder.g.dll"
-          "AltCover.Recorder.g.pdb"
           "Sample1.exe"
           "Sample1.exe.mdb" ]
 
