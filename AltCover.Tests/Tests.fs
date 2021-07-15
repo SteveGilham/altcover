@@ -282,7 +282,6 @@ module AltCoverTests =
                  (fst x) + " -> " + name
                ))
 
-#if !MONO // Mono doesn't embed
   [<Test>]
   let ShouldGetEmbeddedPdbFromImage () =
     let target = sample8path
@@ -296,7 +295,6 @@ module AltCoverTests =
 
     match pdb with
     | Some name -> Assert.That(name, Is.EqualTo "Sample8.pdb", target + " -> " + name)
-#endif
 
   [<Test>]
   let ShouldGetNoMdbFromMonoImage () =
