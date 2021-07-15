@@ -769,9 +769,12 @@ module AltCoverXTests =
           "xunit.runner.reporters.netcoreapp10.dll"
           "xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
-
+          
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+        
       let theFiles =
-        expected
+        ( maybe isWindows  ("AltCover.Recorder.g.pdb" :: expected) expected)
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       let actualFiles =
@@ -1001,8 +1004,15 @@ module AltCoverXTests =
         |> Seq.map Path.GetFileName
         |> Seq.toList
         |> List.sortBy (fun f -> f.ToUpperInvariant())
+        
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+ 
+      let expected = 
+        (maybe isWindows ("AltCover.Recorder.g.pdb" :: theFiles) theFiles)
+        |> List.sortBy (fun f -> f.ToUpperInvariant())
 
-      test <@ actual = theFiles @>
+      test <@ actual = expected @>
 
       let expectedText =
         MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
