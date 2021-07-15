@@ -3584,6 +3584,7 @@ module AltCoverTests3 =
 
       test <@ synthetic = helptext @>
 
+#if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
 #if !NET472
       let dir =
         Path.Combine(
@@ -3623,7 +3624,7 @@ module AltCoverTests3 =
         + "Vidu https://stevegilham.github.io/altcover/Usage por plenaj detaloj.\n"
 
       test <@ syntheticeo = helptexteo @>
-
+#endif // Mono   // remove for fantomas
     finally
       Console.SetError saved
 
