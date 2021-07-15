@@ -270,7 +270,7 @@ module AltCoverTests =
              AltCover.ProgramDatabase.getPdbFromImage (snd x)
 
            match pdb with
-           //| None -> Assert.Fail(sprintf "%A" x)
+           | None -> Assert.Fail(sprintf "%A" x)
            | Some name ->
                let probe = Path.ChangeExtension((fst x), ".pdb")
                let file = FileInfo(probe)
