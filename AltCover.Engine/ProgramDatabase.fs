@@ -49,7 +49,7 @@ module internal ProgramDatabase =
     |> Option.filter (fun x -> x.HasDebugHeader)
     |> Option.map (fun x -> x.GetDebugHeader())
     |> Option.filter (fun x -> x.HasEntries)
-    |> Option.bind (fun x -> x.Entries |> Seq.tryFind (fun t -> true))
+    |> Option.bind (fun x -> x.Entries |> Seq.tryHead)
     |> Option.map (fun x -> x.Data)
     |> Option.filter (fun x -> x.Length > 0x18)
     |> Option.map
