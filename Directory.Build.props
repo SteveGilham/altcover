@@ -3,8 +3,4 @@
   <ItemGroup>
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.64" PrivateAssets="All" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'!='Release'">
-    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
-  </PropertyGroup>
 </Project>
