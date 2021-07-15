@@ -264,11 +264,13 @@ module AltCoverTests =
     test <@ files <> [] @>
 
     files
-    |> Seq.iter
-         (fun x ->
+    |> Seq.map (fun x ->
            let pdb =
              AltCover.ProgramDatabase.getPdbFromImage (snd x)
-
+           printfn "%A %A" x pdb
+           (x, pdb))
+    |> Seq.iter
+         (fun (x,pdb) ->
            match pdb with
            | None -> Assert.Fail(sprintf "%A" x)
            | Some name ->
