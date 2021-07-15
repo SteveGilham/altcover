@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Sdk Name="DotNet.ReproducibleBuilds.Isolated" Version="0.1.64" />
   <ItemGroup>
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.64" PrivateAssets="All"/>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.64" PrivateAssets="All" />
   </ItemGroup>
-  
-  <!-- PropertyGroup Condition="'$(Configuration)'!='Release'">
+
+  <PropertyGroup Condition="'$(Configuration)'!='Release'">
     <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
-  </PropertyGroup -->
+  </PropertyGroup>
 </Project>
