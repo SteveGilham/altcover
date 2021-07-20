@@ -43,7 +43,7 @@ module Actions =
                         |> Seq.filter (fun c -> c = '\\' || c = '/')
                         |> Seq.length)
                 |> Seq.map (fun (n, x) -> (n, x |> Seq.sort))
-                |> Seq.sortBy (fun p -> -1 * (fst p))
+                |> Seq.sortBy (fst >> ((*) -1))
                 |> Seq.collect snd
                 |> Seq.iter
                     (fun n ->

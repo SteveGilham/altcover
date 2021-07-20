@@ -104,7 +104,6 @@ nuget Fake.Tools.Git >= 5.20.3
 nuget AltCode.Fake.DotNet.Gendarme >= 5.18.1.24
 nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.1.0
-nuget FSharpLint.Core >= 0.16.3
 nuget Markdig >= 0.24.0
 nuget Manatee.Json >= 13.0.4
 nuget NUnit >= 3.12.0

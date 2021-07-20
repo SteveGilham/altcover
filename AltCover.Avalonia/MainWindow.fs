@@ -42,16 +42,16 @@ type MainWindow() as this =
   let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
   let makeTreeNode name icon =
-    let tree = new Image()
+    let tree = Image()
     tree.Source <- icons.TreeExpand.Force()
     tree.Margin <- Thickness.Parse("2")
-    let text = new TextBlock()
+    let text = TextBlock()
     text.Text <- name
     text.Margin <- Thickness.Parse("2")
-    let image = new Image()
+    let image = Image()
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
-    let display = new StackPanel()
+    let display = StackPanel()
     display.Orientation <- Avalonia.Layout.Orientation.Horizontal
     display.Children.Add tree
     display.Children.Add image
@@ -205,7 +205,7 @@ type MainWindow() as this =
           stack.Children.Clear()
 
           for l in 1 .. lines.Length do
-            let pic = new Image()
+            let pic = Image()
 
             let pix =
               HandlerCommon.IconForBranches

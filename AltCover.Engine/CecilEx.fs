@@ -132,7 +132,7 @@ module internal CecilExtension =
       // this is the new part that AltCover didn't have before
       // i.e. handling non-void methods
       let returnVariable =
-        new VariableDefinition(methodDefinition.ReturnType)
+        VariableDefinition(methodDefinition.ReturnType)
 
       ilProcessor.Body.Variables.Add(returnVariable)
 
@@ -178,7 +178,7 @@ module internal CecilExtension =
     ilProcessor.InsertBefore(endFinally, finallyStart)
 
     let handler =
-      new ExceptionHandler(ExceptionHandlerType.Finally)
+      ExceptionHandler(ExceptionHandlerType.Finally)
 
     handler.TryStart <- firstInstruction
     handler.TryEnd <- finallyStart

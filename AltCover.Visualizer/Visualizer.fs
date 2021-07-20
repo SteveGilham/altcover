@@ -605,7 +605,7 @@ module private Gui =
     button.AddAccelerator(
       "clicked",
       g,
-      new AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
+      AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
     )
 
     let label = new TextView()
@@ -680,7 +680,7 @@ module private Gui =
            i.AddAccelerator(
              "activate",
              g,
-             new AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
+             AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible)
            ))
 
   let private prepareGui () =

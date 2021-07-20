@@ -304,7 +304,7 @@ module internal PostProcess =
 
                  classVisits
                  |> Option.iter
-                      (fun cvc -> s.SetAttribute "visitedClasses" (sprintf "%d" cvc))
+                      ((sprintf "%d") >> (s.SetAttribute "visitedClasses"))
 
                  s.SetAttribute "branchCoverage" brcover
                  s.SetAttribute "sequenceCoverage" ptcover

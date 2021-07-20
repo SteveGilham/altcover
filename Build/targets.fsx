@@ -883,7 +883,22 @@ _Target
 _Target "Analysis" ignore
 
 _Target
-    "Lint" ignore // API mismtach for FSharp.Compiler.SourceCodeServices.FSharpChecker
+    "Lint"
+    (fun _ ->
+      let cfg = Path.getFullName "./fsharplint.json"
+
+      [ !! "*.sln"
+        //|> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+        //|> Seq.distinct
+        |> Seq.sortBy (Path.GetFileName)
+        !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
+      |> Seq.concat
+      |> Seq.iter (fun f -> Actions.RunDotnet dotnetOptions
+                                              "fsharplint"
+                                              ("lint -l " + cfg + " " + f)
+                                              "Lint issues were found")
+      )
+
     //(fun _ ->
     //    let failOnIssuesFound (issuesFound: bool) =
     //        Assert.That(issuesFound, Is.False, "Lint issues were found")

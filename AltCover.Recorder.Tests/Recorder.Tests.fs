@@ -43,10 +43,10 @@ module AltCoverTests =
     |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   let private UpdateReport a b =
-    Adapter.UpdateReport(a, ReportFormat.NCover, b, b)
+    Adapter.updateReport(a, ReportFormat.NCover, b, b)
     |> ignore
 
-  let private PointVisitInit a b = Adapter.Init(a, b)
+  let private PointVisitInit a b = Adapter.init(a, b)
 
   let resource2 =
     Assembly
@@ -81,7 +81,7 @@ module AltCoverTests =
   [<Test>]
   let ShouldBeLinkingTheCorrectCopyOfThisCode () =
     GetMyMethodName "=>"
-    let tracer = Adapter.MakeNullTrace String.Empty
+    let tracer = Adapter.makeNullTrace String.Empty
 
     Assert.True(tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder")
     GetMyMethodName "<="
@@ -95,22 +95,22 @@ module AltCoverTests =
       (fun () ->
         try
           Adapter.SamplesClear()
-          Assert.True(Adapter.AddSample("module", 23, Null))
-          Assert.True(Adapter.AddSample("module", 24, Null))
-          Assert.True(Adapter.AddSample("newmodule", 23, Null))
-          Assert.True(Adapter.AddSample("module", 23, Null) |> not)
-          Assert.True(Adapter.AddSampleUnconditional("module", 23, Null))
-          Assert.True(Adapter.AddSample("module", 23, Call 1))
-          Assert.True(Adapter.AddSample("module", 23, Time 0L))
-          Assert.True(Adapter.AddSample("module", 24, Both { Call = 1; Time = 0L }))
-          Assert.True(Adapter.AddSample("module", 25, Both { Call = 1; Time = 0L }))
-          Assert.True(Adapter.AddSample("module", 25, Call 1) |> not)
-          Assert.True(Adapter.AddSample("module", 25, Call 1) |> not)
-          Assert.True(Adapter.AddSample("module", 25, Null) |> not)
+          Assert.True(Adapter.addSample("module", 23, Null))
+          Assert.True(Adapter.addSample("module", 24, Null))
+          Assert.True(Adapter.addSample("newmodule", 23, Null))
+          Assert.True(Adapter.addSample("module", 23, Null) |> not)
+          Assert.True(Adapter.addSampleUnconditional("module", 23, Null))
+          Assert.True(Adapter.addSample("module", 23, Call 1))
+          Assert.True(Adapter.addSample("module", 23, Time 0L))
+          Assert.True(Adapter.addSample("module", 24, Both { Call = 1; Time = 0L }))
+          Assert.True(Adapter.addSample("module", 25, Both { Call = 1; Time = 0L }))
+          Assert.True(Adapter.addSample("module", 25, Call 1) |> not)
+          Assert.True(Adapter.addSample("module", 25, Call 1) |> not)
+          Assert.True(Adapter.addSample("module", 25, Null) |> not)
 
           Assert.Throws<InvalidDataException>
             (fun () ->
-              Adapter.AddSample("module", 23, Table null)
+              Adapter.addSample("module", 23, Table null)
               |> ignore)
           |> ignore
         finally
@@ -128,7 +128,7 @@ module AltCoverTests =
 
         try
           Adapter.VisitsClear()
-          Instance.I.trace <- Adapter.MakeNullTrace null
+          Instance.I.trace <- Adapter.makeNullTrace null
 
           let key = " "
           Instance.I.recording <- false
@@ -163,39 +163,39 @@ module AltCoverTests =
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
       Assert.True(Instance.I.callerId () |> Option.isNone)
-      Assert.True(Adapter.PayloadSelector false = Adapter.Null())
-      Assert.True(Adapter.PayloadSelector true = Adapter.Null())
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector true = Adapter.asNull())
       Instance.Push 4321
-      Assert.True(Adapter.PayloadSelector false = Adapter.Null())
-      Assert.True(Adapter.PayloadSelector true = (Adapter.Call 4321))
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
         let result =
-          Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+          Adapter.payloadSelection(1311693406324658740L, 1000L, true)
 
         let expected =
-          Adapter.NewBoth(1311693406324658000L, 6789)
+          Adapter.newBoth(1311693406324658000L, 6789)
 
         Assert.True((result = expected))
       finally
         Instance.Pop()
 
-      Assert.True((Adapter.PayloadSelector true = (Adapter.Call 4321)))
+      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
     finally
       Instance.Pop()
       Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 =
-      Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+      Adapter.payloadSelection(1311693406324658740L, 1000L, true)
 
-    let expected2 = Adapter.Time 1311693406324658000L
+    let expected2 = Adapter.time 1311693406324658000L
     Assert.True((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
-    let probed = Adapter.PayloadControl(1000L, true)
+    let probed = Adapter.payloadControl(1000L, true)
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Adapter.Null() |> Adapter.untime |> Seq.isEmpty)
+    Assert.True(Adapter.asNull() |> Adapter.untime |> Seq.isEmpty)
     let [ probe ] = Adapter.untime probed |> Seq.toList
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
@@ -212,40 +212,40 @@ module AltCoverTests =
       Adapter.VisitsClear()
 
       Assert.True(Instance.I.callerId () |> Option.isNone)
-      Assert.True(Adapter.PayloadSelector false = Adapter.Null())
-      Assert.True(Adapter.PayloadSelector true = Adapter.Null())
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector true = Adapter.asNull())
       Instance.Push 4321
-      Assert.True(Adapter.PayloadSelector false = Adapter.Null())
-      Assert.True(Adapter.PayloadSelector true = (Adapter.Call 4321))
+      Assert.True(Adapter.payloadSelector false = Adapter.asNull())
+      Assert.True(Adapter.payloadSelector true = (Adapter.asCall 4321))
 
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
         let result =
-          Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+          Adapter.payloadSelection(1311693406324658740L, 1000L, true)
 
         let expected =
-          Adapter.NewBoth(1311693406324658000L, 6789)
+          Adapter.newBoth(1311693406324658000L, 6789)
 
         Assert.True((result = expected))
       finally
         Instance.Pop()
 
-      Assert.True((Adapter.PayloadSelector true = (Adapter.Call 4321)))
+      Assert.True((Adapter.payloadSelector true = (Adapter.asCall 4321)))
     finally
       Instance.Pop()
       Instance.I.isRunner <- false
       Instance.CoverageFormat <- ReportFormat.NCover
 
     let result2 =
-      Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+      Adapter.payloadSelection(1311693406324658740L, 1000L, true)
 
-    let expected2 = Adapter.Time 1311693406324658000L
+    let expected2 = Adapter.time 1311693406324658000L
     Assert.True((result2 = expected2))
     let v1 = DateTime.UtcNow.Ticks
-    let probed = Adapter.PayloadControl(1000L, true)
+    let probed = Adapter.payloadControl(1000L, true)
     let v2 = DateTime.UtcNow.Ticks
-    Assert.True(Adapter.Null() |> Adapter.untime |> Seq.isEmpty)
+    Assert.True(Adapter.asNull() |> Adapter.untime |> Seq.isEmpty)
     let [ probe ] = Adapter.untime probed |> Seq.toList
     Assert.True(probe % 1000L = 0L)
     Assert.True(probe <= v2)
@@ -307,10 +307,10 @@ module AltCoverTests =
 
         try
           Instance.I.visits.Clear()
-          Instance.I.trace <- Adapter.MakeNullTrace null
+          Instance.I.trace <- Adapter.makeNullTrace null
 
           let key = " "
-          Instance.I.visitSelection (Adapter.Null()) key 23
+          Instance.I.visitSelection (Adapter.asNull()) key 23
 
           Assert.That(
             Instance.I.visits.Count,
@@ -383,7 +383,7 @@ module AltCoverTests =
   let Issue71WrapperHandlesKeyNotFoundException () =
     let pair = [| false; false |]
     let unique = System.Guid.NewGuid().ToString()
-    Adapter.InvokeIssue71Wrapper<KeyNotFoundException>(unique, pair)
+    Adapter.invokeIssue71Wrapper<KeyNotFoundException>(unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -391,7 +391,7 @@ module AltCoverTests =
   let Issue71WrapperHandlesNullReferenceException () =
     let pair = [| false; false |]
     let unique = System.Guid.NewGuid().ToString()
-    Adapter.InvokeIssue71Wrapper<NullReferenceException>(unique, pair)
+    Adapter.invokeIssue71Wrapper<NullReferenceException>(unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -399,7 +399,7 @@ module AltCoverTests =
   let Issue71WrapperHandlesArgumentNullException () =
     let pair = [| false; false |]
     let unique = System.Guid.NewGuid().ToString()
-    Adapter.InvokeIssue71Wrapper<ArgumentNullException>(unique, pair)
+    Adapter.invokeIssue71Wrapper<ArgumentNullException>(unique, pair)
     Assert.That(pair |> Seq.head, Is.True)
     Assert.That(pair |> Seq.last, Is.True)
 
@@ -410,7 +410,7 @@ module AltCoverTests =
 
     let exn =
       Assert.Throws<InvalidOperationException>
-        (fun () -> Adapter.InvokeIssue71Wrapper<InvalidOperationException>(unique, pair))
+        (fun () -> Adapter.invokeIssue71Wrapper<InvalidOperationException>(unique, pair))
 
     Assert.That(pair |> Seq.head, Is.False)
     Assert.That(pair |> Seq.last, Is.False)
@@ -431,7 +431,7 @@ module AltCoverTests =
           let path = Instance.ReportFile |> Path.GetFullPath
           let where = path |> Path.GetDirectoryName
           let before = Directory.GetFiles(where, "*.exn")
-          Instance.I.visitImpl key 23 (Adapter.Null())
+          Instance.I.visitImpl key 23 (Adapter.asNull())
           let after = Directory.GetFiles(where, "*.exn")
           Assert.That(after.Length, Is.GreaterThan before.Length)
           let all = HashSet<String>(after)
@@ -470,8 +470,8 @@ module AltCoverTests =
         try
           Instance.I.visits.Clear()
           let key = " "
-          Instance.I.visitImpl key 23 (Adapter.Null())
-          Instance.I.visitImpl "key" 42 (Adapter.Null())
+          Instance.I.visitImpl key 23 (Adapter.asNull())
+          Instance.I.visitImpl "key" 42 (Adapter.asNull())
           Assert.That(Instance.I.visits.Count, Is.EqualTo 2)
         finally
           Instance.I.visits.Clear())
@@ -488,8 +488,8 @@ module AltCoverTests =
         try
           Instance.I.visits.Clear()
           let key = " "
-          Instance.I.visitImpl key 23 (Adapter.Null())
-          Instance.I.visitImpl key 42 (Adapter.Null())
+          Instance.I.visitImpl key 23 (Adapter.asNull())
+          Instance.I.visitImpl key 42 (Adapter.asNull())
           Assert.That(Instance.I.visits.Count, Is.EqualTo 1)
           Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
         finally
@@ -509,8 +509,8 @@ module AltCoverTests =
         try
           Instance.I.visits.Clear()
           let key = " "
-          Instance.I.visitImpl key 23 (Adapter.Null())
-          Instance.I.visitImpl key 23 (Adapter.Null())
+          Instance.I.visitImpl key 23 (Adapter.asNull())
+          Instance.I.visitImpl key 23 (Adapter.asNull())
           Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
           Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
         finally
@@ -530,8 +530,8 @@ module AltCoverTests =
         try
           Instance.I.visits.Clear()
           let key = " "
-          let payload = Adapter.Time DateTime.UtcNow.Ticks
-          Instance.I.visitImpl key 23 (Adapter.Null())
+          let payload = Adapter.time DateTime.UtcNow.Ticks
+          Instance.I.visitImpl key 23 (Adapter.asNull())
           Instance.I.visitImpl key 23 payload
           Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
           Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
@@ -1018,7 +1018,7 @@ module AltCoverTests =
 
         item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
 
-        Adapter.UpdateReport(item, ReportFormat.OpenCover, worker, worker)
+        Adapter.updateReport(item, ReportFormat.OpenCover, worker, worker)
         |> ignore
 
         worker.Position <- 0L
@@ -1120,7 +1120,7 @@ module AltCoverTests =
             let s1 =
               new Compression.DeflateStream(s, CompressionMode.Compress)
 
-            Instance.I.trace <- Adapter.MakeStreamTrace s1
+            Instance.I.trace <- Adapter.makeStreamTrace s1
 
             try
               Instance.I.isRunner <- true
@@ -1324,7 +1324,7 @@ module AltCoverTests =
               Path.Combine(where, Guid.NewGuid().ToString())
 
             let save = Instance.I.trace
-            Instance.I.trace <- Adapter.MakeNullTrace null
+            Instance.I.trace <- Adapter.makeNullTrace null
 
             try
               Adapter.VisitsClear()
@@ -1426,7 +1426,7 @@ module AltCoverTests =
               Path.Combine(where, Guid.NewGuid().ToString())
 
             let save = Instance.I.trace
-            Instance.I.trace <- Adapter.MakeNullTrace null
+            Instance.I.trace <- Adapter.makeNullTrace null
 
             Instance.supervision <- true
 
@@ -1556,7 +1556,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.DoFlush(
+      Adapter.doFlush(
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1644,7 +1644,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.DoFlush(
+      Adapter.doFlush(
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1724,7 +1724,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.DoFlush(
+      Adapter.doFlush(
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1813,7 +1813,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.DoFlush(
+      Adapter.doFlush(
         visits,
         AltCover.Recorder.ReportFormat.NCover,
         reportFile,
@@ -1886,7 +1886,7 @@ module AltCoverTests =
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Adapter.DoFlush(visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null)
+      Adapter.doFlush(visits, AltCover.Recorder.ReportFormat.NCover, reportFile, null)
       |> ignore
 
       Assert.That(reportFile |> File.Exists |> not)
@@ -1919,7 +1919,7 @@ module AltCoverTests =
               Path.Combine(where, Guid.NewGuid().ToString())
 
             let save = Instance.I.trace
-            Instance.I.trace <- Adapter.MakeNullTrace null
+            Instance.I.trace <- Adapter.makeNullTrace null
 
             try
               Adapter.VisitsClear()

@@ -477,10 +477,10 @@ module internal Visitor =
           ensureEndsWith
           <| Path.DirectorySeparatorChar.ToString()
 
-        let uri = Uri(new Uri("file://"), ender relativeTo)
+        let uri = Uri(Uri("file://"), ender relativeTo)
 
         Uri
-          .UnescapeDataString(uri.MakeRelativeUri(Uri(new Uri("file://"), path)).ToString())
+          .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), path)).ToString())
           .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
     let internal exists (url: Uri) =

@@ -31,12 +31,12 @@ module HandlerCommon =
     let document =
       allpoints
       |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
-      |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+      |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
 
     let line =
       allpoints
       |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
-      |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+      |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
 
     if document |> Option.isNone || line |> Option.isNone then
       noSource ()

@@ -576,7 +576,7 @@ module internal Runner =
              vc <- vc + (cv |> Seq.distinct |> Seq.length)
              nc <- nc + (cn |> Seq.distinct |> Seq.length))
 
-      let _ = summarise go vc nc "VisitedClasses"
+      summarise go vc nc "VisitedClasses" |> ignore
       let mcovered = summarise go vm nm "VisitedMethods"
       let covered = summarise go vs ns "VisitedPoints"
       let bcovered = summarise go vb nb "VisitedBranches"

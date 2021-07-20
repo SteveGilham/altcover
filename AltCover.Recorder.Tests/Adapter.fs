@@ -27,25 +27,23 @@ module Adapter =
       let entry = Dictionary<int, PointVisit>()
       Instance.I.visits.Add(name, entry)
 
-  let internal Init (n, l) =
+  let internal init (n, l) =
     let tmp = { PointVisit.Create() with Count = n }
     tmp.Tracks.AddRange l
     tmp
 
-  //let internal VisitSelection (a, b, c) = Instance.I.visitSelection a b c
-  //let Visit (a,b) = Instance.Visit a b
   let VisitsAdd (name, line, number) =
     prepareName name
-    let v = Init(number, [])
+    let v = init(number, [])
     Instance.I.visits.[name].Add(line, v)
 
   let VisitsAddTrack (name, line, number) =
     prepareName name
-    let v1 = Init(number, [ Call 17; Call 42 ])
+    let v1 = init(number, [ Call 17; Call 42 ])
     Instance.I.visits.[name].Add(line, v1)
 
     let v2 =
-      Init(
+      init(
         (number + 1L),
         [ Time 17L
           Both { Time = 42L; Call = 23 } ]
@@ -69,16 +67,16 @@ module Adapter =
   //let internal VisitImpl (a, b, c) =
   //  Instance.I.visitImpl a b c
 
-  let internal AddSample (moduleId, hitPointId, context) =
+  let internal addSample (moduleId, hitPointId, context) =
     Instance.I.takeSample Sampling.Single moduleId hitPointId context
 
-  let internal AddSampleUnconditional (moduleId, hitPointId, context) =
+  let internal addSampleUnconditional (moduleId, hitPointId, context) =
     Instance.I.takeSample Sampling.All moduleId hitPointId context
 
-  let internal NewBoth (time, call) = Both { Time = time; Call = call }
+  let internal newBoth (time, call) = Both { Time = time; Call = call }
 
-  let internal Call track = Call track
-  let internal Time at = Time at
+  let internal asCall track = Call track
+  let internal time at = Time at
 
   let internal untime at =
     let r = List<System.Int64>()
@@ -89,8 +87,8 @@ module Adapter =
 
     r
 
-  let internal Null () = Null
-  let internal Table t = Table t
+  let internal asNull () = Null
+  let internal table t = Table t
 
   let internal untable t =
     let r = List<System.Object>()
@@ -104,7 +102,7 @@ module Adapter =
 
     r
 
-  let internal DoFlush (visits, format, report, output) =
+  let internal doFlush (visits, format, report, output) =
     let output' =
       if System.String.IsNullOrEmpty output then
         None
@@ -113,7 +111,7 @@ module Adapter =
 
     Counter.doFlushFile ignore (fun _ _ -> ()) true visits format report output'
 
-  let internal UpdateReport (counts, format, coverageFile, outputFile) =
+  let internal updateReport (counts, format, coverageFile, outputFile) =
     Counter.I.updateReport
       ignore
       (fun _ _ -> ())
@@ -123,29 +121,29 @@ module Adapter =
       coverageFile
       outputFile
 
-  let internal PayloadSelector x = Instance.I.payloadSelector (fun _ -> x)
+  let internal payloadSelector x = Instance.I.payloadSelector (fun _ -> x)
 
-  let internal PayloadControl (x, y) =
+  let internal payloadControl (x, y) =
     Instance.I.payloadControl (fun _ -> x) (fun _ -> y)
 
-  let internal PayloadSelection (x, y, z) =
+  let internal payloadSelection (x, y, z) =
     Instance.I.payloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
 
-  let internal MakeNullTrace name =
+  let internal makeNullTrace name =
     { Tracer = name
       Stream = null
       Formatter = null
       Runner = false
       Definitive = false }
 
-  let internal MakeStreamTrace s1 =
+  let internal makeStreamTrace s1 =
     { Tracer = null
       Stream = new System.IO.MemoryStream()
       Formatter = new System.IO.BinaryWriter(s1)
       Runner = true
       Definitive = false }
 
-  let internal InvokeIssue71Wrapper<'T when 'T :> System.Exception>
+  let internal invokeIssue71Wrapper<'T when 'T :> System.Exception>
     (
       (unique: string),
       (called: bool array)
