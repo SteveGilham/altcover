@@ -14,11 +14,12 @@ module internal CecilExtension =
   // workround for old MCS + Cecil 0.11.4
   let pruneLocalScopes(m:MethodDefinition) =
     let rec pruneScope (scope:ScopeDebugInformation) =
-      scope.Scopes
+      let scopes = scope.Scopes
+      scopes
       |> Seq.filter(fun subScope -> pruneScope subScope
                                     subScope.Start.IsEndOfMethod)
       |> Seq.toList
-      |> List.iter (scope.Scopes.Remove >> ignore)
+      |> List.iter (scopes.Remove >> ignore)
 
     m.DebugInformation.Scope |> pruneScope
 
