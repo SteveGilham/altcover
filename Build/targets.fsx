@@ -887,16 +887,31 @@ _Target
     (fun _ ->
       let cfg = Path.getFullName "./fsharplint.json"
 
-      [ !! "*.sln"
-        //|> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
-        //|> Seq.distinct
+      let doLint f =
+        Fake.Core.Shell.Exec("dotnet", ("fsharplint lint -l " + cfg + " " + f), ".")
+      let doLintAsync f = async { return doLint f }
+      
+      let throttle x = Async.Parallel (x, System.Environment.ProcessorCount)
+      let demo = Path.getFullName "./Demo"
+      let regress = Path.getFullName "./RegressionTesting"
+      let sample = Path.getFullName "./Samples"
+      
+      let failOnIssuesFound (issuesFound: bool) =
+        Assert.That(issuesFound, Is.False, "Lint issues were found")
+      
+
+      [ !! "./**/*.fsproj"
         |> Seq.sortBy (Path.GetFileName)
+        |> Seq.filter (fun f -> ((f.Contains demo) ||
+                                 (f.Contains regress) ||
+                                 (f.Contains sample)) |> not)
         !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
       |> Seq.concat
-      |> Seq.iter (fun f -> Actions.RunDotnet dotnetOptions
-                                              "fsharplint"
-                                              ("lint -l " + cfg + " " + f)
-                                              "Lint issues were found")
+      |> Seq.map (fun f -> doLintAsync f)
+      |> throttle
+      |> Async.RunSynchronously
+      |> Seq.forall (fun x -> x = 0)
+      |> failOnIssuesFound
       )
 
     //(fun _ ->
