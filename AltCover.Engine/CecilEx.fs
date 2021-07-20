@@ -6,10 +6,22 @@
 namespace AltCover
 
 open System
+open Mono.Cecil
 open Mono.Cecil.Cil
 
 [<AutoOpen>]
 module internal CecilExtension =
+  // workround for old MCS + Cecil 0.11.4
+  let pruneLocalScopes(m:MethodDefinition) =
+    let rec pruneScope (scope:ScopeDebugInformation) =
+      scope.Scopes
+      |> Seq.filter(fun subScope -> pruneScope subScope
+                                    subScope.Start.IsEndOfMethod)
+      |> Seq.toList
+      |> List.iter (scope.Scopes.Remove >> ignore)
+
+    m.DebugInformation.Scope |> pruneScope
+
   // Adjust the IL for exception handling
   // param name="handler">The exception handler</param>
   // param name="oldBoundary">The uninstrumented location</param>
