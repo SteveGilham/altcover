@@ -888,8 +888,10 @@ _Target
       let cfg = Path.getFullName "./fsharplint.json"
 
       let doLint f =
-        Fake.Core.Shell.Exec("dotnet", ("fsharplint lint -l " + cfg + " " + f), ".")
-      let doLintAsync f = async { return doLint f }
+        CreateProcess.fromRawCommand "dotnet" ["fsharplint"; "lint";  "-l"; cfg ; f]
+        |> CreateProcess.ensureExitCodeWithMessage "Lint issues were found"
+        |> Proc.run
+      let doLintAsync f = async { return (doLint f).ExitCode }
       
       let throttle x = Async.Parallel (x, System.Environment.ProcessorCount)
       let demo = Path.getFullName "./Demo"
@@ -907,10 +909,10 @@ _Target
                                  (f.Contains sample)) |> not)
         !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
       |> Seq.concat
-      |> Seq.map (fun f -> doLintAsync f)
+      |> Seq.map doLintAsync
       |> throttle
       |> Async.RunSynchronously
-      |> Seq.forall (fun x -> x = 0)
+      |> Seq.exists (fun x -> x <> 0)
       |> failOnIssuesFound
       )
 
