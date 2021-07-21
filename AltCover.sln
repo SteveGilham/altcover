@@ -35,7 +35,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		.travis.yml = .travis.yml
 		Build\actions.fsx = Build\actions.fsx
 		Build\AddStrongName.fsx = Build\AddStrongName.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec

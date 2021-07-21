@@ -597,9 +597,6 @@ _Target
         let appveyor =
             Environment.environVar "APPVEYOR_BUILD_VERSION"
 
-        let travis =
-            Environment.environVar "TRAVIS_JOB_NUMBER"
-
         let github =
             Environment.environVar "GITHUB_RUN_NUMBER"
 
@@ -607,13 +604,10 @@ _Target
 
         let ci =
             if String.IsNullOrWhiteSpace appveyor then
-                if String.IsNullOrWhiteSpace travis then
-                    if String.IsNullOrWhiteSpace github then
-                        String.Empty
-                    else
-                        version.Replace("{build}", github + "-github")
+                if String.IsNullOrWhiteSpace github then
+                  String.Empty
                 else
-                    version.Replace("{build}", travis + "-travis")
+                  version.Replace("{build}", github + "-github")
             else
                 appveyor
 
