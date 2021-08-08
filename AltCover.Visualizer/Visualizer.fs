@@ -429,7 +429,7 @@ module private Gui =
       if chars = 0 then
         line
       else
-        buff.GetIterAtLineOffset(n.Line - 1, Math.Min(n.Column, chars) - 1)
+        buff.GetIterAtLineOffset(n.Line - 1, Math.Max(Math.Min(n.Column, chars) - 1, 0))
 
     let endline = buff.GetIterAtLine(n.EndLine - 1)
     let endchars = endline.CharsInLine

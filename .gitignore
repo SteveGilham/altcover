@@ -78,3 +78,5 @@ buildsample*.fsx.lock
 AltCover.Recorder/Strings.resources
 coverage.xml
 **/Backup/
+LastCoverageResults.log
+CoverageReport-*
