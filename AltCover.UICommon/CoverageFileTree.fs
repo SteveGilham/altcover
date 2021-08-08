@@ -39,13 +39,25 @@ module CoverageFileTree =
       =
       let ((display, special), keys) = item
 
+      // C++/CLI fixups -- probably more will be needed
+      let modopt s = System.Text.RegularExpressions.Regex.Replace(s,
+                       @"modopt\(System\.Runtime\.\w+\.(\w+)?\)", "[$1]")
+      let system s = System.Text.RegularExpressions.Regex.Replace(s,
+                       @"<(\w+)::(\w+)\ \^", "<$1.$2 ^")
+
+      let fixup = modopt >> system
+
       let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
         let fullname =
-          x.Navigator.GetAttribute("fullname", String.Empty)
+          fixup <| x.Navigator.GetAttribute("fullname", String.Empty)
+
+        let name = fixup x.Name
+
+        //printfn "%s ||| %s" name fullname
 
         let args =
           if String.IsNullOrEmpty(fullname)
-             || charIndexOf x.Name '(' > 0 then
+             || charIndexOf name '(' > 0 then
             String.Empty
           else
             let bracket = charIndexOf fullname '('
@@ -55,7 +67,7 @@ module CoverageFileTree =
             else
               fullname.Substring(bracket)
 
-        let displayname = x.Name + args
+        let displayname = name + args
 
         let offset =
           match displayname.LastIndexOf("::", StringComparison.Ordinal) with
