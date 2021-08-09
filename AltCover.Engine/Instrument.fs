@@ -426,6 +426,9 @@ module internal Instrument =
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
         let write (a: AssemblyDefinition) p pk =
+         if(a.MainModule.Attributes
+              &&& ModuleAttributes.ILOnly <> ModuleAttributes.ILOnly) then
+
           use sink =
             File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 

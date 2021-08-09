@@ -447,9 +447,10 @@ module internal Main =
                           ProgramDatabase.readSymbols def
 
                           if def.MainModule.HasSymbols
-                             && (def.IsIncluded).IsInstrumented
-                             && (def.MainModule.Attributes
-                                 &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly) then
+                             && (def.IsIncluded).IsInstrumented then
+                            //  && (def.MainModule.Attributes
+                            //      &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly
+                                
                             CommandLine.Format.Local("instrumenting", fullName)
                             |> Output.info
 
