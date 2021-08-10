@@ -665,7 +665,7 @@ module internal Instrument =
             | _ -> m.Module.Mvid.ToString() }
 
     let private visitMethod (state: InstrumentContext) m =
-      match m.Inspection.IsInstrumented with
+      match m.Inspection.IsInstrumented && m.Method.HasBody with
       | true ->
           let body = m.Method.Body
 

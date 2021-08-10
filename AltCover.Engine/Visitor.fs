@@ -968,14 +968,20 @@ module internal Visitor =
       |> Seq.cast
       |> Seq.filter
            (fun (m: MethodDefinition) ->
+             printfn "%A %A %A %A %A %A %A" m.MetadataToken
+                       m.DebugInformation.HasSequencePoints
+                       m.FullName m.IsAbstract
+                       m.IsRuntime m.IsPInvokeImpl m.HasBody
+
              not m.IsAbstract
              && not m.IsRuntime
-             && not m.IsPInvokeImpl
-             && m.HasBody)
+             // && not m.IsPInvokeImpl
+             //&& m.HasBody)
+           )
       |> Seq.map
            (fun m ->
              let key =
-               if significant m then
+               if (not m.HasBody) || significant m then
                  StaticFilter.NoFilter
                else
                  match CoverageParameters.staticFilter with
@@ -1294,7 +1300,10 @@ module internal Visitor =
       |> Seq.toList
 
     let private visitMethod (m: MethodEntry) =
-      let rawInstructions = m.Method.Body.Instructions
+      let rawInstructions =
+        if m.Method.Body.IsNotNull
+        then m.Method.Body.Instructions
+        else Mono.Collections.Generic.Collection<Instruction>()
       let dbg = m.Method.DebugInformation
 
       let instructions =
