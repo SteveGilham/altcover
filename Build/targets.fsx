@@ -886,15 +886,14 @@ _Target
         |> CreateProcess.ensureExitCodeWithMessage "Lint issues were found"
         |> Proc.run
       let doLintAsync f = async { return (doLint f).ExitCode }
-      
+
       let throttle x = Async.Parallel (x, System.Environment.ProcessorCount)
       let demo = Path.getFullName "./Demo"
       let regress = Path.getFullName "./RegressionTesting"
       let sample = Path.getFullName "./Samples"
-      
+
       let failOnIssuesFound (issuesFound: bool) =
         Assert.That(issuesFound, Is.False, "Lint issues were found")
-      
 
       [ !! "./**/*.fsproj"
         |> Seq.sortBy (Path.GetFileName)
@@ -3862,7 +3861,11 @@ _Target
                                   + Environment.NewLine
                                   + Environment.NewLine
                                   + w.ToString()
-                              ToolPath = Path.getFullName "_Binaries/NuPacker/Release+AnyCPU/net472/NuPacker.exe" })
+                              ToolPath =
+                                      ("./packages/"
+                                       + (packageVersion "NuGet.CommandLine")
+                                       + "/tools/NuGet.exe")
+                                      |> Path.getFullName })
                     nuspec))
 
 _Target "PrepareFrameworkBuild" ignore
