@@ -153,7 +153,6 @@ NUGET
       FSharp.Core (>= 4.7.2)
       System.Reactive (>= 5.0)
     FSharp.Core (5.0.2)
-    FSharpLint.Core (0.19.2)
     Fuchu (1.1)
       FSharp.Core (>= 4.3.4)
     Manatee.Json (13.0.5)
