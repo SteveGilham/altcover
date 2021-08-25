@@ -42,10 +42,31 @@ module CoverageFileTree =
       // C++/CLI fixups -- probably more will be needed
       let modopt s = System.Text.RegularExpressions.Regex.Replace(s,
                        @"modopt\(System\.Runtime\.\w+\.(\w+)?\)", "[$1]")
-      let system s = System.Text.RegularExpressions.Regex.Replace(s,
-                       @"<(\w+)::(\w+)\ \^", "<$1.$2 ^")
 
-      let fixup = modopt >> system
+      let gcroot (s: string) =
+        let rec step (s: string) (i:int) =
+          let next = s.IndexOf("gcroot<", i)
+          if next < 0
+          then s
+          else
+            let rec scan (s:string) index depth =
+              match s.[index] with
+              | '<' -> scan s (index + 1) (depth + 1)
+              | '>' -> let d = depth - 1
+                       if d = 0
+                       then index
+                       else scan s (index + 1) d
+              | _ -> scan s (index + 1) depth
+
+            let index = next + 7
+            let stop = scan s index 1
+            let start = s.Substring(0, index)
+            let middle = s.Substring(index, stop - index).Replace("::", ".")
+            let finish = s.Substring(stop)
+            step (start + middle + finish) index
+        step s 0
+
+      let fixup = modopt >> gcroot
 
       let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
         let fullname =
