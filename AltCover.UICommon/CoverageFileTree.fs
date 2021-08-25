@@ -28,6 +28,19 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
 module CoverageFileTree =
+
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+            "ReviewSelfAssignmentRule",
+            Justification = "Final line is a self-assignment for 'depth' -- compiler fault")>]
+  let rec private scan (s:string) index depth =
+    match s.[index] with
+    | '<' -> scan s (index + 1) (depth + 1)
+    | '>' -> let d = depth - 1
+             if d = 0
+             then index
+             else scan s (index + 1) d
+    | _ -> scan s (index + 1) depth
+
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
@@ -45,19 +58,10 @@ module CoverageFileTree =
 
       let gcroot (s: string) =
         let rec step (s: string) (i:int) =
-          let next = s.IndexOf("gcroot<", i)
+          let next = s.IndexOf("gcroot<", i, StringComparison.Ordinal)
           if next < 0
           then s
           else
-            let rec scan (s:string) index depth =
-              match s.[index] with
-              | '<' -> scan s (index + 1) (depth + 1)
-              | '>' -> let d = depth - 1
-                       if d = 0
-                       then index
-                       else scan s (index + 1) d
-              | _ -> scan s (index + 1) depth
-
             let index = next + 7
             let stop = scan s index 1
             let start = s.Substring(0, index)
