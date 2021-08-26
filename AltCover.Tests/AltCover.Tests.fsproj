@@ -106,9 +106,9 @@
     <Reference Include="AltCover.Recorder">
       <HintPath>$(ProjectDir)..\_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
     </Reference>
-    <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>

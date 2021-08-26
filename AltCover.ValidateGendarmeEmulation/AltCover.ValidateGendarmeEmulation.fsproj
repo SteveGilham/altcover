@@ -26,7 +26,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="System.ValueTuple" />
     <Reference Include="Gendarme.Framework">
       <HintPath>$(GendarmeToolDir)Gendarme.Framework.dll</HintPath>
@@ -67,14 +67,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="coverlet.collector" Version="3.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.6" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.8" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.2">

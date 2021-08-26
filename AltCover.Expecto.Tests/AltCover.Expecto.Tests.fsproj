@@ -22,10 +22,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Expecto" Version="9.0.2" />
+    <PackageReference Include="Expecto" Version="9.0.4" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.6" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.8" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
   </ItemGroup>
 
   <ItemGroup>

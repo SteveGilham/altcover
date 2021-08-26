@@ -56,13 +56,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
+    <PackageReference Include="Avalonia" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" />
+    <PackageReference Include="Mono.Options" Version="6.12.0.148" />
     <PackageReference Include="System.Reactive.Core" Version="5.0.0" />
   </ItemGroup>
 
