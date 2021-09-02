@@ -105,18 +105,34 @@ module CoverageFileTree =
             environment.Icons.Method
             (displayname.Substring(offset))
 
-        environment.Map newrow x.Navigator
-
         // multi-source??
+        let upcase (s:string) = s.ToUpperInvariant()
+        let getFileName (s:string) =
+          if
+            s.StartsWith("http://", StringComparison.Ordinal)
+            || s.StartsWith
+              (
+                "https://",
+                StringComparison.Ordinal
+              )
+          then
+            System.Uri(s).LocalPath |> Path.GetFileName
+          else
+            Path.GetFileName s
+
         let sources =
           x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
           |> Seq.cast<XPathNavigator>
           |> Seq.map
-           (fun s -> s.GetAttribute("document", String.Empty), s)
-          |> Seq.distinctBy fst
-          |> Seq.sortBy (fst >> Path.GetFileName) // Source link TODO
+           (fun s ->
+              let d = s.GetAttribute("document", String.Empty)
+              (d, (d |> getFileName, s)))
+          |> Seq.distinctBy fst // allows for same name, different path
+          |> Seq.map snd
+          |> Seq.sortBy (fst >> upcase)
           |> Seq.toList
 
+        // If multi-source (has inlines), add the source file nodes to the hittable map
         if sources |> List.tail |> List.isEmpty |> not
         then
           sources
@@ -125,10 +141,12 @@ module CoverageFileTree =
                 environment.AddNode
                   newrow
                   environment.Icons.Source
-                  (Path.GetFileName d)
+                  d
               environment.Map srow n
           )
-        ()
+        else
+          // most of the time, go here and just add the method
+          environment.Map newrow x.Navigator
 
       if special <> MethodType.Normal then
         let newrow =
