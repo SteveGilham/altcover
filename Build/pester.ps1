@@ -1,17 +1,12 @@
-param([string]$ACV="0.0.0.0")
+param([string]$ACV="0.0.0.0", [string]$ReportName="!:!", [string]$FolderName="!:!")
 
-Import-Module "./_Packaging/Module/tools/netcoreapp2.0/AltCover.PowerShell.dll"
-Import-Module "./packages/pester/5.0.2/Pester.psm1"
-
+Import-Module (Join-Path $($FolderName) "AltCover.PowerShell.dll")
 Invoke-Altcover -?
-# Invoke-Pester -Script @{ Path='.\Build'; Parameters = @{ ACV = $ACV}} -EnableExit -OutputFormat NUnitXml -OutputFile "./_Reports/PesterReport.xml"
 
+Import-Module "./packages/pester/5.3.0/tools/Pester.psm1"
 $configuration = [PesterConfiguration]::Default
 $configuration.Run.Path = '.\Build'
 $configuration.Run.Exit = $true
-
 $configuration.TestResult.Enabled = $true
-# $configuration.TestResult.OutputFormat = "NUnit2.5"
-$configuration.TestResult.OutputPath = "./_Reports/PesterReport.xml"
-
+$configuration.TestResult.OutputPath = "./_Reports/$($ReportName).xml"
 Invoke-Pester -Configuration $configuration

@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <RootNamespace>AltCover.FontSupport</RootNamespace>
     <AssemblyName>AltCover.FontSupport</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -13,10 +13,18 @@
     <AssemblyOriginatorKeyFile>$(SolutionDir)\Build\Infrastructure.snk</AssemblyOriginatorKeyFile>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <NoWarn>1701;1702;8002</NoWarn>
+    <WarningsAsErrors>NU1605</WarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,8 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fake.Core.Process" Version="5.20.2" Condition="'$(TargetFramework)' != 'net46'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net46" Version="1.0.0" Condition="'$(TargetFramework)' == 'net46'">
+    <PackageReference Include="Fake.Core.Process" Version="5.20.4" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -2,15 +2,11 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
-open System.Threading
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
+[<ExcludeFromCodeCoverage>]
 type internal Close =
   | DomainUnload
   | ProcessExit
@@ -19,34 +15,37 @@ type internal Close =
 
 [<NoComparison; AutoSerializable(false)>]
 type Tracer =
-  { Tracer : string
-    Runner : bool
-    Definitive : bool
-    Stream : System.IO.Stream
-    Formatter : System.IO.BinaryWriter }
+  { Tracer: string
+    Runner: bool
+    Definitive: bool
+    Stream: System.IO.Stream
+    Formatter: System.IO.BinaryWriter }
 
-  static member internal Create(name : string) =
+  static member internal Create(name: string) =
     { Tracer = name
       Runner = false
       Definitive = false
       Stream = null
       Formatter = null }
 
-  member internal this.IsConnected
-    with get() =
+  member this.IsConnected
+    with internal get () =
       match this.Stream with
       | null -> false
       | _ -> this.Runner
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-         "EnsureLocalDisposalRule",
-         Justification="Record return confusing Gendarme -- TODO")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2000:DisposeObjectsBeforeLosingScope",
-                                                    Justification = "'fs' is subsumed")>]
+  [<SuppressMessage("Gendarme.Rules.Correctness",
+                    "EnsureLocalDisposalRule",
+                    Justification = "Record return confusing Gendarme -- TODO")>]
+  [<SuppressMessage("Microsoft.Reliability",
+                    "CA2000:DisposeObjectsBeforeLosingScope",
+                    Justification = "'fs' is subsumed")>]
   member private this.MakeConnection f =
     let fs = File.OpenWrite f
-    let s = new DeflateStream(fs, CompressionMode.Compress)
+
+    let s =
+      new DeflateStream(fs, CompressionMode.Compress)
+
     { this with
         Stream = s
         Formatter = new BinaryWriter(s)
@@ -65,7 +64,9 @@ type Tracer =
     try
       this.Stream.Flush()
       this.Formatter.Close()
-    with :? ObjectDisposedException -> ()
+    with
+    | :? ObjectDisposedException
+    | :? NullReferenceException -> ()
 
   member private this.PushContext context =
     match context with
@@ -82,39 +83,43 @@ type Tracer =
         this.Formatter.Write(b.Call)
     | Table t ->
         this.Formatter.Write(Tag.Table |> byte)
+
         t.Keys
-        |> Seq.iter (fun m ->
-             this.Formatter.Write m
-             this.Formatter.Write t.[m].Keys.Count
-             t.[m].Keys
-             |> Seq.iter (fun p ->
-                  this.Formatter.Write p
-                  let v = t.[m].[p]
-                  this.Formatter.Write v.Count
-                  v.Tracks |> Seq.iter this.PushContext
-                  this.PushContext Null))
+        |> Seq.iter
+             (fun m ->
+               this.Formatter.Write m
+               this.Formatter.Write t.[m].Keys.Count
+
+               t.[m].Keys
+               |> Seq.iter
+                    (fun p ->
+                      this.Formatter.Write p
+                      let v = t.[m].[p]
+                      this.Formatter.Write v.Count
+                      v.Tracks |> Seq.iter this.PushContext
+                      this.PushContext Null))
+
         this.Formatter.Write String.Empty
 
-  member internal this.Push (moduleId : string) (hitPointId : int) context =
+  member internal this.Push (moduleId: string) (hitPointId: int) context =
     this.Formatter.Write moduleId
     this.Formatter.Write hitPointId
     this.PushContext context
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>>) =
+  member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
     if visits.Count > 0 then
-      visits
-      |> Table
-      |> this.Push String.Empty 0
+      visits |> Table |> this.Push String.Empty 0
 
   member internal this.OnStart() =
     let running =
-      if this.Tracer <> "Coverage.Default.xml.acv"
-      then this.Connect()
-      else this
+      if this.Tracer <> "Coverage.Default.xml.acv" then
+        this.Connect()
+      else
+        this
+
     { running with Definitive = true }
 
-  member internal  this.OnConnected f g =
-    if this.IsConnected then f() else g()
+  member internal this.OnConnected f g = if this.IsConnected then f () else g ()
 
   member internal this.OnFinish visits =
     this.CatchUp visits

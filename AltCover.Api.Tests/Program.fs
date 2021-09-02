@@ -1,82 +1,67 @@
-namespace AltCover.Expecto.Tests
+namespace Tests
 
-#if NETCOREAPP3_0
+#if !NET472
 
 open Expecto
-open Mono.Cecil
-open Mono.Cecil.Cil
-open Mono.Cecil.Rocks
-open Swensen.Unquote
 
-module TestMain =
-  let sync = System.Object()
-
-  let regular = [
-          Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
-          Tests.FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState, "FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
-          Tests.FSApiTests.OpenCoverToLcov, "FSApiTests.OpenCoverToLcov"
-          Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"
-          Tests.FSApiTests.OpenCoverToNCover, "FSApiTests.OpenCoverToNCover"
-          Tests.FSApiTests.OpenCoverFromNCover, "FSApiTests.OpenCoverFromNCover"
-          Tests.FSApiTests.FormatsConvertToXmlDocument, "FSApiTests.FormatsConvertToXmlDocument"
-          Tests.FSApiTests.FormatsConvertToXDocument, "FSApiTests.FormatsConvertToXDocument"
-          Tests.FSApiTests.FormatsRoundTripSimply, "FSApiTests.FormatsRoundTripSimply"
-          Tests.FSApiTests.NCoverToCobertura, "FSApiTests.NCoverToCobertura"
-          Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
-          Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
-          Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
+module ExpectoMain =
+  let regular =
+    [ Tests.TestCommonTests.TestIgnoredTests, "TestCommonTests.TestIgnoredTests"
+      Tests.TestCommonTests.ExerciseItAll, "TestCommonTests.ExerciseItAll"
+      Tests.TestCommonTests.SelfTest, "TestCommonTests.SelfTest"
+      Tests.FSApiTests.FormatFromCoverletMeetsSpec, "FSApiTests.FormatFromCoverlet"
+      Tests.FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState,
+      "FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
+      Tests.FSApiTests.JsonToOpenCover, "FSApiTests.JsonToOpenCover"
+      Tests.FSApiTests.OpenCoverToJson, "FSApiTests.OpenCoverToJson"
+      Tests.FSApiTests.OpenCoverToLcov, "FSApiTests.OpenCoverToLcov"
+      Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"
+      Tests.FSApiTests.OpenCoverToNCover, "FSApiTests.OpenCoverToNCover"
+      Tests.FSApiTests.OpenCoverFromNCover, "FSApiTests.OpenCoverFromNCover"
+      Tests.FSApiTests.FormatsConvertToXmlDocument,
+      "FSApiTests.FormatsConvertToXmlDocument"
+      Tests.FSApiTests.FormatsConvertToXDocument, "FSApiTests.FormatsConvertToXDocument"
+      Tests.FSApiTests.FormatsRoundTripSimply, "FSApiTests.FormatsRoundTripSimply"
+      Tests.FSApiTests.NCoverToCobertura, "FSApiTests.NCoverToCobertura"
+      Tests.FSApiTests.NCoverToJson, "FSApiTests.NCoverToJson"
+      Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
+      Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
+      Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"
+      Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
+      Tests.FSApiTests.MergeRejectsNonCoverage, "FSApiTests.MergeRejectsNonCoverage"
+      Tests.FSApiTests.MergePassesSingleOpenCover, "FSApiTests.MergePassesSingleOpenCover"
+      Tests.FSApiTests.MergeCombinesSummaryCoverage,
+      "FSApiTests.MergeCombinesSummaryCoverage"
+      Tests.FSApiTests.MergeCombinesRepeatCoverage,
+      "FSApiTests.MergeCombinesRepeatCoverage"
 #if SOURCEMAP
-          Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
-          Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
+      Tests.FSApiTests.NCoverFindsFiles, "FSApiTests.NCoverFindsFiles"
+      Tests.FSApiTests.OpenCoverFindsFiles, "FSApiTests.OpenCoverFindsFiles"
 #endif
-          Tests.FSApiTests.ArgumentsConsistent, "FSApiTests.ArgumentsConsistent"
-        ]
+      ]
 
-  let specials =
-   []
+  let specials = []
 
-  let consistencyCheck() =
-    let here = System.Reflection.Assembly.GetExecutingAssembly().Location
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(here)
-
-    let testMethods = def.MainModule.GetTypes()
-                      |> Seq.collect (fun t -> t.Methods)
-                      |> Seq.filter (fun m -> m.CustomAttributes |> isNull |> not)
-                      |> Seq.filter (fun m -> m.CustomAttributes |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
-                      |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
-
-    let lookup = def.MainModule.GetAllTypes()
-                 |> Seq.filter (fun t -> t.Methods |> Seq.exists(fun m -> m.Name = "Invoke"))
-                 |> Seq.map (fun t -> (t.FullName.Replace("/","+"), t.Methods |> Seq.find(fun m -> m.Name = "Invoke")))
-                 |> Map.ofSeq
-
-    let calls = regular
-                |> List.map (fst
-                            >> (fun f -> f.GetType().FullName.Replace("/","+"))
-                            >> (fun f -> Map.find f lookup)
-                            >> (fun f -> f.Body.Instructions |> Seq.find (fun i -> i.OpCode = OpCodes.Call))
-                            >> (fun i -> let m = (i.Operand :?> MethodDefinition)
-                                         m.DeclaringType.FullName + "::" + m.Name))
-                |> Set.ofList
-
-    let omitted = testMethods
-                  |> Seq.filter (fun t -> (Set.contains t calls) |> not)
-                  |> Seq.toList
-
-    // cover all but the special cases
-    test <@ omitted = [] @>
+  let consistencyCheck () =
+    ExpectoTestCommon.consistencyCheck regular []
 
   [<Tests>]
   let tests =
-    testList "AltCover.Api.Tests"
-    <| ((((consistencyCheck, "ConsistencyCheck") :: regular)
-        |> List.map (fun (f,name) -> testCase name f))
-        @ specials)
+    ExpectoTestCommon.makeTests
+      "AltCoverApiTests"
+      consistencyCheck
+      regular
+      specials
+      ignore
 
-module Program =
-  [<EntryPoint>]
-  let main argv =
-    let writeResults = TestResults.writeNUnitSummary ("AltCover.Api.TestResults.xml", "AltCover.Api.Tests")
-    let config = defaultConfig.appendSummaryHandler writeResults
-    runTestsWithArgs config argv TestMain.tests
+module UnitTestStub =
+  [<EntryPoint; System.Runtime.CompilerServices.CompilerGenerated>]
+  let unitTestStub argv =
+    let writeResults =
+      TestResults.writeNUnitSummary ("AltCover.Api.TestResults.xml", "AltCover.Api.Tests")
+
+    let config =
+      defaultConfig.appendSummaryHandler writeResults
+
+    runTestsWithArgs config argv ExpectoMain.tests
 #endif

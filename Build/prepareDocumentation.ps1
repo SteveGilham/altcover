@@ -1,7 +1,10 @@
-Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll"
+## TODO -- AltCover => AltCover.Engine
+
+Import-Module "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
 
 ## clear first
 dir -recurse "./docs/*apidoc.md" | del -force
+dir -recurse "./docs/*.fsx.lock" | del -force
 
 ## Documentation
 
@@ -226,11 +229,11 @@ $footer = @"
 
 **Note**: As MSBuild informational output is suppressed by default with ``dotnet test``, and log verbosity has no fine-grained control, the ``-v m`` (``--verbosity minimal``) option is needed to show the progress and summary information for the instrumentation and collection process if this is desired.
 
-**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in ``/p:AltCoverXmlReport`` just as for the default ``coverage.xml`` name.
+**Note**: In the case of multiple target frameworks the framework identifier will be inserted ahead of the extension (if any) of the file name given in ``/p:AltCoverReport`` just as for the default ``coverage.xml`` or ``coverage.json`` name.
 
 ## Example
 ``````
-dotnet test /p:AltCover=true /p:AltCoverXmlreport=".\altcover.xml" /p:AltCoverAssemblyFilter=NUnit
+dotnet test /p:AltCover=true /p:AltCoverReport=".\altcover.xml" /p:AltCoverAssemblyExcludeFilter=NUnit
 ``````
 Chooses a different report name, and excludes the ``NUnit3.TestAdapter`` assembly that comes with its pdb files, and gets instrumented by default.
 "@
@@ -275,7 +278,7 @@ The full command line is
 
 $header | Out-File -Encoding UTF8 $mdfile
 
-$resources = [xml](Get-Content "./AltCover/Strings.resx")
+$resources = [xml](Get-Content "./AltCover.Engine/Strings.resx")
 
 $helptext = $resources.root.data | ? { $_.name -eq "HelpText" } | % { $_.value }
 
@@ -293,7 +296,7 @@ In detail
 
 $glue | Out-File -Encoding UTF8 -Append $mdfile
 
-Get-Content "./Tests/AltCover.Usage.txt" | % { $_ | Out-File -Encoding UTF8 -Append $mdfile }
+Get-Content "./AltCover.Tests/AltCover.Usage.txt" | % { $_ | Out-File -Encoding UTF8 -Append $mdfile }
 
 $glue = @"
 -- ...                 Anything on the command line after a free-standing "--" is considered a separate command line to be executed after the instrumentation has been done.
@@ -304,7 +307,7 @@ or
 
 $glue | Out-File -Encoding UTF8 -Append $mdfile
 
-Get-Content "./Tests/AltCover.Runner.Usage.txt" | % { $_  | Out-File -Encoding UTF8 -Append $mdfile }
+Get-Content "./AltCover.Tests/AltCover.Runner.Usage.txt" | % { $_  | Out-File -Encoding UTF8 -Append $mdfile }
 
 
 $footer = @"
@@ -341,7 +344,7 @@ or, for the global tool only
 
 * Filter values are semi-colon (``;``) separated regular expressions, applied by type in the order as they are defined in the command line; any item whose name matches the expression will be excluded from the coverage reporting.  In the simplest case, with no special regex items, this means that a name containing the filter item as a sub-string will be excluded.  In v6.0.700 or later, should the need ever arise to have a semi-colon in a regex, then escape it in by doubling (``;;``); if a triplet ``;;;`` or longer is present, doubling gets grouped from the left.
 
-* Except where being driven by AltCover in "runner" mode, coverage statistics are written to the file nominated by the ``x|xmlReport=`` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
+* Except where being driven by AltCover in "runner" mode, coverage statistics are written to the file nominated by the ``r|report=`` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
 * valid arguments for ``--teamcity`` are ``B``, ``R``, ``+B``, ``+R`` or nothing at all (same as ``B``).  The letter indicates which symbol to use in the TeamCity format for branch coverage (``B`` is for ``Block``, which by experiment did show in the build report, and ``R`` is for ``bRanch`` which is documented, but did not show when I tried it), the optional ``+`` indicates that the OpenCover summary should also be emitted.
 
@@ -370,7 +373,35 @@ In release 5.3, the writing the collected data has been offloaded to an in-proce
 
 $footer | Out-File -Encoding UTF8 -Append $mdfile
 
+### docs/AltCover.Fake.DotNet.Testing.AltCover/index.md
+
+$lines = Get-Content "./Build/AltCover.Fake.DotNet.Testing.AltCover.md"
+$lines | % {
+  if ($_ -like "!!*") {
+    Get-Content ($_.Substring(2))
+  }
+  else { $_ }
+} | Set-Content "./docs/AltCover.Fake.DotNet.Testing.AltCover/index.md"
+
+### docs/Fake-and-Cake-integration.md
+
+$lines = Get-Content "./Build/Fake-and-Cake-integration.md"
+$lines | % {
+  if ($_ -like "!!*") {
+    Get-Content ($_.Substring(2))
+  }
+  else { $_ }
+} | Set-Content "./docs/Fake-and-Cake-integration.md"
+
+
+##-----------------------------------------
+
 Write-Host "In node.js prompt, 'harp server C:\Users\steve\Documents\GitHub\altcover\docs'"
+Write-Host ""
+Write-Host "Touch test examples like"
+Write-Host "dotnet fake run .\docs\AltCover.Fake.DotNet.Testing.AltCover\BuildSample_1.fsx"
+Write-Host "dotnet fake run .\docs\AltCover.Fake.DotNet.Testing.AltCover\BuildSample_2.fsx"
+Write-Host "dotnet fake run .\docs\BuildSample_1.fsx"
 
 
 

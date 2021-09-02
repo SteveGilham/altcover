@@ -4,8 +4,8 @@
     <DataCollectors>
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
-          <Format>opencover</Format>          
-          <Exclude />
+          <Format>opencover</Format>
+          <Exclude>[AltCover.Recorder.g]*</Exclude>
           <Include />
           <ExcludeByAttribute />
           <ExcludeByFile />

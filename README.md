@@ -18,12 +18,11 @@ For Mono, .net framework and .net core, except as noted
 * A coverage visualizer tool 
   * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
   * For .net core : uses the cross-platform AvaloniaUI toolkit
-  ![Visualizer screenshot](./AltCover.Visualizer/Screenshot-Avalonia.png)
+  ![Visualizer screenshot](https://github.com/SteveGilham/altcover/raw/master/AltCover.Visualizer/Screenshot-Avalonia.png)
     
 ### NuGet Packages
 * [![Nuget](https://buildstats.info/nuget/AltCover) General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the `dotnet test` API with FAKE and CAKE integration and the AvaloniaUI visualizer
 * [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the visualizer in all forms
-* [![Nuget](https://buildstats.info/nuget/altcover.dotnet) dotnet CLI tool install](https://www.nuget.org/packages/AltCover.dotnet) -- **Obsolete**  -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/Avalonia Visualizer as a global tool
 * [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.18.1 or later), only in this package
@@ -35,22 +34,16 @@ In particular, while instrumenting .net core assemblies "just works" with this a
 
 ### Why altcover? -- the back-story of why it was ever a thing
 
-Back in 2010, the new .net version finally removed the deprecated profiling APIs that the free NCover 1.5.x series relied upon.  The first version of AltCover was written to both fill a gap in functionality, and to give me an excuse for a ground-up F# project to work on.  As such, it saw real production use for about a year and a half, until OpenCover reached a point where it could be used for .net4/x64 work (and I could find time to adapt everything downstream that consumed NCover format input).
+Back in 2010, the new .net version finally removed the deprecated profiling APIs that the free NCover 1.5.x series relied upon.  The first version of AltCover was written to both fill a gap in functionality, and to give me an excuse for a ground-up F# project to work on.  As such, it saw real production use for about a year and a half, until [OpenCover](https://github.com/OpenCover/opencover) reached a point where it could be used for .net4/x64 work (and I could find time to adapt everything downstream that consumed NCover format input).
 
 Fast forwards to autumn 2017, and I get the chance to dust the project off, with the intention of saying that it worked on Mono, too -- and realise that it's _déja vu_ all over again, because .net core didn't yet have profiler based coverage tools either, and the same approach would work there as well.
 
-### Other notes
-
-1. On old-fashioned .net framework, the `ProcessExit` event handling window of ~2s is sufficient for processing significant bodies of code under test (several 10s of kloc, as observed in production back in the '10-'11 timeframe); under `dotnet test` [the `vstest.console` process imposes a 100ms guillotine](https://github.com/Microsoft/vstest/issues/1900#issuecomment-457488472), even though .net Core imposes no time-limit of its own.  This is about enough time to fill in an NCover report for a program of no more than 1kloc, hence the development of a "write it all promptly to file and post-process" `Runner` mode.  With version 5.3 and above, the `dotnet test` integration now hooks the VSTest in-process data collection, allowing an indefinite window to write collected data from memory, thus removing the file I/O bottleneck. 
-
-2. Under Mono on non-Windows platforms the default values of `--debug:full` or `--debug:pdbonly` generate no symbols from F# projects -- and without symbols, such assemblies cannot be instrumented.  Unlike with C# projects, where the substitution appears to be automatic, to use the necessary `--debug:portable` option involves explicitly hand editing the old-school `.fsproj` file to have `<DebugType>portable</DebugType>`.  
-
 ## Continuous Integration
 
-| | | |
+| | | | 
 | --- | --- | --- | 
-| **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
-| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) |
+| **Build** | <sup>GitHub</sup> [![Build status](https://github.com/SteveGilham/altcover/workflows/CI/badge.svg)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)[![Build history](https://buildstats.info/github/chart/SteveGilham/altcover?branch=master)](https://github.com/SteveGilham/altcover/actions?query=workflow%3ACI)| <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)  ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) |
+| **Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) | <sup>AppVeyor</sup> [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover)
 
 ## Usage
 
@@ -60,9 +53,13 @@ See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for deta
 
 See the [current project](https://github.com/SteveGilham/altcover/projects/8) and [long term research items](https://github.com/SteveGilham/altcover/projects/9) for details; though _ad hoc_ items not in the projects will get added as inspiration or need arise.
 
-All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
+All `To do` and  `On Hold` items are implicitly `up for grabs` and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
 
-I am considering retiring the legacy framework/Mono support after the release of .net 5, contingent on having suitable replacements for Framework-only static analysis tools.
+### Possible retirement/obsolescence of support
+
+tl;dr -- legacy framework/Mono support is not going away any time soon.
+
+Despite earlier ruminations on the subject, as .net 4.7.2 can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues after the release of .net 5 and until such a time as it is no longer possible to retain those API levels.  Framework builds apart from the minimum (executable entry-points and the recorder) remain until I have suitable replacements for Framework-only static analysis tooling (i.e. can convince FxCop to consume `netstandard20`).
 
 ## Building
 
@@ -72,22 +69,22 @@ I am considering retiring the legacy framework/Mono support after the release of
 
 It is assumed that the following are available
 
-.net core SDK 3.1.301 (`dotnet`) -- try https://www.microsoft.com/net/download  
-PowerShell Core 7.0.1 or later (`pwsh`) -- try https://github.com/powershell/powershell  
+.net SDK version as per global.json, or later minor version (`dotnet`) -- try https://www.microsoft.com/net/download  
+PowerShell Core 7.1.0 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
-The build may target netstandard2.0 or netcoreapp2.x, but does not need any pre-3.1 runtimes to be installed.
+The build may target `netstandard2.0` or `netcoreapp2.0/2.1` for deliverables, and `net5.0` for unit tests, but does not need any pre-5.0 runtimes to be installed (roll-forward policies are in place).
+
+**Note:** F# compiler code generation changes may cause incompatibilities due to some of the IL inspection performed by AltCover and its self-tests (e.g. by, at 5.0.201, generating non-closure function objects as static fields rather than locally instantiated objects)
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.6.2 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2019 (Community Edition) v16.10.3 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.
 
-In preparation for the .net 5 unification, on Windows, the default full build uses new-style projects under `altcover.core.sln` with a few test/helper old-style projects built from `MCS.sln`; and the build for release only needs these.
-
 #### *nix
 
-It is assumed that `mono` (version 6.8.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+It is assumed that `mono` (version 6.12.x or later) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 
@@ -106,10 +103,11 @@ If there's a passing build on the CI servers for this commit, then it's likely t
 
 ### Unit Tests
 
-The tests in the `AltCover.Test` project are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
+The tests in the `AltCover.Test` project are broadly ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
+
+Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; these tests will be marked `ignore` when running the unit tests under `net472` and `pass` without doing anything under `net5.0` (as Expecto has no `ignore` option) if the build is not complete and thus those expected assemblies are not found e.g. in Visual Studio from clean, or after a build to targets like `Analysis` that only build code to be analysed.
 
 ## Thanks to
 
 * [AppVeyor](https://ci.appveyor.com/project/SteveGilham/altcover) for allowing free build CI services for Open Source projects
-* [travis-ci](https://travis-ci.org/SteveGilham/altcover) for allowing free build CI services for Open Source projects
 * [Coveralls](https://coveralls.io/r/SteveGilham/altcover) for allowing free services for Open Source projects

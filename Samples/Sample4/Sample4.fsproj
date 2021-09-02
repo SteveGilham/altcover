@@ -1,0 +1,78 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <UsingTask TaskName="AltCover.Prepare" Condition="'$(MSBuildTest)' == 'true' AND '$(AltCoverPath)' != '' AND Exists('$(AltCoverPath)/AltCover.Engine.dll')" AssemblyFile="$(AltCoverPath)/AltCover.Engine.dll" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>Sample4</AssemblyName>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <RollForward>Major</RollForward>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Data\Bar.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="$(ProjectDir)\Data\Foo.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(ProjectDir)\Data\Deeper\Bar.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Data\Deeper\Foo.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <Compile Include="Tests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <Reference Include="Unquote">
+      <HintPath>..\..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.2">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <AssemblyFilter Include="xunit" />
+      <FSharpXml Include="$(OutputPath)/$(TargetFramework)/FSharp.*.xml" />
+      <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
+      <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
+    </ItemGroup>
+    <Delete Files="@(FSharpXml)" />
+    <AltCover.Prepare Condition="'$(MSBuildTest)' == 'true'" InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" />
+  </Target>
+</Project>

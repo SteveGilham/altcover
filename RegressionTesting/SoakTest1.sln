@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SoakTest1", "SoakTest1\SoakTest1.fsproj", "{FC18B253-3995-4C54-99E1-7DDF298707BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC18B253-3995-4C54-99E1-7DDF298707BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC18B253-3995-4C54-99E1-7DDF298707BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC18B253-3995-4C54-99E1-7DDF298707BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC18B253-3995-4C54-99E1-7DDF298707BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {96E00688-75C5-4063-9498-89397DCC7329}
+	EndGlobalSection
+EndGlobal

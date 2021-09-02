@@ -1,0 +1,3 @@
+# Ignore interfaces (documentation annotations)
+*.fsi
+Abstract.fs

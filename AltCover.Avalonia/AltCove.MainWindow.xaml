@@ -1,6 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
         x:Class="AltCover.MainWindow"
         Title="AltCover.Visualizer"
         Icon="resm:AltCover.UICommon.VIcon.ico?assembly=AltCover.UICommon"
@@ -137,7 +136,7 @@
                         HorizontalScrollBarVisibility="Auto"
                         Background="WhiteSmoke">
             <StackPanel Orientation="Horizontal">
-              <TextBlock
+              <TextPresenter
                        Name="Lines" MinWidth="50"
                        TextAlignment="Right"
                        TextWrapping="NoWrap"
@@ -149,7 +148,7 @@
                           Width="16"
                           MinWidth="16">
               </StackPanel>
-              <TextBlock
+              <TextPresenter
                        Name="Source" MinWidth="150"
                        TextWrapping="NoWrap"
                        Background="WhiteSmoke"

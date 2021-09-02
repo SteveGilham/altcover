@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-
+    <RollForward>Major</RollForward>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

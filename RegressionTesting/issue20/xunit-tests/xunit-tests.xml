@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>xunit_tests</RootNamespace>
-
+    <RollForward>Major</RollForward>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

@@ -68,4 +68,15 @@ Demo/MultiTest/**/coverage.xml
 *.xss
 TestResults/
 AltCover/Abstract.fs
-Tests.Visualizer/Reports/
+AltCover.Visualizer.Tests/Reports/
+.fake
+.ionide
+AltCover.Engine/Abstract.fsi
+Samples/Sample22/Sample22.fsproj
+Samples/Sample22/coverage.xml
+buildsample*.fsx.lock
+AltCover.Recorder/Strings.resources
+coverage.xml
+**/Backup/
+LastCoverageResults.log
+CoverageReport-*

@@ -1,0 +1,377 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0" branch-rate="1" lines-covered="0" lines-valid="89" branches-covered="0" branches-valid="0" complexity="1" version="3.0.0.0" timestamp="xx">
+  <sources>
+    <source>altcover/Sample5</source>
+  </sources>
+  <packages>
+    <package name="altcover/Sample5/Sample5.dll" line-rate="0" branch-rate="1" complexity="1">
+      <classes>
+        <class name="Sample5.Class1" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;F1&gt;g__Interior|0_1" signature="System.Int32 (System.Int32,System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="18" hits="0" branch="false" />
+                <line number="25" hits="0" branch="false" />
+                <line number="26" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="&lt;F1&gt;g__Recursive|0_3" signature="System.Int32 (System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="21" hits="0" branch="false" />
+                <line number="22" hits="0" branch="false" />
+                <line number="23" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="F1" signature="System.Int32 (System.String)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
+                <line number="30" hits="0" branch="false" />
+                <line number="35" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
+            <line number="18" hits="0" branch="false" />
+            <line number="21" hits="0" branch="false" />
+            <line number="22" hits="0" branch="false" />
+            <line number="23" hits="0" branch="false" />
+            <line number="25" hits="0" branch="false" />
+            <line number="26" hits="0" branch="false" />
+            <line number="30" hits="0" branch="false" />
+            <line number="35" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+&lt;&gt;c" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;F1&gt;b__0_0" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="14" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
+                <line number="14" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="14" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
+            <line number="14" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+&lt;&gt;c__DisplayClass0_0" filename="altcover/Sample5/Class1.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;F1&gt;b__2" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="31" hits="0" branch="false" />
+                <line number="32" hits="0" branch="false" />
+                <line number="33" hits="0" branch="false" />
+                <line number="34" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="31" hits="0" branch="false" />
+            <line number="32" hits="0" branch="false" />
+            <line number="33" hits="0" branch="false" />
+            <line number="34" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+&lt;F2&gt;d__1" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="15" hits="0" branch="false" />
+                <line number="17" hits="0" branch="false" />
+                <line number="17" hits="0" branch="false" />
+                <line number="17" hits="0" branch="false" />
+                <line number="18" hits="0" branch="false" />
+                <line number="19" hits="0" branch="false" />
+                <line number="20" hits="0" branch="false" />
+                <line number="17" hits="0" branch="false" />
+                <line number="21" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="15" hits="0" branch="false" />
+            <line number="17" hits="0" branch="false" />
+            <line number="17" hits="0" branch="false" />
+            <line number="17" hits="0" branch="false" />
+            <line number="17" hits="0" branch="false" />
+            <line number="18" hits="0" branch="false" />
+            <line number="19" hits="0" branch="false" />
+            <line number="20" hits="0" branch="false" />
+            <line number="21" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+&lt;F3&gt;d__2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="System.Void ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="25" hits="0" branch="false" />
+                <line number="27" hits="0" branch="false" />
+                <line number="28" hits="0" branch="false" />
+                <line number="29" hits="0" branch="false" />
+                <line number="30" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="25" hits="0" branch="false" />
+            <line number="27" hits="0" branch="false" />
+            <line number="28" hits="0" branch="false" />
+            <line number="29" hits="0" branch="false" />
+            <line number="30" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+Inner" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;G1&gt;g__InteriorToArray|0_1" signature="T[] &lt;T&gt;(T)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="42" hits="0" branch="false" />
+                <line number="43" hits="0" branch="false" />
+                <line number="44" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="&lt;G1&gt;g__Interior|0_2" signature="System.Int32 (System.Int32,System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="48" hits="0" branch="false" />
+                <line number="55" hits="0" branch="false" />
+                <line number="56" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="&lt;G1&gt;g__Recursive|0_4" signature="System.Int32 (System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="51" hits="0" branch="false" />
+                <line number="52" hits="0" branch="false" />
+                <line number="53" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="G1" signature="System.Int32 (System.String)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="37" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
+                <line number="60" hits="0" branch="false" />
+                <line number="65" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="G1" signature="System.Void (System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="68" hits="0" branch="false" />
+                <line number="69" hits="0" branch="false" />
+                <line number="70" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="G2" signature="System.Void (System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="84" hits="0" branch="false" />
+                <line number="85" hits="0" branch="false" />
+                <line number="86" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="G3" signature="System.Void (System.Int32)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="98" hits="0" branch="false" />
+                <line number="99" hits="0" branch="false" />
+                <line number="100" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="37" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
+            <line number="42" hits="0" branch="false" />
+            <line number="43" hits="0" branch="false" />
+            <line number="44" hits="0" branch="false" />
+            <line number="48" hits="0" branch="false" />
+            <line number="51" hits="0" branch="false" />
+            <line number="52" hits="0" branch="false" />
+            <line number="53" hits="0" branch="false" />
+            <line number="55" hits="0" branch="false" />
+            <line number="56" hits="0" branch="false" />
+            <line number="60" hits="0" branch="false" />
+            <line number="65" hits="0" branch="false" />
+            <line number="68" hits="0" branch="false" />
+            <line number="69" hits="0" branch="false" />
+            <line number="70" hits="0" branch="false" />
+            <line number="84" hits="0" branch="false" />
+            <line number="85" hits="0" branch="false" />
+            <line number="86" hits="0" branch="false" />
+            <line number="98" hits="0" branch="false" />
+            <line number="99" hits="0" branch="false" />
+            <line number="100" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+Inner+&lt;&gt;c" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;G1&gt;b__0_0" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="39" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
+                <line number="39" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="39" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
+            <line number="39" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;G1&gt;b__3" signature="System.Int32 (System.Char)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="61" hits="0" branch="false" />
+                <line number="62" hits="0" branch="false" />
+                <line number="63" hits="0" branch="false" />
+                <line number="64" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="61" hits="0" branch="false" />
+            <line number="62" hits="0" branch="false" />
+            <line number="63" hits="0" branch="false" />
+            <line number="64" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+Inner+&lt;G2&gt;d__2`1" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="74" hits="0" branch="false" />
+                <line number="76" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
+                <line number="78" hits="0" branch="false" />
+                <line number="79" hits="0" branch="false" />
+                <line number="80" hits="0" branch="false" />
+                <line number="77" hits="0" branch="false" />
+                <line number="81" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="74" hits="0" branch="false" />
+            <line number="76" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
+            <line number="77" hits="0" branch="false" />
+            <line number="78" hits="0" branch="false" />
+            <line number="79" hits="0" branch="false" />
+            <line number="80" hits="0" branch="false" />
+            <line number="81" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.Class1+Inner+&lt;G3&gt;d__4" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="System.Void ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="90" hits="0" branch="false" />
+                <line number="92" hits="0" branch="false" />
+                <line number="93" hits="0" branch="false" />
+                <line number="94" hits="0" branch="false" />
+                <line number="95" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="90" hits="0" branch="false" />
+            <line number="92" hits="0" branch="false" />
+            <line number="93" hits="0" branch="false" />
+            <line number="94" hits="0" branch="false" />
+            <line number="95" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.RecursiveSyntheticInvocation`2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator" signature="System.Collections.Generic.IEnumerator`1 ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="148" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.get_Count" signature="System.Int32 ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="144" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.ContainsKey" signature="System.Boolean (Sample5.RecursiveSyntheticInvocation`2+T)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="146" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.TryGetValue" signature="System.Boolean (Sample5.RecursiveSyntheticInvocation`2+T,K&amp;)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="152" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Item" signature="(Sample5.RecursiveSyntheticInvocation`2+T)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="143" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys" signature="System.Collections.Generic.IEnumerable`1 ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="137" hits="0" branch="false" />
+                <line number="137" hits="0" branch="false" />
+                <line number="137" hits="0" branch="false" />
+              </lines>
+            </method>
+            <method name="System.Collections.IEnumerable.GetEnumerator" signature="System.Collections.IEnumerator ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="150" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="137" hits="0" branch="false" />
+            <line number="137" hits="0" branch="false" />
+            <line number="137" hits="0" branch="false" />
+            <line number="143" hits="0" branch="false" />
+            <line number="144" hits="0" branch="false" />
+            <line number="146" hits="0" branch="false" />
+            <line number="148" hits="0" branch="false" />
+            <line number="150" hits="0" branch="false" />
+            <line number="152" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="117" hits="0" branch="false" />
+                <line number="117" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="117" hits="0" branch="false" />
+            <line number="117" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4" filename="altcover/Sample5/Class1a.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="System.Boolean ()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="126" hits="0" branch="false" />
+                <line number="127" hits="0" branch="false" />
+                <line number="128" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="126" hits="0" branch="false" />
+            <line number="127" hits="0" branch="false" />
+            <line number="128" hits="0" branch="false" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

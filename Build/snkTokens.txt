@@ -12,7 +12,7 @@ Genbu Gabiaru
 Habu
 Indori
 Jinmengyo
-Kaban
+Kawauso = river otter // Kaban
 
 https://stu.dev/dotnet-core-3-local-tools/
 bootstrap -- dotnet new tool-manifest

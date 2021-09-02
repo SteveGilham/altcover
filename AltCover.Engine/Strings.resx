@@ -1,0 +1,460 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="i|inputDirectory=" xml:space="preserve">
+    <value>Optional, multiple: A folder containing assemblies to instrument (default: current directory)</value>
+  </data>
+  <data name="o|outputDirectory=" xml:space="preserve">
+    <value>Optional, multiple: A folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if '--inplace' is set).
+See also '--inplace'</value>
+  </data>
+  <data name="k|key=" xml:space="preserve">
+    <value>Optional, multiple: any other strong-name key to use</value>
+  </data>
+  <data name="sn|strongNameKey=" xml:space="preserve">
+    <value>Optional: The default strong naming key to apply to instrumented assemblies (default: None)</value>
+  </data>
+  <data name="r|report=" xml:space="preserve">
+    <value>Optional: The output report template file (default: 'coverage.xml' or 'coverage.json' in the current directory)</value>
+  </data>
+  <data name="f|fileFilter=" xml:space="preserve">
+    <value>Optional, multiple: source file name to exclude from instrumentation</value>
+  </data>
+  <data name="s|assemblyFilter=" xml:space="preserve">
+    <value>Optional, multiple: assembly name to exclude from instrumentation</value>
+  </data>
+  <data name="t|typeFilter=" xml:space="preserve">
+    <value>Optional, multiple: type name to exclude from instrumentation</value>
+  </data>
+  <data name="m|methodFilter=" xml:space="preserve">
+    <value>Optional, multiple: method name to exclude from instrumentation</value>
+  </data>
+  <data name="a|attributeFilter=" xml:space="preserve">
+    <value>Optional, multiple: attribute name to exclude from instrumentation</value>
+  </data>
+  <data name="?|help|h" xml:space="preserve">
+    <value>Prints out the options.</value>
+  </data>
+  <data name="CreateFolder" xml:space="preserve">
+    <value>Creating folder {0}</value>
+  </data>
+  <data name="HelpText" xml:space="preserve">
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/k[ey]=VALUE] [/sn|strongNameKey=VALUE] [/r[eport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t[ypeFilter]=VALUE] [/m[ethodFilter]=VALUE] [/a[ttributeFilter]=VALUE] [/attributetoplevel=VALUE] [/typetoplevel=VALUE] [/methodtoplevel=VALUE] [--l[ocalSource]] [/c[allContext]=VALUE] [/reportFormat=VALUE] [--inplace] [--save] [--zipfile] [--methodpoint] [--single] [--linecover] [--branchcover] [--dropReturnCode] [--sourcelink] [--defer] [--v[isibleBranches]] [/showstatic[=VALUE]] [--showGenerated] [--?|help|h] [-- ] [...]
+or
+AltCover Runner [/r[ecorderDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [/summary|teamcity[=VALUE]] [--?|help|h] [-- ] [...]
+or
+AltCover ImportModule
+or
+AltCover Version
+or, for the global tool only
+AltCover TargetsPath
+
+See https://stevegilham.github.io/altcover/Usage for full details.
+</value>
+  </data>
+  <data name="NotInPlace" xml:space="preserve">
+    <value>From and to directories {0} are identical</value>
+  </data>
+  <data name="UsageError" xml:space="preserve">
+    <value>Error - usage is:</value>
+  </data>
+  <data name="&lt;&gt;" xml:space="preserve">
+    <value>"n/a"</value>
+    <comment>@Invariant</comment>
+  </data>
+  <data name="instrumentingfrom" xml:space="preserve">
+    <value>Instrumenting files from {0}</value>
+  </data>
+  <data name="instrumentingto" xml:space="preserve">
+    <value>Writing files to {0}</value>
+  </data>
+  <data name="reportingto" xml:space="preserve">
+    <value>
+Coverage Report: {0}
+
+</value>
+  </data>
+  <data name="e|assemblyExcludeFilter=" xml:space="preserve">
+    <value>Optional, multiple: assembly which links other instrumented assemblies but for which internal details may be excluded</value>
+  </data>
+  <data name="r|recorderDirectory=" xml:space="preserve">
+    <value>The folder containing the instrumented code to monitor (including the AltCover.Recorder.g.dll generated by previous a use of the .net core AltCover).</value>
+  </data>
+  <data name="x|executable=" xml:space="preserve">
+    <value>The executable to run e.g. dotnet</value>
+  </data>
+  <data name="w|workingDirectory=" xml:space="preserve">
+    <value>Optional: The working directory for the application launch</value>
+  </data>
+  <data name="%d visits recorded" xml:space="preserve">
+    <value>A total of {0:#,#0} visits recorded</value>
+  </data>
+  <data name="Beginning run..." xml:space="preserve">
+    <value>Beginning run...</value>
+  </data>
+  <data name="Coverage statistics flushing took {0:N} seconds" xml:space="preserve">
+    <value>Coverage statistics flushing took {0:N} seconds</value>
+  </data>
+  <data name="Getting results..." xml:space="preserve">
+    <value>Getting results...</value>
+  </data>
+  <data name="orbinder" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="ImportModule" xml:space="preserve">
+    <value>  ImportModule               Prints out the PowerShell script to import the
+                               associated PowerShell module</value>
+  </data>
+  <data name="reportFormat=" xml:space="preserve">
+    <value>Optional: Generate the report in the specified format (Json, NCover or the default OpenCover)</value>
+  </data>
+  <data name="CommandLine" xml:space="preserve">
+    <value>Command line : '{0} {1}'</value>
+  </data>
+  <data name="y|symbolDirectory=" xml:space="preserve">
+    <value>Optional, multiple: Additional directory to search for matching symbols for the assemblies in the input directory</value>
+  </data>
+  <data name="c|callContext=" xml:space="preserve">
+    <value>Optional, multiple: Tracking either times of visits in ticks or designated method calls leading to the visits.
+    A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow
+    A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.
+    Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</value>
+  </data>
+  <data name="DirectoryNotFound" xml:space="preserve">
+    <value>{0} : Directory {1} not found</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>{0} : File {1} not found</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>{0} : cannot be '{1}'</value>
+  </data>
+  <data name="MultiplesNotAllowed" xml:space="preserve">
+    <value>{0} : specify this only once</value>
+  </data>
+  <data name="collect" xml:space="preserve">
+    <value>Optional: Process previously saved raw coverage data, rather than launching a process.</value>
+  </data>
+  <data name="inplace" xml:space="preserve">
+    <value>Optional: Instrument the inputDirectory, rather than the outputDirectory (e.g. for dotnet test)</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Optional: Write raw coverage data to file for later processing</value>
+  </data>
+  <data name="instrumentingin" xml:space="preserve">
+    <value>Instrumenting files in {0}</value>
+  </data>
+  <data name="savingto" xml:space="preserve">
+    <value>Saving files to {0}</value>
+  </data>
+  <data name="executableRequired" xml:space="preserve">
+    <value>Use in 'runner' mode requires exactly one of either '--executable' or '--collect'.</value>
+  </data>
+  <data name="recorderNotFound" xml:space="preserve">
+    <value>Recorder assembly {0} not found in the nominated directory.</value>
+  </data>
+  <data name="recorderRequired" xml:space="preserve">
+    <value>The '--recorderDirectory' value is required.</value>
+  </data>
+  <data name="SaveExists" xml:space="preserve">
+    <value>Output directory for saved files {0} already exists</value>
+  </data>
+  <data name="l|lcovReport=" xml:space="preserve">
+    <value>Optional: File for lcov format version of the collected data</value>
+  </data>
+  <data name="Alternative" xml:space="preserve">
+    <value>==== Alternative Results (includes all methods including those without corresponding source) ====</value>
+  </data>
+  <data name="AltVC" xml:space="preserve">
+    <value>Alternative Visited Classes {0} of {1} ({2})</value>
+  </data>
+  <data name="AltVM" xml:space="preserve">
+    <value>Alternative Visited Methods {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedBranches" xml:space="preserve">
+    <value>Visited Branches {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedClasses" xml:space="preserve">
+    <value>Visited Classes {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedMethods" xml:space="preserve">
+    <value>Visited Methods {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedPoints" xml:space="preserve">
+    <value>Visited Points {0} of {1} ({2})</value>
+  </data>
+  <data name="Collection" xml:space="preserve">
+    <value>
+ERROR *** Collection phase failed
+
+</value>
+  </data>
+  <data name="Instrumentation" xml:space="preserve">
+    <value>
+ERROR *** Instrumentation phase failed
+
+</value>
+  </data>
+  <data name="WrittenTo" xml:space="preserve">
+    <value>
+Details written to {0}</value>
+  </data>
+  <data name="WrittenToEx" xml:space="preserve">
+    <value>Details written to {0}
+If this problem was detected in the pre-test instrumentation stage of `dotnet test`, then the file may have been moved to {1} when the task completes.</value>
+  </data>
+  <data name="instrumenting" xml:space="preserve">
+    <value>   =&gt; {0}</value>
+  </data>
+  <data name="instrumented" xml:space="preserve">
+    <value>    {1}
+                &lt;=  {0}</value>
+  </data>
+  <data name="t|threshold=" xml:space="preserve">
+    <value>Optional: one or more of minimum acceptable statement (S), branch (B) or method (M/AM) coverage percentage (integer, 1 to 100) or maximum acceptable CRAP score (C/AC followed by integer, 1 to 255) e.g. M80C40B50. If the value starts with a number, a leading S is assumed. If any threshold is specified more than once, the last instance is assumed -- so 25S50 counts as S50.
+Zero/absent values are ignored. If a coverage result is below threshold, or the CRAP score is above threshold, the return code of the process is the largest abs(threshold - actual) rounded up to the nearest integer. AM, AC include methods with no source; the default is to ignore such methods.</value>
+  </data>
+  <data name="c|cobertura=" xml:space="preserve">
+    <value>Optional: File for Cobertura format version of the collected data</value>
+  </data>
+  <data name="Statements" xml:space="preserve">
+    <value>Statement coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
+  <data name="o|outputFile=" xml:space="preserve">
+    <value>Optional: write the recorded coverage to this file rather than overwriting the original report file.</value>
+  </data>
+  <data name="resolved" xml:space="preserve">
+    <value>Resolved assembly reference '{0}' as file '{1}'.</value>
+  </data>
+  <data name="d|dependency=" xml:space="preserve">
+    <value>Optional, multiple: assembly path to resolve missing reference.</value>
+  </data>
+  <data name="NotAnAssembly" xml:space="preserve">
+    <value>{0} : File {1} is not an assembly</value>
+  </data>
+  <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
+    <value>{0:#,#0} visits recorded in {1} ({2:#,#0} visits/sec)</value>
+  </data>
+  <data name="AltCover.Version" xml:space="preserve">
+    <value>AltCover version {0}</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>  Version                    Prints out the AltCover build version</value>
+  </data>
+  <data name="Incompatible" xml:space="preserve">
+    <value>Command line options {0} and {1} are mutally exclusive.</value>
+  </data>
+  <data name="single" xml:space="preserve">
+    <value>Optional: only record the first hit at any location, or first hit for each context if --callContext is operating.</value>
+  </data>
+  <data name="linecover" xml:space="preserve">
+    <value>Optional: Do not record branch coverage.  Ignored for the --reportFormat=NCover option.
+    Incompatible with --branchcover.</value>
+  </data>
+  <data name="branchcover" xml:space="preserve">
+    <value>Optional: Do not record line coverage.  Ignored for the --reportFormat=NCover option.
+    Incompatible with --linecover.</value>
+  </data>
+  <data name="p|pathFilter=" xml:space="preserve">
+    <value>Optional, multiple: source file path to exclude from instrumentation</value>
+  </data>
+  <data name="dropReturnCode" xml:space="preserve">
+    <value>Optional: Do not report any non-zero return code from a launched process.</value>
+  </data>
+  <data name="sourcelink" xml:space="preserve">
+    <value>Optional: Display sourcelink URLs rather than file paths if present.</value>
+  </data>
+  <data name="summary|teamcity:" xml:space="preserve">
+    <value>Optional: Defines the format of any summary; an optional string value consisting of the tokens : 
+'N' = No summary at all, regardless of other values
+'B' = TeamCity format, with branches as Block items
+'R' = TeamCity format, with branches as b​Ranch items
+'O' = Classic OpenCover format
+'C' = Change Risk Anti-Pattern score
+'+' is the same as "OC" (special case - "+" by itself is the same as 'BOC')
+If the option is present, but has no value, this is the same as 'B'
+If the option is not present, then the default is 'OC'.</value>
+  </data>
+  <data name="defer" xml:space="preserve">
+    <value>Optional, defers writing runner-mode coverage data until process exit.</value>
+  </data>
+  <data name="DuplicatesNotAllowed" xml:space="preserve">
+    <value>{0} was already specified for {1}</value>
+  </data>
+  <data name="l|localSource" xml:space="preserve">
+    <value>Don't instrument code for which the source file is not present.</value>
+  </data>
+  <data name="v|visibleBranches" xml:space="preserve">
+    <value>Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies.</value>
+  </data>
+  <data name="showstatic:" xml:space="preserve">
+    <value>Optional: Instrument and show code that is by default skipped as trivial.  --showstatic:- is equivalent to omitting the parameter; --showstatic or --showstatic:+ sets the unvisited count to a negative value interpreted by the visualizer (but treated as zero by ReportGenerator) ; --showstatic:++ sets the unvisited count to zero.</value>
+  </data>
+  <data name="showGenerated" xml:space="preserve">
+    <value>Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited</value>
+  </data>
+  <data name="zipfile" xml:space="preserve">
+    <value>Optional: Emit the coverage report inside a zip archive.</value>
+  </data>
+  <data name="methodpoint" xml:space="preserve">
+    <value>Optional: record only whether a method has been visited or not.  Overrides the --linecover and --branchcover options.</value>
+  </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Branch coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
+  <data name="Crap" xml:space="preserve">
+    <value>Maximum CRAP score achieved is {0} above the threshold of {1}.</value>
+  </data>
+  <data name="Methods" xml:space="preserve">
+    <value>Method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
+  <data name="AltCrap" xml:space="preserve">
+    <value>Alternative maximum CRAP score achieved is {0} above the threshold of {1}.</value>
+  </data>
+  <data name="AltMethods" xml:space="preserve">
+    <value>Alternative method coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
+  <data name="attributetoplevel=" xml:space="preserve">
+    <value>Optional, multiple: Types marked with an attribute of a type that matches the regex are considered top-level, and are not excluded from coverage on the basis of any type which textually encloses them.
+</value>
+  </data>
+  <data name="methodtoplevel=" xml:space="preserve">
+    <value>Optional, multiple: Methods with a name that matches the regex are considered top-level, and are not excluded from coverage on the basis of any method which textually encloses them.</value>
+  </data>
+  <data name="typetoplevel=" xml:space="preserve">
+    <value>Optional, multiple: Types with a name that matches the regex are considered top-level, and are not excluded from coverage on the basis of any type which textually encloses them.</value>
+  </data>
+  <data name="orglobal" xml:space="preserve">
+    <value>or, for the global tool only</value>
+  </data>
+  <data name="TargetsPath" xml:space="preserve">
+    <value>  TargetsPath                Prints out the path to the 'altcover.global.targets' file
+                               (as the tool cannot be 'dotnet add'ed to the project).
+                               The 'altcover.global.props' file is present in the same directory</value>
+  </data>
+  <data name="altMaxCrap" xml:space="preserve">
+    <value>Alternative maximum CRAP score {0}</value>
+  </data>
+  <data name="maxCrap" xml:space="preserve">
+    <value>Maximum CRAP score {0}</value>
+  </data>
+  <data name="q" xml:space="preserve">
+    <value>Optional, multiple: Quiet mode -- once to switch off informational messages, twice to switch off warnings as well, three (or more) times to switch off all messages.</value>
+  </data>
+</root>

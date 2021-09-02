@@ -138,7 +138,7 @@ is out of date with respect to source file
     <value>Select font for source display</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
-    <value>xml files (*.xml)%xml|All files (*.*)%*</value>
+    <value>xml files (*.xml)%xml|json files (*.json)%json|All files (*.*)%*</value>
   </data>
   <data name="MissingSourceFile" xml:space="preserve">
     <value>The file

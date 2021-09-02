@@ -1,0 +1,15 @@
+Making the GTK# reference assemblies
+
+1) Copy assemblies from GAC into another location
+2) Decompile all
+3) Ambiguous Context types are Cairo.Context
+4) Add to each project first property block
+
+    <Deterministic>true</Deterministic>
+    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>    
+    <AssemblyOriginatorKeyFile>path\to\gtk-sharp.snk</AssemblyOriginatorKeyFile>
+    
+and <Private>False</Private> to all the referernces
+5) Rebuild all @ release and copy here
+    
+
