@@ -35,7 +35,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.TreeExpand = makeIcon "ExpandChevronRight_16x"
   member self.TreeCollapse = makeIcon "CollapseChevronDown_16x"
   member self.MRU = makeIcon "ExpandChevronDown_16x"
-  member self.Source = makeIcon "TextFile_16x.png"
+  member self.Source = makeIcon "TextFile_16x"
 
   member self.MRUInactive =
     makeIcon "ExpandChevronDown_lightGray_16x"

@@ -107,6 +107,29 @@ module CoverageFileTree =
 
         environment.Map newrow x.Navigator
 
+        // multi-source??
+        let sources =
+          x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
+          |> Seq.cast<XPathNavigator>
+          |> Seq.map
+           (fun s -> s.GetAttribute("document", String.Empty), s)
+          |> Seq.distinctBy fst
+          |> Seq.sortBy (fst >> Path.GetFileName) // Source link TODO
+          |> Seq.toList
+
+        if sources |> List.tail |> List.isEmpty |> not
+        then
+          sources
+          |> List.iter (fun (d,n) ->
+              let srow =
+                environment.AddNode
+                  newrow
+                  environment.Icons.Source
+                  (Path.GetFileName d)
+              environment.Map srow n
+          )
+        ()
+
       if special <> MethodType.Normal then
         let newrow =
           environment.AddNode
