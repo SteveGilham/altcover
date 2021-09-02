@@ -66,6 +66,7 @@
     <EmbeddedResource Include="StatusInformation_32x.png" />
     <EmbeddedResource Include="StatusWarning_16x.png" />
     <EmbeddedResource Include="StatusWarning_32x.png" />
+    <EmbeddedResource Include="TextFile_16x.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VSTAAbout_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />
