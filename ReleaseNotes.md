@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.2.8xx (Habu series release 7)
+# 8.2.822 (Habu series release 6a)
 * [VISUALIZER] Support OpenCover's output from C++/CLI assemblies compiled `/Zi` (line information only, zero column values)
   * account for (& simplify) the C++/CLI attribute decorations in method names
   * allow for (& simplify) `gcroot<type::with::Cpp::namespacing ^>` types in method names
