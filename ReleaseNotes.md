@@ -4,6 +4,9 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 8.2.8xx (Habu series release 7)
 * [VISUALIZER] Support OpenCover's output from C++/CLI assemblies compiled `/Zi` (line information only, zero column values)
+  * account for (& simplify) the C++/CLI attribute decorations in method names
+  * allow for (& simplify) `gcroot<type::with::Cpp::namespacing ^>` types in method names
+  * allow source file selection for methods with code inlined from multiple source files
 
 # 8.2.821 (Habu series release 6)
 * Support deterministic builds `/p:ContinuousIntegrationBuild=true`, with or without `--sourcelink`/`/p:AltCoverSourceLink=true`.  Note that assemblies created by deterministic builds will be excluded by `-l`/`/p:AltCoverLocalSource=true`.
