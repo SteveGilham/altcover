@@ -132,11 +132,13 @@ module CoverageFileTree =
           |> Seq.sortBy (fst >> upcase)
           |> Seq.toList
 
-        // If multi-source (has inlines), add the source file nodes to the hittable map
-        if
-          sources |> List.isEmpty |> not &&
-          sources |> List.tail |> List.isEmpty |> not
-        then
+        match sources with
+        | []
+        | [_] ->
+          // most of the time, go here and just add the method
+          environment.Map newrow x.Navigator
+        | _ ->
+          // If multi-source (has inlines), add the source file nodes to the hittable map
           sources
           |> List.iter (fun (d,n) ->
               let srow =
@@ -146,9 +148,6 @@ module CoverageFileTree =
                   d
               environment.Map srow n
           )
-        else
-          // most of the time, go here and just add the method
-          environment.Map newrow x.Navigator
 
       if special <> MethodType.Normal then
         let newrow =
