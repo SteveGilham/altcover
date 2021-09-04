@@ -13,14 +13,14 @@ open System.Reflection
 type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   let makeIcon name =
     lazy
-     try
+     //try
       (toIcon (
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceStream("AltCover.UICommon." + name + ".png")
       ))
-     with
-     | x -> System.InvalidOperationException(name, x) |> raise
+     //with
+     //| x -> System.InvalidOperationException(name, x) |> raise
 
   member self.Xml = makeIcon "XMLFile_16x"
   member self.Assembly = makeIcon "Assembly_16x"
@@ -31,10 +31,10 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Class = makeIcon "Class_16x"
   member self.Property = makeIcon "Property_16x"
   member self.Method = makeIcon "Method_16x"
-  member self.Branched = makeIcon "Branch_12x_16x_grn" // maybe
-  member self.Branch = makeIcon "Branch_12x_16x_ylw" // maybe + Branch_12x_16x
-  member self.RedBranch = makeIcon "Branch_12x_16x_red" // maybe
-  member self.Blank = makeIcon "Blank_12x_16x" // maybe
+  member self.Branched = makeIcon "Branch_12x_16x_grn" // TODO
+  member self.Branch = makeIcon "Branch_12x_16x_ylw" // TODO as Branch_12x_16x => Branch_16x
+  member self.RedBranch = makeIcon "Branch_12x_16x_red" // TODO
+  member self.Blank = makeIcon "Blank_12x_16x" // TODO
   member self.TreeExpand = makeIcon "ExpandRight_16x"
   member self.TreeCollapse = makeIcon "ExpandDown_16x" // "CollapseChevronDown_16x" // TODO
   member self.MRU = makeIcon "ExpandDown_16x"
