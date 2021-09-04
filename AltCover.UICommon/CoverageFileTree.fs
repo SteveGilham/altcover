@@ -133,7 +133,9 @@ module CoverageFileTree =
           |> Seq.toList
 
         // If multi-source (has inlines), add the source file nodes to the hittable map
-        if sources |> List.tail |> List.isEmpty |> not
+        if
+          sources |> List.isEmpty |> not &&
+          sources |> List.tail |> List.isEmpty |> not
         then
           sources
           |> List.iter (fun (d,n) ->
