@@ -17,7 +17,7 @@
         <MenuItem Name="Open">
           <MenuItem.Header>
             <StackPanel>
-              <Image Source="resm:AltCover.UICommon.Open_6529.png?assembly=AltCover.UICommon"  Stretch="None" />
+              <Image Source="resm:AltCover.UICommon.OpenFile_16x.png?assembly=AltCover.UICommon"  Stretch="None" />
               <AccessText Name="OpenText" Text="" />
             </StackPanel>
           </MenuItem.Header>
@@ -25,7 +25,7 @@
         <MenuItem Name="List" IsEnabled="False">
           <MenuItem.Header>
             <StackPanel>
-              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandChevronDown_lightGray_16x.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
+              <Image Name="ListImage" Source="resm:AltCover.UICommon.ExpandDown_lightGray_16x.png?assembly=AltCover.UICommon" Stretch="None" Margin="0,8" />
             </StackPanel>
           </MenuItem.Header>
           <MenuItem Header="0"></MenuItem>

@@ -36,7 +36,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.RedBranch = makeIcon "Branch_12x_16x_red" // maybe
   member self.Blank = makeIcon "Blank_12x_16x" // maybe
   member self.TreeExpand = makeIcon "ExpandRight_16x"
-  member self.TreeCollapse = makeIcon "CollapseChevronDown_16x" // TODO
+  member self.TreeCollapse = makeIcon "ExpandDown_16x" // "CollapseChevronDown_16x" // TODO
   member self.MRU = makeIcon "ExpandDown_16x"
   member self.Source = makeIcon "TextFile_16x"
 
@@ -45,8 +45,8 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
 
   member self.RefreshActive = makeIcon "Refresh_16x"
   member self.Refresh = makeIcon "Refresh_greyThin_16x"
-  member self.Info = makeIcon "StatusInformation_32x" // TODO
-  member self.Warn = makeIcon "StatusWarning_32x" // TODO
+  member self.Info = makeIcon "StatusInformation_32x" // Unchanged @ 2019
+  member self.Warn = makeIcon "StatusWarning_32x" // Unchanged @ 2019
   member self.Error = makeIcon "StatusCriticalError_32x" // TODO
   member self.Open = makeIcon "OpenFile_16x"
   member self.Font = makeIcon "Font_16x"
