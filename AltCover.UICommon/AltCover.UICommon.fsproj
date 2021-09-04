@@ -30,29 +30,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assembly_6212.png" />
+    <EmbeddedResource Include="Assembly_16x.png" />
     <EmbeddedResource Include="Blank_12x_16x.png" />
     <EmbeddedResource Include="Branch_12x_16x_red.png" />
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
-    <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="Class_16x.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\Cobertura.xsd" Link="Cobertura.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\CoberturaToNCoverEx.xsl" Link="CoberturaToNCoverEx.xsl" />
     <EmbeddedResource Include="CollapseChevronDown_16x.png" />
     <EmbeddedResource Include="config.xsd" />
-    <EmbeddedResource Include="Effects_16x.png" />
+    <EmbeddedResource Include="Effect_16x.png" />
     <EmbeddedResource Include="Event_16x.png" />
     <EmbeddedResource Include="Exit_16x.png" />
-    <EmbeddedResource Include="ExpandChevronDown_16x.png" />
-    <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
-    <EmbeddedResource Include="ExpandChevronRight_16x.png" />
+    <EmbeddedResource Include="ExpandDown_16x.png" />
+    <EmbeddedResource Include="ExpandDown_lightGray_16x.png" />
+    <EmbeddedResource Include="ExpandRight_16x.png" />
     <EmbeddedResource Include="Font_16x.png" />
     <EmbeddedResource Include="logo.png" />
-    <EmbeddedResource Include="method_16xLG.png" />
+    <EmbeddedResource Include="Method_16x.png" />
     <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCover.xsd" Link="NCover.xsd" />
-    <EmbeddedResource Include="Open_6529.png" />
+    <EmbeddedResource Include="OpenFile_16x.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
     <EmbeddedResource Include="Property_16x.png" />
