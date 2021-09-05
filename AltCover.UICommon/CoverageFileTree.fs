@@ -208,18 +208,21 @@ module CoverageFileTree =
       let icon =
         if group |> snd |> Seq.isEmpty then
           environment.Icons.Module
-        else if group
-                |> snd
-                |> Seq.exists
-                     (fun key ->
-                       let d = key.Name |> DisplayName
-
-                       (d.StartsWith(".", StringComparison.Ordinal)
-                        || d.Equals("Invoke"))
-                       |> not) then
-          environment.Icons.Class
         else
-          environment.Icons.Effect
+          let names = group
+                      |> snd
+                      |> Seq.map
+                          (fun key -> key.Name |> DisplayName)
+                      |> Seq.filter (fun d -> d.[0] <> '.')
+                      |> Seq.toList
+
+          if names |> List.isEmpty ||
+             names |> List.exists
+                     (fun d -> d.Equals("Invoke") |> not )
+          then
+            environment.Icons.Class
+          else
+            environment.Icons.Effect
 
       let newrow = environment.AddNode theModel icon name
 
