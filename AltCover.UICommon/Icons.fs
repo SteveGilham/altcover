@@ -31,10 +31,11 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Class = makeIcon "Class_16x"
   member self.Property = makeIcon "Property_16x"
   member self.Method = makeIcon "Method_16x"
-  member self.Branched = makeIcon "Branch_12x_16x_grn" // TODO
-  member self.Branch = makeIcon "Branch_12x_16x_ylw" // TODO as Branch_12x_16x => Branch_16x
-  member self.RedBranch = makeIcon "Branch_12x_16x_red" // TODO
-  member self.Blank = makeIcon "Blank_12x_16x" // TODO
+  // actually 16x16
+  member self.Branched = makeIcon "Branch_12x_16x_grn"
+  member self.Branch = makeIcon "Branch_12x_16x_ylw"
+  member self.RedBranch = makeIcon "Branch_12x_16x_red"
+  member self.Blank = makeIcon "Blank_12x_16x"
   member self.TreeExpand = makeIcon "ExpandRight_16x"
   member self.TreeCollapse = makeIcon "ExpandDown_16x"
   member self.MRU = makeIcon "ExpandDown_16x"
