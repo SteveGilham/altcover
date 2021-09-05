@@ -3223,16 +3223,16 @@ module AltCoverTests =
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
 <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
 <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"true\" instrumented=\"false\" >
-<seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"33\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"89\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"62\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"11\" column=\"3\"  endline=\"11\" endcolumn=\"4\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"12\" column=\"4\" endline=\"12\" endcolumn=\"27\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"13\" column=\"4\" endline=\"13\" endcolumn=\"24\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"14\" column=\"4\" endline=\"14\" endcolumn=\"5\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"15\" column=\"5\" endline=\"15\" endcolumn=\"77\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"16\" column=\"4\" endline=\"16\" endcolumn=\"5\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"18\" column=\"4\" endline=\"18\" endcolumn=\"5\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"19\" column=\"5\" endline=\"19\" endcolumn=\"50\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"20\" column=\"4\" endline=\"20\" endcolumn=\"5\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"21\" column=\"3\"  endline=\"21\" endcolumn=\"4\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 </method>
 </module>
 </coverage>"

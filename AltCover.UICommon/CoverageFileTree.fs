@@ -132,9 +132,13 @@ module CoverageFileTree =
           |> Seq.sortBy (fst >> upcase)
           |> Seq.toList
 
-        // If multi-source (has inlines), add the source file nodes to the hittable map
-        if sources |> List.tail |> List.isEmpty |> not
-        then
+        match sources with
+        | []
+        | [_] ->
+          // most of the time, go here and just add the method
+          environment.Map newrow x.Navigator
+        | _ ->
+          // If multi-source (has inlines), add the source file nodes to the hittable map
           sources
           |> List.iter (fun (d,n) ->
               let srow =
@@ -144,9 +148,6 @@ module CoverageFileTree =
                   d
               environment.Map srow n
           )
-        else
-          // most of the time, go here and just add the method
-          environment.Map newrow x.Navigator
 
       if special <> MethodType.Normal then
         let newrow =
@@ -207,18 +208,21 @@ module CoverageFileTree =
       let icon =
         if group |> snd |> Seq.isEmpty then
           environment.Icons.Module
-        else if group
-                |> snd
-                |> Seq.exists
-                     (fun key ->
-                       let d = key.Name |> DisplayName
-
-                       (d.StartsWith(".", StringComparison.Ordinal)
-                        || d.Equals("Invoke"))
-                       |> not) then
-          environment.Icons.Class
         else
-          environment.Icons.Effect
+          let names = group
+                      |> snd
+                      |> Seq.map
+                          (fun key -> key.Name |> DisplayName)
+                      |> Seq.filter (fun d -> d.[0] <> '.')
+                      |> Seq.toList
+
+          if names |> List.isEmpty ||
+             names |> List.exists
+                     (fun d -> d.Equals("Invoke") |> not )
+          then
+            environment.Icons.Class
+          else
+            environment.Icons.Effect
 
       let newrow = environment.AddNode theModel icon name
 

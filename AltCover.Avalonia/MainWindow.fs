@@ -265,7 +265,7 @@ type MainWindow() as this =
            let showSource (info: Source) (line: int) =
              try
                this.UpdateTextFonts text text2
-               text.Text <- File.ReadAllText info.FullName
+               text.Text <- (File.ReadAllText info.FullName).Replace('\t', '\u2192')
 
                let textLines =
                  text.FormattedText.GetLines() |> Seq.toList

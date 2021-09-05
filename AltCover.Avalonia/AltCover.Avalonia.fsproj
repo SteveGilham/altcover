@@ -36,7 +36,7 @@
 
   <ItemGroup>
     <None Include="nuget.config" />
-    <EmbeddedResource Include="AltCove.MainWindow.xaml">
+    <EmbeddedResource Include="AltCover.MainWindow.xaml">
       <LogicalName>AltCover.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
 
