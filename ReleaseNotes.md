@@ -1,6 +1,13 @@
-Q. Never mind the fluff -- how do I get started?
+﻿Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
+
+# 8.2.823 (Habu series release 6b)
+* [VISUALIZER] Fixes and updates
+  * [REGRESSION] Fix where multiple source file support broke methods with no source file
+  * [BUGFIX] Fix where some types were erroneously shown as functions (ƒₓ)
+  * Allow for TAB characters (which occupy 1 column only in the .PDB), and display → rather than ◻ in the global tool (TAB expands to 8 spaces in the GTK# build)
+  * Update icons to VS2019 from VS2017 (except where taken from GTK in the GTK# build), which means slightly more colours in the tree view, and a small change to the branch indicator.
 
 # 8.2.822 (Habu series release 6a)
 * [VISUALIZER] Support OpenCover's output from C++/CLI assemblies compiled `/Zi` (line information only, zero column values)
