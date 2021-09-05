@@ -261,20 +261,20 @@ Describe "ConvertTo-NCover" {
   <module moduleId="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F" name="Sample1.exe" assembly="Sample1" assemblyIdentity="Sample1">
     <method excluded="false" instrumented="true" name=".ctor" class="TouchTest.Program" fullname="System.Void TouchTest.Program::.ctor()" />
     <method excluded="false" instrumented="true" name="Main" class="TouchTest.Program" fullname="System.Void TouchTest.Program::Main(System.String[])">
-      <seqpnt visitcount="1" line="11" column="9" endline="11" endcolumn="10" offset="0" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="12" column="32" endline="12" endcolumn="33" offset="1" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="13" column="13" endline="13" endcolumn="14" offset="7" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="13" column="21" endline="13" endcolumn="22" offset="9" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="14" column="13" endline="14" endcolumn="14" offset="24" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="15" column="17" endline="15" endcolumn="18" offset="25" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="15" column="72" endline="15" endcolumn="73" offset="36" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="15" column="25" endline="15" endcolumn="26" offset="46" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="16" column="13" endline="16" endcolumn="14" offset="51" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="18" column="13" endline="18" endcolumn="14" offset="57" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="19" column="17" endline="19" endcolumn="18" offset="58" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="19" column="25" endline="19" endcolumn="26" offset="63" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="0" line="20" column="13" endline="20" endcolumn="14" offset="68" excluded="false" document="altcover/Sample1/Program.cs" />
-      <seqpnt visitcount="1" line="21" column="9" endline="21" endcolumn="10" offset="69" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="11" column="3" endline="11" endcolumn="4" offset="0" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="12" column="23" endline="12" endcolumn="24" offset="1" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="13" column="4" endline="13" endcolumn="5" offset="7" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="13" column="12" endline="13" endcolumn="13" offset="9" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="14" column="4" endline="14" endcolumn="5" offset="24" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="5" endline="15" endcolumn="6" offset="25" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="60" endline="15" endcolumn="61" offset="36" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="13" endline="15" endcolumn="14" offset="46" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="16" column="4" endline="16" endcolumn="5" offset="51" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="18" column="4" endline="18" endcolumn="5" offset="57" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="19" column="5" endline="19" endcolumn="6" offset="58" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="19" column="13" endline="19" endcolumn="14" offset="63" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="20" column="4" endline="20" endcolumn="5" offset="68" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="21" column="3" endline="21" endcolumn="4" offset="69" excluded="false" document="altcover/Sample1/Program.cs" />
     </method>
   </module>
 </coverage>
