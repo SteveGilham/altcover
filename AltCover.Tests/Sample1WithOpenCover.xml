@@ -48,7 +48,7 @@
                 <BranchPoint vc="1" uspid="11" ordinal="0" offset="23" sl="13" path="0" offsetend="25" fileid="1" />
                 <BranchPoint vc="0" uspid="12" ordinal="1" offset="23" sl="13" path="1" offsetend="56" fileid="1" />
               </BranchPoints>
-              <MethodPoint xsi:type="SequencePoint" vc="1" uspid="1" ordinal="0" offset="0" sl="11" sc="9" el="11" ec="10" bec="0" bev="0" fileid="1" />
+              <MethodPoint xsi:type="SequencePoint" vc="1" uspid="1" ordinal="0" offset="0" sl="11" sc="3" el="11" ec="4" bec="0" bev="0" fileid="1" />
             </Method>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
               <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="2" maxCrapScore="2" />
