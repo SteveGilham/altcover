@@ -38,7 +38,6 @@
     <EmbeddedResource Include="Class_16x.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\Cobertura.xsd" Link="Cobertura.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\CoberturaToNCoverEx.xsl" Link="CoberturaToNCoverEx.xsl" />
-    <EmbeddedResource Include="CollapseChevronDown_16x.png" />
     <EmbeddedResource Include="config.xsd" />
     <EmbeddedResource Include="Effect_16x.png" />
     <EmbeddedResource Include="Event_16x.png" />
