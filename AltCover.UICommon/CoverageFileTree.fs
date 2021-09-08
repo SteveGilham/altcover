@@ -99,12 +99,6 @@ module CoverageFileTree =
           | -1 -> 0
           | o -> o + 2
 
-        let newrow =
-          environment.AddNode
-            mmodel
-            environment.Icons.Method
-            (displayname.Substring(offset))
-
         // multi-source??
         let upcase (s:string) = s.ToUpperInvariant()
         let getFileName (s:string) =
@@ -116,9 +110,10 @@ module CoverageFileTree =
                 StringComparison.Ordinal
               )
           then
-            System.Uri(s).LocalPath |> Path.GetFileName
+            (System.Uri(s).LocalPath |> Path.GetFileName, (true, environment.Icons.SourceLink))
           else
-            Path.GetFileName s
+            let x = File.Exists s
+            (Path.GetFileName s, (x, if x then environment.Icons.Source else environment.Icons.NoSource))
 
         let sources =
           x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
@@ -129,24 +124,48 @@ module CoverageFileTree =
               (d, (d |> getFileName, s)))
           |> Seq.distinctBy fst // allows for same name, different path
           |> Seq.map snd
-          |> Seq.sortBy (fst >> upcase)
+          |> Seq.sortBy (fst >> fst >> upcase)
           |> Seq.toList
 
+        let hasSource = sources
+                        |> List.exists (fst >> snd >> fst)
+        let icon = if hasSource
+                   then environment.Icons.Method
+                   else environment.Icons.MethodMissingSource
+
         match sources with
-        | []
+        | [] ->
+          environment.AddNode
+            mmodel
+            environment.Icons.MethodNoSource
+            (displayname.Substring(offset)) |> ignore
+
         | [_] ->
-          // most of the time, go here and just add the method
-          environment.Map newrow x.Navigator
+          let newrow =
+            environment.AddNode
+              mmodel
+              icon
+              (displayname.Substring(offset))
+
+          if hasSource
+          then environment.Map newrow x.Navigator
+
         | _ ->
           // If multi-source (has inlines), add the source file nodes to the hittable map
+          let newrow =
+            environment.AddNode
+              mmodel
+              icon
+              (displayname.Substring(offset))
           sources
           |> List.iter (fun (d,n) ->
+              let (map, icon) = snd d
               let srow =
                 environment.AddNode
                   newrow
-                  environment.Icons.Source
-                  d
-              environment.Map srow n
+                  icon
+                  (fst d)
+              if map then environment.Map srow n
           )
 
       if special <> MethodType.Normal then
