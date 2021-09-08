@@ -31,6 +31,8 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.Class = makeIcon "Class_16x"
   member self.Property = makeIcon "Property_16x"
   member self.Method = makeIcon "Method_16x"
+  member self.MethodMissingSource = makeIcon "MethodWarning_16x"
+  member self.MethodNoSource = makeIcon "SourcelessMethod_16x"
   // actually 16x16
   member self.Branched = makeIcon "Branch_12x_16x_grn"
   member self.Branch = makeIcon "Branch_12x_16x_ylw"
@@ -40,6 +42,8 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.TreeCollapse = makeIcon "ExpandDown_16x"
   member self.MRU = makeIcon "ExpandDown_16x"
   member self.Source = makeIcon "TextFile_16x"
+  member self.SourceLink = makeIcon "TextFileWeb_16x"
+  member self.NoSource = makeIcon "TextFileMissing_16x"
 
   member self.MRUInactive =
     makeIcon "ExpandDown_lightGray_16x"
