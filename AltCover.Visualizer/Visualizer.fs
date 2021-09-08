@@ -311,19 +311,33 @@ module private Gui =
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
+            handler.classStructureTree.Data.Values
+            |> Seq.cast<Tooltip>
+            |> Seq.iter (fun t -> handler.classStructureTree.SetTooltipRow(t, null)
+                                  t.Dispose())
+            handler.classStructureTree.Data.Clear()
 
             let topRow =
               model.AppendValues(name, icons.Xml.Force())
 
             { Model = model; Row = topRow }
         AddNode =
-          fun context icon name ->
-            { context with
-                Row =
-                  context.Model.AppendValues(
+          fun context icon name (tip : string option) ->
+            let newrow =
+              context.Model.AppendValues(
                     context.Row,
-                    [| name :> obj; icon.Force() :> obj |]
-                  ) }
+                    [| name :> obj; icon.Force() :> obj |])
+
+            // TODO tooltip magic
+            tip
+            |> Option.iter ignore
+                           //(fun text -> let t = new Tooltip()
+                           //             t.Text <- text
+                           //             let path = context.Model.GetPath(newrow)
+                           //             handler.classStructureTree.Data.Add(path, t)
+                           //             handler.classStructureTree.SetTooltipRow(t, path))
+            { context with
+                Row = newrow }
         Map = fun context xpath -> mappings.Add(context.Model.GetPath context.Row, xpath) }
 
     async { CoverageFileTree.DoSelected environment index }

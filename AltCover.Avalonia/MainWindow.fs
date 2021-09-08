@@ -591,12 +591,12 @@ type MainWindow() as this =
                        model.Add row
                        row }
                AddNode =
-                 fun context icon name ->
+                 fun context icon name (tip : string option) ->
+                   let newrow = makeNewRow name icon
+                   (context.Row.Items :?> List<TreeViewItem>).Add newrow
+                   // TODO tooltip magic
                    { context with
-                       Row =
-                         let row = makeNewRow name icon
-                         (context.Row.Items :?> List<TreeViewItem>).Add row
-                         row }
+                       Row = newrow }
                Map = this.PrepareDoubleTap }
 
            Dispatcher.UIThread.Post

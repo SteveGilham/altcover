@@ -255,4 +255,7 @@ THE SOFTWARE.</value>
   <data name="LoadInfo" xml:space="preserve">
     <value>Note</value>
   </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>File not found : {0}</value>
+  </data>
 </root>

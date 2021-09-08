@@ -24,10 +24,18 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     UpdateMRUFailure: FileInfo -> unit
     UpdateUISuccess: FileInfo -> unit
     SetXmlNode: String -> CoverageTreeContext<'TModel, 'TRow>
-    AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
+    AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
 module CoverageFileTree =
+
+  type SourceFile<'TIcon> = {
+    FullName : string
+    FileName : string
+    X : XPathNavigator
+    Icon : Lazy<'TIcon>
+    Exists : bool
+  }
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
             "ReviewSelfAssignmentRule",
@@ -121,14 +129,20 @@ module CoverageFileTree =
           |> Seq.map
            (fun s ->
               let d = s.GetAttribute("document", String.Empty)
-              (d, (d |> getFileName, s)))
-          |> Seq.distinctBy fst // allows for same name, different path
-          |> Seq.map snd
-          |> Seq.sortBy (fst >> fst >> upcase)
+              let n, (e, i) = d |> getFileName
+              {
+                FullName = d
+                FileName = n
+                X = s
+                Icon = i
+                Exists = e
+              })
+          |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
+          |> Seq.sortBy (fun s -> s.FileName |> upcase)
           |> Seq.toList
 
         let hasSource = sources
-                        |> List.exists (fst >> snd >> fst)
+                        |> List.exists (fun s -> s.Exists)
         let icon = if hasSource
                    then environment.Icons.Method
                    else environment.Icons.MethodMissingSource
@@ -138,14 +152,19 @@ module CoverageFileTree =
           environment.AddNode
             mmodel
             environment.Icons.MethodNoSource
-            (displayname.Substring(offset)) |> ignore
+            (displayname.Substring(offset))
+            None |> ignore
 
-        | [_] ->
+        | [s] ->
+
           let newrow =
             environment.AddNode
               mmodel
               icon
               (displayname.Substring(offset))
+              (if hasSource
+               then None
+               else Some <| Resource.Format("FileNotFound", [| s.FullName |]))
 
           if hasSource
           then environment.Map newrow x.Navigator
@@ -157,15 +176,18 @@ module CoverageFileTree =
               mmodel
               icon
               (displayname.Substring(offset))
+              None
           sources
-          |> List.iter (fun (d,n) ->
-              let (map, icon) = snd d
+          |> List.iter (fun s ->
               let srow =
                 environment.AddNode
                   newrow
                   icon
-                  (fst d)
-              if map then environment.Map srow n
+                  s.FileName
+                  (if s.Exists
+                   then None
+                   else Some <| Resource.Format("FileNotFound", [| s.FullName |]))
+              if s.Exists then environment.Map srow s.X
           )
 
       if special <> MethodType.Normal then
@@ -177,6 +199,7 @@ module CoverageFileTree =
              else
                environment.Icons.Event)
             display
+            None
 
         keys
         |> Seq.sortBy (fun key -> key.Name |> DisplayName)
@@ -243,7 +266,7 @@ module CoverageFileTree =
           else
             environment.Icons.Effect
 
-      let newrow = environment.AddNode theModel icon name
+      let newrow = environment.AddNode theModel icon name None
 
       populateClassNode environment newrow (snd group)
       newrow
@@ -320,7 +343,7 @@ module CoverageFileTree =
       let name = fst group
 
       let newrow =
-        environment.AddNode theModel environment.Icons.Namespace name
+        environment.AddNode theModel environment.Icons.Namespace name None
 
       populateNamespaceNode environment newrow (snd group)
 
@@ -392,7 +415,7 @@ module CoverageFileTree =
           let name = snd group
 
           let newModel =
-            environment.AddNode theModel environment.Icons.Assembly name
+            environment.AddNode theModel environment.Icons.Assembly name None
 
           populateAssemblyNode environment newModel (fst group)
 
