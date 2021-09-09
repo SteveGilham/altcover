@@ -307,7 +307,7 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name ->
+          fun name icon ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
@@ -318,7 +318,7 @@ module private Gui =
             handler.classStructureTree.Data.Clear()
 
             let topRow =
-              model.AppendValues(name, icons.Xml.Force())
+              model.AppendValues(name, icon.Force())
 
             { Model = model; Row = topRow }
         AddNode =

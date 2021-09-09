@@ -48,6 +48,7 @@
     <EmbeddedResource Include="Font_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Method_16x.png" />
+    <EmbeddedResource Include="MethodDated_16x.png" />
     <EmbeddedResource Include="MethodWarning_16x.png" />
     <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
@@ -58,6 +59,9 @@
     <EmbeddedResource Include="Property_16x.png" />
     <EmbeddedResource Include="Refresh_16x.png" />
     <EmbeddedResource Include="Refresh_greyThin_16x.png" />
+    <EmbeddedResource Include="Report_16x.png" />
+    <EmbeddedResource Include="ReportDated_16x.png" />
+    <EmbeddedResource Include="ReportWarning_16x.png" />
     <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="SourcelessMethod_16x.png" />
@@ -68,12 +72,11 @@
     <EmbeddedResource Include="StatusWarning_16x.png" />
     <EmbeddedResource Include="StatusWarning_32x.png" />
     <EmbeddedResource Include="TextFile_16x.png" />
+    <EmbeddedResource Include="TextFileDated_16x.png" />
     <EmbeddedResource Include="TextFileMissing_16x.png" />
     <EmbeddedResource Include="TextFileWeb_16x.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VSTAAbout_16x.png" />
-    <EmbeddedResource Include="WarningDecal_16x.png" />
-    <EmbeddedResource Include="XMLFile_16x.png" />
   </ItemGroup>
 
   <ItemGroup>

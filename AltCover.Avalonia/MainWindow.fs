@@ -582,12 +582,12 @@ type MainWindow() as this =
                    tree.Items <- auxModel.Model
                    this.UpdateMRU info.FullName true
                SetXmlNode =
-                 fun name ->
+                 fun name icon ->
                    let model = auxModel.Model
 
                    { Model = model
                      Row =
-                       let row = makeNewRow name icons.Xml
+                       let row = makeNewRow name icon
                        model.Add row
                        row }
                AddNode =
