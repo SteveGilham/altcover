@@ -312,7 +312,8 @@ module private Gui =
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
-            handler.classStructureTree.Data.Clear()
+            let table = handler.classStructureTree.Data
+            table.Clear()
 
             let topRow =
               model.AppendValues(name, icon.Force())
@@ -320,7 +321,7 @@ module private Gui =
             if tip |> String.IsNullOrWhiteSpace |> not
             then
               let path = model.GetPath(topRow)
-              handler.classStructureTree.Data.Add(path, tip)
+              table.Add(path, tip)
 
             { Model = model; Row = topRow }
         AddNode =
@@ -785,8 +786,9 @@ module private Gui =
       let mutable path:TreePath = null
       if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path)
       then
-        if handler.classStructureTree.Data.ContainsKey path
-        then let text = string handler.classStructureTree.Data.[path]
+        let table = handler.classStructureTree.Data
+        if table.ContainsKey path
+        then let text = table.[path] :?> string
              tip.Text <- text
              x.RetVal <- true) // <== magic happens here
 
@@ -901,7 +903,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@141.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target = "AltCover.Gui+prepareTreeView@142.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification = "Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

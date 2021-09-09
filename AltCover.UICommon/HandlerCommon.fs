@@ -13,8 +13,8 @@ module HandlerCommon =
   let DoRowActivation
     (methodPath: XPathNavigator)
     (window: IVisualizerWindow)
-    noSource
-    showSource
+    (noSource: unit -> unit)
+    (showSource: Source -> int -> unit)
     =
     let points =
       [ "seqpnt"; "branch" ]

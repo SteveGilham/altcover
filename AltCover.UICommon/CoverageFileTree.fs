@@ -29,10 +29,11 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
 
 module CoverageFileTree =
 
+  [<AutoSerializable(false)>]
   type SourceFile<'TIcon> = {
     FullName : string
     FileName : string
-    X : XPathNavigator
+    Navigator : XPathNavigator
     Icon : Lazy<'TIcon>
     Exists : bool
     Stale : bool
@@ -123,7 +124,7 @@ module CoverageFileTree =
             {
               FullName = s
               FileName = System.Uri(s).LocalPath |> Path.GetFileName
-              X = null
+              Navigator = null
               Icon = environment.Icons.SourceLink
               Exists = true
               Stale = false
@@ -131,16 +132,17 @@ module CoverageFileTree =
 
           else
             let info = GetSource(s)
+            let x = info.Exists
             let stale = info.Outdated epoch
             {
               FullName = s
               FileName = Path.GetFileName s
-              X = null
-              Icon = match (info.Exists, stale) with
+              Navigator = null
+              Icon = match (x, stale) with
                      | (false, _) -> environment.Icons.NoSource
                      | (_, true) -> environment.Icons.SourceDated
                      | _ -> environment.Icons.Source
-              Exists = info.Exists
+              Exists = x
               Stale = stale
             }
 
@@ -150,7 +152,7 @@ module CoverageFileTree =
           |> Seq.map
            (fun s ->
               let d = s.GetAttribute("document", String.Empty)
-              { (d |> getFileName) with X = s })
+              { (d |> getFileName) with Navigator = s })
           |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
           |> Seq.sortBy (fun s -> s.FileName |> upcase)
           |> Seq.toList
@@ -203,7 +205,7 @@ module CoverageFileTree =
                   (if s.Exists
                    then None
                    else Some <| Resource.Format("FileNotFound", [| s.FullName |]))
-            if s.Exists && (not s.Stale) then environment.Map srow s.X
+            if s.Exists && (not s.Stale) then environment.Map srow s.Navigator
           )
 
       if special <> MethodType.Normal then
