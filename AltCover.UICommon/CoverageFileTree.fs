@@ -23,7 +23,7 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     GetFileInfo: int -> FileInfo
     UpdateMRUFailure: FileInfo -> unit
     UpdateUISuccess: FileInfo -> unit
-    SetXmlNode: String -> Lazy<'TIcon> -> CoverageTreeContext<'TModel, 'TRow>
+    SetXmlNode: String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
     AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
@@ -176,7 +176,10 @@ module CoverageFileTree =
               (if source.Stale then environment.Icons.MethodDated else icon)
               (displayname.Substring(offset))
               (if hasSource
-               then None
+               then
+                if source.Stale
+                then Some <| Resource.Format("FileNewerThanReport", [| source.FullName |])
+                else None
                else Some <| Resource.Format("FileNotFound", [| source.FullName |]))
 
           if hasSource && (not source.Stale)
@@ -410,24 +413,28 @@ module CoverageFileTree =
           |> Seq.map GetSource
           |> Seq.filter (fun f -> not f.Exists)
 
-        //if not (Seq.isEmpty missing) then
-        //  Messages.MissingSourceFileMessage environment.Display current
-
         let newer =
           sourceFiles
           |> Seq.map GetSource
           |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
-        // warn if not
-        //if not (Seq.isEmpty newer) then
-        //  Messages.OutdatedCoverageFileMessage environment.Display current
 
-        let model = environment.SetXmlNode current.Name (if Seq.isEmpty missing
-                                                         then
-                                                          if Seq.isEmpty newer
-                                                          then environment.Icons.Report
-                                                          else environment.Icons.ReportDated
-                                                         else
-                                                          environment.Icons.ReportWarning)
+        let message = [
+                        (missing, "NotAllSourcePresent")
+                        (newer, "SomeSourceModified")
+                      ]
+                      |> Seq.filter (fun (x,y) -> x |> Seq.isEmpty |> not)
+                      |> Seq.map (fun (x,y) -> Resource.Format(y, [| |]))
+
+        let model = environment.SetXmlNode
+                      current.Name
+                      (if Seq.isEmpty missing
+                       then
+                        if Seq.isEmpty newer
+                        then environment.Icons.Report
+                        else environment.Icons.ReportDated
+                       else
+                       environment.Icons.ReportWarning)
+                      (String.Join(Environment.NewLine, message))
 
         let applyToModel
           (theModel: CoverageTreeContext<'TModel, 'TRow>)

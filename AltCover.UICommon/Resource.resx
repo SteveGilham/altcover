@@ -123,33 +123,11 @@
 is not a valid coverage file:
 {1}</value>
   </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file
-{0} 
-is out of date with respect to some of the source files.</value>
-  </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file
-{0} 
-is out of date with respect to source file
-{1}.</value>
-  </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Select font for source display</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
     <value>xml files (*.xml)%xml|json files (*.json)%json|All files (*.*)%*</value>
-  </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>The file
-{0} 
-refers to source files not found on this computer.</value>
-  </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>The file
-{0} 
-refers to absent to source file
-{1}.</value>
   </data>
   <data name="aboutVisualizer.Comments" xml:space="preserve">
     <value>Coverage visualizer for NCover and OpenCover reports</value>
@@ -257,5 +235,14 @@ THE SOFTWARE.</value>
   </data>
   <data name="FileNotFound" xml:space="preserve">
     <value>File not found : {0}</value>
+  </data>
+  <data name="FileNewerThanReport" xml:space="preserve">
+    <value>File newer than report : {0}</value>
+  </data>
+  <data name="NotAllSourcePresent" xml:space="preserve">
+    <value>Not all source files mentioned are present</value>
+  </data>
+  <data name="SomeSourceModified" xml:space="preserve">
+    <value>Some source files have been modified since this report was created</value>
   </data>
 </root>
