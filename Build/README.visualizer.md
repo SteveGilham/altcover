@@ -15,7 +15,7 @@ The recently accessed list is a drop-down for quick access to coverage files of 
 
 The tree view opens with just the node for the coverage file shown.  Drill down to the method of interest and double-click to load the appropriate source file.
 
-The tree view shows the structure of the assemblies in the report, including virtual groupings for modules (classes that only contain classes, so have no presence in the XML reports), (as seen in the inset) for properties (`get_` and/or `set_`), and for events (`add_` and/or `remove_`).  Also where a type is just a function (i.e. only has an `Invoke` method), there is separate icon for that.
+The tree view shows the structure of the assemblies in the report, including virtual groupings for modules (classes that only contain classes, so have no presence in the XML reports), for properties (`get_` and/or `set_`), and for events (`add_` and/or `remove_`).  Also where a type is just a function (i.e. only has an `Invoke` method), there is separate icon for that.
 
 ### Colouring
 
