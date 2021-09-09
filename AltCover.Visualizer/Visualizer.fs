@@ -311,11 +311,11 @@ module private Gui =
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
-            handler.classStructureTree.Data.Values
-            |> Seq.cast<Tooltip>
-            |> Seq.iter (fun t -> handler.classStructureTree.SetTooltipRow(t, null)
-                                  t.Dispose())
-            handler.classStructureTree.Data.Clear()
+            //handler.classStructureTree.Data.Values
+            //|> Seq.cast<Tooltip>
+            //|> Seq.iter (fun t -> handler.classStructureTree.SetTooltipRow(t, null)
+            //                      t.Dispose())
+            //handler.classStructureTree.Data.Clear()
 
             let topRow =
               model.AppendValues(name, icon.Force())
