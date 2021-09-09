@@ -23,6 +23,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
      //| x -> System.InvalidOperationException(name, x) |> raise
 
   member self.Xml = makeIcon "XMLFile_16x"
+  member self.XmlDated = makeIcon "XMLFileDated_16x"
   member self.XmlWarn = makeIcon "XMLFileWarning_16x"
   member self.Assembly = makeIcon "Assembly_16x"
   member self.Event = makeIcon "Event_16x"

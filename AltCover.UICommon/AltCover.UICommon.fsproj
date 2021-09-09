@@ -76,6 +76,7 @@
     <EmbeddedResource Include="VSTAAbout_16x.png" />
     <EmbeddedResource Include="WarningDecal_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />
+    <EmbeddedResource Include="XMLFileDated_16x.png" />
     <EmbeddedResource Include="XMLFileWarning_16x.png" />
   </ItemGroup>
 
