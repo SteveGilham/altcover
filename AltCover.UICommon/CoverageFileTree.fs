@@ -35,6 +35,7 @@ module CoverageFileTree =
     X : XPathNavigator
     Icon : Lazy<'TIcon>
     Exists : bool
+    Stale : bool
   }
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
@@ -53,6 +54,7 @@ module CoverageFileTree =
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
     (nodes: seq<MethodKey>)
+    (epoch : DateTime)
     =
     let applyToModel
       (theModel: CoverageTreeContext<'TModel, 'TRow>)
@@ -118,10 +120,29 @@ module CoverageFileTree =
                 StringComparison.Ordinal
               )
           then
-            (System.Uri(s).LocalPath |> Path.GetFileName, (true, environment.Icons.SourceLink))
+            {
+              FullName = s
+              FileName = System.Uri(s).LocalPath |> Path.GetFileName
+              X = null
+              Icon = environment.Icons.SourceLink
+              Exists = true
+              Stale = false
+            }
+
           else
-            let x = File.Exists s
-            (Path.GetFileName s, (x, if x then environment.Icons.Source else environment.Icons.NoSource))
+            let info = GetSource(s)
+            let stale = info.Outdated epoch
+            {
+              FullName = s
+              FileName = Path.GetFileName s
+              X = null
+              Icon = match (info.Exists, stale) with
+                     | (false, _) -> environment.Icons.NoSource
+                     | (_, true) -> environment.Icons.SourceDated
+                     | _ -> environment.Icons.Source
+              Exists = info.Exists
+              Stale = stale
+            }
 
         let sources =
           x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
@@ -129,16 +150,10 @@ module CoverageFileTree =
           |> Seq.map
            (fun s ->
               let d = s.GetAttribute("document", String.Empty)
-              let n, (e, i) = d |> getFileName
-              {
-                FullName = d
-                FileName = n
-                X = s
-                Icon = i
-                Exists = e
-              })
+              { (d |> getFileName) with X = s })
           |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
-          |> Seq.sortBy (fun s -> s.FileName |> upcase)          |> Seq.toList
+          |> Seq.sortBy (fun s -> s.FileName |> upcase)
+          |> Seq.toList
 
         let hasSource = sources
                         |> List.exists (fun s -> s.Exists)
@@ -153,14 +168,14 @@ module CoverageFileTree =
             environment.Icons.MethodNoSource
             (displayname.Substring(offset)) |> ignore
 
-        | [_] ->
+        | [source] ->
           let newrow =
             environment.AddNode
               mmodel
-              icon
+              (if source.Stale then environment.Icons.MethodDated else icon)
               (displayname.Substring(offset))
 
-          if hasSource
+          if hasSource && (not source.Stale)
           then environment.Map newrow x.Navigator
 
         | _ ->
@@ -175,9 +190,9 @@ module CoverageFileTree =
             let srow =
                 environment.AddNode
                   newrow
-                  icon
+                  (if s.Stale then environment.Icons.SourceDated else icon)
                   s.FileName
-            if s.Exists then environment.Map srow s.X
+            if s.Exists && (not s.Stale) then environment.Map srow s.X
           )
 
       if special <> MethodType.Normal then
@@ -229,6 +244,7 @@ module CoverageFileTree =
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
     (nodes: seq<MethodKey>)
+    (epoch : DateTime)
     =
     let applyToModel
       (theModel: CoverageTreeContext<'TModel, 'TRow>)
@@ -257,7 +273,7 @@ module CoverageFileTree =
 
       let newrow = environment.AddNode theModel icon name
 
-      populateClassNode environment newrow (snd group)
+      populateClassNode environment newrow (snd group) epoch
       newrow
 
     let isNested (name: string) n =
@@ -323,6 +339,7 @@ module CoverageFileTree =
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
     (node: XPathNavigator)
+    (epoch : DateTime)
     =
     // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
     let applyToModel
@@ -334,7 +351,7 @@ module CoverageFileTree =
       let newrow =
         environment.AddNode theModel environment.Icons.Namespace name
 
-      populateNamespaceNode environment newrow (snd group)
+      populateNamespaceNode environment newrow (snd group) epoch
 
     let methods =
       node.SelectChildren("method", String.Empty)
@@ -412,7 +429,7 @@ module CoverageFileTree =
           let newModel =
             environment.AddNode theModel environment.Icons.Assembly name
 
-          populateAssemblyNode environment newModel (fst group)
+          populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
         let assemblies =
           coverage

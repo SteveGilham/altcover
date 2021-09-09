@@ -47,12 +47,13 @@ module HandlerCommon =
       let current = FileInfo(window.CoverageFiles.Head)
 
       if (not <| info.Exists) then
-        Messages.MissingSourceThisFileMessage window.ShowMessageOnGuiThread current info
+        () // Messages.MissingSourceThisFileMessage window.ShowMessageOnGuiThread current info
       else if (info.Outdated current.LastWriteTimeUtc) then
-        Messages.OutdatedCoverageThisFileMessage
-          window.ShowMessageOnGuiThread
-          current
-          info
+        //Messages.OutdatedCoverageThisFileMessage
+        //  window.ShowMessageOnGuiThread
+        //  current
+        //  info
+        ()
       else
         let lineNumber =
           Int32.TryParse(line |> Option.get) |> snd
