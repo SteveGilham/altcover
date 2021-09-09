@@ -133,6 +133,7 @@ module private Gui =
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")
 
   let private prepareTreeView (handler: Handler) =
+    handler.classStructureTree.HasTooltip <- true
     [| icons.Assembly
        icons.Namespace
        icons.Class
@@ -307,18 +308,19 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name icon _tip -> // TODO tooltip magic
+          fun name icon tip ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
-            //handler.classStructureTree.Data.Values
-            //|> Seq.cast<Tooltip>
-            //|> Seq.iter (fun t -> handler.classStructureTree.SetTooltipRow(t, null)
-            //                      t.Dispose())
-            //handler.classStructureTree.Data.Clear()
+            handler.classStructureTree.Data.Clear()
 
             let topRow =
               model.AppendValues(name, icon.Force())
+
+            if tip |> String.IsNullOrWhiteSpace |> not
+            then
+              let path = model.GetPath(topRow)
+              handler.classStructureTree.Data.Add(path, tip)
 
             { Model = model; Row = topRow }
         AddNode =
@@ -328,14 +330,10 @@ module private Gui =
                     context.Row,
                     [| name :> obj; icon.Force() :> obj |])
 
-            // TODO tooltip magic
             tip
-            |> Option.iter ignore
-                           //(fun text -> let t = new Tooltip()
-                           //             t.Text <- text
-                           //             let path = context.Model.GetPath(newrow)
-                           //             handler.classStructureTree.Data.Add(path, t)
-                           //             handler.classStructureTree.SetTooltipRow(t, path))
+            |> Option.iter
+                           (fun text -> let path = context.Model.GetPath(newrow)
+                                        handler.classStructureTree.Data.Add(path, text))
             { context with
                 Row = newrow }
         Map = fun context xpath -> mappings.Add(context.Model.GetPath context.Row, xpath) }
@@ -780,6 +778,18 @@ module private Gui =
     Application.Init()
 
     let handler = prepareGui ()
+    handler.classStructureTree.QueryTooltip
+    |> Event.add (fun (x:QueryTooltipArgs) ->
+      let tip = x.Tooltip
+      x.RetVal <- null
+      let mutable path:TreePath = null
+      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path)
+      then
+        if handler.classStructureTree.Data.ContainsKey path
+        then let text = string handler.classStructureTree.Data.[path]
+             tip.Text <- text
+             x.RetVal <- true) // <== magic happens here
+
 #if !NET472
     handler.codeView.Drawn
     |> Event.add (fun _ -> latch.Set() |> ignore)
