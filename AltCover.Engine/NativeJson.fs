@@ -918,7 +918,8 @@ module
                  XAttribute(XName.Get "ec", 2),
                  XAttribute(XName.Get "uspid", i),
                  XAttribute(XName.Get "bec", bec2),
-                 XAttribute(XName.Get "bev", bev2)
+                 XAttribute(XName.Get "bev", bev2),
+                 XAttribute(XName.Get "fileid", fileId)
                )
 
              sp.Add sx

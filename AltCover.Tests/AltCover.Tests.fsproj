@@ -44,6 +44,7 @@
     <EmbeddedResource Include="Sample4.syntheticvisits.native.json" />
     <EmbeddedResource Include="Sample4FullTracking.json" />
     <EmbeddedResource Include="Sample4FullTracking.cobertura" />
+    <None Include="Sample4.fromcoverletjson.xml" />
     <EmbeddedResource Include="Sample4.coverlet.json" />
     <EmbeddedResource Include="Sample4.coverlet.lcov" />
     <EmbeddedResource Include="Sample5.native.json" />
