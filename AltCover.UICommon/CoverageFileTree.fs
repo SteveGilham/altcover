@@ -29,6 +29,14 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
 
 module CoverageFileTree =
 
+  type SourceFile<'TIcon> = {
+    FullName : string
+    FileName : string
+    X : XPathNavigator
+    Icon : Lazy<'TIcon>
+    Exists : bool
+  }
+
   [<SuppressMessage("Gendarme.Rules.Correctness",
             "ReviewSelfAssignmentRule",
             Justification = "Final line is a self-assignment for 'depth' -- compiler fault")>]
@@ -121,14 +129,19 @@ module CoverageFileTree =
           |> Seq.map
            (fun s ->
               let d = s.GetAttribute("document", String.Empty)
-              (d, (d |> getFileName, s)))
-          |> Seq.distinctBy fst // allows for same name, different path
-          |> Seq.map snd
-          |> Seq.sortBy (fst >> fst >> upcase)
-          |> Seq.toList
+              let n, (e, i) = d |> getFileName
+              {
+                FullName = d
+                FileName = n
+                X = s
+                Icon = i
+                Exists = e
+              })
+          |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
+          |> Seq.sortBy (fun s -> s.FileName |> upcase)          |> Seq.toList
 
         let hasSource = sources
-                        |> List.exists (fst >> snd >> fst)
+                        |> List.exists (fun s -> s.Exists)
         let icon = if hasSource
                    then environment.Icons.Method
                    else environment.Icons.MethodMissingSource
@@ -158,14 +171,13 @@ module CoverageFileTree =
               icon
               (displayname.Substring(offset))
           sources
-          |> List.iter (fun (d,n) ->
-              let (map, icon) = snd d
-              let srow =
+          |> List.iter (fun s ->
+            let srow =
                 environment.AddNode
                   newrow
                   icon
-                  (fst d)
-              if map then environment.Map srow n
+                  s.FileName
+            if s.Exists then environment.Map srow s.X
           )
 
       if special <> MethodType.Normal then
