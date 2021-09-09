@@ -415,10 +415,10 @@ module CoverageFileTree =
         let model = environment.SetXmlNode current.Name (if Seq.isEmpty missing
                                                          then
                                                           if Seq.isEmpty newer
-                                                          then environment.Icons.Xml
-                                                          else environment.Icons.XmlDated
+                                                          then environment.Icons.Report
+                                                          else environment.Icons.ReportDated
                                                          else
-                                                          environment.Icons.XmlWarn)
+                                                          environment.Icons.ReportWarning)
 
         let applyToModel
           (theModel: CoverageTreeContext<'TModel, 'TRow>)
