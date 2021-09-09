@@ -48,6 +48,7 @@
     <EmbeddedResource Include="Font_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Method_16x.png" />
+    <EmbeddedResource Include="MethodDated_16x.png" />
     <EmbeddedResource Include="MethodWarning_16x.png" />
     <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
@@ -68,12 +69,14 @@
     <EmbeddedResource Include="StatusWarning_16x.png" />
     <EmbeddedResource Include="StatusWarning_32x.png" />
     <EmbeddedResource Include="TextFile_16x.png" />
+    <EmbeddedResource Include="TextFileDated_16x.png" />
     <EmbeddedResource Include="TextFileMissing_16x.png" />
     <EmbeddedResource Include="TextFileWeb_16x.png" />
     <EmbeddedResource Include="VIcon.ico" Link="VIcon.ico" />
     <EmbeddedResource Include="VSTAAbout_16x.png" />
     <EmbeddedResource Include="WarningDecal_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />
+    <EmbeddedResource Include="XMLFileWarning_16x.png" />
   </ItemGroup>
 
   <ItemGroup>
