@@ -2,6 +2,13 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.824 (Habu series release 6c)
+* [VISUALIZER] Fixes and updates
+  * [REGRESSION] Fix where multiple source file support broke JSON coverage support
+  * Not all coverage reports are XML -- fix root node icon
+  * Add more icons indicating non-default states (files missing, changed, via sourcelink &c)
+  * Replace most of the annoying pop-ups with tool-tips
+
 # 8.2.823 (Habu series release 6b)
 * [VISUALIZER] Fixes and updates
   * [REGRESSION] Fix where multiple source file support broke methods with no source file

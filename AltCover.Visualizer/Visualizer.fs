@@ -133,6 +133,7 @@ module private Gui =
       Resource.GetResourceString("aboutVisualizer.WebsiteLabel")
 
   let private prepareTreeView (handler: Handler) =
+    handler.classStructureTree.HasTooltip <- true
     [| icons.Assembly
        icons.Namespace
        icons.Class
@@ -307,23 +308,35 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name ->
+          fun name icon tip ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
+            let table = handler.classStructureTree.Data
+            table.Clear()
 
             let topRow =
-              model.AppendValues(name, icons.Xml.Force())
+              model.AppendValues(name, icon.Force())
+
+            if tip |> String.IsNullOrWhiteSpace |> not
+            then
+              let path = model.GetPath(topRow)
+              table.Add(path, tip)
 
             { Model = model; Row = topRow }
         AddNode =
-          fun context icon name ->
-            { context with
-                Row =
-                  context.Model.AppendValues(
+          fun context icon name (tip : string option) ->
+            let newrow =
+              context.Model.AppendValues(
                     context.Row,
-                    [| name :> obj; icon.Force() :> obj |]
-                  ) }
+                    [| name :> obj; icon.Force() :> obj |])
+
+            tip
+            |> Option.iter
+                           (fun text -> let path = context.Model.GetPath(newrow)
+                                        handler.classStructureTree.Data.Add(path, text))
+            { context with
+                Row = newrow }
         Map = fun context xpath -> mappings.Add(context.Model.GetPath context.Row, xpath) }
 
     async { CoverageFileTree.DoSelected environment index }
@@ -766,6 +779,19 @@ module private Gui =
     Application.Init()
 
     let handler = prepareGui ()
+    handler.classStructureTree.QueryTooltip
+    |> Event.add (fun (x:QueryTooltipArgs) ->
+      let tip = x.Tooltip
+      x.RetVal <- null
+      let mutable path:TreePath = null
+      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path)
+      then
+        let table = handler.classStructureTree.Data
+        if table.ContainsKey path
+        then let text = table.[path] :?> string
+             tip.Text <- text
+             x.RetVal <- true) // <== magic happens here
+
 #if !NET472
     handler.codeView.Drawn
     |> Event.add (fun _ -> latch.Set() |> ignore)
@@ -877,7 +903,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@141.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target = "AltCover.Gui+prepareTreeView@142.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification = "Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

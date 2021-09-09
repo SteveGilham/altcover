@@ -582,21 +582,23 @@ type MainWindow() as this =
                    tree.Items <- auxModel.Model
                    this.UpdateMRU info.FullName true
                SetXmlNode =
-                 fun name ->
+                 fun name icon tip ->
                    let model = auxModel.Model
-
+                   let row = makeNewRow name icon
+                   model.Add row
+                   if tip |> String.IsNullOrWhiteSpace |> not
+                   then ToolTip.SetTip(row, tip)
                    { Model = model
-                     Row =
-                       let row = makeNewRow name icons.Xml
-                       model.Add row
-                       row }
+                     Row =  row }
                AddNode =
-                 fun context icon name ->
+                 fun context icon name (tip : string option) ->
+                   let newrow = makeNewRow name icon
+                   (context.Row.Items :?> List<TreeViewItem>).Add newrow
+                   tip
+                   |> Option.iter(fun text ->
+                      ToolTip.SetTip(newrow, text))
                    { context with
-                       Row =
-                         let row = makeNewRow name icon
-                         (context.Row.Items :?> List<TreeViewItem>).Add row
-                         row }
+                       Row = newrow }
                Map = this.PrepareDoubleTap }
 
            Dispatcher.UIThread.Post
