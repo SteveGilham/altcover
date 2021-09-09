@@ -846,7 +846,8 @@ module
                  XAttribute(XName.Get "uspid", b.Id),
                  XAttribute(XName.Get "ordinal", b.Ordinal),
                  XAttribute(XName.Get "offset", b.Offset),
-                 XAttribute(XName.Get "path", b.Path)
+                 XAttribute(XName.Get "path", b.Path),
+                 XAttribute(XName.Get "fileid", fileId)
                )
 
              bp.Add bx)
@@ -888,7 +889,8 @@ module
                  XAttribute(XName.Get "ec", s.EC),
                  XAttribute(XName.Get "uspid", s.Id),
                  XAttribute(XName.Get "bec", bec2),
-                 XAttribute(XName.Get "bev", bev2)
+                 XAttribute(XName.Get "bev", bev2),
+                 XAttribute(XName.Get "fileid", fileId)
                )
 
              sp.Add sx
