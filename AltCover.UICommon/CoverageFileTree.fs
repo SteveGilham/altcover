@@ -61,6 +61,9 @@ module CoverageFileTree =
     |> Math.Floor
     |> int
 
+  let private pcCover (navigator:XPathNavigator) =
+     (sprintf "%3i%%" (cover navigator))
+
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
@@ -98,8 +101,6 @@ module CoverageFileTree =
           fixup <| x.Navigator.GetAttribute("fullname", String.Empty)
 
         let name = fixup x.Name
-
-        //printfn "%s ||| %s" name fullname
 
         let args =
           if String.IsNullOrEmpty(fullname)
@@ -178,7 +179,7 @@ module CoverageFileTree =
           environment.AddNode
             mmodel
             environment.Icons.MethodNoSource
-            "****"
+            "TODO" // maybe 0 or 100%
             (displayname.Substring(offset))
             None |> ignore
 
@@ -187,7 +188,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               (if source.Stale then environment.Icons.MethodDated else icon)
-              (sprintf "%3i%%" (cover x.Navigator))
+              (pcCover x.Navigator)
               (displayname.Substring(offset))
               (if hasSource
                then
@@ -205,7 +206,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               icon
-              (sprintf "%3i%%" (cover x.Navigator))
+              (pcCover x.Navigator)
               (displayname.Substring(offset))
               None
           sources
@@ -214,7 +215,7 @@ module CoverageFileTree =
                 environment.AddNode
                   newrow
                   (if s.Stale then environment.Icons.SourceDated else icon)
-                  "????"
+                  "TODO" // filter the method
                   s.FileName
                   (if s.Exists
                    then None
@@ -230,7 +231,7 @@ module CoverageFileTree =
                environment.Icons.Property
              else
                environment.Icons.Event)
-            "xxxx"
+            String.Empty // TODO maybe
             display
             None
 
@@ -283,7 +284,7 @@ module CoverageFileTree =
 
       let icon =
         if group |> snd |> Seq.isEmpty then
-          environment.Icons.Module
+          (environment.Icons.Module, String.Empty) // TODO maybe
         else
           let names = group
                       |> snd
@@ -296,11 +297,11 @@ module CoverageFileTree =
              names |> List.exists
                      (fun d -> d.Equals("Invoke") |> not )
           then
-            environment.Icons.Class
+            (environment.Icons.Class, "TODO")
           else
-            environment.Icons.Effect
+            (environment.Icons.Effect, "TODO")
 
-      let newrow = environment.AddNode theModel icon "zzzz" name None
+      let newrow = environment.AddNode theModel (fst icon) (snd icon) name None
 
       populateClassNode environment newrow (snd group) epoch
       newrow
@@ -378,7 +379,7 @@ module CoverageFileTree =
       let name = fst group
 
       let newrow =
-        environment.AddNode theModel environment.Icons.Namespace "nnnn" name None
+        environment.AddNode theModel environment.Icons.Namespace "TODO" name None
 
       populateNamespaceNode environment newrow (snd group) epoch
 
@@ -415,11 +416,11 @@ module CoverageFileTree =
         Messages.InvalidCoverageFileMessage environment.Display failed
         environment.UpdateMRUFailure current
     | Right coverage ->
+        let navigator = coverage.Document.CreateNavigator()
+
         // check if coverage is newer that the source files
         let sourceFiles =
-          coverage
-            .Document
-            .CreateNavigator()
+          navigator
             .Select("//seqpnt/@document")
           |> Seq.cast<XPathNavigator>
           |> Seq.map (fun x -> x.Value)
@@ -443,7 +444,7 @@ module CoverageFileTree =
                       |> Seq.map (fun (x,y) -> Resource.Format(y, [| |]))
 
         let model = environment.SetXmlNode
-                      "oooo"
+                      (pcCover navigator)
                       current.Name
                       (if Seq.isEmpty missing
                        then
@@ -461,7 +462,7 @@ module CoverageFileTree =
           let name = snd group
 
           let newModel =
-            environment.AddNode theModel environment.Icons.Assembly "aaaa" name None
+            environment.AddNode theModel environment.Icons.Assembly (group |> fst |> pcCover)  name None
 
           populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
