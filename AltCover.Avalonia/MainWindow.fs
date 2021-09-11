@@ -50,6 +50,9 @@ type MainWindow() as this =
     text.Margin <- Thickness.Parse("2")
     let note = TextBlock()
     note.Text <- pc
+    note.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Right
+    note.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Bottom
+    text.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Bottom
     note.Margin <- Thickness.Parse("2")
     let (_, logfont) = LogFont.TryParse(Persistence.readFont ())
     note.FontFamily <- FontFamily(logfont.faceName)
