@@ -25,6 +25,7 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     UpdateUISuccess: FileInfo -> unit
     SetXmlNode: String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
     AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
+    AddLeafNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
 module CoverageFileTree =
@@ -165,7 +166,7 @@ module CoverageFileTree =
 
         match sources with
         | [] ->
-          environment.AddNode
+          environment.AddLeafNode
             mmodel
             environment.Icons.MethodNoSource
             (displayname.Substring(offset))
@@ -173,7 +174,7 @@ module CoverageFileTree =
 
         | [source] ->
           let newrow =
-            environment.AddNode
+            environment.AddLeafNode
               mmodel
               (if source.Stale then environment.Icons.MethodDated else icon)
               (displayname.Substring(offset))
@@ -198,7 +199,7 @@ module CoverageFileTree =
           sources
           |> List.iter (fun s ->
             let srow =
-                environment.AddNode
+                environment.AddLeafNode
                   newrow
                   (if s.Stale then environment.Icons.SourceDated else icon)
                   s.FileName

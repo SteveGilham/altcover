@@ -278,6 +278,21 @@ module private Gui =
 #endif
 
   let private doSelected (handler: Handler) doUpdateMRU index =
+    let addNode =
+          fun (context:CoverageTreeContext<TreeStore, TreeIter>) 
+              (icon:Lazy<Gdk.Pixbuf>) name (tip : string option) ->
+            let newrow =
+              context.Model.AppendValues(
+                    context.Row,
+                    [| name :> obj; icon.Force() :> obj |])
+
+            tip
+            |> Option.iter
+                           (fun text -> let path = context.Model.GetPath(newrow)
+                                        handler.classStructureTree.Data.Add(path, text))
+            { context with
+                Row = newrow }
+
     let environment =
       { Icons = icons
         GetFileInfo =
@@ -324,19 +339,8 @@ module private Gui =
               table.Add(path, tip)
 
             { Model = model; Row = topRow }
-        AddNode =
-          fun context icon name (tip : string option) ->
-            let newrow =
-              context.Model.AppendValues(
-                    context.Row,
-                    [| name :> obj; icon.Force() :> obj |])
-
-            tip
-            |> Option.iter
-                           (fun text -> let path = context.Model.GetPath(newrow)
-                                        handler.classStructureTree.Data.Add(path, text))
-            { context with
-                Row = newrow }
+        AddNode = addNode
+        AddLeafNode = addNode
         Map = fun context xpath -> mappings.Add(context.Model.GetPath context.Row, xpath) }
 
     async { CoverageFileTree.DoSelected environment index }
