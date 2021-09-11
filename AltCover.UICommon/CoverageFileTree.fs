@@ -51,6 +51,16 @@ module CoverageFileTree =
              else scan s (index + 1) d
     | _ -> scan s (index + 1) depth
 
+  let private cover (navigator:XPathNavigator) =
+    let points = navigator.SelectDescendants("seqpnt", String.Empty, false)
+                  |> Seq.cast<XPathNavigator>
+    let visited = points
+                  |> Seq.filter(fun p -> p.GetAttribute("visitcount", String.Empty) <> "0")
+
+    (100.0 * (visited |>  Seq.length |> float) / (points |>  Seq.length |> float))
+    |> Math.Floor
+    |> int
+
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
@@ -176,7 +186,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               (if source.Stale then environment.Icons.MethodDated else icon)
-              (displayname.Substring(offset))
+              (sprintf "%3i%% %s" (cover x.Navigator) (displayname.Substring(offset)))
               (if hasSource
                then
                 if source.Stale
@@ -193,7 +203,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               icon
-              (displayname.Substring(offset))
+              (sprintf "%3i%% %s" (cover x.Navigator) (displayname.Substring(offset)))
               None
           sources
           |> List.iter (fun s ->
