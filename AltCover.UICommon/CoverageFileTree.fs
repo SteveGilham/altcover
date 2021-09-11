@@ -185,7 +185,7 @@ module CoverageFileTree =
           environment.AddNode
             mmodel
             environment.Icons.MethodNoSource
-            "TODO" // maybe 0 or 100%
+            String.Empty // TODO maybe 0 or 100% ??
             (displayname.Substring(offset))
             None |> ignore
 
