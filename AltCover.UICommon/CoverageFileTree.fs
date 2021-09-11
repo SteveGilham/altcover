@@ -51,9 +51,7 @@ module CoverageFileTree =
              else scan s (index + 1) d
     | _ -> scan s (index + 1) depth
 
-  let private cover (navigator:XPathNavigator) =
-    let points = navigator.SelectDescendants("seqpnt", String.Empty, false)
-                  |> Seq.cast<XPathNavigator>
+  let private coverPoints (points:XPathNavigator seq) =
     let visited = points
                   |> Seq.filter(fun p -> p.GetAttribute("visitcount", String.Empty) <> "0")
 
@@ -61,8 +59,16 @@ module CoverageFileTree =
     |> Math.Floor
     |> int
 
-  let private pcCover (navigator:XPathNavigator) =
-     (sprintf "%3i%%" (cover navigator))
+  let private cover (navigator:XPathNavigator seq) =
+    let points = navigator
+                  |> Seq.collect (fun n -> n.SelectDescendants("seqpnt", String.Empty, false)
+                                           |> Seq.cast<XPathNavigator>)
+    coverPoints points
+
+  let private coverText pc = sprintf "%3i%%" pc
+
+  let private pcCover (navigator:XPathNavigator seq) =
+     navigator |> cover |> coverText
 
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
@@ -188,7 +194,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               (if source.Stale then environment.Icons.MethodDated else icon)
-              (pcCover x.Navigator)
+              (pcCover [x.Navigator])
               (displayname.Substring(offset))
               (if hasSource
                then
@@ -206,7 +212,7 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               icon
-              (pcCover x.Navigator)
+              (pcCover [x.Navigator])
               (displayname.Substring(offset))
               None
           sources
@@ -215,7 +221,12 @@ module CoverageFileTree =
                 environment.AddNode
                   newrow
                   (if s.Stale then environment.Icons.SourceDated else icon)
-                  "TODO" // filter the method
+                  (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
+                   |> Seq.cast<XPathNavigator>
+                   |> Seq.filter(fun n -> n.GetAttribute("document", String.Empty) = s.FullName)
+                   |> coverPoints
+                   |> coverText
+                  )
                   s.FileName
                   (if s.Exists
                    then None
@@ -224,6 +235,10 @@ module CoverageFileTree =
           )
 
       if special <> MethodType.Normal then
+        let pc = keys
+                 |> Seq.map (fun x -> x.Navigator)
+                 |> pcCover
+
         let newrow =
           environment.AddNode
             theModel
@@ -231,7 +246,7 @@ module CoverageFileTree =
                environment.Icons.Property
              else
                environment.Icons.Event)
-            String.Empty // TODO maybe
+            pc
             display
             None
 
@@ -286,6 +301,11 @@ module CoverageFileTree =
         if group |> snd |> Seq.isEmpty then
           (environment.Icons.Module, String.Empty) // TODO maybe
         else
+          let pc = group
+                   |> snd
+                   |> Seq.map (fun x -> x.Navigator)
+                   |> pcCover
+
           let names = group
                       |> snd
                       |> Seq.map
@@ -297,9 +317,9 @@ module CoverageFileTree =
              names |> List.exists
                      (fun d -> d.Equals("Invoke") |> not )
           then
-            (environment.Icons.Class, "TODO")
+            (environment.Icons.Class, pc)
           else
-            (environment.Icons.Effect, "TODO")
+            (environment.Icons.Effect, pc)
 
       let newrow = environment.AddNode theModel (fst icon) (snd icon) name None
 
@@ -377,9 +397,13 @@ module CoverageFileTree =
       (group: string * seq<MethodKey>)
       =
       let name = fst group
+      let pc = group
+                |> snd
+                |> Seq.map (fun x -> x.Navigator)
+                |> pcCover
 
       let newrow =
-        environment.AddNode theModel environment.Icons.Namespace "TODO" name None
+        environment.AddNode theModel environment.Icons.Namespace pc name None
 
       populateNamespaceNode environment newrow (snd group) epoch
 
@@ -444,7 +468,7 @@ module CoverageFileTree =
                       |> Seq.map (fun (x,y) -> Resource.Format(y, [| |]))
 
         let model = environment.SetXmlNode
-                      (pcCover navigator)
+                      (pcCover [navigator])
                       current.Name
                       (if Seq.isEmpty missing
                        then
@@ -462,7 +486,7 @@ module CoverageFileTree =
           let name = snd group
 
           let newModel =
-            environment.AddNode theModel environment.Icons.Assembly (group |> fst |> pcCover)  name None
+            environment.AddNode theModel environment.Icons.Assembly ([group |> fst] |> pcCover)  name None
 
           populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
