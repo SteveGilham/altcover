@@ -23,8 +23,8 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     GetFileInfo: int -> FileInfo
     UpdateMRUFailure: FileInfo -> unit
     UpdateUISuccess: FileInfo -> unit
-    SetXmlNode: String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
-    AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
+    SetXmlNode: String -> String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
+    AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
 module CoverageFileTree =
@@ -178,6 +178,7 @@ module CoverageFileTree =
           environment.AddNode
             mmodel
             environment.Icons.MethodNoSource
+            "****"
             (displayname.Substring(offset))
             None |> ignore
 
@@ -186,7 +187,8 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               (if source.Stale then environment.Icons.MethodDated else icon)
-              (sprintf "%3i%% %s" (cover x.Navigator) (displayname.Substring(offset)))
+              (sprintf "%3i%%" (cover x.Navigator))
+              (displayname.Substring(offset))
               (if hasSource
                then
                 if source.Stale
@@ -203,7 +205,8 @@ module CoverageFileTree =
             environment.AddNode
               mmodel
               icon
-              (sprintf "%3i%% %s" (cover x.Navigator) (displayname.Substring(offset)))
+              (sprintf "%3i%%" (cover x.Navigator))
+              (displayname.Substring(offset))
               None
           sources
           |> List.iter (fun s ->
@@ -211,6 +214,7 @@ module CoverageFileTree =
                 environment.AddNode
                   newrow
                   (if s.Stale then environment.Icons.SourceDated else icon)
+                  "????"
                   s.FileName
                   (if s.Exists
                    then None
@@ -226,6 +230,7 @@ module CoverageFileTree =
                environment.Icons.Property
              else
                environment.Icons.Event)
+            "xxxx"
             display
             None
 
@@ -295,7 +300,7 @@ module CoverageFileTree =
           else
             environment.Icons.Effect
 
-      let newrow = environment.AddNode theModel icon name None
+      let newrow = environment.AddNode theModel icon "zzzz" name None
 
       populateClassNode environment newrow (snd group) epoch
       newrow
@@ -373,7 +378,7 @@ module CoverageFileTree =
       let name = fst group
 
       let newrow =
-        environment.AddNode theModel environment.Icons.Namespace name None
+        environment.AddNode theModel environment.Icons.Namespace "nnnn" name None
 
       populateNamespaceNode environment newrow (snd group) epoch
 
@@ -438,6 +443,7 @@ module CoverageFileTree =
                       |> Seq.map (fun (x,y) -> Resource.Format(y, [| |]))
 
         let model = environment.SetXmlNode
+                      "oooo"
                       current.Name
                       (if Seq.isEmpty missing
                        then
@@ -455,7 +461,7 @@ module CoverageFileTree =
           let name = snd group
 
           let newModel =
-            environment.AddNode theModel environment.Icons.Assembly name None
+            environment.AddNode theModel environment.Icons.Assembly "aaaa" name None
 
           populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 

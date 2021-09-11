@@ -141,43 +141,59 @@ module private Gui =
     |> Seq.iteri
          (fun i x -> // this line number
            let column = new Gtk.TreeViewColumn()
-           let cell = new Gtk.CellRendererText()
            let icon = new Gtk.CellRendererPixbuf()
            column.PackStart(icon, true)
+
+           let cell = new Gtk.CellRendererText()
            column.PackEnd(cell, true)
+
+           let note = new Gtk.CellRendererText()
+           note.Alignment <- Pango.Alignment.Right
+           let font = Persistence.readFont ()
+                      |> Pango.FontDescription.FromString
+           let copy = note.FontDesc.Copy()
+           copy.Family <- font.Family
+           note.FontDesc <- copy
+           column.PackEnd(note, true)
 
            handler.classStructureTree.AppendColumn(column)
            |> ignore
 
-           column.AddAttribute(cell, "text", 2 * i)
-           column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+           column.AddAttribute(icon, "pixbuf", (3 * i))
+           column.AddAttribute(note, "text", (3 * i) + 1)
+           column.AddAttribute(cell, "text", (3 * i) + 2)
+         )
 
     handler.classStructureTree.Model <-
       new TreeStore(
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+        typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>
+        typeof<string>
       )
 
     handler.auxModel <-
       new TreeStore(
+        typeof<Gdk.Pixbuf>,
+        typeof<string>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>,
         typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+        typeof<string>,
         typeof<Gdk.Pixbuf>,
         typeof<string>,
-        typeof<Gdk.Pixbuf>
+        typeof<string>
       )
 
 #if !NET472
@@ -308,7 +324,7 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name icon tip ->
+          fun pc name icon tip ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
@@ -316,7 +332,7 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name, icon.Force())
+              model.AppendValues(icon.Force(), pc, name)
 
             if tip |> String.IsNullOrWhiteSpace |> not
             then
@@ -325,11 +341,11 @@ module private Gui =
 
             { Model = model; Row = topRow }
         AddNode =
-          fun context icon name (tip : string option) ->
+          fun context icon pc name (tip : string option) ->
             let newrow =
               context.Model.AppendValues(
                     context.Row,
-                    [| name :> obj; icon.Force() :> obj |])
+                    [| icon.Force() :> obj; pc :> obj; name :> obj; |])
 
             tip
             |> Option.iter
