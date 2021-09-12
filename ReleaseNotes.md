@@ -2,6 +2,10 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.82x (Habu series release x)
+* [VISUALIZER] Fixes and updates
+  * Don't put expander icons on leaf nodes (most methods, source) in the global tool
+
 # 8.2.824 (Habu series release 6c)
 * [VISUALIZER] Fixes and updates
   * [REGRESSION] Fix where multiple source file support broke JSON coverage support
