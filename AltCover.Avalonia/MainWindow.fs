@@ -43,7 +43,7 @@ type MainWindow() as this =
 
   let makeTreeNode leaf name icon =
     let tree = Image()
-    tree.Source <- if leaf 
+    tree.Source <- if leaf
                    then icons.Blank.Force()
                    else icons.TreeExpand.Force()
     tree.Margin <- Thickness.Parse("2")
@@ -509,11 +509,12 @@ type MainWindow() as this =
              row.Items.OfType<TreeViewItem>()
              |> Seq.iter remargin)
 
-      if not leaf then
-        row.Tapped
-        |> Event.add
-            (fun evt ->
-              row.IsExpanded <- not row.IsExpanded
+      row.Tapped
+      |> Event.add
+          (fun evt ->
+            row.IsExpanded <- not row.IsExpanded
+            if not leaf
+            then
               let items = (row.Header :?> StackPanel).Children
               items.RemoveAt(0)
               let mark = Image()
@@ -529,7 +530,7 @@ type MainWindow() as this =
 
               mark.Margin <- Thickness.Parse("2")
               items.Insert(0, mark)
-              evt.Handled <- true)
+            evt.Handled <- true)
 
       row.Items <- List<TreeViewItem>()
       row.Header <- makeTreeNode leaf name <| anIcon.Force()
