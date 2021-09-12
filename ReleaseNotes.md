@@ -5,6 +5,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 # 8.2.82x (Habu series release x)
 * [VISUALIZER] Fixes and updates
   * Don't put expander icons on leaf nodes (most methods, source) in the global tool
+  * Don't throw while trying to determine if a file that doesn't exist is outdated
 
 # 8.2.824 (Habu series release 6c)
 * [VISUALIZER] Fixes and updates
