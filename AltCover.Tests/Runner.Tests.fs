@@ -204,7 +204,7 @@ module AltCoverRunnerTests =
     |> Seq.find
          (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
-  let internal Init n l =
+  let internal init n l =
     let tmp = { PointVisit.Create() with Count = n }
     tmp.Tracks.AddRange l
     tmp
@@ -231,10 +231,10 @@ module AltCoverRunnerTests =
     let payload = Dictionary<int, PointVisit>()
 
     [ 0 .. 9 ]
-    |> Seq.iter (fun i -> payload.[10 - i] <- Init(int64 (i + 1)) [])
+    |> Seq.iter (fun i -> payload.[10 - i] <- init(int64 (i + 1)) [])
 
     [ 11 .. 12 ]
-    |> Seq.iter (fun i -> payload.[i ||| Counter.branchFlag] <- Init(int64 (i - 10)) [])
+    |> Seq.iter (fun i -> payload.[i ||| Counter.branchFlag] <- init(int64 (i - 10)) [])
 
     let item =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -325,7 +325,7 @@ module AltCoverRunnerTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- Init(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- init(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -427,7 +427,7 @@ module AltCoverRunnerTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- Init(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- init(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -3232,11 +3232,11 @@ module AltCoverRunnerTests =
       Dictionary<string, Dictionary<int, PointVisit>>()
 
     let a = Dictionary<int, PointVisit>()
-    a.Add(0, Init 1L [])
+    a.Add(0, init 1L [])
     let b = Dictionary<int, PointVisit>()
-    b.Add(1, Init 1L [])
+    b.Add(1, init 1L [])
     let c = Dictionary<int, PointVisit>()
-    c.Add(3, Init 1L [])
+    c.Add(3, init 1L [])
     expected.Add("a", a)
     expected.Add("b", b)
     expected.Add("c", c)
@@ -3378,7 +3378,7 @@ module AltCoverRunnerTests =
         Time 42L
         Call 5 ]
 
-    let pv = Init 42L (payloads0 |> List.tail)
+    let pv = init 42L (payloads0 |> List.tail)
 
     let table =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -3747,8 +3747,8 @@ module AltCoverRunnerTests =
 
     let visit = Dictionary<int, PointVisit>()
     visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
-    visit.Add(100663297, Init 1L []) // should fill in the expected non-zero value
-    visit.Add(100663298, Init 23L []) // should be ignored
+    visit.Add(100663297, init 1L []) // should fill in the expected non-zero value
+    visit.Add(100663298, init 23L []) // should be ignored
     Runner.J.postProcess visits ReportFormat.OpenCover after
 
     Assert.That(
@@ -5235,7 +5235,7 @@ module AltCoverRunnerTests =
 
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
   // Also, this rule is deprecated
-  let private LoadSchema () =
+  let private loadSchema () =
     let schemas = new XmlSchemaSet()
 
     use stream =
@@ -5248,8 +5248,8 @@ module AltCoverRunnerTests =
     schemas.Add(String.Empty, xreader) |> ignore
     schemas
 
-  let private Validate result =
-    let schema = LoadSchema()
+  let private validate result =
+    let schema = loadSchema()
     let xmlDocument = XmlDocument()
     xmlDocument.LoadXml(result)
     xmlDocument.Schemas <- schema
@@ -5356,7 +5356,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-      Validate result
+      validate result
     finally
       Cobertura.path := None
 
@@ -5436,7 +5436,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-      Validate result
+      validate result
     finally
       Cobertura.path := None
 
@@ -5520,7 +5520,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-      Validate result
+      validate result
     finally
       Cobertura.path := None
 
@@ -5602,7 +5602,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-      Validate result
+      validate result
     finally
       Cobertura.path := None
 
@@ -5763,7 +5763,7 @@ module AltCoverRunnerTests =
           )
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-      Validate result
+      validate result
     finally
       Cobertura.path := None
 
@@ -5845,7 +5845,7 @@ module AltCoverRunnerTests =
         result
       )
 
-      Validate result
+      validate result
     finally
       Cobertura.path := None
 

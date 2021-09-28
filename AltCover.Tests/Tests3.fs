@@ -1335,10 +1335,10 @@ module AltCoverTests3 =
       ProgramDatabase.symbolFolders.Clear()
       let options = Main.I.declareOptions ()
       let unique = Path.GetFullPath(".")
-      let Symbol = [| "-y"; unique |]
+      let symbol = [| "-y"; unique |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Right (x, y) ->
@@ -1358,14 +1358,14 @@ module AltCoverTests3 =
       ProgramDatabase.symbolFolders.Clear()
       let options = Main.I.declareOptions ()
 
-      let Symbol =
+      let symbol =
         [| "-y"
            Path.GetFullPath(".")
            "/y"
            Path.GetFullPath("..") |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Right (x, y) ->
@@ -1376,7 +1376,7 @@ module AltCoverTests3 =
       | 2 ->
           Assert.That(
             ProgramDatabase.symbolFolders,
-            Is.EquivalentTo(Symbol |> Seq.filter (fun x -> x.Length > 2))
+            Is.EquivalentTo(symbol |> Seq.filter (fun x -> x.Length > 2))
           )
     finally
       ProgramDatabase.symbolFolders.Clear()
@@ -1392,10 +1392,10 @@ module AltCoverTests3 =
       let unique =
         Guid.NewGuid().ToString().Replace("-", "*")
 
-      let Symbol = [| "-y"; unique |]
+      let symbol = [| "-y"; unique |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Left (x, y) ->
@@ -1411,10 +1411,10 @@ module AltCoverTests3 =
     try
       ProgramDatabase.symbolFolders.Clear()
       let options = Main.I.declareOptions ()
-      let Symbol = [| "-y" |]
+      let symbol = [| "-y" |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Left (x, y) ->

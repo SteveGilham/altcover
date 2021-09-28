@@ -26,7 +26,7 @@ module AltCoverTests2 =
       .GetManifestResourceNames()
     |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
 
-  let private ProvideKeyPair () =
+  let private provideKeyPair () =
     use stream =
       Assembly
         .GetExecutingAssembly()
@@ -137,7 +137,7 @@ module AltCoverTests2 =
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-      ProvideKeyPair() |> CoverageParameters.add
+      provideKeyPair() |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownKey def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -153,7 +153,7 @@ module AltCoverTests2 =
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-      ProvideKeyPair() |> CoverageParameters.add
+      provideKeyPair() |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -196,7 +196,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
-      ProvideKeyPair() |> CoverageParameters.add
+      provideKeyPair() |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -229,7 +229,7 @@ module AltCoverTests2 =
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-      ProvideKeyPair() |> CoverageParameters.add
+      provideKeyPair() |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownToken def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -247,7 +247,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
-      ProvideKeyPair() |> CoverageParameters.add
+      provideKeyPair() |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownToken def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -256,7 +256,7 @@ module AltCoverTests2 =
   let ForeignTokenIsNotMatchedInIndex () =
     try
       CoverageParameters.keys.Clear()
-      ProvideKeyPair() |> CoverageParameters.add
+      provideKeyPair() |> CoverageParameters.add
 
       let path =
         typeof<System.IO.FileAccess>.Assembly.Location
@@ -1160,7 +1160,7 @@ module AltCoverTests2 =
            Assert.That(i.Operand, Is.SameAs before))
 
   // work around weird compiler error with array indexing
-  let private AsIArray (x: obj) (i: int) =
+  let private asIArray (x: obj) (i: int) =
     (x :?> Instruction [])
     |> Seq.mapi (fun index instr -> (index, instr))
     |> Seq.filter (fun (x, y) -> x = i)
@@ -1202,11 +1202,11 @@ module AltCoverTests2 =
            |> Seq.mapi (fun o t -> (i, o, t)))
     |> Seq.iter
          (fun (i, o, t) ->
-           Assert.That(AsIArray i.Operand o, (Is.SameAs t))
+           Assert.That(asIArray i.Operand o, (Is.SameAs t))
            Assert.That(t, Is.Not.EqualTo newValue)
            CecilExtension.substituteInstructionOperand t newValue i
 
-           let t' = AsIArray i.Operand
+           let t' = asIArray i.Operand
            Assert.That(t' o, Is.EqualTo newValue))
 
   [<Test>]
@@ -3375,13 +3375,13 @@ module AltCoverTests2 =
   [<Test>]
   let OutputCanBeExercised () =
     let sink = StringSink(ignore)
-    let SetInfo (x: StringSink) = Output.info <- x.Invoke
-    let SetError (x: StringSink) = Output.error <- x.Invoke
-    let SetWarn (x: StringSink) = Output.warn <- x.Invoke
+    let setInfo (x: StringSink) = Output.info <- x.Invoke
+    let setError (x: StringSink) = Output.error <- x.Invoke
+    let setWarn (x: StringSink) = Output.warn <- x.Invoke
 
-    SetInfo sink
-    SetError sink
-    SetWarn sink
+    setInfo sink
+    setError sink
+    setWarn sink
     Output.echo <- ignore
     Output.usage <- ignore
     Output.echo "echo"
@@ -3438,9 +3438,9 @@ module AltCoverTests2 =
 
            invoke.Invoke(o, [| arg |]) |> ignore)
 
-    SetWarn sink
-    SetError sink |> ignore
-    SetInfo sink |> ignore
+    setWarn sink
+    setError sink |> ignore
+    setInfo sink |> ignore
     Output.warn "warn"
     Output.error "error"
     Output.info "info"

@@ -27,7 +27,7 @@ open NUnit.Framework
 module AltCoverTests =
 
   [<MethodImpl(MethodImplOptions.NoInlining)>]
-  let private GetMyMethodName tag = ignore tag
+  let private getMyMethodName tag = ignore tag
   //    let st = StackTrace(StackFrame(1))
   //    st.GetFrame(0).GetMethod().Name |>
   //#if NET20
@@ -42,11 +42,11 @@ module AltCoverTests =
       .GetManifestResourceNames()
     |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
-  let private UpdateReport a b =
+  let private updateReport a b =
     Adapter.updateReport(a, ReportFormat.NCover, b, b)
     |> ignore
 
-  let private PointVisitInit a b = Adapter.init(a, b)
+  let private pointVisitInit a b = Adapter.init(a, b)
 
   let resource2 =
     Assembly
@@ -80,15 +80,15 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldBeLinkingTheCorrectCopyOfThisCode () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
     let tracer = Adapter.makeNullTrace String.Empty
 
     Assert.True(tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder")
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let OnlyNewIdPairShouldBeSampled () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -116,10 +116,10 @@ module AltCoverTests =
         finally
           Adapter.SamplesClear())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let RealIdShouldIncrementCount () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -149,7 +149,7 @@ module AltCoverTests =
           Adapter.VisitsClear()
           Instance.I.trace <- save)
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let JunkUspidGivesNegativeIndex () =
@@ -297,7 +297,7 @@ module AltCoverTests =
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -331,7 +331,7 @@ module AltCoverTests =
           Instance.I.visits.Clear()
           Instance.I.trace <- save)
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let strip before (all: HashSet<String>) =
     before
@@ -419,7 +419,7 @@ module AltCoverTests =
 #if NET5_0
   [<Test>]
   let NullRefShouldBeHandled () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
     let handle = Instance.I.visits
 
     lock
@@ -457,12 +457,12 @@ module AltCoverTests =
           Instance.I.visits <- handle
           Instance.I.visits.Clear())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 #endif
 
   [<Test>]
   let DistinctIdShouldBeDistinct () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -476,11 +476,11 @@ module AltCoverTests =
         finally
           Instance.I.visits.Clear())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let DistinctLineShouldBeDistinct () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -495,11 +495,11 @@ module AltCoverTests =
         finally
           Adapter.VisitsClear())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let RepeatVisitsShouldIncrementCount () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -516,11 +516,11 @@ module AltCoverTests =
         finally
           Instance.I.visits.Clear())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let RepeatVisitsShouldIncrementTotal () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -538,11 +538,11 @@ module AltCoverTests =
         finally
           Instance.I.visits.Clear())
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   //[<Test>]
   //let TabledVisitsShouldIncrementCount() =
-  //  GetMyMethodName "=>"
+  //  getMyMethodName "=>"
   //  lock Instance.I.visits (fun () ->
   //    Adapter.Reset()
   //    try
@@ -556,7 +556,7 @@ module AltCoverTests =
   //          Adapter.Time 23L
   //          Adapter.NewBoth(5L, 42) ]
 
-  //      let pv = PointVisitInit 42L payloads
+  //      let pv = pointVisitInit 42L payloads
   //      table.[key].Add(23, pv)
   //      let n = Counter.AddTable(Instance.I.visits, table)
   //      Assert.That(n, Is.EqualTo 45)
@@ -564,11 +564,11 @@ module AltCoverTests =
   //      Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo payloads)
   //    finally
   //      Instance.I.visits.Clear())
-  //  GetMyMethodName "<="
+  //  getMyMethodName "<="
 
   [<Test>]
   let OldDocumentStartIsNotUpdated () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -595,7 +595,7 @@ module AltCoverTests =
             .GetManifestResourceStream(resource)
         )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
+        updateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
         worker.Position <- 0L
         let after = XmlDocument()
         after.Load worker
@@ -613,11 +613,11 @@ module AltCoverTests =
           Is.EqualTo(Counter.startTime.ToUniversalTime())
         ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let NewDocumentStartIsMadeEarlier () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -646,7 +646,7 @@ module AltCoverTests =
             .GetManifestResourceStream(resource)
         )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
+        updateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
         worker.Position <- 0L
         let after = XmlDocument()
         after.Load worker
@@ -664,11 +664,11 @@ module AltCoverTests =
           Is.EqualTo(Counter.startTime.ToUniversalTime())
         ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let NewDocumentMeasureIsNotMadeEarlier () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -697,7 +697,7 @@ module AltCoverTests =
             .GetManifestResourceStream(resource)
         )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
+        updateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
         worker.Position <- 0L
         let after = XmlDocument()
         after.Load worker
@@ -715,11 +715,11 @@ module AltCoverTests =
           Is.EqualTo(Counter.measureTime.ToUniversalTime())
         ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let OldDocumentMeasureIsUpdated () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -746,7 +746,7 @@ module AltCoverTests =
             .GetManifestResourceStream(resource)
         )
 
-        UpdateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
+        updateReport(Dictionary<string, Dictionary<int, PointVisit>>()) worker
         worker.Position <- 0L
         let after = XmlDocument()
         after.Load worker
@@ -764,11 +764,11 @@ module AltCoverTests =
           Is.EqualTo(Counter.measureTime.ToUniversalTime())
         ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let UnknownModuleMakesNoChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -799,7 +799,7 @@ module AltCoverTests =
           Dictionary<string, Dictionary<int, PointVisit>>()
 
         item.Add("not a guid", null)
-        UpdateReport item worker
+        updateReport item worker
         worker.Position <- 0L
         let after = new StreamReader(worker)
 
@@ -817,11 +817,11 @@ module AltCoverTests =
 
         Assert.That(result, Is.EquivalentTo expected))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithNothingMakesNoChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -852,7 +852,7 @@ module AltCoverTests =
           Dictionary<string, Dictionary<int, PointVisit>>()
 
         item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int, PointVisit>())
-        UpdateReport item worker
+        updateReport item worker
         worker.Position <- 0L
         let after = new StreamReader(worker)
 
@@ -870,11 +870,11 @@ module AltCoverTests =
 
         Assert.That(result, Is.EquivalentTo expected))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithNothingInRangeMakesNoChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -902,14 +902,14 @@ module AltCoverTests =
           )
 
         let payload = Dictionary<int, PointVisit>()
-        payload.[-1] <- PointVisitInit 10L []
-        payload.[100] <- PointVisitInit 10L []
+        payload.[-1] <- pointVisitInit 10L []
+        payload.[100] <- pointVisitInit 10L []
 
         let item =
           Dictionary<string, Dictionary<int, PointVisit>>()
 
         item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
-        UpdateReport item worker
+        updateReport item worker
         worker.Position <- 0L
         let after = new StreamReader(worker)
 
@@ -927,11 +927,11 @@ module AltCoverTests =
 
         Assert.That(result, Is.EquivalentTo expected))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithPayloadMakesExpectedChange () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -953,13 +953,13 @@ module AltCoverTests =
         let payload = Dictionary<int, PointVisit>()
 
         [ 0 .. 9 ]
-        |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+        |> Seq.iter (fun i -> payload.[i] <- pointVisitInit(int64 (i + 1)) [])
 
         let item =
           Dictionary<string, Dictionary<int, PointVisit>>()
 
         item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
-        UpdateReport item worker
+        updateReport item worker
         worker.Position <- 0L
         let after = XmlDocument()
         after.Load worker
@@ -980,11 +980,11 @@ module AltCoverTests =
                             "1" ]
         ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let KnownModuleWithPayloadMakesExpectedChangeInOpenCover () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Instance.I.visits
@@ -1006,12 +1006,12 @@ module AltCoverTests =
         let payload = Dictionary<int, PointVisit>()
 
         [ 0 .. 9 ]
-        |> Seq.iter (fun i -> payload.[10 - i] <- PointVisitInit(int64 (i + 1)) [])
+        |> Seq.iter (fun i -> payload.[10 - i] <- pointVisitInit(int64 (i + 1)) [])
 
         [ 11 .. 12 ]
         |> Seq.iter
              (fun i ->
-               payload.[i ||| Counter.branchFlag] <- PointVisitInit(int64 (i - 10)) [])
+               payload.[i ||| Counter.branchFlag] <- pointVisitInit(int64 (i - 10)) [])
 
         let item =
           Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1048,11 +1048,11 @@ module AltCoverTests =
           Is.EquivalentTo [ "2"; "2" ]
         ))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let EmptyFlushLeavesNoTrace () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -1069,7 +1069,7 @@ module AltCoverTests =
           Adapter.VisitsClear()
           Console.SetOut saved)
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let trywith<'a when 'a :> exn> f g =
     try
@@ -1097,7 +1097,7 @@ module AltCoverTests =
       (fun () -> InvalidOperationException() |> raise)
 
   let PauseLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -1194,10 +1194,10 @@ module AltCoverTests =
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let ResumeLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -1301,10 +1301,10 @@ module AltCoverTests =
               File.Delete tag
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   let FlushLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -1404,11 +1404,11 @@ module AltCoverTests =
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let SupervisedFlushLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -1501,7 +1501,7 @@ module AltCoverTests =
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 
   [<Test>]
   let FlushLeavesExpectedTracesWhenDiverted () =
@@ -1552,7 +1552,7 @@ module AltCoverTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -1640,7 +1640,7 @@ module AltCoverTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -1720,7 +1720,7 @@ module AltCoverTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -1809,7 +1809,7 @@ module AltCoverTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -1882,7 +1882,7 @@ module AltCoverTests =
       let payload = Dictionary<int, PointVisit>()
 
       [ 0 .. 9 ]
-      |> Seq.iter (fun i -> payload.[i] <- PointVisitInit(int64 (i + 1)) [])
+      |> Seq.iter (fun i -> payload.[i] <- pointVisitInit(int64 (i + 1)) [])
 
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
@@ -1899,7 +1899,7 @@ module AltCoverTests =
       AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
 
   let ZipFlushLeavesExpectedTraces () =
-    GetMyMethodName "=>"
+    getMyMethodName "=>"
 
     lock
       Adapter.Lock
@@ -2011,7 +2011,7 @@ module AltCoverTests =
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
 
-    GetMyMethodName "<="
+    getMyMethodName "<="
 #endif
 
   // Dead simple sequential operation

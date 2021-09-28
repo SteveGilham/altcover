@@ -86,7 +86,7 @@ module AltCoverXTests =
            RecursiveValidate(r.Elements()) (e.Elements()) (depth + 1) zero)
 
   let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
-    let X name = XName.Get(name)
+    let xn name = XName.Get(name)
     let rcount = result |> Seq.length
 
     let expected =
@@ -96,7 +96,7 @@ module AltCoverXTests =
              el.Name.LocalName <> "Module"
              || expectSkipped
              || "skippedDueTo"
-                |> X
+                |> xn
                 |> el.Attributes
                 |> Seq.isEmpty)
       |> Seq.toList
