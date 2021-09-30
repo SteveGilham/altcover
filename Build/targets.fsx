@@ -5547,7 +5547,7 @@ Target.runOrDefault "DoIt"
 
             File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}", "\"" + ver + "\""))
 
-            let dependencies = """version 5.249.0
+            let dependencies = """version 5.257.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
