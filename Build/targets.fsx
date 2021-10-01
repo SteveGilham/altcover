@@ -5550,6 +5550,7 @@ Target.runOrDefault "DoIt"
             let dependencies = """version 5.257.0
 // [ FAKE GROUP ]
 group NetcoreBuild
+  storage: none
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core.Target >= 5.20.3
   nuget Fake.DotNet.Cli >= 5.20.3

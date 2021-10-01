@@ -1,6 +1,7 @@
 
 
 GROUP NetcoreBuild
+STORAGE: NONE
 NUGET
   remote: {1}
     altcover.api ({0})
