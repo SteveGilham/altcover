@@ -3585,19 +3585,8 @@ module AltCoverTests3 =
       test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
-#if !NET472
-      let dir =
-        Path.Combine(
-          SolutionRoot.location,
-          "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0"
-        )
-#else
-      let dir =
-        Path.Combine(
-          SolutionRoot.location,
-          "_Binaries/AltCover.Engine/Debug+AnyCPU/net472"
-        )
-#endif
+      let dir = System.Reflection.Assembly.GetExecutingAssembly().Location
+                |> Path.GetDirectoryName
 
       let eo =
         Path.Combine(dir, "./eo/AltCover.Engine.resources.dll")
