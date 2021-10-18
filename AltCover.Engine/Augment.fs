@@ -13,6 +13,8 @@ module internal Augment =
 #endif
 
 #if !ValidateGendarmeEmulation
+  let internal maybe a b c = if a then b else c
+
   [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",
     Justification="Preferred overload, no comparison exists in netstd2.0/net472")>]
   let internal charIndexOf (name:string) (token:char) =

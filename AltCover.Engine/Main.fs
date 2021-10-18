@@ -417,18 +417,35 @@ module internal Main =
              (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
+      let matchType = maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+                            StringComparison.OrdinalIgnoreCase StringComparison.Ordinal
       Seq.zip inputInfos outputInfos
       |> Seq.iter
            (fun (inputInfo, outputInfo) ->
-             let files = inputInfo.GetFiles()
-             // TODO recurse here
+             // recurse here
+
+             let files = inputInfo.GetFiles("*",SearchOption.AllDirectories)
+                         |> Seq.filter (fun i -> outputInfos
+                                                 |> Seq.exists(fun o -> if i.FullName.StartsWith(o.FullName, matchType)
+                                                                        then
+                                                                          let l = o.FullName.Length // address corner case here
+                                                                          let del = i.FullName.[l]
+                                                                          (del = Path.DirectorySeparatorChar ||
+                                                                           del = Path.AltDirectorySeparatorChar)
+                                                                        else false)
+                                                 |> not)
 
              files
              |> Seq.iter
                   (fun info ->
                     let fullName = info.FullName
-                    let filename = info.Name
+                    let filename =
+                      Visitor.I.getRelativePath inputInfo.FullName fullName
                     let copy = Path.Combine(outputInfo.FullName, filename)
+                    copy
+                    |> Path.GetDirectoryName
+                    |> Directory.CreateDirectory
+                    |> ignore
                     File.Copy(fullName, copy, true)))
 
       // Track the symbol-bearing assemblies
