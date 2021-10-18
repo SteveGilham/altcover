@@ -401,6 +401,19 @@ module internal Main =
       | :? ArgumentException
       | :? IOException -> tidy ()
 
+    let internal matchType = Maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+                                    StringComparison.OrdinalIgnoreCase StringComparison.Ordinal
+
+    let internal isInDirectory (file:string) (dir:string) =
+      if file.StartsWith(dir, matchType)
+      then
+        let l = dir.Length // address corner case here
+        // array accessor fails in Release again
+        let next = file |> Seq.skip l |> Seq.head
+        (next = Path.DirectorySeparatorChar ||
+          next = Path.AltDirectorySeparatorChar)
+      else false
+
     let internal prepareTargetFiles
       (inputInfos: DirectoryInfo seq)
       (outputInfos: DirectoryInfo seq)
@@ -417,8 +430,6 @@ module internal Main =
              (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
-      let matchType = Maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
-                            StringComparison.OrdinalIgnoreCase StringComparison.Ordinal
       Seq.zip inputInfos outputInfos
       |> Seq.iter
            (fun (inputInfo, outputInfo) ->
@@ -426,16 +437,7 @@ module internal Main =
 
              let files = inputInfo.GetFiles("*",SearchOption.AllDirectories)
                          |> Seq.filter (fun i -> outputInfos
-                                                 |> Seq.exists(fun o -> let inputName = i.FullName
-                                                                        let outputName = o.FullName
-                                                                        if inputName.StartsWith(outputName, matchType)
-                                                                        then
-                                                                          let l = outputName.Length // address corner case here
-                                                                          // array accessor fails in Release again
-                                                                          let next = inputName |> Seq.skip l |> Seq.head
-                                                                          (next = Path.DirectorySeparatorChar ||
-                                                                           next = Path.AltDirectorySeparatorChar)
-                                                                        else false)
+                                                 |> Seq.exists(fun o -> isInDirectory i.FullName o.FullName)
                                                  |> not)
 
              files

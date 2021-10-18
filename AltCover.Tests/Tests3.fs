@@ -3169,6 +3169,16 @@ module AltCoverTests3 =
     Assert.That(one.Value, Is.True)
 
   [<Test>]
+  let FolderNestingIsDetectedCorrectly () =
+    let dir = "some/path"
+    let file1 = "different/path"
+    test <@ (Main.I.isInDirectory file1 dir) |> not @>
+    let file2 = "some/pathway/a.b"
+    test <@ (Main.I.isInDirectory file2 dir) |> not @>
+    let file3 = "some/path/nested/a.b"
+    test <@ (Main.I.isInDirectory file3 dir) @>
+
+  [<Test>]
   let PreparingNewPlaceShouldCopyEverything () =
     Main.init ()
     // because mono symbol-writing is broken, work around trying to

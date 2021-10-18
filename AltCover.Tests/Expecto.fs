@@ -765,6 +765,8 @@ module ExpectoTestManifest =
       "Tests3.ResilientHandlesBadImageFormatException"
       Tests.AltCoverTests3.ResilientHandlesArgumentException,
       "Tests3.ResilientHandlesArgumentException"
+      Tests.AltCoverTests3.FolderNestingIsDetectedCorrectly,
+      "Tests3.FolderNestingIsDetectedCorrectly"
       Tests.AltCoverTests3.PreparingNewPlaceShouldCopyEverything,
       "Tests3.PreparingNewPlaceShouldCopyEverything"
       Tests.AltCoverTests3.ShouldProcessTrailingArguments,
