@@ -135,7 +135,7 @@ module internal Main =
       [ ("i|inputDirectory=",
          (fun x ->
            if CommandLine.validateDirectory "--inputDirectory" x then
-             let arg = Path.GetFullPath x
+             let arg = Uri(Path.GetFullPath x, UriKind.Absolute).LocalPath
 
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
@@ -147,7 +147,7 @@ module internal Main =
         ("o|outputDirectory=",
          (fun x ->
            if CommandLine.validatePath "--outputDirectory" x then
-             let arg = Path.GetFullPath x
+             let arg = Uri(Path.GetFullPath x, UriKind.Absolute).LocalPath
 
              if CoverageParameters.theOutputDirectories.Contains arg then
                CommandLine.error <-
