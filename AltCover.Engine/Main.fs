@@ -331,13 +331,13 @@ module internal Main =
       match action with
       | Right (rest, options) ->
           // Check that the directories are distinct
-          let fromDirectories = CoverageParameters.inputDirectories ()
-          let toDirectories = CoverageParameters.outputDirectories ()
+          let inputDirectories = CoverageParameters.inputDirectories ()
+          let outputDirectories = CoverageParameters.outputDirectories ()
 
-          fromDirectories
+          inputDirectories
           |> Seq.iter
                (fun fromDirectory ->
-                 if toDirectories.Contains fromDirectory then
+                 if outputDirectories.Contains fromDirectory then
                    CommandLine.error <-
                      CommandLine.Format.Local("NotInPlace", fromDirectory)
                      :: CommandLine.error)
@@ -345,7 +345,7 @@ module internal Main =
           CommandLine.doPathOperation
             (fun () ->
               let found =
-                toDirectories |> Seq.filter Directory.Exists
+                outputDirectories |> Seq.filter Directory.Exists
 
               if CoverageParameters.inplace.Value
                  && CommandLine.error |> List.isEmpty
@@ -358,36 +358,36 @@ module internal Main =
                          :: CommandLine.error)
 
               if CommandLine.error |> List.isEmpty then
-                (Seq.iter CommandLine.ensureDirectory toDirectories))
+                (Seq.iter CommandLine.ensureDirectory outputDirectories))
             ()
             false
 
           if CommandLine.error |> List.isEmpty |> not then
             Left("UsageError", options)
           else
-            Seq.zip toDirectories fromDirectories
+            Seq.zip outputDirectories inputDirectories
             |> Seq.iter
-                 (fun (toDirectory, fromDirectory) ->
+                 (fun (outputDirectory, inputDirectory) ->
                    if CommandLine.verbosity < 1 // implement it early here
                    then
                      if CoverageParameters.inplace.Value then
                        Output.info
-                       <| CommandLine.Format.Local("savingto", toDirectory)
+                       <| CommandLine.Format.Local("savingto", outputDirectory)
 
                        Output.info
-                       <| CommandLine.Format.Local("instrumentingin", fromDirectory)
+                       <| CommandLine.Format.Local("instrumentingin", inputDirectory)
                      else
                        Output.info
-                       <| CommandLine.Format.Local("instrumentingfrom", fromDirectory)
+                       <| CommandLine.Format.Local("instrumentingfrom", inputDirectory)
 
                        Output.info
-                       <| CommandLine.Format.Local("instrumentingto", toDirectory))
+                       <| CommandLine.Format.Local("instrumentingto", outputDirectory))
 
             Right(
               rest,
-              fromDirectories |> Seq.map DirectoryInfo,
-              toDirectories |> Seq.map DirectoryInfo,
-              CoverageParameters.sourceDirectories ()
+              inputDirectories |> Seq.map DirectoryInfo,
+              outputDirectories |> Seq.map DirectoryInfo,
+              CoverageParameters.sourceDirectories () // "instrument-from" selection of the above
               |> Seq.map DirectoryInfo
             )
       | Left intro -> Left intro
@@ -402,37 +402,38 @@ module internal Main =
       | :? IOException -> tidy ()
 
     let internal prepareTargetFiles
-      (fromInfos: DirectoryInfo seq)
-      (toInfos: DirectoryInfo seq)
-      (sourceInfos: DirectoryInfo seq)
-      (targets: string seq)
+      (inputInfos: DirectoryInfo seq)
+      (outputInfos: DirectoryInfo seq)
+      (instrumentFromInfos: DirectoryInfo seq)
+      (instrumentToPaths: string seq)
       =
       // Copy all the files into the target directory
       let mapping = Dictionary<string, string>()
 
-      Seq.zip sourceInfos targets
+      Seq.zip instrumentFromInfos instrumentToPaths
       |> Seq.map
            (fun (x, y) ->
              let f = x.FullName // trim separator
              (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
-      Seq.zip fromInfos toInfos
+      Seq.zip inputInfos outputInfos
       |> Seq.iter
-           (fun (fromInfo, toInfo) ->
-             let files = fromInfo.GetFiles()
+           (fun (inputInfo, outputInfo) ->
+             let files = inputInfo.GetFiles()
+             // TODO recurse here
 
              files
              |> Seq.iter
                   (fun info ->
                     let fullName = info.FullName
                     let filename = info.Name
-                    let copy = Path.Combine(toInfo.FullName, filename)
+                    let copy = Path.Combine(outputInfo.FullName, filename)
                     File.Copy(fullName, copy, true)))
 
       // Track the symbol-bearing assemblies
       let assemblies =
-        sourceInfos
+        instrumentFromInfos
         |> Seq.map
              (fun sourceInfo ->
                sourceInfo.GetFiles()
