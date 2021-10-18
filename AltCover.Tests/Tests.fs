@@ -2594,7 +2594,7 @@ module AltCoverTests =
         |> Seq.map
              (fun t ->
                let flag =
-                 maybe (t.Name <> "Program") Inspections.Instrument Inspections.Ignore
+                 Maybe (t.Name <> "Program") Inspections.Instrument Inspections.Ignore
 
                let node =
                  Node.Type
@@ -3271,7 +3271,7 @@ module AltCoverTests =
                         + " -> document"
                       )
                   | "visitcount" ->
-                      let expected = maybe zero "0" a2.Value
+                      let expected = Maybe zero "0" a2.Value
 
                       Assert.That(
                         a1.Value,
@@ -4245,7 +4245,7 @@ module AltCoverTests =
                         + " -> document"
                       )
                   | "vc" ->
-                      let expected = maybe zero "0" a2.Value
+                      let expected = Maybe zero "0" a2.Value
 
                       Assert.That(
                         a1.Value,

@@ -76,7 +76,7 @@ module AltCoverXTests =
                          + r.ToString()
                          + " -> document")
                   | "visitcount" ->
-                      let expected = maybe zero "0" a2.Value
+                      let expected = Maybe zero "0" a2.Value
                       test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
                   | _ ->
                       test'
@@ -153,7 +153,7 @@ module AltCoverXTests =
                          + r.ToString()
                          + " -> document")
                   | "vc" ->
-                      let expected = maybe zero "0" a2.Value
+                      let expected = Maybe zero "0" a2.Value
                       test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
                   | _ ->
                       test'
@@ -774,7 +774,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let theFiles =
-        ( maybe isWindows  ("AltCover.Recorder.g.pdb" :: expected) expected)
+        ( Maybe isWindows  ("AltCover.Recorder.g.pdb" :: expected) expected)
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       let actualFiles =
@@ -1009,7 +1009,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let expected =
-        (maybe isWindows ("AltCover.Recorder.g.pdb" :: theFiles) theFiles)
+        (Maybe isWindows ("AltCover.Recorder.g.pdb" :: theFiles) theFiles)
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       test <@ actual = expected @>

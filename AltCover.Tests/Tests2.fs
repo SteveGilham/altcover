@@ -683,7 +683,7 @@ module AltCoverTests2 =
         Assert.That(traces, Is.EquivalentTo expectedTraces, "unexpected traces")
 
         let expectedSymbols =
-          maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
+          Maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
 
         let isSymbols =
 #if NET472
@@ -902,7 +902,7 @@ module AltCoverTests2 =
         Instrument.I.writeAssembly def outputdll
 
         let expectedSymbols =
-          maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
+          Maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
 
         let isSymbols =
 #if !NET472
@@ -963,7 +963,7 @@ module AltCoverTests2 =
             |> Seq.toList
 
           let result =
-            maybe
+            Maybe
               isMsft // HACK HACK HACK
               log
               [ (unique, 42) ]
@@ -3359,7 +3359,7 @@ module AltCoverTests2 =
     let unique = Guid.NewGuid().ToString()
 
     let raiser =
-      fun x -> maybe x (unique |> CryptographicException |> raise) ()
+      fun x -> Maybe x (unique |> CryptographicException |> raise) ()
 
     let arg = fun () -> raiser true
 
@@ -3422,7 +3422,7 @@ module AltCoverTests2 =
            let c0 = c |> Seq.head
            let p = c0.GetParameters().Length
 
-           let o = c0.Invoke(maybe (p = 0) null [| sink |])
+           let o = c0.Invoke(Maybe (p = 0) null [| sink |])
 
            let invoke = t.GetMethod("Invoke")
            let param = invoke.GetParameters() |> Seq.head

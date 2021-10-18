@@ -417,7 +417,7 @@ module internal Main =
              (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
-      let matchType = maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+      let matchType = Maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
                             StringComparison.OrdinalIgnoreCase StringComparison.Ordinal
       Seq.zip inputInfos outputInfos
       |> Seq.iter
@@ -426,12 +426,15 @@ module internal Main =
 
              let files = inputInfo.GetFiles("*",SearchOption.AllDirectories)
                          |> Seq.filter (fun i -> outputInfos
-                                                 |> Seq.exists(fun o -> if i.FullName.StartsWith(o.FullName, matchType)
+                                                 |> Seq.exists(fun o -> let inputName = i.FullName
+                                                                        let outputName = o.FullName
+                                                                        if inputName.StartsWith(outputName, matchType)
                                                                         then
-                                                                          let l = o.FullName.Length // address corner case here
-                                                                          let del = i.FullName.[l]
-                                                                          (del = Path.DirectorySeparatorChar ||
-                                                                           del = Path.AltDirectorySeparatorChar)
+                                                                          let l = outputName.Length // address corner case here
+                                                                          // array accessor fails in Release again
+                                                                          let next = inputName |> Seq.skip l |> Seq.head
+                                                                          (next = Path.DirectorySeparatorChar ||
+                                                                           next = Path.AltDirectorySeparatorChar)
                                                                         else false)
                                                  |> not)
 

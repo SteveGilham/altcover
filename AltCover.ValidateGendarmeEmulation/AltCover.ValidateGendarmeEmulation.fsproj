@@ -56,6 +56,7 @@
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
+    <Compile Include="..\AltCover.Engine\Abstraction.fs" Link="Abstraction.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Engine\Gendarme.fs" Link="Gendarme.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />

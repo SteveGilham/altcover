@@ -709,7 +709,7 @@ module AltCoverRunnerTests =
         <> "Windows_NT"
 
       let exe, args =
-        maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
+        Maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
 
       let r =
         CommandLine.I.launch
@@ -722,7 +722,7 @@ module AltCoverRunnerTests =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty
@@ -2344,7 +2344,7 @@ module AltCoverRunnerTests =
 
     let args =
 #if NET472
-      maybe nonWindows [ "mono"; path ] [ path ]
+      Maybe nonWindows [ "mono"; path ] [ path ]
 #else
       [ "dotnet"; path ]
 #endif
@@ -2416,7 +2416,7 @@ module AltCoverRunnerTests =
         <> "Windows_NT"
 
       let args =
-        maybe nonWindows ("mono" :: baseArgs) baseArgs
+        Maybe nonWindows ("mono" :: baseArgs) baseArgs
 
       let r =
         CommandLine.processTrailingArguments args
@@ -2428,7 +2428,7 @@ module AltCoverRunnerTests =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty
@@ -2608,7 +2608,7 @@ module AltCoverRunnerTests =
         <> "Windows_NT"
 
       let args =
-        maybe nonWindows ("mono" :: baseArgs) baseArgs
+        Maybe nonWindows ("mono" :: baseArgs) baseArgs
 
       let r = Runner.J.getPayload args
       Assert.That(r, Is.EqualTo 0)
@@ -2617,7 +2617,7 @@ module AltCoverRunnerTests =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty

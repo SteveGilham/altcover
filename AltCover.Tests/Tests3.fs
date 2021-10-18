@@ -56,7 +56,7 @@ module AltCoverTests3 =
         <> "Windows_NT"
 
       let exe, args =
-        maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
+        Maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
 
       let r =
         CommandLine.I.launch
@@ -69,7 +69,7 @@ module AltCoverTests3 =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty
@@ -3278,7 +3278,7 @@ module AltCoverTests3 =
         <> "Windows_NT"
 
       let args =
-        maybe nonWindows ("mono" :: baseArgs) baseArgs
+        Maybe nonWindows ("mono" :: baseArgs) baseArgs
 
       let r =
         CommandLine.processTrailingArguments args (DirectoryInfo(where))
@@ -3288,7 +3288,7 @@ module AltCoverTests3 =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty
