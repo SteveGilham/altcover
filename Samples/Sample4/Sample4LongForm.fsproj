@@ -50,6 +50,7 @@
     <PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Tests.fs" />
     <Compile Include="..\..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,5 +62,13 @@
   <ItemGroup>
     <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\netcoreapp2.1\.NETCoreApp,Version=v2.1.AssemblyAttributes.fs" />
     <Compile Remove="_Intermediate\Sample4\Debug+AnyCPU\netcoreapp2.1\Sample4.AssemblyInfo.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.eo.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
