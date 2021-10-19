@@ -1041,6 +1041,8 @@ module AltCoverTests3 =
     finally
       CoverageParameters.theReportPath <- None
 
+  let internal n x = Uri(Path.GetFullPath (x + "/"), UriKind.Absolute).LocalPath
+
   [<Test>]
   let ParsingInputGivesInput () =
     Main.init ()
@@ -1061,7 +1063,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.theInputDirectories
             |> Seq.toList with
-      | [ x ] -> Assert.That(x, Is.EqualTo unique)
+      | [ x ] -> Assert.That(x, Is.EqualTo (n unique))
     finally
       CoverageParameters.theInputDirectories.Clear()
 
@@ -1078,20 +1080,20 @@ module AltCoverTests3 =
 
       let input =
         [| "-i"
-           Path.GetFullPath(".")
+           "."
            "/i"
-           Path.GetFullPath("..") |]
+           ".." |]
 
       let parse =
         CommandLine.parseCommandLine input options
 
-      let pcom a b = Path.Combine(b, a) |> Path.GetFullPath
+      let pcom a b = Path.Combine(b, a) |> n
 
       match parse with
       | Right _ ->
           CoverageParameters.inputDirectories ()
           |> Seq.toList
-          |> List.zip ([ "."; ".." ] |> List.map Path.GetFullPath)
+          |> List.zip ([ "."; ".." ] |> List.map n)
           |> List.iter Assert.AreEqual
 
           CoverageParameters.outputDirectories ()
@@ -1120,7 +1122,7 @@ module AltCoverTests3 =
     try
       CoverageParameters.theInputDirectories.Clear()
       let options = Main.I.declareOptions ()
-      let here = Path.GetFullPath(".")
+      let here = "."
       let input = [| "-i"; here; "-i"; here |]
 
       let parse =
@@ -1134,7 +1136,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ here
+              [ (n here)
                 + " was already specified for --inputDirectory" ]
             )
           )
@@ -1203,7 +1205,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.outputDirectories ()
             |> Seq.toList with
-      | [ x ] -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+      | [ x ] -> Assert.That(n x, Is.EqualTo (n unique))
     finally
       CoverageParameters.theOutputDirectories.Clear()
 
@@ -1228,7 +1230,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ Path.GetFullPath(unique)
+              [ (n unique)
                 + " was already specified for --outputDirectory" ]
             )
           )
@@ -1248,7 +1250,7 @@ module AltCoverTests3 =
       let u2 = unique.Replace("-", "+")
 
       let outs =
-        [ unique; u2 ] |> List.map Path.GetFullPath
+        [ unique; u2 ] |> List.map n
 
       let input = [| "-o"; unique; "/o"; u2 |]
 
@@ -3170,12 +3172,12 @@ module AltCoverTests3 =
 
   [<Test>]
   let FolderNestingIsDetectedCorrectly () =
-    let dir = "some/path"
-    let file1 = "different/path"
+    let dir = n "some/path/"
+    let file1 = Path.Combine (n "different", "path")
     test <@ (Main.I.isInDirectory file1 dir) |> not @>
-    let file2 = "some/pathway/a.b"
+    let file2 = Path.Combine (n "some/pathway", "a.b")
     test <@ (Main.I.isInDirectory file2 dir) |> not @>
-    let file3 = "some/path/nested/a.b"
+    let file3 = Path.Combine (n "some/path/nested/a.b", "a.b")
     test <@ (Main.I.isInDirectory file3 dir) @>
 
   [<Test>]

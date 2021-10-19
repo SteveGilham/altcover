@@ -135,7 +135,7 @@ module internal Main =
       [ ("i|inputDirectory=",
          (fun x ->
            if CommandLine.validateDirectory "--inputDirectory" x then
-             let arg = Uri(Path.GetFullPath x, UriKind.Absolute).LocalPath
+             let arg = Uri(Path.GetFullPath (x + "/"), UriKind.Absolute).LocalPath
 
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
@@ -147,7 +147,7 @@ module internal Main =
         ("o|outputDirectory=",
          (fun x ->
            if CommandLine.validatePath "--outputDirectory" x then
-             let arg = Uri(Path.GetFullPath x, UriKind.Absolute).LocalPath
+             let arg = Uri(Path.GetFullPath (x + "/"), UriKind.Absolute).LocalPath
 
              if CoverageParameters.theOutputDirectories.Contains arg then
                CommandLine.error <-
@@ -405,14 +405,7 @@ module internal Main =
                                     StringComparison.OrdinalIgnoreCase StringComparison.Ordinal
 
     let internal isInDirectory (file:string) (dir:string) =
-      if file.StartsWith(dir, matchType)
-      then
-        let l = dir.Length // address corner case here
-        // array accessor fails in Release again
-        let next = file |> Seq.skip l |> Seq.head
-        (next = Path.DirectorySeparatorChar ||
-          next = Path.AltDirectorySeparatorChar)
-      else false
+      file.StartsWith(dir, matchType)
 
     let internal prepareTargetFiles
       (inputInfos: DirectoryInfo seq)

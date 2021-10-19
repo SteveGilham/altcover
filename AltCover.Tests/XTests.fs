@@ -726,11 +726,11 @@ module AltCoverXTests =
         + "\nWriting files to "
         + output
         + "\n   => "
-        + Path.Combine(Path.GetFullPath input, "Sample4.dll")
+        + Path.Combine(AltCoverTests3.n input, "Sample4.dll")
         + "\n\nCoverage Report: "
         + report
         + "\n\n\n    "
-        + Path.Combine(Path.GetFullPath output, "Sample4.dll")
+        + Path.Combine(AltCoverTests3.n output, "Sample4.dll")
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       test
@@ -745,7 +745,7 @@ module AltCoverXTests =
 
       test
         <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = ((Path.GetFullPath input).Replace("\\", "/")) @>
+          .Replace("\\", "/") = ((AltCoverTests3.n input).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
       use stream = new FileStream(key, FileMode.Open)
@@ -968,7 +968,7 @@ module AltCoverXTests =
         + "\n\nCoverage Report: "
         + report
         + "\n\n\n    "
-        + Path.Combine(Path.GetFullPath output, "Sample1.exe")
+        + Path.Combine(AltCoverTests3.n output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       let console = stdout.ToString()
