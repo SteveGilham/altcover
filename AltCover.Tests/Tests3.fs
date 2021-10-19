@@ -3030,6 +3030,7 @@ module AltCoverTests3 =
 
   [<Test>]
   let InPlaceOperationIsAsExpected () =
+    CommandLine.toConsole ()
     Main.init ()
     let options = Main.I.declareOptions ()
     let saved = (Console.Out, Console.Error)
