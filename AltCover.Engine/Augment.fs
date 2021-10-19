@@ -1,4 +1,5 @@
 #nowarn "25"
+#nowarn "52"
 namespace AltCover
 
 open System
