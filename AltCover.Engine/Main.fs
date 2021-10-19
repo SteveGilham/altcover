@@ -135,7 +135,7 @@ module internal Main =
       [ ("i|inputDirectory=",
          (fun x ->
            if CommandLine.validateDirectory "--inputDirectory" x then
-             let arg = CanonicalDirectory x
+             let arg = canonicalDirectory x
 
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
@@ -147,7 +147,7 @@ module internal Main =
         ("o|outputDirectory=",
          (fun x ->
            if CommandLine.validatePath "--outputDirectory" x then
-             let arg = CanonicalDirectory x
+             let arg = canonicalDirectory x
 
              if CoverageParameters.theOutputDirectories.Contains arg then
                CommandLine.error <-
@@ -174,7 +174,7 @@ module internal Main =
                let path =
                  x
                  |> Environment.ExpandEnvironmentVariables
-                 |> CanonicalPath
+                 |> canonicalPath
 
                let name, ok =
                  CommandLine.validateAssembly "--dependency" path
@@ -213,7 +213,7 @@ module internal Main =
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
-                 (fun () -> CoverageParameters.theReportPath <- Some(CanonicalPath x))
+                 (fun () -> CoverageParameters.theReportPath <- Some(canonicalPath x))
                  ()
                  false))
         ("f|fileFilter=", makeFilter FilterScope.File)
@@ -661,7 +661,7 @@ module internal Main =
             "../any" ]
           |> Seq.map
                (fun d ->
-                 CanonicalPath(
+                 canonicalPath(
                    Path.Combine(Path.Combine(here, d), "AltCover.PowerShell.dll")
                  ))
           |> Seq.filter File.Exists

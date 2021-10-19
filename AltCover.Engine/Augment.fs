@@ -1,10 +1,7 @@
 #nowarn "25"
-#nowarn "52"
 namespace AltCover
 
-open System
 open System.Diagnostics.CodeAnalysis
-open System.IO
 
 [<SuppressMessage("Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
   Justification = "AvoidCodeDuplicatedInSameClassRule")>]
@@ -14,12 +11,6 @@ module Augment =
 #else
 module internal Augment =
 #endif
-
-  let CanonicalPath (path:string) =
-    Uri(Path.GetFullPath path, UriKind.Absolute).LocalPath
-
-  let CanonicalDirectory (path:string) =
-    CanonicalPath (path + Path.DirectorySeparatorChar.ToString())
 
 #if !ValidateGendarmeEmulation
   [<SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison",

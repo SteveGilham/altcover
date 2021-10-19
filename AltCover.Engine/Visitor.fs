@@ -305,7 +305,7 @@ module internal CoverageParameters =
       theInputDirectories |> Seq.toList
     else
       [ defaultInputDirectory ]
-      |> List.map CanonicalDirectory
+      |> List.map canonicalDirectory
 
   let internal inplaceSelection a b = if inplace.Value then a else b
 
@@ -321,7 +321,7 @@ module internal CoverageParameters =
       (theOutputDirectories :> string seq)
       (Seq.initInfinite defaultOutputDirectory)
     |> Seq.zip paired
-    |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> CanonicalDirectory)
+    |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> canonicalDirectory)
     |> Seq.toList
 
   let internal instrumentDirectories () =
@@ -351,7 +351,7 @@ module internal CoverageParameters =
       "coverage.xml"
 
   let internal reportPath () =
-    let r = CanonicalPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let r = canonicalPath(Option.defaultValue (defaultReportPath ()) theReportPath)
     let suffix = (Path.GetExtension r).ToUpperInvariant()
     match (suffix, reportKind()) with
     | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
@@ -470,7 +470,7 @@ module internal Visitor =
         s + c
 
     let internal getRelativePath (relativeTo: string) path =
-      if CanonicalPath path = CanonicalPath relativeTo then
+      if canonicalPath path = canonicalPath relativeTo then
         String.Empty
       else
         let ender =

@@ -29,7 +29,7 @@ module TypeSafe =
       match self with
       | NoFile -> String.Empty
       | FInfo i -> i.FullName
-      | FilePath s -> CanonicalPath s
+      | FilePath s -> canonicalPath s
       | Tool t -> t
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]

@@ -1061,7 +1061,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.theInputDirectories
             |> Seq.toList with
-      | [ x ] -> Assert.That(x, Is.EqualTo (CanonicalDirectory unique))
+      | [ x ] -> Assert.That(x, Is.EqualTo (canonicalDirectory unique))
     finally
       CoverageParameters.theInputDirectories.Clear()
 
@@ -1085,13 +1085,13 @@ module AltCoverTests3 =
       let parse =
         CommandLine.parseCommandLine input options
 
-      let pcom a b = Path.Combine(b, a) |> CanonicalDirectory
+      let pcom a b = Path.Combine(b, a) |> canonicalDirectory
 
       match parse with
       | Right _ ->
           CoverageParameters.inputDirectories ()
           |> Seq.toList
-          |> List.zip ([ "."; ".." ] |> List.map CanonicalDirectory)
+          |> List.zip ([ "."; ".." ] |> List.map canonicalDirectory)
           |> List.iter Assert.AreEqual
 
           CoverageParameters.outputDirectories ()
@@ -1104,7 +1104,7 @@ module AltCoverTests3 =
 
           CoverageParameters.outputDirectories ()
           |> Seq.toList
-          |> List.zip [ CanonicalDirectory "maybe"
+          |> List.zip [ canonicalDirectory "maybe"
                         ".." |> (pcom "__Saved") ]
           |> List.iter Assert.AreEqual
 
@@ -1134,7 +1134,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ (CanonicalDirectory here)
+              [ (canonicalDirectory here)
                 + " was already specified for --inputDirectory" ]
             )
           )
@@ -1203,7 +1203,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.outputDirectories ()
             |> Seq.toList with
-      | [ x ] -> Assert.That(CanonicalDirectory x, Is.EqualTo (CanonicalDirectory unique))
+      | [ x ] -> Assert.That(canonicalDirectory x, Is.EqualTo (canonicalDirectory unique))
     finally
       CoverageParameters.theOutputDirectories.Clear()
 
@@ -1228,7 +1228,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ (CanonicalDirectory unique)
+              [ (canonicalDirectory unique)
                 + " was already specified for --outputDirectory" ]
             )
           )
@@ -1248,7 +1248,7 @@ module AltCoverTests3 =
       let u2 = unique.Replace("-", "+")
 
       let outs =
-        [ unique; u2 ] |> List.map CanonicalDirectory
+        [ unique; u2 ] |> List.map canonicalDirectory
 
       let input = [| "-o"; unique; "/o"; u2 |]
 
@@ -2837,7 +2837,7 @@ module AltCoverTests3 =
 
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        |> CanonicalDirectory
+        |> canonicalDirectory
 
       CoverageParameters.theInputDirectories.Clear()
       CoverageParameters.theInputDirectories.Add here
@@ -2897,12 +2897,12 @@ module AltCoverTests3 =
           Assert.That(x, Is.SameAs rest)
 
           y
-          |> Seq.iter (fun y' -> Assert.That(y'.FullName |> CanonicalDirectory, Is.EqualTo (CanonicalDirectory here)))
+          |> Seq.iter (fun y' -> Assert.That(y'.FullName |> canonicalDirectory, Is.EqualTo (canonicalDirectory here)))
 
           z
           |> Seq.iter
                (fun z' ->
-                 Assert.That(z'.FullName |> CanonicalDirectory, Is.EqualTo(CanonicalDirectory (Path.GetDirectoryName here))))
+                 Assert.That(z'.FullName |> canonicalDirectory, Is.EqualTo(canonicalDirectory (Path.GetDirectoryName here))))
 
           t
           |> Seq.zip y
@@ -2914,7 +2914,7 @@ module AltCoverTests3 =
               "Instrumenting files from "
               + here
               + "\nWriting files to "
-              + (CanonicalDirectory (Path.GetDirectoryName here))
+              + (canonicalDirectory (Path.GetDirectoryName here))
               + "\n"
             )
           )
@@ -2962,7 +2962,7 @@ module AltCoverTests3 =
           |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
 
           z
-          |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo (CanonicalDirectory there)))
+          |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo (canonicalDirectory there)))
 
           t
           |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo here))
@@ -2971,11 +2971,11 @@ module AltCoverTests3 =
             stdout.ToString().Replace("\r", String.Empty),
             Is.EqualTo(
               "Creating folder "
-              + (CanonicalDirectory there)
+              + (canonicalDirectory there)
               + "\nInstrumenting files from "
               + here
               + "\nWriting files to "
-              + (CanonicalDirectory there)
+              + (canonicalDirectory there)
               + "\n"
             )
           )
@@ -3045,11 +3045,11 @@ module AltCoverTests3 =
 
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        |> CanonicalDirectory
+        |> canonicalDirectory
 
       let there =
         Path.Combine(here, Guid.NewGuid().ToString())
-        |> CanonicalDirectory
+        |> canonicalDirectory
 
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theInputDirectories.Clear()
@@ -3174,12 +3174,12 @@ module AltCoverTests3 =
 
   [<Test>]
   let FolderNestingIsDetectedCorrectly () =
-    let dir = CanonicalDirectory "some/path/"
-    let file1 = Path.Combine (CanonicalDirectory "different", "path")
+    let dir = canonicalDirectory "some/path/"
+    let file1 = Path.Combine (canonicalDirectory "different", "path")
     test <@ (Main.I.isInDirectory file1 dir) |> not @>
-    let file2 = Path.Combine (CanonicalDirectory "some/pathway", "a.b")
+    let file2 = Path.Combine (canonicalDirectory "some/pathway", "a.b")
     test <@ (Main.I.isInDirectory file2 dir) |> not @>
-    let file3 = Path.Combine (CanonicalDirectory "some/path/nested/a.b", "a.b")
+    let file3 = Path.Combine (canonicalDirectory "some/path/nested", "a.b")
     test <@ (Main.I.isInDirectory file3 dir) @>
 
   [<Test>]

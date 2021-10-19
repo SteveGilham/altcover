@@ -1111,7 +1111,7 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.Empty)
 
       match Runner.workingDirectory with
-      | Some x -> Assert.That(x, Is.EqualTo (CanonicalDirectory unique))
+      | Some x -> Assert.That(x, Is.EqualTo (canonicalDirectory unique))
     finally
       Runner.workingDirectory <- None
 
@@ -1205,7 +1205,7 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.Empty)
 
       match Runner.recordingDirectory with
-      | Some x -> Assert.That(x, Is.EqualTo (CanonicalDirectory unique))
+      | Some x -> Assert.That(x, Is.EqualTo (canonicalDirectory unique))
     finally
       Runner.recordingDirectory <- None
 
