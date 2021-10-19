@@ -288,7 +288,7 @@ module internal CommandLine =
       doPathOperation
         (fun () ->
           if (not (String.IsNullOrWhiteSpace x))
-             && x |> Path.GetFullPath |> exists then
+             && x |> CanonicalPath |> exists then
             true
           else
             error <- Format.Local(message, key, x) :: error

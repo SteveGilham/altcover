@@ -720,17 +720,17 @@ module AltCoverXTests =
 
       let expected =
         "Creating folder "
-        + output
+        + (CanonicalDirectory output)
         + "\nInstrumenting files from "
-        + (Path.GetFullPath input)
+        + (CanonicalDirectory input)
         + "\nWriting files to "
-        + output
+        + (CanonicalDirectory output)
         + "\n   => "
-        + Path.Combine(AltCoverTests3.n input, "Sample4.dll")
+        + Path.Combine(CanonicalDirectory input, "Sample4.dll")
         + "\n\nCoverage Report: "
         + report
         + "\n\n\n    "
-        + Path.Combine(AltCoverTests3.n output, "Sample4.dll")
+        + Path.Combine(CanonicalDirectory output, "Sample4.dll")
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       test
@@ -741,11 +741,11 @@ module AltCoverXTests =
 
       test
         <@ CoverageParameters.outputDirectories ()
-           |> Seq.head = output @>
+           |> Seq.head = CanonicalDirectory output @>
 
       test
         <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = ((AltCoverTests3.n input).Replace("\\", "/")) @>
+          .Replace("\\", "/") = ((CanonicalDirectory input).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
       use stream = new FileStream(key, FileMode.Open)
@@ -968,7 +968,7 @@ module AltCoverXTests =
         + "\n\nCoverage Report: "
         + report
         + "\n\n\n    "
-        + Path.Combine(AltCoverTests3.n output, "Sample1.exe")
+        + Path.Combine(CanonicalDirectory output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       let console = stdout.ToString()

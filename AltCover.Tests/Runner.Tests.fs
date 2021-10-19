@@ -1099,7 +1099,7 @@ module AltCoverRunnerTests =
     try
       Runner.workingDirectory <- None
       let options = Runner.declareOptions ()
-      let unique = Path.GetFullPath(".")
+      let unique = "."
       let input = [| "-w"; unique |]
 
       let parse =
@@ -1111,7 +1111,7 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.Empty)
 
       match Runner.workingDirectory with
-      | Some x -> Assert.That(x, Is.EqualTo unique)
+      | Some x -> Assert.That(x, Is.EqualTo (CanonicalDirectory unique))
     finally
       Runner.workingDirectory <- None
 
@@ -1193,7 +1193,7 @@ module AltCoverRunnerTests =
     try
       Runner.recordingDirectory <- None
       let options = Runner.declareOptions ()
-      let unique = Path.GetFullPath(".")
+      let unique = "."
       let input = [| "-r"; unique |]
 
       let parse =
@@ -1205,7 +1205,7 @@ module AltCoverRunnerTests =
           Assert.That(x, Is.Empty)
 
       match Runner.recordingDirectory with
-      | Some x -> Assert.That(x, Is.EqualTo unique)
+      | Some x -> Assert.That(x, Is.EqualTo (CanonicalDirectory unique))
     finally
       Runner.recordingDirectory <- None
 

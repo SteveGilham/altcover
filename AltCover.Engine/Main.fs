@@ -135,7 +135,7 @@ module internal Main =
       [ ("i|inputDirectory=",
          (fun x ->
            if CommandLine.validateDirectory "--inputDirectory" x then
-             let arg = Uri(Path.GetFullPath (x + "/"), UriKind.Absolute).LocalPath
+             let arg = CanonicalDirectory x
 
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
@@ -147,7 +147,7 @@ module internal Main =
         ("o|outputDirectory=",
          (fun x ->
            if CommandLine.validatePath "--outputDirectory" x then
-             let arg = Uri(Path.GetFullPath (x + "/"), UriKind.Absolute).LocalPath
+             let arg = CanonicalDirectory x
 
              if CoverageParameters.theOutputDirectories.Contains arg then
                CommandLine.error <-
@@ -174,7 +174,7 @@ module internal Main =
                let path =
                  x
                  |> Environment.ExpandEnvironmentVariables
-                 |> Path.GetFullPath
+                 |> CanonicalPath
 
                let name, ok =
                  CommandLine.validateAssembly "--dependency" path
@@ -213,7 +213,7 @@ module internal Main =
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
-                 (fun () -> CoverageParameters.theReportPath <- Some(Path.GetFullPath x))
+                 (fun () -> CoverageParameters.theReportPath <- Some(CanonicalPath x))
                  ()
                  false))
         ("f|fileFilter=", makeFilter FilterScope.File)
@@ -325,6 +325,22 @@ module internal Main =
              o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
            (OptionSet())
 
+    let private echoDirectories (outputDirectory:string, inputDirectory:string) =
+      if CommandLine.verbosity < 1 // implement it early here
+      then
+        if CoverageParameters.inplace.Value then
+          Output.info
+          <| CommandLine.Format.Local("savingto", outputDirectory)
+
+          Output.info
+          <| CommandLine.Format.Local("instrumentingin", inputDirectory)
+        else
+          Output.info
+          <| CommandLine.Format.Local("instrumentingfrom", inputDirectory)
+
+          Output.info
+          <| CommandLine.Format.Local("instrumentingto", outputDirectory)
+
     let internal processOutputLocation
       (action: Either<string * OptionSet, string list * OptionSet>)
       =
@@ -366,22 +382,7 @@ module internal Main =
             Left("UsageError", options)
           else
             Seq.zip outputDirectories inputDirectories
-            |> Seq.iter
-                 (fun (outputDirectory, inputDirectory) ->
-                   if CommandLine.verbosity < 1 // implement it early here
-                   then
-                     if CoverageParameters.inplace.Value then
-                       Output.info
-                       <| CommandLine.Format.Local("savingto", outputDirectory)
-
-                       Output.info
-                       <| CommandLine.Format.Local("instrumentingin", inputDirectory)
-                     else
-                       Output.info
-                       <| CommandLine.Format.Local("instrumentingfrom", inputDirectory)
-
-                       Output.info
-                       <| CommandLine.Format.Local("instrumentingto", outputDirectory))
+            |> Seq.iter echoDirectories
 
             Right(
               rest,
@@ -660,7 +661,7 @@ module internal Main =
             "../any" ]
           |> Seq.map
                (fun d ->
-                 Path.GetFullPath(
+                 CanonicalPath(
                    Path.Combine(Path.Combine(here, d), "AltCover.PowerShell.dll")
                  ))
           |> Seq.filter File.Exists

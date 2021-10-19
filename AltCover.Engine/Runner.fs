@@ -718,7 +718,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--recorderDirectory")
                :: CommandLine.error
            else
-             recordingDirectory <- Some(Path.GetFullPath x)))
+             recordingDirectory <- Some(CanonicalDirectory x)))
       ("w|workingDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--workingDirectory" x then
@@ -727,7 +727,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--workingDirectory")
                :: CommandLine.error
            else
-             workingDirectory <- Some(Path.GetFullPath x)))
+             workingDirectory <- Some(CanonicalDirectory x)))
       ("x|executable=",
        (fun x ->
          if CommandLine.validatePath "--executable" x then
@@ -746,7 +746,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
            else
-             LCov.path := x |> Path.GetFullPath |> Some
+             LCov.path := x |> CanonicalPath |> Some
              I.addLCovSummary ()))
       ("t|threshold=",
        (fun x ->
@@ -767,7 +767,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
            else
-             Cobertura.path := x |> Path.GetFullPath |> Some
+             Cobertura.path := x |> CanonicalPath |> Some
              I.addCoberturaSummary ()))
       ("o|outputFile=",
        (fun x ->
@@ -777,7 +777,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--outputFile")
                :: CommandLine.error
            else
-             output <- x |> Path.GetFullPath |> Some))
+             output <- x |> CanonicalPath |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       ("summary|teamcity:",
        (fun x ->
@@ -1387,7 +1387,7 @@ module internal Runner =
               let report =
                 (J.getMethod instance "get_ReportFile")
                 |> J.getFirstOperandAsString
-                |> Path.GetFullPath
+                |> CanonicalPath
 
               let format =
                 (J.getMethod instance "get_CoverageFormat")

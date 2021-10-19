@@ -1041,8 +1041,6 @@ module AltCoverTests3 =
     finally
       CoverageParameters.theReportPath <- None
 
-  let internal n x = Uri(Path.GetFullPath (x + "/"), UriKind.Absolute).LocalPath
-
   [<Test>]
   let ParsingInputGivesInput () =
     Main.init ()
@@ -1050,7 +1048,7 @@ module AltCoverTests3 =
     try
       CoverageParameters.theInputDirectories.Clear()
       let options = Main.I.declareOptions ()
-      let unique = Path.GetFullPath(".")
+      let unique = "."
       let input = [| "-i"; unique |]
 
       let parse =
@@ -1063,7 +1061,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.theInputDirectories
             |> Seq.toList with
-      | [ x ] -> Assert.That(x, Is.EqualTo (n unique))
+      | [ x ] -> Assert.That(x, Is.EqualTo (CanonicalDirectory unique))
     finally
       CoverageParameters.theInputDirectories.Clear()
 
@@ -1087,13 +1085,13 @@ module AltCoverTests3 =
       let parse =
         CommandLine.parseCommandLine input options
 
-      let pcom a b = Path.Combine(b, a) |> n
+      let pcom a b = Path.Combine(b, a) |> CanonicalDirectory
 
       match parse with
       | Right _ ->
           CoverageParameters.inputDirectories ()
           |> Seq.toList
-          |> List.zip ([ "."; ".." ] |> List.map n)
+          |> List.zip ([ "."; ".." ] |> List.map CanonicalDirectory)
           |> List.iter Assert.AreEqual
 
           CoverageParameters.outputDirectories ()
@@ -1106,7 +1104,7 @@ module AltCoverTests3 =
 
           CoverageParameters.outputDirectories ()
           |> Seq.toList
-          |> List.zip [ Path.GetFullPath "maybe"
+          |> List.zip [ CanonicalDirectory "maybe"
                         ".." |> (pcom "__Saved") ]
           |> List.iter Assert.AreEqual
 
@@ -1136,7 +1134,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ (n here)
+              [ (CanonicalDirectory here)
                 + " was already specified for --inputDirectory" ]
             )
           )
@@ -1205,7 +1203,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.outputDirectories ()
             |> Seq.toList with
-      | [ x ] -> Assert.That(n x, Is.EqualTo (n unique))
+      | [ x ] -> Assert.That(CanonicalDirectory x, Is.EqualTo (CanonicalDirectory unique))
     finally
       CoverageParameters.theOutputDirectories.Clear()
 
@@ -1230,7 +1228,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ (n unique)
+              [ (CanonicalDirectory unique)
                 + " was already specified for --outputDirectory" ]
             )
           )
@@ -1250,7 +1248,7 @@ module AltCoverTests3 =
       let u2 = unique.Replace("-", "+")
 
       let outs =
-        [ unique; u2 ] |> List.map n
+        [ unique; u2 ] |> List.map CanonicalDirectory
 
       let input = [| "-o"; unique; "/o"; u2 |]
 
@@ -2839,6 +2837,7 @@ module AltCoverTests3 =
 
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+        |> CanonicalDirectory
 
       CoverageParameters.theInputDirectories.Clear()
       CoverageParameters.theInputDirectories.Add here
@@ -2898,12 +2897,12 @@ module AltCoverTests3 =
           Assert.That(x, Is.SameAs rest)
 
           y
-          |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          |> Seq.iter (fun y' -> Assert.That(y'.FullName |> CanonicalDirectory, Is.EqualTo (CanonicalDirectory here)))
 
           z
           |> Seq.iter
                (fun z' ->
-                 Assert.That(z'.FullName, Is.EqualTo(Path.GetDirectoryName here)))
+                 Assert.That(z'.FullName |> CanonicalDirectory, Is.EqualTo(CanonicalDirectory (Path.GetDirectoryName here))))
 
           t
           |> Seq.zip y
@@ -2915,7 +2914,7 @@ module AltCoverTests3 =
               "Instrumenting files from "
               + here
               + "\nWriting files to "
-              + (Path.GetDirectoryName here)
+              + (CanonicalDirectory (Path.GetDirectoryName here))
               + "\n"
             )
           )
@@ -2963,7 +2962,7 @@ module AltCoverTests3 =
           |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
 
           z
-          |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo there))
+          |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo (CanonicalDirectory there)))
 
           t
           |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo here))
@@ -2972,11 +2971,11 @@ module AltCoverTests3 =
             stdout.ToString().Replace("\r", String.Empty),
             Is.EqualTo(
               "Creating folder "
-              + there
+              + (CanonicalDirectory there)
               + "\nInstrumenting files from "
               + here
               + "\nWriting files to "
-              + there
+              + (CanonicalDirectory there)
               + "\n"
             )
           )
@@ -3045,9 +3044,11 @@ module AltCoverTests3 =
 
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+        |> CanonicalDirectory
 
       let there =
         Path.Combine(here, Guid.NewGuid().ToString())
+        |> CanonicalDirectory
 
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theInputDirectories.Clear()
@@ -3172,12 +3173,12 @@ module AltCoverTests3 =
 
   [<Test>]
   let FolderNestingIsDetectedCorrectly () =
-    let dir = n "some/path/"
-    let file1 = Path.Combine (n "different", "path")
+    let dir = CanonicalDirectory "some/path/"
+    let file1 = Path.Combine (CanonicalDirectory "different", "path")
     test <@ (Main.I.isInDirectory file1 dir) |> not @>
-    let file2 = Path.Combine (n "some/pathway", "a.b")
+    let file2 = Path.Combine (CanonicalDirectory "some/pathway", "a.b")
     test <@ (Main.I.isInDirectory file2 dir) |> not @>
-    let file3 = Path.Combine (n "some/path/nested/a.b", "a.b")
+    let file3 = Path.Combine (CanonicalDirectory "some/path/nested/a.b", "a.b")
     test <@ (Main.I.isInDirectory file3 dir) @>
 
   [<Test>]
