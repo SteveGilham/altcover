@@ -958,11 +958,11 @@ module AltCoverXTests =
 
       let expected =
         "Creating folder "
-        + output
+        + (canonicalDirectory output)
         + "\nInstrumenting files from "
-        + path
+        + (canonicalDirectory path)
         + "\nWriting files to "
-        + output
+        + (canonicalDirectory output)
         + "\n   => "
         + monoSample1path
         + "\n\nCoverage Report: "
@@ -978,11 +978,11 @@ module AltCoverXTests =
 
       test
         <@ CoverageParameters.outputDirectories ()
-           |> Seq.head = output @>
+           |> Seq.head = (canonicalDirectory output) @>
 
       test
         <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = (path.Replace("\\", "/")) @>
+          .Replace("\\", "/") = ((canonicalDirectory path).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
       use stream = new FileStream(key, FileMode.Open)
