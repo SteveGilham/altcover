@@ -3204,11 +3204,22 @@ module AltCoverTests3 =
 
     let f, t = Seq.zip fromInfo toInfo |> Seq.head
 
+    let flen = here.Length
+    let tlen = there.Length
+
     Assert.That(
-      t.EnumerateFiles() |> Seq.map (fun x -> x.Name),
-      Is.EquivalentTo(f.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
+      t.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(tlen)),
+      Is.EquivalentTo(f.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(flen))),
       "Simple to-from comparison failed"
     )
+
+    //t.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(tlen))
+    //|> Seq.iter (printfn "%A")
+    //f.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(flen))
+    //|> Seq.iter (printfn "%A")
+
+    Assert.That (File.Exists <| Path.Combine(here, "eo/Sample4.resources.dll"))
+    Assert.That (File.Exists <| Path.Combine(there, "eo/Sample4.resources.dll"))
 
     Assert.That(
       y,
