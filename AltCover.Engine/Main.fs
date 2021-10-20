@@ -438,9 +438,10 @@ module internal Main =
              |> Seq.iter
                   (fun info ->
                     let fullName = info.FullName
-                    let filename =
-                      Visitor.I.getRelativePath inputInfo.FullName fullName
-                    let copy = Path.Combine(outputInfo.FullName, filename)
+                    let dirname = info.DirectoryName
+                    let reldir =
+                      Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
+                    let copy = Path.Combine(outputInfo.FullName, reldir, info.Name)
                     copy
                     |> Path.GetDirectoryName
                     |> Directory.CreateDirectory

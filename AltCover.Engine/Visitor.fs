@@ -463,25 +463,17 @@ module internal Visitor =
 
     let internal toSeq node = List.toSeq [ node ]
 
-    let internal ensureEndsWith c (s: string) =
-      if s.EndsWith(c, StringComparison.Ordinal) then
-        s
-      else
-        s + c
-
-    let internal getRelativePath (relativeTo: string) path =
-      if canonicalPath path = canonicalPath relativeTo then
+    let internal getRelativeDirectoryPath (relativeTo: string) path =
+      let rebase = canonicalDirectory relativeTo
+      let canon = canonicalDirectory path
+      if canon = rebase then
         String.Empty
       else
-        let ender =
-          ensureEndsWith
-          <| Path.DirectorySeparatorChar.ToString()
-
-        let uri = Uri(Uri("file://"), ender relativeTo)
+        let uri = Uri(Uri("file://"), rebase)
 
         Uri
-          .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), path)).ToString())
-          .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+          .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), canon)).ToString())
+          .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
     let internal exists (url: Uri) =
       let request = System.Net.WebRequest.CreateHttp(url)
@@ -502,7 +494,7 @@ module internal Visitor =
       |> Seq.map
            (fun x ->
              (x,
-              getRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+              getRelativeDirectoryPath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
       |> Seq.filter (fun (x, r) -> r.IndexOf("..", StringComparison.Ordinal) < 0)
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead

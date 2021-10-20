@@ -1076,14 +1076,6 @@ module AltCoverTests =
       CoverageParameters.single <- save
 
   [<Test>]
-  let FixEnding () =
-    let a = Visitor.I.ensureEndsWith "a" "banana"
-    Assert.That(a, Is.EqualTo "banana")
-
-    let s = Visitor.I.ensureEndsWith "s" "banana"
-    Assert.That(s, Is.EqualTo "bananas")
-
-  [<Test>]
   let ValidateStaticExemption () =
     let result =
       [ StaticFilter.AsCovered
