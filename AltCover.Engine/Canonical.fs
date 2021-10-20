@@ -11,7 +11,8 @@ open System.IO
 module internal Canonical =
 
   let canonicalPath (path:string) =
-    Uri(Path.GetFullPath path, UriKind.Absolute).LocalPath
+    // Mono+Linux barfs at a path of "/_"
+    Uri("file://" + (Path.GetFullPath path), UriKind.Absolute).LocalPath
 
 #if !FAKE && !NoCanonicalDirectories
   let canonicalDirectory (path:string) =
