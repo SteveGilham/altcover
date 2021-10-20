@@ -15,5 +15,9 @@ module internal Canonical =
 
 #if !FAKE && !NoCanonicalDirectories
   let canonicalDirectory (path:string) =
-    canonicalPath (path + Path.DirectorySeparatorChar.ToString())
+    let last = path |> Seq.last
+    canonicalPath (if last = Path.DirectorySeparatorChar ||
+                      last = Path.AltDirectorySeparatorChar
+                   then path
+                   else path + Path.DirectorySeparatorChar.ToString())
 #endif
