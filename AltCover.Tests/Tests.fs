@@ -1206,6 +1206,12 @@ module AltCoverTests =
     let f = AssemblyDefinition.ReadAssembly fdll
     ProgramDatabase.readSymbols f
 
+    let here = Assembly.GetExecutingAssembly().Location
+               |> AssemblyDefinition.ReadAssembly
+    ProgramDatabase.readSymbols here
+
+    Assert.That(here.LocalFilter, Is.False, "test Assembly non-local")
+    Assert.That(here.MainModule.LocalFilter, Is.False, "test MainModule non-local")
     Assert.That(a.LocalFilter, Is.False, "Assembly non-local")
     Assert.That(a.MainModule.LocalFilter, Is.False, "MainModule non-local")
     Assert.That(m.LocalFilter, Is.False, "dll Assembly non-local")
@@ -1215,6 +1221,8 @@ module AltCoverTests =
 
     try
       CoverageParameters.local := true
+      Assert.That(here.LocalFilter, Is.False, "test Assembly local")
+      Assert.That(here.MainModule.LocalFilter, Is.False, "test MainModule local")
       Assert.That(a.LocalFilter, Is.True, "Assembly local")
       Assert.That(a.MainModule.LocalFilter, Is.False, "MainModule local")
       Assert.That(m.LocalFilter, Is.True, "dll Assembly local")

@@ -3,6 +3,7 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.IO
+open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -24,6 +25,23 @@ module internal ProgramDatabase =
        |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.Mixin")
        |> Seq.head)
         .GetMethod("GetEmbeddedPortablePdbEntry")
+
+    // and for direct access to the Documents data
+    let internal getMetadataReader =
+      typeof<Mono.Cecil.ModuleDefinition>.GetField("reader", BindingFlags.Instance ||| BindingFlags.NonPublic)
+
+    let internal metadataReaderSpec =
+      let mrType = (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
+                    |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataReader")
+                    |> Seq.head)
+      (//mrType.GetMethod("InitializeDocuments", BindingFlags.Instance ||| BindingFlags.NonPublic),
+       mrType.GetField("metadata", BindingFlags.Instance ||| BindingFlags.NonPublic))
+
+    let internal getDocuments =
+      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
+      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataSystem")
+      |> Seq.head)
+       .GetField("Documents", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
     let internal getEmbeddedPortablePdbEntry (assembly: AssemblyDefinition) =
       getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |])
@@ -98,3 +116,20 @@ module internal ProgramDatabase =
              provider.GetSymbolReader(assembly.MainModule, pdbpath)
 
            assembly.MainModule.ReadSymbols(reader))
+
+  let internal getAssemblyDocuments (assembly: AssemblyDefinition) =
+    let reader = I.getMetadataReader.GetValue(assembly.MainModule)
+    let meta = I.metadataReaderSpec
+    //init.Invoke(reader, [||]) |> ignore
+    assembly.MainModule.GetTypes()
+    |> Seq.collect(fun t -> t.Methods)
+    |> Seq.collect(fun m -> m.DebugInformation.SequencePoints)
+    |> Seq.tryHead
+    |> ignore
+    let system = meta.GetValue(reader)
+    let docs = I.getDocuments.GetValue(system)
+    if docs.IsNotNull then
+      docs :?> System.Collections.IEnumerable
+      |> Seq.cast<Mono.Cecil.Cil.Document>
+      |> Seq.toList
+    else []
