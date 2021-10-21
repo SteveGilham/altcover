@@ -125,10 +125,11 @@ module internal ProgramDatabase =
       (assembly.MainModule.GetTypes()
        |> Seq.collect(fun t -> t.Methods)
        |> Seq.collect(fun m -> m.DebugInformation.SequencePoints)
-       |> Seq.tryHead // assuming lazy
-       |> ignore // hoping this call for side-effects doesn't get optimized away
-       I.getDocuments.GetValue(system)
-       |> Option.ofObj
+       |> Seq.tryHead // assuming lazy & that no SP = no user code
+       // Have to evaluate if any exist to perform this operation
+       |> Option.map (fun _ -> I.getDocuments.GetValue(system) 
+                               |> Option.ofObj)
+       |> Option.flatten
        |> Option.defaultValue ([] :> obj)) :?> System.Collections.IEnumerable
     |> Seq.cast<Mono.Cecil.Cil.Document>
     |> Seq.toList
