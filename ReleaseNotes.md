@@ -2,9 +2,10 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.2.82x (Habu series release x)
+# 8.2.82x (Habu series release 7)
+* [BUGFIX] As noted in [issue #107](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies and such-like subfolders (e.g. platform specific libraries) were not being copied appropriately relative to the instrumented location; this is now resolved.
 * [VISUALIZER] Fixes and updates
-  * Don't put expander icons on leaf nodes (most methods, source) in the global tool
+  * Don't put expander icons on leaf nodes (most methods, source) in the global tool, something done automatically by GTK, but not Avalonia.
   * Don't throw while trying to determine if a file that doesn't exist is outdated
 
 # 8.2.824 (Habu series release 6c)
