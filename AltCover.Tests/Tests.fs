@@ -1206,12 +1206,27 @@ module AltCoverTests =
     let f = AssemblyDefinition.ReadAssembly fdll
     ProgramDatabase.readSymbols f
 
-    let here = Assembly.GetExecutingAssembly().Location
-               |> AssemblyDefinition.ReadAssembly
-    ProgramDatabase.readSymbols here
+    // work round the instrumented assemblies having unreliable symbols
+#if !NET472
+    let dir =
+      Path.Combine(
+        SolutionRoot.location,
+        "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0"
+      )
+#else
+    let dir =
+      Path.Combine(
+        SolutionRoot.location,
+        "_Binaries/AltCover.Engine/Debug+AnyCPU/net472"
+      )
+#endif
 
-    Assert.That(here.LocalFilter, Is.False, "test Assembly non-local")
-    Assert.That(here.MainModule.LocalFilter, Is.False, "test MainModule non-local")
+    let localAssembly = Path.Combine(dir, "AltCover.Engine.dll")
+                        |> AssemblyDefinition.ReadAssembly
+    ProgramDatabase.readSymbols localAssembly
+
+    Assert.That(localAssembly.LocalFilter, Is.False, "local engine Assembly non-local")
+    Assert.That(localAssembly.MainModule.LocalFilter, Is.False, "local engine  MainModule non-local")
     Assert.That(a.LocalFilter, Is.False, "Assembly non-local")
     Assert.That(a.MainModule.LocalFilter, Is.False, "MainModule non-local")
     Assert.That(m.LocalFilter, Is.False, "dll Assembly non-local")
@@ -1221,8 +1236,8 @@ module AltCoverTests =
 
     try
       CoverageParameters.local := true
-      Assert.That(here.LocalFilter, Is.False, "test Assembly local")
-      Assert.That(here.MainModule.LocalFilter, Is.False, "test MainModule local")
+      Assert.That(localAssembly.LocalFilter, Is.False, "local engine  Assembly local")
+      Assert.That(localAssembly.MainModule.LocalFilter, Is.False, "local engine  MainModule local")
       Assert.That(a.LocalFilter, Is.True, "Assembly local")
       Assert.That(a.MainModule.LocalFilter, Is.False, "MainModule local")
       Assert.That(m.LocalFilter, Is.True, "dll Assembly local")

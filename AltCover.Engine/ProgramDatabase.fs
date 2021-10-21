@@ -30,12 +30,11 @@ module internal ProgramDatabase =
     let internal getMetadataReader =
       typeof<Mono.Cecil.ModuleDefinition>.GetField("reader", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
-    let internal metadataReaderSpec =
-      let mrType = (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
-                    |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataReader")
-                    |> Seq.head)
-      (//mrType.GetMethod("InitializeDocuments", BindingFlags.Instance ||| BindingFlags.NonPublic),
-       mrType.GetField("metadata", BindingFlags.Instance ||| BindingFlags.NonPublic))
+    let internal metadataSystem =
+      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
+      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataReader")
+      |> Seq.head)
+       .GetField("metadata", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
     let internal getDocuments =
       (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
@@ -119,17 +118,17 @@ module internal ProgramDatabase =
 
   let internal getAssemblyDocuments (assembly: AssemblyDefinition) =
     let reader = I.getMetadataReader.GetValue(assembly.MainModule)
-    let meta = I.metadataReaderSpec
-    //init.Invoke(reader, [||]) |> ignore
-    assembly.MainModule.GetTypes()
-    |> Seq.collect(fun t -> t.Methods)
-    |> Seq.collect(fun m -> m.DebugInformation.SequencePoints)
-    |> Seq.tryHead
-    |> ignore
-    let system = meta.GetValue(reader)
-    let docs = I.getDocuments.GetValue(system)
-    if docs.IsNotNull then
-      docs :?> System.Collections.IEnumerable
-      |> Seq.cast<Mono.Cecil.Cil.Document>
-      |> Seq.toList
-    else []
+    let system = I.metadataSystem.GetValue(reader)
+    I.getDocuments.GetValue(system) // set if sequence points have been loaded
+    |> Option.ofObj
+    |> Option.defaultValue
+      (assembly.MainModule.GetTypes()
+       |> Seq.collect(fun t -> t.Methods)
+       |> Seq.collect(fun m -> m.DebugInformation.SequencePoints)
+       |> Seq.tryHead // assuming lazy
+       |> ignore // hoping this call for side-effects doesn't get optimized away
+       I.getDocuments.GetValue(system)
+       |> Option.ofObj
+       |> Option.defaultValue ([] :> obj)) :?> System.Collections.IEnumerable
+    |> Seq.cast<Mono.Cecil.Cil.Document>
+    |> Seq.toList
