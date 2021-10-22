@@ -2,11 +2,12 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.2.82x (Habu series release 7)
-* [BUGFIX] As noted in [Q&A discussion (#107)](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies and such-like subfolders (e.g. platform specific libraries) were not being copied appropriately relative to the instrumented location; this is now resolved.
+# 8.2.825 (Habu series release 7)
+* Next release will be post .net 6 release to accomodate its impact, barring show-stoppers
+* [BUGFIX] As noted in [Q&A discussion (#107)](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies, and in [issue #47](https://github.com/SteveGilham/altcover/issues/47#issuecomment-461838463)  platform specific library subfolders, were not being copied appropriately relative to the instrumented location; this is now resolved.
 * [BUGFIX] Prevent `--localSource` possibly excluding locally built assemblies using source generators.
 * [VISUALIZER] Fixes and updates
-  * Don't put expander icons on leaf nodes (most methods, source) in the global tool, something done automatically by GTK, but not Avalonia.
+  * On the global tool, don't put expander icons (˃) on leaf nodes, i.e. most methods, all source -- such icons are an automatic feature in GTK, but are manual in Avalonia.
   * Don't throw while trying to determine if a file that doesn't exist is outdated
 
 # 8.2.824 (Habu series release 6c)
