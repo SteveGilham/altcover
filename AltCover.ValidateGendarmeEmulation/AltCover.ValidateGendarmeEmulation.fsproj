@@ -75,7 +75,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.8" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.10" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.0">
