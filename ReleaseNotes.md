@@ -3,6 +3,7 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 8.2.82x (Habu series release x)
+* [BUGFIX] Prevent `--localSource` possibly excluding locally build assemblies using source generators.
 * [VISUALIZER] Fixes and updates
   * Don't put expander icons on leaf nodes (most methods, source) in the global tool
   * Don't throw while trying to determine if a file that doesn't exist is outdated
