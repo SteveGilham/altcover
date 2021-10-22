@@ -26,8 +26,8 @@ open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
 open Fake.Tools.Git
 
-open FSharpLint.Application
-open FSharpLint.Framework
+//open FSharpLint.Application
+//open FSharpLint.Framework
 open NUnit.Framework
 open Swensen.Unquote
 
@@ -597,9 +597,6 @@ _Target
         let appveyor =
             Environment.environVar "APPVEYOR_BUILD_VERSION"
 
-        let travis =
-            Environment.environVar "TRAVIS_JOB_NUMBER"
-
         let github =
             Environment.environVar "GITHUB_RUN_NUMBER"
 
@@ -607,13 +604,10 @@ _Target
 
         let ci =
             if String.IsNullOrWhiteSpace appveyor then
-                if String.IsNullOrWhiteSpace travis then
-                    if String.IsNullOrWhiteSpace github then
-                        String.Empty
-                    else
-                        version.Replace("{build}", github + "-github")
+                if String.IsNullOrWhiteSpace github then
+                  String.Empty
                 else
-                    version.Replace("{build}", travis + "-travis")
+                  version.Replace("{build}", github + "-github")
             else
                 appveyor
 
@@ -701,11 +695,7 @@ module SolutionRoot =
 
         [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
           "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-          "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-          "./AltCover.Avalonia/AltCover.Avalonia.fsproj"
-          "./AltCover.Avalonia.FuncUI/AltCover.Avalonia.FuncUI.fsproj"
-          "./AltCover.Visualizer/AltCover.Visualizer.fsproj" // GAC
-          "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ]
+          "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj" ]
         |> Seq.iter
             (fun f ->
                 let dir = Path.GetDirectoryName f
@@ -762,10 +752,9 @@ _Target
     "BuildRelease"
     (fun _ ->
         try
-            [ "MCS.sln" ] |> Seq.iter (msbuildRelease None) // mono
-
             [ "./AltCover.sln"
-              "./AltCover.Visualizer.sln" ]
+              "./AltCover.Visualizer.sln"
+              "MCS.sln" ]
             |> Seq.iter dotnetBuildRelease
 
             // document cmdlets ahead of packaging
@@ -837,8 +826,6 @@ _Target
              Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
             "./Samples/Sample14/Sample14/Class3.txt"
 
-        [ "MCS.sln" ] |> Seq.iter (msbuildDebug None) // gac; mono
-
         [ "./AltCover.Recorder.sln" ]
         |> Seq.iter (msbuildDebug MSBuildPath) // net20
 
@@ -847,7 +834,8 @@ _Target
 
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
-          "./Samples/Sample14/Sample14.sln" ]
+          "./Samples/Sample14/Sample14.sln"
+          "MCS.sln" ]
         |> Seq.iter dotnetBuildDebug
 
         Shell.copy "./_SourceLink" (!! "./Samples/Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
@@ -858,7 +846,7 @@ _Target
         [ "./Samples/Sample8/Sample8.csproj" ]
         |> Seq.iter dotnetBuildDebug // build to embed on non-Windows
 
-        let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
+        let mcs = "_Binaries/MCS/Release+AnyCPU/net472/MCS.exe"
 
         [ ("./_Mono/Sample1",
            [ "-debug"
@@ -889,7 +877,38 @@ _Target
 _Target "Analysis" ignore
 
 _Target
-    "Lint" ignore // API mismtach for FSharp.Compiler.SourceCodeServices.FSharpChecker
+    "Lint"
+    (fun _ ->
+      let cfg = Path.getFullName "./fsharplint.json"
+
+      let doLint f =
+        CreateProcess.fromRawCommand "dotnet" ["fsharplint"; "lint";  "-l"; cfg ; f]
+        |> CreateProcess.ensureExitCodeWithMessage "Lint issues were found"
+        |> Proc.run
+      let doLintAsync f = async { return (doLint f).ExitCode }
+
+      let throttle x = Async.Parallel (x, System.Environment.ProcessorCount)
+      let demo = Path.getFullName "./Demo"
+      let regress = Path.getFullName "./RegressionTesting"
+      let sample = Path.getFullName "./Samples"
+
+      let failOnIssuesFound (issuesFound: bool) =
+        Assert.That(issuesFound, Is.False, "Lint issues were found")
+
+      [ !! "./**/*.fsproj"
+        |> Seq.sortBy (Path.GetFileName)
+        |> Seq.filter (fun f -> ((f.Contains demo) ||
+                                 (f.Contains regress) ||
+                                 (f.Contains sample)) |> not)
+        !! "./Build/*.fsx" |> Seq.map Path.GetFullPath ]
+      |> Seq.concat
+      |> Seq.map doLintAsync
+      |> throttle
+      |> Async.RunSynchronously
+      |> Seq.exists (fun x -> x <> 0)
+      |> failOnIssuesFound
+      )
+
     //(fun _ ->
     //    let failOnIssuesFound (issuesFound: bool) =
     //        Assert.That(issuesFound, Is.False, "Lint issues were found")
@@ -3479,11 +3498,6 @@ _Target
         let uic =
             Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/net472/AltCover.UICommon.dll"
 
-        let packable =
-            Path.getFullName "./_Binaries/README.html"
-
-        let readmemd = Path.getFullName "README.md"
-
         let libFiles path =
             Seq.concat [ !! "./_Binaries/AltCover/Release+AnyCPU/net472/Mono.C*.dll"
                          !! "_Publish/System.*" ]
@@ -3510,8 +3524,8 @@ _Target
               (manatee, Some "tools/net472", None)
               (fox, Some "tools/net472", None)
               (options, Some "tools/net472", None)
-              (readmemd, Some "", None)
-              (packable, Some "", None) ]
+              (Path.getFullName "Build/README.core.md", Some "", None)
+              (Path.getFullName "./_Binaries/README.core.html", Some "", None) ]
 
         let apiFiles =
             [ (AltCover, Some "lib/net472", None)
@@ -3524,8 +3538,8 @@ _Target
               (manatee, Some "lib/net472", None)
               (fox, Some "lib/net472", None)
               (options, Some "lib/net472", None)
-              (readmemd, Some "", None)
-              (packable, Some "", None) ]
+              (Path.getFullName "Build/README.api.md", Some "", None)
+              (Path.getFullName "./_Binaries/README.api.html", Some "", None) ]
 
         let resourceFiles path =
             [ "_Binaries/AltCover/Release+AnyCPU/net472"
@@ -3758,7 +3772,10 @@ _Target
                          // monitorFiles "lib/netstandard2.0/"
                          // [ (monitor, Some "lib/net20", None) ]
                          monitorFiles "tools/netcoreapp2.1/any/"
-                         [ (readmemd, Some "", None); (packable, Some "", None) ]
+                         [
+                           (Path.getFullName "Build/README.global.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.global.html", Some "", None)
+                         ]
                          auxFiles
                          otherFilesGlobal
                          housekeeping ],
@@ -3768,7 +3785,10 @@ _Target
            "altcover.global")
 
           (List.concat [ vizFiles "tools/netcoreapp2.1/any"
-                         [ (readmemd, Some "", None); (packable, Some "", None) ]
+                         [
+                           (Path.getFullName "Build/README.visualizer.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.visualizer.html", Some "", None)
+                         ]
                          auxVFiles
                          housekeepingVis ],
            [],
@@ -3778,7 +3798,10 @@ _Target
 
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
-                         [ (readmemd, Some "", None); (packable, Some "", None) ]
+                         [
+                           (Path.getFullName "Build/README.fake.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.fake.html", Some "", None)
+                         ]
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
              ("Fake.Core.Environment", "5.18.1")
@@ -3839,13 +3862,10 @@ _Target
                                   + Environment.NewLine
                                   + w.ToString()
                               ToolPath =
-                                  if Environment.isWindows then
                                       ("./packages/"
                                        + (packageVersion "NuGet.CommandLine")
                                        + "/tools/NuGet.exe")
-                                      |> Path.getFullName
-                                  else
-                                      "/usr/bin/nuget" })
+                                      |> Path.getFullName })
                     nuspec))
 
 _Target "PrepareFrameworkBuild" ignore
@@ -3885,27 +3905,37 @@ _Target
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
         // dotnet tooling mods
-        [ ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)", None, None)
+        [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
+           "AltCover (dotnet global tool install)", None,
+           "README.global.md",
+            None)
 
           ("DotnetTool",
            "./_Generated/altcover.visualizer.nuspec",
            "AltCover.Visualizer (dotnet global tool install)",
            Some "AltCover.UICommon/logo.png",
+           "README.visualizer.md",
            Some "codecoverage .netcore cross-platform")
 
-          (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None, None)
+          (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None,
+           "README.api.md",
+           None)
 
           (String.Empty,
            "./_Generated/altcover.fake.nuspec",
            "AltCover (FAKE task helpers)",
            None,
+           "README.fake.md",
            Some "codecoverage .net Mono .netcore cross-platform FAKE build") ]
         |> List.iter
-            (fun (ptype, path, caption, icon, tags) ->
+            (fun (ptype, path, caption, icon, readme, tags) ->
                 let x s =
                     XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
 
                 let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
+
+                dotnetNupkg.Descendants(x "readme")
+                |> Seq.iter (fun hint -> hint.SetValue readme)
 
                 let title =
                     dotnetNupkg.Descendants(x "title") |> Seq.head
@@ -3946,12 +3976,19 @@ _Target
 _Target
     "PrepareReadMe"
     (fun _ ->
-        Actions.PrepareReadMe(
-            Copyright.Value
-                .Replace("©", "&#xa9;")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-        ))
+        let c = Copyright.Value
+                 .Replace("©", "&#xa9;")
+                 .Replace("<", "&lt;")
+                 .Replace(">", "&gt;")
+
+        [
+            "./Build/README.core.md"
+            "./Build/README.api.md"
+            "./Build/README.fake.md"
+            "./Build/README.global.md"
+            "./Build/README.visualizer.md"
+        ]
+        |> Seq.iter (Actions.PrepareReadMe c))
 
 // Post-packaging deployment touch test
 
@@ -5510,9 +5547,10 @@ Target.runOrDefault "DoIt"
 
             File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}", "\"" + ver + "\""))
 
-            let dependencies = """version 5.249.0
+            let dependencies = """version 5.257.0
 // [ FAKE GROUP ]
 group NetcoreBuild
+  storage: none
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core.Target >= 5.20.3
   nuget Fake.DotNet.Cli >= 5.20.3
@@ -5601,6 +5639,11 @@ _Target
                         |> Seq.head
 
                     targets.SetValue "net5.0"
+
+                    fsproj.Descendants(XName.Get("HintPath"))
+                    |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
+                                             |> Path.getFullName
+                                             |> hint.SetValue)
 
                     let pack =
                         fsproj.Descendants(XName.Get("PackageReference"))
@@ -6718,6 +6761,12 @@ _Target
                 |> Seq.head
 
             targets.SetValue "netcoreapp2.1"
+
+            fsproj.Descendants(XName.Get("HintPath"))
+            |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
+                                     |> Path.getFullName
+                                     |> hint.SetValue)
+
             fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.fs")
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.json")

@@ -43,7 +43,7 @@ module Actions =
                         |> Seq.filter (fun c -> c = '\\' || c = '/')
                         |> Seq.length)
                 |> Seq.map (fun (n, x) -> (n, x |> Seq.sort))
-                |> Seq.sortBy (fun p -> -1 * (fst p))
+                |> Seq.sortBy (fst >> ((*) -1))
                 |> Seq.collect snd
                 |> Seq.iter
                     (fun n ->
@@ -469,8 +469,9 @@ do ()"""
 
             ValidateSample1 simpleReport reportSigil
 
-    let PrepareReadMe packingCopyright =
-        let readme = Path.getFullName "README.md"
+    let PrepareReadMe packingCopyright readmemd =
+        let readme = Path.getFullName readmemd
+        let name = Path.GetFileNameWithoutExtension readmemd
         let document = File.ReadAllText readme
         let markdown = Markdown.ToHtml(document)
 
@@ -535,7 +536,7 @@ a:hover {color: #ecc;}
                 | _ -> ())
 
         let packable =
-            Path.getFullName "./_Binaries/README.html"
+            Path.getFullName ("./_Binaries/" + name + ".html")
 
         xmlform.Save packable
 

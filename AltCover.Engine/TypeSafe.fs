@@ -14,6 +14,8 @@ open System.Text.RegularExpressions
 #if RUNNER
 [<ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 #else
+open AltCover
+
 [<RequireQualifiedAccess>]
 #endif
 module TypeSafe =
@@ -27,7 +29,7 @@ module TypeSafe =
       match self with
       | NoFile -> String.Empty
       | FInfo i -> i.FullName
-      | FilePath s -> Path.GetFullPath s
+      | FilePath s -> canonicalPath s
       | Tool t -> t
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]

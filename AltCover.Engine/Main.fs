@@ -135,7 +135,7 @@ module internal Main =
       [ ("i|inputDirectory=",
          (fun x ->
            if CommandLine.validateDirectory "--inputDirectory" x then
-             let arg = Path.GetFullPath x
+             let arg = canonicalDirectory x
 
              if CoverageParameters.theInputDirectories.Contains arg then
                CommandLine.error <-
@@ -147,7 +147,7 @@ module internal Main =
         ("o|outputDirectory=",
          (fun x ->
            if CommandLine.validatePath "--outputDirectory" x then
-             let arg = Path.GetFullPath x
+             let arg = canonicalDirectory x
 
              if CoverageParameters.theOutputDirectories.Contains arg then
                CommandLine.error <-
@@ -174,7 +174,7 @@ module internal Main =
                let path =
                  x
                  |> Environment.ExpandEnvironmentVariables
-                 |> Path.GetFullPath
+                 |> canonicalPath
 
                let name, ok =
                  CommandLine.validateAssembly "--dependency" path
@@ -213,7 +213,7 @@ module internal Main =
                  :: CommandLine.error
              else
                CommandLine.doPathOperation
-                 (fun () -> CoverageParameters.theReportPath <- Some(Path.GetFullPath x))
+                 (fun () -> CoverageParameters.theReportPath <- Some(canonicalPath x))
                  ()
                  false))
         ("f|fileFilter=", makeFilter FilterScope.File)
@@ -325,19 +325,35 @@ module internal Main =
              o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
            (OptionSet())
 
+    let private echoDirectories (outputDirectory:string, inputDirectory:string) =
+      if CommandLine.verbosity < 1 // implement it early here
+      then
+        if CoverageParameters.inplace.Value then
+          Output.info
+          <| CommandLine.Format.Local("savingto", outputDirectory)
+
+          Output.info
+          <| CommandLine.Format.Local("instrumentingin", inputDirectory)
+        else
+          Output.info
+          <| CommandLine.Format.Local("instrumentingfrom", inputDirectory)
+
+          Output.info
+          <| CommandLine.Format.Local("instrumentingto", outputDirectory)
+
     let internal processOutputLocation
       (action: Either<string * OptionSet, string list * OptionSet>)
       =
       match action with
       | Right (rest, options) ->
           // Check that the directories are distinct
-          let fromDirectories = CoverageParameters.inputDirectories ()
-          let toDirectories = CoverageParameters.outputDirectories ()
+          let inputDirectories = CoverageParameters.inputDirectories ()
+          let outputDirectories = CoverageParameters.outputDirectories ()
 
-          fromDirectories
+          inputDirectories
           |> Seq.iter
                (fun fromDirectory ->
-                 if toDirectories.Contains fromDirectory then
+                 if outputDirectories.Contains fromDirectory then
                    CommandLine.error <-
                      CommandLine.Format.Local("NotInPlace", fromDirectory)
                      :: CommandLine.error)
@@ -345,7 +361,7 @@ module internal Main =
           CommandLine.doPathOperation
             (fun () ->
               let found =
-                toDirectories |> Seq.filter Directory.Exists
+                outputDirectories |> Seq.filter Directory.Exists
 
               if CoverageParameters.inplace.Value
                  && CommandLine.error |> List.isEmpty
@@ -358,36 +374,21 @@ module internal Main =
                          :: CommandLine.error)
 
               if CommandLine.error |> List.isEmpty then
-                (Seq.iter CommandLine.ensureDirectory toDirectories))
+                (Seq.iter CommandLine.ensureDirectory outputDirectories))
             ()
             false
 
           if CommandLine.error |> List.isEmpty |> not then
             Left("UsageError", options)
           else
-            Seq.zip toDirectories fromDirectories
-            |> Seq.iter
-                 (fun (toDirectory, fromDirectory) ->
-                   if CommandLine.verbosity < 1 // implement it early here
-                   then
-                     if CoverageParameters.inplace.Value then
-                       Output.info
-                       <| CommandLine.Format.Local("savingto", toDirectory)
-
-                       Output.info
-                       <| CommandLine.Format.Local("instrumentingin", fromDirectory)
-                     else
-                       Output.info
-                       <| CommandLine.Format.Local("instrumentingfrom", fromDirectory)
-
-                       Output.info
-                       <| CommandLine.Format.Local("instrumentingto", toDirectory))
+            Seq.zip outputDirectories inputDirectories
+            |> Seq.iter echoDirectories
 
             Right(
               rest,
-              fromDirectories |> Seq.map DirectoryInfo,
-              toDirectories |> Seq.map DirectoryInfo,
-              CoverageParameters.sourceDirectories ()
+              inputDirectories |> Seq.map DirectoryInfo,
+              outputDirectories |> Seq.map DirectoryInfo,
+              CoverageParameters.sourceDirectories () // "instrument-from" selection of the above
               |> Seq.map DirectoryInfo
             )
       | Left intro -> Left intro
@@ -401,38 +402,55 @@ module internal Main =
       | :? ArgumentException
       | :? IOException -> tidy ()
 
+    let internal matchType = Maybe (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
+                                    StringComparison.OrdinalIgnoreCase StringComparison.Ordinal
+
+    let internal isInDirectory (file:string) (dir:string) =
+      file.StartsWith(dir, matchType)
+
     let internal prepareTargetFiles
-      (fromInfos: DirectoryInfo seq)
-      (toInfos: DirectoryInfo seq)
-      (sourceInfos: DirectoryInfo seq)
-      (targets: string seq)
+      (inputInfos: DirectoryInfo seq)
+      (outputInfos: DirectoryInfo seq)
+      (instrumentFromInfos: DirectoryInfo seq)
+      (instrumentToPaths: string seq)
       =
       // Copy all the files into the target directory
       let mapping = Dictionary<string, string>()
 
-      Seq.zip sourceInfos targets
+      Seq.zip instrumentFromInfos instrumentToPaths
       |> Seq.map
            (fun (x, y) ->
              let f = x.FullName // trim separator
              (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
       |> Seq.iter mapping.Add
 
-      Seq.zip fromInfos toInfos
+      Seq.zip inputInfos outputInfos
       |> Seq.iter
-           (fun (fromInfo, toInfo) ->
-             let files = fromInfo.GetFiles()
+           (fun (inputInfo, outputInfo) ->
+             // recurse here
+
+             let files = inputInfo.GetFiles("*",SearchOption.AllDirectories)
+                         |> Seq.filter (fun i -> outputInfos
+                                                 |> Seq.exists(fun o -> isInDirectory i.FullName o.FullName)
+                                                 |> not)
 
              files
              |> Seq.iter
                   (fun info ->
                     let fullName = info.FullName
-                    let filename = info.Name
-                    let copy = Path.Combine(toInfo.FullName, filename)
+                    let dirname = info.DirectoryName
+                    let reldir =
+                      Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
+                    let copy = Path.Combine(outputInfo.FullName, reldir, info.Name)
+                    copy
+                    |> Path.GetDirectoryName
+                    |> Directory.CreateDirectory
+                    |> ignore
                     File.Copy(fullName, copy, true)))
 
       // Track the symbol-bearing assemblies
       let assemblies =
-        sourceInfos
+        instrumentFromInfos
         |> Seq.map
              (fun sourceInfo ->
                sourceInfo.GetFiles()
@@ -644,7 +662,7 @@ module internal Main =
             "../any" ]
           |> Seq.map
                (fun d ->
-                 Path.GetFullPath(
+                 canonicalPath(
                    Path.Combine(Path.Combine(here, d), "AltCover.PowerShell.dll")
                  ))
           |> Seq.filter File.Exists

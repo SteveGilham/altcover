@@ -1,6 +1,34 @@
-Q. Never mind the fluff -- how do I get started?
+﻿Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
+
+# 8.2.825 (Habu series release 7)
+* Next release will be post .net 6 release to accomodate its impact, barring show-stoppers
+* [BUGFIX] As noted in [Q&A discussion (#107)](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies, and in [issue #47](https://github.com/SteveGilham/altcover/issues/47#issuecomment-461838463)  platform specific library subfolders, were not being copied appropriately relative to the instrumented location; this is now resolved.
+* [BUGFIX] Prevent `--localSource` possibly excluding locally built assemblies using source generators.
+* [VISUALIZER] Fixes and updates
+  * On the global tool, don't put expander icons (˃) on leaf nodes, i.e. most methods, all source -- such icons are an automatic feature in GTK, but are manual in Avalonia.
+  * Don't throw while trying to determine if a file that doesn't exist is outdated
+
+# 8.2.824 (Habu series release 6c)
+* [VISUALIZER] Fixes and updates
+  * [REGRESSION] Fix where multiple source file support broke JSON coverage support
+  * Not all coverage reports are XML -- fix root node icon
+  * Add more icons indicating non-default states (files missing, changed, via sourcelink &c)
+  * Replace most of the annoying pop-ups with tool-tips
+
+# 8.2.823 (Habu series release 6b)
+* [VISUALIZER] Fixes and updates
+  * [REGRESSION] Fix where multiple source file support broke methods with no source file
+  * [BUGFIX] Fix where some types were erroneously shown as functions (ƒₓ)
+  * Allow for TAB characters (which occupy 1 column only in the .PDB), and display → rather than ◻ in the global tool (TAB expands to 8 spaces in the GTK# build)
+  * Update icons to VS2019 from VS2017 (except where taken from GTK in the GTK# build), which means slightly more colours in the tree view, and a small change to the branch indicator.
+
+# 8.2.822 (Habu series release 6a)
+* [VISUALIZER] Support OpenCover's output from C++/CLI assemblies compiled `/Zi` (line information only, zero column values)
+  * account for (& simplify) the C++/CLI attribute decorations in method names
+  * allow for (& simplify) `gcroot<type::with::Cpp::namespacing ^>` types in method names
+  * allow source file selection for methods with code inlined from multiple source files
 
 # 8.2.821 (Habu series release 6)
 * Support deterministic builds `/p:ContinuousIntegrationBuild=true`, with or without `--sourcelink`/`/p:AltCoverSourceLink=true`.  Note that assemblies created by deterministic builds will be excluded by `-l`/`/p:AltCoverLocalSource=true`.

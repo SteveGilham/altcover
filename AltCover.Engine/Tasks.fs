@@ -472,7 +472,7 @@ type ContingentCopy() =
     let relativeDir = if self.ProjectDir |> String.IsNullOrWhiteSpace |> not &&
                          self.ProjectDir  |> Path.IsPathRooted &&
                          self.RelativeDir |> Path.IsPathRooted
-                      then Visitor.I.getRelativePath self.ProjectDir self.RelativeDir
+                      then Visitor.I.getRelativeDirectoryPath self.ProjectDir self.RelativeDir
                       else self.RelativeDir
 
     // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)

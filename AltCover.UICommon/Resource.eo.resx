@@ -131,17 +131,6 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
   <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
     <value>Vizitu la magazinon AltCover en GitHub</value>
   </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>La dosiero
-{0}
-estas sen dato koncerne iujn el la fontaj dosieroj.</value>
-  </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>La dosiero
-{0}
-estas sen dato pri respekto al fonta dosiero
-{1}.</value>
-  </data>
   <data name="C_redits" xml:space="preserve">
     <value>_Kreditoj</value>
   </data>
@@ -165,17 +154,6 @@ estas sen dato pri respekto al fonta dosiero
 {0}
 ne estas valida kovra dosiero:
 {1}</value>
-  </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>La dosiero
-{0} 
-raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
-  </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>La dosiero
-{0}
-raportas al ausente fonta dosiero
-{1}.</value>
   </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
@@ -254,5 +232,17 @@ THE SOFTWARE.</value>
   </data>
   <data name="LoadInfo" xml:space="preserve">
     <value>Noto</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>Dosiero ne trovita: {0}</value>
+  </data>
+  <data name="FileNewerThanReport" xml:space="preserve">
+    <value>Dosiero pli nova ol raporto: {0}</value>
+  </data>
+  <data name="NotAllSourcePresent" xml:space="preserve">
+    <value>Ne ĉiuj menciitaj fontodosieroj ĉeestas</value>
+  </data>
+  <data name="SomeSourceModified" xml:space="preserve">
+    <value>Luj fontodosieroj estis modifitaj de kiam ĉi tiu raporto estis kreita</value>
   </data>
 </root>

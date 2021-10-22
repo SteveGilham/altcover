@@ -484,7 +484,7 @@ module AltCover =
     static member private ValidateArray a f key =
       PrepareOptions.ValidateArraySimple a (f key)
 
-    static member private ValidateArraySimple a f = a |> Seq.iter (fun s -> f s |> ignore)
+    static member private ValidateArraySimple a f = a |> Seq.iter (f >> ignore)
 
     static member private ValidateOptional f key x =
       if x |> String.IsNullOrWhiteSpace |> not then

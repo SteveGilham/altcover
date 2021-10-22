@@ -44,6 +44,7 @@
     <EmbeddedResource Include="Sample4.syntheticvisits.native.json" />
     <EmbeddedResource Include="Sample4FullTracking.json" />
     <EmbeddedResource Include="Sample4FullTracking.cobertura" />
+    <None Include="Sample4.fromcoverletjson.xml" />
     <EmbeddedResource Include="Sample4.coverlet.json" />
     <EmbeddedResource Include="Sample4.coverlet.lcov" />
     <EmbeddedResource Include="Sample5.native.json" />
@@ -106,21 +107,20 @@
     <Reference Include="AltCover.Recorder">
       <HintPath>$(ProjectDir)..\_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
     </Reference>
-    <PackageReference Include="Expecto" Version="9.0.2" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net472'" />
-    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.0" Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
     </Reference>
@@ -130,7 +130,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1">
+    <PackageReference Update="FSharp.Core" Version="6.0.0">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

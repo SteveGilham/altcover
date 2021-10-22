@@ -56,7 +56,7 @@ module AltCoverTests3 =
         <> "Windows_NT"
 
       let exe, args =
-        maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
+        Maybe nonWindows ("mono", "\"" + program + "\"") (program, String.Empty)
 
       let r =
         CommandLine.I.launch
@@ -69,7 +69,7 @@ module AltCoverTests3 =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty
@@ -1048,7 +1048,7 @@ module AltCoverTests3 =
     try
       CoverageParameters.theInputDirectories.Clear()
       let options = Main.I.declareOptions ()
-      let unique = Path.GetFullPath(".")
+      let unique = "."
       let input = [| "-i"; unique |]
 
       let parse =
@@ -1061,7 +1061,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.theInputDirectories
             |> Seq.toList with
-      | [ x ] -> Assert.That(x, Is.EqualTo unique)
+      | [ x ] -> Assert.That(x, Is.EqualTo (canonicalDirectory unique))
     finally
       CoverageParameters.theInputDirectories.Clear()
 
@@ -1078,20 +1078,20 @@ module AltCoverTests3 =
 
       let input =
         [| "-i"
-           Path.GetFullPath(".")
+           "."
            "/i"
-           Path.GetFullPath("..") |]
+           ".." |]
 
       let parse =
         CommandLine.parseCommandLine input options
 
-      let pcom a b = Path.Combine(b, a) |> Path.GetFullPath
+      let pcom a b = Path.Combine(b, a) |> canonicalDirectory
 
       match parse with
       | Right _ ->
           CoverageParameters.inputDirectories ()
           |> Seq.toList
-          |> List.zip ([ "."; ".." ] |> List.map Path.GetFullPath)
+          |> List.zip ([ "."; ".." ] |> List.map canonicalDirectory)
           |> List.iter Assert.AreEqual
 
           CoverageParameters.outputDirectories ()
@@ -1104,7 +1104,7 @@ module AltCoverTests3 =
 
           CoverageParameters.outputDirectories ()
           |> Seq.toList
-          |> List.zip [ Path.GetFullPath "maybe"
+          |> List.zip [ canonicalDirectory "maybe"
                         ".." |> (pcom "__Saved") ]
           |> List.iter Assert.AreEqual
 
@@ -1120,7 +1120,7 @@ module AltCoverTests3 =
     try
       CoverageParameters.theInputDirectories.Clear()
       let options = Main.I.declareOptions ()
-      let here = Path.GetFullPath(".")
+      let here = "."
       let input = [| "-i"; here; "-i"; here |]
 
       let parse =
@@ -1134,7 +1134,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ here
+              [ (canonicalDirectory here)
                 + " was already specified for --inputDirectory" ]
             )
           )
@@ -1203,7 +1203,7 @@ module AltCoverTests3 =
 
       match CoverageParameters.outputDirectories ()
             |> Seq.toList with
-      | [ x ] -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+      | [ x ] -> Assert.That(canonicalDirectory x, Is.EqualTo (canonicalDirectory unique))
     finally
       CoverageParameters.theOutputDirectories.Clear()
 
@@ -1228,7 +1228,7 @@ module AltCoverTests3 =
           Assert.That(
             CommandLine.error,
             Is.EquivalentTo(
-              [ Path.GetFullPath(unique)
+              [ (canonicalDirectory unique)
                 + " was already specified for --outputDirectory" ]
             )
           )
@@ -1248,7 +1248,7 @@ module AltCoverTests3 =
       let u2 = unique.Replace("-", "+")
 
       let outs =
-        [ unique; u2 ] |> List.map Path.GetFullPath
+        [ unique; u2 ] |> List.map canonicalDirectory
 
       let input = [| "-o"; unique; "/o"; u2 |]
 
@@ -1335,10 +1335,10 @@ module AltCoverTests3 =
       ProgramDatabase.symbolFolders.Clear()
       let options = Main.I.declareOptions ()
       let unique = Path.GetFullPath(".")
-      let Symbol = [| "-y"; unique |]
+      let symbol = [| "-y"; unique |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Right (x, y) ->
@@ -1358,14 +1358,14 @@ module AltCoverTests3 =
       ProgramDatabase.symbolFolders.Clear()
       let options = Main.I.declareOptions ()
 
-      let Symbol =
+      let symbol =
         [| "-y"
            Path.GetFullPath(".")
            "/y"
            Path.GetFullPath("..") |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Right (x, y) ->
@@ -1376,7 +1376,7 @@ module AltCoverTests3 =
       | 2 ->
           Assert.That(
             ProgramDatabase.symbolFolders,
-            Is.EquivalentTo(Symbol |> Seq.filter (fun x -> x.Length > 2))
+            Is.EquivalentTo(symbol |> Seq.filter (fun x -> x.Length > 2))
           )
     finally
       ProgramDatabase.symbolFolders.Clear()
@@ -1392,10 +1392,10 @@ module AltCoverTests3 =
       let unique =
         Guid.NewGuid().ToString().Replace("-", "*")
 
-      let Symbol = [| "-y"; unique |]
+      let symbol = [| "-y"; unique |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Left (x, y) ->
@@ -1411,10 +1411,10 @@ module AltCoverTests3 =
     try
       ProgramDatabase.symbolFolders.Clear()
       let options = Main.I.declareOptions ()
-      let Symbol = [| "-y" |]
+      let symbol = [| "-y" |]
 
       let parse =
-        CommandLine.parseCommandLine Symbol options
+        CommandLine.parseCommandLine symbol options
 
       match parse with
       | Left (x, y) ->
@@ -2837,6 +2837,7 @@ module AltCoverTests3 =
 
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+        |> canonicalDirectory
 
       CoverageParameters.theInputDirectories.Clear()
       CoverageParameters.theInputDirectories.Add here
@@ -2896,12 +2897,12 @@ module AltCoverTests3 =
           Assert.That(x, Is.SameAs rest)
 
           y
-          |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          |> Seq.iter (fun y' -> Assert.That(y'.FullName |> canonicalDirectory, Is.EqualTo (canonicalDirectory here)))
 
           z
           |> Seq.iter
                (fun z' ->
-                 Assert.That(z'.FullName, Is.EqualTo(Path.GetDirectoryName here)))
+                 Assert.That(z'.FullName |> canonicalDirectory, Is.EqualTo(canonicalDirectory (Path.GetDirectoryName here))))
 
           t
           |> Seq.zip y
@@ -2913,7 +2914,7 @@ module AltCoverTests3 =
               "Instrumenting files from "
               + here
               + "\nWriting files to "
-              + (Path.GetDirectoryName here)
+              + (canonicalDirectory (Path.GetDirectoryName here))
               + "\n"
             )
           )
@@ -2961,7 +2962,7 @@ module AltCoverTests3 =
           |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
 
           z
-          |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo there))
+          |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo (canonicalDirectory there)))
 
           t
           |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo here))
@@ -2970,11 +2971,11 @@ module AltCoverTests3 =
             stdout.ToString().Replace("\r", String.Empty),
             Is.EqualTo(
               "Creating folder "
-              + there
+              + (canonicalDirectory there)
               + "\nInstrumenting files from "
               + here
               + "\nWriting files to "
-              + there
+              + (canonicalDirectory there)
               + "\n"
             )
           )
@@ -3029,6 +3030,7 @@ module AltCoverTests3 =
 
   [<Test>]
   let InPlaceOperationIsAsExpected () =
+    CommandLine.toConsole ()
     Main.init ()
     let options = Main.I.declareOptions ()
     let saved = (Console.Out, Console.Error)
@@ -3043,9 +3045,11 @@ module AltCoverTests3 =
 
       let here =
         Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+        |> canonicalDirectory
 
       let there =
         Path.Combine(here, Guid.NewGuid().ToString())
+        |> canonicalDirectory
 
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theInputDirectories.Clear()
@@ -3169,12 +3173,22 @@ module AltCoverTests3 =
     Assert.That(one.Value, Is.True)
 
   [<Test>]
+  let FolderNestingIsDetectedCorrectly () =
+    let dir = canonicalDirectory "some/path/"
+    let file1 = Path.Combine (canonicalDirectory "different", "path")
+    test <@ (Main.I.isInDirectory file1 dir) |> not @>
+    let file2 = Path.Combine (canonicalDirectory "some/pathway", "a.b")
+    test <@ (Main.I.isInDirectory file2 dir) |> not @>
+    let file3 = Path.Combine (canonicalDirectory "some/path/nested", "a.b")
+    test <@ (Main.I.isInDirectory file3 dir) @>
+
+  [<Test>]
   let PreparingNewPlaceShouldCopyEverything () =
     Main.init ()
     // because mono symbol-writing is broken, work around trying to
     // examine the instrumented files in a self-test run.
     let here =
-      Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy")
+      Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy/net472")
 
     let there =
       Path.Combine(
@@ -3190,11 +3204,22 @@ module AltCoverTests3 =
 
     let f, t = Seq.zip fromInfo toInfo |> Seq.head
 
+    let flen = here.Length
+    let tlen = there.Length
+
     Assert.That(
-      t.EnumerateFiles() |> Seq.map (fun x -> x.Name),
-      Is.EquivalentTo(f.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
+      t.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(tlen)),
+      Is.EquivalentTo(f.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(flen))),
       "Simple to-from comparison failed"
     )
+
+    //t.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(tlen))
+    //|> Seq.iter (printfn "%A")
+    //f.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map (fun x -> x.FullName.Substring(flen))
+    //|> Seq.iter (printfn "%A")
+
+    Assert.That (File.Exists <| Path.Combine(here, "eo/Sample4.resources.dll"))
+    Assert.That (File.Exists <| Path.Combine(there, "eo/Sample4.resources.dll"))
 
     Assert.That(
       y,
@@ -3278,7 +3303,7 @@ module AltCoverTests3 =
         <> "Windows_NT"
 
       let args =
-        maybe nonWindows ("mono" :: baseArgs) baseArgs
+        Maybe nonWindows ("mono" :: baseArgs) baseArgs
 
       let r =
         CommandLine.processTrailingArguments args (DirectoryInfo(where))
@@ -3288,7 +3313,7 @@ module AltCoverTests3 =
       let result = stdout.ToString()
 
       let quote =
-        maybe
+        Maybe
           (System.Environment.GetEnvironmentVariable("OS") = "Windows_NT")
           "\""
           String.Empty
@@ -3585,19 +3610,8 @@ module AltCoverTests3 =
       test <@ synthetic = helptext @>
 
 #if !MONO // Mono won't play nicely with Esperanto placeholder locale  // remove for fantomas
-#if !NET472
-      let dir =
-        Path.Combine(
-          SolutionRoot.location,
-          "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0"
-        )
-#else
-      let dir =
-        Path.Combine(
-          SolutionRoot.location,
-          "_Binaries/AltCover.Engine/Debug+AnyCPU/net472"
-        )
-#endif
+      let dir = System.Reflection.Assembly.GetExecutingAssembly().Location
+                |> Path.GetDirectoryName
 
       let eo =
         Path.Combine(dir, "./eo/AltCover.Engine.resources.dll")

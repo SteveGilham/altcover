@@ -262,7 +262,8 @@ module internal Instrument =
                  let head = initialBody |> Seq.head
                  worker.InsertBefore(head, value (worker))
                  worker.InsertBefore(head, worker.Create(OpCodes.Ret))
-                 initialBody |> Seq.iter worker.Remove)
+                 initialBody |> Seq.iter worker.Remove
+                 pruneLocalScopes pathGetterDef)
 
           [ ("get_Timer",  // set the timer interval in ticks
              CoverageParameters.interval ()) ]
@@ -281,7 +282,8 @@ module internal Instrument =
                  worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
                  worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
                  worker.InsertBefore(head, worker.Create(OpCodes.Ret))
-                 initialBody |> Seq.iter worker.Remove))
+                 initialBody |> Seq.iter worker.Remove
+                 pruneLocalScopes pathGetterDef))
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
@@ -958,6 +960,8 @@ module internal Instrument =
         body.SimplifyMacros()
         // changes "long" conditional operators to their short representation where possible
         body.OptimizeMacros()
+        // purge dodgy scope data
+        state.MethodBody.Method |> pruneLocalScopes
 
       doTrack state m
 

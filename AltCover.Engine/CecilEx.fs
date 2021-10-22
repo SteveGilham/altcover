@@ -6,10 +6,27 @@
 namespace AltCover
 
 open System
+open Mono.Cecil
 open Mono.Cecil.Cil
 
 [<AutoOpen>]
 module internal CecilExtension =
+  // workround for old MCS + Cecil 0.11.4
+  let pruneLocalScopes(m:MethodDefinition) =
+    let rec pruneScope (scope:ScopeDebugInformation) =
+      if scope.IsNotNull
+      then
+        let scopes = scope.Scopes
+        if scopes.IsNotNull
+        then
+          scopes
+          |> Seq.filter(fun subScope -> pruneScope subScope
+                                        subScope.Start.IsEndOfMethod)
+          |> Seq.toList
+          |> List.iter (scopes.Remove >> ignore)
+
+    m.DebugInformation.Scope |> pruneScope
+
   // Adjust the IL for exception handling
   // param name="handler">The exception handler</param>
   // param name="oldBoundary">The uninstrumented location</param>
@@ -115,7 +132,7 @@ module internal CecilExtension =
       // this is the new part that AltCover didn't have before
       // i.e. handling non-void methods
       let returnVariable =
-        new VariableDefinition(methodDefinition.ReturnType)
+        VariableDefinition(methodDefinition.ReturnType)
 
       ilProcessor.Body.Variables.Add(returnVariable)
 
@@ -161,7 +178,7 @@ module internal CecilExtension =
     ilProcessor.InsertBefore(endFinally, finallyStart)
 
     let handler =
-      new ExceptionHandler(ExceptionHandlerType.Finally)
+      ExceptionHandler(ExceptionHandlerType.Finally)
 
     handler.TryStart <- firstInstruction
     handler.TryEnd <- finallyStart

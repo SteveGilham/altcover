@@ -104,7 +104,6 @@ nuget Fake.Tools.Git >= 5.20.3
 nuget AltCode.Fake.DotNet.Gendarme >= 5.18.1.24
 nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.1.0
-nuget FSharpLint.Core >= 0.16.3
 nuget Markdig >= 0.24.0
 nuget Manatee.Json >= 13.0.4
 nuget NUnit >= 3.12.0
@@ -115,6 +114,7 @@ nuget YamlDotNet >= 8.1.2 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
+#load "../AltCover.Engine/Canonical.fs"
 #load "../AltCover.Engine/NativeJson.fs"
 #load "../AltCover.Engine/Abstract.fs"
 #load "../AltCover.Engine/Primitive.fs"
@@ -164,8 +164,7 @@ _Target
                 let rules = target @@ "Rules"
                 Shell.copyDir rules dixon (fun _ -> true)))
 
-// Restore the NuGet packages used by the build and the Framework version
-_Target "Preparation" (fun _ -> RestoreMSSolutionPackages restore "./MCS.sln")
+_Target "Preparation" ignore
 
 let defaultTarget () =
     resetColours ()

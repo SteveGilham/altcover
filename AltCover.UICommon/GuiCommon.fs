@@ -91,7 +91,9 @@ module GuiCommon =
 
     member self.Outdated epoch =
       match self with
-      | File info -> (info.LastWriteTimeUtc > epoch)
+      | File info -> if info.Exists
+                     then info.LastWriteTimeUtc > epoch
+                     else false // can't tell; should show as non-existing
       | _ -> false // Sensible SourceLink assumed
 
     member self.ReadAllText() =

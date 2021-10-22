@@ -87,7 +87,7 @@ module AltCoverCoreTests =
         (id, strike,
          match enum tag with
          //| Tag.Time -> Adapter.Time <| formatter.ReadInt64()
-         | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
+         | Tag.Call -> Adapter.asCall <| formatter.ReadInt32()
          //| Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
          | Tag.Table ->
              Assert.True(( id = String.Empty ))
@@ -106,20 +106,20 @@ module AltCoverCoreTests =
                    if pts > 0 then
                      let p = formatter.ReadInt32()
                      let n = formatter.ReadInt64()
-                     let pv = Adapter.Init(n, [])
+                     let pv = Adapter.init(n, [])
                      t.[m].Add(p, pv)
                      let rec tracking() =
                        let track = formatter.ReadByte() |> int
                        match enum track with
                        | Tag.Time ->
-                           pv.Tracks.Add(Adapter.Time <| formatter.ReadInt64())
+                           pv.Tracks.Add(Adapter.time <| formatter.ReadInt64())
                            tracking()
                        | Tag.Call ->
-                           pv.Tracks.Add(Adapter.Call <| formatter.ReadInt32())
+                           pv.Tracks.Add(Adapter.asCall <| formatter.ReadInt32())
                            tracking()
                        | Tag.Both ->
                            pv.Tracks.Add
-                             (Adapter.NewBoth
+                             (Adapter.newBoth
                                ((formatter.ReadInt64()), (formatter.ReadInt32())))
                            tracking()
                        //| Tag.Table -> Assert.True( false, "No nested tables!!")
@@ -129,8 +129,8 @@ module AltCoverCoreTests =
                      ``module``()
                  sequencePoint points
              ``module``()
-             Adapter.Table t
-         | _ -> Adapter.Null())
+             Adapter.table t
+         | _ -> Adapter.asNull())
         |> hits.Add
         sink())
     sink()
@@ -143,7 +143,7 @@ module AltCoverCoreTests =
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let tag = unique + ".acv"
 
-    let expected = [ ("name", 23, Adapter.Null()) ]
+    let expected = [ ("name", 23, Adapter.asNull()) ]
     do use stream = File.Create tag
        ()
     try
@@ -176,19 +176,19 @@ module AltCoverCoreTests =
     let t = Dictionary<string, Dictionary<int, PointVisit>>()
     t.["name"] <- Dictionary<int, PointVisit>()
     let expect23 =
-      [ Adapter.Call 17
-        Adapter.Call 42 ]
+      [ Adapter.asCall 17
+        Adapter.asCall 42 ]
 
     let expect24 =
-      [ Adapter.Time 17L
-        Adapter.NewBoth(42L, 23) ]
+      [ Adapter.time 17L
+        Adapter.newBoth(42L, 23) ]
 
-    t.["name"].[23] <- Adapter.Init(1L, expect23)
-    t.["name"].[24] <- Adapter.Init(2L, expect24)
+    t.["name"].[23] <- Adapter.init(1L, expect23)
+    t.["name"].[24] <- Adapter.init(2L, expect24)
 
     let expected =
-      [ (String.Empty, 0, Adapter.Table t)
-        ("name", 23, Adapter.Call 5) ]
+      [ (String.Empty, 0, Adapter.table t)
+        ("name", 23, Adapter.asCall 5) ]
     do use stream = File.Create tag
        ()
     try
@@ -208,7 +208,7 @@ module AltCoverCoreTests =
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
       let results = readResults stream
-      Assert.True( ("no", 0, Adapter.Null())
+      Assert.True( ("no", 0, Adapter.asNull())
                    |> Adapter.untable
                    |> Seq.isEmpty)
       Assert.True( Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
@@ -278,7 +278,7 @@ module AltCoverCoreTests =
        ()
     try
       let client = Tracer.Create unique
-      let expected = [ ("name", client.GetHashCode(), Adapter.Null()) ]
+      let expected = [ ("name", client.GetHashCode(), Adapter.asNull()) ]
       try
         Adapter.VisitsClear()
         Instance.I.trace <- client.OnStart()

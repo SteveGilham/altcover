@@ -41,17 +41,19 @@ type MainWindow() as this =
   let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
   let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
-  let makeTreeNode name icon =
-    let tree = new Image()
-    tree.Source <- icons.TreeExpand.Force()
+  let makeTreeNode leaf name icon =
+    let tree = Image()
+    tree.Source <- if leaf
+                   then icons.Blank.Force()
+                   else icons.TreeExpand.Force()
     tree.Margin <- Thickness.Parse("2")
-    let text = new TextBlock()
+    let text = TextBlock()
     text.Text <- name
     text.Margin <- Thickness.Parse("2")
-    let image = new Image()
+    let image = Image()
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
-    let display = new StackPanel()
+    let display = StackPanel()
     display.Orientation <- Avalonia.Layout.Orientation.Horizontal
     display.Children.Add tree
     display.Children.Add image
@@ -205,7 +207,7 @@ type MainWindow() as this =
           stack.Children.Clear()
 
           for l in 1 .. lines.Length do
-            let pic = new Image()
+            let pic = Image()
 
             let pix =
               HandlerCommon.IconForBranches
@@ -265,7 +267,7 @@ type MainWindow() as this =
            let showSource (info: Source) (line: int) =
              try
                this.UpdateTextFonts text text2
-               text.Text <- File.ReadAllText info.FullName
+               text.Text <- (File.ReadAllText info.FullName).Replace('\t', '\u2192')
 
                let textLines =
                  text.FormattedText.GetLines() |> Seq.toList
@@ -487,7 +489,7 @@ type MainWindow() as this =
       this.FindControl<MenuItem>("Refresh").Click
       |> Event.map (fun _ -> 0)
 
-    let makeNewRow name (anIcon: Lazy<Bitmap>) =
+    let makeNewRow leaf name (anIcon: Lazy<Bitmap>) =
       let row = TreeViewItem()
       row.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Left
 
@@ -509,27 +511,29 @@ type MainWindow() as this =
 
       row.Tapped
       |> Event.add
-           (fun evt ->
-             row.IsExpanded <- not row.IsExpanded
-             let items = (row.Header :?> StackPanel).Children
-             items.RemoveAt(0)
-             let mark = Image()
+          (fun evt ->
+            row.IsExpanded <- not row.IsExpanded
+            if not leaf
+            then
+              let items = (row.Header :?> StackPanel).Children
+              items.RemoveAt(0)
+              let mark = Image()
 
-             mark.Source <-
-               if row.Items.OfType<Object>().Any() then
-                 if row.IsExpanded then
-                   icons.TreeCollapse.Force()
-                 else
-                   icons.TreeExpand.Force()
-               else
-                 icons.Blank.Force()
+              mark.Source <-
+                if row.Items.OfType<Object>().Any() then
+                  if row.IsExpanded then
+                    icons.TreeCollapse.Force()
+                  else
+                    icons.TreeExpand.Force()
+                else
+                  icons.Blank.Force()
 
-             mark.Margin <- Thickness.Parse("2")
-             items.Insert(0, mark)
-             evt.Handled <- true)
+              mark.Margin <- Thickness.Parse("2")
+              items.Insert(0, mark)
+            evt.Handled <- true)
 
       row.Items <- List<TreeViewItem>()
-      row.Header <- makeTreeNode name <| anIcon.Force()
+      row.Header <- makeTreeNode leaf name <| anIcon.Force()
       row
 
     select
@@ -542,6 +546,15 @@ type MainWindow() as this =
            let mutable auxModel =
              { Model = List<TreeViewItem>()
                Row = null }
+           let addNode =
+                 fun leaf (context:CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon name (tip : string option) ->
+                   let newrow = makeNewRow leaf name icon
+                   (context.Row.Items :?> List<TreeViewItem>).Add newrow
+                   tip
+                   |> Option.iter(fun text ->
+                      ToolTip.SetTip(newrow, text))
+                   { context with
+                       Row = newrow }
 
            let environment =
              { Icons = icons
@@ -582,21 +595,16 @@ type MainWindow() as this =
                    tree.Items <- auxModel.Model
                    this.UpdateMRU info.FullName true
                SetXmlNode =
-                 fun name ->
+                 fun name icon tip ->
                    let model = auxModel.Model
-
+                   let row = makeNewRow false name icon
+                   model.Add row
+                   if tip |> String.IsNullOrWhiteSpace |> not
+                   then ToolTip.SetTip(row, tip)
                    { Model = model
-                     Row =
-                       let row = makeNewRow name icons.Xml
-                       model.Add row
-                       row }
-               AddNode =
-                 fun context icon name ->
-                   { context with
-                       Row =
-                         let row = makeNewRow name icon
-                         (context.Row.Items :?> List<TreeViewItem>).Add row
-                         row }
+                     Row =  row }
+               AddNode = (addNode false)
+               AddLeafNode = (addNode true)
                Map = this.PrepareDoubleTap }
 
            Dispatcher.UIThread.Post

@@ -23,20 +23,20 @@ module AltCoverXTests =
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
   <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
     <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
-      <seqpnt visitcount=\"0\" line=\"11\" column=\"9\" endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"12\" column=\"32\" endline=\"12\" endcolumn=\"33\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"13\" column=\"21\" endline=\"13\" endcolumn=\"22\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"15\" column=\"72\" endline=\"15\" endcolumn=\"73\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"15\" column=\"25\" endline=\"15\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"19\" column=\"25\" endline=\"19\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"21\" column=\"9\" endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"11\" column=\"3\" endline=\"11\" endcolumn=\"4\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"12\" column=\"23\" endline=\"12\" endcolumn=\"24\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"4\" endline=\"13\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"12\" endline=\"13\" endcolumn=\"13\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"14\" column=\"4\" endline=\"14\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"5\" endline=\"15\" endcolumn=\"6\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"60\" endline=\"15\" endcolumn=\"61\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"13\" endline=\"15\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"16\" column=\"4\" endline=\"16\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"18\" column=\"4\" endline=\"18\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"5\" endline=\"19\" endcolumn=\"6\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"13\" endline=\"19\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"20\" column=\"4\" endline=\"20\" endcolumn=\"5\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"21\" column=\"3\" endline=\"21\" endcolumn=\"4\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
     </method>
   </module>
 </coverage>"
@@ -76,7 +76,7 @@ module AltCoverXTests =
                          + r.ToString()
                          + " -> document")
                   | "visitcount" ->
-                      let expected = maybe zero "0" a2.Value
+                      let expected = Maybe zero "0" a2.Value
                       test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
                   | _ ->
                       test'
@@ -86,7 +86,7 @@ module AltCoverXTests =
            RecursiveValidate(r.Elements()) (e.Elements()) (depth + 1) zero)
 
   let rec RecursiveValidateOpenCover result expected' depth zero expectSkipped =
-    let X name = XName.Get(name)
+    let xn name = XName.Get(name)
     let rcount = result |> Seq.length
 
     let expected =
@@ -96,7 +96,7 @@ module AltCoverXTests =
              el.Name.LocalName <> "Module"
              || expectSkipped
              || "skippedDueTo"
-                |> X
+                |> xn
                 |> el.Attributes
                 |> Seq.isEmpty)
       |> Seq.toList
@@ -153,7 +153,7 @@ module AltCoverXTests =
                          + r.ToString()
                          + " -> document")
                   | "vc" ->
-                      let expected = maybe zero "0" a2.Value
+                      let expected = Maybe zero "0" a2.Value
                       test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
                   | _ ->
                       test'
@@ -720,17 +720,17 @@ module AltCoverXTests =
 
       let expected =
         "Creating folder "
-        + output
+        + (canonicalDirectory output)
         + "\nInstrumenting files from "
-        + (Path.GetFullPath input)
+        + (canonicalDirectory input)
         + "\nWriting files to "
-        + output
+        + (canonicalDirectory output)
         + "\n   => "
-        + Path.Combine(Path.GetFullPath input, "Sample4.dll")
+        + Path.Combine(canonicalDirectory input, "Sample4.dll")
         + "\n\nCoverage Report: "
         + report
         + "\n\n\n    "
-        + Path.Combine(Path.GetFullPath output, "Sample4.dll")
+        + Path.Combine(canonicalDirectory output, "Sample4.dll")
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       test
@@ -741,11 +741,11 @@ module AltCoverXTests =
 
       test
         <@ CoverageParameters.outputDirectories ()
-           |> Seq.head = output @>
+           |> Seq.head = canonicalDirectory output @>
 
       test
         <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = ((Path.GetFullPath input).Replace("\\", "/")) @>
+          .Replace("\\", "/") = ((canonicalDirectory input).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
       use stream = new FileStream(key, FileMode.Open)
@@ -760,18 +760,21 @@ module AltCoverXTests =
 
       let expected =
         [ "AltCover.Recorder.g.dll"
-          "AltCover.Recorder.g.pdb"
           "Sample4.deps.json"
           "Sample4.dll"
           "Sample4.runtimeconfig.dev.json"
           "Sample4.runtimeconfig.json"
           "Sample4.pdb"
+          "Unquote.dll"
           "xunit.runner.reporters.netcoreapp10.dll"
           "xunit.runner.utility.netcoreapp10.dll"
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
 
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+
       let theFiles =
-        expected
+        ( Maybe isWindows  ("AltCover.Recorder.g.pdb" :: expected) expected)
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       let actualFiles =
@@ -955,17 +958,17 @@ module AltCoverXTests =
 
       let expected =
         "Creating folder "
-        + output
+        + (canonicalDirectory output)
         + "\nInstrumenting files from "
-        + path
+        + (canonicalDirectory path)
         + "\nWriting files to "
-        + output
+        + (canonicalDirectory output)
         + "\n   => "
         + monoSample1path
         + "\n\nCoverage Report: "
         + report
         + "\n\n\n    "
-        + Path.Combine(Path.GetFullPath output, "Sample1.exe")
+        + Path.Combine(canonicalDirectory output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       let console = stdout.ToString()
@@ -975,11 +978,11 @@ module AltCoverXTests =
 
       test
         <@ CoverageParameters.outputDirectories ()
-           |> Seq.head = output @>
+           |> Seq.head = (canonicalDirectory output) @>
 
       test
         <@ (CoverageParameters.inputDirectories () |> Seq.head)
-          .Replace("\\", "/") = (path.Replace("\\", "/")) @>
+          .Replace("\\", "/") = ((canonicalDirectory path).Replace("\\", "/")) @>
 
       test <@ CoverageParameters.reportPath () = report @>
       use stream = new FileStream(key, FileMode.Open)
@@ -993,7 +996,6 @@ module AltCoverXTests =
 
       let theFiles =
         [ "AltCover.Recorder.g.dll"
-          "AltCover.Recorder.g.pdb"
           "Sample1.exe"
           "Sample1.exe.mdb" ]
 
@@ -1003,7 +1005,14 @@ module AltCoverXTests =
         |> Seq.toList
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
-      test <@ actual = theFiles @>
+      let isWindows =
+        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+
+      let expected =
+        (Maybe isWindows ("AltCover.Recorder.g.pdb" :: theFiles) theFiles)
+        |> List.sortBy (fun f -> f.ToUpperInvariant())
+
+      test <@ actual = expected @>
 
       let expectedText =
         MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + monoSample1path + "\"")
