@@ -576,7 +576,7 @@ module internal Runner =
              vc <- vc + (cv |> Seq.distinct |> Seq.length)
              nc <- nc + (cn |> Seq.distinct |> Seq.length))
 
-      let _ = summarise go vc nc "VisitedClasses"
+      summarise go vc nc "VisitedClasses" |> ignore
       let mcovered = summarise go vm nm "VisitedMethods"
       let covered = summarise go vs ns "VisitedPoints"
       let bcovered = summarise go vb nb "VisitedBranches"
@@ -718,7 +718,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--recorderDirectory")
                :: CommandLine.error
            else
-             recordingDirectory <- Some(Path.GetFullPath x)))
+             recordingDirectory <- Some(canonicalDirectory x)))
       ("w|workingDirectory=",
        (fun x ->
          if CommandLine.validateDirectory "--workingDirectory" x then
@@ -727,7 +727,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--workingDirectory")
                :: CommandLine.error
            else
-             workingDirectory <- Some(Path.GetFullPath x)))
+             workingDirectory <- Some(canonicalDirectory x)))
       ("x|executable=",
        (fun x ->
          if CommandLine.validatePath "--executable" x then
@@ -746,7 +746,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
            else
-             LCov.path := x |> Path.GetFullPath |> Some
+             LCov.path := x |> canonicalPath |> Some
              I.addLCovSummary ()))
       ("t|threshold=",
        (fun x ->
@@ -767,7 +767,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
            else
-             Cobertura.path := x |> Path.GetFullPath |> Some
+             Cobertura.path := x |> canonicalPath |> Some
              I.addCoberturaSummary ()))
       ("o|outputFile=",
        (fun x ->
@@ -777,7 +777,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--outputFile")
                :: CommandLine.error
            else
-             output <- x |> Path.GetFullPath |> Some))
+             output <- x |> canonicalPath |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       ("summary|teamcity:",
        (fun x ->
@@ -1387,7 +1387,7 @@ module internal Runner =
               let report =
                 (J.getMethod instance "get_ReportFile")
                 |> J.getFirstOperandAsString
-                |> Path.GetFullPath
+                |> canonicalPath
 
               let format =
                 (J.getMethod instance "get_CoverageFormat")

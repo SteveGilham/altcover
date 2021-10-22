@@ -4,8 +4,9 @@ open System
 open System.IO
 open System.Reflection
 
-#if !NET472
 open AltCover
+
+#if !NET472
 open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -48,8 +49,6 @@ module TestCommon =
     with _ ->
       g ()
       reraise ()
-
-  let maybe a b c = if a then b else c
 
   let test x = Swensen.Unquote.Assertions.test x
 
@@ -103,8 +102,8 @@ module TestCommonTests =
     maybeIOException (fun () -> maybeReraise (fun () -> IOException() |> raise) ignore)
     maybeIOException (fun () -> System.UnauthorizedAccessException() |> raise)
 
-    test <@ (maybe true 1 2) = 1 @>
-    test <@ (maybe false 1 2) = 2 @>
+    test <@ (Maybe true 1 2) = 1 @>
+    test <@ (Maybe false 1 2) = 2 @>
     test <@ SolutionDir() |> String.IsNullOrEmpty |> not @>
     test <@ SolutionDir() = AltCover.SolutionRoot.location @>
     test <@ where.StartsWith(AltCover.SolutionRoot.location, StringComparison.Ordinal) @>

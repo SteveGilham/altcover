@@ -42,9 +42,11 @@
                 <xsl:sort select="@offset" data-type="number" />
                 <xsl:choose>
                   <xsl:when test="name(.) = 'SequencePoint'">
+                    <xsl:variable name="fileRef2" select="@fileid" />
+                    <xsl:variable name="file2" select="//File[@uid = $fileRef2]/@fullPath" />
                     <seqpnt visitcount="{@vc}" line="{@sl}" column="{@sc}" endline="{@el}" endcolumn="{@ec}" offset="{@offset}" excluded="false">
                       <xsl:attribute name="document">
-                        <xsl:value-of select="$file" />
+                        <xsl:value-of select="$file2" />
                       </xsl:attribute>
                     </seqpnt>
                   </xsl:when>

@@ -51,8 +51,4 @@ module MonitorTests =
     maybeIgnore (fun () -> not (a && a0))
     let code = b.Code
     let branch = b.Branch
-#if BUILD_ON_APPVEYOR
     test <@ (code, branch) = (85, 11) @>
-#else
-    test <@ (code, branch) = (152, 36) @>
-#endif

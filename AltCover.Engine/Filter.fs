@@ -243,7 +243,7 @@ module internal Filter =
             else
               name)
     | Attribute -> I.matchAttribute filter.Regex f nameProvider
-    | Path -> I.matchItem<string> filter.Regex f nameProvider Path.GetFullPath
+    | Path -> I.matchItem<string> filter.Regex f nameProvider canonicalPath
 
   let internal isFSharpInternal (m: MethodDefinition) =
     I.isFSharpAutoProperty m

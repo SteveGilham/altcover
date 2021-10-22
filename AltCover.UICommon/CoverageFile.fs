@@ -178,18 +178,20 @@ module Transformer =
           schemas2.Add(String.Empty, ncreader) |> ignore
           fixedup.Validate(schemas2, null)
 
-          // Fix for coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+          // Fix for column-defective OpenCover
           let lineOnly =
             fixedup.Descendants(XName.Get "seqpnt")
             |> Seq.forall
                  (fun s ->
+                   let columns = (s.Attribute(XName.Get "column").Value,
+                                  s.Attribute(XName.Get "endcolumn").Value)
                    s.Attribute(XName.Get "line").Value = s
                      .Attribute(
                        XName.Get "endline"
                      )
                      .Value
-                   && s.Attribute(XName.Get "column").Value = "1"
-                   && s.Attribute(XName.Get "endcolumn").Value = "2")
+                   && (columns = ("1", "2") || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+                       columns = ("0", "0")))  // For OpenCover on C++/CLI
 
           if lineOnly then
             fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))

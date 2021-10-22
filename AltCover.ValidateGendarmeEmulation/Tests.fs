@@ -16,7 +16,7 @@ module Rocks =
            |> Seq.toList))
 
 module ValidateGendarmeEmulation =
-  let importantItems (n, e, r) = maybe (r <> e) (Some(n, e, r)) None
+  let importantItems (n, e, r) = Maybe (r <> e) (Some(n, e, r)) None
 
   let stringify x =
     match x with

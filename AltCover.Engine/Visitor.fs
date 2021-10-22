@@ -305,7 +305,7 @@ module internal CoverageParameters =
       theInputDirectories |> Seq.toList
     else
       [ defaultInputDirectory ]
-      |> List.map Path.GetFullPath
+      |> List.map canonicalDirectory
 
   let internal inplaceSelection a b = if inplace.Value then a else b
 
@@ -321,7 +321,7 @@ module internal CoverageParameters =
       (theOutputDirectories :> string seq)
       (Seq.initInfinite defaultOutputDirectory)
     |> Seq.zip paired
-    |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> Path.GetFullPath)
+    |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> canonicalDirectory)
     |> Seq.toList
 
   let internal instrumentDirectories () =
@@ -351,7 +351,7 @@ module internal CoverageParameters =
       "coverage.xml"
 
   let internal reportPath () =
-    let r = Path.GetFullPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let r = canonicalPath(Option.defaultValue (defaultReportPath ()) theReportPath)
     let suffix = (Path.GetExtension r).ToUpperInvariant()
     match (suffix, reportKind()) with
     | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
@@ -403,36 +403,14 @@ module internal Inspector =
         Inspections.Instrument
 
     member nameProvider.LocalFilter: bool =
-      let methodFile (m: MethodDefinition) =
-        m.DebugInformation.SequencePoints
-        |> Seq.tryHead // assume methods can only be in one file
-        |> Option.map (fun sp -> sp.Document.Url)
-
-      let typeFiles (t: TypeDefinition) =
-        Option.ofObj t.Methods
-        |> Option.map
-             (fun ms ->
-               ms
-               |> Seq.map methodFile
-               |> Seq.choose id
-               |> Seq.distinct)
-
-      let moduleFiles (m: ModuleDefinition) =
-        m.GetAllTypes()
-        |> Seq.map typeFiles
-        |> Seq.choose id
-        |> Seq.collect id
-        |> Seq.distinct
-
       match nameProvider with
       | :? AssemblyDefinition as a ->
           (CoverageParameters.local.Value)
-          && a.MainModule
-             |> moduleFiles
-             |> Seq.tryHead
-             |> Option.map File.Exists
-             |> Option.defaultValue false
-             |> not
+          && a
+        |> ProgramDatabase.getAssemblyDocuments
+        |> Seq.map (fun d -> d.Url)
+        |> Seq.exists File.Exists
+        |> not
       | _ -> false
 
 [<RequireQualifiedAccess>]
@@ -463,25 +441,17 @@ module internal Visitor =
 
     let internal toSeq node = List.toSeq [ node ]
 
-    let internal ensureEndsWith c (s: string) =
-      if s.EndsWith(c, StringComparison.Ordinal) then
-        s
-      else
-        s + c
-
-    let internal getRelativePath (relativeTo: string) path =
-      if Path.GetFullPath path = Path.GetFullPath relativeTo then
+    let internal getRelativeDirectoryPath (relativeTo: string) path =
+      let rebase = canonicalDirectory relativeTo
+      let canon = canonicalDirectory path
+      if canon = rebase then
         String.Empty
       else
-        let ender =
-          ensureEndsWith
-          <| Path.DirectorySeparatorChar.ToString()
-
-        let uri = Uri(new Uri("file://"), ender relativeTo)
+        let uri = Uri(Uri("file://"), rebase)
 
         Uri
-          .UnescapeDataString(uri.MakeRelativeUri(Uri(new Uri("file://"), path)).ToString())
-          .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+          .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), canon)).ToString())
+          .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
     let internal exists (url: Uri) =
       let request = System.Net.WebRequest.CreateHttp(url)
@@ -502,7 +472,7 @@ module internal Visitor =
       |> Seq.map
            (fun x ->
              (x,
-              getRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+              getRelativeDirectoryPath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
       |> Seq.filter (fun (x, r) -> r.IndexOf("..", StringComparison.Ordinal) < 0)
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead

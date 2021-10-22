@@ -60,7 +60,7 @@ module internal Report =
         XElement(
           "module".X,
           XAttribute("moduleId".X, def.Mvid.ToString()),
-          XAttribute("name".X, def.FileName |> System.IO.Path.GetFullPath),
+          XAttribute("name".X, def.FileName |> canonicalPath),
           XAttribute("assembly".X, def.Assembly.Name.Name),
           XAttribute("assemblyIdentity".X, def.Assembly.Name.FullName),
           XAttribute("excluded".X, toExcluded moduleDef.Inspection.IsInstrumented)

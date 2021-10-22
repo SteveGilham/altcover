@@ -13,8 +13,8 @@ module HandlerCommon =
   let DoRowActivation
     (methodPath: XPathNavigator)
     (window: IVisualizerWindow)
-    noSource
-    showSource
+    (noSource: unit -> unit)
+    (showSource: Source -> int -> unit)
     =
     let points =
       [ "seqpnt"; "branch" ]
@@ -31,12 +31,12 @@ module HandlerCommon =
     let document =
       allpoints
       |> Seq.map (fun p -> p.GetAttribute("document", String.Empty))
-      |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+      |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
 
     let line =
       allpoints
       |> Seq.map (fun p -> p.GetAttribute("line", String.Empty))
-      |> Seq.tryFind (fun d -> d |> String.IsNullOrWhiteSpace |> not)
+      |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
 
     if document |> Option.isNone || line |> Option.isNone then
       noSource ()
@@ -44,20 +44,10 @@ module HandlerCommon =
       let filename = Option.get document
       window.Title <- "AltCover.Visualizer - " + filename
       let info = GetSource(filename)
-      let current = FileInfo(window.CoverageFiles.Head)
-
-      if (not <| info.Exists) then
-        Messages.MissingSourceThisFileMessage window.ShowMessageOnGuiThread current info
-      else if (info.Outdated current.LastWriteTimeUtc) then
-        Messages.OutdatedCoverageThisFileMessage
-          window.ShowMessageOnGuiThread
-          current
-          info
-      else
-        let lineNumber =
+      let lineNumber =
           Int32.TryParse(line |> Option.get) |> snd
 
-        showSource info lineNumber
+      showSource info lineNumber
 
   let private filterCoverage lines (n: CodeTag) =
     n.Line > 0
