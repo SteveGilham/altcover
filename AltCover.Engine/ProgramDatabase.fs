@@ -3,6 +3,7 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.IO
+open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -24,6 +25,22 @@ module internal ProgramDatabase =
        |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.Mixin")
        |> Seq.head)
         .GetMethod("GetEmbeddedPortablePdbEntry")
+
+    // and for direct access to the Documents data
+    let internal getMetadataReader =
+      typeof<Mono.Cecil.ModuleDefinition>.GetField("reader", BindingFlags.Instance ||| BindingFlags.NonPublic)
+
+    let internal metadataSystem =
+      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
+      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataReader")
+      |> Seq.head)
+       .GetField("metadata", BindingFlags.Instance ||| BindingFlags.NonPublic)
+
+    let internal getDocuments =
+      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
+      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataSystem")
+      |> Seq.head)
+       .GetField("Documents", BindingFlags.Instance ||| BindingFlags.NonPublic)
 
     let internal getEmbeddedPortablePdbEntry (assembly: AssemblyDefinition) =
       getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |])
@@ -98,3 +115,21 @@ module internal ProgramDatabase =
              provider.GetSymbolReader(assembly.MainModule, pdbpath)
 
            assembly.MainModule.ReadSymbols(reader))
+
+  let internal getAssemblyDocuments (assembly: AssemblyDefinition) =
+    let reader = I.getMetadataReader.GetValue(assembly.MainModule)
+    let system = I.metadataSystem.GetValue(reader)
+    I.getDocuments.GetValue(system) // set if sequence points have been loaded
+    |> Option.ofObj
+    |> Option.defaultValue
+      (assembly.MainModule.GetTypes()
+       |> Seq.collect(fun t -> t.Methods)
+       |> Seq.collect(fun m -> m.DebugInformation.SequencePoints)
+       |> Seq.tryHead // assuming lazy & that no SP = no user code
+       // Have to evaluate if any exist to perform this operation
+       |> Option.map (fun _ -> I.getDocuments.GetValue(system) 
+                               |> Option.ofObj)
+       |> Option.flatten
+       |> Option.defaultValue ([] :> obj)) :?> System.Collections.IEnumerable
+    |> Seq.cast<Mono.Cecil.Cil.Document>
+    |> Seq.toList

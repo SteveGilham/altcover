@@ -403,36 +403,14 @@ module internal Inspector =
         Inspections.Instrument
 
     member nameProvider.LocalFilter: bool =
-      let methodFile (m: MethodDefinition) =
-        m.DebugInformation.SequencePoints
-        |> Seq.tryHead // assume methods can only be in one file
-        |> Option.map (fun sp -> sp.Document.Url)
-
-      let typeFiles (t: TypeDefinition) =
-        Option.ofObj t.Methods
-        |> Option.map
-             (fun ms ->
-               ms
-               |> Seq.map methodFile
-               |> Seq.choose id
-               |> Seq.distinct)
-
-      let moduleFiles (m: ModuleDefinition) =
-        m.GetAllTypes()
-        |> Seq.map typeFiles
-        |> Seq.choose id
-        |> Seq.collect id
-        |> Seq.distinct
-
       match nameProvider with
       | :? AssemblyDefinition as a ->
           (CoverageParameters.local.Value)
-          && a.MainModule
-             |> moduleFiles
-             |> Seq.tryHead
-             |> Option.map File.Exists
-             |> Option.defaultValue false
-             |> not
+          && a
+        |> ProgramDatabase.getAssemblyDocuments
+        |> Seq.map (fun d -> d.Url)
+        |> Seq.exists File.Exists
+        |> not
       | _ -> false
 
 [<RequireQualifiedAccess>]
