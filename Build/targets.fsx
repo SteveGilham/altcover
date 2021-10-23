@@ -6996,7 +6996,7 @@ _Target "All" ignore
 
 _Target "CppInline" (fun _ ->
   if Environment.isWindows then
-    Directory.ensure "./_Reports"
+    Directory.ensure "./_Reports/CppInline"
     msbuildDebug None "./Samples/Sample29/SimpleMix.sln"
     OpenCover.run
         (fun p ->
@@ -7010,6 +7010,15 @@ _Target "CppInline" (fun _ ->
                   Output = Path.getFullName "_Reports/CppInlineWithOpenCover.xml"
                   TimeOut = TimeSpan(0, 10, 0) })
         String.Empty
+    ReportGenerator.generateReports
+        (fun p ->
+            { p with
+                  ToolType = ToolType.CreateLocalTool()
+                  ReportTypes =
+                      [ ReportGenerator.ReportType.Html
+                        ReportGenerator.ReportType.XmlSummary ]
+                  TargetDir = "_Reports/CppInline" })
+        [ "_Reports/CppInlineWithOpenCover.xml" ]
 )
 
 let resetColours _ =

@@ -5,6 +5,11 @@ VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleMix", "SimpleMix\SimpleMix.vcxproj", "{07BF1471-D85B-4B32-89B1-12B43947517B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1B8DFA2-C5B3-4C1F-A3DD-EF71C24C25F2}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Build\targets.fsx = ..\..\Build\targets.fsx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86

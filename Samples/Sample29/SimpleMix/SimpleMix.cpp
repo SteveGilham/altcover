@@ -18,14 +18,22 @@ int NativeCountVowels(wchar_t* pString)
 
 using namespace System;
 
+ref class Example {
+public:
+  static int main(array<System::String^>^ args)
+  {
+    String^ str = "Text to be hashed";
+    Console::WriteLine(str);
+    pin_ptr<Char> p =
+      const_cast<interior_ptr<Char>> (
+        PtrToStringChars(str));
+    Console::WriteLine(NativeCountVowels(p));
+
+    return 0;
+  }
+};
+
 int main(array<System::String^>^ args)
 {
-  String^ str = "Text to be hashed";
-  Console::WriteLine(str);
-  pin_ptr<Char> p =
-    const_cast<interior_ptr<Char>> (
-      PtrToStringChars(str));
-  Console::WriteLine(NativeCountVowels(p));
-
-  return 0;
+  return Example::main(args);
 }
