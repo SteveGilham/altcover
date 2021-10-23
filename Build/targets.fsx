@@ -835,6 +835,7 @@ _Target
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
           "./Samples/Sample14/Sample14.sln"
+          "./Samples/Sample28/SourceGenerators.sln"
           "MCS.sln" ]
         |> Seq.iter dotnetBuildDebug
 
