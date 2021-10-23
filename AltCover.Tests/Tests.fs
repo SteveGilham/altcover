@@ -4387,6 +4387,38 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
+  let ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle () =
+    let visitor, document = OpenCover.reportGenerator ()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let result = (makeDocument document).Descendants("File".X)
+                   |> Seq.filter(fun f -> f.Attribute("fullPath".X).Value |> File.Exists |> not )
+                   |> Seq.toList
+      // Generated source does not exist at the specified path
+      test <@ result |> Seq.isEmpty |> not @>
+
+      // but we should have picked up the embedded source
+      let embeds = result
+                   |> List.filter (fun f -> f.Attribute("embed".X).IsNotNull)
+      test <@ embeds |> Seq.isEmpty |> not @>
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle () =
     let visitor, document = OpenCover.reportGenerator ()
     // Hack for running while instrumented

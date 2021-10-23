@@ -421,6 +421,8 @@ module ExpectoTestManifest =
       "Tests.ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle"
+      Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle,
+      "Tests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle,
