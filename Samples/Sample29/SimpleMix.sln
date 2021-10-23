@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleMix", "SimpleMix\SimpleMix.vcxproj", "{07BF1471-D85B-4B32-89B1-12B43947517B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1B8DFA2-C5B3-4C1F-A3DD-EF71C24C25F2}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Build\targets.fsx = ..\..\Build\targets.fsx
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07BF1471-D85B-4B32-89B1-12B43947517B}.Debug|x86.ActiveCfg = Debug|Win32
+		{07BF1471-D85B-4B32-89B1-12B43947517B}.Debug|x86.Build.0 = Debug|Win32
+		{07BF1471-D85B-4B32-89B1-12B43947517B}.Release|x86.ActiveCfg = Release|Win32
+		{07BF1471-D85B-4B32-89B1-12B43947517B}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64A470EE-01B4-4C49-AD2F-5ED2D1F3AADE}
+	EndGlobalSection
+EndGlobal
