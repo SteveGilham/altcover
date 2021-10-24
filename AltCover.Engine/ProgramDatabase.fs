@@ -116,18 +116,18 @@ module internal ProgramDatabase =
 
            assembly.MainModule.ReadSymbols(reader))
 
-  let internal getAssemblyDocuments (assembly: AssemblyDefinition) =
-    let reader = I.getMetadataReader.GetValue(assembly.MainModule)
+  let internal getModuleDocuments (``module``: ModuleDefinition) =
+    let reader = I.getMetadataReader.GetValue(``module``)
     let system = I.metadataSystem.GetValue(reader)
     I.getDocuments.GetValue(system) // set if sequence points have been loaded
     |> Option.ofObj
     |> Option.defaultValue
-      (assembly.MainModule.GetTypes()
+      (``module``.GetTypes()
        |> Seq.collect(fun t -> t.Methods)
        |> Seq.collect(fun m -> m.DebugInformation.SequencePoints)
        |> Seq.tryHead // assuming lazy & that no SP = no user code
        // Have to evaluate if any exist to perform this operation
-       |> Option.map (fun _ -> I.getDocuments.GetValue(system) 
+       |> Option.map (fun _ -> I.getDocuments.GetValue(system)
                                |> Option.ofObj)
        |> Option.flatten
        |> Option.defaultValue ([] :> obj)) :?> System.Collections.IEnumerable

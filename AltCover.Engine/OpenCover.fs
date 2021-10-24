@@ -125,6 +125,13 @@ module internal OpenCover =
       element.Add(modules)
       { s with Stack = modules :: s.Stack }
 
+    let recordFile (files: Map<string, int>) file =
+      if files.ContainsKey file then
+        files, files.Item file
+      else
+        let index = files.Count + 1
+        files.Add(file, index), index
+
     let visitModule (s: OpenCoverContext) (moduleDef: ModuleEntry) =
       let def = moduleDef.Module
       let instrumented = moduleDef.Inspection.IsInstrumented
@@ -142,8 +149,16 @@ module internal OpenCover =
       element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc def.FileName))
       element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
 
-      if instrumented then
-        element.Add(XElement("Files".X))
+      let files =
+          if instrumented then
+            element.Add(XElement("Files".X))
+            def
+            |> ProgramDatabase.getModuleDocuments
+            |> Seq.fold (fun f d -> d.Url
+                                    |> Visitor.sourceLinkMapping
+                                    |> recordFile f
+                                    |> fst) s.Files
+           else s.Files
 
       let classes = XElement("Classes".X)
       element.Add(classes)
@@ -156,6 +171,7 @@ module internal OpenCover =
       { s with
           Stack = classes :: s.Stack
           Excluded = Nothing
+          Files = files
           ModuleSeq = 0
           ModuleBr = 0
           ModuleMethods = 0
@@ -277,16 +293,9 @@ module internal OpenCover =
         XAttribute("fileid".X, ref)
       )
 
-    let recordFile (s: OpenCoverContext) file =
-      if s.Files.ContainsKey file then
-        s.Files, s.Files.Item file
-      else
-        let index = s.Files.Count + 1
-        s.Files.Add(file, index), index
-
     let visitCodeSegment (s: OpenCoverContext) (codeSegment: SeqPnt) i vc =
       let fileset, ref =
-        recordFile s (codeSegment.Document |> Visitor.sourceLinkMapping)
+        recordFile s.Files (codeSegment.Document |> Visitor.sourceLinkMapping)
 
       let element = methodPointElement codeSegment ref i vc
       let head = s.Stack |> Seq.head
@@ -319,7 +328,7 @@ module internal OpenCover =
 
     let visitGoTo s branch =
       let doc = branch.SequencePoint.Document.Url
-      let fileset, ref = recordFile s doc
+      let fileset, ref = recordFile s.Files doc
       let fileid = fileset.Item doc
 
       (XElement(

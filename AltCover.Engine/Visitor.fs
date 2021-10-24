@@ -406,8 +406,8 @@ module internal Inspector =
       match nameProvider with
       | :? AssemblyDefinition as a ->
           (CoverageParameters.local.Value)
-          && a
-        |> ProgramDatabase.getAssemblyDocuments
+          && a.MainModule
+        |> ProgramDatabase.getModuleDocuments
         |> Seq.map (fun d -> d.Url)
         |> Seq.exists File.Exists
         |> not
