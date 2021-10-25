@@ -27,22 +27,6 @@ module internal ProgramDatabase =
        |> Seq.head)
         .GetMethod("GetEmbeddedPortablePdbEntry")
 
-    // and for direct access to the Documents data
-    let internal getMetadataReader =
-      typeof<Mono.Cecil.ModuleDefinition>.GetField("reader", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    let internal metadataSystem =
-      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
-      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataReader")
-      |> Seq.head)
-       .GetField("metadata", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
-    let internal getDocuments =
-      (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
-      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.MetadataSystem")
-      |> Seq.head)
-       .GetField("Documents", BindingFlags.Instance ||| BindingFlags.NonPublic)
-
     let internal getEmbeddedPortablePdbEntry (assembly: AssemblyDefinition) =
       getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |])
       :?> ImageDebugHeaderEntry
