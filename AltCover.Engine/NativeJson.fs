@@ -1196,7 +1196,7 @@ module
           VisibleMethod = m.VisibleMethod
           Track = m.Track }
 
-    let getMethodRecord (s: JsonContext) (doc: string) =
+    let getMethodRecord (s: JsonContext) (doc: string) (record:Cil.Document) =
       let visibleMethodName = s.VisibleMethod.FullName
       let visibleTypeName = s.VisibleMethod.DeclaringType.FullName
 
@@ -1206,6 +1206,13 @@ module
         | _ ->
             let c = Classes()
             s.Documents.Add(doc, c)
+            record.CustomDebugInformations
+            |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
+            |> Option.iter (fun _ -> // TODO => cast and get text
+                                     let dummy = Method.Create(None)
+                                     let embed = Methods()
+                                     embed.Add ("TODO", dummy)
+                                     c.Add ("\u00ABembed\u00BB", embed))
             c
 
       let methods =
@@ -1231,7 +1238,7 @@ module
                let doc =
                  codeSegment.Document.Url |> Visitor.sourceLinkMapping
 
-               let mplus = getMethodRecord s doc
+               let mplus = getMethodRecord s doc codeSegment.Document
                mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
 
                mplus.SeqPnts.Add
@@ -1253,7 +1260,7 @@ module
           b.SequencePoint.Document.Url
           |> Visitor.sourceLinkMapping
 
-        let mplus = getMethodRecord s doc
+        let mplus = getMethodRecord s doc b.SequencePoint.Document
 
         mplus.Branches.Add
           { Line = b.SequencePoint.StartLine
