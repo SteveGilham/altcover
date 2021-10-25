@@ -163,10 +163,9 @@ module internal OpenCover =
                                       use squashed = new MemoryStream()
                                       // Get deflation working with this one weird trick
                                       // Dispose the deflate stream w/o closing the one it points at!
-                                      let compressto stream data =
-                                        use compress = new DeflateStream(stream, CompressionMode.Compress, true)
-                                        compress.Write(data, 0, data.Length)
-                                      compressto squashed source
+                                      do
+                                        use compress = new DeflateStream(squashed, CompressionMode.Compress, true)
+                                        compress.Write(source, 0, source.Length)
                                       let crushed = Array.create<byte> (int squashed.Length) 0uy
                                       squashed.Seek (0L, SeekOrigin.Begin) |> ignore
                                       squashed.Read (crushed, 0, crushed.Length) |> ignore
