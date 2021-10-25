@@ -1284,7 +1284,6 @@ module
           VisibleType = null }
 
     let visitAfterModule s = { s with Documents = null }
-    //    let afterAll = id
 
     let reportVisitor (s: JsonContext) (node: Node) =
       match node with
@@ -1297,7 +1296,6 @@ module
       | AfterMethod m -> visitAfterMethod s m
       | AfterType _ -> visitAfterType s
       | AfterModule _ -> visitAfterModule s
-      //      | Finish -> afterAll s
       | _ -> s
 
     let result =
