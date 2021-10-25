@@ -102,7 +102,7 @@ module internal Report =
               XAttribute("endline".X, codeSegment.EndLine),
               XAttribute("endcolumn".X, codeSegment.EndColumn),
               XAttribute("excluded".X, toExcluded e.Interesting),
-              XAttribute("document".X, codeSegment.Document |> Visitor.sourceLinkMapping)
+              XAttribute("document".X, codeSegment.Document.Url |> Visitor.sourceLinkMapping)
             )
 
           if head.IsEmpty then

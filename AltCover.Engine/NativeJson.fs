@@ -1229,7 +1229,7 @@ module
         |> Option.iter
              (fun codeSegment ->
                let doc =
-                 codeSegment.Document |> Visitor.sourceLinkMapping
+                 codeSegment.Document.Url |> Visitor.sourceLinkMapping
 
                let mplus = getMethodRecord s doc
                mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount

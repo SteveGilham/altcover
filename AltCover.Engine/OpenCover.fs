@@ -326,7 +326,7 @@ module internal OpenCover =
 
     let visitCodeSegment (s: OpenCoverContext) (codeSegment: SeqPnt) i vc =
       let fileset, ref =
-        recordFile s.Files (codeSegment.Document |> Visitor.sourceLinkMapping)
+        recordFile s.Files (codeSegment.Document.Url |> Visitor.sourceLinkMapping)
 
       let element = methodPointElement codeSegment ref i vc
       let head = s.Stack |> Seq.head
