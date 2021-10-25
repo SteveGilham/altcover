@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Xml.Linq
 
@@ -23,6 +24,7 @@ type internal OpenCoverContext =
   { Stack: XElement list
     Excluded: Exclusion
     Files: Map<string, int>
+    Embeds: Map<string, string>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -43,6 +45,7 @@ type internal OpenCoverContext =
     { Stack = List.empty<XElement>
       Excluded = Nothing
       Files = Map.empty<string, int>
+      Embeds = Map.empty<string, string>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -149,16 +152,43 @@ module internal OpenCover =
       element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc def.FileName))
       element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
 
-      let files =
+      let (files, embeds) =
           if instrumented then
             element.Add(XElement("Files".X))
             def
             |> ProgramDatabase.getModuleDocuments
-            |> Seq.fold (fun f d -> d.Url
-                                    |> Visitor.sourceLinkMapping
-                                    |> recordFile f
-                                    |> fst) s.Files
-           else s.Files
+            |> Seq.fold (fun f d -> let key = d.Url
+                                              |> Visitor.sourceLinkMapping
+                                    let squash (source:byte[]) =
+                                      use squashed = new MemoryStream()
+                                      // Get deflation working with this one weird trick
+                                      // Dispose the deflate stream w/o closing the one it points at!
+                                      let compressto stream data =
+                                        use compress = new DeflateStream(stream, CompressionMode.Compress, true)
+                                        compress.Write(data, 0, data.Length)
+                                      compressto squashed source
+                                      let crushed = Array.create<byte> (int squashed.Length) 0uy
+                                      squashed.Seek (0L, SeekOrigin.Begin) |> ignore
+                                      squashed.Read (crushed, 0, crushed.Length) |> ignore
+                                      crushed
+
+                                    let embed = d.CustomDebugInformations
+                                                |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
+                                                |> Option.map (fun c -> let e = c :?> Cil.EmbeddedSourceDebugInformation
+                                                                        let datamake = Maybe e.Compress squash id
+                                                                        let data = datamake e.Content
+                                                                        let updater = Maybe (data.Length > 0)
+                                                                                            (let src = String.Join(String.Empty, data |> Seq.map (fun d -> d.ToString("X2", CultureInfo.InvariantCulture)))
+                                                                                             Map.add key src)
+                                                                                             id
+                                                                        updater (snd f))
+                                                |> Option.defaultValue (snd f)
+
+                                    (key
+                                     |> recordFile (fst f)
+                                     |> fst,
+                                     embed)) (s.Files, s.Embeds)
+           else (s.Files, s.Embeds)
 
       let classes = XElement("Classes".X)
       element.Add(classes)
@@ -172,6 +202,7 @@ module internal OpenCover =
           Stack = classes :: s.Stack
           Excluded = Nothing
           Files = files
+          Embeds = embeds
           ModuleSeq = 0
           ModuleBr = 0
           ModuleMethods = 0
@@ -632,13 +663,15 @@ module internal OpenCover =
              files
              |> Seq.iter
                   (fun f ->
-                    f.Add(
+                    let file =
                       XElement(
                         "File".X,
                         XAttribute("uid".X, v),
                         XAttribute("fullPath".X, k)
                       )
-                    )))
+                    f.Add(file)
+                    if s.Embeds.ContainsKey k
+                    then file.Add(XAttribute("embed".X, s.Embeds.Item k))))
 
       { s with
           Stack = tail
