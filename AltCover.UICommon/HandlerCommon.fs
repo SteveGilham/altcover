@@ -43,7 +43,10 @@ module HandlerCommon =
     else
       let filename = Option.get document
       window.Title <- "AltCover.Visualizer - " + filename
-      let info = GetSource(filename)
+      // get embed if any & fold it in here
+      let embed = GuiCommon.Embed methodPath filename
+      let info = GetSource(filename).MakeEmbedded embed
+
       let lineNumber =
           Int32.TryParse(line |> Option.get) |> snd
 

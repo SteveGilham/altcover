@@ -58,6 +58,15 @@ module GuiCommon =
       (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
+  let Embed (nav:XPathNavigator) (document: string) =
+    nav.SelectAncestors("module", String.Empty, false)
+    |> Seq.cast<XPathNavigator>
+    |> Seq.collect(fun n -> n.SelectDescendants("./file/[@document = document]", String.Empty, false)
+                            |> Seq.cast<XPathNavigator>)
+    |> Seq.map (fun n -> n.GetAttribute("embed", String.Empty))
+    |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+    |> Seq.tryHead
+
   [<NoComparison; AutoSerializable(false)>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
                                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -65,10 +74,12 @@ module GuiCommon =
   type Source =
     | File of FileInfo
     | Url of Uri
+    | Embed of (FileInfo * string option)
 
     member self.Exists =
       match self with
       | File info -> info.Exists
+      | Embed (i, s) -> i.Exists || s.IsSome
       | Url u ->
           let request = WebRequest.CreateHttp(u)
           request.Method <- "HEAD"
@@ -82,6 +93,7 @@ module GuiCommon =
 
     member self.FullName =
       match self with
+      | Embed (info, _)
       | File info ->
           if info |> isNull then
             String.Empty
@@ -94,7 +106,7 @@ module GuiCommon =
       | File info -> if info.Exists
                      then info.LastWriteTimeUtc > epoch
                      else false // can't tell; should show as non-existing
-      | _ -> false // Sensible SourceLink assumed
+      | _ -> false // Embed or ensible SourceLink assumed
 
     member self.ReadAllText() =
       match self with
@@ -102,6 +114,12 @@ module GuiCommon =
       | Url u ->
           use client = new System.Net.WebClient()
           client.DownloadString(u)
+      | Embed (_,source) -> source.Value // TODO expand
+
+    member self.MakeEmbedded (source: string option) =
+      match (self, source) with
+      | (File info, Some _) -> Embed (info, source)
+      | _ -> self
 
   let GetSource (document: string) =
     if

@@ -153,7 +153,14 @@ module CoverageFileTree =
           |> Seq.map
            (fun s ->
               let d = s.GetAttribute("document", String.Empty)
-              { (d |> getFileName) with Navigator = s })
+              let state = { (d |> getFileName) with Navigator = s }
+              // get any embed and tweak state and icon accordingly
+              match GuiCommon.Embed s d with
+              | None -> state
+              | Some _ -> { state with Exists = true
+                                       Stale = false
+                                       Icon = environment.Icons.Source }
+           )
           |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
           |> Seq.sortBy (fun s -> s.FileName |> upcase)
           |> Seq.toList
