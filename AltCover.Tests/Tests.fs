@@ -4403,7 +4403,7 @@ module AltCoverTests =
           { AssemblyPath = path
             Destinations = [] })
 
-      printfn "%A" (makeDocument document)
+      //printfn "%A" (makeDocument document)
       let result = (makeDocument document).Descendants("File".X)
                    |> Seq.filter(fun f -> f.Attribute("fullPath".X).Value |> File.Exists |> not )
                    |> Seq.toList
