@@ -52,7 +52,7 @@
     <EmbeddedResource Include="MethodWarning_16x.png" />
     <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
-    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCover.xsd" Link="NCover.xsd" />
+    <EmbeddedResource Include="..\AltCover.Toolkit\xsd\NCoverEmbedded.xsd" Link="NCoverEmbedded.xsd" />
     <EmbeddedResource Include="OpenFile_16x.png" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
