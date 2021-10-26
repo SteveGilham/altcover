@@ -159,27 +159,13 @@ module internal OpenCover =
             |> ProgramDatabase.getModuleDocuments
             |> Seq.fold (fun f d -> let key = d.Url
                                               |> Visitor.sourceLinkMapping
-                                    let squash (source:byte[]) =
-                                      use squashed = new MemoryStream()
-                                      // Get deflation working with this one weird trick
-                                      // Dispose the deflate stream w/o closing the one it points at!
-                                      do
-                                        use compress = new DeflateStream(squashed, CompressionMode.Compress, true)
-                                        compress.Write(source, 0, source.Length)
-                                      let crushed = Array.create<byte> (int squashed.Length) 0uy
-                                      squashed.Seek (0L, SeekOrigin.Begin) |> ignore
-                                      squashed.Read (crushed, 0, crushed.Length) |> ignore
-                                      crushed
 
                                     let embed = d.CustomDebugInformations
                                                 |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-                                                |> Option.map (fun c -> let e = c :?> Cil.EmbeddedSourceDebugInformation
-                                                                        let datamake = Maybe e.Compress squash id
-                                                                        let data = datamake e.Content
-                                                                        let updater = Maybe (data.Length > 0)
-                                                                                            (let src = String.Join(String.Empty, data |> Seq.map (fun d -> d.ToString("X2", CultureInfo.InvariantCulture)))
-                                                                                             Map.add key src)
-                                                                                             id
+                                                |> Option.map (fun c -> let src = Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation)
+                                                                        let updater = Maybe (src |> String.IsNullOrEmpty)
+                                                                                            id
+                                                                                            (Map.add key src)
                                                                         updater (snd f))
                                                 |> Option.defaultValue (snd f)
 

@@ -1208,11 +1208,14 @@ module
             s.Documents.Add(doc, c)
             record.CustomDebugInformations
             |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-            |> Option.iter (fun _ -> // TODO => cast and get text
-                                     let dummy = Method.Create(None)
-                                     let embed = Methods()
-                                     embed.Add ("TODO", dummy)
-                                     c.Add ("\u00ABembed\u00BB", embed))
+            |> Option.iter (fun cd -> let src = Metadata.getCompressedSource (cd :?> Cil.EmbeddedSourceDebugInformation)
+                                      let updater = Maybe (src |> String.IsNullOrEmpty)
+                                                          ignore
+                                                          (fun embed -> let dummy = Method.Create(None)
+                                                                        let m = Methods()
+                                                                        m.Add (embed, dummy)
+                                                                        c.Add ("\u00ABAltCover.embed\u00BB", m))
+                                      updater src)
             c
 
       let methods =
