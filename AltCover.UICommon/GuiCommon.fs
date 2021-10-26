@@ -62,8 +62,9 @@ module GuiCommon =
   let Embed (nav:XPathNavigator) (document: string) =
     nav.SelectAncestors("module", String.Empty, false)
     |> Seq.cast<XPathNavigator>
-    |> Seq.collect(fun n -> n.SelectDescendants("./file/[@document = document]", String.Empty, false)
+    |> Seq.collect(fun n -> n.SelectDescendants("file", String.Empty, false)
                             |> Seq.cast<XPathNavigator>)
+    |> Seq.filter (fun n -> n.GetAttribute("document", String.Empty) = document)
     |> Seq.map (fun n -> n.GetAttribute("embed", String.Empty))
     |> Seq.filter (String.IsNullOrWhiteSpace >> not)
     |> Seq.tryHead
