@@ -23,5 +23,4 @@ module internal Metadata =
   let internal getCompressedSource (embed:EmbeddedSourceDebugInformation) =
     let datamake = Maybe embed.Compress squash id
     let data = datamake embed.Content
-    String.Join(String.Empty,
-                data |> Seq.map (fun d -> d.ToString("X2", CultureInfo.InvariantCulture)))
+    Convert.ToBase64String data
