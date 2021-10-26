@@ -117,12 +117,13 @@ module GuiCommon =
           use client = new System.Net.WebClient()
           client.DownloadString(u)
       | Embed (_,source) -> let data = Convert.FromBase64String source
+                            use raw = new MemoryStream(data)
                             use expanded = new MemoryStream()
                             // Get deflation working with this one weird trick
                             // Dispose the deflate stream w/o closing the one it points at!
                             do
-                              use expand = new DeflateStream(expanded, CompressionMode.Decompress, true)
-                              expand.Write(data, 0, data.Length)
+                              use expand = new DeflateStream(raw, CompressionMode.Decompress, true)
+                              expand.CopyTo expanded
                             System.Text.Encoding.UTF8.GetString(expanded.GetBuffer(),
                                                                 0, int expanded.Length)
 
