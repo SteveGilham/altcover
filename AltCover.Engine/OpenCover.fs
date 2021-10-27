@@ -656,7 +656,7 @@ module internal OpenCover =
                       )
                     f.Add(file)
                     if s.Embeds.ContainsKey k
-                    then file.Add(XAttribute("embed".X, s.Embeds.Item k))))
+                    then file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
 
       { s with
           Stack = tail

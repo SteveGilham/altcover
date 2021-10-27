@@ -4412,7 +4412,7 @@ module AltCoverTests =
 
       // but we should have picked up the embedded source
       let embeds = result
-                   |> List.filter (fun f -> f.Attribute("embed".X).IsNotNull)
+                   |> List.filter (fun f -> f.Attribute("altcover.embed".X).IsNotNull)
       test <@ embeds |> Seq.isEmpty |> not @>
 
     finally

@@ -61,8 +61,8 @@
               </xsl:for-each>
             </method>
           </xsl:for-each>
-          <xsl:for-each select="./Files/File[@embed]">
-            <file document="{@fullPath}" embed="{@embed}" />
+          <xsl:for-each select="./Files/File[@altcover.embed]">
+            <altcover.file document="{@fullPath}" embed="{@altcover.embed}" />
           </xsl:for-each>
         </module>
       </xsl:for-each>
