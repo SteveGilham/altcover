@@ -76,12 +76,12 @@ module GuiCommon =
   type Source =
     | File of FileInfo
     | Url of Uri
-    | Embed of (FileInfo * string)
+    | Embed of (string * string)
 
-    member self.Exists =
+    member internal self.Exists =
       match self with
       | File info -> info.Exists
-      | Embed (i, s) -> i.Exists || s |> String.IsNullOrWhiteSpace |> not
+      | Embed (_, s) -> s |> String.IsNullOrWhiteSpace |> not
       | Url u ->
           let request = WebRequest.CreateHttp(u)
           request.Method <- "HEAD"
@@ -93,9 +93,9 @@ module GuiCommon =
             && (response :?> HttpWebResponse).StatusCode |> int < 400
           with :? WebException -> false
 
-    member self.FullName =
+    member internal self.FullName =
       match self with
-      | Embed (info, _)
+      | Embed (name, _) -> name
       | File info ->
           if info |> isNull then
             String.Empty
@@ -103,7 +103,7 @@ module GuiCommon =
             info.FullName
       | Url u -> u.AbsoluteUri
 
-    member self.Outdated epoch =
+    member internal self.Outdated epoch =
       match self with
       | File info -> if info.Exists
                      then info.LastWriteTimeUtc > epoch
@@ -127,9 +127,9 @@ module GuiCommon =
                             System.Text.Encoding.UTF8.GetString(expanded.GetBuffer(),
                                                                 0, int expanded.Length)
 
-    member self.MakeEmbedded (source: string option) =
+    member internal self.MakeEmbedded (filename: string) (source: string option) =
       match (self, source) with
-      | (File info, Some _) -> Embed (info, source.Value)
+      | (File info, Some _) -> Embed (filename, source.Value)
       | _ -> self
 
   let GetSource (document: string) =

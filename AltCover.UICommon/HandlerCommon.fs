@@ -45,7 +45,7 @@ module HandlerCommon =
       window.Title <- "AltCover.Visualizer - " + filename
       // get embed if any & fold it in here
       let embed = GuiCommon.Embed methodPath filename
-      let info = GetSource(filename).MakeEmbedded embed
+      let info = GetSource(filename).MakeEmbedded filename embed
 
       let lineNumber =
           Int32.TryParse(line |> Option.get) |> snd
@@ -121,14 +121,14 @@ module HandlerCommon =
   [<SuppressMessage("Microsoft.Usage",
                     "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification = "Ditto, ditto")>]
-  let TagCoverage (methodPath: XPathNavigator) (fileName: string) (sourceLines: int) =
+  let TagCoverage (methodPath: XPathNavigator) (file: Source) (sourceLines: int) =
     let lineOnly =
       methodPath.Select("//coverage[@lineonly]")
       |> Seq.cast<XPathNavigator>
       |> Seq.isEmpty
       |> not
 
-    methodPath.Select("//seqpnt[@document='" + fileName + "']")
+    methodPath.Select("//seqpnt[@document='" + file.FullName + "']") // TODO encapsulate more
     |> Seq.cast<XPathNavigator>
     |> Seq.map (coverageToTag lineOnly)
     |> Seq.filter (filterCoverage sourceLines)
@@ -178,10 +178,9 @@ module HandlerCommon =
 
       0
 
-  let TagBranches (methodPath: XPathNavigator) (fileName: string) =
-    (methodPath.Select("//method[@document='" + fileName + "']")
+  let TagBranches (methodPath: XPathNavigator) (file: Source) =
+    (methodPath.Select("//branch[@document='" + file.FullName + "']") // TODO
      |> Seq.cast<XPathNavigator>
-     |> Seq.collect (fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
      |> Seq.groupBy (fun n -> n.GetAttribute("line", String.Empty))
      |> Seq.toList
      |> Seq.map

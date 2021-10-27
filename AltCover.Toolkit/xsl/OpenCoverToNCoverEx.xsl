@@ -21,7 +21,6 @@
           <xsl:for-each select="descendant::Method[not(@skippedDueTo)]">
             <xsl:variable name="class" select="../../FullName" />
             <xsl:variable name="fileRef" select="./FileRef/@uid" />
-            <xsl:variable name="file" select="../../../../../../Files/File[@uid = $fileRef]/@fullPath" />
             <xsl:variable name="method" select="./Name" />
 
             <method excluded="false" instrumented="true">
@@ -33,9 +32,6 @@
               </xsl:attribute>
               <xsl:attribute name="fullname">
                 <xsl:value-of select="$method" />
-              </xsl:attribute>
-              <xsl:attribute name="document">
-                <xsl:value-of select="$file" />
               </xsl:attribute>
 
               <xsl:for-each select="descendant::SequencePoint|descendant::BranchPoint">
