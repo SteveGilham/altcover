@@ -164,7 +164,7 @@ module internal OpenCover =
                                                 |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
                                                 |> Option.map (fun c -> let src = Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation)
                                                                         let updater = Maybe (src |> String.IsNullOrEmpty)
-                                                                                            id
+                                                                                            id // TODO uncovered -- refactor to Option??
                                                                                             (Map.add key src)
                                                                         updater (snd f))
                                                 |> Option.defaultValue (snd f)

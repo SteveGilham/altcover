@@ -1206,11 +1206,11 @@ module
         | _ ->
             let c = Classes()
             s.Documents.Add(doc, c)
-            record.CustomDebugInformations
+            record.CustomDebugInformations //TODO embed test
             |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
             |> Option.iter (fun cd -> let src = Metadata.getCompressedSource (cd :?> Cil.EmbeddedSourceDebugInformation)
                                       let updater = Maybe (src |> String.IsNullOrEmpty)
-                                                          ignore
+                                                          ignore // Refactor
                                                           (fun embed -> let dummy = Method.Create(None)
                                                                         let m = Methods()
                                                                         m.Add (embed, dummy)
