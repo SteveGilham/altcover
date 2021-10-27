@@ -59,8 +59,8 @@ module GuiCommon =
       (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
-  let Embed (nav:XPathNavigator) (document: string) =
-    nav.SelectAncestors("module", String.Empty, false)
+  let Embed (node:XPathNavigator) (document: string) =
+    node.SelectAncestors("module", String.Empty, false)
     |> Seq.cast<XPathNavigator>
     |> Seq.collect(fun n -> n.SelectDescendants("altcover.file", String.Empty, false)
                             |> Seq.cast<XPathNavigator>)

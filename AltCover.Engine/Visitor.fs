@@ -44,6 +44,7 @@ type internal SeqPnt =
     StartColumn: int
     EndLine: int
     EndColumn: int
+    [<NonSerialized>]
     Document: Cil.Document
     Offset: int }
   static member Build(codeSegment: Cil.SequencePoint) =
