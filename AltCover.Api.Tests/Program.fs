@@ -24,6 +24,7 @@ module ExpectoMain =
       Tests.FSApiTests.FormatsRoundTripSimply, "FSApiTests.FormatsRoundTripSimply"
       Tests.FSApiTests.NCoverToCobertura, "FSApiTests.NCoverToCobertura"
       Tests.FSApiTests.NCoverToJson, "FSApiTests.NCoverToJson"
+      Tests.FSApiTests.NCoverToJsonWithEmbeds, "FSApiTests.NCoverToJsonWithEmbeds"
       Tests.FSApiTests.NCoverToBarChart, "FSApiTests.NCoverToBarChart"
       Tests.FSApiTests.OpenCoverBranchCompression, "FSApiTests.OpenCoverBranchCompression"
       Tests.FSApiTests.ArgumentsBuilt, "FSApiTests.ArgumentsBuilt"

@@ -26,6 +26,7 @@
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.html" Link="HandRolledMonoCoverage.html" />
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.xml" Link="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledMonoCoverage.lcov" Link="HandRolledMonoCoverage.lcov" />
+    <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.json" Link="HandRolledToNCover.json" />
     <EmbeddedResource Include="..\AltCover.Tests\HandRolledToNCover.xml" Link="HandRolledToNCover.xml" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>

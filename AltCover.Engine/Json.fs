@@ -211,11 +211,17 @@ module internal Json =
 
                              if not excluded then
                                if docname |> fst |> String.IsNullOrWhiteSpace  then
+                                 let doc = s.Attribute(XName.Get "document").Value
+                                 let embed = s.Ancestors("module".X)
+                                             |> Seq.collect (fun m -> m.Descendants("altcover.file".X))
+                                             |> Seq.filter (fun f -> f.Attribute(XName.Get "document").Value = doc)
+                                             |> Seq.tryHead
+                                             |> Option.map (fun f -> f.Attribute(XName.Get "embed").Value)
+                                             |> Option.filter (String.IsNullOrWhiteSpace >> not)
+                                             |> Option.defaultValue String.Empty
+
                                  docname <- (s.Attribute(XName.Get "document").Value,
-                                             s.Attribute(XName.Get "embed")
-                                             |> Option.ofObj
-                                             |> Option.map (fun e -> e.Value)
-                                             |> Option.defaultValue String.Empty)
+                                             embed)
 
                                { NativeJson.SeqPnt.VC = parse "visitcount"
                                  NativeJson.SeqPnt.SL = parse "line"
