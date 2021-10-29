@@ -1209,16 +1209,14 @@ module
         | _ ->
             let c = Classes()
             s.Documents.Add(doc, c)
-            record.CustomDebugInformations //TODO embed test
+            record.CustomDebugInformations
             |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-            |> Option.iter (fun cd -> let src = Metadata.getCompressedSource (cd :?> Cil.EmbeddedSourceDebugInformation)
-                                      let updater = Maybe (src |> String.IsNullOrEmpty)
-                                                          ignore // Refactor
-                                                          (fun embed -> let dummy = Method.Create(None)
-                                                                        let m = Methods()
-                                                                        m.Add (embed, dummy)
-                                                                        c.Add ("\u00ABAltCover.embed\u00BB", m))
-                                      updater src)
+            |> Option.map (fun c -> Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation))
+            |> Option.filter (String.IsNullOrEmpty >> not)
+            |> Option.iter (fun embed -> let dummy = Method.Create(None)
+                                         let m = Methods()
+                                         m.Add (embed, dummy)
+                                         c.Add ("\u00ABAltCover.embed\u00BB", m))
             c
 
       let methods =
