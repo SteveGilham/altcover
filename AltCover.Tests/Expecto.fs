@@ -395,8 +395,12 @@ module ExpectoTestManifest =
       Tests.AltCoverTests.FullMethodNamesAreExtracted, "Tests.FullMethodNamesAreExtracted"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNet,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
+      Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbeds,
+      "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
       Tests.AltCoverTests.ShouldGenerateExpectedJsonReportFromDotNet,
       "Tests.ShouldGenerateExpectedJsonReportFromDotNet"
+      Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithEmbeds,
+      "Tests.ShouldGenerateExpectedJsonReportWithEmbeds"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly,
       "Tests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel,
