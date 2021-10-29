@@ -673,7 +673,7 @@ module
 
     w
     |> append (slugs.[9])
-    |> appendLine ("\"Lines\": {")
+    |> (if method.Lines |> Seq.isEmpty then append else appendLine) ("\"Lines\": {")
     |> ifNotEmpty method.Lines lineToBuilder id post
     |> appendLine ("},")
 
@@ -1162,6 +1162,13 @@ module
 #if RUNNER
   // Instrumentation ---------------------------------------------------------
 
+  let injectEmbed (c:Classes) (embed:string) =
+    if embed |> String.IsNullOrWhiteSpace |> not then
+      let dummy = Method.Create(None)
+      let m = Methods()
+      m.Add (embed, dummy)
+      c.Add ("\u00ABAltCover.embed\u00BB", m)
+
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type internal JsonContext =
     { Documents: Documents
@@ -1211,10 +1218,7 @@ module
             s.Documents.Add(doc, c)
             record
             |> Metadata.getSource
-            |> Option.iter (fun embed -> let dummy = Method.Create(None)
-                                         let m = Methods()
-                                         m.Add (embed, dummy)
-                                         c.Add ("\u00ABAltCover.embed\u00BB", m))
+            |> Option.iter (injectEmbed c)
             c
 
       let methods =

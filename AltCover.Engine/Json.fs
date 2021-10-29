@@ -23,16 +23,17 @@ module internal Json =
                                                     Justification = "AvoidSpeculativeGenerality too")>]
   let internal getMethodRecords
     (modul: NativeJson.Documents)
-    (doc: string)
+    (doc: string * string)
     (cname: string)
     (mname: string)
     =
     let classes =
-      match modul.TryGetValue doc with
+      match modul.TryGetValue (fst doc) with
       | true, c -> c
       | _ ->
           let c = NativeJson.Classes()
-          modul.Add(doc, c)
+          modul.Add(fst doc, c)
+          NativeJson.injectEmbed c (snd doc)
           c
 
     let methods =
@@ -55,7 +56,7 @@ module internal Json =
                                                     Justification = "AvoidSpeculativeGenerality too")>]
   let internal getMethodRecord
     (modul: NativeJson.Documents)
-    (doc: string)
+    (doc: string * string)
     (cname: string)
     (mname: string)
     =
@@ -69,7 +70,7 @@ module internal Json =
                     Justification = "Long enough but no longer")>]
   let internal updateMethodRecord
     (modul: NativeJson.Documents)
-    (doc: string)
+    (doc: string * string)
     (cname: string)
     (mname: string)
     (update: (Nullable<int> * NativeJson.Times * NativeJson.Times))
@@ -190,7 +191,7 @@ module internal Json =
                       m.Attribute(XName.Get "excluded").Value
                       |> Boolean.TryParse
 
-                    let mutable docname = String.Empty
+                    let mutable docname = (String.Empty, String.Empty)
 
                     if not excluded then
                       let sp = NativeJson.SeqPnts()
@@ -209,8 +210,12 @@ module internal Json =
                                |> Option.defaultValue 0
 
                              if not excluded then
-                               if String.IsNullOrWhiteSpace docname then
-                                 docname <- s.Attribute(XName.Get "document").Value
+                               if docname |> fst |> String.IsNullOrWhiteSpace  then
+                                 docname <- (s.Attribute(XName.Get "document").Value,
+                                             s.Attribute(XName.Get "embed")
+                                             |> Option.ofObj
+                                             |> Option.map (fun e -> e.Value)
+                                             |> Option.defaultValue String.Empty)
 
                                { NativeJson.SeqPnt.VC = parse "visitcount"
                                  NativeJson.SeqPnt.SL = parse "line"
@@ -273,14 +278,22 @@ module internal Json =
            let modul = NativeJson.Documents()
 
            let files =
-             System.Collections.Generic.Dictionary<string, string>()
+             System.Collections.Generic.Dictionary<string, (string*string)>()
 
            x.Descendants(XName.Get "File")
            |> Seq.iter
                 (fun x ->
+                  let document = x.Attribute(XName.Get "fullPath").Value
+
+                  let embed = x.Attribute(XName.Get "altcover.embed")
+                              |> Option.ofObj
+                              |> Option.map (fun e -> e.Value)
+                              |> Option.defaultValue String.Empty
+
                   files.Add(
                     x.Attribute(XName.Get "uid").Value,
-                    x.Attribute(XName.Get "fullPath").Value
+                    (document, embed)
+
                   ))
 
            let tracked =
@@ -327,10 +340,10 @@ module internal Json =
 
                     let outerclass = cname.Split('/') |> Seq.head
 
-                    let mutable docname = String.Empty
+                    let mutable docname = (String.Empty, String.Empty)
 
                     let updateDocname (s: XElement) =
-                      if String.IsNullOrWhiteSpace docname then
+                      if docname |> fst |> String.IsNullOrWhiteSpace  then
                         docname <- files.[s.Attribute(XName.Get "fileid").Value]
 
                     let sp = NativeJson.SeqPnts()
