@@ -325,6 +325,7 @@ module FSApiTests =
 
     let result =
       rdr.ReadToEnd().Replace("\r", String.Empty)
+                     .Replace("ID0ES", "ID0ET") // flakiness in label autogenerator
 
     use stream2 =
       Assembly
