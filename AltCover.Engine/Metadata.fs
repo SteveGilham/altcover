@@ -24,3 +24,9 @@ module internal Metadata =
     let datamake = Maybe embed.Compress squash id
     let data = datamake embed.Content
     Convert.ToBase64String data
+
+  let internal getSource (record:Document) =
+    record.CustomDebugInformations
+    |> Seq.tryFind (fun c -> c.Kind = CustomDebugInformationKind.EmbeddedSource)
+    |> Option.map (fun c -> getCompressedSource (c :?> EmbeddedSourceDebugInformation))
+    |> Option.filter (String.IsNullOrEmpty >> not)

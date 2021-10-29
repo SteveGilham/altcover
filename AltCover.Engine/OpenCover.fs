@@ -161,10 +161,8 @@ module internal OpenCover =
                                               |> Visitor.sourceLinkMapping
                                     let map = snd f
 
-                                    let embed = d.CustomDebugInformations
-                                                |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-                                                |> Option.map (fun c -> Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation))
-                                                |> Option.filter (String.IsNullOrEmpty >> not)
+                                    let embed = d
+                                                |> Metadata.getSource
                                                 |> Option.map (fun s -> Map.add key s map)
                                                 |> Option.defaultValue map
 

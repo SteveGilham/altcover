@@ -73,10 +73,8 @@ module internal Report =
       |> ProgramDatabase.getModuleDocuments
       |> Seq.iter (fun d -> let key = d.Url
                                       |> Visitor.sourceLinkMapping
-                            d.CustomDebugInformations
-                            |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-                            |> Option.map (fun c -> Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation))
-                            |> Option.filter (String.IsNullOrEmpty >> not)
+                            d
+                            |> Metadata.getSource
                             |> Option.iter (fun s -> let x = XElement("altcover.file".X,
                                                                       XAttribute("document".X, key),
                                                                       XAttribute("embed".X, s))

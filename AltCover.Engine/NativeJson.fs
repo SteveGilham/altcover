@@ -1209,10 +1209,8 @@ module
         | _ ->
             let c = Classes()
             s.Documents.Add(doc, c)
-            record.CustomDebugInformations
-            |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-            |> Option.map (fun c -> Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation))
-            |> Option.filter (String.IsNullOrEmpty >> not)
+            record
+            |> Metadata.getSource
             |> Option.iter (fun embed -> let dummy = Method.Create(None)
                                          let m = Methods()
                                          m.Add (embed, dummy)
