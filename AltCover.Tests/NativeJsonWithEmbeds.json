@@ -1,0 +1,2081 @@
+{
+ "CSharpGeneratedDemo.dll": {
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\Analyzer1.SettingsXmlGenerator\\Settings_Main.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "rVPLTsMwELxHyj\u002BsekokFMG5KhIqDyGVHmgPSIiDSbetJceu7E1pqfJlHPgkfoHNq41bhDiwl9jr2Z3ZsfP18RkGWmToViJFuMrJTJBI6oULg10YAEfueAuTrSPM\u002Bqep5ClTnK4PVvmrkimshCUpFKRKOAcMODQtUU3jMg6rptSRIP48CKnbomoDO1gg9aGAAWh88wBRr7tLNplyzboX76V1OGpZHsUB0xHnCyyDR7k2aZ6hJthU60ZO5yDyOSteK9eCkIezpXFzqXDMpp/iWg8q2B3SyKRsh9FRDIPLbh0chZ\u002BRmtBqvgDPpSP22K/ZnTalpXRJC\u002BdBf\u002BGvzUhGRsyiPcERrijHDYNmyFdjFNxK6\u002Bgx1/vHxnd88kYsUm41RGVFDEOj12gpGS6FXuB0u8Ioitj\u002BG4Wl\u002B3GjpL2NJs1wqWZjM0P3fP4SJ/dao53ihs6AuIWZ191bySzVV8uOwlCkS5zId/yTWq74D7EXP4otm/taC/4zim8=": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "AutoSettings.XmlSettings": {
+       "System.Void AutoSettings.XmlSettings::.cctor()": {
+         "Lines": {
+           "10": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 52,
+            "EL": 10,
+            "EC": 96,
+            "Offset": 0,
+            "Id": 80
+           }
+          ]
+        }
+      },
+     "AutoSettings.XmlSettings/MainSettings": {
+       "System.String AutoSettings.XmlSettings/MainSettings::GetLocation()": {
+         "Lines": {
+           "19": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 44,
+            "EL": 19,
+            "EC": 52,
+            "Offset": 0,
+            "Id": 81
+           }
+          ]
+        },
+       "System.Void AutoSettings.XmlSettings/MainSettings::.ctor(System.String)": {
+         "Lines": {
+           "15": 0,
+           "21": 0,
+           "22": 0,
+           "23": 0,
+           "24": 0,
+           "25": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 13,
+            "EL": 25,
+            "EC": 14,
+            "Offset": 39,
+            "Id": 82
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 17,
+            "EL": 24,
+            "EC": 39,
+            "Offset": 26,
+            "Id": 83
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 17,
+            "EL": 23,
+            "EC": 42,
+            "Offset": 19,
+            "Id": 84
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 13,
+            "EL": 22,
+            "EC": 14,
+            "Offset": 18,
+            "Id": 85
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 13,
+            "EL": 21,
+            "EC": 51,
+            "Offset": 11,
+            "Id": 86
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 13,
+            "EL": 15,
+            "EC": 52,
+            "Offset": 0,
+            "Id": 87
+           }
+          ]
+        },
+       "System.Boolean AutoSettings.XmlSettings/MainSettings::get_FirstRun()": {
+         "Lines": {
+           "31": 0,
+           "32": 0,
+           "33": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 33,
+            "SC": 5,
+            "EL": 33,
+            "EC": 6,
+            "Offset": 56,
+            "Id": 88
+           },
+           {
+            "VC": 0,
+            "SL": 32,
+            "SC": 9,
+            "EL": 32,
+            "EC": 118,
+            "Offset": 1,
+            "Id": 89
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 5,
+            "EL": 31,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 90
+           }
+          ]
+        },
+       "System.Int32 AutoSettings.XmlSettings/MainSettings::get_CacheSize()": {
+         "Lines": {
+           "40": 0,
+           "41": 0,
+           "42": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 42,
+            "SC": 5,
+            "EL": 42,
+            "EC": 6,
+            "Offset": 56,
+            "Id": 91
+           },
+           {
+            "VC": 0,
+            "SL": 41,
+            "SC": 9,
+            "EL": 41,
+            "EC": 116,
+            "Offset": 1,
+            "Id": 92
+           },
+           {
+            "VC": 0,
+            "SL": 40,
+            "SC": 5,
+            "EL": 40,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 93
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\CsvGenerator.CSVGenerator\\Csv_Cars.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "lZLPSgMxEMbvgX2HsV7qZWkrirJWqYuKoFAoKJ4kTcYSSJOSP4gs\u002B2QefCRfwWRbaktjbeeQXWa\u002B32a\u002Bmf3\u002B/MrIofJS0rFEQBUfGVF0inZGGUI5eoIqIxDCW6EmMPqwDqd5qaVE5oRWNr9DhUawIiNz4cyPpWDAJLUWSmosVE1\u002BpWadiR\u002B7NlRxqGCCrgAbjhr6wPGNeukOiuwP6lFzlLtTQjl4QWp2J7j2cRol24IsGeuoC8z9jfJTNHF\u002BF9Hz5RW8UikDFKe7nM2amzQIg4BVv/IYoYuYWk/GeBDWLbDmLnxfSbWPik2iWQhLFNiCj4IkyfL5vvrQuhXUtZKS\u002BXKCZOiV02lNs40\u002BQK/TOUsKytgLdHv5caIs8wHnbZbscB8L2vB/LDzTiVbbLXTPT063WOh19rWw\u002BGlkomTQeaM2SjVZf6tJTX4A": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "CSV.Cars": {
+       "System.Collections.Generic.IEnumerable\u00601\u003CCSV.Cars\u003E CSV.Cars::get_All()": {
+         "Lines": {
+           "15": 0,
+           "17": 0,
+           "19": 0,
+           "20": 0,
+           "21": 0,
+           "22": 0,
+           "23": 0,
+           "24": 0,
+           "25": 0,
+           "26": 0,
+           "27": 0,
+           "28": 0,
+           "29": 0,
+           "30": 0,
+           "31": 0,
+           "32": 0,
+           "33": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 33,
+            "SC": 13,
+            "EL": 33,
+            "EC": 14,
+            "Offset": 149,
+            "Id": 59
+           },
+           {
+            "VC": 0,
+            "SL": 32,
+            "SC": 17,
+            "EL": 32,
+            "EC": 26,
+            "Offset": 145,
+            "Id": 60
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 17,
+            "EL": 31,
+            "EC": 26,
+            "Offset": 139,
+            "Id": 61
+           },
+           {
+            "VC": 0,
+            "SL": 30,
+            "SC": 17,
+            "EL": 30,
+            "EC": 26,
+            "Offset": 131,
+            "Id": 62
+           },
+           {
+            "VC": 0,
+            "SL": 29,
+            "SC": 17,
+            "EL": 29,
+            "EC": 30,
+            "Offset": 115,
+            "Id": 63
+           },
+           {
+            "VC": 0,
+            "SL": 28,
+            "SC": 17,
+            "EL": 28,
+            "EC": 32,
+            "Offset": 103,
+            "Id": 64
+           },
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 17,
+            "EL": 27,
+            "EC": 35,
+            "Offset": 91,
+            "Id": 65
+           },
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 17,
+            "EL": 26,
+            "EC": 34,
+            "Offset": 79,
+            "Id": 66
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 17,
+            "EL": 25,
+            "EC": 32,
+            "Offset": 73,
+            "Id": 67
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 17,
+            "EL": 24,
+            "EC": 26,
+            "Offset": 65,
+            "Id": 68
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 17,
+            "EL": 23,
+            "EC": 30,
+            "Offset": 49,
+            "Id": 69
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 17,
+            "EL": 22,
+            "EC": 32,
+            "Offset": 37,
+            "Id": 70
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 17,
+            "EL": 21,
+            "EC": 35,
+            "Offset": 25,
+            "Id": 71
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 17,
+            "EL": 20,
+            "EC": 34,
+            "Offset": 13,
+            "Id": 72
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 17,
+            "EL": 19,
+            "EC": 32,
+            "Offset": 7,
+            "Id": 73
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 17,
+            "EL": 17,
+            "EC": 49,
+            "Offset": 1,
+            "Id": 74
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 17,
+            "EL": 15,
+            "EC": 18,
+            "Offset": 0,
+            "Id": 75
+           }
+          ]
+        },
+       "System.Void CSV.Cars::.ctor()": {
+         "Lines": {
+           "7": 0,
+           "8": 0,
+           "9": 0,
+           "10": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 41,
+            "EL": 10,
+            "EC": 49,
+            "Offset": 21,
+            "Id": 76
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 40,
+            "EL": 9,
+            "EC": 48,
+            "Offset": 14,
+            "Id": 77
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 44,
+            "EL": 8,
+            "EC": 52,
+            "Offset": 7,
+            "Id": 78
+           },
+           {
+            "VC": 0,
+            "SL": 7,
+            "SC": 44,
+            "EL": 7,
+            "EC": 52,
+            "Offset": 0,
+            "Id": 79
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\CsvGenerator.CSVGenerator\\Csv_People.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "lVJNT8JAEL1v0v8w4gUuREAPpqIBYowJMSYkXsmyHbFm2JL98COkv8yDP8m/4C5tMZVFYQ7tZua9mTdv9\u002BvjM2LH0hLxGSGg9L\u002BISb5AveQCYTR5gFXEwIXVqZzD5F0bXLRHGREKk2ZSt29QokpFHLECuLQzSgUI4lrDPWZL13lV1nxow42rF5VmC1bwwhW8QR8GRDHkP8iykzbKj75zqhx4jiYG7T65YyT4yC2Zo3gXaZAkCp2OvXmpNDDtdAbzv2b93uX2WtoFKu/eRbHX5RVMOZGjeXc33tQE7qJ6HyrXq3BKfKqe9DFOtdkQ1/PwtZZstuJtVnktIlASZY/qfkKQ9vou\u002BtAYW8FhmFEjiKrMd8BuD4bo1poYhWjC8NL2PsD5SQBAvl9TBAUdovk5e5KQZPiv5l4XRlyRf0p7aD49O0xz\u002BTwoUFJorJJbpZzVTznL2Tc=": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "CSV.People": {
+       "System.Void CSV.People::.cctor()": {
+         "Lines": {
+           "8": 0,
+           "13": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 40,
+            "EL": 8,
+            "EC": 41,
+            "Offset": 13,
+            "Id": 37
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 27,
+            "EL": 8,
+            "EC": 39,
+            "Offset": 7,
+            "Id": 38
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 25,
+            "EL": 8,
+            "EC": 26,
+            "Offset": 6,
+            "Id": 39
+           },
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 9,
+            "EL": 13,
+            "EC": 49,
+            "Offset": 0,
+            "Id": 40
+           }
+          ]
+        },
+       "System.Collections.Generic.IEnumerable\u00601\u003CCSV.People\u003E CSV.People::get_All()": {
+         "Lines": {
+           "16": 0,
+           "18": 0,
+           "20": 0,
+           "21": 0,
+           "22": 0,
+           "23": 0,
+           "24": 0,
+           "25": 0,
+           "26": 0,
+           "27": 0,
+           "28": 0,
+           "29": 0,
+           "30": 0,
+           "31": 0,
+           "32": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 32,
+            "SC": 13,
+            "EL": 32,
+            "EC": 14,
+            "Offset": 111,
+            "Id": 41
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 17,
+            "EL": 31,
+            "EC": 26,
+            "Offset": 107,
+            "Id": 42
+           },
+           {
+            "VC": 0,
+            "SL": 30,
+            "SC": 17,
+            "EL": 30,
+            "EC": 26,
+            "Offset": 101,
+            "Id": 43
+           },
+           {
+            "VC": 0,
+            "SL": 29,
+            "SC": 17,
+            "EL": 29,
+            "EC": 26,
+            "Offset": 93,
+            "Id": 44
+           },
+           {
+            "VC": 0,
+            "SL": 28,
+            "SC": 17,
+            "EL": 28,
+            "EC": 32,
+            "Offset": 84,
+            "Id": 45
+           },
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 17,
+            "EL": 27,
+            "EC": 46,
+            "Offset": 72,
+            "Id": 46
+           },
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 17,
+            "EL": 26,
+            "EC": 37,
+            "Offset": 60,
+            "Id": 47
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 17,
+            "EL": 25,
+            "EC": 34,
+            "Offset": 54,
+            "Id": 48
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 17,
+            "EL": 24,
+            "EC": 26,
+            "Offset": 46,
+            "Id": 49
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 17,
+            "EL": 23,
+            "EC": 32,
+            "Offset": 37,
+            "Id": 50
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 17,
+            "EL": 22,
+            "EC": 46,
+            "Offset": 25,
+            "Id": 51
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 17,
+            "EL": 21,
+            "EC": 37,
+            "Offset": 13,
+            "Id": 52
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 17,
+            "EL": 20,
+            "EC": 34,
+            "Offset": 7,
+            "Id": 53
+           },
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 17,
+            "EL": 18,
+            "EC": 53,
+            "Offset": 1,
+            "Id": 54
+           },
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 17,
+            "EL": 16,
+            "EC": 18,
+            "Offset": 0,
+            "Id": 55
+           }
+          ]
+        },
+       "System.Void CSV.People::.ctor()": {
+         "Lines": {
+           "9": 0,
+           "10": 0,
+           "11": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 42,
+            "EL": 11,
+            "EC": 50,
+            "Offset": 14,
+            "Id": 56
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 46,
+            "EL": 10,
+            "EC": 54,
+            "Offset": 7,
+            "Id": 57
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 43,
+            "EL": 9,
+            "EC": 51,
+            "Offset": 0,
+            "Id": 58
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\MathsGenerator.MathsGenerator\\__MathLibrary__.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "dZBNasMwEIX3Bt9hlhK4vkBab9KmLTSbphdQ5EkikEaufgIm9GRd9Ei9QuXYxrGhg0Cj0ce8N/P7/ZNn0Ss6wq71AU35puhzNa8tnuXaao0yKEu\u002BfEZCp2RC8oyEQd8IibAV4eThkmfQxL1WEnwQIV1SC\u002B9hY52JWrygbtBdsQQOMedfnygadGKv8b626QsrWFs6owsf9vFaYLeMolCBtJpPDS9T2sXBOhTyBOwsHHhQtMDHaBXqGhyG6AhYr83Bryby63/bPQ7bdhcNS566ugsFdClSXcAmkhwGKmAc7MDhoZo7mUYrU6txBWy5ghvsXdAR2aCXtOCuF\u002Be8SAKD/WQ9nT8=": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "Maths.FormulaHelpers": {
+       "System.Double Maths.FormulaHelpers::MySum(System.Int32,System.Int32,System.Func\u00602\u003CSystem.Double,System.Double\u003E)": {
+         "Lines": {
+           "16": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 13,
+            "EL": 16,
+            "EC": 93,
+            "Offset": 0,
+            "Id": 21
+           }
+          ]
+        },
+       "System.Collections.Generic.IEnumerable\u00601\u003CSystem.Double\u003E Maths.FormulaHelpers::ConvertToDouble(System.Collections.Generic.IEnumerable\u00601\u003CSystem.Int32\u003E)": {
+         "Lines": {
+           "10": 0,
+           "11": 0,
+           "12": 0,
+           "13": 0
+          },
+         "Branches": [
+           {
+            "Line": 11,
+            "Offset": 122,
+            "EndOffset": 124,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 2
+           },
+           {
+            "Line": 11,
+            "Offset": 122,
+            "EndOffset": 62,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 3
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 9,
+            "EL": 13,
+            "EC": 10,
+            "Offset": 138,
+            "Id": 22
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 28,
+            "EL": 11,
+            "EC": 30,
+            "Offset": 111,
+            "Id": 23
+           },
+           {
+            "VC": 0,
+            "SL": 12,
+            "SC": 17,
+            "EL": 12,
+            "EC": 41,
+            "Offset": 79,
+            "Id": 24
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 22,
+            "EL": 11,
+            "EC": 27,
+            "Offset": 62,
+            "Id": 25
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 31,
+            "EL": 11,
+            "EC": 34,
+            "Offset": 35,
+            "Id": 26
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 13,
+            "EL": 11,
+            "EC": 20,
+            "Offset": 34,
+            "Id": 27
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 9,
+            "EL": 10,
+            "EC": 10,
+            "Offset": 33,
+            "Id": 28
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\MathsGenerator.MathsGenerator\\Geometry.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "hVLbasJAEH1uIP8wj0mNWm0pBWmhtLT2QbDmC8bNogubTdzdoKH4ZX3oJ/UXOrmroA0szJw958zZIb/fP66TGaFWYCxawSDMjeXxYIZ2PTm5KjAzeEt0nEmccplybYjjOgpjblJkvKLAVwECfWm2lCSs9SlqK1ACk2gM1D7EBte5OmZGCbUc4FlzDDcZag5eg0nw4fEJ5skWPGoCGBMwgUsWC84sqpU8cNlC0JTrynAL11ReNnoRmh266DrLB2l1ec7rPzOMdIm0cuxCLLuSVaYe9AntQbjRlprqvcv6vX24o3FIp2D7MKS7cYmUuzgb4j2REVcLwpJixmhwP3q4ub2QuhBMUcddaFXFO3TqwYhmz/IwI54nlPUJCKpCQSAKPiFDEP/Ee\u002B3G7OZaxLzbyi7kLFFRB\u002BQnhLwmlOmOluY1Zv3Wxa/32GspeUPJTyhl4up33rvO/g8=": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "Maths.Formulas": {
+       "System.Double Maths.Formulas::AreaSquare(System.Double)": {
+         "Lines": {
+           "8": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 51,
+            "EL": 8,
+            "EC": 64,
+            "Offset": 0,
+            "Id": 29
+           }
+          ]
+        },
+       "System.Double Maths.Formulas::AreaRectangle(System.Double,System.Double)": {
+         "Lines": {
+           "9": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 65,
+            "EL": 9,
+            "EC": 70,
+            "Offset": 0,
+            "Id": 30
+           }
+          ]
+        },
+       "System.Double Maths.Formulas::AreaCircle(System.Double)": {
+         "Lines": {
+           "10": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 51,
+            "EL": 10,
+            "EC": 61,
+            "Offset": 0,
+            "Id": 31
+           }
+          ]
+        },
+       "System.Double Maths.Formulas::Quadratic(System.Double,System.Double,System.Double)": {
+         "Lines": {
+           "11": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 72,
+            "EL": 11,
+            "EC": 128,
+            "Offset": 0,
+            "Id": 32
+           }
+          ]
+        },
+       "System.Double Maths.Formulas::get_GoldenRatio()": {
+         "Lines": {
+           "13": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 39,
+            "EL": 13,
+            "EC": 46,
+            "Offset": 0,
+            "Id": 33
+           }
+          ]
+        },
+       "System.Double Maths.Formulas::GoldHarm(System.Double)": {
+         "Lines": {
+           "14": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 49,
+            "EL": 14,
+            "EC": 105,
+            "Offset": 0,
+            "Id": 34
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 98,
+            "EL": 14,
+            "EC": 103,
+            "Offset": 0,
+            "Id": 36
+           }
+          ]
+        },
+       "System.Double Maths.Formulas::D(System.Double,System.Double,System.Double,System.Double)": {
+         "Lines": {
+           "16": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 97,
+            "EL": 16,
+            "EC": 173,
+            "Offset": 0,
+            "Id": 35
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\Mustache.MustacheGenerator\\Mustache_MainAttributes__.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "hY7BCoJQEEX3Qf8wS4XoAxIDd21qk62ixWiDCqOJM4\u002BQ6Mta9En9Qs\u002BeGRTS3TyYd\u002B\u002B593G7Tydgtd\u002B2olTOI9WmSIzSTjAj7/saY5ORyjwSoTLhdgYR8\u002Bm8NqxFzRRqY8g/OGRRKTUVMggh0xFSRhFYG1FMcxqQC/gucfGLezrVJuEiBbH/VQYbLAkuYHcEcB0zxVTWjPrfuELJx00/a70\u002BVtkRszdD\u002B7LhkFuo/4F1CpfgbV6heHB33T6E4DnaB/PKBw5gRz0B": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "MustacheAttribute": {
+       "System.Void MustacheAttribute::.ctor(System.String,System.String,System.String)": {
+         "Lines": {
+           "8": 0,
+           "9": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 16,
+            "EL": 9,
+            "EC": 63,
+            "Offset": 7,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 9,
+            "EL": 8,
+            "EC": 76,
+            "Offset": 0,
+            "Id": 1
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\SourceGeneratorSamples.AutoNotifyGenerator\\AutoNotifyAttribute.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "bZDBSgNBDIbvC/sOoactlH0Ai4fVavFgEbQnEUl30zUwnVkmGWQpPpkHH8lXMNLttqAhzGSG\u002BZJ//u/PrzxLwr6Fx16UdvM887gj6bAmqJKGVVDe9nm2zzOweK5UI2\u002BS0lqwpWI8PmFsSaW8ZXLNDO78G0VWauAStuiEZlA5F97vk1PuHB2vpy9D38P4csHY\u002BiDKtZTXwTesHDy6YnLSsiRPETXE18XN1Xo5ObYQQmfzaociZ9JHhXABY30ghj/9Rpc2juv/sGJ6enUGfPxhxQDz8SGGjqL2K7MR9mCmzE2aLQNhm\u002BUP": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "AutoNotify.AutoNotifyAttribute": {
+       "System.Void AutoNotify.AutoNotifyAttribute::.ctor()": {
+         "Lines": {
+           "9": 0,
+           "10": 0,
+           "11": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 9,
+            "EL": 11,
+            "EC": 10,
+            "Offset": 8,
+            "Id": 18
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 9,
+            "EL": 10,
+            "EC": 10,
+            "Offset": 7,
+            "Id": 19
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 9,
+            "EL": 9,
+            "EC": 37,
+            "Offset": 0,
+            "Id": 20
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\SourceGeneratorSamples.AutoNotifyGenerator\\ExampleViewModel_autoNotify.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "vZHPSsQwEMbvhb7DHFuQPoBFROqie1AExavEdrYbzD\u002BSaXeL9Mk8\u002BEi\u002BgklbutBF2L2YU5L5vm/ml/x8fceRYhKdYSXCHSq0jLC6Ranj6DOOwC/TvAtegmGWOBNQCuYcrPZMGoGvHHcPukIBl/DcOUKZFVoarVDRcJ\u002BtHzXxTfdktUFLXbFlqsZqTPYNpnBsveGPhIV1FaT3TFUCLSxq\u002BRzoyHJVwwvuCWaSGsNh6gzTskiNVUBb7rI38vp8rPVxNG4c0pHpoIYraJloMF8UF5NdZ2vV6g9MQvECFO7OoL2xtUvCN\u002BlNEojSND0MOcw5c3P/jIVu1FnUTAbH6dyj/r/JB6xj9B76Xw==": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "GeneratedDemo.ExampleViewModel": {
+       "System.String GeneratedDemo.ExampleViewModel::get_Text()": {
+         "Lines": {
+           "10": 0,
+           "11": 0,
+           "12": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 12,
+            "SC": 5,
+            "EL": 12,
+            "EC": 6,
+            "Offset": 10,
+            "Id": 108
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 9,
+            "EL": 11,
+            "EC": 27,
+            "Offset": 1,
+            "Id": 109
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 5,
+            "EL": 10,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 110
+           }
+          ]
+        },
+       "System.Void GeneratedDemo.ExampleViewModel::set_Text(System.String)": {
+         "Lines": {
+           "15": 0,
+           "16": 0,
+           "17": 0,
+           "18": 0
+          },
+         "Branches": [
+           {
+            "Line": 17,
+            "Offset": 15,
+            "EndOffset": 37,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 2
+           },
+           {
+            "Line": 17,
+            "Offset": 15,
+            "EndOffset": 20,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 3
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 5,
+            "EL": 18,
+            "EC": 6,
+            "Offset": 37,
+            "Id": 111
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 9,
+            "EL": 17,
+            "EC": 110,
+            "Offset": 8,
+            "Id": 112
+           },
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 9,
+            "EL": 16,
+            "EC": 28,
+            "Offset": 1,
+            "Id": 113
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 5,
+            "EL": 15,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 114
+           }
+          ]
+        },
+       "System.Int32 GeneratedDemo.ExampleViewModel::get_Count()": {
+         "Lines": {
+           "25": 0,
+           "26": 0,
+           "27": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 5,
+            "EL": 27,
+            "EC": 6,
+            "Offset": 10,
+            "Id": 115
+           },
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 9,
+            "EL": 26,
+            "EC": 29,
+            "Offset": 1,
+            "Id": 116
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 5,
+            "EL": 25,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 117
+           }
+          ]
+        },
+       "System.Void GeneratedDemo.ExampleViewModel::set_Count(System.Int32)": {
+         "Lines": {
+           "30": 0,
+           "31": 0,
+           "32": 0,
+           "33": 0
+          },
+         "Branches": [
+           {
+            "Line": 32,
+            "Offset": 15,
+            "EndOffset": 37,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 4
+           },
+           {
+            "Line": 32,
+            "Offset": 15,
+            "EndOffset": 20,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 5
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 33,
+            "SC": 5,
+            "EL": 33,
+            "EC": 6,
+            "Offset": 37,
+            "Id": 118
+           },
+           {
+            "VC": 0,
+            "SL": 32,
+            "SC": 9,
+            "EL": 32,
+            "EC": 111,
+            "Offset": 8,
+            "Id": 119
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 9,
+            "EL": 31,
+            "EC": 30,
+            "Offset": 1,
+            "Id": 120
+           },
+           {
+            "VC": 0,
+            "SL": 30,
+            "SC": 5,
+            "EL": 30,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 121
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\CSharpSourceGeneratorSamples\\SourceGeneratorSamples.HelloWorldGenerator\\helloWorldGenerated.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "xZXNatwwEMfvC/sO6p4SSA1tLyUh0MVbkkIaCk6bHgSLrJ1dq0gaoRm7MSVP1kMfqa9QrffDSTeQQ2BXl7Gk/8xvJM/Yf3//GQ5qMn4hipYY3Nlw4JUDCkqDuARr8RajnV2Ah6gYZsPBr\u002BFApBHq0hotiBUno60ieqBfadbSXXmDZiYK1XYOR8ei1z1wWY4cPaGF7DYahivj4WjU\u002BYh5RCcWm6yExhm8Gh2fPet9U4GYY4rwc3lmaj2rO8ERgATcGVrGMl5wUml0wdiULi7nioWO0LG4MiRCxEVU7rRj7nI\u002BjMRrkZ/KrwSRZArbgJygrh14Jnlh\u002BLIupbKssYEoC\u002BWCBVrbt\u002B/l9ron4FB\u002BWbEyTfugpSDjmvEa2czb9RbG/cFzag5A3Sn1fcI/K67oENw69aOu4ADo784WwJyacO8Hx/KHnEBZL6SH5JG6OoR32RuZXX\u002B8ydN0HMLJt8RJjX/epI1sTASutO2YOZqyZqADZ5oXlYrhkXab5Cc/x\u002BfS69wLrKPuX/0mlf9q8fFUTqfLhStTRhXb6fRFoHXxZTtVuN1KMOP7W38Z7\u002Bnl7IlvnezXtvANuf/B3K8ek7n/Bw==": {
+         "Lines": {
+},
+         "Branches": []
+        }
+      },
+     "HelloWorldGenerated.HelloWorld": {
+       "System.Void HelloWorldGenerated.HelloWorld::SayHello()": {
+         "Lines": {
+           "8": 0,
+           "9": 0,
+           "10": 0,
+           "11": 0,
+           "12": 0,
+           "13": 0,
+           "14": 0,
+           "15": 0,
+           "16": 0,
+           "17": 0,
+           "18": 0,
+           "19": 0,
+           "20": 0,
+           "21": 0,
+           "22": 0,
+           "24": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 9,
+            "EL": 24,
+            "EC": 10,
+            "Offset": 155,
+            "Id": 2
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 1,
+            "EL": 22,
+            "EC": 121,
+            "Offset": 144,
+            "Id": 3
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 1,
+            "EL": 21,
+            "EC": 111,
+            "Offset": 133,
+            "Id": 4
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 1,
+            "EL": 20,
+            "EC": 104,
+            "Offset": 122,
+            "Id": 5
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 1,
+            "EL": 19,
+            "EC": 158,
+            "Offset": 111,
+            "Id": 6
+           },
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 1,
+            "EL": 18,
+            "EC": 169,
+            "Offset": 100,
+            "Id": 7
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 1,
+            "EL": 17,
+            "EC": 125,
+            "Offset": 89,
+            "Id": 8
+           },
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 1,
+            "EL": 16,
+            "EC": 122,
+            "Offset": 78,
+            "Id": 9
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 1,
+            "EL": 15,
+            "EC": 119,
+            "Offset": 67,
+            "Id": 10
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 1,
+            "EL": 14,
+            "EC": 124,
+            "Offset": 56,
+            "Id": 11
+           },
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 1,
+            "EL": 13,
+            "EC": 117,
+            "Offset": 45,
+            "Id": 12
+           },
+           {
+            "VC": 0,
+            "SL": 12,
+            "SC": 1,
+            "EL": 12,
+            "EC": 124,
+            "Offset": 34,
+            "Id": 13
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 1,
+            "EL": 11,
+            "EC": 109,
+            "Offset": 23,
+            "Id": 14
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 13,
+            "EL": 10,
+            "EC": 115,
+            "Offset": 12,
+            "Id": 15
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 13,
+            "EL": 9,
+            "EC": 61,
+            "Offset": 1,
+            "Id": 16
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 9,
+            "EL": 8,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 17
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\Program.cs": {
+     "GeneratedDemo.Program": {
+       "System.Void GeneratedDemo.Program::Main(System.String[])": {
+         "Lines": {
+           "8": 0,
+           "10": 0,
+           "11": 0,
+           "13": 0,
+           "14": 0,
+           "16": 0,
+           "17": 0,
+           "19": 0,
+           "20": 0,
+           "22": 0,
+           "23": 0,
+           "25": 0,
+           "26": 0,
+           "27": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 9,
+            "EL": 27,
+            "EC": 10,
+            "Offset": 103,
+            "Id": 94
+           },
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 13,
+            "EL": 26,
+            "EC": 37,
+            "Offset": 97,
+            "Id": 95
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 13,
+            "EL": 25,
+            "EC": 64,
+            "Offset": 86,
+            "Id": 96
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 13,
+            "EL": 23,
+            "EC": 40,
+            "Offset": 80,
+            "Id": 97
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 13,
+            "EL": 22,
+            "EC": 67,
+            "Offset": 69,
+            "Id": 98
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 13,
+            "EL": 20,
+            "EC": 35,
+            "Offset": 63,
+            "Id": 99
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 13,
+            "EL": 19,
+            "EC": 62,
+            "Offset": 52,
+            "Id": 100
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 13,
+            "EL": 17,
+            "EC": 43,
+            "Offset": 46,
+            "Id": 101
+           },
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 13,
+            "EL": 16,
+            "EC": 61,
+            "Offset": 35,
+            "Id": 102
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 13,
+            "EL": 14,
+            "EC": 42,
+            "Offset": 29,
+            "Id": 103
+           },
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 13,
+            "EL": 13,
+            "EC": 60,
+            "Offset": 18,
+            "Id": 104
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 13,
+            "EL": 11,
+            "EC": 42,
+            "Offset": 12,
+            "Id": 105
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 13,
+            "EL": 10,
+            "EC": 56,
+            "Offset": 1,
+            "Id": 106
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 9,
+            "EL": 8,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 107
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\UseAutoNotifyGenerator.cs": {
+     "GeneratedDemo.ExampleViewModel": {
+       "System.Void GeneratedDemo.ExampleViewModel::.ctor()": {
+         "Lines": {
+           "10": 0,
+           "13": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 9,
+            "EL": 13,
+            "EC": 33,
+            "Offset": 11,
+            "Id": 122
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 9,
+            "EL": 10,
+            "EC": 53,
+            "Offset": 0,
+            "Id": 123
+           }
+          ]
+        }
+      },
+     "GeneratedDemo.UseAutoNotifyGenerator": {
+       "System.Void GeneratedDemo.UseAutoNotifyGenerator::Run()": {
+         "Lines": {
+           "19": 0,
+           "20": 0,
+           "23": 0,
+           "24": 0,
+           "27": 0,
+           "28": 0,
+           "31": 0,
+           "32": 0,
+           "33": 0,
+           "37": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 37,
+            "SC": 9,
+            "EL": 37,
+            "EC": 10,
+            "Offset": 119,
+            "Id": 124
+           },
+           {
+            "VC": 0,
+            "SL": 33,
+            "SC": 13,
+            "EL": 33,
+            "EC": 28,
+            "Offset": 110,
+            "Id": 125
+           },
+           {
+            "VC": 0,
+            "SL": 32,
+            "SC": 13,
+            "EL": 32,
+            "EC": 29,
+            "Offset": 98,
+            "Id": 126
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 13,
+            "EL": 31,
+            "EC": 105,
+            "Offset": 60,
+            "Id": 127
+           },
+           {
+            "VC": 0,
+            "SL": 28,
+            "SC": 13,
+            "EL": 28,
+            "EC": 51,
+            "Offset": 38,
+            "Id": 128
+           },
+           {
+            "VC": 0,
+            "SL": 27,
+            "SC": 13,
+            "EL": 27,
+            "EC": 34,
+            "Offset": 31,
+            "Id": 129
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 13,
+            "EL": 24,
+            "EC": 49,
+            "Offset": 14,
+            "Id": 130
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 13,
+            "EL": 23,
+            "EC": 35,
+            "Offset": 7,
+            "Id": 131
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 13,
+            "EL": 20,
+            "EC": 58,
+            "Offset": 1,
+            "Id": 132
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 9,
+            "EL": 19,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 133
+           },
+           {
+            "VC": 0,
+            "SL": 31,
+            "SC": 45,
+            "EL": 31,
+            "EC": 104,
+            "Offset": 0,
+            "Id": 134
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\UseCsvGenerator.cs": {
+     "GeneratedDemo.UseCsvGenerator": {
+       "System.Void GeneratedDemo.UseCsvGenerator::Run()": {
+         "Lines": {
+           "13": 0,
+           "14": 0,
+           "15": 0,
+           "16": 0,
+           "17": 0,
+           "18": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 9,
+            "EL": 18,
+            "EC": 10,
+            "Offset": 117,
+            "Id": 135
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 12,
+            "EL": 17,
+            "EC": 94,
+            "Offset": 70,
+            "Id": 136
+           },
+           {
+            "VC": 0,
+            "SL": 16,
+            "SC": 12,
+            "EL": 16,
+            "EC": 37,
+            "Offset": 59,
+            "Id": 137
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 12,
+            "EL": 15,
+            "EC": 97,
+            "Offset": 12,
+            "Id": 138
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 12,
+            "EL": 14,
+            "EC": 33,
+            "Offset": 1,
+            "Id": 139
+           },
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 9,
+            "EL": 13,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 140
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 43,
+            "EL": 15,
+            "EC": 95,
+            "Offset": 0,
+            "Id": 141
+           },
+           {
+            "VC": 0,
+            "SL": 17,
+            "SC": 45,
+            "EL": 17,
+            "EC": 92,
+            "Offset": 0,
+            "Id": 142
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\UseHelloWorldGenerator.cs": {
+     "GeneratedDemo.UseHelloWorldGenerator": {
+       "System.Void GeneratedDemo.UseHelloWorldGenerator::Run()": {
+         "Lines": {
+           "6": 0,
+           "8": 0,
+           "9": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 9,
+            "EL": 9,
+            "EC": 10,
+            "Offset": 7,
+            "Id": 143
+           },
+           {
+            "VC": 0,
+            "SL": 8,
+            "SC": 13,
+            "EL": 8,
+            "EC": 55,
+            "Offset": 1,
+            "Id": 144
+           },
+           {
+            "VC": 0,
+            "SL": 6,
+            "SC": 9,
+            "EL": 6,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 145
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\UseMathsGenerator.cs": {
+     "GeneratedDemo.UseMathsGenerator": {
+       "System.Void GeneratedDemo.UseMathsGenerator::Run()": {
+         "Lines": {
+           "9": 0,
+           "10": 0,
+           "11": 0,
+           "12": 0,
+           "13": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 13,
+            "SC": 9,
+            "EL": 13,
+            "EC": 10,
+            "Offset": 115,
+            "Id": 146
+           },
+           {
+            "VC": 0,
+            "SL": 12,
+            "SC": 13,
+            "EL": 12,
+            "EC": 74,
+            "Offset": 80,
+            "Id": 147
+           },
+           {
+            "VC": 0,
+            "SL": 11,
+            "SC": 13,
+            "EL": 11,
+            "EC": 83,
+            "Offset": 45,
+            "Id": 148
+           },
+           {
+            "VC": 0,
+            "SL": 10,
+            "SC": 13,
+            "EL": 10,
+            "EC": 95,
+            "Offset": 1,
+            "Id": 149
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 9,
+            "EL": 9,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 150
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\UseMustacheGenerator.cs": {
+     "GeneratedDemo.UseMustacheGenerator": {
+       "System.Void GeneratedDemo.UseMustacheGenerator::Run()": {
+         "Lines": {
+           "20": 0,
+           "21": 0,
+           "22": 0,
+           "23": 0,
+           "24": 0,
+           "25": 0,
+           "26": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 26,
+            "SC": 9,
+            "EL": 26,
+            "EC": 10,
+            "Offset": 56,
+            "Id": 151
+           },
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 13,
+            "EL": 25,
+            "EC": 57,
+            "Offset": 45,
+            "Id": 152
+           },
+           {
+            "VC": 0,
+            "SL": 24,
+            "SC": 13,
+            "EL": 24,
+            "EC": 51,
+            "Offset": 34,
+            "Id": 153
+           },
+           {
+            "VC": 0,
+            "SL": 23,
+            "SC": 13,
+            "EL": 23,
+            "EC": 48,
+            "Offset": 23,
+            "Id": 154
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 13,
+            "EL": 22,
+            "EC": 46,
+            "Offset": 12,
+            "Id": 155
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 13,
+            "EL": 21,
+            "EC": 51,
+            "Offset": 1,
+            "Id": 156
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 9,
+            "EL": 20,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 157
+           }
+          ]
+        }
+      }
+    },
+   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample28\\GeneratedDemo\\UseXmlSettingsGenerator.cs": {
+     "GeneratedDemo.UseXmlSettingsGenerator": {
+       "System.Void GeneratedDemo.UseXmlSettingsGenerator::Run()": {
+         "Lines": {
+           "9": 0,
+           "14": 0,
+           "15": 0,
+           "18": 0,
+           "19": 0,
+           "21": 0,
+           "22": 0,
+           "25": 0
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 25,
+            "SC": 9,
+            "EL": 25,
+            "EC": 10,
+            "Offset": 95,
+            "Id": 158
+           },
+           {
+            "VC": 0,
+            "SL": 22,
+            "SC": 13,
+            "EL": 22,
+            "EC": 67,
+            "Offset": 73,
+            "Id": 159
+           },
+           {
+            "VC": 0,
+            "SL": 21,
+            "SC": 13,
+            "EL": 21,
+            "EC": 56,
+            "Offset": 62,
+            "Id": 160
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 13,
+            "EL": 19,
+            "EC": 65,
+            "Offset": 40,
+            "Id": 161
+           },
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 13,
+            "EL": 18,
+            "EC": 55,
+            "Offset": 29,
+            "Id": 162
+           },
+           {
+            "VC": 0,
+            "SL": 15,
+            "SC": 13,
+            "EL": 15,
+            "EC": 78,
+            "Offset": 7,
+            "Id": 163
+           },
+           {
+            "VC": 0,
+            "SL": 14,
+            "SC": 13,
+            "EL": 14,
+            "EC": 62,
+            "Offset": 1,
+            "Id": 164
+           },
+           {
+            "VC": 0,
+            "SL": 9,
+            "SC": 9,
+            "EL": 9,
+            "EC": 10,
+            "Offset": 0,
+            "Id": 165
+           }
+          ]
+        }
+      }
+    }
+  }
+}
