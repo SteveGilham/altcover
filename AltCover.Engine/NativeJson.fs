@@ -1050,10 +1050,17 @@ module
                XAttribute(XName.Get "fullPath", name)
              )
 
+           kvp.Value
+           |> Seq.tryFind(fun kvp -> kvp.Key = "\u00ABAltCover.embed\u00BB")
+           |> Option.map (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
+           |> Option.flatten
+           |> Option.iter (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
+
            files.Add item
            classesToXml i classTable kvp.Value)
 
     classTable
+    |> Seq.filter (fun kvp -> kvp.Key |> Seq.head <> '\u00AB')
     |> Seq.iter (fun kvp -> classes.Add kvp.Value)
 
     summarize sd m "Method"
