@@ -692,9 +692,12 @@ module
           >> append (slugs.[9])
           >> appendLine ("\"SeqPnts\": ["))
          id
-    |> newLine
-    |> append (slugs.[10])
-    |> append ("]")
+    |> if Seq.isEmpty method.SeqPnts
+       then id
+       else
+         newLine
+         >> append (slugs.[10])
+         >> append ("]")
 
     // After SeqPnts, now Tracking
     |> methodTrackingToBuilder method
