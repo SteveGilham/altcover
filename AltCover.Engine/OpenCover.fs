@@ -159,15 +159,14 @@ module internal OpenCover =
             |> ProgramDatabase.getModuleDocuments
             |> Seq.fold (fun f d -> let key = d.Url
                                               |> Visitor.sourceLinkMapping
+                                    let map = snd f
 
                                     let embed = d.CustomDebugInformations
                                                 |> Seq.tryFind (fun c -> c.Kind = Cil.CustomDebugInformationKind.EmbeddedSource)
-                                                |> Option.map (fun c -> let src = Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation)
-                                                                        let updater = Maybe (src |> String.IsNullOrEmpty)
-                                                                                            id // TODO uncovered -- refactor to Option??
-                                                                                            (Map.add key src)
-                                                                        updater (snd f))
-                                                |> Option.defaultValue (snd f)
+                                                |> Option.map (fun c -> Metadata.getCompressedSource (c :?> Cil.EmbeddedSourceDebugInformation))
+                                                |> Option.filter (String.IsNullOrEmpty >> not)
+                                                |> Option.map (fun s -> Map.add key s map)
+                                                |> Option.defaultValue map
 
                                     (key
                                      |> recordFile (fst f)
