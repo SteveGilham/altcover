@@ -1169,6 +1169,9 @@ module
 #if RUNNER
   // Instrumentation ---------------------------------------------------------
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let injectEmbed (c:Classes) (embed:string) =
     if embed |> String.IsNullOrWhiteSpace |> not then
       let dummy = Method.Create(None)

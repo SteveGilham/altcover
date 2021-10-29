@@ -1,7 +1,7 @@
 ﻿namespace AltCover
 
 open System
-open System.Globalization
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
 
@@ -25,6 +25,9 @@ module internal Metadata =
     let data = datamake embed.Content
     Convert.ToBase64String data
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal getSource (record:Document) =
     record.CustomDebugInformations
     |> Seq.tryFind (fun c -> c.Kind = CustomDebugInformationKind.EmbeddedSource)
