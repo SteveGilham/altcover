@@ -623,7 +623,7 @@ module internal Visitor =
              (fun x ->
                x.CustomDebugInformations
                |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
-        |> Option.bind id
+        |> Option.flatten
         |> Option.map
              (fun i ->
                let c =
