@@ -264,6 +264,44 @@ module FSApiTests =
         .Trim([| '\u00FF' |]) @>
 
   [<Test>]
+  let OpenCoverWithPartialsToJson () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+
+    let doc = XDocument.Load(stream)
+
+    let result = CoverageFormats.ConvertToJson doc
+    printfn "%s" result
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.JsonWithPartials.json")
+
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    printfn "%s" result
+    Assert.That(result
+                  .Replace('\r','\u00FF').Replace('\n','\u00FF')
+                  .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+                  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+                                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test
+      <@ result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) = expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) @>
+
+  [<Test>]
   let NCoverToJson () =
     use stream =
       Assembly
