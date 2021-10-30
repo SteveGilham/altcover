@@ -2,6 +2,15 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.82x (Habu series release 8)
+* Absorb .net 6 release into build tooling (awaiting an updated release of `fake.build` to be able to upgrade to F# 6)
+* Where the debug symbols used in the instrumentation contain embedded source, represent that within the generated report --
+  * for OpenCover format, as an `altcover.embed` attribute added to the `File` element
+  * for NCover classic, `altcover.file` elements are added after the `method` records in a `module`, with attributes `document` and `embed`
+  * and for the extended coverlet JSON format, as a type `«AltCover.embed»` with an empty method with name being the embedded text.
+* Support these format extensions in conversions between those formats -- conversion to other formats like Lcov and Cobertura lose this information
+* [VISUALIZER] Support these formats for display, using the embedded source in preference to the file system whenever present
+
 # 8.2.825 (Habu series release 7)
 * Next release will be post .net 6 release to accomodate its impact, barring show-stoppers
 * [BUGFIX] As noted in [Q&A discussion (#107)](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies, and in [issue #47](https://github.com/SteveGilham/altcover/issues/47#issuecomment-461838463)  platform specific library subfolders, were not being copied appropriately relative to the instrumented location; this is now resolved.
