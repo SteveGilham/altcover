@@ -3,7 +3,7 @@
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 8.2.82x (Habu series release 8)
-* Absorb .net 6 release into build tooling (awaiting an updated release of `fake.build` to be able to upgrade to F# 6)
+* Absorb .net 6 release into build tooling (awaiting an updated release of (`fake.build`)[https://fake.build/] to be able to upgrade to F# 6)
 * Where the debug symbols used in the instrumentation contain embedded source, represent that within the generated report --
   * for OpenCover format, as an `altcover.embed` attribute added to the `File` element
   * for NCover classic, `altcover.file` elements are added after the `method` records in a `module`, with attributes `document` and `embed`
