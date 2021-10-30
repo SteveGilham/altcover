@@ -504,6 +504,50 @@ module FSApiTests =
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
   [<Test>]
+  let OpenCoverWithPartialsToNCover () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+
+    let doc = XDocument.Load stream
+    use mstream = new MemoryStream()
+    let rewrite = CoverageFormats.ConvertToNCover doc
+    rewrite.Save mstream
+
+    use mstream2 =
+      new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+
+    use rdr = new StreamReader(mstream2)
+
+    let result =
+      rdr.ReadToEnd().Replace("\r", String.Empty)
+
+    use stream2 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
+
+    use rdr2 = new StreamReader(stream2)
+
+    let time =
+      (rewrite.Descendants(XName.Get "coverage")
+       |> Seq.head)
+        .Attribute(
+        XName.Get "startTime"
+      )
+        .Value
+
+    let expected =
+      rdr2
+        .ReadToEnd()
+        .Replace("{0}", time)
+        .Replace("utf-16", "utf-8")
+        .Replace("\r", String.Empty)
+
+    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+
+  [<Test>]
   let OpenCoverFromNCover () =
     let sample = typeof<M.Thing>.Assembly.Location
     let reporter, doc = AltCover.Report.reportGenerator ()
