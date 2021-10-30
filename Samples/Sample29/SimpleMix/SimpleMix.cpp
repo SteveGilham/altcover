@@ -35,5 +35,15 @@ public:
 
 int main(array<System::String^>^ args)
 {
-  return Example::main(args);
+  if (! Example::main(args))
+  {
+     String^ str = "Text to be hashed";
+     Console::WriteLine(str);
+    pin_ptr<Char> p =
+      const_cast<interior_ptr<Char>> (
+        PtrToStringChars(str));
+    Console::WriteLine(NativeCountVowels(p));
+
+    return 0;
+  }
 }
