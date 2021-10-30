@@ -3311,8 +3311,6 @@ module AltCoverTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNet () =
     let visitor, document = Report.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = sample1path
 
     try
@@ -3351,8 +3349,6 @@ module AltCoverTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportWithEmbeds () =
     let visitor, document = Report.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
 
     try
@@ -3379,6 +3375,64 @@ module AltCoverTests =
       let prev = lead.PreviousNode :?> XElement
       Assert.That(prev, Is.Not.Null)
       Assert.That(prev.Name, Is.EqualTo ("method".X))
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithPartials () =
+    let visitor, document = Report.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      //printfn "%A" (makeDocument document)
+      let results = (makeDocument document)
+      let methods = results.Descendants("method".X)
+                   |> Seq.toList
+      let classes = methods
+                    |> List.groupBy (fun x -> x.Attribute("class".X).Value)
+      let documents = classes
+                      |> List.map (fun (n,ml) -> n, ml
+                                                    |> Seq.map (fun m -> m.Descendants("seqpnt".X)
+                                                                         |> Seq.map (fun s -> s.Attribute("document".X).Value)
+                                                                         |> Seq.distinct
+                                                                         |> Seq.toList))
+      let classdocs = documents
+                      |> List.map (fun (n,dl) -> (n, dl
+                                                     |> Seq.concat
+                                                     |> Seq.distinct
+                                                     |> Seq.toList))
+      let classcount = classdocs
+                       |> List.map (fun (n,dl) -> (n, dl |> List.length))
+                       |> List.sortBy fst
+
+      // printfn "%A" classcount
+
+      // snd > 1 => partial class at least
+      test <@ classcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 10);
+                            ("Example", 2)] @>
+
+      let mcount = documents
+                   |> List.map (fun (n,ml) -> (n, ml |> Seq.maxBy List.length |> List.length))
+                   |> List.sortBy fst
+
+      // snd > 1 => inlined method at least
+      test <@ mcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 2);
+                            ("Example", 2)] @>
 
     finally
       CoverageParameters.nameFilters.Clear()
