@@ -49,7 +49,9 @@ namespace AutoNotify
             INamedTypeSymbol notifySymbol = context.Compilation.GetTypeByMetadataName("System.ComponentModel.INotifyPropertyChanged");
 
             // group the fields by class, and generate the source
+#pragma warning disable RS1024 // Compare symbols correctly
             foreach (IGrouping<INamedTypeSymbol, IFieldSymbol> group in receiver.Fields.GroupBy(f => f.ContainingType))
+#pragma warning restore RS1024 // Compare symbols correctly
             {
                 string classSource = ProcessClass(group.Key, group.ToList(), attributeSymbol, notifySymbol, context);
                context.AddSource($"{group.Key.Name}_autoNotify.cs", SourceText.From(classSource, Encoding.UTF8));
@@ -74,7 +76,9 @@ namespace {namespaceName}
 ");
 
             // if the class doesn't implement INotifyPropertyChanged already, add it
+#pragma warning disable RS1024 // Compare symbols correctly
             if (!classSymbol.Interfaces.Contains(notifySymbol))
+#pragma warning restore RS1024 // Compare symbols correctly
             {
                 source.Append("public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;");
             }

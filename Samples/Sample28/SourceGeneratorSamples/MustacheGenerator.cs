@@ -37,7 +37,7 @@ namespace Mustache
         private static string SourceFileFromMustachePath(string name, string template, string hash)
         {
             var tree = HandlebarsDotNet.Handlebars.Compile(template);
-            object @object = Newtonsoft.Json.JsonConvert.DeserializeObject(hash);
+            object? @object = Newtonsoft.Json.JsonConvert.DeserializeObject(hash);
             string mustacheText = tree(@object).ToString();
 
             StringBuilder sb = new StringBuilder();
