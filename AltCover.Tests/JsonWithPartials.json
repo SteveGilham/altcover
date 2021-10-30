@@ -1,7 +1,123 @@
 {
  "SimpleMix.exe": {
-   "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h":{
+   "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include\\vcclr.h": {
+     "\u003CModule\u003E": {
+       "System.Int32 \u003CModule\u003E::main(System.String[])": {
+         "Lines": {
+           "41": 0,
+           "42": 0,
+           "43": 0
+          },
+         "Branches": [
+           {
+            "Line": 42,
+            "Offset": 23,
+            "EndOffset": 25,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 2
            },
+           {
+            "Line": 42,
+            "Offset": 23,
+            "EndOffset": 33,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 3
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 43,
+            "SC": 0,
+            "EL": 43,
+            "EC": 0,
+            "Offset": 25,
+            "Id": 4
+           },
+           {
+            "VC": 0,
+            "SL": 42,
+            "SC": 0,
+            "EL": 42,
+            "EC": 0,
+            "Offset": 22,
+            "Id": 5
+           },
+           {
+            "VC": 0,
+            "SL": 41,
+            "SC": 0,
+            "EL": 41,
+            "EC": 0,
+            "Offset": 20,
+            "Id": 6
+           }
+          ]
+        }
+      },
+     "Example": {
+       "System.Int32 Example::main(System.String[])": {
+         "Lines": {
+           "41": 0,
+           "42": 0,
+           "43": 0
+          },
+         "Branches": [
+           {
+            "Line": 42,
+            "Offset": 15,
+            "EndOffset": 17,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 0,
+            "Id": 148
+           },
+           {
+            "Line": 42,
+            "Offset": 15,
+            "EndOffset": 25,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 149
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 0,
+            "SL": 43,
+            "SC": 0,
+            "EL": 43,
+            "EC": 0,
+            "Offset": 17,
+            "Id": 449
+           },
+           {
+            "VC": 0,
+            "SL": 42,
+            "SC": 0,
+            "EL": 42,
+            "EC": 0,
+            "Offset": 14,
+            "Id": 450
+           },
+           {
+            "VC": 0,
+            "SL": 41,
+            "SC": 0,
+            "EL": 41,
+            "EC": 0,
+            "Offset": 12,
+            "Id": 451
+           }
+          ]
+        }
+      }
+    },
    "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample29\\SimpleMix\\SimpleMix.cpp": {
      "\u00ABAltCover.embed\u00BB": {
        "1ZJBb9swDIXvBvwfOO9iN0Xas5sGGIweCgTb0HbbrQGrMLEGWxIouUlR5L\u002BPlpKmwDCg11104Ht8Ij/p4gKaxV2DXUc8Vc5BDT1qA47tb1IB1rqjaZ7l2WdtVDesCAofVrjeTdsilh3jpkcYTI8GN7TKM20CfMWgn6mxgwk/7ZY6X25Vi7wMZ\u002BDuA2uzqfLsNc8ARrcafXANl1djRVnjA7z5n2O/qIsCSdvhy83ttx9FdG5bmQ7Ks1MkQAyV2DXIlV61XKaAczjaJpOqSiZIN08mMW0/HkxhYJPqUt2fNnzbL88GLzFgsCfvUBHcv/hA/dUoMa1Bdeg93OywdzKeDOSGp06resz3QciouPXIuURmfJmlgLpOAz7OHwF549/vc1CknwVF8UC7AMHCE0GLvqVVAgLQCDzbUV3/Yh1ooQ2V0lIdVKfN0gWeNcJ2Dg6uTxyE\u002BVKhDzMZjVhbPhnnUB59AN8DP9g0zSj6GF/9\u002B/a/f4KL9tRwwH15fIB9VD5KJ30geelPR9p1fegT/T2\u002BD/P77wH\u002BAQ==": {
