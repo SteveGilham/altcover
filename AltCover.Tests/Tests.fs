@@ -3348,6 +3348,42 @@ module AltCoverTests =
     finally
       CoverageParameters.nameFilters.Clear()
 
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithEmbeds () =
+    let visitor, document = Report.reportGenerator ()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      //printfn "%A" (makeDocument document)
+      let results = (makeDocument document).Descendants("altcover.file".X)
+                   |> Seq.toList
+      Assert.That (results |> List.length, Is.EqualTo 9)
+      results
+      |> Seq.iter (fun x -> let doc = x.Attribute("document".X)
+                            Assert.That (doc, Is.Not.Null, x.ToString())
+                            let path = doc.Value
+                            Assert.That(path |> File.Exists, Is.False, path))
+
+      let lead = results |> Seq.head
+      let prev = lead.PreviousNode :?> XElement
+      Assert.That(prev, Is.Not.Null)
+      Assert.That(prev.Name, Is.EqualTo ("method".X))
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
   let internal makeJson (f: Stream -> unit) =
     use stash = new MemoryStream()
     stash |> f
@@ -3428,6 +3464,43 @@ module AltCoverTests =
       )
     finally
       CoverageParameters.trackingNames.Clear()
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedJsonReportWithEmbeds () =
+    let visitor, document = OpenCover.reportGenerator ()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+      let visitor, document = Main.I.selectReportGenerator ()
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let result = makeJson document
+      //printfn "%A" result
+      let json = NativeJson.fromJsonText result
+      Assert.That (json.Count, Is.EqualTo 1)
+      Assert.That (json.["CSharpGeneratedDemo.dll"].Count, Is.EqualTo 16)
+      let dict = json.["CSharpGeneratedDemo.dll"]
+      let embeds = dict.Keys
+                   |> Seq.map (fun k -> let file = k |> File.Exists |> not
+                                        let embed = dict.[k].ContainsKey "\u00ABAltCover.embed\u00BB"
+                                        Assert.That (file, Is.EqualTo embed, k)
+                                        if file then 1 else 0)
+                   |> Seq.toList
+
+      test <@ embeds = [1; 1; 1; 1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0; 0; 0] @>
+
+    finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -4382,6 +4455,43 @@ module AltCoverTests =
       let result = (makeDocument document).Elements()
       let expected = baseline.Elements()
       recursiveValidateOpenCover result expected 0 true false
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle () =
+    let visitor, document = OpenCover.reportGenerator ()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let expected = [1; 1; 1; 1; 1; 1; 1; 1; 0; 1; 0; 0; 0; 0; 0; 0]
+      //printfn "%A" (makeDocument document)
+      let result = (makeDocument document).Descendants("File".X)
+                   |> Seq.map(fun f -> if f.Attribute("fullPath".X).Value |> File.Exists |> not
+                                       then 1 else 0)
+                   |> Seq.toList
+      // Generated source does not exist at the specified path -- a check on the MSFT inputs
+      test <@ result = expected @>
+
+      // but we should have picked up the embedded source
+      let embeds = (makeDocument document).Descendants("File".X)
+                   |> Seq.map (fun f -> if f.Attribute("altcover.embed".X).IsNotNull
+                                         then 1 else 0)
+                   |> Seq.toList
+      test <@ embeds = expected  @>
+
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None

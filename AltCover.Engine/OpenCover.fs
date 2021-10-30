@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Xml.Linq
 
@@ -23,6 +24,7 @@ type internal OpenCoverContext =
   { Stack: XElement list
     Excluded: Exclusion
     Files: Map<string, int>
+    Embeds: Map<string, string>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -43,6 +45,7 @@ type internal OpenCoverContext =
     { Stack = List.empty<XElement>
       Excluded = Nothing
       Files = Map.empty<string, int>
+      Embeds = Map.empty<string, string>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -149,16 +152,25 @@ module internal OpenCover =
       element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc def.FileName))
       element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
 
-      let files =
+      let (files, embeds) =
           if instrumented then
             element.Add(XElement("Files".X))
             def
             |> ProgramDatabase.getModuleDocuments
-            |> Seq.fold (fun f d -> d.Url
-                                    |> Visitor.sourceLinkMapping
-                                    |> recordFile f
-                                    |> fst) s.Files
-           else s.Files
+            |> Seq.fold (fun f d -> let key = d.Url
+                                              |> Visitor.sourceLinkMapping
+                                    let map = snd f
+
+                                    let embed = d
+                                                |> Metadata.getSource
+                                                |> Option.map (fun s -> Map.add key s map)
+                                                |> Option.defaultValue map
+
+                                    (key
+                                     |> recordFile (fst f)
+                                     |> fst,
+                                     embed)) (s.Files, s.Embeds)
+           else (s.Files, s.Embeds)
 
       let classes = XElement("Classes".X)
       element.Add(classes)
@@ -172,6 +184,7 @@ module internal OpenCover =
           Stack = classes :: s.Stack
           Excluded = Nothing
           Files = files
+          Embeds = embeds
           ModuleSeq = 0
           ModuleBr = 0
           ModuleMethods = 0
@@ -295,7 +308,7 @@ module internal OpenCover =
 
     let visitCodeSegment (s: OpenCoverContext) (codeSegment: SeqPnt) i vc =
       let fileset, ref =
-        recordFile s.Files (codeSegment.Document |> Visitor.sourceLinkMapping)
+        recordFile s.Files (codeSegment.Document.Url |> Visitor.sourceLinkMapping)
 
       let element = methodPointElement codeSegment ref i vc
       let head = s.Stack |> Seq.head
@@ -632,13 +645,15 @@ module internal OpenCover =
              files
              |> Seq.iter
                   (fun f ->
-                    f.Add(
+                    let file =
                       XElement(
                         "File".X,
                         XAttribute("uid".X, v),
                         XAttribute("fullPath".X, k)
                       )
-                    )))
+                    f.Add(file)
+                    if s.Embeds.ContainsKey k
+                    then file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
 
       { s with
           Stack = tail

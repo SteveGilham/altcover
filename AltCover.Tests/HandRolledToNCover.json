@@ -1,0 +1,157 @@
+{
+ "Sample1.exe": {
+   "altcover/Sample1/Program.cs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "hU9NS8NAED0nkP/wzKnVkgavRT3Uk6gIDRQRD2ucJkuTnTC7SQjS/\u002B5mq\u002BDNwwzDvI9501ttKuwm66jdJHESr9dwZB064UpUGxYHFgh1LA4VGRLlNJuZbFRLtlMloeC\u002BrAsvTOKvJI60cSRGNSgbZS1efs2iGYw60YNyBOu8U4mB9SeelDYL68THeXuHksouZ2rgR4MSGB5xg3uvK3RL2TOPm4DpAxYey17Jk25xned5UP5Ioy0byw1le9GOHrWhRbqvSQjaop0gXB7Jv6vK4x1SXGEXMmQP7POkl\u002BnqnGV5PnYKnRpL/5woRjJOk6ux9UMv0wofPF2kf33m5uv0DQ==": {
+         "Lines": {},
+         "Branches": []
+        }
+      },
+     "TouchTest.Program": {
+       "ReturnType1 TouchTest.Program::Main(Argument List1)": {
+         "Lines": {
+           "11": 1,
+           "12": 1,
+           "13": 1,
+           "14": 1,
+           "15": 1,
+           "16": 1,
+           "18": 0,
+           "19": 0,
+           "20": 0,
+           "21": 1
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 11,
+            "SC": 3,
+            "EL": 11,
+            "EC": 4,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 12,
+            "SC": 23,
+            "EL": 12,
+            "EC": 24,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 13,
+            "SC": 4,
+            "EL": 13,
+            "EC": 5,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 13,
+            "SC": 12,
+            "EL": 13,
+            "EC": 13,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 14,
+            "SC": 4,
+            "EL": 14,
+            "EC": 5,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 15,
+            "SC": 5,
+            "EL": 15,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 15,
+            "SC": 60,
+            "EL": 15,
+            "EC": 61,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 15,
+            "SC": 13,
+            "EL": 15,
+            "EC": 14,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 16,
+            "SC": 4,
+            "EL": 16,
+            "EC": 5,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 18,
+            "SC": 4,
+            "EL": 18,
+            "EC": 5,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 5,
+            "EL": 19,
+            "EC": 6,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 19,
+            "SC": 13,
+            "EL": 19,
+            "EC": 14,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 0,
+            "SL": 20,
+            "SC": 4,
+            "EL": 20,
+            "EC": 5,
+            "Offset": 0,
+            "Id": 0
+           },
+           {
+            "VC": 1,
+            "SL": 21,
+            "SC": 3,
+            "EL": 21,
+            "EC": 4,
+            "Offset": 0,
+            "Id": 0
+           }
+          ]
+        }
+      }
+    }
+  }
+}

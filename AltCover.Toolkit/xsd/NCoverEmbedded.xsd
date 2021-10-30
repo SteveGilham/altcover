@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:element name="coverage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="module" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="method" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                      <xs:element name="seqpnt">
+                        <xs:complexType>
+                          <xs:attribute name="visitcount" type="xs:integer" use="required" />
+                          <xs:attribute name="line" type="xs:integer" use="required" />
+                          <xs:attribute name="column" type="xs:integer" use="required" />
+                          <xs:attribute name="endline" type="xs:integer" use="required" />
+                          <xs:attribute name="endcolumn" type="xs:integer" use="required" />
+                          <xs:attribute name="excluded" type="xs:boolean" use="required" />
+                          <xs:attribute name="document" type="xs:string" use="required" />
+                          <xs:attribute name="excluded-because" type="xs:string" use="optional" />
+                          <xs:attribute name="tag" type="xs:integer" use="optional" />
+                          <xs:anyAttribute processContents="skip" />
+                        </xs:complexType>
+                      </xs:element>
+                      <xs:element name="branch">
+                        <xs:complexType>
+                          <xs:attribute name="visitcount" type="xs:integer" use="required" />
+                          <xs:attribute name="path" type="xs:integer" use="required" />
+                          <xs:attribute name="offset" type="xs:integer" use="optional" />
+                          <xs:anyAttribute processContents="skip" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:choice>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:string" use="required" />
+                  <xs:attribute name="class" type="xs:string" use="required" />
+                  <xs:attribute name="metadataToken" type="xs:integer" />
+                  <xs:attribute name="excluded" type="xs:boolean" use="required" />
+                  <xs:attribute name="instrumented" type="xs:boolean" use="required" />
+                  <xs:attribute name="fullname" type="xs:string" use="optional" />
+                  <xs:attribute name="excluded-because" type="xs:string" use="optional" />
+                  <xs:attribute name="sig" type="xs:string" use="optional" />
+                  <xs:attribute name="tag" type="xs:integer" use="optional" />
+                  <xs:anyAttribute processContents="skip" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="altcover.file" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="document" type="xs:string" use="required" />
+                  <xs:attribute name="embed" type="xs:string" use="required" />
+                  <xs:anyAttribute processContents="skip" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="moduleId" type="xs:string" use="required" />
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="assembly" type="xs:string" use="required" />
+            <xs:attribute name="assemblyIdentity" type="xs:string" use="optional" />
+            <xs:anyAttribute processContents="skip" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:anyAttribute processContents="skip" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element ref="coverage" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

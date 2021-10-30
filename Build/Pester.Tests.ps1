@@ -276,6 +276,7 @@ Describe "ConvertTo-NCover" {
       <seqpnt visitcount="0" line="20" column="4" endline="20" endcolumn="5" offset="68" excluded="false" document="altcover/Sample1/Program.cs" />
       <seqpnt visitcount="1" line="21" column="3" endline="21" endcolumn="4" offset="69" excluded="false" document="altcover/Sample1/Program.cs" />
     </method>
+    <altcover.file document="altcover/Sample1/Program.cs" embed="hU9NS8NAED0nkP/wzKnVkgavRT3Uk6gIDRQRD2ucJkuTnTC7SQjS/+5mq+DNwwzDvI9501ttKuwm66jdJHESr9dwZB064UpUGxYHFgh1LA4VGRLlNJuZbFRLtlMloeC+rAsvTOKvJI60cSRGNSgbZS1efs2iGYw60YNyBOu8U4mB9SeelDYL68THeXuHksouZ2rgR4MSGB5xg3uvK3RL2TOPm4DpAxYey17Jk25xned5UP5Ioy0byw1le9GOHrWhRbqvSQjaop0gXB7Jv6vK4x1SXGEXMmQP7POkl+nqnGV5PnYKnRpL/5woRjJOk6ux9UMv0wofPF2kf33m5uv0DQ==" />
   </module>
 </coverage>
 "@
@@ -367,9 +368,9 @@ Describe "ConvertTo-BarChart" {
     $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
     $expected = [System.IO.File]::ReadAllText("./AltCover.Tests/HandRolledMonoCoverage.html")
 
-    $result = $sw.ToString().Replace("`r", "")
+    $result = $sw.ToString().Replace("`r", "").Replace("ID0ES", "ID0ET") # flakiness in label autogenerator
     $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString()).Replace("`"utf-8`"?>", "`"utf-16`"?>")
-    $written.Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+    $written.Replace("`r", "").Replace("ID0ES", "ID0ET")  | Should -Be $expected.Replace("`r", "")
   }
 }
 

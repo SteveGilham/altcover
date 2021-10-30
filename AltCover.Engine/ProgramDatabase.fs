@@ -101,6 +101,8 @@ module internal ProgramDatabase =
 
            assembly.MainModule.ReadSymbols(reader))
 
+  // reflective short-cuts don't work.
+  // maybe move this somewhere else, now?
   let internal getModuleDocuments (``module``: ModuleDefinition) =
     ``module``.GetAllTypes()
     |> Seq.collect (fun t -> t.GetMethods())

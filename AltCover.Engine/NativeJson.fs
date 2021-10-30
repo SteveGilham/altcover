@@ -673,7 +673,7 @@ module
 
     w
     |> append (slugs.[9])
-    |> appendLine ("\"Lines\": {")
+    |> (if method.Lines |> Seq.isEmpty then append else appendLine) ("\"Lines\": {")
     |> ifNotEmpty method.Lines lineToBuilder id post
     |> appendLine ("},")
 
@@ -692,9 +692,12 @@ module
           >> append (slugs.[9])
           >> appendLine ("\"SeqPnts\": ["))
          id
-    |> newLine
-    |> append (slugs.[10])
-    |> append ("]")
+    |> if Seq.isEmpty method.SeqPnts
+       then id
+       else
+         newLine
+         >> append (slugs.[10])
+         >> append ("]")
 
     // After SeqPnts, now Tracking
     |> methodTrackingToBuilder method
@@ -1047,10 +1050,17 @@ module
                XAttribute(XName.Get "fullPath", name)
              )
 
+           kvp.Value
+           |> Seq.tryFind(fun kvp -> kvp.Key = "\u00ABAltCover.embed\u00BB")
+           |> Option.map (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
+           |> Option.flatten
+           |> Option.iter (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
+
            files.Add item
            classesToXml i classTable kvp.Value)
 
     classTable
+    |> Seq.filter (fun kvp -> kvp.Key |> Seq.head <> '\u00AB')
     |> Seq.iter (fun kvp -> classes.Add kvp.Value)
 
     summarize sd m "Method"
@@ -1159,6 +1169,16 @@ module
 #if RUNNER
   // Instrumentation ---------------------------------------------------------
 
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let injectEmbed (c:Classes) (embed:string) =
+    if embed |> String.IsNullOrWhiteSpace |> not then
+      let dummy = Method.Create(None)
+      let m = Methods()
+      m.Add (embed, dummy)
+      c.Add ("\u00ABAltCover.embed\u00BB", m)
+
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type internal JsonContext =
     { Documents: Documents
@@ -1196,7 +1216,7 @@ module
           VisibleMethod = m.VisibleMethod
           Track = m.Track }
 
-    let getMethodRecord (s: JsonContext) (doc: string) =
+    let getMethodRecord (s: JsonContext) (doc: string) (record:Cil.Document) =
       let visibleMethodName = s.VisibleMethod.FullName
       let visibleTypeName = s.VisibleMethod.DeclaringType.FullName
 
@@ -1206,6 +1226,9 @@ module
         | _ ->
             let c = Classes()
             s.Documents.Add(doc, c)
+            record
+            |> Metadata.getSource
+            |> Option.iter (injectEmbed c)
             c
 
       let methods =
@@ -1229,9 +1252,9 @@ module
         |> Option.iter
              (fun codeSegment ->
                let doc =
-                 codeSegment.Document |> Visitor.sourceLinkMapping
+                 codeSegment.Document.Url |> Visitor.sourceLinkMapping
 
-               let mplus = getMethodRecord s doc
+               let mplus = getMethodRecord s doc codeSegment.Document
                mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
 
                mplus.SeqPnts.Add
@@ -1253,7 +1276,7 @@ module
           b.SequencePoint.Document.Url
           |> Visitor.sourceLinkMapping
 
-        let mplus = getMethodRecord s doc
+        let mplus = getMethodRecord s doc b.SequencePoint.Document
 
         mplus.Branches.Add
           { Line = b.SequencePoint.StartLine
@@ -1284,7 +1307,6 @@ module
           VisibleType = null }
 
     let visitAfterModule s = { s with Documents = null }
-    //    let afterAll = id
 
     let reportVisitor (s: JsonContext) (node: Node) =
       match node with
@@ -1297,7 +1319,6 @@ module
       | AfterMethod m -> visitAfterMethod s m
       | AfterType _ -> visitAfterType s
       | AfterModule _ -> visitAfterModule s
-      //      | Finish -> afterAll s
       | _ -> s
 
     let result =

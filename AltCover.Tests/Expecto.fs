@@ -395,8 +395,12 @@ module ExpectoTestManifest =
       Tests.AltCoverTests.FullMethodNamesAreExtracted, "Tests.FullMethodNamesAreExtracted"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNet,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
+      Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbeds,
+      "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
       Tests.AltCoverTests.ShouldGenerateExpectedJsonReportFromDotNet,
       "Tests.ShouldGenerateExpectedJsonReportFromDotNet"
+      Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithEmbeds,
+      "Tests.ShouldGenerateExpectedJsonReportWithEmbeds"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly,
       "Tests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel,
@@ -421,6 +425,8 @@ module ExpectoTestManifest =
       "Tests.ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle"
+      Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle,
+      "Tests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle,

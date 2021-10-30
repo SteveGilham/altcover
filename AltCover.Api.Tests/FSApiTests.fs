@@ -307,6 +307,84 @@ module FSApiTests =
         .Trim([| '\u00FF' |]) @>
 
   [<Test>]
+  let NCoverToJsonWithEmbeds () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.HandRolledToNCover.xml")
+
+    let doc = XDocument.Load(stream)
+
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.HandRolledToNCover.json")
+
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test
+      <@ result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) = expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) @>
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.Xml")
+
+    let doc = XDocument.Load(stream)
+    // fix up file path
+    let exe =
+      Path.Combine(SolutionRoot.location, "Samples/Sample19", "ConsoleApplication1.exe")
+
+    doc.Root.Descendants(XName.Get "module")
+    |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
+
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.json")
+
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test
+      <@ result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) = expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) @>
+
+  [<Test>]
   let OpenCoverToBarChart () =
     use stream =
       Assembly
@@ -325,6 +403,7 @@ module FSApiTests =
 
     let result =
       rdr.ReadToEnd().Replace("\r", String.Empty)
+                     .Replace("ID0ES", "ID0ET") // flakiness in label autogenerator
 
     use stream2 =
       Assembly

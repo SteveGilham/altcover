@@ -415,10 +415,10 @@ module private Gui =
   let private markBranches
     (root: XPathNavigator)
     (lineView: TextView)
-    (filename: string)
+    (file: Source)
     =
     let buff = lineView.Buffer
-    let branches = HandlerCommon.TagBranches root filename
+    let branches = HandlerCommon.TagBranches root file
 
     for l in 1 .. buff.LineCount do
       let image = new Image()
@@ -569,7 +569,6 @@ module private Gui =
       let showSource (info: Source) (line: int) =
         let buff = handler.codeView.Buffer
         let buff2 = handler.lineView.Buffer
-        let pathname = info.FullName
 
         buff.Text <- info.ReadAllText()
 
@@ -592,8 +591,8 @@ module private Gui =
 
         let root = m.Clone()
         root.MoveToRoot()
-        markBranches root handler.lineView pathname
-        markCoverage root buff buff2 pathname
+        markBranches root handler.lineView info
+        markCoverage root buff buff2 info
         handler.activeRow <- line
         handler.codeView.CursorVisible <- false
         handler.viewport1.QueueDraw()

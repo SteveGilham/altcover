@@ -156,7 +156,7 @@ module Transformer =
       new StreamReader(
         Assembly
           .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.UICommon.NCover.xsd")
+          .GetManifestResourceStream("AltCover.UICommon.NCoverEmbedded.xsd")
       )
 
     use ncreader = XmlReader.Create(sr2)

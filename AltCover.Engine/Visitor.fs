@@ -44,7 +44,8 @@ type internal SeqPnt =
     StartColumn: int
     EndLine: int
     EndColumn: int
-    Document: string
+    [<NonSerialized>]
+    Document: Cil.Document
     Offset: int }
   static member Build(codeSegment: Cil.SequencePoint) =
     { StartLine = codeSegment.StartLine
@@ -59,7 +60,7 @@ type internal SeqPnt =
           codeSegment.StartColumn + 1
         else
           codeSegment.EndColumn
-      Document = codeSegment.Document.Url
+      Document = codeSegment.Document
       Offset = codeSegment.Offset }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -622,7 +623,7 @@ module internal Visitor =
              (fun x ->
                x.CustomDebugInformations
                |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
-        |> Option.bind id
+        |> Option.flatten
         |> Option.map
              (fun i ->
                let c =

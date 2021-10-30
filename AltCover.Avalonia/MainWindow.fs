@@ -194,9 +194,9 @@ type MainWindow() as this =
       (root: XPathNavigator)
       (stack: StackPanel)
       (lines: FormattedTextLine list)
-      (filename: string)
+      (file: Source)
       =
-      let branches = HandlerCommon.TagBranches root filename
+      let branches = HandlerCommon.TagBranches root file
 
       let h = (lines |> Seq.head).Height
       let pad = (h - 16.0) / 2.0
@@ -225,10 +225,10 @@ type MainWindow() as this =
       (textBox: TextPresenter)
       (text2: TextPresenter)
       (lines: FormattedTextLine list)
-      filename
+      info
       =
       let tags =
-        HandlerCommon.TagCoverage root filename lines.Length
+        HandlerCommon.TagCoverage root info lines.Length
 
       let formats =
         tags |> List.map (tagByCoverage textBox lines)
@@ -267,7 +267,7 @@ type MainWindow() as this =
            let showSource (info: Source) (line: int) =
              try
                this.UpdateTextFonts text text2
-               text.Text <- (File.ReadAllText info.FullName).Replace('\t', '\u2192')
+               text.Text <- info.ReadAllText().Replace('\t', '\u2192')
 
                let textLines =
                  text.FormattedText.GetLines() |> Seq.toList
@@ -287,11 +287,11 @@ type MainWindow() as this =
                root.MoveToRoot()
 
                let (formats, linemark) =
-                 markCoverage root text text2 textLines info.FullName
+                 markCoverage root text text2 textLines info
 
                let stack = this.FindControl<StackPanel>("Branches")
                root.MoveToRoot()
-               markBranches root stack textLines info.FullName
+               markBranches root stack textLines info
 
                async {
                  Threading.Thread.Sleep(300)
