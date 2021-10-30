@@ -14,9 +14,11 @@ module ExpectoMain =
       "FSApiTests.PostprocessShouldRestoreBranchOnlyOpenCoverState"
       Tests.FSApiTests.JsonToOpenCover, "FSApiTests.JsonToOpenCover"
       Tests.FSApiTests.OpenCoverToJson, "FSApiTests.OpenCoverToJson"
+      Tests.FSApiTests.OpenCoverWithPartialsToJson, "FSApiTests.OpenCoverWithPartialsToJson"
       Tests.FSApiTests.OpenCoverToLcov, "FSApiTests.OpenCoverToLcov"
       Tests.FSApiTests.OpenCoverToBarChart, "FSApiTests.OpenCoverToBarChart"
       Tests.FSApiTests.OpenCoverToNCover, "FSApiTests.OpenCoverToNCover"
+      Tests.FSApiTests.OpenCoverWithPartialsToNCover, "FSApiTests.OpenCoverWithPartialsToNCover"
       Tests.FSApiTests.OpenCoverFromNCover, "FSApiTests.OpenCoverFromNCover"
       Tests.FSApiTests.FormatsConvertToXmlDocument,
       "FSApiTests.FormatsConvertToXmlDocument"
