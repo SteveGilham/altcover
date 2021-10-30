@@ -3522,10 +3522,75 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
+  let ShouldGenerateExpectedJsonReportWithPartials () =
+    let visitor, document = OpenCover.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+      let visitor, document = Main.I.selectReportGenerator ()
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let result = makeJson document
+      //printfn "%A" result
+      let json = NativeJson.fromJsonText result
+      Assert.That (json.Count, Is.EqualTo 1)
+      let documents = json.Values |> Seq.head
+
+      Assert.That(documents.Count, Is.EqualTo 10)
+      let classdocs = documents
+                      |> Seq.collect (fun kvp -> kvp.Value.Keys
+                                                 |> Seq.map (fun k -> (k, kvp.Key)))
+                      |> Seq.groupBy fst
+                      |> Seq.toList
+
+      let classcount = classdocs
+                       |> List.map (fun (n,dl) -> (n, dl |> Seq.length))
+                       |> List.sortBy fst
+
+      // printfn "%A" classcount
+
+      // snd > 1 => partial class at least
+      test <@ classcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 10);
+                            ("Example", 2)] @>
+
+      let mcount = documents
+                  |> Seq.collect (fun kvp -> kvp.Value
+                                            |> Seq.collect (fun kv -> kv.Value.Keys
+                                                                      |> Seq.map (fun k -> kv.Key, (k, kvp.Key))))
+
+                  |> Seq.groupBy fst
+                  |> Seq.map (fun (n,l) -> n,(l |> Seq.map snd
+                                                |> Seq.groupBy fst
+                                                |> Seq.map (fun (_, dl) -> dl |> Seq.map snd
+                                                                              |> Seq.distinct
+                                                                              |> Seq.length))
+                                             |> Seq.max)
+                  |> Seq.toList
+                  |> List.sortBy fst
+
+      //mcount
+      //|> Seq.iter (printfn "%A")
+
+      // snd > 1 => inlined method at least
+      test <@ mcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 2);
+                            ("Example", 2)] @>
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
   let ShouldGenerateExpectedJsonReportWithEmbeds () =
     let visitor, document = OpenCover.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
 
     try
@@ -4479,8 +4544,6 @@ module AltCoverTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle () =
     let visitor, document = OpenCover.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = sample1path
 
     try
@@ -4516,8 +4579,6 @@ module AltCoverTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle () =
     let visitor, document = OpenCover.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
 
     try
@@ -4545,6 +4606,66 @@ module AltCoverTests =
                                          then 1 else 0)
                    |> Seq.toList
       test <@ embeds = expected  @>
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle () =
+    let visitor, document = OpenCover.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      // printfn "%A" (makeDocument document)
+      let results = (makeDocument document)
+      let classes = results.Descendants("Class".X)
+                    |> Seq.map (fun c -> (c.Element("FullName".X).Value,
+                                          c.Descendants("Method".X) |> Seq.toList))
+                    |> Seq.toList
+
+      let documents = classes
+                      |> List.map (fun (n,ml) -> (n, ml |> Seq.map (fun m -> [ m.Descendants("SequencePoint".X);
+                                                                               m.Descendants("Branch".X)]
+                                                                             |> Seq.concat
+                                                                             |> Seq.map (fun x -> x.Attribute("fileid".X).Value)
+                                                                             |> Seq.distinct
+                                                                             |> Seq.toList)))
+      let classdocs = documents
+                      |> List.map (fun (n,dl) -> (n, dl
+                                                     |> Seq.concat
+                                                     |> Seq.distinct
+                                                     |> Seq.toList))
+      let classcount = classdocs
+                       |> List.map (fun (n,dl) -> (n, dl |> List.length))
+                       |> List.sortBy fst
+
+      // printfn "%A" classcount
+
+      // snd > 1 => partial class at least
+      test <@ classcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 10);
+                            ("Example", 2)] @>
+
+      let mcount = documents
+                   |> List.map (fun (n,ml) -> (n, ml |> Seq.maxBy List.length |> List.length))
+                   |> List.sortBy fst
+
+      // snd > 1 => inlined method at least
+      test <@ mcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 2);
+                            ("Example", 2)] @>
 
     finally
       CoverageParameters.nameFilters.Clear()
