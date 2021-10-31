@@ -694,7 +694,7 @@ module FSApiTests =
     use stream =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+        .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
 
     let exe =
       Path.Combine(SolutionRoot.location, "AltCover.Test/SimpleMix.exe")
@@ -722,10 +722,15 @@ module FSApiTests =
         .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
 
     use rdr2 = new StreamReader(stream2)
+    let doc2 = XDocument.Load rdr2
+    use stream3 = new MemoryStream()
+    doc2.Save(stream3)
+    stream3.Position <- 0L
+    use rdr3 = new StreamReader(stream3)
+
     let expected =
-      rdr2
+      rdr3
         .ReadToEnd()
-        .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
