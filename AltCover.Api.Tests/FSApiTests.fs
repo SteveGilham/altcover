@@ -181,6 +181,35 @@ module FSApiTests =
     test <@ result = expected @>
 
   [<Test>]
+  let OpenCoverWithPartialsToLcov () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+
+    let doc = XDocument.Load(stream)
+    use stream2 = new MemoryStream()
+    CoverageFormats.ConvertToLcov doc stream2
+    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use rdr = new StreamReader(stream2a)
+
+    let result =
+      rdr.ReadToEnd().Replace("\r", String.Empty)
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.lcov")
+
+    use rdr2 = new StreamReader(stream3)
+
+    let expected =
+      rdr2.ReadToEnd().Replace("\r", String.Empty)
+    // printfn "%s" result
+    //Assert.That(result, Is.EqualTo expected)
+    test <@ result = expected @>
+
+  [<Test>]
   let JsonToOpenCover () =
     use stream =
       Assembly
@@ -197,6 +226,53 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.Api.Tests.OpenCover.xml")
+
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    Assert.That(
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]),
+      Is.EqualTo
+      <| expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+    )
+
+    test
+      <@ result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) = expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) @>
+
+  [<Test>]
+  let JsonWithPartialsToOpenCover () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.JsonWithPartials.json")
+
+    let doc =
+      use reader = new StreamReader(stream)
+      reader.ReadToEnd()
+
+    let result = (OpenCover.JsonToXml doc).ToString()
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
 
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
@@ -322,6 +398,49 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.Api.Tests.GenuineNCover158.json")
+
+    use rdr2 = new StreamReader(stream3)
+    let expected = rdr2.ReadToEnd()
+
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+
+    test
+      <@ result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) = expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) @>
+
+  [<Test>]
+  let NCoverWithPartialsToJson () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
+
+    let doc = XDocument.Load(stream)
+    // fix up file path
+    let exe =
+      Path.Combine(SolutionRoot.location, "AltCover.Test/SimpleMix.exe")
+
+    doc.Root.Descendants(XName.Get "module")
+    |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
+
+    let result = CoverageFormats.ConvertToJson doc
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.JsonWithPartials.json")
 
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
@@ -570,6 +689,46 @@ module FSApiTests =
     test <@ rewrite |> isNull |> not @>
 
   [<Test>]
+  let OpenCoverFromNCoverWithPartials () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+
+    let exe =
+      Path.Combine(SolutionRoot.location, "AltCover.Test/SimpleMix.exe")
+
+    let document =
+      XDocument.Load stream
+
+    let rewrite =
+      CoverageFormats.ConvertFromNCover document [ exe ]
+
+    use mstream = new MemoryStream()
+    rewrite.Save mstream
+
+    use mstream2 =
+      new MemoryStream(mstream.GetBuffer(), 0, mstream.Position |> int)
+
+    use rdr = new StreamReader(mstream2)
+
+    let result =
+      rdr.ReadToEnd().Replace("\r", String.Empty)
+
+    use stream2 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+
+    use rdr2 = new StreamReader(stream2)
+    let expected =
+      rdr2
+        .ReadToEnd()
+        .Replace("utf-16", "utf-8")
+        .Replace("\r", String.Empty)
+    NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+
+  [<Test>]
   let FormatsConvertToXmlDocument () =
     use stream =
       Assembly
@@ -658,6 +817,56 @@ module FSApiTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.xml")
+
+    let doc = XDocument.Load(stream)
+
+    doc.Descendants()
+    |> Seq.map (fun n -> n.Attribute(XName.Get "excluded"))
+    |> Seq.filter (isNull >> not)
+    |> Seq.iter (fun a -> a.Value <- "false")
+
+    let cob = CoverageFormats.ConvertToCobertura doc
+    use stream2 = new MemoryStream()
+    cob.Save stream2
+    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use rdr = new StreamReader(stream2a)
+
+    let result =
+      rdr.ReadToEnd().Replace("\r", String.Empty)
+    // printfn "FSApi.NCoverToCobertura\r\n%s" result
+
+    use stream3 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")
+
+    use rdr2 = new StreamReader(stream3)
+
+    let coverage =
+      cob.Descendants(XName.Get "coverage") |> Seq.head
+
+    let v =
+      coverage.Attribute(XName.Get "version").Value
+
+    let t =
+      coverage.Attribute(XName.Get "timestamp").Value
+
+    let expected =
+      rdr2
+        .ReadToEnd()
+        .Replace("{0}", v)
+        .Replace("{1}", t)
+        .Replace("\r", String.Empty)
+
+    //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
+    test <@ result = expected @>
+
+  [<Test>]
+  let NCoverWithPartialsToCobertura () =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
 
     let doc = XDocument.Load(stream)
 
