@@ -4903,6 +4903,76 @@ module AltCoverRunnerTests =
       LCov.path := None
 
   [<Test>]
+  let OpenCoverWithPartialsShouldGeneratePlausibleLcov () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find
+           (fun n -> n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString() + "/OpenCover.lcov"
+      )
+
+    LCov.path := Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      Runner.I.addLCovSummary ()
+      let summarize = Runner.I.summaries |> Seq.head
+
+      let r =
+        summarize (XML baseline) ReportFormat.OpenCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      let result = File.ReadAllText unique
+
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+      //printfn "%A" result
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected
+      )
+    finally
+      LCov.path := None
+
+  [<Test>]
   let NCoverShouldGeneratePlausibleLcov () =
     Runner.init ()
 
@@ -4911,6 +4981,72 @@ module AltCoverRunnerTests =
         .GetExecutingAssembly()
         .GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString() + "/NCover.lcov"
+      )
+
+    LCov.path := Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      let r =
+        LCov.summary (XML baseline) ReportFormat.NCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      let result = File.ReadAllText unique
+
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("NCover.lcov", StringComparison.Ordinal))
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected
+      )
+    finally
+      LCov.path := None
+
+  [<Test>]
+  let NCoverWithPartialsShouldGeneratePlausibleLcov () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5043,6 +5179,76 @@ module AltCoverRunnerTests =
         .GetExecutingAssembly()
         .GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("Sample4.coverlet.json", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline =
+      use r = new StreamReader(stream)
+      r.ReadToEnd() |> NativeJson.fromJsonText
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString()
+        + "/Sample4.coverlet.lcov"
+      )
+
+    LCov.path := Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      let r =
+        LCov.summary (JSON baseline) ReportFormat.NativeJson 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+      let result = File.ReadAllText unique
+
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find
+             (fun n -> n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+      //printfn "%s" result
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected
+      )
+    finally
+      LCov.path := None
+
+  [<Test>]
+  let JsonWithPartialsShouldGeneratePlausibleLcov () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("JsonWithPartials.json", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5361,6 +5567,84 @@ module AltCoverRunnerTests =
       Cobertura.path := None
 
   [<Test>]
+  let NCoverWithPartialsShouldGeneratePlausibleCobertura () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartialsxml", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString() + "/NCover122.cobertura"
+      )
+
+    Cobertura.path := Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      Runner.I.addCoberturaSummary ()
+      let summarize = Runner.I.summaries |> Seq.head
+
+      let r =
+        summarize (XML baseline) ReportFormat.NCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+      let result =
+        Regex
+          .Replace(File.ReadAllText unique,
+                   """timestamp=\"\d*\">""",
+                   """timestamp="xx">""")
+          .Replace("\\", "/")
+      //printfn "%s" result
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+          .Replace(
+            """version="3.0.0.0""",
+            "version=\""
+            + typeof<SummaryFormat>
+              .Assembly.GetName()
+              .Version.ToString()
+          )
+
+      Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+      validate result
+    finally
+      Cobertura.path := None
+
+  [<Test>]
   let NCoverShouldGenerateMorePlausibleCobertura () =
     Runner.init ()
 
@@ -5450,6 +5734,90 @@ module AltCoverRunnerTests =
         .GetManifestResourceNames()
       |> Seq.find
            (fun n -> n.EndsWith("Sample4FullTracking.json", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline =
+      use r = new StreamReader(stream)
+      r.ReadToEnd() |> NativeJson.fromJsonText
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString()
+        + "/Sample4FullTracking.cobertura"
+      )
+
+    Cobertura.path := Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      Runner.I.addCoberturaSummary ()
+      let summarize = Runner.I.summaries |> Seq.head
+
+      let r =
+        summarize (JSON baseline) ReportFormat.NativeJson 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+      let result =
+        Regex
+          .Replace(File.ReadAllText unique,
+                   """timestamp=\"\d*\">""",
+                   """timestamp="xx">""")
+          .Replace("\\", "/")
+      //printfn "%s" result
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find
+             (fun n ->
+               n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+          .Replace(
+            """version="3.0.0.0""",
+            "version=\""
+            + typeof<SummaryFormat>
+              .Assembly.GetName()
+              .Version.ToString()
+          )
+
+      Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+      validate result
+    finally
+      Cobertura.path := None
+
+  [<Test>]
+  let JsonWithPartialsShouldGeneratePlausibleCobertura () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find
+           (fun n -> n.EndsWith("JsonWithPartials.json", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5685,6 +6053,84 @@ module AltCoverRunnerTests =
         .Trim([| '\u00FF' |]) @>
 
   [<Test>]
+  let JsonWithPartialsShouldGeneratePlausibleXml () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("JsonWithPartials.json", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline =
+      use r = new StreamReader(stream)
+      r.ReadToEnd() |> NativeJson.fromJsonText
+
+    let xml =
+      baseline
+      |> NativeJson.jsonToXml
+      |> NativeJson.orderXml
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString() + "/Sample5.native.xml"
+      )
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    xml.Save(unique)
+    let result = File.ReadAllText unique
+
+    let resource2 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("Sample5.native.xml", StringComparison.Ordinal))
+
+    use stream2 =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource2)
+
+    use reader = new StreamReader(stream2)
+    let expected = reader.ReadToEnd()
+    //printfn "%s" result
+    Assert.That(
+      result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]),
+      Is.EqualTo
+      <| expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |])
+    )
+
+    test
+      <@ result
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) = expected
+        .Replace('\r', '\u00FF')
+        .Replace('\n', '\u00FF')
+        .Replace("\u00FF\u00FF", "\u00FF")
+        .Trim([| '\u00FF' |]) @>
+
+  [<Test>]
   let NCoverShouldGeneratePlausibleCoberturaWithMissingFullName () =
     Runner.init ()
 
@@ -5776,6 +6222,88 @@ module AltCoverRunnerTests =
         .GetExecutingAssembly()
         .GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("issue122.xml", StringComparison.Ordinal))
+
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+
+    let unique =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        Guid.NewGuid().ToString() + "/issue122.cobertura"
+      )
+
+    Cobertura.path := Some unique
+
+    unique
+    |> Path.GetDirectoryName
+    |> Directory.CreateDirectory
+    |> ignore
+
+    try
+      let r =
+        Cobertura.summary (XML baseline) ReportFormat.OpenCover 0
+
+      Assert.That(r, Is.EqualTo(0, 0, String.Empty))
+
+      let result =
+        Regex.Replace(
+          File.ReadAllText unique,
+          """timestamp=\"\d*\">""",
+          """timestamp="xx">"""
+        )
+      //printfn "%s" result
+      let resource2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue122.cobertura", StringComparison.Ordinal))
+
+      use stream2 =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(resource2)
+
+      use reader = new StreamReader(stream2)
+
+      let expected =
+        reader
+          .ReadToEnd()
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/")
+          .Replace(
+            """version="3.0.0.0""",
+            "version=\""
+            + typeof<SummaryFormat>
+              .Assembly.GetName()
+              .Version.ToString()
+          )
+
+      Assert.That(
+        result
+          .Replace("\r", String.Empty)
+          .Replace("\\", "/"),
+        Is.EqualTo expected,
+        result
+      )
+
+      validate result
+    finally
+      Cobertura.path := None
+
+  [<Test>]
+  let OpenCoverWithPartialsShouldGeneratePlausibleCobertura () =
+    Runner.init ()
+
+    let resource =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+      |> Seq.find (fun n -> n.EndsWith("OpenCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly

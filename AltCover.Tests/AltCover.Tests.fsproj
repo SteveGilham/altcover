@@ -55,7 +55,10 @@
     <EmbeddedResource Include="Sample5.ncover.cobertura" />
     <EmbeddedResource Include="GenuineNCover158.json" />
     <EmbeddedResource Include="GenuineNCover158.Xml" />
+    <EmbeddedResource Include="JsonWithPartials.json" />
+    <EmbeddedResource Include="OpenCoverWithPartials.xml" />
     <EmbeddedResource Include="OpenCover.json" />
+    <EmbeddedResource Include="NCoverWithPartials.xml" />
     <EmbeddedResource Include="NCover.lcov" />
     <EmbeddedResource Include="OpenCover.lcov" />
     <EmbeddedResource Include="NCover.cobertura" />
