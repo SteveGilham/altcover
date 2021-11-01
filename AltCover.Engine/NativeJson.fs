@@ -894,8 +894,6 @@ module
       m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets)
         .ToString(CultureInfo.InvariantCulture)
 
-    let mutable mvc = 0
-
     if value.SeqPnts.IsNotNull then
       value.SeqPnts
       |> Seq.iter
@@ -920,8 +918,7 @@ module
                  XAttribute(XName.Get "fileid", fileId)
                )
 
-             sp.Add sx
-             mvc <- Math.Max(mvc, s.VC))
+             sp.Add sx)
     else
       value.Lines
       |> Seq.iteri
@@ -947,14 +944,7 @@ module
                  XAttribute(XName.Get "fileid", fileId)
                )
 
-             sp.Add sx
-             mvc <- Math.Max(mvc, l.Value))
-
-    // TDOD recompute
-    let mp =
-      XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", mvc))
-
-    m.Add mp
+             sp.Add sx)
 
     // recompute points
     let sd = m.Descendants("Summary".X) |> Seq.head
@@ -966,6 +956,16 @@ module
     let ns = points |> Seq.length
     let vs = points |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
                     |> Seq.length
+
+    if ns > 0 then
+      let mp = m.Descendants("MethodPoint".X) |> Seq.tryHead
+               |> Option.defaultWith (fun () -> let tmp = XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", "0"))
+                                                m.Add tmp
+                                                tmp)
+      let mvc = points
+                |> Seq.map (fun x -> x.Attribute("vc".X).Value |> Int32.TryParse |> snd)
+                |> Seq.max
+      mp.Attribute("vc".X).Value <- mvc.ToString(CultureInfo.InvariantCulture)
 
     makeSummary nb vb ns vs sd
 
@@ -1143,6 +1143,12 @@ module
            original
            |> Seq.sortBy
                 (fun sp ->
+                  let offset = sp.Attribute(XName.Get "offset")
+                  let topword = offset
+                              |> Option.ofObj
+                              |> Option.map(fun x -> x.Value |> Int64.TryParse |> snd)
+                              |> Option.defaultValue 0L
+
                   let sl =
                     sp.Attribute(XName.Get "sl").Value
                     |> Int32.TryParse
@@ -1153,7 +1159,7 @@ module
                     |> Int32.TryParse
                     |> snd
 
-                  (sl <<< 16) + sc)
+                  topword + int64 ((sl <<< 16) + sc))
            |> sps.Add)
 
     x.Descendants(XName.Get "BranchPoints")
