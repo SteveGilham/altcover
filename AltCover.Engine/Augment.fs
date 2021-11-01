@@ -24,16 +24,18 @@ module internal Augment =
       with get() =
         self |> isNull |> not
 
-#if !(GUI || ValidateGendarmeEmulation)
+#if !ValidateGendarmeEmulation
   type System.String with
     member self.X
       with get() =
         System.Xml.Linq.XName.Get self
+#if !GUI
 
     member self.InvariantParseDouble() =
       System.Double.TryParse(self,
                              System.Globalization.NumberStyles.Number,
                              System.Globalization.CultureInfo.InvariantCulture)
+#endif
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 

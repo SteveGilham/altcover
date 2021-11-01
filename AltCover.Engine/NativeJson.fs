@@ -833,6 +833,9 @@ module
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "InstantiateArgumentExceptionCorrectlyRule",
+                    Justification = "Library method inlined")>]
   let internal methodToXml
     (table:Dictionary<string, XElement>)
     (fileId: int)
@@ -962,9 +965,9 @@ module
                |> Option.defaultWith (fun () -> let tmp = XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", "0"))
                                                 m.Add tmp
                                                 tmp)
-      let mvc = points
-                |> Seq.map (fun x -> x.Attribute("vc".X).Value |> Int32.TryParse |> snd)
-                |> Seq.max
+      let mvc = points // not Seq.max as that exposes repeated calls to enumerator.Current when bootstrapping
+                |> Seq.fold (fun max x -> let tmp = x.Attribute("vc".X).Value |> Int32.TryParse |> snd
+                                          if tmp > max then tmp else max) 0 // know this is a hard floor
       mp.Attribute("vc".X).Value <- mvc.ToString(CultureInfo.InvariantCulture)
 
     makeSummary nb vb ns vs sd
