@@ -435,7 +435,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     // fix up file path
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Test/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
 
     doc.Root.Descendants(XName.Get "module")
     |> Seq.iter (fun e -> e.Attribute(XName.Get "name").Value <- exe)
