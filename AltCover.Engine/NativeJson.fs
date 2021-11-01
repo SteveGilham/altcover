@@ -1143,7 +1143,7 @@ module
            original
            |> Seq.sortBy
                 (fun sp ->
-                  let offset = sp.Attribute(XName.Get "offset")
+                  let offset = sp.Attribute(XName.Get "fileid")
                   let topword = offset
                               |> Option.ofObj
                               |> Option.map(fun x -> x.Value |> Int64.TryParse |> snd)
