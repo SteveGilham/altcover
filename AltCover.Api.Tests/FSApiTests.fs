@@ -272,14 +272,19 @@ module FSApiTests =
     use stream3 =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+        .GetManifestResourceStream("AltCover.Api.Tests.JsonWithPartialsToXml.xml")
 
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
+
+    let r2 = """<?xml version="1.0" encoding="utf-8"?>""" +
+             "\u00FF" +
+             result
+
     Assert.That(
-      result
+      r2
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")
@@ -293,7 +298,7 @@ module FSApiTests =
     )
 
     test
-      <@ result
+      <@ r2
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")

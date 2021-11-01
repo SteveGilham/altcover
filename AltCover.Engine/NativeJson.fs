@@ -1159,7 +1159,7 @@ module
                     |> Int32.TryParse
                     |> snd
 
-                  topword + int64 ((sl <<< 16) + sc))
+                  (topword <<< 32) + int64 ((sl <<< 16) + sc))
            |> sps.Add)
 
     x.Descendants(XName.Get "BranchPoints")
