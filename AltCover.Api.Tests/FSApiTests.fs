@@ -702,7 +702,7 @@ module FSApiTests =
         .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.xml")
 
     let exe =
-      Path.Combine(SolutionRoot.location, "AltCover.Test/SimpleMix.exe")
+      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
 
     let document =
       XDocument.Load stream
