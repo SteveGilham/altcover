@@ -757,7 +757,6 @@ module
       zero "numSequencePoints",
       zero "visitedSequencePoints")
 
-
   let internal buildSummary (m: XContainer) =
     let sd = summaryElement ()
     m.Add sd
@@ -980,6 +979,29 @@ module
   let internal methodsToXml (fileId: int) (item: XElement) (table:Dictionary<string, XElement>) (methods: Methods) =
     methods |> Seq.iter (methodToXml table fileId item)
 
+  let private valueOf (x: XElement) (name: string) =
+    x.Attribute(XName.Get name).Value
+    |> Int32.TryParse
+    |> snd
+
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "AvoidUnnecessarySpecializationRule",
+                    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal summarize sd (m: XElement) name =
+    let (nb, vb, ns, vs) =
+      m.Descendants(XName.Get name)
+      |> Seq.collect (fun m2 -> m2.Elements(XName.Get "Summary"))
+      |> Seq.fold
+           (fun (bn, bv, sn, sv) ms ->
+             (bn + valueOf ms "numBranchPoints",
+              bv + valueOf ms "visitedBranchPoints",
+              sn + valueOf ms "numSequencePoints",
+              sv + valueOf ms "visitedSequencePoints"))
+           (0, 0, 0, 0)
+
+    makeSummary nb vb ns vs sd
+
+
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
@@ -1010,40 +1032,8 @@ module
              item.Elements(XName.Get "Methods") |> Seq.head
 
            methodsToXml fileId next methodtable kvp.Value
-           // fill in summary -- could be more efficient
-           let branches = item.Descendants("BranchPoint".X)
-           let nb = branches |> Seq.length
-           let vb = branches |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
-                             |> Seq.length
-           let points = item.Descendants("SequencePoint".X)
-           let ns = points |> Seq.length
-           let vs = points |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
-                           |> Seq.length
            let sd = item.Descendants("Summary".X) |> Seq.head
-           makeSummary nb vb ns vs sd)
-
-
-  let private valueOf (x: XElement) (name: string) =
-    x.Attribute(XName.Get name).Value
-    |> Int32.TryParse
-    |> snd
-
-  [<SuppressMessage("Gendarme.Rules.Maintainability",
-                    "AvoidUnnecessarySpecializationRule",
-                    Justification = "AvoidSpeculativeGenerality too")>]
-  let internal summarize sd (m: XElement) name =
-    let (nb, vb, ns, vs) =
-      m.Descendants(XName.Get name)
-      |> Seq.collect (fun m2 -> m2.Elements(XName.Get "Summary"))
-      |> Seq.fold
-           (fun (bn, bv, sn, sv) ms ->
-             (bn + valueOf ms "numBranchPoints",
-              bv + valueOf ms "visitedBranchPoints",
-              sn + valueOf ms "numSequencePoints",
-              sv + valueOf ms "visitedSequencePoints"))
-           (0, 0, 0, 0)
-
-    makeSummary nb vb ns vs sd
+           summarize sd item "Method")
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",

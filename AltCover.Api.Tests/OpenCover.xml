@@ -10,7 +10,7 @@
       </Files>
       <Classes>
         <Class>
-          <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" visitedMethods="0" visitedClasses="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
+          <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" visitedMethods="0" visitedClasses="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
           <FullName>Tests.Program</FullName>
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
@@ -27,7 +27,7 @@
           </Methods>
         </Class>
         <Class>
-          <Summary numBranchPoints="8" visitedBranchPoints="5" numSequencePoints="21" visitedSequencePoints="7" visitedMethods="4" visitedClasses="1" branchCoverage="33.33" sequenceCoverage="33.33" minCrapScore="1" maxCrapScore="16.76" />
+          <Summary numBranchPoints="15" visitedBranchPoints="5" numSequencePoints="21" visitedSequencePoints="7" visitedMethods="4" visitedClasses="1" branchCoverage="33.33" sequenceCoverage="33.33" minCrapScore="1" maxCrapScore="16.76" />
           <FullName>Tests.DU</FullName>
           <Methods>
             <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
@@ -134,7 +134,7 @@
           </Methods>
         </Class>
         <Class>
-          <Summary numBranchPoints="2" visitedBranchPoints="2" numSequencePoints="6" visitedSequencePoints="4" visitedMethods="3" visitedClasses="1" branchCoverage="40" sequenceCoverage="66.67" minCrapScore="1" maxCrapScore="4.13" />
+          <Summary numBranchPoints="5" visitedBranchPoints="2" numSequencePoints="6" visitedSequencePoints="4" visitedMethods="3" visitedClasses="1" branchCoverage="40" sequenceCoverage="66.67" minCrapScore="1" maxCrapScore="4.13" />
           <FullName>Tests.M</FullName>
           <Methods>
             <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">

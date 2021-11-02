@@ -6080,7 +6080,7 @@ module AltCoverRunnerTests =
       Path.Combine(
         Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName,
-        Guid.NewGuid().ToString() + "/Sample5.native.xml"
+        Guid.NewGuid().ToString() + "/JsonWithPartialsToRawXml.xml"
       )
 
     unique
@@ -6095,7 +6095,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("JsonWithPartialsToXml.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("JsonWithPartialsToRawXml.xml", StringComparison.Ordinal))
 
     use stream2 =
       Assembly
@@ -6105,19 +6105,20 @@ module AltCoverRunnerTests =
     use reader = new StreamReader(stream2)
     let expected = reader.ReadToEnd()
     //printfn "%s" result
-    Assert.That(
-      result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]),
-      Is.EqualTo
-      <| expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |])
-    )
+    //Assert.That(
+    //  result
+    //    .Replace('\r', '\u00FF')
+    //    .Replace('\n', '\u00FF')
+    //    .Replace("\u00FF\u00FF", "\u00FF")
+    //    .Trim([| '\u00FF' |]),
+    //  Is.EqualTo
+    //  <| expected
+    //    .Replace('\r', '\u00FF')
+    //    .Replace('\n', '\u00FF')
+    //    .Replace("\u00FF\u00FF", "\u00FF")
+    //    .Trim([| '\u00FF' |]),
+    //  result
+    //)
 
     test
       <@ result
