@@ -748,18 +748,18 @@ module
 #if GUI || RUNNER
   // Conversion to XML ---------------------------------------------------------
 
-  let internal buildSummary (m: XContainer) =
+  let internal summaryElement () =
     let zero name = XAttribute(XName.Get name, 0)
+    XElement(
+      XName.Get "Summary",
+      zero "numBranchPoints",
+      zero "visitedBranchPoints",
+      zero "numSequencePoints",
+      zero "visitedSequencePoints")
 
-    let sd =
-      XElement(
-        XName.Get "Summary",
-        zero "numBranchPoints",
-        zero "visitedBranchPoints",
-        zero "numSequencePoints",
-        zero "visitedSequencePoints"
-      )
 
+  let internal buildSummary (m: XContainer) =
+    let sd = summaryElement ()
     m.Add sd
     sd
 
@@ -970,7 +970,9 @@ module
                                           if tmp > max then tmp else max) 0 // know this is a hard floor
       mp.Attribute("vc".X).Value <- mvc.ToString(CultureInfo.InvariantCulture)
 
-    makeSummary nb vb ns vs sd
+    // adjust to match OpenCover values for branches
+    makeSummary (nb.Increment (nb > 0 || ns > 0)) 
+                (vb.Increment (vb > 0 || vs > 0)) ns vs sd
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
@@ -999,6 +1001,7 @@ module
                (fun () ->
                  XElement(
                    XName.Get "Class",
+                   summaryElement (),
                    XElement(XName.Get "FullName", name),
                    XElement(XName.Get "Methods")
                  ))
@@ -1006,7 +1009,19 @@ module
            let next =
              item.Elements(XName.Get "Methods") |> Seq.head
 
-           methodsToXml fileId next methodtable kvp.Value)
+           methodsToXml fileId next methodtable kvp.Value
+           // fill in summary -- could be more efficient
+           let branches = item.Descendants("BranchPoint".X)
+           let nb = branches |> Seq.length
+           let vb = branches |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+                             |> Seq.length
+           let points = item.Descendants("SequencePoint".X)
+           let ns = points |> Seq.length
+           let vs = points |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+                           |> Seq.length
+           let sd = item.Descendants("Summary".X) |> Seq.head
+           makeSummary nb vb ns vs sd)
+
 
   let private valueOf (x: XElement) (name: string) =
     x.Attribute(XName.Get name).Value

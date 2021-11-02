@@ -279,12 +279,8 @@ module FSApiTests =
 
     //printfn "%s" result
 
-    let r2 = """<?xml version="1.0" encoding="utf-8"?>""" +
-             "\u00FF" +
-             result
-
     Assert.That(
-      r2
+      result
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")

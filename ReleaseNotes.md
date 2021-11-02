@@ -2,6 +2,10 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# not yet merged
+
+* Compute summary data correctly in the output from Json to OpenCover
+
 # 8.2.82x (Habu series release 8)
 * Absorb .net 6 release into build tooling (awaiting an updated release of (`fake.build`)[https://fake.build/] to be able to upgrade to F# 6)
 * Where the debug symbols used in the instrumentation contain embedded source, represent that within the generated report --

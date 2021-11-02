@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
 <CoverageSession>
-  <Summary numBranchPoints="6" visitedBranchPoints="3" numSequencePoints="27" visitedSequencePoints="24" maxCyclomaticComplexity="3" />
+  <Summary numBranchPoints="9" visitedBranchPoints="5" numSequencePoints="27" visitedSequencePoints="24" maxCyclomaticComplexity="3" visitedMethods="3" visitedClasses="2" branchCoverage="55.56" sequenceCoverage="88.89" minCrapScore="1" maxCrapScore="3.01" />
   <Modules>
     <Module hash="SimpleMix.exe">
-      <Summary numBranchPoints="6" visitedBranchPoints="3" numSequencePoints="27" visitedSequencePoints="24" />
+      <Summary numBranchPoints="9" visitedBranchPoints="5" numSequencePoints="27" visitedSequencePoints="24" visitedMethods="3" visitedClasses="2" branchCoverage="55.56" sequenceCoverage="88.89" minCrapScore="1" maxCrapScore="3.01" />
       <ModulePath>SimpleMix.exe</ModulePath>
       <ModuleName>SimpleMix</ModuleName>
       <Files>
@@ -13,10 +12,11 @@
       </Files>
       <Classes>
         <Class>
+          <Summary numBranchPoints="4" visitedBranchPoints="3" numSequencePoints="19" visitedSequencePoints="16" visitedMethods="2" visitedClasses="1" branchCoverage="50" sequenceCoverage="84.21" minCrapScore="1.01" maxCrapScore="3.01" />
           <FullName>&lt;Module&gt;</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="3" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="4" visitedBranchPoints="2" numSequencePoints="10" visitedSequencePoints="9" />
+            <Method visited="true" cyclomaticComplexity="3" sequenceCoverage="90" branchCoverage="60" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="3.01">
+              <Summary numBranchPoints="5" visitedBranchPoints="3" numSequencePoints="10" visitedSequencePoints="9" visitedMethods="1" branchCoverage="60" sequenceCoverage="90" minCrapScore="3.01" maxCrapScore="3.01" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Int32 &lt;Module&gt;::main(System.String[])</Name>
               <FileRef uid="1" />
@@ -38,10 +38,10 @@
                 <BranchPoint vc="1" sl="42" uspid="2" ordinal="0" offset="23" path="0" fileid="1" />
                 <BranchPoint vc="0" sl="42" uspid="3" ordinal="1" offset="23" path="1" fileid="1" />
               </BranchPoints>
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="20" sl="41" sc="0" el="41" ec="0" uspid="6" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="9" visitedSequencePoints="7" />
+            <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="77.78" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1.01">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="9" visitedSequencePoints="7" visitedMethods="1" branchCoverage="0" sequenceCoverage="77.78" minCrapScore="1.01" maxCrapScore="1.01" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Int32 &lt;Module&gt;::mainCRTStartupStrArray(System.String[])</Name>
               <FileRef uid="3" />
@@ -57,15 +57,16 @@
                 <SequencePoint vc="1" offset="66" sl="288" sc="0" el="288" ec="0" uspid="376" bec="0" bev="0" fileid="3" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="223" sc="0" el="223" ec="0" uspid="368" bec="0" bev="0" fileid="3" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
           </Methods>
         </Class>
         <Class>
+          <Summary numBranchPoints="2" visitedBranchPoints="2" numSequencePoints="8" visitedSequencePoints="8" visitedMethods="1" visitedClasses="1" branchCoverage="66.67" sequenceCoverage="100" minCrapScore="1" maxCrapScore="1" />
           <FullName>Example</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="2" visitedBranchPoints="1" numSequencePoints="8" visitedSequencePoints="8" />
+            <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="66.67" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+              <Summary numBranchPoints="3" visitedBranchPoints="2" numSequencePoints="8" visitedSequencePoints="8" visitedMethods="1" branchCoverage="66.67" sequenceCoverage="100" minCrapScore="1" maxCrapScore="1" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Int32 Example::main(System.String[])</Name>
               <FileRef uid="1" />
@@ -83,7 +84,7 @@
                 <BranchPoint vc="1" sl="42" uspid="148" ordinal="0" offset="15" path="0" fileid="1" />
                 <BranchPoint vc="0" sl="42" uspid="149" ordinal="1" offset="15" path="1" fileid="1" />
               </BranchPoints>
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="12" sl="41" sc="0" el="41" ec="0" uspid="451" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
           </Methods>
         </Class>
