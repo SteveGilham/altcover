@@ -294,7 +294,7 @@ module FSApiTests =
     )
 
     test
-      <@ r2
+      <@ result
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")
