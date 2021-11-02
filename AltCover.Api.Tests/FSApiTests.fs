@@ -441,7 +441,7 @@ module FSApiTests =
     use stream3 =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.JsonWithPartials.json")
+        .GetManifestResourceStream("AltCover.Api.Tests.JsonFromNCoverWithPartials.json")
 
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
