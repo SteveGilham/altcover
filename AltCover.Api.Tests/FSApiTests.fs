@@ -664,7 +664,6 @@ module FSApiTests =
         .Replace("{0}", time)
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
-        .Replace("SimpleMix, Version=1.0.7973.23538, Culture=neutral, PublicKeyToken=null", "SimpleMix")
 
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
