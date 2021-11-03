@@ -231,19 +231,19 @@ module FSApiTests =
     let expected = rdr2.ReadToEnd()
 
     //printfn "%s" result
-    Assert.That(
-      result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]),
-      Is.EqualTo
-      <| expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |])
-    )
+    //Assert.That(
+    //  result
+    //    .Replace('\r', '\u00FF')
+    //    .Replace('\n', '\u00FF')
+    //    .Replace("\u00FF\u00FF", "\u00FF")
+    //    .Trim([| '\u00FF' |]),
+    //  Is.EqualTo
+    //  <| expected
+    //    .Replace('\r', '\u00FF')
+    //    .Replace('\n', '\u00FF')
+    //    .Replace("\u00FF\u00FF", "\u00FF")
+    //    .Trim([| '\u00FF' |])
+    //)
 
     test
       <@ result
@@ -279,19 +279,19 @@ module FSApiTests =
 
     //printfn "%s" result
 
-    Assert.That(
-      result
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |]),
-      Is.EqualTo
-      <| expected
-        .Replace('\r', '\u00FF')
-        .Replace('\n', '\u00FF')
-        .Replace("\u00FF\u00FF", "\u00FF")
-        .Trim([| '\u00FF' |])
-    )
+    //Assert.That(
+    //  result
+    //    .Replace('\r', '\u00FF')
+    //    .Replace('\n', '\u00FF')
+    //    .Replace("\u00FF\u00FF", "\u00FF")
+    //    .Trim([| '\u00FF' |]),
+    //  Is.EqualTo
+    //  <| expected
+    //    .Replace('\r', '\u00FF')
+    //    .Replace('\n', '\u00FF')
+    //    .Replace("\u00FF\u00FF", "\u00FF")
+    //    .Trim([| '\u00FF' |])
+    //)
 
     test
       <@ result
@@ -350,7 +350,6 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
 
     let result = CoverageFormats.ConvertToJson doc
-    printfn "%s" result
 
     use stream3 =
       Assembly
@@ -360,12 +359,13 @@ module FSApiTests =
     use rdr2 = new StreamReader(stream3)
     let expected = rdr2.ReadToEnd()
 
-    printfn "%s" result
-    Assert.That(result
-                  .Replace('\r','\u00FF').Replace('\n','\u00FF')
-                  .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
-                  Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
-                                        .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]))
+    //printfn "%s" result
+    //Assert.That(result
+    //              .Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //              .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              Is.EqualTo <| expected.Replace('\r','\u00FF').Replace('\n','\u00FF')
+    //                                    .Replace("\u00FF\u00FF","\u00FF").Trim([| '\u00FF' |]),
+    //              result)
 
     test
       <@ result
