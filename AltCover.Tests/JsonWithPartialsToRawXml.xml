@@ -22,22 +22,22 @@
               <Name>System.Int32 &lt;Module&gt;::main(System.String[])</Name>
               <FileRef uid="1" />
               <SequencePoints>
-                <SequencePoint vc="1" offset="20" sl="41" sc="0" el="41" ec="0" uspid="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" offset="20" sl="41" sc="0" el="41" ec="0" uspid="4" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" offset="22" sl="42" sc="0" el="42" ec="0" uspid="5" bec="2" bev="1" fileid="1" />
-                <SequencePoint vc="1" offset="25" sl="43" sc="0" el="43" ec="0" uspid="4" bec="0" bev="0" fileid="1" />
-                <SequencePoint vc="1" offset="0" sl="38" sc="0" el="38" ec="0" uspid="9" bec="2" bev="1" fileid="2" />
-                <SequencePoint vc="1" offset="8" sl="40" sc="0" el="40" ec="0" uspid="8" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="14" sl="41" sc="0" el="41" ec="0" uspid="7" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="33" sl="42" sc="0" el="42" ec="0" uspid="3" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="35" sl="45" sc="0" el="45" ec="0" uspid="2" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="46" sl="47" sc="0" el="47" ec="0" uspid="1" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="0" offset="48" sl="49" sc="0" el="49" ec="0" uspid="0" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="25" sl="43" sc="0" el="43" ec="0" uspid="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" offset="0" sl="38" sc="0" el="38" ec="0" uspid="1" bec="2" bev="1" fileid="2" />
+                <SequencePoint vc="1" offset="8" sl="40" sc="0" el="40" ec="0" uspid="2" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="14" sl="41" sc="0" el="41" ec="0" uspid="3" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="33" sl="42" sc="0" el="42" ec="0" uspid="7" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="35" sl="45" sc="0" el="45" ec="0" uspid="8" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="46" sl="47" sc="0" el="47" ec="0" uspid="9" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="48" sl="49" sc="0" el="49" ec="0" uspid="10" bec="0" bev="0" fileid="2" />
               </SequencePoints>
               <BranchPoints>
-                <BranchPoint vc="1" sl="38" uspid="0" ordinal="0" offset="6" path="0" fileid="2" />
-                <BranchPoint vc="0" sl="38" uspid="1" ordinal="1" offset="6" path="1" fileid="2" />
-                <BranchPoint vc="1" sl="42" uspid="2" ordinal="0" offset="23" path="0" fileid="1" />
-                <BranchPoint vc="0" sl="42" uspid="3" ordinal="1" offset="23" path="1" fileid="1" />
+                <BranchPoint vc="1" sl="38" uspid="11" ordinal="0" offset="6" path="0" fileid="2" />
+                <BranchPoint vc="0" sl="38" uspid="12" ordinal="1" offset="6" path="1" fileid="2" />
+                <BranchPoint vc="1" sl="42" uspid="13" ordinal="2" offset="23" path="0" fileid="1" />
+                <BranchPoint vc="0" sl="42" uspid="14" ordinal="3" offset="23" path="1" fileid="1" />
               </BranchPoints>
               <MethodPoint vc="1" />
             </Method>
@@ -72,18 +72,18 @@
               <Name>System.Int32 Example::main(System.String[])</Name>
               <FileRef uid="1" />
               <SequencePoints>
-                <SequencePoint vc="1" offset="12" sl="41" sc="0" el="41" ec="0" uspid="451" bec="0" bev="0" fileid="1" />
-                <SequencePoint vc="1" offset="14" sl="42" sc="0" el="42" ec="0" uspid="450" bec="2" bev="1" fileid="1" />
-                <SequencePoint vc="1" offset="17" sl="43" sc="0" el="43" ec="0" uspid="449" bec="0" bev="0" fileid="1" />
-                <SequencePoint vc="1" offset="0" sl="25" sc="0" el="25" ec="0" uspid="453" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="6" sl="26" sc="0" el="26" ec="0" uspid="452" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="25" sl="27" sc="0" el="27" ec="0" uspid="448" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="27" sl="30" sc="0" el="30" ec="0" uspid="447" bec="0" bev="0" fileid="2" />
-                <SequencePoint vc="1" offset="38" sl="32" sc="0" el="32" ec="0" uspid="446" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="12" sl="41" sc="0" el="41" ec="0" uspid="619" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" offset="14" sl="42" sc="0" el="42" ec="0" uspid="620" bec="2" bev="1" fileid="1" />
+                <SequencePoint vc="1" offset="17" sl="43" sc="0" el="43" ec="0" uspid="621" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" offset="0" sl="25" sc="0" el="25" ec="0" uspid="617" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="6" sl="26" sc="0" el="26" ec="0" uspid="618" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="25" sl="27" sc="0" el="27" ec="0" uspid="622" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="27" sl="30" sc="0" el="30" ec="0" uspid="623" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="1" offset="38" sl="32" sc="0" el="32" ec="0" uspid="624" bec="0" bev="0" fileid="2" />
               </SequencePoints>
               <BranchPoints>
-                <BranchPoint vc="1" sl="42" uspid="148" ordinal="0" offset="15" path="0" fileid="1" />
-                <BranchPoint vc="0" sl="42" uspid="149" ordinal="1" offset="15" path="1" fileid="1" />
+                <BranchPoint vc="1" sl="42" uspid="625" ordinal="0" offset="15" path="0" fileid="1" />
+                <BranchPoint vc="0" sl="42" uspid="626" ordinal="1" offset="15" path="1" fileid="1" />
               </BranchPoints>
               <MethodPoint vc="1" />
             </Method>
