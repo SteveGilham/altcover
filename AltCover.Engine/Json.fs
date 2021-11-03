@@ -171,6 +171,8 @@ module internal Json =
 
            let counts =
              System.Collections.Generic.Dictionary<string, int>()
+           let embeds =
+             System.Collections.Generic.Dictionary<string, string>()
 
            let def = maybeAssembly path
 
@@ -191,75 +193,85 @@ module internal Json =
                       m.Attribute(XName.Get "excluded").Value
                       |> Boolean.TryParse
 
-                    let mutable docname = (String.Empty, String.Empty)
+                    let jmethods = System.Collections.Generic.Dictionary<string, NativeJson.Method>()
 
                     if not excluded then
-                      let sp = NativeJson.SeqPnts()
+                      let basename = sprintf "%s::%s" cname mname
+                      let _, count = counts.TryGetValue basename
+                      let index = count + 1
+                      counts.[basename] <- index
 
-                      m.Descendants(XName.Get "seqpnt")
+                      let synth =
+                        sprintf "ReturnType%d %s(Argument List%d)" index basename index
+
+                      let spoints = m.Descendants(XName.Get "seqpnt")
+
+                      let makeSeqPnt (x:XElement) =
+                        let parse n =
+                          x.Attribute(XName.Get n)
+                          |> Option.ofObj
+                          |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
+                          |> Option.defaultValue 0
+
+                        { NativeJson.SeqPnt.VC = parse "visitcount"
+                          NativeJson.SeqPnt.SL = parse "line"
+                          NativeJson.SeqPnt.SC = parse "column"
+                          NativeJson.SeqPnt.EL = parse "endline"
+                          NativeJson.SeqPnt.EC = parse "endcolumn"
+                          NativeJson.SeqPnt.Offset = parse "offset"
+                          NativeJson.SeqPnt.Id = 0
+                          NativeJson.SeqPnt.Times = null
+                          NativeJson.SeqPnt.Tracks = null }
+
+                      let sp = spoints
+                               |> Seq.tryHead
+                               |> Option.map makeSeqPnt
+
+                      let (className, methodName) =
+                        maybeNames
+                          def
+                          synth
+                          outerclass
+                          sp
+                          cname
+                          mname
+
+                      spoints
                       |> Seq.iter
                            (fun s ->
                              let _, excluded =
                                s.Attribute(XName.Get "excluded").Value
                                |> Boolean.TryParse
 
-                             let parse n =
-                               s.Attribute(XName.Get n)
-                               |> Option.ofObj
-                               |> Option.map (fun a -> a.Value |> Int32.TryParse |> snd)
-                               |> Option.defaultValue 0
-
                              if not excluded then
-                               if docname |> fst |> String.IsNullOrWhiteSpace  then
-                                 let doc = s.Attribute(XName.Get "document").Value
-                                 let embed = s.Ancestors("module".X)
-                                             |> Seq.collect (fun m -> m.Descendants("altcover.file".X))
-                                             |> Seq.filter (fun f -> f.Attribute(XName.Get "document").Value = doc)
-                                             |> Seq.tryHead
-                                             |> Option.map (fun f -> f.Attribute(XName.Get "embed").Value)
-                                             |> Option.filter (String.IsNullOrWhiteSpace >> not)
-                                             |> Option.defaultValue String.Empty
+                                let doc = s.Attribute(XName.Get "document").Value
+                                let embed =
+                                  let (ok, result) = embeds.TryGetValue(doc)
+                                  if ok then result
+                                  else
+                                    let found = s.Ancestors("module".X)
+                                                |> Seq.collect (fun m -> m.Descendants("altcover.file".X))
+                                                |> Seq.filter (fun f -> f.Attribute(XName.Get "document").Value = doc)
+                                                |> Seq.tryHead
+                                                |> Option.map (fun f -> f.Attribute(XName.Get "embed").Value)
+                                                |> Option.filter (String.IsNullOrWhiteSpace >> not)
+                                                |> Option.defaultValue String.Empty
+                                    embeds.Add(doc, found)
+                                    found
 
-                                 docname <- (s.Attribute(XName.Get "document").Value,
-                                             embed)
+                                let docname = (doc, embed)
+                                let jmethod =
+                                  getMethodRecord modul docname className methodName
+                                jmethods.[doc] <- jmethod
 
-                               { NativeJson.SeqPnt.VC = parse "visitcount"
-                                 NativeJson.SeqPnt.SL = parse "line"
-                                 NativeJson.SeqPnt.SC = parse "column"
-                                 NativeJson.SeqPnt.EL = parse "endline"
-                                 NativeJson.SeqPnt.EC = parse "endcolumn"
-                                 NativeJson.SeqPnt.Offset = 0
-                                 NativeJson.SeqPnt.Id = 0
-                                 NativeJson.SeqPnt.Times = null
-                                 NativeJson.SeqPnt.Tracks = null }
-                               |> sp.Add)
+                                s
+                                |> makeSeqPnt
+                                |> jmethod.SeqPnts.Add)
 
-                      if sp.Count > 0 then
-                        let basename = sprintf "%s::%s" cname mname
-                        let _, count = counts.TryGetValue basename
-                        let index = count + 1
-                        counts.[basename] <- index
-
-                        let synth =
-                          sprintf "ReturnType%d %s(Argument List%d)" index basename index
-
-                        let (className, methodName) =
-                          maybeNames
-                            def
-                            synth
-                            outerclass
-                            (sp |> Seq.head |> Some)
-                            cname
-                            mname
-
-                        let m =
-                          getMethodRecord modul docname className methodName
-
-                        m.SeqPnts.AddRange sp
-
-                        m.SeqPnts
-                        |> Seq.groupBy (fun s -> s.SL)
-                        |> Seq.iter (fun (l, ss) -> m.Lines.[l] <- lineVisits ss))
+                      jmethods.Values
+                      |> Seq.iter (fun jm -> jm.SeqPnts
+                                             |> Seq.groupBy (fun s -> s.SL)
+                                             |> Seq.iter (fun (l, ss) -> jm.Lines.[l] <- lineVisits ss)))
            finally
              maybeDispose def
 
