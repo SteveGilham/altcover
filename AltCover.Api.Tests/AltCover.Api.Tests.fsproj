@@ -32,6 +32,7 @@
     <EmbeddedResource Include="..\AltCover.Tests\JsonFromNCoverWithPartials.json" Link="JsonFromNCoverWithPartials.json" />
     <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToXml.xml" Link="JsonWithPartialsToXml.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.xml" Link="NCoverWithPartials.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\OpenCoverFromNCoverWithPartials.xml" Link="OpenCoverFromNCoverWithPartials.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.xml" Link="OpenCoverWithPartials.xml" />
     <EmbeddedResource Include="..\AltCover.Toolkit\xsd\OpenCoverStrict.xsd" Link="OpenCoverStrict.xsd">
       <Generator>MSDataSetGenerator</Generator>

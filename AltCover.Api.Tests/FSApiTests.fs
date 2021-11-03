@@ -720,10 +720,11 @@ module FSApiTests =
     use stream2 =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverFromNCoverWithPartials.xml")
 
     use rdr2 = new StreamReader(stream2)
     let doc2 = XDocument.Load rdr2
+    // OpenCover.PostProcess doc2 BranchOrdinal.Offset
     use stream3 = new MemoryStream()
     doc2.Save(stream3)
     stream3.Position <- 0L
@@ -733,6 +734,7 @@ module FSApiTests =
       rdr3
         .ReadToEnd()
         .Replace("\r", String.Empty)
+    // printfn "%A" result
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
   [<Test>]
