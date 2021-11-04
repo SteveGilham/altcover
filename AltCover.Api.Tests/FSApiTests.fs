@@ -631,6 +631,12 @@ module FSApiTests =
         .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.xml")
 
     let doc = XDocument.Load stream
+    // fix up file path
+    let exe =
+      Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+    doc.Descendants("ModulePath".X)
+    |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
+
     use mstream = new MemoryStream()
     let rewrite = CoverageFormats.ConvertToNCover doc
     rewrite.Save mstream
@@ -658,12 +664,14 @@ module FSApiTests =
       )
         .Value
 
+
     let expected =
       rdr2
         .ReadToEnd()
         .Replace("{0}", time)
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
+
 
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
@@ -701,9 +709,12 @@ module FSApiTests =
 
     let document =
       XDocument.Load stream
+    let now = DateTime.UtcNow.ToLongDateString()
 
     let rewrite =
       CoverageFormats.ConvertFromNCover document [ exe ]
+    rewrite.Descendants("ModuleTime".X)
+    |> Seq.iter (fun x -> x.Value <- now)
 
     use mstream = new MemoryStream()
     rewrite.Save mstream
@@ -723,6 +734,11 @@ module FSApiTests =
 
     use rdr2 = new StreamReader(stream2)
     let doc2 = XDocument.Load rdr2
+    doc2.Descendants("ModulePath".X)
+    |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
+    doc2.Descendants("ModuleTime".X)
+    |> Seq.iter (fun x -> x.Value <- now)
+
     // OpenCover.PostProcess doc2 BranchOrdinal.Offset
     use stream3 = new MemoryStream()
     doc2.Save(stream3)
