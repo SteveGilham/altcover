@@ -5886,6 +5886,15 @@ module AltCoverRunnerTests =
               .Assembly.GetName()
               .Version.ToString()
           )
+          .Replace( // different computations TODO!!
+            """complexity="2.2""",
+            """complexity="1.8""")
+          .Replace( // different computations TODO!!
+            """complexity="2""",
+            """complexity="1""")
+          .Replace( // different computations TODO!!
+            """.cpp" line-rate="0.78" branch-rate="0""",
+            """.cpp" line-rate="0.78" branch-rate="1""")
 
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result

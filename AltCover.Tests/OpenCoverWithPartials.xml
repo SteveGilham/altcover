@@ -1,20 +1,20 @@
- <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="4.7.1221.0">
-  <Summary numSequencePoints="27" visitedSequencePoints="24" numBranchPoints="9" visitedBranchPoints="5" sequenceCoverage="88.89" branchCoverage="55.56" maxCyclomaticComplexity="10" minCyclomaticComplexity="1" maxCrapScore="3.01" minCrapScore="1.01" visitedClasses="2" numClasses="2" visitedMethods="3" numMethods="3" />
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="4.7.1221.0">
+  <Summary numSequencePoints="27" visitedSequencePoints="24" numBranchPoints="9" visitedBranchPoints="5" sequenceCoverage="88.89" branchCoverage="55.56" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" maxCrapScore="3.01" minCrapScore="1.01" visitedClasses="2" numClasses="2" visitedMethods="3" numMethods="3" />
   <Modules>
     <Module hash="26-01-02-74-B5-50-08-95-5A-98-F1-3F-AC-EE-F2-BE-E7-B8-10-EA">
-      <Summary numSequencePoints="27" visitedSequencePoints="24" numBranchPoints="9" visitedBranchPoints="5" sequenceCoverage="88.89" branchCoverage="55.56" maxCyclomaticComplexity="10" minCyclomaticComplexity="1" maxCrapScore="3.01" minCrapScore="1.01" visitedClasses="2" numClasses="2" visitedMethods="3" numMethods="3" />
+      <Summary numSequencePoints="27" visitedSequencePoints="24" numBranchPoints="9" visitedBranchPoints="5" sequenceCoverage="88.89" branchCoverage="55.56" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" maxCrapScore="3.01" minCrapScore="1.01" visitedClasses="2" numClasses="2" visitedMethods="3" numMethods="3" />
       <ModulePath>C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\Debug\SimpleMix.exe</ModulePath>
       <ModuleTime>2021-10-30T13:04:37.9842657Z</ModuleTime>
       <ModuleName>SimpleMix</ModuleName>
       <Files>
-        <File uid="1" fullPath="C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix\SimpleMix.cpp" 
+        <File uid="1" fullPath="C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix\SimpleMix.cpp"
          altcover.embed="1ZJBb9swDIXvBvwfOO9iN0Xas5sGGIweCgTb0HbbrQGrMLEGWxIouUlR5L+PlpKmwDCg11104Ht8Ij/p4gKaxV2DXUc8Vc5BDT1qA47tb1IB1rqjaZ7l2WdtVDesCAofVrjeTdsilh3jpkcYTI8GN7TKM20CfMWgn6mxgwk/7ZY6X25Vi7wMZ+DuA2uzqfLsNc8ARrcafXANl1djRVnjA7z5n2O/qIsCSdvhy83ttx9FdG5bmQ7Ks1MkQAyV2DXIlV61XKaAczjaJpOqSiZIN08mMW0/HkxhYJPqUt2fNnzbL88GLzFgsCfvUBHcv/hA/dUoMa1Bdeg93OywdzKeDOSGp06resz3QciouPXIuURmfJmlgLpOAz7OHwF549/vc1CknwVF8UC7AMHCE0GLvqVVAgLQCDzbUV3/Yh1ooQ2V0lIdVKfN0gWeNcJ2Dg6uTxyE+VKhDzMZjVhbPhnnUB59AN8DP9g0zSj6GF/9+/a/f4KL9tRwwH15fIB9VD5KJ30geelPR9p1fegT/T2+D/P77wH+AQ==" />
         <File uid="2" fullPath="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h" />
         <File uid="7" fullPath="d:\a01\_work\5\s\src\vctools\crt\crtw32\msilcrt\mcrtexe.cpp" />
       </Files>
       <Classes>
         <Class>
-          <Summary numSequencePoints="19" visitedSequencePoints="16" numBranchPoints="6" visitedBranchPoints="3" sequenceCoverage="84.21" branchCoverage="50" maxCyclomaticComplexity="10" minCyclomaticComplexity="1" maxCrapScore="3.01" minCrapScore="1.01" visitedClasses="1" numClasses="1" visitedMethods="2" numMethods="2" />
+          <Summary numSequencePoints="19" visitedSequencePoints="16" numBranchPoints="6" visitedBranchPoints="3" sequenceCoverage="84.21" branchCoverage="50" maxCyclomaticComplexity="3" minCyclomaticComplexity="1" maxCrapScore="3.01" minCrapScore="1.01" visitedClasses="1" numClasses="1" visitedMethods="2" numMethods="2" />
           <FullName>&lt;Module&gt;</FullName>
           <Methods>
             <Method visited="true" cyclomaticComplexity="3" nPathComplexity="4" sequenceCoverage="90" branchCoverage="60" crapScore="3.01" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">

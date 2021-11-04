@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.89" branch-rate="0.56" lines-covered="24" lines-valid="27" branches-covered="5" branches-valid="9" complexity="10" version="8.2.0.0" timestamp="xx">
+<coverage line-rate="0.89" branch-rate="0.5" lines-covered="24" lines-valid="27" branches-covered="3" branches-valid="6" complexity="3" version="3.0.0.0" timestamp="xx">
   <sources>
     <source>C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include</source>
     <source>C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix</source>
     <source>d:\a01\_work\5\s\src\vctools\crt\crtw32\msilcrt</source>
   </sources>
   <packages>
-    <package name="SimpleMix" line-rate="0.89" branch-rate="0.56" complexity="2">
+    <package name="SimpleMix" line-rate="0.89" branch-rate="0.5" complexity="2.2">
       <classes>
         <class name="&lt;Module&gt;" filename="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h" line-rate="0.9" branch-rate="0.6" complexity="3">
           <methods>
-            <method name="main" signature="System.Int32 (System.String[])" line-rate="0.9" branch-rate="0.6" complexity="3">
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="0.9" branch-rate="0.5" complexity="3">
               <lines>
                 <line number="41" hits="1" branch="false" />
                 <line number="42" hits="1" branch="true" condition-coverage="50% (1/2)">
@@ -32,10 +32,10 @@
             </line>
             <line number="43" hits="1" branch="false" />
           </lines>
-        </class>        
+        </class>
         <class name="&lt;Module&gt;" filename="C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix\SimpleMix.cpp" line-rate="0.9" branch-rate="0.6" complexity="3">
           <methods>
-            <method name="main" signature="System.Int32 (System.String[])" line-rate="0.9" branch-rate="0.6" complexity="3">
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="0.9" branch-rate="0.5" complexity="3">
               <lines>
                 <line number="38" hits="1" branch="true" condition-coverage="50% (1/2)">
                   <conditions>
@@ -93,9 +93,9 @@
             <line number="288" hits="1" branch="false" />
           </lines>
         </class>
-        <class name="Example" filename="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h" line-rate="0.9" branch-rate="0.6" complexity="3">
-         <methods>
-            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="0.67" complexity="2">
+        <class name="Example" filename="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h" line-rate="1" branch-rate="0.67" complexity="2">
+          <methods>
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="0.5" complexity="2">
               <lines>
                 <line number="41" hits="1" branch="false" />
                 <line number="42" hits="1" branch="true" condition-coverage="50% (1/2)">
@@ -119,7 +119,7 @@
         </class>
         <class name="Example" filename="C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix\SimpleMix.cpp" line-rate="1" branch-rate="0.67" complexity="2">
           <methods>
-            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="0.67" complexity="2">
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="0.5" complexity="2">
               <lines>
                 <line number="25" hits="1" branch="false" />
                 <line number="26" hits="1" branch="false" />
