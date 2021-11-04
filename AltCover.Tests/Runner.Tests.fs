@@ -5574,7 +5574,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartialsxml", StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.xml", StringComparison.Ordinal))
 
     use stream =
       Assembly
@@ -5587,7 +5587,7 @@ module AltCoverRunnerTests =
       Path.Combine(
         Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName,
-        Guid.NewGuid().ToString() + "/NCover122.cobertura"
+        Guid.NewGuid().ToString() + "/NCoverWithPartials.cobertura"
       )
 
     Cobertura.path := Some unique
@@ -5617,7 +5617,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("NCover122.cobertura", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.cob.xml", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5833,7 +5833,7 @@ module AltCoverRunnerTests =
         Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName,
         Guid.NewGuid().ToString()
-        + "/Sample4FullTracking.cobertura"
+        + "/JsonWithPartials.cobertura"
       )
 
     Cobertura.path := Some unique
@@ -5865,7 +5865,7 @@ module AltCoverRunnerTests =
           .GetManifestResourceNames()
         |> Seq.find
              (fun n ->
-               n.EndsWith("Sample4FullTracking.cobertura", StringComparison.Ordinal))
+               n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -6317,7 +6317,7 @@ module AltCoverRunnerTests =
       Path.Combine(
         Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName,
-        Guid.NewGuid().ToString() + "/issue122.cobertura"
+        Guid.NewGuid().ToString() + "/OpenCoverWithPartials.cobertura"
       )
 
     Cobertura.path := Some unique
@@ -6344,7 +6344,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("issue122.cobertura", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("OpenCoverWithPartials.cob.xml", StringComparison.Ordinal))
 
       use stream2 =
         Assembly

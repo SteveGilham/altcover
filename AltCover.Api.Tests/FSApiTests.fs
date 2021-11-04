@@ -896,7 +896,7 @@ module FSApiTests =
     use stream3 =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.Sample1WithNCover.cob.xml")
+        .GetManifestResourceStream("AltCover.Api.Tests.NCoverWithPartials.cob.xml")
 
     use rdr2 = new StreamReader(stream3)
 

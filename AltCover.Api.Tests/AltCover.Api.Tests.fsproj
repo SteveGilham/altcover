@@ -31,6 +31,7 @@
     <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartials.json" Link="JsonWithPartials.json" />
     <EmbeddedResource Include="..\AltCover.Tests\JsonFromNCoverWithPartials.json" Link="JsonFromNCoverWithPartials.json" />
     <EmbeddedResource Include="..\AltCover.Tests\JsonWithPartialsToXml.xml" Link="JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.cob.xml" Link="NCoverWithPartials.cob.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\NCoverWithPartials.xml" Link="NCoverWithPartials.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\OpenCoverFromNCoverWithPartials.xml" Link="OpenCoverFromNCoverWithPartials.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\OpenCoverWithPartials.xml" Link="OpenCoverWithPartials.xml" />

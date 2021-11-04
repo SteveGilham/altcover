@@ -137,7 +137,8 @@ module internal Cobertura =
 
       let extractClasses (``module``: XElement) classes =
         ``module``.Descendants("method".X)
-        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value <> "true")
+        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value <> "true"
+                                && m.Descendants("seqpnt".X) |> Seq.isEmpty |> not)
         |> Seq.groupBy
              (fun method ->
                (method.Attribute("class".X).Value,
