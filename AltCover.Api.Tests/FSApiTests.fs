@@ -239,6 +239,8 @@ module FSApiTests =
     //    .Trim([| '\u00FF' |]),
     //  Is.EqualTo
     //  <| expected
+    //    .Replace("8.13", "8.12")
+    //    .Replace("4.13", "4.12")  // CRAP score rounding
     //    .Replace('\r', '\u00FF')
     //    .Replace('\n', '\u00FF')
     //    .Replace("\u00FF\u00FF", "\u00FF")
@@ -251,6 +253,8 @@ module FSApiTests =
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")
         .Trim([| '\u00FF' |]) = expected
+        .Replace("8.13", "8.12")  // CRAP score rounding
+        .Replace("4.13", "4.12")  // CRAP score rounding
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")
