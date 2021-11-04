@@ -886,11 +886,14 @@ module FSApiTests =
     let cob = CoverageFormats.ConvertToCobertura doc
     use stream2 = new MemoryStream()
     cob.Save stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
     use rdr = new StreamReader(stream2a)
 
     let result =
-      rdr.ReadToEnd().Replace("\r", String.Empty)
+      rdr.ReadToEnd()
+         .Replace("\r", String.Empty)
+         .Replace("\\", "/")
+
     // printfn "FSApi.NCoverToCobertura\r\n%s" result
 
     use stream3 =
@@ -912,10 +915,11 @@ module FSApiTests =
     let expected =
       rdr2
         .ReadToEnd()
-        .Replace("{0}", v)
-        .Replace("{1}", t)
+        .Replace("version=\"8.2.0.0\"", "version=\"" + v + "\"")
+        .Replace("timestamp=\"xx\"", "timestamp=\"" + t + "\"")
         .Replace("\r", String.Empty)
 
+    //printfn "%A" result
     //NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
     test <@ result = expected @>
 
