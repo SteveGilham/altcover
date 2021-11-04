@@ -63,7 +63,7 @@ FN:4,(anonymous_0)
 
   let internal convertReport (report: XDocument) (format: ReportFormat) (stream: Stream) =
     doWithStream
-      (fun () -> new StreamWriter(stream))
+      (fun () -> new StreamWriter(stream, Text.Encoding.UTF8, 4096, true))
       (fun writer ->
         match format with
         | ReportFormat.NCover ->

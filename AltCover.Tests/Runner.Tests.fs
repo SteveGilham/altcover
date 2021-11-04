@@ -4924,7 +4924,7 @@ module AltCoverRunnerTests =
       Path.Combine(
         Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName,
-        Guid.NewGuid().ToString() + "/OpenCover.lcov"
+        Guid.NewGuid().ToString() + "/OpenCoverWithPartials.lcov"
       )
 
     LCov.path := Some unique
@@ -4948,7 +4948,7 @@ module AltCoverRunnerTests =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5075,12 +5075,13 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
+      //printfn "%s" result
 
       let resource2 =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("NCover.lcov", StringComparison.Ordinal))
+        |> Seq.find (fun n -> n.EndsWith("NCoverWithPartials.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly
@@ -5264,7 +5265,7 @@ module AltCoverRunnerTests =
         Assembly.GetExecutingAssembly().Location
         |> Path.GetDirectoryName,
         Guid.NewGuid().ToString()
-        + "/Sample4.coverlet.lcov"
+        + "/JsonWithPartials.lcov"
       )
 
     LCov.path := Some unique
@@ -5286,7 +5287,7 @@ module AltCoverRunnerTests =
           .GetExecutingAssembly()
           .GetManifestResourceNames()
         |> Seq.find
-             (fun n -> n.EndsWith("Sample4.coverlet.lcov", StringComparison.Ordinal))
+             (fun n -> n.EndsWith("OpenCoverWithPartials.lcov", StringComparison.Ordinal))
 
       use stream2 =
         Assembly

@@ -161,7 +161,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
     CoverageFormats.ConvertToLcov doc stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
     use rdr = new StreamReader(stream2a)
 
     let result =
@@ -190,7 +190,7 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
     CoverageFormats.ConvertToLcov doc stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
     use rdr = new StreamReader(stream2a)
 
     let result =
@@ -199,13 +199,13 @@ module FSApiTests =
     use stream3 =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.HandRolledMonoCoverage.lcov")
+        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverWithPartials.lcov")
 
     use rdr2 = new StreamReader(stream3)
 
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    // printfn "%s" result
+    //printfn "%s" result
     //Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
 
@@ -852,7 +852,7 @@ module FSApiTests =
     let cob = CoverageFormats.ConvertToCobertura doc
     use stream2 = new MemoryStream()
     cob.Save stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer())
+    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
     use rdr = new StreamReader(stream2a)
 
     let result =

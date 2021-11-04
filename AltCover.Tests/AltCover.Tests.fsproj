@@ -59,9 +59,11 @@
     <EmbeddedResource Include="JsonWithPartialsToRawXml.xml" />
     <EmbeddedResource Include="JsonWithPartialsToXml.xml" />
     <EmbeddedResource Include="OpenCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="OpenCoverWithPartials.lcov" />
     <EmbeddedResource Include="OpenCoverWithPartials.xml" />
     <EmbeddedResource Include="OpenCover.json" />
     <EmbeddedResource Include="NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="NCoverWithPartials.lcov" />
     <EmbeddedResource Include="NCoverWithPartials.xml" />
     <EmbeddedResource Include="NCover.lcov" />
     <EmbeddedResource Include="OpenCover.lcov" />
