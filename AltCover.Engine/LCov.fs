@@ -67,18 +67,20 @@ FN:4,(anonymous_0)
       (fun writer ->
         match format with
         | ReportFormat.NCover ->
+            // TODO -- by module
             report.Descendants("method".X)
             |> Seq.filter
                  (fun m ->
                    m.Attribute("excluded".X).Value <> "true"
                    && m.Descendants("seqpnt".X)
                       |> Seq.exists (fun s -> s.Attribute("excluded".X).Value <> "true"))
-            |> Seq.groupBy
-                 (fun m ->
-                   (m.Descendants("seqpnt".X) |> Seq.head).Attribute(
-                     "document".X
-                   )
+            |> Seq.collect( fun m -> m.Descendants("seqpnt".X)
+                                     |> Seq.map (fun s -> s.Attribute("document".X)
                      .Value)
+                                     |> Seq.distinct
+                                     |> Seq.map (fun d -> (d, m)))      
+            |> Seq.groupBy fst
+            |> Seq.map (fun (d, dmlist) -> d, dmlist |> Seq.map snd)
             |> I.multiSortByNameAndStartLine
             |> Seq.iter
                  (fun (f, methods) ->
@@ -86,7 +88,7 @@ FN:4,(anonymous_0)
                    //   is stored in the following format:
                    //
                    // TN:<test name>
-                   writer.WriteLine "TN:"
+                   writer.WriteLine "TN:" // TODO module name
                    // For each source file referenced in the .da file,  there  is  a  section
                    // containing filename and coverage data:
                    //
