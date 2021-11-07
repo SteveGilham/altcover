@@ -28,6 +28,17 @@ module internal LCov =
       |> Int32.TryParse
       |> snd
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
+                                                      "AvoidUnnecessarySpecializationRule",
+                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    let internal lineOfPartialMethod (m: XElement * XElement seq) =
+      let (_, s) = m
+      s
+      |> Seq.map (fun x -> x.Attribute("line".X).Value
+                           |> Int32.TryParse
+                           |> snd)
+      |> Seq.min
+
     let internal multiSort (by: 'a -> int) (l: (string * 'a seq) seq) =
       l
       |> Seq.map (fun (f, ms) -> (f, ms |> Seq.sortBy by |> Seq.toList))
@@ -35,6 +46,9 @@ module internal LCov =
 
     let internal multiSortByNameAndStartLine (l: (string * XElement seq) seq) =
       multiSort lineOfMethod l
+
+    let internal multiSortByNameAndPartialStartLine (l: (string * (XElement * XElement seq) seq) seq) =
+      multiSort lineOfPartialMethod l
 
   // from a real sample e.g. https://pastebin.com/588FggQg
   (*
@@ -75,13 +89,12 @@ FN:4,(anonymous_0)
                    && m.Descendants("seqpnt".X)
                       |> Seq.exists (fun s -> s.Attribute("excluded".X).Value <> "true"))
             |> Seq.collect( fun m -> m.Descendants("seqpnt".X)
-                                     |> Seq.map (fun s -> s.Attribute("document".X)
-                     .Value)
-                                     |> Seq.distinct
-                                     |> Seq.map (fun d -> (d, m)))      
+                                     |> Seq.groupBy (fun s -> s.Attribute("document".X)
+                                                               .Value)
+                                     |> Seq.map (fun (d, l) -> (d, (m, l))))      
             |> Seq.groupBy fst
             |> Seq.map (fun (d, dmlist) -> d, dmlist |> Seq.map snd)
-            |> I.multiSortByNameAndStartLine
+            |> I.multiSortByNameAndPartialStartLine
             |> Seq.iter
                  (fun (f, methods) ->
                    //If available, a tracefile begins with the testname which
@@ -112,10 +125,11 @@ FN:4,(anonymous_0)
                    |> Seq.iter
                         (fun m ->
                           let l =
-                            (I.lineOfMethod m)
+                            (I.lineOfPartialMethod m)
                               .ToString(CultureInfo.InvariantCulture)
 
-                          let name = fullname m
+                          let (mx, pts) = m
+                          let name = fullname mx
                           writer.WriteLine("FN:" + l + "," + name))
                    // Next, there is a list of execution counts for each  instrumented  function:
                    //
@@ -123,10 +137,10 @@ FN:4,(anonymous_0)
                    let hit =
                      methods
                      |> Seq.fold
-                          (fun (n: int) m ->
+                          (fun (n: int) (m,_) ->
                             let v =
                               (m.Descendants("seqpnt".X) |> Seq.head).Attribute(
-                                "visitcount".X
+                                                    "visitcount".X
                               )
                                 .Value
 
@@ -171,20 +185,26 @@ FN:4,(anonymous_0)
                    // checksumming algorithm.
                    let (lf, lh) =
                      methods
-                     |> Seq.collect (fun m -> m.Descendants("seqpnt".X))
+                     |> Seq.collect snd
                      |> Seq.filter
                           (fun b ->
                             b.Attribute("line".X).Value
                             |> String.IsNullOrWhiteSpace
                             |> not)
+                     |> Seq.groupBy (fun b -> b.Attribute("line".X).Value)
+                     |> Seq.sortBy (fst >> Int32.TryParse >> snd)
                      |> Seq.fold
-                          (fun (f, h) b ->
-                            let sl = b.Attribute("line".X).Value
-                            let v = b.Attribute("visitcount".X)
-
-                            let vc = if v |> isNull then "0" else v.Value
-                            writer.WriteLine("DA:" + sl + "," + vc)
-                            (f + 1, h + if vc = "0" then 0 else 1))
+                          (fun (f, (h:int)) (sl,bs) ->
+                            let vx = bs
+                                     |> Seq.map (fun b -> let v = b.Attribute("visitcount".X)
+                                                          if v |> isNull then 0
+                                                          else v.Value |> Int32.TryParse |> snd)
+                            let vc = if vx |> Seq.exists(fun v -> v > 0)
+                                     then vx |> Seq.max
+                                     else vx |> Seq.min
+                            writer.WriteLine("DA:" + sl.ToString(CultureInfo.InvariantCulture) 
+                                                   + "," + vc.ToString(CultureInfo.InvariantCulture))
+                            (f + 1, h.Increment (vc <> 0)))
                           (0, 0)
                    // At  the  end of a section, there is a summary about how many lines were
                    // found and how many were actually instrumented:

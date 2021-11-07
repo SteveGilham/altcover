@@ -1,25 +1,25 @@
 ﻿TN:
 SF:C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h
-FN:38,System.Int32 <Module>::main(System.String[])
-FN:25,System.Int32 Example::main(System.String[])
+FN:41,System.Int32 <Module>::main(System.String[])
+FN:41,System.Int32 Example::main(System.String[])
 FNDA:1,System.Int32 <Module>::main(System.String[])
 FNDA:1,System.Int32 Example::main(System.String[])
 FNF:2
 FNH:2
 BRF:0
 BRH:0
-DA:41,3
-DA:42,3
-DA:43,2
-LH:12
-LF:13
+DA:41,1
+DA:42,1
+DA:43,1
+LH:3
+LF:3
 end_of_record
 TN:
 SF:C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix\SimpleMix.cpp
-FN:38,System.Int32 <Module>::main(System.String[])
 FN:25,System.Int32 Example::main(System.String[])
-FNDA:1,System.Int32 <Module>::main(System.String[])
+FN:38,System.Int32 <Module>::main(System.String[])
 FNDA:1,System.Int32 Example::main(System.String[])
+FNDA:1,System.Int32 <Module>::main(System.String[])
 FNF:2
 FNH:2
 BRF:0
@@ -31,13 +31,13 @@ DA:30,1
 DA:32,1
 DA:38,1
 DA:40,1
-DA:41,3
-DA:42,3
+DA:41,1
+DA:42,1
 DA:45,1
 DA:47,1
 DA:49,0
-LH:12
-LF:13
+LH:11
+LF:12
 end_of_record
 TN:
 SF:d:\a01\_work\5\s\src\vctools\crt\crtw32\msilcrt\mcrtexe.cpp
