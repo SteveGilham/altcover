@@ -1,4 +1,4 @@
-﻿TN:
+﻿TN: SimpleMix, Version=1.0.7973.23538, Culture=neutral, PublicKeyToken=null
 SF:C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\vcclr.h
 FN:41,System.Int32 <Module>::main(System.String[])
 FN:41,System.Int32 Example::main(System.String[])
@@ -14,7 +14,7 @@ DA:43,1
 LH:3
 LF:3
 end_of_record
-TN:
+TN: SimpleMix, Version=1.0.7973.23538, Culture=neutral, PublicKeyToken=null
 SF:C:\Users\steve\Documents\GitHub\altcover\Samples\Sample29\SimpleMix\SimpleMix.cpp
 FN:25,System.Int32 Example::main(System.String[])
 FN:38,System.Int32 <Module>::main(System.String[])
@@ -39,7 +39,7 @@ DA:49,0
 LH:11
 LF:12
 end_of_record
-TN:
+TN: SimpleMix, Version=1.0.7973.23538, Culture=neutral, PublicKeyToken=null
 SF:d:\a01\_work\5\s\src\vctools\crt\crtw32\msilcrt\mcrtexe.cpp
 FN:223,System.Int32 <Module>::mainCRTStartupStrArray(System.String[])
 FNDA:1,System.Int32 <Module>::mainCRTStartupStrArray(System.String[])

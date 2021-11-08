@@ -64,8 +64,9 @@ FN:4,(anonymous_0)
       (fun writer ->
         match format with
         | ReportFormat.NCover ->
-            // TODO -- by module
-            report.Descendants("method".X)
+            report.Descendants("module".X)
+            |> Seq.iter (fun assembly ->
+            assembly.Descendants("method".X)
             |> Seq.filter
                  (fun m ->
                    m.Attribute("excluded".X).Value <> "true"
@@ -74,7 +75,7 @@ FN:4,(anonymous_0)
             |> Seq.collect( fun m -> m.Descendants("seqpnt".X)
                                      |> Seq.groupBy (fun s -> s.Attribute("document".X)
                                                                .Value)
-                                     |> Seq.map (fun (d, l) -> (d, (m, l))))      
+                                     |> Seq.map (fun (d, l) -> (d, (m, l))))
             |> Seq.groupBy fst
             |> Seq.map (fun (d, dmlist) -> d, dmlist |> Seq.map snd)
             |> I.multiSortByNameAndPartialStartLine
@@ -84,7 +85,7 @@ FN:4,(anonymous_0)
                    //   is stored in the following format:
                    //
                    // TN:<test name>
-                   writer.WriteLine "TN:" // TODO module name
+                   writer.WriteLine ("TN: " + assembly.Attribute("assemblyIdentity".X).Value)
                    // For each source file referenced in the .da file,  there  is  a  section
                    // containing filename and coverage data:
                    //
@@ -198,7 +199,7 @@ FN:4,(anonymous_0)
                    // Each sections ends with:
                    //
                    // end_of_record
-                   writer.WriteLine "end_of_record")
+                   writer.WriteLine "end_of_record"))
         | _ ->
             report.Descendants("File".X)
             |> Seq.iter
