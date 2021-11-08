@@ -106,7 +106,7 @@ module CoverageFormats =
            |> Seq.iter
                 (fun f ->
                   files.Add(
-                    f.Attribute(XName.Get "fullPath").Value.Replace(Path.DirectorySeparatorChar, '/'),
+                    f.Attribute(XName.Get "fullPath").Value.Replace('\\', '/'),
                     f.Attribute(XName.Get "uid").Value
                   ))
 
@@ -124,7 +124,7 @@ module CoverageFormats =
                   let el = s.Attribute(XName.Get "endline").Value
                   let ec = s.Attribute(XName.Get "endcolumn").Value
 
-                  let key = s.Attribute(XName.Get "document").Value.Replace(Path.DirectorySeparatorChar, '/')
+                  let key = s.Attribute(XName.Get "document").Value.Replace('\\', '/')
                   printfn "%s" key
 
                   let uid = files.[key]
