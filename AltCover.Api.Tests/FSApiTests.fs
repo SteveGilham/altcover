@@ -205,7 +205,7 @@ module FSApiTests =
 
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    printfn "%s" result
+    //printfn "%s" result
     Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
 
@@ -800,7 +800,7 @@ module FSApiTests =
       rdr3
         .ReadToEnd()
         .Replace("\r", String.Empty)
-    // printfn "%A" result
+    //printfn "%A" result
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
   [<Test>]
@@ -908,7 +908,7 @@ module FSApiTests =
 
     let result =
       rdr.ReadToEnd().Replace("\r", String.Empty)
-    // printfn "FSApi.NCoverToCobertura\r\n%s" result
+    //printfn "FSApi.NCoverToCobertura\r\n%s" result
 
     use stream3 =
       Assembly
@@ -961,7 +961,7 @@ module FSApiTests =
          .Replace("\r", String.Empty)
          .Replace("\\", "/")
 
-    // printfn "FSApi.NCoverToCobertura\r\n%s" result
+    //printfn "FSApi.NCoverToCobertura\r\n%s" result
 
     use stream3 =
       Assembly
@@ -1322,7 +1322,7 @@ module FSApiTests =
 
     let summary = merge.Root.Element(XName.Get "Summary")
 
-    // printfn "%A" merge
+    //printfn "%A" merge
 
     test
       <@ summary.ToString() = "<Summary numSequencePoints=\"35\" visitedSequencePoints=\"21\" numBranchPoints=\"5\" visitedBranchPoints=\"5\" sequenceCoverage=\"60.00\" branchCoverage=\"100.00\" maxCyclomaticComplexity=\"7\" minCyclomaticComplexity=\"1\" visitedClasses=\"5\" numClasses=\"8\" visitedMethods=\"9\" numMethods=\"13\" minCrapScore=\"1.00\" maxCrapScore=\"14.11\" />" @>
@@ -1349,7 +1349,7 @@ module FSApiTests =
     let merge = AltCover.OpenCover.Merge [ doc1; doc2; doc1; doc2 ]
     let summary = merge.Root.Element(XName.Get "Summary")
 
-    // printfn "%A" merge
+    //printfn "%A" merge
 
     test
       <@ summary

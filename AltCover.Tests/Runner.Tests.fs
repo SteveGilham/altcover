@@ -4580,7 +4580,7 @@ module AltCoverRunnerTests =
 
           let expected =
             "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||"
-          // printfn "%s" <| builder.ToString()
+          //printfn "%s" <| builder.ToString()
           Assert.That(builder.ToString(), Is.EqualTo expected)
 
           let collected =
@@ -4624,7 +4624,7 @@ module AltCoverRunnerTests =
             "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
 
           let result = builder.ToString()
-          // printfn "%s" result
+          //printfn "%s" result
           Assert.That(result, Is.EqualTo expected, result)
 
           let collected =
@@ -4668,7 +4668,7 @@ module AltCoverRunnerTests =
             "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|Visited Branches 0 of 0 (n/a)||##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|"
 
           let result = builder.ToString()
-          // printfn "%s" result
+          //printfn "%s" result
           Assert.That(result, Is.EqualTo expected, result)
 
           let collected =
@@ -5142,7 +5142,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       let result = File.ReadAllText unique
-      // printfn "%s" result
+      //printfn "%s" result
       let resource2 =
         Assembly
           .GetExecutingAssembly()
@@ -5695,7 +5695,7 @@ module AltCoverRunnerTests =
                    """timestamp=\"\d*\">""",
                    """timestamp="xx">""")
           .Replace("\\", "/")
-      // printfn "%s" result
+      //printfn "%s" result
       let resource2 =
         Assembly
           .GetExecutingAssembly()
@@ -5954,7 +5954,7 @@ module AltCoverRunnerTests =
                    """timestamp=\"\d*\">""",
                    """timestamp="xx">""")
           .Replace("\\", "/")
-      // printfn "%s" result
+      //printfn "%s" result
       let resource2 =
         Assembly
           .GetExecutingAssembly()
