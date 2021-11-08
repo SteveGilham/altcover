@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.71" branch-rate="0.5" lines-covered="10" lines-valid="14" branches-covered="1" branches-valid="2" complexity="2" version="8.2.0.0" timestamp="1636382286">
+<coverage line-rate="0.71" branch-rate="0.5" lines-covered="10" lines-valid="14" branches-covered="1" branches-valid="2" complexity="2" version="$v" timestamp="$t">
   <sources>
     <source>altcover\Sample1</source>
   </sources>
