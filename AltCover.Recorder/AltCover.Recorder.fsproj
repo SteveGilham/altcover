@@ -6,15 +6,15 @@
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
     <DefineConstants>TRACE</DefineConstants>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
   </PropertyGroup>
