@@ -113,7 +113,7 @@ module GuiCommon =
     member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
-      | Url u -> realAllText u
+      | Url u -> readAllText u
       | Embed (_,source) -> let data = Convert.FromBase64String source
                             use raw = new MemoryStream(data)
                             use expanded = new MemoryStream()
