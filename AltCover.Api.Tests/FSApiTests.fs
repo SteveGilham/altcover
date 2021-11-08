@@ -176,7 +176,7 @@ module FSApiTests =
 
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    // printfn "%s" result
+    //printfn "%s" result
     //Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
 
@@ -205,8 +205,8 @@ module FSApiTests =
 
     let expected =
       rdr2.ReadToEnd().Replace("\r", String.Empty)
-    //printfn "%s" result
-    //Assert.That(result, Is.EqualTo expected)
+    printfn "%s" result
+    Assert.That(result, Is.EqualTo expected)
     test <@ result = expected @>
 
   [<Test>]
@@ -668,14 +668,12 @@ module FSApiTests =
       )
         .Value
 
-
     let expected =
       rdr2
         .ReadToEnd()
         .Replace("{0}", time)
         .Replace("utf-16", "utf-8")
         .Replace("\r", String.Empty)
-
 
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 

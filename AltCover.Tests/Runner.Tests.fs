@@ -5427,9 +5427,6 @@ module AltCoverRunnerTests =
               |> Seq.toList))
       |> Seq.toList
 
-    result
-    |> Seq.iter (printfn "%A")
-
     Assert.That(
       result,
       Is.EquivalentTo [ ("a",

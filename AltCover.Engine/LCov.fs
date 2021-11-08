@@ -204,6 +204,7 @@ FN:4,(anonymous_0)
             report.Descendants("Module".X)
             |> Seq.iter (fun assembly ->
             assembly.Descendants("File".X)
+            |> Seq.sortBy(fun f -> f.Attribute("fullPath".X).Value)
             |> Seq.iter
                  (fun f ->
                    //If available, a tracefile begins with the testname which
@@ -231,8 +232,10 @@ FN:4,(anonymous_0)
                      p.Descendants("Method".X)
                      |> Seq.filter
                           (fun m ->
-                            m.Descendants("FileRef".X)
-                            |> Seq.exists (fun r -> r.Attribute("uid".X).Value = uid))
+                            m.Descendants()
+                            |> Seq.exists (fun r ->
+                              let f = r.Attribute("fileid".X)
+                              f.IsNotNull && f.Value = uid))
                      |> Seq.toList
 
                    let FN (ms: XElement list) = // fsharplint:disable-line NonPublicValuesNames
@@ -240,6 +243,7 @@ FN:4,(anonymous_0)
                      |> Seq.iter
                           (fun m ->
                             m.Descendants("SequencePoint".X)
+                            |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = uid)
                             |> Seq.tryHead
                             |> Option.iter
                                  (fun s ->
@@ -262,6 +266,7 @@ FN:4,(anonymous_0)
                      |> Seq.iter
                           (fun m ->
                             m.Descendants("SequencePoint".X)
+                            |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = uid)
                             |> Seq.tryHead
                             |> Option.iter
                                  (fun s ->
@@ -291,7 +296,11 @@ FN:4,(anonymous_0)
 
                    let hit =
                      methods
-                     |> List.filter (fun m -> m.Attribute("visited".X).Value = "true")
+                     |> List.filter (fun m -> m.Attribute("visited".X).Value = "true"
+                                              || m.Descendants("SequencePoint".X)
+                                                 |> Seq.exists(fun s -> s.Attribute("vc".X).Value <> "0")
+                                              || m.Descendants("BranchPoint".X)
+                                                 |> Seq.exists(fun s -> s.Attribute("vc".X).Value <> "0"))
 
                    writer.WriteLine(
                      "FNH:"
@@ -308,6 +317,7 @@ FN:4,(anonymous_0)
                      let (brf, brh, _) =
                        ms
                        |> Seq.collect (fun m -> m.Descendants("BranchPoint".X))
+                       |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = uid)
                        |> Seq.filter
                             (fun b ->
                               b.Attribute("sl".X).Value
@@ -362,6 +372,7 @@ FN:4,(anonymous_0)
                    let (lf, lh) =
                      methods
                      |> Seq.collect (fun m -> m.Descendants("SequencePoint".X))
+                     |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = uid)
                      |> Seq.filter
                           (fun b ->
                             b.Attribute("sl".X).Value
@@ -375,15 +386,15 @@ FN:4,(anonymous_0)
                             let sl =
                               line.ToString(CultureInfo.InvariantCulture)
 
-                            let vc =
-                              points
-                              |> Seq.fold
-                                   (fun total point ->
-                                     total
-                                     + (point.Attribute("vc".X).Value
-                                        |> Int32.TryParse
-                                        |> snd))
-                                   0
+                            // TODO extract and share w/NCover
+                            // TODO decide what the real merge criterion is
+                            let vx = points
+                                     |> Seq.map (fun b -> let v = b.Attribute("vc".X)
+                                                          if v |> isNull then 0
+                                                          else v.Value |> Int32.TryParse |> snd)
+                            let vc = if vx |> Seq.exists(fun v -> v > 0)
+                                     then vx |> Seq.max
+                                     else vx |> Seq.min
 
                             let vcs =
                               vc.ToString(CultureInfo.InvariantCulture)
