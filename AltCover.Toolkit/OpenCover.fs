@@ -366,7 +366,7 @@ module OpenCover =
                          )))
 
   let private hash =
-    new System.Security.Cryptography.SHA1CryptoServiceProvider()
+    sha1Hash()
 
   let internal fixFormatModule (m: XElement) (files: string array) =
     // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
