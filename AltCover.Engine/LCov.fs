@@ -201,14 +201,19 @@ FN:4,(anonymous_0)
                    // end_of_record
                    writer.WriteLine "end_of_record"))
         | _ ->
-            report.Descendants("File".X)
+            report.Descendants("Module".X)
+            |> Seq.iter (fun assembly ->
+            assembly.Descendants("File".X)
             |> Seq.iter
                  (fun f ->
                    //If available, a tracefile begins with the testname which
                    //   is stored in the following format:
                    //
                    // TN:<test name>
-                   writer.WriteLine "TN:"
+                   writer.WriteLine ("TN: " + (assembly.Descendants("ModuleName".X)
+                                               |> Seq.tryHead
+                                               |> Option.map (fun n -> n.Value)
+                                               |> Option.defaultValue String.Empty))
                    // For each source file referenced in the .da file,  there  is  a  section
                    // containing filename and coverage data:
                    //
@@ -396,7 +401,7 @@ FN:4,(anonymous_0)
                    // Each sections ends with:
                    //
                    // end_of_record
-                   writer.WriteLine "end_of_record"))
+                   writer.WriteLine "end_of_record")))
 
   let convertJson document s =
     let x =

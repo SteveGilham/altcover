@@ -1,4 +1,4 @@
-TN:
+TN: Sample4
 SF:C:\Users\steve\source\repos\ClassLibrary1\Sample4\Program.fs
 FN:1,System.Int32 Program/Program::main(System.String[])
 FNDA:0,System.Int32 Program/Program::main(System.String[])
@@ -10,7 +10,7 @@ DA:1,0
 LH:0
 LF:1
 end_of_record
-TN:
+TN: Sample4
 SF:C:\Users\steve\source\repos\ClassLibrary1\Sample4\Tests.fs
 FN:49,Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)
 FN:50,Tests.DU/MyUnion Tests.DU::returnBar(System.String)
