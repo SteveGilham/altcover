@@ -319,7 +319,8 @@ module FSApiTests =
       use reader = new StreamReader(stream)
       reader.ReadToEnd()
 
-    let result = (OpenCover.JsonToXml doc).ToString()
+    let result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\u00FF" +
+                    (OpenCover.JsonToXml doc).ToString()
 
     use stream3 =
       Assembly
