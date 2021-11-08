@@ -1,6 +1,7 @@
 namespace AltCover
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Xml.Linq
@@ -17,6 +18,14 @@ module internal LCov =
 
   module internal I =
 
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "InstantiateArgumentExceptionCorrectlyRule",
+                      Justification = "Library method inlined")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidRepetitiveCallsToPropertiesRule",
+                      Justification = "Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+                      Justification = "Library method inlined")>]
     let internal lineOfPartialMethod (m: XElement * XElement seq) =
       let (_, s) = m
       s
@@ -32,6 +41,23 @@ module internal LCov =
 
     let internal multiSortByNameAndPartialStartLine (l: (string * (XElement * XElement seq) seq) seq) =
       multiSort lineOfPartialMethod l
+
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "InstantiateArgumentExceptionCorrectlyRule",
+                      Justification = "Library method inlined")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidRepetitiveCallsToPropertiesRule",
+                      Justification = "Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly",
+                      Justification = "Library method inlined")>]
+    let internal computeVisitCount (lines : XElement seq) (attr : string) =
+      let vx = lines
+               |> Seq.map (fun l -> let v = l.Attribute(attr.X)
+                                    if v |> isNull then 0
+                                    else v.Value |> Int32.TryParse |> snd)
+      if vx |> Seq.exists(fun v -> v > 0)
+      then vx |> Seq.max
+      else vx |> Seq.min
 
   // from a real sample e.g. https://pastebin.com/588FggQg
   (*
@@ -179,13 +205,7 @@ FN:4,(anonymous_0)
                      |> Seq.sortBy (fst >> Int32.TryParse >> snd)
                      |> Seq.fold
                           (fun (f, (h:int)) (sl,bs) ->
-                            let vx = bs
-                                     |> Seq.map (fun b -> let v = b.Attribute("visitcount".X)
-                                                          if v |> isNull then 0
-                                                          else v.Value |> Int32.TryParse |> snd)
-                            let vc = if vx |> Seq.exists(fun v -> v > 0)
-                                     then vx |> Seq.max
-                                     else vx |> Seq.min
+                            let vc = I.computeVisitCount bs "visitcount"
                             writer.WriteLine("DA:" + sl + "," + vc.ToString(CultureInfo.InvariantCulture))
                             (f + 1, h.Increment (vc <> 0)))
                           (0, 0)
@@ -386,16 +406,7 @@ FN:4,(anonymous_0)
                             let sl =
                               line.ToString(CultureInfo.InvariantCulture)
 
-                            // TODO extract and share w/NCover
-                            // TODO decide what the real merge criterion is
-                            let vx = points
-                                     |> Seq.map (fun b -> let v = b.Attribute("vc".X)
-                                                          if v |> isNull then 0
-                                                          else v.Value |> Int32.TryParse |> snd)
-                            let vc = if vx |> Seq.exists(fun v -> v > 0)
-                                     then vx |> Seq.max
-                                     else vx |> Seq.min
-
+                            let vc = I.computeVisitCount points "vc"
                             let vcs =
                               vc.ToString(CultureInfo.InvariantCulture)
 
