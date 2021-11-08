@@ -1,6 +1,6 @@
 {
  "SimpleMix.exe": {
-   "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include\\vcclr.h": {
+   "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h": {
      "\u003CModule\u003E": {
        "System.Int32 \u003CModule\u003E::main(System.String[])": {
          "Lines": {
@@ -118,7 +118,7 @@
         }
       }
     },
-   "C:\\Users\\steve\\Documents\\GitHub\\altcover\\Samples\\Sample29\\SimpleMix\\SimpleMix.cpp": {
+   "C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp": {
      "\u00ABAltCover.embed\u00BB": {
        "1ZJBb9swDIXvBvwfOO9iN0Xas5sGGIweCgTb0HbbrQGrMLEGWxIouUlR5L\u002BPlpKmwDCg11104Ht8Ij/p4gKaxV2DXUc8Vc5BDT1qA47tb1IB1rqjaZ7l2WdtVDesCAofVrjeTdsilh3jpkcYTI8GN7TKM20CfMWgn6mxgwk/7ZY6X25Vi7wMZ\u002BDuA2uzqfLsNc8ARrcafXANl1djRVnjA7z5n2O/qIsCSdvhy83ttx9FdG5bmQ7Ks1MkQAyV2DXIlV61XKaAczjaJpOqSiZIN08mMW0/HkxhYJPqUt2fNnzbL88GLzFgsCfvUBHcv/hA/dUoMa1Bdeg93OywdzKeDOSGp06resz3QciouPXIuURmfJmlgLpOAz7OHwF549/vc1CknwVF8UC7AMHCE0GLvqVVAgLQCDzbUV3/Yh1ooQ2V0lIdVKfN0gWeNcJ2Dg6uTxyE\u002BVKhDzMZjVhbPhnnUB59AN8DP9g0zSj6GF/9\u002B/a/f4KL9tRwwH15fIB9VD5KJ30geelPR9p1fegT/T2\u002BD/P77wH\u002BAQ==": {
          "Lines": {},
@@ -283,7 +283,7 @@
         }
       }
     },
-   "d:\\a01\\_work\\5\\s\\src\\vctools\\crt\\crtw32\\msilcrt\\mcrtexe.cpp": {
+   "d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp": {
      "\u003CModule\u003E": {
        "System.Int32 \u003CModule\u003E::mainCRTStartupStrArray(System.String[])": {
          "Lines": {
