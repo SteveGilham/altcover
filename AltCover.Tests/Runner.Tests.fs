@@ -6030,7 +6030,7 @@ module AltCoverRunnerTests =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith("Sample5.native.xml", StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("Sample5.raw-native.xml", StringComparison.Ordinal))
 
     use stream2 =
       Assembly
