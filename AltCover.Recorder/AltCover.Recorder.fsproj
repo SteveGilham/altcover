@@ -14,7 +14,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
     <DefineConstants>TRACE</DefineConstants>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone --staticlink:ICSharpCode.SharpZipLib</OtherFlags>
   </PropertyGroup>

@@ -12,6 +12,8 @@
     <NoWarn>NU1702</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
     <RollForward>Major</RollForward>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
