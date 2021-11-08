@@ -32,6 +32,9 @@ type InvalidFile = { File: FileInfo; Fault: Exception }
 
 module Transformer =
   // now, what was this for??
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
   let internal defaultHelper (_: XDocument) (document: XDocument) = document
 
   let internal loadTransform (path: string) =

@@ -303,6 +303,9 @@ module internal Instrument =
         "packages"
       )
 
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "meets an interface")>]
     let internal resolveFromNugetCache _ (y: AssemblyNameReference) =
       let name = y.ToString()
 

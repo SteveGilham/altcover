@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7" branch-rate="0.67" lines-covered="7" lines-valid="10" branches-covered="2" branches-valid="3" complexity="2" version="3.0.0.0" timestamp="xx">
+<coverage line-rate="0.7" branch-rate="0.5" lines-covered="7" lines-valid="10" branches-covered="1" branches-valid="2" complexity="2" version="8.2.0.0" timestamp="xx">
   <sources>
     <source>altcover/Sample1</source>
   </sources>
   <packages>
-    <package name="Sample1" line-rate="0.7" branch-rate="0.67" complexity="1.5">
+    <package name="Sample1" line-rate="0.7" branch-rate="0.5" complexity="1.5">
       <classes>
         <class name="&lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1" filename="altcover/Sample1/Program.cs" line-rate="0" branch-rate="0" complexity="1">
           <methods>
@@ -21,7 +21,7 @@
         </class>
         <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.7" branch-rate="0.67" complexity="2">
           <methods>
-            <method name="Main" signature="System.Void (System.String[])" line-rate="0.7" branch-rate="0.67" complexity="2">
+            <method name="Main" signature="System.Void (System.String[])" line-rate="0.7" branch-rate="0.5" complexity="2">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />

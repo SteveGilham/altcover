@@ -20,7 +20,6 @@
           </xsl:attribute>
           <xsl:for-each select="descendant::Method[not(@skippedDueTo)]">
             <xsl:variable name="class" select="../../FullName" />
-            <xsl:variable name="fileRef" select="./FileRef/@uid" />
             <xsl:variable name="method" select="./Name" />
 
             <method excluded="false" instrumented="true">

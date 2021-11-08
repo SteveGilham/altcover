@@ -1,4 +1,4 @@
-TN:
+TN: Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 SF:altcover\Sample1\Program.cs
 FN:11,System.Void TouchTest.Program.Main(System.String[])
 FNDA:1,System.Void TouchTest.Program.Main(System.String[])
@@ -14,8 +14,8 @@ DA:15,1
 DA:16,1
 DA:18,0
 DA:19,0
-DA:20,X
+DA:20,0
 DA:21,-1
-LH:8
+LH:7
 LF:10
 end_of_record

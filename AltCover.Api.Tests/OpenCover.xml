@@ -1,8 +1,8 @@
 <CoverageSession>
-  <Summary numBranchPoints="10" visitedBranchPoints="4" numSequencePoints="28" visitedSequencePoints="11" maxCyclomaticComplexity="5" />
+  <Summary numBranchPoints="21" visitedBranchPoints="7" numSequencePoints="28" visitedSequencePoints="11" maxCyclomaticComplexity="5" visitedMethods="7" visitedClasses="2" branchCoverage="33.33" sequenceCoverage="39.29" minCrapScore="1" maxCrapScore="16.76" />
   <Modules>
     <Module hash="Sample4.dll">
-      <Summary numBranchPoints="10" visitedBranchPoints="4" numSequencePoints="28" visitedSequencePoints="11" />
+      <Summary numBranchPoints="21" visitedBranchPoints="7" numSequencePoints="28" visitedSequencePoints="11" visitedMethods="7" visitedClasses="2" branchCoverage="33.33" sequenceCoverage="39.29" minCrapScore="1" maxCrapScore="16.76" />
       <ModulePath>Sample4.dll</ModulePath>
       <ModuleName>Sample4</ModuleName>
       <Files>
@@ -10,10 +10,11 @@
       </Files>
       <Classes>
         <Class>
+          <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" visitedMethods="0" visitedClasses="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
           <FullName>Tests.Program</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" visitedMethods="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Int32 Tests.Program::main(System.String[])</Name>
               <FileRef uid="1" />
@@ -21,15 +22,16 @@
                 <SequencePoint vc="0" offset="2" sl="61" sc="16" el="61" ec="17" uspid="0" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="0" />
+              <MethodPoint vc="0" p8:type="SequencePoint" offset="2" sl="61" sc="16" el="61" ec="17" uspid="0" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
           </Methods>
         </Class>
         <Class>
+          <Summary numBranchPoints="15" visitedBranchPoints="5" numSequencePoints="21" visitedSequencePoints="7" visitedMethods="4" visitedClasses="1" branchCoverage="33.33" sequenceCoverage="33.33" minCrapScore="1" maxCrapScore="16.76" />
           <FullName>Tests.DU</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" />
+            <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" visitedMethods="1" branchCoverage="0" sequenceCoverage="100" minCrapScore="1" maxCrapScore="1" />
               <MetadataToken>0</MetadataToken>
               <Name>Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)</Name>
               <FileRef uid="1" />
@@ -37,10 +39,10 @@
                 <SequencePoint vc="1" offset="0" sl="49" sc="21" el="49" ec="26" uspid="1" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="49" sc="21" el="49" ec="26" uspid="1" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" />
+            <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" visitedMethods="1" branchCoverage="0" sequenceCoverage="100" minCrapScore="1" maxCrapScore="1" />
               <MetadataToken>0</MetadataToken>
               <Name>Tests.DU/MyUnion Tests.DU::returnBar(System.String)</Name>
               <FileRef uid="1" />
@@ -48,10 +50,10 @@
                 <SequencePoint vc="1" offset="0" sl="50" sc="21" el="50" ec="26" uspid="2" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="50" sc="21" el="50" ec="26" uspid="2" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="5" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="4" visitedBranchPoints="2" numSequencePoints="6" visitedSequencePoints="3" />
+            <Method visited="true" cyclomaticComplexity="5" sequenceCoverage="50" branchCoverage="60" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="8.13">
+              <Summary numBranchPoints="5" visitedBranchPoints="3" numSequencePoints="6" visitedSequencePoints="3" visitedMethods="1" branchCoverage="60" sequenceCoverage="50" minCrapScore="8.13" maxCrapScore="8.13" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Void Tests.DU::testMakeUnion()</Name>
               <FileRef uid="1" />
@@ -69,10 +71,10 @@
                 <BranchPoint vc="1" sl="55" uspid="2" ordinal="2" offset="475" path="0" fileid="1" />
                 <BranchPoint vc="0" sl="55" uspid="3" ordinal="3" offset="475" path="1" fileid="1" />
               </BranchPoints>
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="54" sc="5" el="54" ec="37" uspid="8" bec="2" bev="1" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="5" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="4" visitedBranchPoints="1" numSequencePoints="9" visitedSequencePoints="2" />
+            <Method visited="true" cyclomaticComplexity="5" sequenceCoverage="22.22" branchCoverage="40" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="16.76">
+              <Summary numBranchPoints="5" visitedBranchPoints="2" numSequencePoints="9" visitedSequencePoints="2" visitedMethods="1" branchCoverage="40" sequenceCoverage="22.22" minCrapScore="16.76" maxCrapScore="16.76" />
               <MetadataToken>0</MetadataToken>
               <Name>Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()</Name>
               <FileRef uid="1" />
@@ -93,10 +95,10 @@
                 <BranchPoint vc="0" sl="36" uspid="6" ordinal="2" offset="8" path="2" fileid="1" />
                 <BranchPoint vc="0" sl="36" uspid="7" ordinal="3" offset="8" path="3" fileid="1" />
               </BranchPoints>
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="36" sc="9" el="36" ec="24" uspid="17" bec="4" bev="1" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" visitedMethods="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
               <MetadataToken>0</MetadataToken>
               <Name>Microsoft.FSharp.Core.FSharpFunc`2&lt;Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion&gt; Tests.DU/MyUnion::get_MyBar()</Name>
               <FileRef uid="1" />
@@ -104,10 +106,10 @@
                 <SequencePoint vc="0" offset="0" sl="44" sc="25" el="44" ec="36" uspid="18" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="0" />
+              <MethodPoint vc="0" p8:type="SequencePoint" offset="0" sl="44" sc="25" el="44" ec="36" uspid="18" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" visitedMethods="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
               <MetadataToken>0</MetadataToken>
               <Name>Tests.DU/MyUnion Tests.DU/get_MyBar@44::Invoke(Microsoft.FSharp.Core.Unit)</Name>
               <FileRef uid="1" />
@@ -115,10 +117,10 @@
                 <SequencePoint vc="0" offset="0" sl="44" sc="25" el="44" ec="36" uspid="19" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="0" />
+              <MethodPoint vc="0" p8:type="SequencePoint" offset="0" sl="44" sc="25" el="44" ec="36" uspid="19" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="2" visitedSequencePoints="0" />
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="2">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="2" visitedSequencePoints="0" visitedMethods="0" branchCoverage="0" sequenceCoverage="0" minCrapScore="2" maxCrapScore="2" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Void Tests.DU/MyClass::.ctor()</Name>
               <FileRef uid="1" />
@@ -127,15 +129,16 @@
                 <SequencePoint vc="0" offset="8" sl="47" sc="27" el="47" ec="28" uspid="21" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="0" />
+              <MethodPoint vc="0" p8:type="SequencePoint" offset="15" sl="46" sc="8" el="46" ec="15" uspid="20" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
           </Methods>
         </Class>
         <Class>
+          <Summary numBranchPoints="5" visitedBranchPoints="2" numSequencePoints="6" visitedSequencePoints="4" visitedMethods="3" visitedClasses="1" branchCoverage="40" sequenceCoverage="66.67" minCrapScore="1" maxCrapScore="4.13" />
           <FullName>Tests.M</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" />
+            <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" visitedMethods="1" branchCoverage="0" sequenceCoverage="100" minCrapScore="1" maxCrapScore="1" />
               <MetadataToken>0</MetadataToken>
               <Name>Tests.M/Thing Tests.M::makeThing(System.String)</Name>
               <FileRef uid="1" />
@@ -143,10 +146,10 @@
                 <SequencePoint vc="2" offset="0" sl="20" sc="21" el="20" ec="34" uspid="22" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="2" />
+              <MethodPoint vc="2" p8:type="SequencePoint" offset="0" sl="20" sc="21" el="20" ec="34" uspid="22" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="3" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="2" visitedBranchPoints="1" numSequencePoints="4" visitedSequencePoints="2" />
+            <Method visited="true" cyclomaticComplexity="3" sequenceCoverage="50" branchCoverage="66.67" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="4.13">
+              <Summary numBranchPoints="3" visitedBranchPoints="2" numSequencePoints="4" visitedSequencePoints="2" visitedMethods="1" branchCoverage="66.67" sequenceCoverage="50" minCrapScore="4.13" maxCrapScore="4.13" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Void Tests.M::testMakeThing()</Name>
               <FileRef uid="1" />
@@ -160,10 +163,10 @@
                 <BranchPoint vc="1" sl="24" uspid="8" ordinal="0" offset="209" path="0" fileid="1" />
                 <BranchPoint vc="0" sl="24" uspid="9" ordinal="1" offset="209" path="1" fileid="1" />
               </BranchPoints>
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="24" sc="5" el="24" ec="43" uspid="26" bec="2" bev="1" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
-            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
-              <Summary numBranchPoints="0" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" />
+            <Method visited="true" cyclomaticComplexity="1" sequenceCoverage="100" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false" crapScore="1">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="1" visitedMethods="1" branchCoverage="0" sequenceCoverage="100" minCrapScore="1" maxCrapScore="1" />
               <MetadataToken>0</MetadataToken>
               <Name>System.Byte[] Tests.M/Thing::bytes()</Name>
               <FileRef uid="1" />
@@ -171,7 +174,7 @@
                 <SequencePoint vc="1" offset="0" sl="18" sc="27" el="18" ec="73" uspid="27" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints />
-              <MethodPoint vc="1" />
+              <MethodPoint vc="1" p8:type="SequencePoint" offset="0" sl="18" sc="27" el="18" ec="73" uspid="27" bec="0" bev="0" fileid="1" xmlns:p8="http://www.w3.org/2001/XMLSchema-instance" />
             </Method>
           </Methods>
         </Class>

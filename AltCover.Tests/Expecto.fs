@@ -230,10 +230,16 @@ module ExpectoTestManifest =
       "Runner.DegenerateCasesShouldNotGenerateLcov"
       Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleLcov,
       "Runner.OpenCoverShouldGeneratePlausibleLcov"
+      Tests.AltCoverRunnerTests.OpenCoverWithPartialsShouldGeneratePlausibleLcov,
+      "Runner.OpenCoverWithPartialsShouldGeneratePlausibleLcov"
       Tests.AltCoverRunnerTests.JsonShouldGeneratePlausibleLcov,
       "Runner.JsonShouldGeneratePlausibleLcov"
+      Tests.AltCoverRunnerTests.JsonWithPartialsShouldGeneratePlausibleLcov,
+      "Runner.JsonWithPartialsShouldGeneratePlausibleLcov"
       Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcov,
       "Runner.NCoverShouldGeneratePlausibleLcov"
+      Tests.AltCoverRunnerTests.NCoverWithPartialsShouldGeneratePlausibleLcov,
+      "Runner.NCoverWithPartialsShouldGeneratePlausibleLcov"
       Tests.AltCoverRunnerTests.NCoverShouldGenerateMorePlausibleLcov,
       "Runner.NCoverShouldGenerateMorePlausibleLcov"
       Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleLcovWithMissingFullName,
@@ -241,12 +247,18 @@ module ExpectoTestManifest =
       Tests.AltCoverRunnerTests.MultiSortDoesItsThing, "Runner.MultiSortDoesItsThing"
       Tests.AltCoverRunnerTests.JsonShouldGeneratePlausibleXml,
       "Runner.JsonShouldGeneratePlausibleXml"
+      Tests.AltCoverRunnerTests.JsonWithPartialsShouldGeneratePlausibleXml,
+      "Runner.JsonWithPartialsShouldGeneratePlausibleXml"
       Tests.AltCoverRunnerTests.JsonShouldGeneratePlausibleCobertura,
       "Runner.JsonShouldGeneratePlausibleCobertura"
+      Tests.AltCoverRunnerTests.JsonWithPartialsShouldGeneratePlausibleCobertura,
+      "Runner.JsonWithPartialsShouldGeneratePlausibleCobertura"
       Tests.AltCoverRunnerTests.JsonFromComplexNestingShouldGeneratePlausibleCobertura,
       "Runner.JsonFromComplexNestingShouldGeneratePlausibleCobertura"
       Tests.AltCoverRunnerTests.NCoverShouldGeneratePlausibleCobertura,
       "Runner.NCoverShouldGeneratePlausibleCobertura"
+      Tests.AltCoverRunnerTests.NCoverWithPartialsShouldGeneratePlausibleCobertura,
+      "Runner.NCoverWithPartialsShouldGeneratePlausibleCobertura"
       Tests.AltCoverRunnerTests.NCoverShouldGenerateMorePlausibleCobertura,
       "Runner.NCoverShouldGenerateMorePlausibleCobertura"
       Tests.AltCoverRunnerTests.DegenerateCasesShouldNotGenerateCobertura,
@@ -255,6 +267,8 @@ module ExpectoTestManifest =
       "Runner.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName"
       Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleCobertura,
       "Runner.OpenCoverShouldGeneratePlausibleCobertura"
+      Tests.AltCoverRunnerTests.OpenCoverWithPartialsShouldGeneratePlausibleCobertura,
+      "Runner.OpenCoverWithPartialsShouldGeneratePlausibleCobertura"
       Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported,
       "Runner.ThresholdViolationShouldBeReported"
       Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
@@ -397,10 +411,14 @@ module ExpectoTestManifest =
       "Tests.ShouldGenerateExpectedXmlReportFromDotNet"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbeds,
       "Tests.ShouldGenerateExpectedXmlReportFromWithEmbeds"
+      Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithPartials,
+      "Tests.ShouldGenerateExpectedXmlReportFromWithPartials"
       Tests.AltCoverTests.ShouldGenerateExpectedJsonReportFromDotNet,
       "Tests.ShouldGenerateExpectedJsonReportFromDotNet"
       Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithEmbeds,
       "Tests.ShouldGenerateExpectedJsonReportWithEmbeds"
+      Tests.AltCoverTests.ShouldGenerateExpectedJsonReportWithPartials,
+      "Tests.ShouldGenerateExpectedJsonReportWithPartials"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly,
       "Tests.ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportForNCoverWithTopLevel,
@@ -427,6 +445,8 @@ module ExpectoTestManifest =
       "Tests.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle"
+      Tests.AltCoverTests.ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle,
+      "Tests.ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle,
       "Tests.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle"
       Tests.AltCoverTests.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle,

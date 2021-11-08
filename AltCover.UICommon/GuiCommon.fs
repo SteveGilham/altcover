@@ -83,7 +83,7 @@ module GuiCommon =
       | File info -> info.Exists
       | Embed (_, s) -> s |> String.IsNullOrWhiteSpace |> not
       | Url u ->
-          let request = WebRequest.CreateHttp(u)
+          let request = createHttp(u)
           request.Method <- "HEAD"
 
           try

@@ -213,7 +213,7 @@ type internal SequenceType =
 [<RequireQualifiedAccess>]
 module internal KeyStore =
   let private hash =
-    new System.Security.Cryptography.SHA1CryptoServiceProvider()
+    sha1Hash()
 
   let private publicKeyOfKey (key: StrongNameKeyData) = key.PublicKey
 
@@ -312,6 +312,9 @@ module internal CoverageParameters =
 
   let internal theOutputDirectories = List<string>()
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
   let private defaultOutputDirectory _ =
     inplaceSelection "__Saved" "__Instrumented"
 
@@ -455,7 +458,7 @@ module internal Visitor =
           .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
     let internal exists (url: Uri) =
-      let request = System.Net.WebRequest.CreateHttp(url)
+      let request = createHttp(url)
       request.Method <- "HEAD"
 
       try

@@ -173,6 +173,9 @@ module internal Runner =
     summaryFormat <- Default
     summary.Clear() |> ignore
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                    Justification = "TODO -- fix this trivial match on write/return")>]
   module internal I =
 
     let internal write line =
@@ -1244,6 +1247,9 @@ module internal Runner =
     [<SuppressMessage("Microsoft.Reliability",
                       "CA2000:DisposeObjectsBeforeLosingScope",
                       Justification = "The reader must not close the stream")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       _
