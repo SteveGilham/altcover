@@ -45,6 +45,8 @@
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithNCover.cob.xml" Link="Sample1WithNCover.cob.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample1WithOpenCover.xml" Link="Sample1WithOpenCover.xml" />
     <EmbeddedResource Include="..\AltCover.Tests\Sample4.Prepare.xml" Link="Sample4.Prepare.xml" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.coverlet.json" Link="Sample4.coverlet.json" />
+    <EmbeddedResource Include="..\AltCover.Tests\Sample4.fromcoverletjson.xml" Link="Sample4.fromcoverletjson.xml" />
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Tests\TestCommon.fs" Link="TestCommon.fs" />
