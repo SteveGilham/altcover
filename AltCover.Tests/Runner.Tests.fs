@@ -5404,12 +5404,13 @@ module AltCoverRunnerTests =
                 sprintf "<x><seqpnt line=\"%d\" /></x>"
                 >> load
                 >> (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+                >> (fun m -> (m, m.Descendants(XName.Get "seqpnt")))
               )
               |> List.toSeq))
       |> List.toSeq
 
     let result =
-      LCov.I.multiSortByNameAndStartLine input
+      LCov.I.multiSortByNameAndPartialStartLine input
       |> Seq.map
            (fun (f, ms) ->
              (f,

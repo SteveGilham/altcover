@@ -17,20 +17,6 @@ module internal LCov =
 
   module internal I =
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
-    let internal lineOfMethod (m: XElement) =
-      (m.Descendants("seqpnt".X) |> Seq.head).Attribute(
-        "line".X
-      )
-        .Value
-      |> Int32.TryParse
-      |> snd
-
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
     let internal lineOfPartialMethod (m: XElement * XElement seq) =
       let (_, s) = m
       s
@@ -43,9 +29,6 @@ module internal LCov =
       l
       |> Seq.map (fun (f, ms) -> (f, ms |> Seq.sortBy by |> Seq.toList))
       |> sortByFirst
-
-    let internal multiSortByNameAndStartLine (l: (string * XElement seq) seq) =
-      multiSort lineOfMethod l
 
     let internal multiSortByNameAndPartialStartLine (l: (string * (XElement * XElement seq) seq) seq) =
       multiSort lineOfPartialMethod l
@@ -202,8 +185,7 @@ FN:4,(anonymous_0)
                             let vc = if vx |> Seq.exists(fun v -> v > 0)
                                      then vx |> Seq.max
                                      else vx |> Seq.min
-                            writer.WriteLine("DA:" + sl.ToString(CultureInfo.InvariantCulture) 
-                                                   + "," + vc.ToString(CultureInfo.InvariantCulture))
+                            writer.WriteLine("DA:" + sl + "," + vc.ToString(CultureInfo.InvariantCulture))
                             (f + 1, h.Increment (vc <> 0)))
                           (0, 0)
                    // At  the  end of a section, there is a summary about how many lines were
