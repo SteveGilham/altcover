@@ -106,7 +106,7 @@ module CoverageFormats =
            |> Seq.iter
                 (fun f ->
                   files.Add(
-                    f.Attribute(XName.Get "fullPath").Value,
+                    f.Attribute(XName.Get "fullPath").Value.Replace(Path.DirectorySeparatorChar, '/'),
                     f.Attribute(XName.Get "uid").Value
                   ))
 
@@ -120,7 +120,7 @@ module CoverageFormats =
                   let ec = s.Attribute(XName.Get "endcolumn").Value
 
                   let uid =
-                    files.[s.Attribute(XName.Get "document").Value]
+                    files.[s.Attribute(XName.Get "document").Value.Replace(Path.DirectorySeparatorChar, '/')]
 
                   let vc =
                     parse <| s.Attribute(XName.Get "visitcount").Value
