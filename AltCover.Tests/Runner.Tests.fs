@@ -5416,29 +5416,34 @@ module AltCoverRunnerTests =
              (f,
               ms
               |> Seq.map
-                   (fun m ->
+                   (fun (m,l) ->
                      m
                        .ToString()
                        .Replace("\r", String.Empty)
                        .Replace("\n", String.Empty)
-                       .Replace("  <", "<"))
+                       .Replace("  <", "<")
+                     + "|" + String.Join("|", l |> Seq.map string)
+                   )
               |> Seq.toList))
       |> Seq.toList
+
+    result
+    |> Seq.iter (printfn "%A")
 
     Assert.That(
       result,
       Is.EquivalentTo [ ("a",
-                         [ """<x><seqpnt line="4" /></x>"""
-                           """<x><seqpnt line="7" /></x>"""
-                           """<x><seqpnt line="9" /></x>""" ])
+                         [ """<x><seqpnt line="4" /></x>|<seqpnt line="4" />"""
+                           """<x><seqpnt line="7" /></x>|<seqpnt line="7" />"""
+                           """<x><seqpnt line="9" /></x>|<seqpnt line="9" />""" ])
 
                         ("m",
-                         [ """<x><seqpnt line="1" /></x>"""
-                           """<x><seqpnt line="2" /></x>"""
-                           """<x><seqpnt line="3" /></x>""" ])
+                         [ """<x><seqpnt line="1" /></x>|<seqpnt line="1" />"""
+                           """<x><seqpnt line="2" /></x>|<seqpnt line="2" />"""
+                           """<x><seqpnt line="3" /></x>|<seqpnt line="3" />""" ])
                         ("z",
-                         [ """<x><seqpnt line="3" /></x>"""
-                           """<x><seqpnt line="5" /></x>""" ]) ]
+                         [ """<x><seqpnt line="3" /></x>|<seqpnt line="3" />"""
+                           """<x><seqpnt line="5" /></x>|<seqpnt line="5" />""" ]) ]
     )
 
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
