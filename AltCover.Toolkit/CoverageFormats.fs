@@ -110,6 +110,11 @@ module CoverageFormats =
                     f.Attribute(XName.Get "uid").Value
                   ))
 
+           printfn "-----------Files------------"
+           files
+           |> Seq.iter (printfn "%A")
+           printfn "-----------Keys ------------"
+
            // Copy sequence points across
            source.Descendants(XName.Get "seqpnt")
            |> Seq.iter
@@ -119,8 +124,10 @@ module CoverageFormats =
                   let el = s.Attribute(XName.Get "endline").Value
                   let ec = s.Attribute(XName.Get "endcolumn").Value
 
-                  let uid =
-                    files.[s.Attribute(XName.Get "document").Value.Replace(Path.DirectorySeparatorChar, '/')]
+                  let key = s.Attribute(XName.Get "document").Value.Replace(Path.DirectorySeparatorChar, '/')
+                  printfn "%s" key
+
+                  let uid = files.[key]
 
                   let vc =
                     parse <| s.Attribute(XName.Get "visitcount").Value
