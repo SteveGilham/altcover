@@ -349,7 +349,7 @@ let defaultTestOptions fwk common (o: DotNet.TestOptions) =
           >> common
       ) with
           NoBuild = true
-          Framework = fwk // Some "net5.0"
+          Framework = fwk // Some "net6.0"
           Configuration = DotNet.BuildConfiguration.Debug }
 
 let defaultDotNetTestCommandLine fwk project =
@@ -366,7 +366,7 @@ let coverletTestOptions (o: DotNet.TestOptions) =
     { o.WithCommon dotnetOptions with
           Configuration = DotNet.BuildConfiguration.Debug
           NoBuild = true
-          Framework = Some "net5.0"
+          Framework = Some "net6.0"
           Settings = Some "./_Generated/coverletArgs.runsettings"
           Collect = Some "XPlat Code Coverage" }
     |> testWithCLIArguments
@@ -1311,7 +1311,7 @@ _Target
                 (fun p ->
                     { p.WithCommon dotnetOptions with
                           Configuration = DotNet.BuildConfiguration.Debug
-                          Framework = Some "net5.0" }
+                          Framework = Some "net6.0" }
                     |> buildWithCLIArguments)
 
         !!(@"./*Test*/*Tests.fsproj")
@@ -1331,7 +1331,7 @@ _Target
                 (fun p ->
                     { p.WithCommon dotnetOptions with
                           Configuration = DotNet.BuildConfiguration.Debug
-                          Framework = Some "net5.0"
+                          Framework = Some "net6.0"
                           NoBuild = true }
                     |> testWithCLIArguments)
 
@@ -1364,7 +1364,7 @@ _Target
                 (fun p ->
                     { p.WithCommon dotnetOptions with
                           Configuration = DotNet.BuildConfiguration.Debug
-                          Framework = Some "net5.0" }
+                          Framework = Some "net6.0" }
                     |> buildWithCLIArguments)
         ))
 
@@ -1955,8 +1955,8 @@ _Target
             Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
         let tests = // TODo monitor!not, Visualizer
-            [ (Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0",  // testDirectory
-               Path.getFullName "AltCover.Expecto.Tests/_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net5.0",  // output
+            [ (Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "AltCover.Expecto.Tests/_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "UnitTestWithAltCoverCore.xml",  // report
                "AltCover.Tests.fsproj",  // project
                Path.getFullName "Tests",  // workingDirectory
@@ -1964,33 +1964,33 @@ _Target
                >> (fun p ->
                    { p with
                          AssemblyExcludeFilter = [ "?^AltCover$" ] })) // filter
-              (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
-               Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net5.0",
+              (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
+               Path.getFullName "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
                reports @@ "RecorderTestWithAltCoverCore.xml",
                "AltCover.Recorder.Tests.fsproj",
                Path.getFullName "Recorder.Tests",
                AltCoverFilterG)
-              (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0",  // testDirectory
-               Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net5.0",  // output
+              (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "AltCover.Api.Tests/_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "ApiUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Api.Tests.fsproj",  // project
                Path.getFullName "AltCover.Api.Tests",  // workingDirectory
                AltCoverApiFilter) // filter
-            //   (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net5.0",  // testDirectory
-            //    Path.getFullName "AltCover.Monitor.Tests/_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net5.0",  // output
+            //   (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+            //    Path.getFullName "AltCover.Monitor.Tests/_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // output
             //    reports @@ "MonitorUnitTestWithAltCoverCore.xml",  // report
             //    "AltCover.Monitor.Tests.fsproj",  // project
             //    Path.getFullName "AltCover.Monitor.Tests",  // workingDirectory
             //    AltCoverApiFilter) // filter
-              (Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net5.0",  // testDirectory
-               Path.getFullName "AltCover.Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net5.0",  // output
+              (Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "AltCover.Tests.Visualizer/_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net6.0",  // output
                reports @@ "VisualizerUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Tests.Visualizer.fsproj",  // project
                Path.getFullName "AltCover.Tests.Visualizer",  // workingDirectory
                AltCoverApiFilter) // filter
-              (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0",  // testDirectory
+              (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName
-                   "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net5.0",  // output
+                   "AltCover.ValidateGendarmeEmulation/_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // output
                reports
                @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml",  // report
                "AltCover.ValidateGendarmeEmulation.fsproj",  // project
@@ -2033,7 +2033,7 @@ _Target
                         (fun p ->
                             { p.WithCommon(withWorkingDirectoryVM workingDirectory) with
                                   Configuration = DotNet.BuildConfiguration.Debug
-                                  Framework = Some "net5.0"
+                                  Framework = Some "net6.0"
                                   NoBuild = true }
                             |> testWithCLIArguments)
                 with x ->
@@ -2183,7 +2183,7 @@ _Target
                     DotNet.test
                         (fun to' ->
                             { to'.WithCommon(withWorkingDirectoryVM testdir) with
-                                  Framework = Some "net5.0"
+                                  Framework = Some "net6.0"
                                   NoBuild = proj.Contains("Recorder") }
                                 .WithAltCoverOptions
                                 prep
@@ -2204,7 +2204,7 @@ _Target
                     if File.Exists report then
                         report
                     else
-                        report.Replace(".xml", ".net5.0.xml"))
+                        report.Replace(".xml", ".net6.0.xml"))
             |> List.filter (fun f -> File.Exists f && f.Contains("Visualizer") |> not)
 
         let pester = Path.getFullName "_Reports/Pester.xml"
@@ -2232,7 +2232,7 @@ _Target
                     if File.Exists report then
                         report
                     else
-                        report.Replace(".xml", ".net5.0.xml"))
+                        report.Replace(".xml", ".net6.0.xml"))
              |> List.filter (fun f -> File.Exists f && f.Contains("Visualizer")))
 
         uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
@@ -2292,7 +2292,7 @@ _Target
             @@ ("AltCoverFSharpTypesDotNet.xml")
 
         let sampleRoot =
-            Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+            Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
@@ -2612,10 +2612,10 @@ _Target
             @@ ("AltCoverFSharpTypesDotNetRunner.xml")
 
         let sampleRoot =
-            Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
+            Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         let instrumented =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         // Instrument the code
         let prep =
@@ -2645,7 +2645,7 @@ _Target
             Path.getFullName "./Samples/Sample2/Sample2.fsproj"
 
         let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "net5.0") sample2
+            defaultDotNetTestCommandLine (Some "net6.0") sample2
 
         let collect =
             AltCover.CollectOptions.Primitive
@@ -2684,7 +2684,7 @@ _Target
             @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
 
         let sampleRoot =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         printfn "Build and test normally"
         Shell.cleanDir sampleRoot
@@ -4419,10 +4419,10 @@ _Target
             Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
 
         let o =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         let i =
-            Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net5.0"
+            Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         Shell.cleanDir o
 
@@ -4457,7 +4457,7 @@ _Target
             Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
 
         let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "net5.0") sample2
+            defaultDotNetTestCommandLine (Some "net6.0") sample2
 
         // Run
         let collect =
@@ -4490,10 +4490,10 @@ _Target
             Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
 
         let o =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+x86/net5.0"
+            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+x86/net6.0"
 
         let i =
-            Path.getFullName "_Binaries/Sample2/Debug+x86/net5.0"
+            Path.getFullName "_Binaries/Sample2/Debug+x86/net6.0"
 
         Shell.cleanDir o
 
@@ -4555,7 +4555,7 @@ _Target
 
                 // Run
                 let (dotnetexe, args) =
-                    defaultDotNetTestCommandLine86 (Some "net5.0") sample2
+                    defaultDotNetTestCommandLine86 (Some "net6.0") sample2
 
                 let collect =
                     AltCover.CollectOptions.Primitive
@@ -4718,10 +4718,10 @@ _Target
             Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
 
         let o =
-            Path.getFullName "Samples/Sample18/_Binaries/Sample18/Debug+AnyCPU/net5.0"
+            Path.getFullName "Samples/Sample18/_Binaries/Sample18/Debug+AnyCPU/net6.0"
 
         let i =
-            Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net5.0"
+            Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net6.0"
 
         Shell.cleanDir o
 
@@ -4754,7 +4754,7 @@ _Target
             Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
 
         let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "net5.0") sample
+            defaultDotNetTestCommandLine (Some "net6.0") sample
 
         // Run
         let collect =
@@ -4800,14 +4800,14 @@ _Target
 
         let binary =
             here
-            @@ "_Binaries/Sample18/Debug+AnyCPU/net5.0/Sample18.dll"
+            @@ "_Binaries/Sample18/Debug+AnyCPU/net6.0/Sample18.dll"
 
         let binaryTarget = reportDir @@ "Sample18.dll"
         Shell.copyFile binaryTarget binary
 
         let binary2 =
             here
-            @@ "_Binaries/Sample18/Debug+AnyCPU/net5.0/Sample18.pdb"
+            @@ "_Binaries/Sample18/Debug+AnyCPU/net6.0/Sample18.pdb"
 
         let binary2Target = reportDir @@ "Sample18.pdb"
         Shell.copyFile binary2Target binary2)
@@ -5639,7 +5639,7 @@ _Target
                         |> Seq.concat
                         |> Seq.head
 
-                    targets.SetValue "net5.0"
+                    targets.SetValue "net6.0"
 
                     fsproj.Descendants(XName.Get("HintPath"))
                     |> Seq.iter (fun hint -> "ThirdParty/Unquote.dll"
@@ -5704,7 +5704,7 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj"
-            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net6.0/__Instrumented_dotnettest")
 
             DotNet.test
                 (fun to' ->
@@ -5718,10 +5718,10 @@ _Target
                         ForceTrue
                     |> testWithCLIArguments)
                 "dotnettest.fsproj" // TODO validate output as per JsonReporting
-            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net5.0/__Instrumented_dotnettest")
+            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net6.0/__Instrumented_dotnettest")
 
             let x =
-                Path.getFullName "./_DotnetTest/coverage.net5.0.xml"
+                Path.getFullName "./_DotnetTest/coverage.net6.0.xml"
 
             Actions.CheckSample4 before x
 
@@ -5739,7 +5739,7 @@ _Target
                 "dotnettest.fsproj"
 
             let x =
-                Path.getFullName "./_DotnetTestInPlace/coverage.net5.0.xml"
+                Path.getFullName "./_DotnetTestInPlace/coverage.net6.0.xml"
 
             Actions.CheckSample4 before x
 
@@ -5782,10 +5782,10 @@ _Target
             Assert.That(xx0 |> File.Exists |> not, xx0 + " should not be present")
 
             Assert.That(
-                "./_DotnetTestFailInstrumentation/bin/Debug/net5.0/dotnettest.dll.txt"
+                "./_DotnetTestFailInstrumentation/bin/Debug/net6.0/dotnettest.dll.txt"
                 |> File.Exists
                 |> not,
-                "./_DotnetTestFailInstrumentation/bin/Debug/net5.0/dotnettest.dll.txt should not be present"
+                "./_DotnetTestFailInstrumentation/bin/Debug/net6.0/dotnettest.dll.txt should not be present"
             )
 
             try
@@ -5805,10 +5805,10 @@ _Target
             Assert.That(xx0a |> File.Exists |> not, xx0a + " should not be present")
 
             Assert.That(
-                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
+                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net6.0/dotnettest.dll.txt"
                 |> File.Exists
                 |> not,
-                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net5.0/dotnettest.dll.txt should not be present"
+                "./_DotnetTestFailInstrumentationInPlace/bin/Debug/net6.0/dotnettest.dll.txt should not be present"
             )
 
             printfn "optest failing test ------------------------------------------------"
@@ -5845,9 +5845,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFail/bin/Debug/net5.0/dotnettest.dll.txt"
+                "./_DotnetTestFail/bin/Debug/net6.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFail/bin/Debug/net5.0/dotnettest.dll.txt should exist"
+                "./_DotnetTestFail/bin/Debug/net6.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5879,7 +5879,7 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             let filepath =
-                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
+                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/net6.0/dotnettest.dll.txt"
 
             Assert.That(filepath |> File.Exists, filepath + " should exist")
 
@@ -5938,9 +5938,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFast/bin/Debug/net5.0/dotnettest.dll.txt"
+                "./_DotnetTestFailFast/bin/Debug/net6.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFast/bin/Debug/net5.0/dotnettest.dll.txt should exist"
+                "./_DotnetTestFailFast/bin/Debug/net6.0/dotnettest.dll.txt should exist"
             )
 
             do
@@ -5972,9 +5972,9 @@ _Target
             with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFastInPlace/bin/Debug/net5.0/dotnettest.dll.txt"
+                "./_DotnetTestFailFastInPlace/bin/Debug/net6.0/dotnettest.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFastInPlace/bin/Debug/net5.0/dotnettest.dll.txt should exist"
+                "./_DotnetTestFailFastInPlace/bin/Debug/net6.0/dotnettest.dll.txt should exist"
             )
 
             do

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
@@ -13,7 +13,7 @@
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
     <WarningsAsErrors>3239;0058</WarningsAsErrors>
   </PropertyGroup>
 
