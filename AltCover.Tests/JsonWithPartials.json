@@ -1,0 +1,388 @@
+{
+ "SimpleMix.exe": {
+   "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h": {
+     "\u003CModule\u003E": {
+       "System.Int32 \u003CModule\u003E::main(System.String[])": {
+         "Lines": {
+           "41": 1,
+           "42": 1,
+           "43": 1
+          },
+         "Branches": [
+           {
+            "Line": 42,
+            "Offset": 23,
+            "EndOffset": 25,
+            "Path": 0,
+            "Ordinal": 2,
+            "Hits": 1,
+            "Id": 13
+           },
+           {
+            "Line": 42,
+            "Offset": 23,
+            "EndOffset": 33,
+            "Path": 1,
+            "Ordinal": 3,
+            "Hits": 0,
+            "Id": 14
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 41,
+            "SC": 0,
+            "EL": 41,
+            "EC": 0,
+            "Offset": 20,
+            "Id": 4
+           },
+           {
+            "VC": 1,
+            "SL": 42,
+            "SC": 0,
+            "EL": 42,
+            "EC": 0,
+            "Offset": 22,
+            "Id": 5
+           },
+           {
+            "VC": 1,
+            "SL": 43,
+            "SC": 0,
+            "EL": 43,
+            "EC": 0,
+            "Offset": 25,
+            "Id": 6
+           }
+          ]
+        }
+      },
+     "Example": {
+       "System.Int32 Example::main(System.String[])": {
+         "Lines": {
+           "41": 1,
+           "42": 1,
+           "43": 1
+          },
+         "Branches": [
+           {
+            "Line": 42,
+            "Offset": 15,
+            "EndOffset": 17,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 1,
+            "Id": 625
+           },
+           {
+            "Line": 42,
+            "Offset": 15,
+            "EndOffset": 25,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 626
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 41,
+            "SC": 0,
+            "EL": 41,
+            "EC": 0,
+            "Offset": 12,
+            "Id": 619
+           },
+           {
+            "VC": 1,
+            "SL": 42,
+            "SC": 0,
+            "EL": 42,
+            "EC": 0,
+            "Offset": 14,
+            "Id": 620
+           },
+           {
+            "VC": 1,
+            "SL": 43,
+            "SC": 0,
+            "EL": 43,
+            "EC": 0,
+            "Offset": 17,
+            "Id": 621
+           }
+          ]
+        }
+      }
+    },
+   "C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp": {
+     "\u00ABAltCover.embed\u00BB": {
+       "1ZJBb9swDIXvBvwfOO9iN0Xas5sGGIweCgTb0HbbrQGrMLEGWxIouUlR5L\u002BPlpKmwDCg11104Ht8Ij/p4gKaxV2DXUc8Vc5BDT1qA47tb1IB1rqjaZ7l2WdtVDesCAofVrjeTdsilh3jpkcYTI8GN7TKM20CfMWgn6mxgwk/7ZY6X25Vi7wMZ\u002BDuA2uzqfLsNc8ARrcafXANl1djRVnjA7z5n2O/qIsCSdvhy83ttx9FdG5bmQ7Ks1MkQAyV2DXIlV61XKaAczjaJpOqSiZIN08mMW0/HkxhYJPqUt2fNnzbL88GLzFgsCfvUBHcv/hA/dUoMa1Bdeg93OywdzKeDOSGp06resz3QciouPXIuURmfJmlgLpOAz7OHwF549/vc1CknwVF8UC7AMHCE0GLvqVVAgLQCDzbUV3/Yh1ooQ2V0lIdVKfN0gWeNcJ2Dg6uTxyE\u002BVKhDzMZjVhbPhnnUB59AN8DP9g0zSj6GF/9\u002B/a/f4KL9tRwwH15fIB9VD5KJ30geelPR9p1fegT/T2\u002BD/P77wH\u002BAQ==": {
+         "Lines": {},
+         "Branches": []
+        }
+      },
+     "\u003CModule\u003E": {
+       "System.Int32 \u003CModule\u003E::main(System.String[])": {
+         "Lines": {
+           "38": 1,
+           "40": 1,
+           "41": 1,
+           "42": 1,
+           "45": 1,
+           "47": 1,
+           "49": 0
+          },
+         "Branches": [
+           {
+            "Line": 38,
+            "Offset": 6,
+            "EndOffset": 8,
+            "Path": 0,
+            "Ordinal": 0,
+            "Hits": 1,
+            "Id": 11
+           },
+           {
+            "Line": 38,
+            "Offset": 6,
+            "EndOffset": 48,
+            "Path": 1,
+            "Ordinal": 1,
+            "Hits": 0,
+            "Id": 12
+           }
+          ],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 38,
+            "SC": 0,
+            "EL": 38,
+            "EC": 0,
+            "Offset": 0,
+            "Id": 1
+           },
+           {
+            "VC": 1,
+            "SL": 40,
+            "SC": 0,
+            "EL": 40,
+            "EC": 0,
+            "Offset": 8,
+            "Id": 2
+           },
+           {
+            "VC": 1,
+            "SL": 41,
+            "SC": 0,
+            "EL": 41,
+            "EC": 0,
+            "Offset": 14,
+            "Id": 3
+           },
+           {
+            "VC": 1,
+            "SL": 42,
+            "SC": 0,
+            "EL": 42,
+            "EC": 0,
+            "Offset": 33,
+            "Id": 7
+           },
+           {
+            "VC": 1,
+            "SL": 45,
+            "SC": 0,
+            "EL": 45,
+            "EC": 0,
+            "Offset": 35,
+            "Id": 8
+           },
+           {
+            "VC": 1,
+            "SL": 47,
+            "SC": 0,
+            "EL": 47,
+            "EC": 0,
+            "Offset": 46,
+            "Id": 9
+           },
+           {
+            "VC": 0,
+            "SL": 49,
+            "SC": 0,
+            "EL": 49,
+            "EC": 0,
+            "Offset": 48,
+            "Id": 10
+           }
+          ]
+        }
+      },
+     "Example": {
+       "System.Int32 Example::main(System.String[])": {
+         "Lines": {
+           "25": 1,
+           "26": 1,
+           "27": 1,
+           "30": 1,
+           "32": 1
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 25,
+            "SC": 0,
+            "EL": 25,
+            "EC": 0,
+            "Offset": 0,
+            "Id": 617
+           },
+           {
+            "VC": 1,
+            "SL": 26,
+            "SC": 0,
+            "EL": 26,
+            "EC": 0,
+            "Offset": 6,
+            "Id": 618
+           },
+           {
+            "VC": 1,
+            "SL": 27,
+            "SC": 0,
+            "EL": 27,
+            "EC": 0,
+            "Offset": 25,
+            "Id": 622
+           },
+           {
+            "VC": 1,
+            "SL": 30,
+            "SC": 0,
+            "EL": 30,
+            "EC": 0,
+            "Offset": 27,
+            "Id": 623
+           },
+           {
+            "VC": 1,
+            "SL": 32,
+            "SC": 0,
+            "EL": 32,
+            "EC": 0,
+            "Offset": 38,
+            "Id": 624
+           }
+          ]
+        }
+      }
+    },
+   "d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp": {
+     "\u003CModule\u003E": {
+       "System.Int32 \u003CModule\u003E::mainCRTStartupStrArray(System.String[])": {
+         "Lines": {
+           "223": 1,
+           "228": 1,
+           "241": 1,
+           "247": 1,
+           "278": 1,
+           "279": 0,
+           "284": 0,
+           "287": 1,
+           "288": 1
+          },
+         "Branches": [],
+         "SeqPnts": [
+           {
+            "VC": 1,
+            "SL": 223,
+            "SC": 0,
+            "EL": 223,
+            "EC": 0,
+            "Offset": 0,
+            "Id": 368
+           },
+           {
+            "VC": 1,
+            "SL": 228,
+            "SC": 0,
+            "EL": 228,
+            "EC": 0,
+            "Offset": 11,
+            "Id": 369
+           },
+           {
+            "VC": 1,
+            "SL": 241,
+            "SC": 0,
+            "EL": 241,
+            "EC": 0,
+            "Offset": 22,
+            "Id": 370
+           },
+           {
+            "VC": 1,
+            "SL": 247,
+            "SC": 0,
+            "EL": 247,
+            "EC": 0,
+            "Offset": 28,
+            "Id": 371
+           },
+           {
+            "VC": 1,
+            "SL": 278,
+            "SC": 0,
+            "EL": 278,
+            "EC": 0,
+            "Offset": 35,
+            "Id": 372
+           },
+           {
+            "VC": 0,
+            "SL": 279,
+            "SC": 0,
+            "EL": 279,
+            "EC": 0,
+            "Offset": 37,
+            "Id": 373
+           },
+           {
+            "VC": 0,
+            "SL": 284,
+            "SC": 0,
+            "EL": 284,
+            "EC": 0,
+            "Offset": 56,
+            "Id": 374
+           },
+           {
+            "VC": 1,
+            "SL": 287,
+            "SC": 0,
+            "EL": 287,
+            "EC": 0,
+            "Offset": 64,
+            "Id": 375
+           },
+           {
+            "VC": 1,
+            "SL": 288,
+            "SC": 0,
+            "EL": 288,
+            "EC": 0,
+            "Offset": 66,
+            "Id": 376
+           }
+          ]
+        }
+      }
+    }
+  }
+}

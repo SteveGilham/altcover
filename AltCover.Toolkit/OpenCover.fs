@@ -1200,10 +1200,24 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
   [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
   let JsonToXml (document: string) =
-    document
-    |> NativeJson.fromJsonText
-    |> NativeJson.jsonToXml
-    |> NativeJson.orderXml
+    let json =
+      document
+      |> NativeJson.fromJsonText
+    let xml =
+      json
+      |> NativeJson.jsonToXml
+      |> NativeJson.orderXml
+
+    // heuristic for coverlet vs altcover
+    let sp = json.Values
+             |> Seq.collect (fun m -> m.Values)
+             |> Seq.collect (fun d -> d.Values)
+             |> Seq.collect (fun c -> c.Values)
+             |> Seq.filter (fun m -> m.SeqPnts.IsNotNull)
+             |> Seq.collect (fun m -> m.SeqPnts)
+             |> Seq.isEmpty |> not
+    PostProcess xml (if sp then BranchOrdinal.Offset else BranchOrdinal.SL)
+    xml
 
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",

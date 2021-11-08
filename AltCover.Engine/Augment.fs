@@ -24,16 +24,18 @@ module internal Augment =
       with get() =
         self |> isNull |> not
 
-#if !(GUI || ValidateGendarmeEmulation)
+#if !ValidateGendarmeEmulation
   type System.String with
     member self.X
       with get() =
         System.Xml.Linq.XName.Get self
+#if !GUI
 
     member self.InvariantParseDouble() =
       System.Double.TryParse(self,
                              System.Globalization.NumberStyles.Number,
                              System.Globalization.CultureInfo.InvariantCulture)
+#endif
 #endif
   type internal Either<'a, 'b> = Choice<'b, 'a>
 
@@ -63,17 +65,18 @@ module internal Augment =
     action stream
 #endif
 
-#if !GUI
   type System.Boolean with
     member self.ToInt32
       with get() =
         if self then 1 else 0
+
 #if !ValidateGendarmeEmulation
   type System.Int32 with
     member self.Increment (b : bool) =
       self + b.ToInt32
 #endif
 
+#if !GUI
   type Microsoft.FSharp.Collections.List<'T> with
    member self.Split
      with get () =
@@ -110,6 +113,16 @@ module internal Augment =
   Justification="Compiler generated")>]
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
   Scope="member", Target="AltCover.Augment.#String.get_X(System.String)",
+  Justification="Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member", Target="AltCover.Augment.#Boolean.get_ToInt32(System.Boolean)", MessageId="param",
+  Justification="Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores",
+  Scope="member", Target="AltCover.Augment.#Boolean.get_ToInt32(System.Boolean)",
+  Justification="Compiler generated")>]
+[<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
+  Scope="member",
+  Target="AltCover.Augment.#Int32.Increment(System.Int32,System.Boolean)", MessageId="b",
   Justification="Compiler generated")>]
 #if GUI
 [<assembly: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
