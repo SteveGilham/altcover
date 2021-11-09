@@ -64,7 +64,7 @@ module AltCoverTests =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net6.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
@@ -3499,7 +3499,7 @@ module AltCoverTests =
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |])
-      printfn "%s" result
+      //printfn "%s" result
       Assert.That(
         result
           .Replace('\r', '\u00FF')
