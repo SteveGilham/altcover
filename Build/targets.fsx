@@ -5215,7 +5215,8 @@ _Target
                 |> Seq.toList
 
             let expected =
-                "0 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 2 0 1 0 1 1"
+                "0 1 1 0 1 0 1 0 1 0 0 0 0 0 1 1 1 0 0 0 0 2 0 1 0 1 1"
+                //"0 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 2 0 1 0 1 1"
 
             Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
             printfn "Visits OK"
