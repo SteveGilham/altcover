@@ -26,8 +26,6 @@ open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
 open Fake.Tools.Git
 
-//open FSharpLint.Application
-//open FSharpLint.Framework
 open NUnit.Framework
 open Swensen.Unquote
 
@@ -884,6 +882,7 @@ _Target
 
       let doLint f =
         CreateProcess.fromRawCommand "dotnet" ["fsharplint"; "lint";  "-l"; cfg ; f]
+        |> CreateProcess.setEnvironmentVariable "DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX" "2"
         |> CreateProcess.ensureExitCodeWithMessage "Lint issues were found"
         |> Proc.run
       let doLintAsync f = async { return (doLint f).ExitCode }
