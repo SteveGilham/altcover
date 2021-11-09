@@ -587,8 +587,9 @@ a:hover {color: #ecc;}
             |> Seq.toList
 
         let expected =
-            "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
-        //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            // "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A in %s" recorded path)
         printfn "Visits OK"
 
@@ -642,6 +643,7 @@ a:hover {color: #ecc;}
             coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
             |> Seq.map (fun x -> x.ToString()),
             Is.EquivalentTo [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                               "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                               "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                               "<TrackedMethodRef uid=\"1\" vc=\"1\" />"

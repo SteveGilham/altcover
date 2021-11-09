@@ -5284,7 +5284,8 @@ _Target
 
             Assert.That(
                 String.Join(" ", trackedVisits),
-                "1 1 1 1 1 1 1 2 2 2 2 2" |> Is.EqualTo,
+                "1 1 1 1 1 1 1 1 2 2 2 2 2" |> Is.EqualTo,
+                //"1 1 1 1 1 1 1 2 2 2 2 2" |> Is.EqualTo,
                 sprintf "Bad tracked visit list %A" trackedVisits
             )
 
