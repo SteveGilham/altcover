@@ -3495,19 +3495,11 @@ module AltCoverTests =
       let expected =
         reader
           .ReadToEnd()
-          .Replace(
-            "Tests.fs",
-            Path
-              .GetFullPath(Path.Combine(SolutionRoot.location,
-                                        "Samples/Sample4",
-                                        "Tests.fs"))
-              .Replace("\\", "\\\\")
-          )
           .Replace('\r', '\u00FF')
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |])
-      //printfn "%s" result
+      printfn "%s" result
       Assert.That(
         result
           .Replace('\r', '\u00FF')
@@ -5203,9 +5195,9 @@ module AltCoverTests =
     let visitor, document = OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net5.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net6.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net5.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net6.0 not built")
 
     try
       "Program"
