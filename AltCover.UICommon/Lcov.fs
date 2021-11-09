@@ -59,14 +59,14 @@ module internal Lcov =
            | FN _
            | DA _
            | BRDA _ -> true
-           | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
+           | _ -> raise (r |> sprintf "%A" |> InvalidDataException ))
     |> Seq.sortBy
          (fun r ->
            match r with
            | FN (a, _) -> 4 * a
            | DA (a, _) -> (4 * a) + 1
            | BRDA (a, _, _, _) -> (4 * a) + 2
-           | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
+           | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
     |> Seq.fold
          (fun x r -> // <method excluded="false" instrumented="true" name="Method1" class="Test.AbstractClass_SampleImpl1" fullname="Test.AbstractClass_SampleImpl1::Method1(...)" document="AbstractClass.cs">
            match r with
@@ -137,7 +137,7 @@ module internal Lcov =
 
                x.Add br
                x
-           | _ -> r |> sprintf "%A" |> InvalidDataException |> raise)
+           | _ -> raise (r |> sprintf "%A" |> InvalidDataException))
          null
     |> ignore
 
@@ -164,10 +164,9 @@ module internal Lcov =
                  | n :: v :: _ ->
                      DA(n |> Int32.TryParse |> snd, v |> Int32.TryParse |> snd)
                  | _ ->
-                     line
-                     |> sprintf "%A"
-                     |> InvalidDataException
-                     |> raise
+                     raise (line
+                            |> sprintf "%A"
+                            |> InvalidDataException)
              | l when l.StartsWith("BRDA:", StringComparison.Ordinal) ->
                  match (l.Substring 5).Split(',') |> Array.toList with
                  | n :: v :: x :: y :: _ ->
@@ -178,10 +177,9 @@ module internal Lcov =
                        y |> Int32.TryParse |> snd
                      )
                  | _ ->
-                     line
-                     |> sprintf "%A"
-                     |> InvalidDataException
-                     |> raise
+                     raise (line
+                            |> sprintf "%A"
+                            |> InvalidDataException)
              | _ -> Other)
       |> Seq.fold
            (fun (i, l) r ->

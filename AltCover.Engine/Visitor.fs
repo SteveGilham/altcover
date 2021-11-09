@@ -315,6 +315,8 @@ module internal CoverageParameters =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
+  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                    Justification = "meets an interface")>]
   let private defaultOutputDirectory _ =
     inplaceSelection "__Saved" "__Instrumented"
 

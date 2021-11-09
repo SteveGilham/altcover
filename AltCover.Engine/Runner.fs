@@ -56,7 +56,7 @@ type internal SummaryFormat =
              | ('R', _) -> Many(R :: (SummaryFormat.ToList state))
              | ('O', _) -> Many(O :: (SummaryFormat.ToList state))
              | ('C', _) -> Many(C :: (SummaryFormat.ToList state))
-             | _ -> s |> FormatException |> raise)
+             | _ -> raise (s |> FormatException))
            (Many [])
     with :? FormatException -> Default
 
@@ -375,53 +375,91 @@ module internal Runner =
 
       (amv, acv)
 
+    type Category =
+      {
+        Number : string;
+        Visited : string;
+        Coverage : string;
+      }
+
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Local use after refactoring out")>]
+    let private summariseBase (summary: XElement) go (visit: string) (number: string) (precalc: string option) key =
+      let vc = summary.Attribute(visit.X).Value
+      let nc = summary.Attribute(number.X).Value
+
+      let pc =
+        match precalc with
+        | None ->
+            if nc = "0" then
+              "n/a"
+            else
+              let vc1 = vc |> Int32.TryParse |> snd |> float
+
+              let nc1 = nc |> Int32.TryParse |> snd |> float
+
+              Math
+                .Round(vc1 * 100.0 / nc1, 2)
+                .ToString(CultureInfo.InvariantCulture)
+        | Some x -> summary.Attribute(x.X).Value
+
+      if go then writeSummary key vc nc pc
+
+      {
+        Number = nc
+        Visited = vc
+        Coverage = pc
+      }
+
+    let private allTC l classes methods statements branches =
+        writeTC totalTC "C" classes.Number
+        writeTC coverTC "C" classes.Visited
+        writeTC totalTC "M" methods.Number
+        writeTC coverTC "M" methods.Visited
+        writeTC totalTC "S" statements.Number
+        writeTC coverTC "S" statements.Coverage
+
+        l
+        |> Seq.iter
+             (fun f ->
+               let tag =
+                 match f with
+                 | R -> "R"
+                 | B -> "B"
+                 | _ -> String.Empty
+
+               if tag |> String.IsNullOrEmpty |> not then
+                 writeTC totalTC tag branches.Number
+                 writeTC coverTC tag branches.Visited)
+
     [<SuppressMessage("Gendarme.Rules.Exceptions",
                       "InstantiateArgumentExceptionCorrectlyRule",
                       Justification = "Library method inlined")>]
     [<SuppressMessage("Microsoft.Usage",
                       "CA2208:InstantiateArgumentExceptionsCorrectly",
-                      Justification = "Library method inlined")>]
+                      Justification = "Library method inlined 4 times")>]
     [<SuppressMessage("Gendarme.Rules.Maintainability",
                       "AvoidComplexMethodsRule",
                       Justification = "TODO: refactor even more")>]
     let private makeOpenCoverSummary (report: XDocument) (summary: XElement) =
 
-      let summarise go (visit: string) (number: string) (precalc: string option) key =
-        let vc = summary.Attribute(visit.X).Value
-        let nc = summary.Attribute(number.X).Value
-
-        let pc =
-          match precalc with
-          | None ->
-              if nc = "0" then
-                "n/a"
-              else
-                let vc1 = vc |> Int32.TryParse |> snd |> float
-
-                let nc1 = nc |> Int32.TryParse |> snd |> float
-
-                Math
-                  .Round(vc1 * 100.0 / nc1, 2)
-                  .ToString(CultureInfo.InvariantCulture)
-          | Some x -> summary.Attribute(x.X).Value
-
-        if go then writeSummary key vc nc pc
-        (vc, nc, pc)
-
       let l =
         (SummaryFormat.ToList summaryFormat)
         |> Seq.distinct
 
+      let summarise = summariseBase summary
+
       let go =
         summaryFormat = Default || l |> Seq.contains O
 
-      let (vc, nc, _) =
+      let classes =
         summarise go "visitedClasses" "numClasses" None "VisitedClasses"
 
-      let (vm, nm, mcovered) =
+      let methods =
         summarise go "visitedMethods" "numMethods" None "VisitedMethods"
 
-      let (vs, ns, covered) =
+      let statements =
         summarise
           go
           "visitedSequencePoints"
@@ -429,7 +467,7 @@ module internal Runner =
           (Some "sequenceCoverage")
           "VisitedPoints"
 
-      let (vb, nb, bcovered) =
+      let branches =
         summarise
           go
           "visitedBranchPoints"
@@ -458,29 +496,11 @@ module internal Runner =
       let (altmcovered, altcrapvalue) = altSummary go extra report
 
       if l |> Seq.contains B || l |> Seq.contains R then
-        writeTC totalTC "C" nc
-        writeTC coverTC "C" vc
-        writeTC totalTC "M" nm
-        writeTC coverTC "M" vm
-        writeTC totalTC "S" ns
-        writeTC coverTC "S" vs
+        allTC l classes methods statements branches
 
-        l
-        |> Seq.iter
-             (fun f ->
-               let tag =
-                 match f with
-                 | R -> "R"
-                 | B -> "B"
-                 | _ -> String.Empty
-
-               if tag |> String.IsNullOrEmpty |> not then
-                 writeTC totalTC tag nb
-                 writeTC coverTC tag vb)
-
-      [ covered
-        bcovered
-        mcovered
+      [ statements.Coverage
+        branches.Coverage
+        methods.Coverage
         altmcovered
         crapvalue
         altcrapvalue ]
@@ -1249,6 +1269,8 @@ module internal Runner =
                       Justification = "The reader must not close the stream")>]
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUnusedParametersRule",
+                      Justification = "meets an interface")>]
+    [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
                       Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
