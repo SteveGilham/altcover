@@ -418,7 +418,7 @@ module internal Runner =
         writeTC totalTC "M" methods.Number
         writeTC coverTC "M" methods.Visited
         writeTC totalTC "S" statements.Number
-        writeTC coverTC "S" statements.Coverage
+        writeTC coverTC "S" statements.Visited
 
         l
         |> Seq.iter
