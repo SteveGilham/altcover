@@ -1290,7 +1290,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethod () =
-    let shift = "/../net5.0"
+    let shift = "/../net6.0"
 
     let path =
       Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
@@ -1352,7 +1352,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethodWithTailCalls () =
-    let shift = "/../net5.0"
+    let shift = "/../net6.0"
 
     let rpath =
       Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
@@ -1432,7 +1432,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethodWithNonVoidReturn () =
-    let shift = "/../net5.0"
+    let shift = "/../net6.0"
 
     let rpath =
       Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
@@ -1513,7 +1513,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAnAsyncMethod () =
-    let shift = "/../net5.0"
+    let shift = "/../net6.0"
 
     let rpath =
       Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
@@ -1594,7 +1594,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAnFSAsyncMethod () =
-    let shift = "/../net5.0"
+    let shift = "/../net6.0"
 
     let rpath =
       Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
@@ -1675,7 +1675,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToInstrumentASwitchForNCover () =
-    let shift = "/../net5.0"
+    let shift = "/../net6.0"
 
     let rpath =
       Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
