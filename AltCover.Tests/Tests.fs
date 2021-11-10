@@ -1680,6 +1680,7 @@ module AltCoverTests =
     let methods =
       def.MainModule.GetAllTypes()
       |> Seq.collect (fun t -> t.Methods)
+      |> Seq.sortBy (fun m -> m.FullName)
       |> Seq.toList
 
     let containing =
@@ -1690,80 +1691,80 @@ module AltCoverTests =
       |> Seq.map (fun (mo: MethodDefinition option) -> mo |> Option.map id)
 
     let expected =
-      [ None // System.Int32 Sample5.Class1::F1(System.String)
+       [Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // K Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerator<K>.get_Current()
+        Some "get_ValuesWorks" // K Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerator<K>.get_Current()
+        None // K Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Item(T)
+        Some "F2" // System.Boolean Sample5.Class1/<F2>d__1::MoveNext()
+        Some "G2" // System.Boolean Sample5.Class1/Inner/<G2>d__2`1::MoveNext()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Boolean Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::MoveNext()
+        Some "get_ValuesWorks" // System.Boolean Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::MoveNext()
+        None // System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.ContainsKey(T)
+        None // System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.TryGetValue(T,K&)
+        None // System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values()
+        None // System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::get_ValuesWorks()
         None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1::F2(System.String)
-        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
-        None // System.Void Sample5.Class1::.ctor()
-        Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)"
-        Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)"
-        None // System.Int32 Sample5.Class1/Inner::G1(System.String)
-        None // System.Void Sample5.Class1/Inner::G1(System.Int32)
-        None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
-        None // System.Void Sample5.Class1/Inner::G2(System.Int32)
-        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
-        None // System.Void Sample5.Class1/Inner::G3(System.Int32)
-        None // System.Void Sample5.Class1/Inner::.ctor()
-        Some "<G1>g__Recursive|0_4" // T[] Sample5.Class1/Inner::<G1>g__InteriorToArray|0_1(T)
-        Some "<G1>b__3" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
-        Some "<G1>g__Interior|0_2" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
-        None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
-        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
-        None // System.Void Sample5.Class1/Inner/<>c::.cctor()
-        None // System.Void Sample5.Class1/Inner/<>c::.ctor()
-        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c::<G1>b__0_0(System.Char)
-        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::.ctor(System.Int32)
-        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.IDisposable.Dispose()
-        Some "G2" // System.Boolean Sample5.Class1/Inner/<G2>d__1::MoveNext()
-        Some "G2" // System.Int32 Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
-        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.Reset()
-        Some "G2" // System.Object Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.get_Current()
-        Some "G2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
-        Some "G2" // System.Collections.IEnumerator Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerable.GetEnumerator()
-        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::.ctor()
-        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::MoveNext()
-        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
-        None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
+        None // System.Collections.Generic.IEnumerable`1<T> Sample5.Class1/Inner::G2(T)
+        None // System.Collections.Generic.IEnumerable`1<T> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Keys()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerable<K>.GetEnumerator()
+        Some "get_ValuesWorks" // System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerable<K>.GetEnumerator()
+        None // System.Collections.Generic.IEnumerator`1<System.Collections.Generic.KeyValuePair`2<T,K>> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,K>>.GetEnumerator()
+        Some "F2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
+        Some "G2" // System.Collections.Generic.IEnumerator`1<T> Sample5.Class1/Inner/<G2>d__2`1::System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+        Some "F2" // System.Collections.IEnumerator Sample5.Class1/<F2>d__1::System.Collections.IEnumerable.GetEnumerator()
+        Some "G2" // System.Collections.IEnumerator Sample5.Class1/Inner/<G2>d__2`1::System.Collections.IEnumerable.GetEnumerator()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerable.GetEnumerator()
+        Some "get_ValuesWorks" // System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerable.GetEnumerator()
+        None // System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2::System.Collections.IEnumerable.GetEnumerator()
+        Some "F1" // System.Int32 Sample5.Class1/<>c::<F1>b__0_0(System.Char)
         Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__2(System.Char)
+        Some "F2" // System.Int32 Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
+        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c::<G1>b__0_0(System.Char)
+        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__3(System.Char)
+        Some "<G1>b__3" // System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_2(System.Int32,System.Int32)
+        Some "<G1>g__Interior|0_2" // System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_4(System.Int32)
+        None // System.Int32 Sample5.Class1/Inner::G1(System.String) // g1
+        Some "F1" // System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)
+        Some "F1" // System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)
+        None // System.Int32 Sample5.Class1::F1(System.String)
+        None // System.Int32 Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<T,K>>.get_Count()
+        Some "F2" // System.Object Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.get_Current()
+        Some "G2" // System.Object Sample5.Class1/Inner/<G2>d__2`1::System.Collections.IEnumerator.get_Current()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Object Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.get_Current()
+        Some "get_ValuesWorks" // System.Object Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.get_Current()
+        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String) // g3
+        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
         None // System.Void Sample5.Class1/<>c::.cctor()
         None // System.Void Sample5.Class1/<>c::.ctor()
-        Some "F1" // System.Int32 Sample5.Class1/<>c::<F1>b__0_0(System.Char)
+        None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
         Some "F2" // System.Void Sample5.Class1/<F2>d__1::.ctor(System.Int32)
-        Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.IDisposable.Dispose()
-        Some "F2" // System.Boolean Sample5.Class1/<F2>d__1::MoveNext()
-        Some "F2" // System.Int32 Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
         Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.Reset()
-        Some "F2" // System.Object Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.get_Current()
-        Some "F2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
-        Some "F2" // System.Collections.IEnumerator Sample5.Class1/<F2>d__1::System.Collections.IEnumerable.GetEnumerator()
+        Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.IDisposable.Dispose()
         Some "F3" // System.Void Sample5.Class1/<F3>d__2::.ctor()
         Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
         Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
-        None // "System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values()"
-        None // "System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::get_ValuesWorks()"
-        None // "System.Collections.Generic.IEnumerable`1<T> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Keys()"
-        None // "K Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Item(T)"
-        None // "System.Int32 Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<T,K>>.get_Count()"
-        None // "System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.ContainsKey(T)"
-        None // "System.Collections.Generic.IEnumerator`1<System.Collections.Generic.KeyValuePair`2<T,K>> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,K>>.GetEnumerator()"
-        None // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2::System.Collections.IEnumerable.GetEnumerator()"
-        None // "System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.TryGetValue(T,K&)"
-        None // "System.Void Sample5.RecursiveSyntheticInvocation`2::.ctor()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::.ctor(System.Int32)"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.IDisposable.Dispose()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Boolean Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::MoveNext()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "K Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerator<K>.get_Current()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.Reset()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Object Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.get_Current()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerable<K>.GetEnumerator()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerable.GetEnumerator()"
-        Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::.ctor(System.Int32)"
-        Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.IDisposable.Dispose()"
-        Some "get_ValuesWorks" // "System.Boolean Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::MoveNext()"
-        Some "get_ValuesWorks" // "K Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerator<K>.get_Current()"
-        Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.Reset()"
-        Some "get_ValuesWorks" // "System.Object Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.get_Current()"
-        Some "get_ValuesWorks" // "System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerable<K>.GetEnumerator()"
-        Some "get_ValuesWorks" ] // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerable.GetEnumerator()"
+        None // System.Void Sample5.Class1/Inner/<>c::.cctor()
+        None // System.Void Sample5.Class1/Inner/<>c::.ctor()
+        None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
+        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__2`1::.ctor(System.Int32)
+        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__2`1::System.Collections.IEnumerator.Reset()
+        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__2`1::System.IDisposable.Dispose()
+        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__4::.ctor()
+        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__4::MoveNext()
+        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__4::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
+        None // System.Void Sample5.Class1/Inner::.ctor()
+        None // System.Void Sample5.Class1/Inner::G1(System.Int32)
+        None // System.Void Sample5.Class1/Inner::G2(System.Int32)
+        None // System.Void Sample5.Class1/Inner::G3(System.Int32)
+        None // System.Void Sample5.Class1::.ctor()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::.ctor(System.Int32)
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.Reset()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.IDisposable.Dispose()
+        Some "get_ValuesWorks" // System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::.ctor(System.Int32)
+        Some "get_ValuesWorks" // System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.Reset()
+        Some "get_ValuesWorks" // System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.IDisposable.Dispose()
+        None // System.Void Sample5.RecursiveSyntheticInvocation`2::.ctor()
+        Some "G2" // T Sample5.Class1/Inner/<G2>d__2`1::System.Collections.Generic.IEnumerator<T>.get_Current()
+        Some "<G1>g__Recursive|0_4"] // T[] Sample5.Class1/Inner::<G1>g__InteriorToArray|0_1(T)
 
     // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
     // Assert.That (result, Is.EquivalentTo expected)
@@ -1797,7 +1798,7 @@ module AltCoverTests =
              sprintf "%A %A %d" x (y |> Option.map toFullName) i
            ))
     // Disambiguation checks
-    let g3 = methods.[10]
+    let g3 = methods.[40]
 
     Assert.That(
       methods
@@ -1807,7 +1808,7 @@ module AltCoverTests =
       Is.EquivalentTo [ g3; g3; g3 ]
     )
 
-    let g1 = methods.[6]
+    let g1 = methods.[31]
 
     Assert.That(
       methods
