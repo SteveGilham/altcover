@@ -3090,10 +3090,20 @@ module AltCoverTests2 =
     use reader = new StreamReader(stream)
     let expected = reader.ReadToEnd()
 
-    let version =
-      typeof<AltCover.Recorder.Tracer>
-        .Assembly.GetName()
-        .Version.ToString()
+    let recorderVersion() =
+      let recorder =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceNames()
+          |> Seq.find (fun n -> n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream(recorder)
+      use def = AssemblyDefinition.ReadAssembly stream
+      def.Name.Version.ToString()
+
+    let version = recorderVersion()
 
     let result =
       expected

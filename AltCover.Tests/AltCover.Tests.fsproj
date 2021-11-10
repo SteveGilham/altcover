@@ -92,6 +92,9 @@
     <EmbeddedResource Include="issue37.pd_" />
     <EmbeddedResource Include="issue122.xml" />
     <EmbeddedResource Include="issue122.cobertura" />
+    <EmbeddedResource Include="$(SolutionDir)_Binaries\AltCover.Recorder\Release+AnyCPU\net20\AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.net20.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -114,9 +117,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AltCover.Recorder">
-      <HintPath>$(ProjectDir)..\_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
-    </Reference>
     <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
