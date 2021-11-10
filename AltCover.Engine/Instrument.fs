@@ -128,10 +128,15 @@ type internal InstrumentContext =
 
 // Module to handle instrumentation visitor
 module internal Instrument =
-  let version =
-    typeof<AltCover.Recorder.Tracer>
-      .Assembly.GetName()
-      .Version.ToString()
+  let recorderDll = Path.Combine(
+                                  Assembly.GetExecutingAssembly().Location 
+                                  |> Path.GetDirectoryName,
+                                  "AltCover.Recorder.dll"
+                                )
+  let recorderVersion() =
+    use def = AssemblyDefinition.ReadAssembly recorderDll
+    def.Name.Version.ToString()                                  
+  let version = recorderVersion()
 
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
@@ -979,10 +984,8 @@ module internal Instrument =
                                                       "EnsureLocalDisposalRule",
                                                       Justification = "Record return confusing Gendarme -- TODO")>]
     let private visitStart state =
-      let recorder = typeof<AltCover.Recorder.Tracer>
-
       let recordingAssembly =
-        prepareAssembly (recorder.Assembly.Location)
+        prepareAssembly (recorderDll)
 
       { state with
           RecordingAssembly = recordingAssembly }
