@@ -468,7 +468,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      let prepared = Instrument.I.prepareAssembly path
+      let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
 
       use raw =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -657,7 +657,7 @@ module AltCoverTests2 =
           "Unexpected sampling"
         )
 
-        let prepared = Instrument.I.prepareAssembly path
+        let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
 
         let traces =
           System.Collections.Generic.List<string>()
@@ -815,7 +815,7 @@ module AltCoverTests2 =
 
       try
         CoverageParameters.theReportPath <- Some unique
-        let prepared = Instrument.I.prepareAssembly path
+        let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
         Instrument.I.writeAssembly prepared outputdll
         // TODO -- see Instrument.I.WriteAssembly       Assert.That (File.Exists (outputdll + ".mdb"))
         use raw =

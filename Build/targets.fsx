@@ -3479,9 +3479,6 @@ _Target
         let options =
             Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/Mono.Options.dll"
 
-        let recorder =
-            Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472/AltCover.Recorder.dll"
-
         let monitor =
             Path.getFullName "_Binaries/AltCover.Monitor/Release+AnyCPU/net20/AltCover.Monitor.dll"
 
@@ -3517,7 +3514,6 @@ _Target
             [ (AltCover, Some "tools/net472", None)
               (engine, Some "tools/net472", None)
               (config, Some "tools/net472", None)
-              (recorder, Some "tools/net472", None)
               (monitor, Some "lib/net20", None)
               (vis, Some "tools/net472", None)
               (uic, Some "tools/net472", None)
@@ -3532,7 +3528,6 @@ _Target
             [ (AltCover, Some "lib/net472", None)
               (engine, Some "lib/net472", None)
               (config, Some "lib/net472", None)
-              (recorder, Some "lib/net472", None)
               (monitor, Some "lib/net472", None)
               (monitor, Some "lib/net20", None)
               (fscore, Some "lib/net472", None)

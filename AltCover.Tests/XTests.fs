@@ -1275,6 +1275,7 @@ module AltCoverXTests =
 
         let from =
           Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+          |> File.OpenRead
 
         let updated = Instrument.I.prepareAssembly from
         Instrument.I.writeAssembly updated create
