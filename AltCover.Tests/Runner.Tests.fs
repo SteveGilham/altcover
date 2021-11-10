@@ -2304,11 +2304,15 @@ module AltCoverRunnerTests =
 
       if create |> File.Exists |> not then
         do
-          let from =
-            Path.Combine(here, "AltCover.Recorder.dll")
-
+          let recorder =
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceNames()
+              |> Seq.find (fun n -> n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
           use frombytes =
-            new FileStream(from, FileMode.Open, FileAccess.Read)
+            Assembly
+              .GetExecutingAssembly()
+              .GetManifestResourceStream(recorder)
 
           use libstream = new FileStream(create, FileMode.Create)
           frombytes.CopyTo libstream
@@ -2523,7 +2527,7 @@ module AltCoverRunnerTests =
   let ShouldGetStringConstants () =
     Runner.init ()
 
-    let where =
+    let here =
       Assembly.GetExecutingAssembly().Location
       |> Path.GetDirectoryName
 
@@ -2533,6 +2537,30 @@ module AltCoverRunnerTests =
       synchronized
       (fun () ->
         try
+          let where =
+            Path.Combine(here, Guid.NewGuid().ToString())
+
+          Directory.CreateDirectory(where) |> ignore
+          Runner.recordingDirectory <- Some where
+
+          let create =
+            Path.Combine(where, "AltCover.Recorder.dll")
+
+          if create |> File.Exists |> not then
+            do
+              let recorder =
+                Assembly
+                  .GetExecutingAssembly()
+                  .GetManifestResourceNames()
+                  |> Seq.find (fun n -> n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+              use frombytes =
+                Assembly
+                  .GetExecutingAssembly()
+                  .GetManifestResourceStream(recorder)
+
+              use libstream = new FileStream(create, FileMode.Create)
+              frombytes.CopyTo libstream
+
           Runner.recordingDirectory <- Some where
           Runner.J.recorderName <- "AltCover.Recorder.dll"
 

@@ -1049,8 +1049,13 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+
     let recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1076,7 +1081,8 @@ module AltCoverXTests =
 
       let input =
         { InstrumentContext.Build [] with
-            RecordingAssembly = recdef }
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
 
       let result =
         Instrument.I.instrumentationVisitor input visited
@@ -1108,11 +1114,13 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    let recpath =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     let recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1138,7 +1146,8 @@ module AltCoverXTests =
 
       let input =
         { InstrumentContext.Build [] with
-            RecordingAssembly = recdef }
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
 
       let result =
         Instrument.I.instrumentationVisitor input visited
@@ -1272,10 +1281,10 @@ module AltCoverXTests =
     if create |> File.Exists |> not then
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.NCover
-
-        let from =
-          Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
-          |> File.OpenRead
+        use from =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
         let updated = Instrument.I.prepareAssembly from
         Instrument.I.writeAssembly updated create

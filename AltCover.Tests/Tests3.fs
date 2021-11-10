@@ -1433,7 +1433,7 @@ module AltCoverTests3 =
       let here = Assembly.GetExecutingAssembly().Location
 
       let next =
-        Path.Combine(Path.GetDirectoryName here, "AltCover.Recorder.dll")
+        Path.Combine(Path.GetDirectoryName here, "AltCover.Engine.dll")
 
       let input = [| "-d"; here; "/d"; next |]
 
@@ -1452,7 +1452,7 @@ module AltCoverTests3 =
 
       Assert.That(
         String.Join(" ", expected),
-        Is.EqualTo("AltCover.Recorder AltCover.Tests")
+        Is.EqualTo("AltCover.Engine AltCover.Tests")
       )
     finally
       Instrument.resolutionTable.Clear()
