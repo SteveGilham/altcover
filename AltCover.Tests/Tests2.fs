@@ -39,11 +39,13 @@ module AltCoverTests2 =
   // Instrument.I.fs
   [<Test>]
   let ShouldBeAbleToGetTheVisitReportMethod () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -1290,13 +1292,13 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethod () =
-    let shift = "/../net6.0"
-
-    let path =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -1352,10 +1354,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethodWithTailCalls () =
-    let shift = "/../net6.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     let res =
       Assembly
@@ -1372,7 +1374,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly stream
 
     let rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1432,10 +1434,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethodWithNonVoidReturn () =
-    let shift = "/../net6.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     let sample24 =
       Path.Combine(
@@ -1448,7 +1450,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1513,10 +1515,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAnAsyncMethod () =
-    let shift = "/../net6.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     let sample24 =
       Path.Combine(
@@ -1529,7 +1531,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
 
     let rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1594,11 +1596,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAnFSAsyncMethod () =
-    let shift = "/../net6.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
-
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
     let sample27 =
       Path.Combine(
         Assembly.GetExecutingAssembly().Location
@@ -1610,7 +1611,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly sample27
 
     let rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1675,10 +1676,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToInstrumentASwitchForNCover () =
-    let shift = "/../net6.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     let res =
       Assembly
@@ -1713,7 +1714,7 @@ module AltCoverTests2 =
     def.MainModule.ReadSymbols(rr)
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1810,11 +1811,13 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldNotChangeAnUntrackedMethod () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+    let recstream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -2729,11 +2732,13 @@ module AltCoverTests2 =
         InstrumentContext.Build [ "nunit.framework"
                                   "nonesuch" ]
 
-      let path' =
-        Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+      let recstream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
       use def' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+        Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
       let visit =
         def'.MainModule.GetAllTypes()
@@ -2884,11 +2889,13 @@ module AltCoverTests2 =
         InstrumentContext.Build [ "nunit.framework"
                                   "nonesuch" ]
 
-      let path' =
-        Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+      let recstream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
       use def' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+        Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
       let visit =
         def'.MainModule.GetAllTypes()

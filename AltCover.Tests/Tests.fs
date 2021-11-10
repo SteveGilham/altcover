@@ -3393,11 +3393,15 @@ module AltCoverTests =
       let expected =
         reader
           .ReadToEnd()
+          .Replace("/_//Samples/Sample4/Tests.fs", // Not compiled CI
+             (Path.Combine(SolutionDir(), "Samples/Sample4/Tests.fs")
+              |> canonicalPath).Replace("\\","\\\\"))
           .Replace('\r', '\u00FF')
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |])
-      //printfn "%s" result
+      //printfn "expected %A" expected
+      //printfn "result %s" result
       Assert.That(
         result
           .Replace('\r', '\u00FF')
