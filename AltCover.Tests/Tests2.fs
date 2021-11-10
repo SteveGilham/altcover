@@ -1946,7 +1946,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
     ProgramDatabase.readSymbols def
-    CoverageParameters.coalesceBranches := true
+    CoverageParameters.coalesceBranches.Value <- true
 
     let method =
       def.MainModule.GetAllTypes()
@@ -2026,7 +2026,7 @@ module AltCoverTests2 =
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
 
   [<Test>]
   let SimpleBranchShouldInstrumentByPushingDown () =

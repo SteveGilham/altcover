@@ -160,14 +160,14 @@ module internal Runner =
   let internal init () =
     CommandLine.verbosity <- 0
     CommandLine.error <- []
-    CommandLine.dropReturnCode := false
+    CommandLine.dropReturnCode.Value <- false
     recordingDirectory <- None
     workingDirectory <- None
-    executable := None
-    LCov.path := None
-    Cobertura.path := None
-    Json.path := None
-    collect := false
+    executable.Value <- None
+    LCov.path.Value <- None
+    Cobertura.path.Value <- None
+    Json.path.Value <- None
+    collect.Value <- false
     threshold <- None
     output <- None
     summaryFormat <- Default
@@ -759,7 +759,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--executable")
                :: CommandLine.error
            else
-             executable := Some x))
+             executable.Value <- Some x))
       (CommandLine.ddFlag "collect" collect)
       ("l|lcovReport=",
        (fun x ->
@@ -769,7 +769,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--lcovReport")
                :: CommandLine.error
            else
-             LCov.path := x |> canonicalPath |> Some
+             LCov.path.Value <- x |> canonicalPath |> Some
              I.addLCovSummary ()))
       ("t|threshold=",
        (fun x ->
@@ -790,7 +790,7 @@ module internal Runner =
                CommandLine.Format.Local("MultiplesNotAllowed", "--cobertura")
                :: CommandLine.error
            else
-             Cobertura.path := x |> canonicalPath |> Some
+             Cobertura.path.Value <- x |> canonicalPath |> Some
              I.addCoberturaSummary ()))
       ("o|outputFile=",
        (fun x ->

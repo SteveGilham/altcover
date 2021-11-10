@@ -510,7 +510,7 @@ module AltCoverRunnerTests =
         + "/GenuineNCover158.json"
       )
 
-    Json.path := Some unique
+    Json.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -548,7 +548,7 @@ module AltCoverRunnerTests =
           .Replace("\r", String.Empty)
           .Replace("\n", String.Empty) @>
     finally
-      Json.path := None
+      Json.path.Value <- None
 
   [<Test>]
   let OpenCoverShouldGeneratePlausibleJson () =
@@ -583,7 +583,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/OpenCover.json"
       )
 
-    Json.path := Some unique
+    Json.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -624,7 +624,7 @@ module AltCoverRunnerTests =
           .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |]) @>
     finally
-      Json.path := None
+      Json.path.Value <- None
 
   // Runner.fs and CommandLine.fs
   [<Test>]
@@ -969,7 +969,7 @@ module AltCoverRunnerTests =
     lock
       Runner.executable
       (fun () ->
-        Runner.executable := None
+        Runner.executable.Value <- None
 
         match CommandLine.parseCommandLine [| "/x"; "x" |] options
               |> CommandLine.processHelpOption with
@@ -1002,7 +1002,7 @@ module AltCoverRunnerTests =
     lock
       Runner.executable
       (fun () ->
-        Runner.executable := None
+        Runner.executable.Value <- None
 
         match CommandLine.parseCommandLine [| "/x"; "x" |] options
               |> CommandLine.processHelpOption with
@@ -1018,7 +1018,7 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := None
+          Runner.executable.Value <- None
           let options = Runner.declareOptions ()
           let unique = "some exe"
           let input = [| "-x"; unique |]
@@ -1034,7 +1034,7 @@ module AltCoverRunnerTests =
           match Runner.executable.Value with
           | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
         finally
-          Runner.executable := None)
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ParsingMultipleExeGivesFailure () =
@@ -1044,7 +1044,7 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := None
+          Runner.executable.Value <- None
           let options = Runner.declareOptions ()
           let unique = Guid.NewGuid().ToString()
 
@@ -1067,7 +1067,7 @@ module AltCoverRunnerTests =
                 Is.EqualTo "--executable : specify this only once"
               )
         finally
-          Runner.executable := None)
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ParsingNoExeGivesFailure () =
@@ -1077,7 +1077,7 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := None
+          Runner.executable.Value <- None
           let options = Runner.declareOptions ()
           let blank = " "
           let input = [| "-x"; blank |]
@@ -1090,7 +1090,7 @@ module AltCoverRunnerTests =
               Assert.That(y, Is.SameAs options)
               Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.executable := None)
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ParsingWorkerGivesWorker () =
@@ -1285,7 +1285,7 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     try
-      Runner.collect := false
+      Runner.collect.Value <- false
       let options = Runner.declareOptions ()
       let input = [| "--collect" |]
 
@@ -1299,14 +1299,14 @@ module AltCoverRunnerTests =
 
       Assert.That(Runner.collect.Value, Is.True)
     finally
-      Runner.collect := false
+      Runner.collect.Value <- false
 
   [<Test>]
   let ParsingMultipleCollectGivesFailure () =
     Runner.init ()
 
     try
-      Runner.collect := false
+      Runner.collect.Value <- false
       let options = Runner.declareOptions ()
       let input = [| "--collect"; "--collect" |]
 
@@ -1323,7 +1323,7 @@ module AltCoverRunnerTests =
             Is.EqualTo "--collect : specify this only once"
           )
     finally
-      Runner.collect := false
+      Runner.collect.Value <- false
 
   [<Test>]
   let ParsingLcovGivesLcov () =
@@ -1333,7 +1333,7 @@ module AltCoverRunnerTests =
       LCov.path
       (fun () ->
         try
-          LCov.path := None
+          LCov.path.Value <- None
           Runner.I.initSummary ()
 
           let options = Runner.declareOptions ()
@@ -1354,7 +1354,7 @@ module AltCoverRunnerTests =
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
           Runner.I.initSummary ()
-          LCov.path := None)
+          LCov.path.Value <- None)
 
   [<Test>]
   let ParsingMultipleLcovGivesFailure () =
@@ -1364,7 +1364,7 @@ module AltCoverRunnerTests =
       LCov.path
       (fun () ->
         try
-          LCov.path := None
+          LCov.path.Value <- None
           Runner.I.initSummary ()
 
           let options = Runner.declareOptions ()
@@ -1390,7 +1390,7 @@ module AltCoverRunnerTests =
               )
         finally
           Runner.I.initSummary ()
-          LCov.path := None)
+          LCov.path.Value <- None)
 
   [<Test>]
   let ParsingNoLcovGivesFailure () =
@@ -1400,7 +1400,7 @@ module AltCoverRunnerTests =
       LCov.path
       (fun () ->
         try
-          LCov.path := None
+          LCov.path.Value <- None
           Runner.I.initSummary ()
 
           let options = Runner.declareOptions ()
@@ -1416,7 +1416,7 @@ module AltCoverRunnerTests =
               Assert.That(x, Is.EqualTo "UsageError")
         finally
           Runner.I.initSummary ()
-          LCov.path := None)
+          LCov.path.Value <- None)
 
   [<Test>]
   let ParsingThresholdGivesThreshold () =
@@ -1749,7 +1749,7 @@ module AltCoverRunnerTests =
       Cobertura.path
       (fun () ->
         try
-          Cobertura.path := None
+          Cobertura.path.Value <- None
           Runner.I.initSummary ()
 
           let options = Runner.declareOptions ()
@@ -1770,7 +1770,7 @@ module AltCoverRunnerTests =
           Assert.That(Runner.I.summaries.Length, Is.EqualTo 2)
         finally
           Runner.I.initSummary ()
-          Cobertura.path := None)
+          Cobertura.path.Value <- None)
 
   [<Test>]
   let ParsingMultipleCoberturaGivesFailure () =
@@ -1780,7 +1780,7 @@ module AltCoverRunnerTests =
       Cobertura.path
       (fun () ->
         try
-          Cobertura.path := None
+          Cobertura.path.Value <- None
           Runner.I.initSummary ()
 
           let options = Runner.declareOptions ()
@@ -1806,7 +1806,7 @@ module AltCoverRunnerTests =
               )
         finally
           Runner.I.initSummary ()
-          Cobertura.path := None)
+          Cobertura.path.Value <- None)
 
   [<Test>]
   let ParsingNoCoberturaGivesFailure () =
@@ -1816,7 +1816,7 @@ module AltCoverRunnerTests =
       Cobertura.path
       (fun () ->
         try
-          Cobertura.path := None
+          Cobertura.path.Value <- None
           Runner.I.initSummary ()
 
           let options = Runner.declareOptions ()
@@ -1832,7 +1832,7 @@ module AltCoverRunnerTests =
               Assert.That(x, Is.EqualTo "UsageError")
         finally
           Runner.I.initSummary ()
-          Cobertura.path := None)
+          Cobertura.path.Value <- None)
 
   [<Test>]
   let ParsingOutputGivesOutput () =
@@ -1863,7 +1863,7 @@ module AltCoverRunnerTests =
 
     try
       Runner.output <- None
-      Runner.collect := false
+      Runner.collect.Value <- false
 
       let options = Runner.declareOptions ()
       let unique = Guid.NewGuid().ToString()
@@ -1914,7 +1914,7 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     try
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
       let options = Runner.declareOptions ()
       let input = [| "--dropReturnCode" |]
 
@@ -1928,14 +1928,14 @@ module AltCoverRunnerTests =
 
       Assert.That(CommandLine.dropReturnCode.Value, Is.True)
     finally
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
 
   [<Test>]
   let ParsingMultipleDropGivesFailure () =
     Runner.init ()
 
     try
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
       let options = Runner.declareOptions ()
 
       let input =
@@ -1955,7 +1955,7 @@ module AltCoverRunnerTests =
             Is.EqualTo "--dropReturnCode : specify this only once"
           )
     finally
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
 
   [<Test>]
   let ParsingTCString () =
@@ -2134,7 +2134,7 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := None
+          Runner.executable.Value <- None
           let options = Runner.declareOptions ()
           let parse = Runner.J.requireExe (Right([], options))
 
@@ -2143,7 +2143,7 @@ module AltCoverRunnerTests =
               Assert.That(y, Is.SameAs options)
               Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.executable := None)
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldAcceptExe () =
@@ -2153,7 +2153,7 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := Some "xxx"
+          Runner.executable.Value <- Some "xxx"
           let options = Runner.declareOptions ()
 
           let parse =
@@ -2165,7 +2165,7 @@ module AltCoverRunnerTests =
               Assert.That(x, Is.EqualTo "xxx")
               Assert.That(y, Is.EquivalentTo [ "b" ])
         finally
-          Runner.executable := None)
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldRequireCollectIfNotExe () =
@@ -2175,8 +2175,8 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := None
-          Runner.collect := true
+          Runner.executable.Value <- None
+          Runner.collect.Value <- true
 
           let options = Runner.declareOptions ()
 
@@ -2186,8 +2186,8 @@ module AltCoverRunnerTests =
           match parse with
           | Right ([], z) -> Assert.That(z, Is.SameAs options)
         finally
-          Runner.collect := false
-          Runner.executable := None)
+          Runner.collect.Value <- false
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldRejectExeIfCollect () =
@@ -2197,8 +2197,8 @@ module AltCoverRunnerTests =
       Runner.executable
       (fun () ->
         try
-          Runner.executable := Some "xxx"
-          Runner.collect := true
+          Runner.executable.Value <- Some "xxx"
+          Runner.collect.Value <- true
 
           let options = Runner.declareOptions ()
 
@@ -2210,8 +2210,8 @@ module AltCoverRunnerTests =
               Assert.That(y, Is.SameAs options)
               Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.collect := false
-          Runner.executable := None)
+          Runner.collect.Value <- false
+          Runner.executable.Value <- None)
 
   [<Test>]
   let ShouldRequireWorker () =
@@ -2362,7 +2362,7 @@ module AltCoverRunnerTests =
     Assert.That(r2, Is.EqualTo 2)
 
     try
-      CommandLine.dropReturnCode := true
+      CommandLine.dropReturnCode.Value <- true
 
       let r0 =
         CommandLine.processTrailingArguments (args @ [ "1"; "2" ])
@@ -2370,7 +2370,7 @@ module AltCoverRunnerTests =
 
       Assert.That(r0, Is.EqualTo 0)
     finally
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
 
   [<Test>]
   let ShouldProcessTrailingArguments () =
@@ -3259,7 +3259,7 @@ module AltCoverRunnerTests =
     Runner.init ()
 
     try
-      Runner.collect := true
+      Runner.collect.Value <- true
 
       let counts =
         Dictionary<string, Dictionary<int, PointVisit>>()
@@ -3311,7 +3311,7 @@ module AltCoverRunnerTests =
       Assert.That(doc, Is.EqualTo DocumentType.Unknown)
       Assert.That(counts, Is.Empty)
     finally
-      Runner.collect := false
+      Runner.collect.Value <- false
 
   [<Test>]
   let JunkPayloadShouldReportAsExpected () =
@@ -4816,7 +4816,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/None.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -4830,7 +4830,7 @@ module AltCoverRunnerTests =
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       Assert.That(unique |> File.Exists |> not)
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let OpenCoverShouldGeneratePlausibleLcov () =
@@ -4857,7 +4857,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/OpenCover.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -4900,7 +4900,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let OpenCoverWithPartialsShouldGeneratePlausibleLcov () =
@@ -4927,7 +4927,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/OpenCoverWithPartials.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -4970,7 +4970,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let NCoverShouldGeneratePlausibleLcov () =
@@ -4996,7 +4996,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/NCover.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5036,7 +5036,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let NCoverWithPartialsShouldGeneratePlausibleLcov () =
@@ -5062,7 +5062,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/NCover.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5103,7 +5103,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let NCoverShouldGenerateMorePlausibleLcov () =
@@ -5129,7 +5129,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/Sample5.ncover.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5169,7 +5169,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let JsonShouldGeneratePlausibleLcov () =
@@ -5198,7 +5198,7 @@ module AltCoverRunnerTests =
         + "/Sample4.coverlet.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5239,7 +5239,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let JsonWithPartialsShouldGeneratePlausibleLcov () =
@@ -5268,7 +5268,7 @@ module AltCoverRunnerTests =
         + "/JsonWithPartials.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5309,7 +5309,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let NCoverShouldGeneratePlausibleLcovWithMissingFullName () =
@@ -5342,7 +5342,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/NCoverBugFix.lcov"
       )
 
-    LCov.path := Some unique
+    LCov.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5382,7 +5382,7 @@ module AltCoverRunnerTests =
         Is.EqualTo expected
       )
     finally
-      LCov.path := None
+      LCov.path.Value <- None
 
   [<Test>]
   let MultiSortDoesItsThing () =
@@ -5476,7 +5476,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/None.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5490,7 +5490,7 @@ module AltCoverRunnerTests =
       Assert.That(r, Is.EqualTo(0, 0, String.Empty))
       Assert.That(unique |> File.Exists |> not)
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let NCoverShouldGeneratePlausibleCobertura () =
@@ -5516,7 +5516,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/NCover122.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5568,7 +5568,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let NCoverWithPartialsShouldGeneratePlausibleCobertura () =
@@ -5594,7 +5594,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/NCoverWithPartials.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5646,7 +5646,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let NCoverShouldGenerateMorePlausibleCobertura () =
@@ -5673,7 +5673,7 @@ module AltCoverRunnerTests =
         + "/Sample5.ncover.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5726,7 +5726,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let JsonShouldGeneratePlausibleCobertura () =
@@ -5756,7 +5756,7 @@ module AltCoverRunnerTests =
         + "/Sample4FullTracking.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5810,7 +5810,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let JsonWithPartialsShouldGeneratePlausibleCobertura () =
@@ -5840,7 +5840,7 @@ module AltCoverRunnerTests =
         + "/JsonWithPartials.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5903,7 +5903,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let JsonFromComplexNestingShouldGeneratePlausibleCobertura () =
@@ -5932,7 +5932,7 @@ module AltCoverRunnerTests =
         + "/Sample5.native.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -5985,7 +5985,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let JsonShouldGeneratePlausibleXml () =
@@ -6175,7 +6175,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/NCover.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -6225,7 +6225,7 @@ module AltCoverRunnerTests =
       Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let OpenCoverShouldGeneratePlausibleCobertura () =
@@ -6251,7 +6251,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/issue122.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -6307,7 +6307,7 @@ module AltCoverRunnerTests =
 
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let OpenCoverWithPartialsShouldGeneratePlausibleCobertura () =
@@ -6333,7 +6333,7 @@ module AltCoverRunnerTests =
         Guid.NewGuid().ToString() + "/OpenCoverWithPartials.cobertura"
       )
 
-    Cobertura.path := Some unique
+    Cobertura.path.Value <- Some unique
 
     unique
     |> Path.GetDirectoryName
@@ -6389,7 +6389,7 @@ module AltCoverRunnerTests =
 
       validate result
     finally
-      Cobertura.path := None
+      Cobertura.path.Value <- None
 
   [<Test>]
   let ThresholdViolationShouldBeReported () =

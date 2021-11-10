@@ -377,7 +377,7 @@ let coverletTestOptionsSample (o: DotNet.TestOptions) =
 let misses = ref 0
 
 let uncovered (path: string) =
-    misses := 0
+    misses.Value <- 0
 
     !!path
     |> Seq.collect
@@ -393,7 +393,7 @@ let uncovered (path: string) =
                         sprintf "No coverage from '%s'" f
                         |> Trace.traceImportant
 
-                        misses := 1 + misses.Value
+                        misses.Value <- 1 + misses.Value
                         false)
             |> Seq.map
                 (fun e ->
@@ -610,12 +610,12 @@ _Target
                 appveyor
 
         let (v, majmin, y) = Actions.LocalVersion ci version
-        Version := v
+        Version.Value <- v
 
         let copy =
             sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
 
-        Copyright := "Copyright " + copy
+        Copyright.Value <- "Copyright " + copy
 
         Directory.ensure "./_Generated"
         Shell.copyFile "./AltCover.Engine/Abstract.fsi" "./AltCover.Engine/Abstract.fs"

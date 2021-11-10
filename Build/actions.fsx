@@ -521,9 +521,9 @@ a:hover {color: #ecc;}
                     match x.Name.LocalName with
                     | "h2" ->
                         keep
-                        := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
+                       .Value <- (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
                            |> Option.isNone
-                    | "footer" -> keep := true
+                    | "footer" -> keep.Value <- true
                     | _ -> ()
 
                     if keep.Value then None else Some x)

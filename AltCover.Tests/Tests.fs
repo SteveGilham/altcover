@@ -1112,7 +1112,7 @@ module AltCoverTests =
   [<Test>]
   let ValidateAutomaticExemption () =
     try
-      CoverageParameters.showGenerated := true
+      CoverageParameters.showGenerated.Value <- true
       let path = Path.Combine(dir, "Sample4.dll")
 
       use def =
@@ -1135,7 +1135,7 @@ module AltCoverTests =
                       Exemption.Automatic
                       Exemption.Automatic ] @>
     finally
-      CoverageParameters.showGenerated := false
+      CoverageParameters.showGenerated.Value <- false
 
   [<Test>]
   let DetectLocalSource () =
@@ -1155,7 +1155,7 @@ module AltCoverTests =
               x.Attribute(XName.Get("version")).Value))
       |> Map.ofSeq
 
-    CoverageParameters.local := false
+    CoverageParameters.local.Value <- false
     CoverageParameters.nameFilters.Clear()
 
     let fscore =
@@ -1235,7 +1235,7 @@ module AltCoverTests =
     Assert.That(f.MainModule.LocalFilter, Is.False, "f# MainModule non-local")
 
     try
-      CoverageParameters.local := true
+      CoverageParameters.local.Value <- true
       Assert.That(localAssembly.LocalFilter, Is.False, "local engine  Assembly local")
       Assert.That(localAssembly.MainModule.LocalFilter, Is.False, "local engine  MainModule local")
       Assert.That(a.LocalFilter, Is.True, "Assembly local")
@@ -1246,7 +1246,7 @@ module AltCoverTests =
       Assert.That(f.MainModule.LocalFilter, Is.False, "f# MainModule local")
 
     finally
-      CoverageParameters.local := false
+      CoverageParameters.local.Value <- false
 
   [<Test>]
   let LocateMatchShouldChooseLongerWildCardPath () =
@@ -1631,7 +1631,7 @@ module AltCoverTests =
     Visitor.visit [] [] // cheat reset
 
     try
-      CoverageParameters.coalesceBranches := true
+      CoverageParameters.coalesceBranches.Value <- true
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       CoverageParameters.nameFilters.Clear()
 
@@ -1666,7 +1666,7 @@ module AltCoverTests =
                              Interesting = true } ->
                  Assert.That(uid, Is.EqualTo i, "point number"))
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -2369,7 +2369,7 @@ module AltCoverTests =
     Visitor.visit [] [] // cheat reset
 
     try
-      CoverageParameters.coalesceBranches := true
+      CoverageParameters.coalesceBranches.Value <- true
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       CoverageParameters.nameFilters.Clear()
 
@@ -2431,7 +2431,7 @@ module AltCoverTests =
                           1 ]
       )
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -2457,7 +2457,7 @@ module AltCoverTests =
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       CoverageParameters.nameFilters.Clear()
-      CoverageParameters.coalesceBranches := true
+      CoverageParameters.coalesceBranches.Value <- true
 
       let deeper =
         Visitor.I.deeper
@@ -2499,7 +2499,7 @@ module AltCoverTests =
                  Assert.That(uid, Is.EqualTo i, "point number"))
 
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -2806,7 +2806,7 @@ module AltCoverTests =
   [<Test>]
   let PathsAreDeeperThanAVisit () =
     try
-      CoverageParameters.showGenerated := true
+      CoverageParameters.showGenerated.Value <- true
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let accumulator = System.Collections.Generic.List<Node>()
@@ -2855,7 +2855,7 @@ module AltCoverTests =
         Is.EquivalentTo(expected |> Seq.map string)
       )
     finally
-      CoverageParameters.showGenerated := false
+      CoverageParameters.showGenerated.Value <- false
 
   [<Test>]
   let TrackingDetectsTests () =
@@ -3622,7 +3622,7 @@ module AltCoverTests =
     let path = sample4path
 
     try
-      CoverageParameters.methodPoint := true
+      CoverageParameters.methodPoint.Value <- true
 
       Visitor.visit
         [ visitor ]
@@ -3637,7 +3637,7 @@ module AltCoverTests =
              let sx = mx.Descendants(XName.Get "seqpnt")
              test <@ sx |> Seq.length = 1 @>)
     finally
-      CoverageParameters.methodPoint := false
+      CoverageParameters.methodPoint.Value <- false
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportForNCoverWithTopLevel () =
@@ -3976,7 +3976,7 @@ module AltCoverTests =
     let path = sample4path
 
     try
-      CoverageParameters.methodPoint := true
+      CoverageParameters.methodPoint.Value <- true
       CoverageParameters.theReportFormat <- None
 
       let visitor, document = Main.I.selectReportGenerator () //OpenCover.reportGenerator()
@@ -3996,7 +3996,7 @@ module AltCoverTests =
 
              test <@ sx |> Seq.length = 1 @>)
     finally
-      CoverageParameters.methodPoint := false
+      CoverageParameters.methodPoint.Value <- false
 
   [<Test>]
   let LocateMatchFallsBackOK () =
@@ -4015,7 +4015,7 @@ module AltCoverTests =
       Path.Combine(here, "_SourceLink/Sample14.dll")
 
     try
-      CoverageParameters.sourcelink := true
+      CoverageParameters.sourcelink.Value <- true
       CoverageParameters.staticFilter <- Some StaticFilter.NoFilter
 
       Visitor.visit
@@ -4072,7 +4072,7 @@ module AltCoverTests =
 
     finally
       CoverageParameters.nameFilters.Clear()
-      CoverageParameters.sourcelink := false
+      CoverageParameters.sourcelink.Value <- false
       CoverageParameters.staticFilter <- None
 
   [<Test>]
@@ -4478,7 +4478,7 @@ module AltCoverTests =
 
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
-      CoverageParameters.sourcelink := true
+      CoverageParameters.sourcelink.Value <- true
 
       Visitor.visit
         [ visitor ]
@@ -4531,7 +4531,7 @@ module AltCoverTests =
       Assert.That(untracked, Is.EquivalentTo expected2)
     finally
       CoverageParameters.nameFilters.Clear()
-      CoverageParameters.sourcelink := false
+      CoverageParameters.sourcelink.Value <- false
       CoverageParameters.theReportFormat <- None
 
   [<Test>]

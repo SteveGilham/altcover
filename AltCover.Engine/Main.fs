@@ -34,8 +34,8 @@ module internal Main =
   let internal init () =
     CommandLine.verbosity <- 0
     CommandLine.error <- []
-    CommandLine.dropReturnCode := false // ddFlag
-    CoverageParameters.defer := false // ddflag
+    CommandLine.dropReturnCode.Value <- false // ddFlag
+    CoverageParameters.defer.Value <- false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
     ProgramDatabase.symbolFolders.Clear()
@@ -56,22 +56,22 @@ module internal Main =
     CoverageParameters.recorderStrongNameKey <- Some(snk)
 
     CoverageParameters.theReportPath <- None
-    CoverageParameters.zipReport := false
-    CoverageParameters.methodPoint := false
+    CoverageParameters.zipReport.Value <- false
+    CoverageParameters.methodPoint.Value <- false
     CoverageParameters.nameFilters.Clear()
     CoverageParameters.theInterval <- None
     CoverageParameters.trackingNames.Clear()
     CoverageParameters.topLevel.Clear()
     CoverageParameters.theReportFormat <- None
-    CoverageParameters.inplace := false // ddFlag
-    CoverageParameters.collect := false // ddFlag
-    CoverageParameters.local := false // ddFlag
+    CoverageParameters.inplace.Value <- false // ddFlag
+    CoverageParameters.collect.Value <- false // ddFlag
+    CoverageParameters.local.Value <- false // ddFlag
     CoverageParameters.single <- false // more complicated
     CoverageParameters.coverstyle <- CoverStyle.All
-    CoverageParameters.sourcelink := false // ddFlag
-    CoverageParameters.coalesceBranches := false // ddFlag
+    CoverageParameters.sourcelink.Value <- false // ddFlag
+    CoverageParameters.coalesceBranches.Value <- false // ddFlag
     CoverageParameters.staticFilter <- None
-    CoverageParameters.showGenerated := false
+    CoverageParameters.showGenerated.Value <- false
 
   let internal validateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then

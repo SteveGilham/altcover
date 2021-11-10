@@ -416,7 +416,7 @@ module internal CommandLine =
            Format.Local("MultiplesNotAllowed", "--" + (name.Split('|') |> Seq.last))
            :: error
        else
-         flag := true))
+         flag.Value <- true))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",
