@@ -284,7 +284,8 @@ let cliArguments =
     { MSBuild.CliArguments.Create() with
           ConsoleLogParameters = []
           DistributedLoggers = None
-          Properties = [ ("CheckEolTargetFramework", "false") ]
+          Properties = [ ("CheckEolTargetFramework", "false")
+                         ("ContinuousIntegrationBuild", "false")]
           DisableInternalBinLog = true }
 
 let withWorkingDirectoryVM dir o =
@@ -440,6 +441,7 @@ let msbuildCommon (p: MSBuildParams) =
           DisableInternalBinLog = true
           Properties =
               [ "CheckEolTargetFramework", "false"
+                "ContinuousIntegrationBuild", "false"
                 "DebugSymbols", "True" ] }
 
 let withDebug (p: MSBuildParams) =
@@ -707,6 +709,7 @@ module SolutionRoot =
                             { tmp.MSBuildParams with
                                   Properties =
                                       ("CheckEolTargetFramework", "false")
+                                      :: ("ContinuousIntegrationBuild", "false")
                                       :: tmp.MSBuildParams.Properties }
 
                         { tmp with MSBuildParams = mparams })
@@ -2150,6 +2153,7 @@ _Target
                                 { tmp.MSBuildParams with
                                       Properties =
                                           ("CheckEolTargetFramework", "false")
+                                          :: ("ContinuousIntegrationBuild", "false")
                                           :: tmp.MSBuildParams.Properties }
 
                             { tmp with MSBuildParams = mparams })
@@ -3882,6 +3886,7 @@ _Target
                           { options.MSBuildParams with
                                 Properties =
                                     ("CheckEolTargetFramework", "false")
+                                    :: ("ContinuousIntegrationBuild", "false")
                                     :: options.MSBuildParams.Properties }
                       Framework = Some "netcoreapp2.0" })
             netcoresource
@@ -3895,6 +3900,7 @@ _Target
                           { options.MSBuildParams with
                                 Properties =
                                     ("CheckEolTargetFramework", "false")
+                                    :: ("ContinuousIntegrationBuild", "false")
                                     :: options.MSBuildParams.Properties }
                       Framework = Some "netcoreapp2.1" })
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
@@ -5319,6 +5325,7 @@ _Target
                     { tmp.MSBuildParams with
                           Properties =
                               ("CheckEolTargetFramework", "false")
+                              :: ("ContinuousIntegrationBuild", "false")
                               :: tmp.MSBuildParams.Properties }
 
                 { tmp with MSBuildParams = mparams })
@@ -5343,6 +5350,7 @@ _Target
                           [ "Configuration", "Debug"
                             "MSBuildTest", "true"
                             "CheckEolTargetFramework", "false"
+                            "ContinuousIntegrationBuild", "false"
                             "AltCoverPath", unpack.Replace('\\', '/')
                             "DebugSymbols", "True" ] })
             "./Samples/Sample4/Sample4LongForm.fsproj")
@@ -5485,7 +5493,8 @@ _Target "DoIt"
     { MSBuild.CliArguments.Create() with
         ConsoleLogParameters = []
         DistributedLoggers = None
-        Properties = [("CheckEolTargetFramework", "false")]
+        Properties = [("CheckEolTargetFramework", "false")
+                      ("ContinuousIntegrationBuild", "false")]
         DisableInternalBinLog = true }
 
   DotNet.test
@@ -6296,6 +6305,7 @@ _Target
                         { tmp.MSBuildParams with
                               Properties =
                                   ("CheckEolTargetFramework", "false")
+                                  :: ("ContinuousIntegrationBuild", "false")
                                   :: tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
@@ -6310,6 +6320,7 @@ _Target
                         { tmp.MSBuildParams with
                               Properties =
                                   ("CheckEolTargetFramework", "false")
+                                  :: ("ContinuousIntegrationBuild", "false")
                                   :: tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
@@ -6426,6 +6437,7 @@ _Target
                         { tmp.MSBuildParams with
                               Properties =
                                   ("CheckEolTargetFramework", "false")
+                                  :: ("ContinuousIntegrationBuild", "false")
                                   :: tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
@@ -6507,6 +6519,7 @@ _Target
                         { tmp.MSBuildParams with
                               Properties =
                                   ("CheckEolTargetFramework", "false")
+                                  :: ("ContinuousIntegrationBuild", "false")
                                   :: tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
@@ -6921,6 +6934,7 @@ _Target
                         { tmp.MSBuildParams with
                               Properties =
                                   ("CheckEolTargetFramework", "false")
+                                  :: ("ContinuousIntegrationBuild", "false")
                                   :: tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
