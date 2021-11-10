@@ -119,7 +119,7 @@
     </Reference>
     <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
@@ -136,11 +136,11 @@
     </Reference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
+    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.0">
+    <PackageReference Update="FSharp.Core" Version="6.0.1">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />
