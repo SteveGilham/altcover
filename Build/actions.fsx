@@ -520,8 +520,8 @@ a:hover {color: #ecc;}
                 (fun x ->
                     match x.Name.LocalName with
                     | "h2" ->
-                        keep
-                       .Value <- (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
+                        keep.Value <-
+                          (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
                            |> Option.isNone
                     | "footer" -> keep.Value <- true
                     | _ -> ()
