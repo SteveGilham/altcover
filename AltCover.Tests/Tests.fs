@@ -2477,17 +2477,17 @@ module AltCoverTests =
                | BranchPoint b -> b.Representative = Reporting.Representative
                | _ -> true)
 
-      Assert.That(reported.Length, Is.EqualTo 14)
+      Assert.That(reported.Length, Is.EqualTo 11)
 
       reported
-      |> List.skip 9
+      |> List.skip 6
       |> List.iteri
            (fun i node ->
              match node with
              | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
 
       deeper
-      |> List.take 9
+      |> List.take 6
       |> List.iteri
            (fun i node ->
              match node with
@@ -4345,7 +4345,7 @@ module AltCoverTests =
       Assert.That(branch.Target.Length, Is.EqualTo 2)
       let xbranch = XElement(XName.Get "test")
       OpenCover.I.setChain xbranch branch
-      Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
+      Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="30" />""")
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
