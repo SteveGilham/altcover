@@ -140,139 +140,36 @@ module AltCoverTests =
   [<Test>]
   let ShouldGetPdbFromImage () =
     let files =
-      Directory.GetFiles(dir)
+      [
+        Directory.GetFiles(dir, "AltCover*")
+        Directory.GetFiles(dir, "Sample*")
+      ]
+      |> Seq.concat
       |> Seq.filter
            (fun x ->
              x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun f ->
-             f |> Path.GetFileNameWithoutExtension
-             <> "testhost")
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-      |> Seq.filter (fun f -> f |> Path.GetFileName <> "CompilerAttributes.dll")
+      |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
       |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
       |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
-#if !NET472
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Expecto", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("ICSharp", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("BlackFox.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Manatee.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Newtonsoft.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("NuGet.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("testcentric.", StringComparison.OrdinalIgnoreCase))
-      // for coverlet
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("coverlet", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Unquote", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("xunit", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName
-               .StartsWith(
-                 "AltCover.Recorder",
-                 StringComparison.OrdinalIgnoreCase
-               ))
-#else
-      |> Seq.filter
-           (fun x ->
-             (snd x)
-               .FullName
-               .EndsWith(
-                 "PublicKeyToken=c02b1a9f5b7cade8",
-                 StringComparison.OrdinalIgnoreCase
-               ))
-#endif
       |> Seq.toList
 
     test <@ files <> [] @>
 
-    files
+    let pdbs =
+      files
+      |> List.map (fun (f, s) -> f, AltCover.ProgramDatabase.getPdbFromImage s)
+
+    pdbs
     |> Seq.iter
          (fun x ->
-           let pdb =
-             AltCover.ProgramDatabase.getPdbFromImage (snd x)
-
-           match pdb with
-           //| None -> Assert.Fail(sprintf "%A" x)
+           let f = fst x
+           match snd x with
+           // Case of <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+           | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample4.dll", f)
            | Some name ->
-               let probe = Path.ChangeExtension((fst x), ".pdb")
+               let probe = Path.ChangeExtension(f, ".pdb")
                let file = FileInfo(probe)
                let filename = file.Name.Replace("\\", "/")
 
