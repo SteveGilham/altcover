@@ -4878,7 +4878,7 @@ _Target
             printfn "%A" vcs
             printfn "%A" (vcs |> List.map (snd >> Seq.length))
             Assert.That(vcs |> List.map fst, Is.EqualTo [ -3; 0 ], "-3 or 0 only")
-            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 10; 28 ], "10 and 28")
+            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 18; 27 ], "10 and 28")
 
         let prep =
             AltCover.PrepareOptions.Primitive(
@@ -4917,7 +4917,7 @@ _Target
             printfn "%A" vcs
             printfn "%A" (vcs |> List.map (snd >> Seq.length))
             Assert.That(vcs |> List.map fst, Is.EqualTo [ 0 ])
-            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 38 ])
+            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 45 ])
 
         let prep =
             AltCover.PrepareOptions.Primitive(
@@ -4956,7 +4956,7 @@ _Target
             printfn "%A" vcs
             printfn "%A" (vcs |> List.map (snd >> Seq.length))
             Assert.That(vcs |> List.map fst, Is.EqualTo [ -2; 0 ], "Expect -2, 0")
-            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 6; 22 ], "Expect 6, 22")
+            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 6; 21 ], "Expect 6, 21")
 
         let prep =
             AltCover.PrepareOptions.Primitive(
@@ -5021,7 +5021,7 @@ _Target
             printfn "%A" vcs
             printfn "%A" (vcs |> List.map (snd >> Seq.length))
             Assert.That(vcs |> List.map fst, Is.EqualTo [ -2; 0; 1; 2 ], "expect [ -2; 0; 1; 2]")
-            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 3; 14; 10; 1 ], "expect [3 ; 10; 9; 1]"))
+            Assert.That(vcs |> List.map (snd >> Seq.length), Is.EqualTo [ 3; 12; 11; 1 ], "expect [3 ; 12; 11; 1]"))
 
 _Target
     "ReleaseXUnitFSharpTypesDotNetFullRunner"
@@ -6055,7 +6055,8 @@ _Target
                 Assert.That(
                     coverageDocument.Descendants(XName.Get("SequencePoint"))
                     |> Seq.length,
-                    Is.EqualTo 21
+                    Is.EqualTo 13,
+                    "./_DotnetTestLineCover/coverage.xml"
                 )
 
                 Assert.That(
@@ -6077,7 +6078,8 @@ _Target
                 Assert.That(
                     coverageDocument.Descendants(XName.Get("SequencePoint"))
                     |> Seq.length,
-                    Is.EqualTo 21
+                    Is.EqualTo 13,
+                    "./_DotnetTestLineCoverInPlace/coverage.xml"
                 )
 
                 Assert.That(
