@@ -56,7 +56,7 @@ Describe "Invoke-Altcover" {
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
         $result = [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount)
-        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w = ""
         $format = @([AltCover.Commands.Summary]::O, [AltCover.Commands.Summary]::C)

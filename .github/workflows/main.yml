@@ -36,8 +36,12 @@ jobs:
       if: failure()
       with:
           name: reports.windows
-          path: _Reports
-  linux:
+          path: |
+            _Reports
+            _Packaging/*.xml
+            ./**/AltCover*.log
+            ./**/dotnettest.*.txt
+ linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -56,5 +60,6 @@ jobs:
           name: reports.linux
           path: |
             _Reports
+            _Packaging/*.xml
             ./**/AltCover*.log
             ./**/dotnettest.*.txt
