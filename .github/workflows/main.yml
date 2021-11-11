@@ -41,7 +41,7 @@ jobs:
             _Packaging/*.xml
             ./**/AltCover*.log
             ./**/dotnettest.*.txt
-linux:
+  linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
