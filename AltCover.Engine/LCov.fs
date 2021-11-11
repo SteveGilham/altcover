@@ -317,11 +317,14 @@ FN:4,(anonymous_0)
                    let hit =
                      methods
                      |> List.filter (fun m -> m.Attribute("visited".X).Value = "true"
-                                              || m.Descendants("SequencePoint".X)
-                                                 |> Seq.exists(fun s -> s.Attribute("vc".X).Value <> "0")
-                                              || m.Descendants("BranchPoint".X)
-                                                 |> Seq.exists(fun s -> s.Attribute("vc".X).Value <> "0"))
-
+                                              || [
+                                                    m.Descendants("SequencePoint".X)
+                                                    m.Descendants("BranchPoint".X)
+                                                    m.Descendants("MethodPoint".X)
+                                                 ]
+                                                 |> Seq.concat
+                                                 |> Seq.exists(fun s -> let v = s.Attribute("vc".X).Value
+                                                                        v.IsNotNull && v <> "0"))
                    writer.WriteLine(
                      "FNH:"
                      + hit.Length.ToString(CultureInfo.InvariantCulture)
