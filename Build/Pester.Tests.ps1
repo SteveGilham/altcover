@@ -42,9 +42,9 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-        $i = "./_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $i = "./_Binaries/Sample2/Debug+AnyCPU/net6.0"
         if (Test-Path $o) {
             Remove-Item -Force -Recurse $o
         }
@@ -70,7 +70,7 @@ Describe "Invoke-Altcover" {
                             #"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net5.0", "Sample2.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net6.0", "Sample2.fsproj")
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
         $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
@@ -81,7 +81,7 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net5.0"
+        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         try 
         {
