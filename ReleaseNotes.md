@@ -12,6 +12,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * Support these extensions in conversions between formats -- conversion to Lcov and Cobertura currently lose this information
 * Other fixes/enhancements to these conversions, esp. in the cases of partial classes and inlined code
 * Compute summary data correctly in the output from Json to OpenCover
+* Carry both recorder versions (net20 and net46) as resources to simplify self-test behaviour
 
 # 8.2.825 (Habu series release 7)
 * Next release will be post .net 6 release to accomodate its impact, barring show-stoppers

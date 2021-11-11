@@ -1043,18 +1043,12 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
-    let recpath =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
-
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    let recstream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+    use recstream = AltCoverTests2.recorderStream()
 
-    let recdef =
+    use recdef =
       Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
@@ -1114,12 +1108,9 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    let recstream =
-      Assembly
-        .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+    use recstream = AltCoverTests2.recorderStream()
 
-    let recdef =
+    use recdef =
       Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
