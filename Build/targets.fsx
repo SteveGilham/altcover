@@ -5867,7 +5867,7 @@ _Target
                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                     |> Seq.toList
 
-                Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;0;1;1;1;0", xx)
+                Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;0;1;1;1;1;1;0", xx)
 
             try
                 DotNet.test
@@ -5907,7 +5907,7 @@ _Target
                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                     |> Seq.toList
 
-                Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;0;1;1;1;1;0", xxa)
+                Assert.That(String.Join(";", recorded), Is.EqualTo "1;1;1;1;1;1;1;1;1;1;1;1;1;0;0;1;1;1;1;1;1;0", xxa)
 
             printfn "optest failing test fast ------------------------------------------------"
 
@@ -5960,7 +5960,7 @@ _Target
                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                     |> Seq.toList
 
-                Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0", xx)
+                Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0", xx)
 
             try
                 DotNet.test
@@ -6001,7 +6001,7 @@ _Target
                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                     |> Seq.toList
 
-                Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0", xxa)
+                Assert.That(String.Join(";", recorded), Is.EqualTo "0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0", xxa)
 
             printfn "optest line cover ------------------------------------------------"
 
@@ -6055,7 +6055,7 @@ _Target
                 Assert.That(
                     coverageDocument.Descendants(XName.Get("SequencePoint"))
                     |> Seq.length,
-                    Is.EqualTo 13
+                    Is.EqualTo 21
                 )
 
                 Assert.That(
@@ -6077,7 +6077,7 @@ _Target
                 Assert.That(
                     coverageDocument.Descendants(XName.Get("SequencePoint"))
                     |> Seq.length,
-                    Is.EqualTo 13
+                    Is.EqualTo 21
                 )
 
                 Assert.That(
