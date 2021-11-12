@@ -395,19 +395,17 @@ Describe "ConvertFrom-NCover" {
 
     $expected = $expected.Replace("09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22", $hash)
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
-    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs").Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\"))
-    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs").Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\"))
+    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
+    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
     $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
                                   "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
-    $result = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
-    $result.Replace('\', '/') | Should -Be $expected.Replace("`r", "").Replace('\', '/')
+    $result | Should -Be $expected.Replace("`r", "")
 
     $written = $written.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("`r", "")
-    $written = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
-    $written.Replace('\', '/') | Should -Be $expected.Replace("`r", "").Replace('\', '/')
+    $result | Should -Be $expected.Replace("`r", "")
   }
 
   It "converts from the pipeline" {
@@ -434,16 +432,15 @@ Describe "ConvertFrom-NCover" {
 
     $expected = $expected.Replace("09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22", $hash)
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
-    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs").Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\"))
-    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs").Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\"))
+    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
+    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
     $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
                                   "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
-    $result = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
 
-    $result.Replace('\', '/') | Should -Be $expected.Replace("`r", "").Replace('\', '/')
+    $result | Should -Be $expected.Replace("`r", "")
   }
 }
 

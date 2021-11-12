@@ -167,7 +167,7 @@ module AltCoverTests =
            let f = fst x
            match snd x with
            // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
-           | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample4.dll", f)
+           | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
            | Some name ->
                let probe = Path.ChangeExtension(f, ".pdb")
                let file = FileInfo(probe)
@@ -3393,9 +3393,9 @@ module AltCoverTests =
       let expected =
         reader
           .ReadToEnd()
-//          .Replace("/_//Samples/Sample4/Tests.fs", // Not compiled deterministic
-//             (Path.Combine(SolutionDir(), "Samples/Sample4/Tests.fs")
-//              |> canonicalPath).Replace("\\","\\\\"))
+          .Replace("/_//Samples/Sample4/Tests.fs", // Not compiled deterministic
+             (Path.Combine(SolutionDir(), "Samples/Sample4/Tests.fs")
+              |> canonicalPath).Replace("\\","\\\\"))
           .Replace('\r', '\u00FF')
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")

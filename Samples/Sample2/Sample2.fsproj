@@ -8,6 +8,8 @@
     <Platforms>AnyCPU;x86</Platforms>
     <RollForward>Major</RollForward>
     <DebugType>portable</DebugType>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
