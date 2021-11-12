@@ -3116,11 +3116,10 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          AfterType
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  AfterType))
     |> ignore
 
     let output = Path.GetTempFileName()
@@ -3161,11 +3160,10 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          AfterType
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  AfterType))
     |> ignore
 
     Assert.That(support.TaskAssembly.FullName, Is.Not.Null) // nothing to raise an object disposed exception with
@@ -3194,11 +3192,10 @@ module AltCoverTests2 =
     // Would be NullreferenceException if we tried it
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          AfterType
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  AfterType))
     |> ignore
 
   [<Test>]
@@ -3215,11 +3212,10 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          Finish
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  Finish))
     |> ignore
 
     let output = Path.GetTempFileName()

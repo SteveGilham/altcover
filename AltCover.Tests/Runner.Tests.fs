@@ -60,9 +60,8 @@ module AltCoverRunnerTests =
   let ShouldFailXmlDataForNativeJson () =
     Assert.Throws<NotSupportedException>
       (fun () ->
-        ReportFormat.NativeJson
-        |> Counter.I.xmlByFormat
-        |> ignore)
+        ignore (ReportFormat.NativeJson
+                |> Counter.I.xmlByFormat))
     |> ignore
 
   [<Test>]

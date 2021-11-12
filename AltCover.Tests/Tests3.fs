@@ -3897,8 +3897,7 @@ module AltCoverTests3 =
       let x =
         Assert.Throws<System.Reflection.TargetInvocationException>
           (fun () ->
-            message.Invoke(subject, [| "x" :> obj |])
-            |> ignore)
+            ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
         x.InnerException,
@@ -4051,8 +4050,7 @@ module AltCoverTests3 =
       let x =
         Assert.Throws<System.Reflection.TargetInvocationException>
           (fun () ->
-            message.Invoke(subject, [| "x" :> obj |])
-            |> ignore)
+            ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
         x.InnerException,
