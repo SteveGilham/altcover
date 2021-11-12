@@ -177,7 +177,7 @@ module Adapter =
         constructor.Invoke([| unique |]) :?> System.Exception
         |> raise
 
-    Instance.I.curriedIssue71Wrapper () () () () pitcher
+    Instance.I.curriedIssue71Wrapper "a" "b" "c" "d" pitcher
 
   let internal tracePush (a, b, c) = Instance.I.trace.Push a b c
 //let LogException (a, b, c, d) = Instance.I.logException a b c d
