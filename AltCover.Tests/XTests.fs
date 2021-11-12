@@ -1086,11 +1086,8 @@ module AltCoverXTests =
       test' <@ File.Exists created @> (created + " not found")
 
       let isWindows =
-#if NET472
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-        true
-#endif
+
       test'
         <@ isWindows |> not
            || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
@@ -1193,11 +1190,8 @@ module AltCoverXTests =
       test' <@ File.Exists created @> (created + " not found")
 
       let isWindows =
-#if NET472
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-        true
-#endif
+
       test'
         <@ isWindows |> not
            || File.Exists(Path.ChangeExtension(created, ".pdb")) @>

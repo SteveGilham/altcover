@@ -6,7 +6,7 @@ $files = ("_Reports/UnitTestWithAltCoverCoreRunner.xml",
           "_Reports/MonitorTestWithAltCoverCoreRunner.net5.0.xml",
           "_Reports/RecorderTestWithAltCoverCoreRunner.net5.0.xml",
           "_Reports/Recorder2TestWithAltCoverCoreRunner.xml",
-          "_Reports/ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.net5.0.xml",
+          "_Reports/ValidateGendarmeEmulationUnitTestWithAltCoverCoreRunner.net6.0.xml",
           "_Reports/Pester.xml" )
 
 $xml = $files | Merge-OpenCover -OutputFile "_Reports/CombinedTestWithAltCoverRunner.coveralls"
