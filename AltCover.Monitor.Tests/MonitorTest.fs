@@ -57,4 +57,4 @@ module MonitorTests =
         "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
       )
       |> File.ReadAllText
-    test' <@ (code, branch) = (176, 39) @> text
+    test' <@ (code, branch) = (109, 14) @> text
