@@ -9,8 +9,6 @@
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <GlobalDefineConstants>AVALONIA</GlobalDefineConstants>
     <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -19,6 +17,15 @@
     <Win32Resource>$(ProjectDir)../AltCover.Visualizer/Resource.res</Win32Resource>
     <RollForward>Major</RollForward>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

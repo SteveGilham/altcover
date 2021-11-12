@@ -9,14 +9,21 @@
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <GlobalDefineConstants>AVALONIA</GlobalDefineConstants>
     <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).FuncUI/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
     <RollForward>Major</RollForward>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
