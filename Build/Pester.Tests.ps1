@@ -403,11 +403,11 @@ Describe "ConvertFrom-NCover" {
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
     $result = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
-    $result | Should -Be $expected.Replace("`r", "")
+    $result.Replace('\', '/') | Should -Be $expected.Replace("`r", "").Replace('\', '/')
 
     $written = $written.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("`r", "")
     $written = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
-    $written | Should -Be $expected.Replace("`r", "")
+    $written.Replace('\', '/') | Should -Be $expected.Replace("`r", "").Replace('\', '/')
   }
 
   It "converts from the pipeline" {
@@ -443,7 +443,7 @@ Describe "ConvertFrom-NCover" {
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
     $result = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
 
-    $result | Should -Be $expected.Replace("`r", "")
+    $result.Replace('\', '/') | Should -Be $expected.Replace("`r", "").Replace('\', '/')
   }
 }
 
