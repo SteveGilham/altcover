@@ -4111,7 +4111,8 @@ _Target
         let unpackapi =
             Path.getFullName "_Packaging.api/Unpack/lib/netstandard2.0"
 
-        let report = Path.getFullName "_Reports/Pester.xml"
+        let report = Path.getFullName "_Reports/RawPester.xml"
+        let fixedReport = Path.getFullName "_Reports/Pester.xml"
         let v = Version.Value.Split([| '-' |]).[0]
 
         let key =
@@ -4173,6 +4174,19 @@ _Target
               WorkingDirectory = unpack }
         |> AltCoverCommand.run
 
+        let xml =
+          report
+          |> Path.getFullName
+          |> XDocument.Load
+
+        xml.Descendants(XName.Get "File")
+        |> Seq.iter (fun x -> let path = x.Attribute(XName.Get "fullPath").Value
+                              let newpath = Path.Combine (Path.getFullName ".",
+                                                          path.TrimStart([| '/'; '_' |]))
+                              x.Attribute(XName.Get "fullPath").Value <- newpath)
+        xml.Save fixedReport
+
+
         ReportGenerator.generateReports
             (fun p ->
                 { p with
@@ -4181,7 +4195,7 @@ _Target
                           [ ReportGenerator.ReportType.Html
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_Pester" })
-            [ report ]
+            [ fixedReport ]
 
         "_Reports/_Pester/Summary.xml"
         |> File.ReadAllText
