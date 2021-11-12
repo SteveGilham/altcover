@@ -4181,8 +4181,10 @@ _Target
 
         xml.Descendants(XName.Get "File")
         |> Seq.iter (fun x -> let path = x.Attribute(XName.Get "fullPath").Value
+                              let part = path.TrimStart([| '/'; '_' |])
                               let newpath = Path.Combine (Path.getFullName ".",
-                                                          path.TrimStart([| '/'; '_' |]))
+                                                          Path.GetDirectoryName part,
+                                                          Path.GetFileName part)
                               x.Attribute(XName.Get "fullPath").Value <- newpath)
         xml.Save fixedReport
 
