@@ -26,9 +26,9 @@ module XmlTypes =
 
     let cn = xmlDocument.ChildNodes
 
-    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
-    | None -> ()
-    | Some doctype ->
+    cn.OfType<XmlDocumentType>() 
+    |> Seq.tryHead
+    |> Option.iter (fun doctype ->
         let xDoctype = document.DocumentType
 
         let newDoctype =
@@ -40,11 +40,11 @@ module XmlTypes =
           )
 
         xmlDocument.ReplaceChild(newDoctype, doctype)
-        |> ignore
+        |> ignore)
 
-    let xDeclaration = document.Declaration
-
-    if xDeclaration.IsNotNull then
+    document.Declaration
+    |> Option.ofObj
+    |> Option.iter (fun xDeclaration ->
       let xmlDeclaration =
         xmlDocument.CreateXmlDeclaration(
           xDeclaration.Version,
@@ -53,7 +53,7 @@ module XmlTypes =
         )
 
       xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild)
-      |> ignore
+      |> ignore)
 
     xmlDocument
 
@@ -69,9 +69,9 @@ module XmlTypes =
     let xdoc = XDocument.Load(nodeReader)
     let cn = xmlDocument.ChildNodes
 
-    match cn.OfType<XmlDocumentType>() |> Seq.tryHead with
-    | None -> ()
-    | Some doctype ->
+    cn.OfType<XmlDocumentType>()
+     |> Seq.tryHead
+     |> Option.iter (fun doctype ->
         xdoc.AddFirst(
           XDocumentType(
             nullIfEmpty doctype.Name,
@@ -79,15 +79,12 @@ module XmlTypes =
             nullIfEmpty doctype.SystemId,
             nullIfEmpty doctype.InternalSubset
           )
-        )
+        ))
 
-    let decl' =
-      cn.OfType<XmlDeclaration>() |> Seq.tryHead
-
-    match decl' with
-    | None -> ()
-    | Some decl ->
-        xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone)
+    cn.OfType<XmlDeclaration>()
+    |> Seq.tryHead
+    |> Option.iter (fun decl ->
+        xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone))
 
     cn.OfType<XmlProcessingInstruction>()
     |> Seq.rev
