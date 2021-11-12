@@ -88,10 +88,10 @@ Describe "Invoke-Altcover" {
         {
           $ev | Should -Be ("--inputDirectory : Directory ./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0 not found" +
                             [Environment]::NewLine +"255")
-		    }
+        }
     }
 
-    It "Reports the version" {        
+    It "Reports the version" {
         $version = Invoke-AltCover -Version -InformationAction Continue 6>&1
         $version.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
     }
@@ -402,10 +402,12 @@ Describe "ConvertFrom-NCover" {
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+    $result = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
     $result | Should -Be $expected.Replace("`r", "")
 
     $written = $written.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13").Replace("`r", "")
-    $result | Should -Be $expected.Replace("`r", "")
+    $written = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
+    $written | Should -Be $expected.Replace("`r", "")
   }
 
   It "converts from the pipeline" {
@@ -439,6 +441,7 @@ Describe "ConvertFrom-NCover" {
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")
     $result = $result.Replace("rapScore=`"13.12", "rapScore=`"13.13").Replace("rapScore=`"8.12", "rapScore=`"8.13")
+    $result = $result.Replace("/_//Samples/Sample4/", "\_\Samples\Sample4\").Replace("/_/Samples/Sample4/", "/_//Samples/Sample4/")
 
     $result | Should -Be $expected.Replace("`r", "")
   }
