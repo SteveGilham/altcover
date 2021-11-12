@@ -5578,7 +5578,7 @@ group NetcoreBuild
             Actions.RunDotnet
                 (withWorkingDirectoryOnly "_ApiUse")
                 "fake"
-                "run ./DriveApi.fsx"
+                "-v run ./DriveApi.fsx"
                 "running fake script returned with a non-zero exit code"
 
             let x =

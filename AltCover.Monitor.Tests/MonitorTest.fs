@@ -19,7 +19,7 @@ module MonitorTests =
     let xml =
       Path.Combine(
         SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net5.0.xml"
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
       )
 
     let doc = XDocument.Load(xml)
