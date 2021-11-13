@@ -2,6 +2,19 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.828 (Habu series release 8)
+* Absorb .net 6 release into build tooling (awaiting a non-preview updated release of (`fake.build`)[https://fake.build/] to be able to upgrade to FSharp.Core 6.x -- still have to target the v5.x library even if the build uses the F#6 compiler)
+* Where the debug symbols used in the instrumentation contain embedded source (e.g. from source generators), represent that within the generated report --
+  * for OpenCover format, as an `altcover.embed` attribute added to the `File` element
+  * for NCover classic, `altcover.file` elements are added after the `method` records in a `module`, with attributes `document` and `embed`
+  * and for the extended coverlet JSON format, as a type `«AltCover.embed»` with an empty method with name being the embedded text.
+* [VISUALIZER] Support the extended formats for display, using the embedded source in preference to the file system whenever present
+* Support these extensions in conversions between formats -- conversion to Lcov and Cobertura currently lose this information
+* Other fixes/enhancements to these conversions, esp. in the cases of partial classes and inlined code
+* Compute summary data correctly in the output from Json to OpenCover
+* Carry both recorder versions (net20 and net46) as resources to simplify self-test behaviour
+* Move baseline Cake support to v1.1.0 and Fake to v5.20.4
+
 # 8.2.825 (Habu series release 7)
 * Next release will be post .net 6 release to accomodate its impact, barring show-stoppers
 * [BUGFIX] As noted in [Q&A discussion (#107)](https://github.com/SteveGilham/altcover/discussions/107), satellite assemblies, and in [issue #47](https://github.com/SteveGilham/altcover/issues/47#issuecomment-461838463)  platform specific library subfolders, were not being copied appropriately relative to the instrumented location; this is now resolved.

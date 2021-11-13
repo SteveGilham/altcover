@@ -324,13 +324,19 @@ module Instance =
         | :? ArgumentNullException -> handler moduleId hitPointId context x
         | _ -> reraise ()
 
+    let
+#if !DEBUG
+        inline
+#endif
+               internal curriedIssue71Wrapper visits moduleId hitPointId context add =
+      issue71Wrapper visits moduleId hitPointId context logException add
+
     let internal addVisit moduleId hitPointId context =
-      issue71Wrapper
+      curriedIssue71Wrapper
         visits
         moduleId
         hitPointId
         context
-        logException
         Counter.addSingleVisit
 
     let internal takeSample strategy moduleId hitPointId (context: Track) =

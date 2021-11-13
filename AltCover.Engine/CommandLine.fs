@@ -316,7 +316,7 @@ module internal CommandLine =
     let internal transformCryptographicException f =
       try
         f ()
-      with :? CryptographicException as c -> (c.Message, c) |> SecurityException |> raise
+      with :? CryptographicException as c -> raise ((c.Message, c) |> SecurityException)
 
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
@@ -416,7 +416,7 @@ module internal CommandLine =
            Format.Local("MultiplesNotAllowed", "--" + (name.Split('|') |> Seq.last))
            :: error
        else
-         flag := true))
+         flag.Value <- true))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
                                                     "AvoidUnnecessarySpecializationRule",

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="{0}" measureTime="{0}" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:user="urn:my-scripts">
+  <module moduleId="26-01-02-74-B5-50-08-95-5A-98-F1-3F-AC-EE-F2-BE-E7-B8-10-EA" name="SimpleMix.exe" assembly="SimpleMix" assemblyIdentity="SimpleMix, Version=1.0.7973.23538, Culture=neutral, PublicKeyToken=null">
+    <method excluded="false" instrumented="true" name="main" class="&lt;Module&gt;" fullname="System.Int32 &lt;Module&gt;::main(System.String[])">
+      <seqpnt visitcount="1" line="38" column="0" endline="38" endcolumn="0" offset="0" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="40" column="0" endline="40" endcolumn="0" offset="8" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="41" column="0" endline="41" endcolumn="0" offset="14" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="41" column="0" endline="41" endcolumn="0" offset="20" excluded="false" document="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" />
+      <seqpnt visitcount="1" line="42" column="0" endline="42" endcolumn="0" offset="22" excluded="false" document="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" />
+      <seqpnt visitcount="1" line="43" column="0" endline="43" endcolumn="0" offset="25" excluded="false" document="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" />
+      <seqpnt visitcount="1" line="42" column="0" endline="42" endcolumn="0" offset="33" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="45" column="0" endline="45" endcolumn="0" offset="35" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="47" column="0" endline="47" endcolumn="0" offset="46" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="0" line="49" column="0" endline="49" endcolumn="0" offset="48" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+    </method>
+    <method excluded="false" instrumented="true" name="mainCRTStartupStrArray" class="&lt;Module&gt;" fullname="System.Int32 &lt;Module&gt;::mainCRTStartupStrArray(System.String[])">
+      <seqpnt visitcount="1" line="223" column="0" endline="223" endcolumn="0" offset="0" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="1" line="228" column="0" endline="228" endcolumn="0" offset="11" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="1" line="241" column="0" endline="241" endcolumn="0" offset="22" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="1" line="247" column="0" endline="247" endcolumn="0" offset="28" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="1" line="278" column="0" endline="278" endcolumn="0" offset="35" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="0" line="279" column="0" endline="279" endcolumn="0" offset="37" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="0" line="284" column="0" endline="284" endcolumn="0" offset="56" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="1" line="287" column="0" endline="287" endcolumn="0" offset="64" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+      <seqpnt visitcount="1" line="288" column="0" endline="288" endcolumn="0" offset="66" excluded="false" document="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" />
+    </method>
+    <method excluded="false" instrumented="true" name="main" class="Example" fullname="System.Int32 Example::main(System.String[])">
+      <seqpnt visitcount="1" line="25" column="0" endline="25" endcolumn="0" offset="0" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="26" column="0" endline="26" endcolumn="0" offset="6" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="41" column="0" endline="41" endcolumn="0" offset="12" excluded="false" document="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" />
+      <seqpnt visitcount="1" line="42" column="0" endline="42" endcolumn="0" offset="14" excluded="false" document="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" />
+      <seqpnt visitcount="1" line="43" column="0" endline="43" endcolumn="0" offset="17" excluded="false" document="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" />
+      <seqpnt visitcount="1" line="27" column="0" endline="27" endcolumn="0" offset="25" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="30" column="0" endline="30" endcolumn="0" offset="27" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+      <seqpnt visitcount="1" line="32" column="0" endline="32" endcolumn="0" offset="38" excluded="false" document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" />
+    </method>
+    <method excluded="false" instrumented="true" name=".ctor" class="Example" fullname="System.Void Example::.ctor()" />
+    <altcover.file document="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" embed="1ZJBb9swDIXvBvwfOO9iN0Xas5sGGIweCgTb0HbbrQGrMLEGWxIouUlR5L+PlpKmwDCg11104Ht8Ij/p4gKaxV2DXUc8Vc5BDT1qA47tb1IB1rqjaZ7l2WdtVDesCAofVrjeTdsilh3jpkcYTI8GN7TKM20CfMWgn6mxgwk/7ZY6X25Vi7wMZ+DuA2uzqfLsNc8ARrcafXANl1djRVnjA7z5n2O/qIsCSdvhy83ttx9FdG5bmQ7Ks1MkQAyV2DXIlV61XKaAczjaJpOqSiZIN08mMW0/HkxhYJPqUt2fNnzbL88GLzFgsCfvUBHcv/hA/dUoMa1Bdeg93OywdzKeDOSGp06resz3QciouPXIuURmfJmlgLpOAz7OHwF549/vc1CknwVF8UC7AMHCE0GLvqVVAgLQCDzbUV3/Yh1ooQ2V0lIdVKfN0gWeNcJ2Dg6uTxyE+VKhDzMZjVhbPhnnUB59AN8DP9g0zSj6GF/9+/a/f4KL9tRwwH15fIB9VD5KJ30geelPR9p1fegT/T2+D/P77wH+AQ==" />
+  </module>
+</coverage>

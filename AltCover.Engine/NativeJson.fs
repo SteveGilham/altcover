@@ -673,7 +673,7 @@ module
 
     w
     |> append (slugs.[9])
-    |> appendLine ("\"Lines\": {")
+    |> (if method.Lines |> Seq.isEmpty then append else appendLine) ("\"Lines\": {")
     |> ifNotEmpty method.Lines lineToBuilder id post
     |> appendLine ("},")
 
@@ -692,9 +692,12 @@ module
           >> append (slugs.[9])
           >> appendLine ("\"SeqPnts\": ["))
          id
-    |> newLine
-    |> append (slugs.[10])
-    |> append ("]")
+    |> if Seq.isEmpty method.SeqPnts
+       then id
+       else
+         newLine
+         >> append (slugs.[10])
+         >> append ("]")
 
     // After SeqPnts, now Tracking
     |> methodTrackingToBuilder method
@@ -745,49 +748,72 @@ module
 #if GUI || RUNNER
   // Conversion to XML ---------------------------------------------------------
 
-  let internal buildSummary (m: XContainer) =
+  let internal summaryElement () =
     let zero name = XAttribute(XName.Get name, 0)
+    XElement(
+      XName.Get "Summary",
+      zero "numBranchPoints",
+      zero "visitedBranchPoints",
+      zero "numSequencePoints",
+      zero "visitedSequencePoints")
 
-    let sd =
-      XElement(
-        XName.Get "Summary",
-        zero "numBranchPoints",
-        zero "visitedBranchPoints",
-        zero "numSequencePoints",
-        zero "visitedSequencePoints"
-      )
-
+  let internal buildSummary (m: XContainer) =
+    let sd = summaryElement ()
     m.Add sd
     sd
 
-  let internal buildMethodElement name fileId =
-    let m =
-      XElement(
-        XName.Get "Method",
-        XAttribute(XName.Get "visited", false),
-        XAttribute(XName.Get "cyclomaticComplexity", 1),
-        XAttribute(XName.Get "sequenceCoverage", 0),
-        XAttribute(XName.Get "branchCoverage", 0),
-        XAttribute(XName.Get "isConstructor", false),
-        XAttribute(XName.Get "isStatic", false),
-        XAttribute(XName.Get "isGetter", false),
-        XAttribute(XName.Get "isSetter", false)
-      )
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "AvoidUnnecessarySpecializationRule",
+                    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal tryGetValueOrDefault
+    (table: Dictionary<string, 'a>)
+    (key: string)
+    (f: unit -> 'a)
+    =
+    let ok, index = table.TryGetValue key
 
-    let sd = buildSummary m
+    if ok then
+      index
+    else
+      let value = f ()
+      table.Add(key, value)
+      value
 
-    [ "MetadataToken", "0"; "Name", name ]
-    |> Seq.iter
-         (fun (name, value) ->
-           let x = XElement(XName.Get name)
-           x.Value <- value
-           m.Add x)
+  let internal buildMethodElement
+    (table:Dictionary<string, XElement>)  (item:XElement)
+    name fileId =
+        tryGetValueOrDefault
+          table
+          name
+          (fun () ->
+            let m2 =
+                XElement(
+                  XName.Get "Method",
+                  XAttribute(XName.Get "visited", false),
+                  XAttribute(XName.Get "cyclomaticComplexity", 1),
+                  XAttribute(XName.Get "sequenceCoverage", 0),
+                  XAttribute(XName.Get "branchCoverage", 0),
+                  XAttribute(XName.Get "isConstructor", false),
+                  XAttribute(XName.Get "isStatic", false),
+                  XAttribute(XName.Get "isGetter", false),
+                  XAttribute(XName.Get "isSetter", false)
+                )
 
-    let f =
-      XElement(XName.Get "FileRef", XAttribute(XName.Get "uid", fileId))
+            let sd = buildSummary m2
 
-    m.Add f
-    (m, sd)
+            [ "MetadataToken", "0"; "Name", name ]
+            |> Seq.iter
+                 (fun (name, value) ->
+                   let x = XElement(XName.Get name)
+                   x.Value <- value
+                   m2.Add x)
+
+            let f =
+              XElement(XName.Get "FileRef", XAttribute(XName.Get "uid", fileId))
+
+            m2.Add f
+            item.Add m2
+            m2)
 
   let internal makeSummary (nb: int) (vb: int) (ns: int) (vs: int) (sd: XElement) =
     sd.Attribute(XName.Get "numBranchPoints").Value <- nb.ToString(
@@ -806,24 +832,33 @@ module
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "InstantiateArgumentExceptionCorrectlyRule",
+                    Justification = "Library method inlined")>]
   let internal methodToXml
+    (table:Dictionary<string, XElement>)
     (fileId: int)
     (item: XElement)
     (method: KeyValuePair<string, Method>)
     =
-    let m, sd = buildMethodElement method.Key fileId
-    item.Add m
+    let m = buildMethodElement table item method.Key fileId
 
-    let sp = XElement(XName.Get "SequencePoints")
-    m.Add sp
-    let bp = XElement(XName.Get "BranchPoints")
-    m.Add bp
+    // conditional
+    let sp = m.Descendants("SequencePoints".X)
+             |> Seq.tryHead
+             |> Option.defaultWith (fun () -> let tmp = XElement(XName.Get "SequencePoints")
+                                              m.Add tmp
+                                              tmp)
+
+    let bp = m.Descendants("BranchPoints".X)
+             |> Seq.tryHead
+             |> Option.defaultWith (fun () -> let tmp = XElement(XName.Get "BranchPoints")
+                                              m.Add tmp
+                                              tmp)
+
     let value = method.Value
-
     let bec = Dictionary<int, int>()
     let bev = Dictionary<int, int>()
-    let mutable nb = 0
-    let mutable vb = 0
 
     if value.Branches.IsNotNull then
       value.Branches
@@ -831,10 +866,8 @@ module
            (fun b ->
              let _, old = bec.TryGetValue b.Line
              bec.[b.Line] <- old + 1
-             nb <- nb + 1
 
              if b.Hits > 0 then
-               vb <- vb + 1
                let _, old = bev.TryGetValue b.Line
                bev.[b.Line] <- old + 1
 
@@ -863,10 +896,6 @@ module
       m.Attribute(XName.Get "cyclomaticComplexity").Value <- (1 + targets)
         .ToString(CultureInfo.InvariantCulture)
 
-    let mutable mvc = 0
-    let mutable ns = 0
-    let mutable vs = 0
-
     if value.SeqPnts.IsNotNull then
       value.SeqPnts
       |> Seq.iter
@@ -875,8 +904,6 @@ module
              bec.[s.SL] <- 0
              let _, bev2 = bev.TryGetValue s.SL
              bev.[s.SL] <- 0
-             ns <- ns + 1
-             if s.VC > 0 then vs <- vs + 1
 
              let sx =
                XElement(
@@ -893,8 +920,7 @@ module
                  XAttribute(XName.Get "fileid", fileId)
                )
 
-             sp.Add sx
-             mvc <- Math.Max(mvc, s.VC))
+             sp.Add sx)
     else
       value.Lines
       |> Seq.iteri
@@ -904,8 +930,6 @@ module
              bec.[k] <- 0
              let _, bev2 = bev.TryGetValue k
              bev.[k] <- 0
-             ns <- ns + 1
-             if l.Value > 0 then vs <- vs + 1
 
              let sx =
                XElement(
@@ -922,66 +946,38 @@ module
                  XAttribute(XName.Get "fileid", fileId)
                )
 
-             sp.Add sx
-             mvc <- Math.Max(mvc, l.Value))
+             sp.Add sx)
 
-    let mp =
-      XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", mvc))
+    // recompute points
+    let sd = m.Descendants("Summary".X) |> Seq.head
+    let branches = bp.Descendants("BranchPoint".X)
+    let nb = branches |> Seq.length
+    let vb = branches |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+                      |> Seq.length
+    let points = sp.Descendants("SequencePoint".X)
+    let ns = points |> Seq.length
+    let vs = points |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+                    |> Seq.length
 
-    m.Add mp
-    makeSummary nb vb ns vs sd
+    if ns > 0 then
+      let mp = m.Descendants("MethodPoint".X) |> Seq.tryHead
+               |> Option.defaultWith (fun () -> let tmp = XElement(XName.Get "MethodPoint", XAttribute(XName.Get "vc", "0"))
+                                                m.Add tmp
+                                                tmp)
+      let mvc = points // not Seq.max as that exposes repeated calls to enumerator.Current when bootstrapping
+                |> Seq.fold (fun max x -> let tmp = x.Attribute("vc".X).Value |> Int32.TryParse |> snd
+                                          if tmp > max then tmp else max) 0 // know this is a hard floor
+      mp.Attribute("vc".X).Value <- mvc.ToString(CultureInfo.InvariantCulture)
 
-  [<SuppressMessage("Gendarme.Rules.Maintainability",
-                    "AvoidUnnecessarySpecializationRule",
-                    Justification = "AvoidSpeculativeGenerality too")>]
-  let internal methodsToXml (fileId: int) (item: XElement) (methods: Methods) =
-    methods |> Seq.iter (methodToXml fileId item)
-
-  [<SuppressMessage("Gendarme.Rules.Maintainability",
-                    "AvoidUnnecessarySpecializationRule",
-                    Justification = "AvoidSpeculativeGenerality too")>]
-  let internal tryGetValueOrDefault
-    (table: Dictionary<string, 'a>)
-    (key: string)
-    (f: unit -> 'a)
-    =
-    let ok, index = table.TryGetValue key
-
-    if ok then
-      index
-    else
-      let value = f ()
-      table.Add(key, value)
-      value
+    // adjust to match OpenCover values for branches
+    makeSummary (nb.Increment (nb > 0 || ns > 0)) 
+                (vb.Increment (vb > 0 || vs > 0)) ns vs sd
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
-  let internal classesToXml
-    (fileId: int)
-    (table: Dictionary<string, XElement>)
-    (classes: Classes)
-    =
-    classes
-    |> Seq.iteri
-         (fun i kvp ->
-           let name = kvp.Key
-
-           let item =
-             tryGetValueOrDefault
-               table
-               name
-               (fun () ->
-                 XElement(
-                   XName.Get "Class",
-                   XElement(XName.Get "FullName", name),
-                   XElement(XName.Get "Methods")
-                 ))
-
-           let next =
-             item.Elements(XName.Get "Methods") |> Seq.head
-
-           methodsToXml fileId next kvp.Value)
+  let internal methodsToXml (fileId: int) (item: XElement) (table:Dictionary<string, XElement>) (methods: Methods) =
+    methods |> Seq.iter (methodToXml table fileId item)
 
   let private valueOf (x: XElement) (name: string) =
     x.Attribute(XName.Get name).Value
@@ -1004,6 +1000,40 @@ module
            (0, 0, 0, 0)
 
     makeSummary nb vb ns vs sd
+
+
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+                    "AvoidUnnecessarySpecializationRule",
+                    Justification = "AvoidSpeculativeGenerality too")>]
+  let internal classesToXml
+    (fileId: int)
+    (table: Dictionary<string, XElement>)
+    (methodtable: Dictionary<string, XElement>)
+    (classes: Classes)
+    =
+    classes
+    |> Seq.iteri
+         (fun i kvp ->
+           let name = kvp.Key
+
+           let item =
+             tryGetValueOrDefault
+               table
+               name
+               (fun () ->
+                 XElement(
+                   XName.Get "Class",
+                   summaryElement (),
+                   XElement(XName.Get "FullName", name),
+                   XElement(XName.Get "Methods")
+                 ))
+
+           let next =
+             item.Elements(XName.Get "Methods") |> Seq.head
+
+           methodsToXml fileId next methodtable kvp.Value
+           let sd = item.Descendants("Summary".X) |> Seq.head
+           summarize sd item "Method")
 
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
@@ -1031,6 +1061,7 @@ module
     let classes = XElement(XName.Get "Classes")
     m.Add classes
     let classTable = Dictionary<string, XElement>()
+    let methodTable = Dictionary<string, XElement>()
 
     documents
     |> Seq.iter
@@ -1047,10 +1078,17 @@ module
                XAttribute(XName.Get "fullPath", name)
              )
 
+           kvp.Value
+           |> Seq.tryFind(fun kvp -> kvp.Key = "\u00ABAltCover.embed\u00BB")
+           |> Option.map (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
+           |> Option.flatten
+           |> Option.iter (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
+
            files.Add item
-           classesToXml i classTable kvp.Value)
+           classesToXml i classTable methodTable kvp.Value)
 
     classTable
+    |> Seq.filter (fun kvp -> kvp.Key |> Seq.head <> '\u00AB')
     |> Seq.iter (fun kvp -> classes.Add kvp.Value)
 
     summarize sd m "Method"
@@ -1113,6 +1151,12 @@ module
            original
            |> Seq.sortBy
                 (fun sp ->
+                  let offset = sp.Attribute(XName.Get "fileid")
+                  let topword = offset
+                              |> Option.ofObj
+                              |> Option.map(fun x -> x.Value |> Int64.TryParse |> snd)
+                              |> Option.defaultValue 0L
+
                   let sl =
                     sp.Attribute(XName.Get "sl").Value
                     |> Int32.TryParse
@@ -1123,7 +1167,7 @@ module
                     |> Int32.TryParse
                     |> snd
 
-                  (sl <<< 16) + sc)
+                  (topword <<< 32) + int64 ((sl <<< 16) + sc))
            |> sps.Add)
 
     x.Descendants(XName.Get "BranchPoints")
@@ -1158,6 +1202,16 @@ module
 
 #if RUNNER
   // Instrumentation ---------------------------------------------------------
+
+  [<SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let injectEmbed (c:Classes) (embed:string) =
+    if embed |> String.IsNullOrWhiteSpace |> not then
+      let dummy = Method.Create(None)
+      let m = Methods()
+      m.Add (embed, dummy)
+      c.Add ("\u00ABAltCover.embed\u00BB", m)
 
   [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
   type internal JsonContext =
@@ -1196,7 +1250,7 @@ module
           VisibleMethod = m.VisibleMethod
           Track = m.Track }
 
-    let getMethodRecord (s: JsonContext) (doc: string) =
+    let getMethodRecord (s: JsonContext) (doc: string) (record:Cil.Document) =
       let visibleMethodName = s.VisibleMethod.FullName
       let visibleTypeName = s.VisibleMethod.DeclaringType.FullName
 
@@ -1206,6 +1260,9 @@ module
         | _ ->
             let c = Classes()
             s.Documents.Add(doc, c)
+            record
+            |> Metadata.getSource
+            |> Option.iter (injectEmbed c)
             c
 
       let methods =
@@ -1229,9 +1286,9 @@ module
         |> Option.iter
              (fun codeSegment ->
                let doc =
-                 codeSegment.Document |> Visitor.sourceLinkMapping
+                 codeSegment.Document.Url |> Visitor.sourceLinkMapping
 
-               let mplus = getMethodRecord s doc
+               let mplus = getMethodRecord s doc codeSegment.Document
                mplus.Lines.[codeSegment.StartLine] <- int e.DefaultVisitCount
 
                mplus.SeqPnts.Add
@@ -1253,7 +1310,7 @@ module
           b.SequencePoint.Document.Url
           |> Visitor.sourceLinkMapping
 
-        let mplus = getMethodRecord s doc
+        let mplus = getMethodRecord s doc b.SequencePoint.Document
 
         mplus.Branches.Add
           { Line = b.SequencePoint.StartLine
@@ -1284,7 +1341,6 @@ module
           VisibleType = null }
 
     let visitAfterModule s = { s with Documents = null }
-    //    let afterAll = id
 
     let reportVisitor (s: JsonContext) (node: Node) =
       match node with
@@ -1297,7 +1353,6 @@ module
       | AfterMethod m -> visitAfterMethod s m
       | AfterType _ -> visitAfterType s
       | AfterModule _ -> visitAfterModule s
-      //      | Finish -> afterAll s
       | _ -> s
 
     let result =

@@ -169,10 +169,10 @@ module internal Counter =
       | ReportFormat.OpenCover -> openCoverXml
       | ReportFormat.NCover -> nCoverXml
       | _ ->
-          format
-          |> (sprintf "%A")
-          |> NotSupportedException
-          |> raise
+          raise (
+            format
+            |> (sprintf "%A")
+            |> NotSupportedException)
 
     let internal minTime (t1: DateTime) (t2: DateTime) = if t1 < t2 then t1 else t2
 

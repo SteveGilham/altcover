@@ -1,0 +1,67 @@
+﻿TN: SimpleMix
+SF:C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h
+FN:41,System.Int32 <Module>::main(System.String[])
+FN:41,System.Int32 Example::main(System.String[])
+FNDA:1,System.Int32 <Module>::main(System.String[])
+FNDA:1,System.Int32 Example::main(System.String[])
+FNF:2
+FNH:2
+BRDA:42,13,0,1
+BRDA:42,13,1,-
+BRDA:42,625,0,1
+BRDA:42,625,1,-
+BRF:4
+BRH:2
+DA:41,1
+DA:42,1
+DA:43,1
+LH:3
+LF:3
+end_of_record
+TN: SimpleMix
+SF:C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp
+FN:38,System.Int32 <Module>::main(System.String[])
+FN:25,System.Int32 Example::main(System.String[])
+FNDA:1,System.Int32 <Module>::main(System.String[])
+FNDA:1,System.Int32 Example::main(System.String[])
+FNF:2
+FNH:2
+BRDA:38,11,0,1
+BRDA:38,11,1,-
+BRF:2
+BRH:1
+DA:25,1
+DA:26,1
+DA:27,1
+DA:30,1
+DA:32,1
+DA:38,1
+DA:40,1
+DA:41,1
+DA:42,1
+DA:45,1
+DA:47,1
+DA:49,0
+LH:11
+LF:12
+end_of_record
+TN: SimpleMix
+SF:d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp
+FN:223,System.Int32 <Module>::mainCRTStartupStrArray(System.String[])
+FNDA:1,System.Int32 <Module>::mainCRTStartupStrArray(System.String[])
+FNF:1
+FNH:1
+BRF:0
+BRH:0
+DA:223,1
+DA:228,1
+DA:241,1
+DA:247,1
+DA:278,1
+DA:279,0
+DA:284,0
+DA:287,1
+DA:288,1
+LH:7
+LF:9
+end_of_record

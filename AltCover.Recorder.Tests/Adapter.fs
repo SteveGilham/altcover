@@ -166,6 +166,18 @@ module Adapter =
           | _ -> x.Message = unique
 
     Instance.I.issue71Wrapper () () () () catcher pitcher
+    
+  let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
+      (unique: string) =
+    let constructor =
+      typeof<'T>.GetConstructor ([| typeof<System.String> |])
+
+    let pitcher =
+      fun _ _ _ _ ->
+        constructor.Invoke([| unique |]) :?> System.Exception
+        |> raise
+
+    Instance.I.curriedIssue71Wrapper "a" "b" "c" "d" pitcher
 
   let internal tracePush (a, b, c) = Instance.I.trace.Push a b c
 //let LogException (a, b, c, d) = Instance.I.logException a b c d

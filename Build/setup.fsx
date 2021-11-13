@@ -50,6 +50,7 @@ let toolPackages =
         |> XDocument.Load
 
     xml.Descendants(XName.Get("PackageReference"))
+    |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
     |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
     |> Map.ofSeq
 

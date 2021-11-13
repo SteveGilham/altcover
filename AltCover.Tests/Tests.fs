@@ -64,7 +64,7 @@ module AltCoverTests =
 
 #if !NET472
   let dir =
-    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net5.0")
+    Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net6.0")
 #else
   let dir =
     Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU/net472")
@@ -140,139 +140,36 @@ module AltCoverTests =
   [<Test>]
   let ShouldGetPdbFromImage () =
     let files =
-      Directory.GetFiles(dir)
+      [
+        Directory.GetFiles(dir, "AltCover*")
+        Directory.GetFiles(dir, "Sample*")
+      ]
+      |> Seq.concat
       |> Seq.filter
            (fun x ->
              x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun f ->
-             f |> Path.GetFileNameWithoutExtension
-             <> "testhost")
       |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
-      |> Seq.filter (fun f -> f |> Path.GetFileName <> "CompilerAttributes.dll")
+      |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Recorder.g.dll")
       |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
       |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
-#if !NET472
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Expecto", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("ICSharp", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("BlackFox.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Manatee.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Newtonsoft.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("NuGet.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("testcentric.", StringComparison.OrdinalIgnoreCase))
-      // for coverlet
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("coverlet", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("Unquote", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName.StartsWith("xunit", StringComparison.OrdinalIgnoreCase))
-      |> Seq.filter
-           (fun x ->
-             not
-             <| (snd x)
-               .FullName
-               .StartsWith(
-                 "AltCover.Recorder",
-                 StringComparison.OrdinalIgnoreCase
-               ))
-#else
-      |> Seq.filter
-           (fun x ->
-             (snd x)
-               .FullName
-               .EndsWith(
-                 "PublicKeyToken=c02b1a9f5b7cade8",
-                 StringComparison.OrdinalIgnoreCase
-               ))
-#endif
       |> Seq.toList
 
     test <@ files <> [] @>
 
-    files
+    let pdbs =
+      files
+      |> List.map (fun (f, s) -> f, AltCover.ProgramDatabase.getPdbFromImage s)
+
+    pdbs
     |> Seq.iter
          (fun x ->
-           let pdb =
-             AltCover.ProgramDatabase.getPdbFromImage (snd x)
-
-           match pdb with
-           //| None -> Assert.Fail(sprintf "%A" x)
+           let f = fst x
+           match snd x with
+           // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
+           | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
            | Some name ->
-               let probe = Path.ChangeExtension((fst x), ".pdb")
+               let probe = Path.ChangeExtension(f, ".pdb")
                let file = FileInfo(probe)
                let filename = file.Name.Replace("\\", "/")
 
@@ -1112,7 +1009,7 @@ module AltCoverTests =
   [<Test>]
   let ValidateAutomaticExemption () =
     try
-      CoverageParameters.showGenerated := true
+      CoverageParameters.showGenerated.Value <- true
       let path = Path.Combine(dir, "Sample4.dll")
 
       use def =
@@ -1135,7 +1032,7 @@ module AltCoverTests =
                       Exemption.Automatic
                       Exemption.Automatic ] @>
     finally
-      CoverageParameters.showGenerated := false
+      CoverageParameters.showGenerated.Value <- false
 
   [<Test>]
   let DetectLocalSource () =
@@ -1147,6 +1044,7 @@ module AltCoverTests =
         |> XDocument.Load
 
       xml.Descendants(XName.Get("PackageReference"))
+      |> Seq.filter (fun x -> x.Attribute("Include".X).IsNotNull)
       |> Seq.map
            (fun x ->
              (x
@@ -1155,7 +1053,7 @@ module AltCoverTests =
               x.Attribute(XName.Get("version")).Value))
       |> Map.ofSeq
 
-    CoverageParameters.local := false
+    CoverageParameters.local.Value <- false
     CoverageParameters.nameFilters.Clear()
 
     let fscore =
@@ -1235,7 +1133,7 @@ module AltCoverTests =
     Assert.That(f.MainModule.LocalFilter, Is.False, "f# MainModule non-local")
 
     try
-      CoverageParameters.local := true
+      CoverageParameters.local.Value <- true
       Assert.That(localAssembly.LocalFilter, Is.False, "local engine  Assembly local")
       Assert.That(localAssembly.MainModule.LocalFilter, Is.False, "local engine  MainModule local")
       Assert.That(a.LocalFilter, Is.True, "Assembly local")
@@ -1246,7 +1144,7 @@ module AltCoverTests =
       Assert.That(f.MainModule.LocalFilter, Is.False, "f# MainModule local")
 
     finally
-      CoverageParameters.local := false
+      CoverageParameters.local.Value <- false
 
   [<Test>]
   let LocateMatchShouldChooseLongerWildCardPath () =
@@ -1631,7 +1529,7 @@ module AltCoverTests =
     Visitor.visit [] [] // cheat reset
 
     try
-      CoverageParameters.coalesceBranches := true
+      CoverageParameters.coalesceBranches.Value <- true
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       CoverageParameters.nameFilters.Clear()
 
@@ -1666,7 +1564,7 @@ module AltCoverTests =
                              Interesting = true } ->
                  Assert.That(uid, Is.EqualTo i, "point number"))
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -1680,6 +1578,7 @@ module AltCoverTests =
     let methods =
       def.MainModule.GetAllTypes()
       |> Seq.collect (fun t -> t.Methods)
+      |> Seq.sortBy (fun m -> m.FullName)
       |> Seq.toList
 
     let containing =
@@ -1690,80 +1589,80 @@ module AltCoverTests =
       |> Seq.map (fun (mo: MethodDefinition option) -> mo |> Option.map id)
 
     let expected =
-      [ None // System.Int32 Sample5.Class1::F1(System.String)
+       [Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // K Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerator<K>.get_Current()
+        Some "get_ValuesWorks" // K Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerator<K>.get_Current()
+        None // K Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Item(T)
+        Some "F2" // System.Boolean Sample5.Class1/<F2>d__1::MoveNext()
+        Some "G2" // System.Boolean Sample5.Class1/Inner/<G2>d__2`1::MoveNext()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Boolean Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::MoveNext()
+        Some "get_ValuesWorks" // System.Boolean Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::MoveNext()
+        None // System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.ContainsKey(T)
+        None // System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.TryGetValue(T,K&)
+        None // System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values()
+        None // System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::get_ValuesWorks()
         None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1::F2(System.String)
-        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
-        None // System.Void Sample5.Class1::.ctor()
-        Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)"
-        Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)"
-        None // System.Int32 Sample5.Class1/Inner::G1(System.String)
-        None // System.Void Sample5.Class1/Inner::G1(System.Int32)
-        None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
-        None // System.Void Sample5.Class1/Inner::G2(System.Int32)
-        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
-        None // System.Void Sample5.Class1/Inner::G3(System.Int32)
-        None // System.Void Sample5.Class1/Inner::.ctor()
-        Some "<G1>g__Recursive|0_4" // T[] Sample5.Class1/Inner::<G1>g__InteriorToArray|0_1(T)
-        Some "<G1>b__3" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
-        Some "<G1>g__Interior|0_2" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
-        None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
-        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
-        None // System.Void Sample5.Class1/Inner/<>c::.cctor()
-        None // System.Void Sample5.Class1/Inner/<>c::.ctor()
-        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c::<G1>b__0_0(System.Char)
-        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::.ctor(System.Int32)
-        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.IDisposable.Dispose()
-        Some "G2" // System.Boolean Sample5.Class1/Inner/<G2>d__1::MoveNext()
-        Some "G2" // System.Int32 Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
-        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.Reset()
-        Some "G2" // System.Object Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.get_Current()
-        Some "G2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
-        Some "G2" // System.Collections.IEnumerator Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerable.GetEnumerator()
-        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::.ctor()
-        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::MoveNext()
-        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
-        None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
+        None // System.Collections.Generic.IEnumerable`1<T> Sample5.Class1/Inner::G2(T)
+        None // System.Collections.Generic.IEnumerable`1<T> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Keys()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerable<K>.GetEnumerator()
+        Some "get_ValuesWorks" // System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerable<K>.GetEnumerator()
+        None // System.Collections.Generic.IEnumerator`1<System.Collections.Generic.KeyValuePair`2<T,K>> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,K>>.GetEnumerator()
+        Some "F2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
+        Some "G2" // System.Collections.Generic.IEnumerator`1<T> Sample5.Class1/Inner/<G2>d__2`1::System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+        Some "F2" // System.Collections.IEnumerator Sample5.Class1/<F2>d__1::System.Collections.IEnumerable.GetEnumerator()
+        Some "G2" // System.Collections.IEnumerator Sample5.Class1/Inner/<G2>d__2`1::System.Collections.IEnumerable.GetEnumerator()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerable.GetEnumerator()
+        Some "get_ValuesWorks" // System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerable.GetEnumerator()
+        None // System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2::System.Collections.IEnumerable.GetEnumerator()
+        Some "F1" // System.Int32 Sample5.Class1/<>c::<F1>b__0_0(System.Char)
         Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__2(System.Char)
+        Some "F2" // System.Int32 Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
+        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c::<G1>b__0_0(System.Char)
+        Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__3(System.Char)
+        Some "<G1>b__3" // System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_2(System.Int32,System.Int32)
+        Some "<G1>g__Interior|0_2" // System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_4(System.Int32)
+        None // System.Int32 Sample5.Class1/Inner::G1(System.String) // g1
+        Some "F1" // System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)
+        Some "F1" // System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)
+        None // System.Int32 Sample5.Class1::F1(System.String)
+        None // System.Int32 Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<T,K>>.get_Count()
+        Some "F2" // System.Object Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.get_Current()
+        Some "G2" // System.Object Sample5.Class1/Inner/<G2>d__2`1::System.Collections.IEnumerator.get_Current()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Object Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.get_Current()
+        Some "get_ValuesWorks" // System.Object Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.get_Current()
+        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String) // g3
+        None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
         None // System.Void Sample5.Class1/<>c::.cctor()
         None // System.Void Sample5.Class1/<>c::.ctor()
-        Some "F1" // System.Int32 Sample5.Class1/<>c::<F1>b__0_0(System.Char)
+        None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
         Some "F2" // System.Void Sample5.Class1/<F2>d__1::.ctor(System.Int32)
-        Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.IDisposable.Dispose()
-        Some "F2" // System.Boolean Sample5.Class1/<F2>d__1::MoveNext()
-        Some "F2" // System.Int32 Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
         Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.Reset()
-        Some "F2" // System.Object Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.get_Current()
-        Some "F2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
-        Some "F2" // System.Collections.IEnumerator Sample5.Class1/<F2>d__1::System.Collections.IEnumerable.GetEnumerator()
+        Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.IDisposable.Dispose()
         Some "F3" // System.Void Sample5.Class1/<F3>d__2::.ctor()
         Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
         Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
-        None // "System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values()"
-        None // "System.Collections.Generic.IEnumerable`1<K> Sample5.RecursiveSyntheticInvocation`2::get_ValuesWorks()"
-        None // "System.Collections.Generic.IEnumerable`1<T> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Keys()"
-        None // "K Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Item(T)"
-        None // "System.Int32 Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<T,K>>.get_Count()"
-        None // "System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.ContainsKey(T)"
-        None // "System.Collections.Generic.IEnumerator`1<System.Collections.Generic.KeyValuePair`2<T,K>> Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,K>>.GetEnumerator()"
-        None // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2::System.Collections.IEnumerable.GetEnumerator()"
-        None // "System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary<T,K>.TryGetValue(T,K&)"
-        None // "System.Void Sample5.RecursiveSyntheticInvocation`2::.ctor()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::.ctor(System.Int32)"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.IDisposable.Dispose()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Boolean Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::MoveNext()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "K Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerator<K>.get_Current()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.Reset()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Object Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.get_Current()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerable<K>.GetEnumerator()"
-        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerable.GetEnumerator()"
-        Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::.ctor(System.Int32)"
-        Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.IDisposable.Dispose()"
-        Some "get_ValuesWorks" // "System.Boolean Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::MoveNext()"
-        Some "get_ValuesWorks" // "K Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerator<K>.get_Current()"
-        Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.Reset()"
-        Some "get_ValuesWorks" // "System.Object Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.get_Current()"
-        Some "get_ValuesWorks" // "System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.Generic.IEnumerable<K>.GetEnumerator()"
-        Some "get_ValuesWorks" ] // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerable.GetEnumerator()"
+        None // System.Void Sample5.Class1/Inner/<>c::.cctor()
+        None // System.Void Sample5.Class1/Inner/<>c::.ctor()
+        None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
+        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__2`1::.ctor(System.Int32)
+        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__2`1::System.Collections.IEnumerator.Reset()
+        Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__2`1::System.IDisposable.Dispose()
+        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__4::.ctor()
+        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__4::MoveNext()
+        Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__4::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
+        None // System.Void Sample5.Class1/Inner::.ctor()
+        None // System.Void Sample5.Class1/Inner::G1(System.Int32)
+        None // System.Void Sample5.Class1/Inner::G2(System.Int32)
+        None // System.Void Sample5.Class1/Inner::G3(System.Int32)
+        None // System.Void Sample5.Class1::.ctor()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::.ctor(System.Int32)
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.Reset()
+        Some "System.Collections.Generic.IReadOnlyDictionary<T,K>.get_Values" // System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.IDisposable.Dispose()
+        Some "get_ValuesWorks" // System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::.ctor(System.Int32)
+        Some "get_ValuesWorks" // System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.Collections.IEnumerator.Reset()
+        Some "get_ValuesWorks" // System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.IDisposable.Dispose()
+        None // System.Void Sample5.RecursiveSyntheticInvocation`2::.ctor()
+        Some "G2" // T Sample5.Class1/Inner/<G2>d__2`1::System.Collections.Generic.IEnumerator<T>.get_Current()
+        Some "<G1>g__Recursive|0_4"] // T[] Sample5.Class1/Inner::<G1>g__InteriorToArray|0_1(T)
 
     // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
     // Assert.That (result, Is.EquivalentTo expected)
@@ -1797,7 +1696,7 @@ module AltCoverTests =
              sprintf "%A %A %d" x (y |> Option.map toFullName) i
            ))
     // Disambiguation checks
-    let g3 = methods.[10]
+    let g3 = methods.[40]
 
     Assert.That(
       methods
@@ -1807,7 +1706,7 @@ module AltCoverTests =
       Is.EquivalentTo [ g3; g3; g3 ]
     )
 
-    let g1 = methods.[6]
+    let g1 = methods.[31]
 
     Assert.That(
       methods
@@ -2368,7 +2267,7 @@ module AltCoverTests =
     Visitor.visit [] [] // cheat reset
 
     try
-      CoverageParameters.coalesceBranches := true
+      CoverageParameters.coalesceBranches.Value <- true
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       CoverageParameters.nameFilters.Clear()
 
@@ -2430,7 +2329,7 @@ module AltCoverTests =
                           1 ]
       )
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -2456,7 +2355,7 @@ module AltCoverTests =
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
       CoverageParameters.nameFilters.Clear()
-      CoverageParameters.coalesceBranches := true
+      CoverageParameters.coalesceBranches.Value <- true
 
       let deeper =
         Visitor.I.deeper
@@ -2476,17 +2375,17 @@ module AltCoverTests =
                | BranchPoint b -> b.Representative = Reporting.Representative
                | _ -> true)
 
-      Assert.That(reported.Length, Is.EqualTo 14)
+      Assert.That(reported.Length, Is.EqualTo 11)
 
       reported
-      |> List.skip 9
+      |> List.skip 6
       |> List.iteri
            (fun i node ->
              match node with
              | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number"))
 
       deeper
-      |> List.take 9
+      |> List.take 6
       |> List.iteri
            (fun i node ->
              match node with
@@ -2498,7 +2397,7 @@ module AltCoverTests =
                  Assert.That(uid, Is.EqualTo i, "point number"))
 
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
 
@@ -2805,7 +2704,7 @@ module AltCoverTests =
   [<Test>]
   let PathsAreDeeperThanAVisit () =
     try
-      CoverageParameters.showGenerated := true
+      CoverageParameters.showGenerated.Value <- true
       let where = Assembly.GetExecutingAssembly().Location
       let path = sample1path
       let accumulator = System.Collections.Generic.List<Node>()
@@ -2854,7 +2753,7 @@ module AltCoverTests =
         Is.EquivalentTo(expected |> Seq.map string)
       )
     finally
-      CoverageParameters.showGenerated := false
+      CoverageParameters.showGenerated.Value <- false
 
   [<Test>]
   let TrackingDetectsTests () =
@@ -3311,8 +3210,6 @@ module AltCoverTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNet () =
     let visitor, document = Report.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = sample1path
 
     try
@@ -3347,6 +3244,98 @@ module AltCoverTests =
       recursiveValidate result expected 0 true
     finally
       CoverageParameters.nameFilters.Clear()
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithEmbeds () =
+    let visitor, document = Report.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      //printfn "%A" (makeDocument document)
+      let results = (makeDocument document).Descendants("altcover.file".X)
+                   |> Seq.toList
+      Assert.That (results |> List.length, Is.EqualTo 9)
+      results
+      |> Seq.iter (fun x -> let doc = x.Attribute("document".X)
+                            Assert.That (doc, Is.Not.Null, x.ToString())
+                            let path = doc.Value
+                            Assert.That(path |> File.Exists, Is.False, path))
+
+      let lead = results |> Seq.head
+      let prev = lead.PreviousNode :?> XElement
+      Assert.That(prev, Is.Not.Null)
+      Assert.That(prev.Name, Is.EqualTo ("method".X))
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithPartials () =
+    let visitor, document = Report.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      //printfn "%A" (makeDocument document)
+      let results = (makeDocument document)
+      let methods = results.Descendants("method".X)
+                   |> Seq.toList
+      let classes = methods
+                    |> List.groupBy (fun x -> x.Attribute("class".X).Value)
+      let documents = classes
+                      |> List.map (fun (n,ml) -> n, ml
+                                                    |> Seq.map (fun m -> m.Descendants("seqpnt".X)
+                                                                         |> Seq.map (fun s -> s.Attribute("document".X).Value)
+                                                                         |> Seq.distinct
+                                                                         |> Seq.toList))
+      let classdocs = documents
+                      |> List.map (fun (n,dl) -> (n, dl
+                                                     |> Seq.concat
+                                                     |> Seq.distinct
+                                                     |> Seq.toList))
+      let classcount = classdocs
+                       |> List.map (fun (n,dl) -> (n, dl |> List.length))
+                       |> List.sortBy fst
+
+      // printfn "%A" classcount
+
+      // snd > 1 => partial class at least
+      test <@ classcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 10);
+                            ("Example", 2)] @>
+
+      let mcount = documents
+                   |> List.map (fun (n,ml) -> (n, ml |> Seq.maxBy List.length |> List.length))
+                   |> List.sortBy fst
+
+      // snd > 1 => inlined method at least
+      test <@ mcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 2);
+                            ("Example", 2)] @>
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
 
   let internal makeJson (f: Stream -> unit) =
     use stash = new MemoryStream()
@@ -3405,19 +3394,15 @@ module AltCoverTests =
       let expected =
         reader
           .ReadToEnd()
-          .Replace(
-            "Tests.fs",
-            Path
-              .GetFullPath(Path.Combine(SolutionRoot.location,
-                                        "Samples/Sample4",
-                                        "Tests.fs"))
-              .Replace("\\", "\\\\")
-          )
+          .Replace("/_//Samples/Sample4/Tests.fs", // Not compiled deterministic
+             (Path.Combine(SolutionDir(), "Samples/Sample4/Tests.fs")
+              |> canonicalPath).Replace("\\","\\\\"))
           .Replace('\r', '\u00FF')
           .Replace('\n', '\u00FF')
           .Replace("\u00FF\u00FF", "\u00FF")
           .Trim([| '\u00FF' |])
-      //printfn "%s" result
+      //printfn "expected %A" expected
+      //printfn "result %s" result
       Assert.That(
         result
           .Replace('\r', '\u00FF')
@@ -3432,12 +3417,114 @@ module AltCoverTests =
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
+  let ShouldGenerateExpectedJsonReportWithPartials () =
+    let visitor, document = OpenCover.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+      let visitor, document = Main.I.selectReportGenerator ()
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let result = makeJson document
+      //printfn "%A" result
+      let json = NativeJson.fromJsonText result
+      Assert.That (json.Count, Is.EqualTo 1)
+      let documents = json.Values |> Seq.head
+
+      Assert.That(documents.Count, Is.EqualTo 10)
+      let classdocs = documents
+                      |> Seq.collect (fun kvp -> kvp.Value.Keys
+                                                 |> Seq.map (fun k -> (k, kvp.Key)))
+                      |> Seq.groupBy fst
+                      |> Seq.toList
+
+      let classcount = classdocs
+                       |> List.map (fun (n,dl) -> (n, dl |> Seq.length))
+                       |> List.sortBy fst
+
+      // printfn "%A" classcount
+
+      // snd > 1 => partial class at least
+      test <@ classcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 10);
+                            ("Example", 2)] @>
+
+      let mcount = documents
+                  |> Seq.collect (fun kvp -> kvp.Value
+                                            |> Seq.collect (fun kv -> kv.Value.Keys
+                                                                      |> Seq.map (fun k -> kv.Key, (k, kvp.Key))))
+
+                  |> Seq.groupBy fst
+                  |> Seq.map (fun (n,l) -> n,(l |> Seq.map snd
+                                                |> Seq.groupBy fst
+                                                |> Seq.map (fun (_, dl) -> dl |> Seq.map snd
+                                                                              |> Seq.distinct
+                                                                              |> Seq.length))
+                                             |> Seq.max)
+                  |> Seq.toList
+                  |> List.sortBy fst
+
+      //mcount
+      //|> Seq.iter (printfn "%A")
+
+      // snd > 1 => inlined method at least
+      test <@ mcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 2);
+                            ("Example", 2)] @>
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedJsonReportWithEmbeds () =
+    let visitor, document = OpenCover.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.NativeJson
+      let visitor, document = Main.I.selectReportGenerator ()
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let result = makeJson document
+      //printfn "%A" result
+      let json = NativeJson.fromJsonText result
+      Assert.That (json.Count, Is.EqualTo 1)
+      Assert.That (json.["CSharpGeneratedDemo.dll"].Count, Is.EqualTo 16)
+      let dict = json.["CSharpGeneratedDemo.dll"]
+      let embeds = dict.Keys
+                   |> Seq.map (fun k -> let file = k |> File.Exists |> not
+                                        let embed = dict.[k].ContainsKey "\u00ABAltCover.embed\u00BB"
+                                        Assert.That (file, Is.EqualTo embed, k)
+                                        if file then 1 else 0)
+                   |> Seq.toList
+
+      test <@ embeds = [1; 1; 1; 1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0; 0; 0] @>
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
   let ShouldGenerateExpectedXmlReportForNCoverWithMethodPointOnly () =
     let visitor, document = Report.reportGenerator ()
     let path = sample4path
 
     try
-      CoverageParameters.methodPoint := true
+      CoverageParameters.methodPoint.Value <- true
 
       Visitor.visit
         [ visitor ]
@@ -3452,7 +3539,7 @@ module AltCoverTests =
              let sx = mx.Descendants(XName.Get "seqpnt")
              test <@ sx |> Seq.length = 1 @>)
     finally
-      CoverageParameters.methodPoint := false
+      CoverageParameters.methodPoint.Value <- false
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportForNCoverWithTopLevel () =
@@ -3791,7 +3878,7 @@ module AltCoverTests =
     let path = sample4path
 
     try
-      CoverageParameters.methodPoint := true
+      CoverageParameters.methodPoint.Value <- true
       CoverageParameters.theReportFormat <- None
 
       let visitor, document = Main.I.selectReportGenerator () //OpenCover.reportGenerator()
@@ -3811,7 +3898,7 @@ module AltCoverTests =
 
              test <@ sx |> Seq.length = 1 @>)
     finally
-      CoverageParameters.methodPoint := false
+      CoverageParameters.methodPoint.Value <- false
 
   [<Test>]
   let LocateMatchFallsBackOK () =
@@ -3830,7 +3917,7 @@ module AltCoverTests =
       Path.Combine(here, "_SourceLink/Sample14.dll")
 
     try
-      CoverageParameters.sourcelink := true
+      CoverageParameters.sourcelink.Value <- true
       CoverageParameters.staticFilter <- Some StaticFilter.NoFilter
 
       Visitor.visit
@@ -3887,7 +3974,7 @@ module AltCoverTests =
 
     finally
       CoverageParameters.nameFilters.Clear()
-      CoverageParameters.sourcelink := false
+      CoverageParameters.sourcelink.Value <- false
       CoverageParameters.staticFilter <- None
 
   [<Test>]
@@ -4160,7 +4247,7 @@ module AltCoverTests =
       Assert.That(branch.Target.Length, Is.EqualTo 2)
       let xbranch = XElement(XName.Get "test")
       OpenCover.I.setChain xbranch branch
-      Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
+      Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="30" />""")
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
@@ -4293,7 +4380,7 @@ module AltCoverTests =
 
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
-      CoverageParameters.sourcelink := true
+      CoverageParameters.sourcelink.Value <- true
 
       Visitor.visit
         [ visitor ]
@@ -4346,14 +4433,12 @@ module AltCoverTests =
       Assert.That(untracked, Is.EquivalentTo expected2)
     finally
       CoverageParameters.nameFilters.Clear()
-      CoverageParameters.sourcelink := false
+      CoverageParameters.sourcelink.Value <- false
       CoverageParameters.theReportFormat <- None
 
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle () =
     let visitor, document = OpenCover.reportGenerator ()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = sample1path
 
     try
@@ -4382,6 +4467,101 @@ module AltCoverTests =
       let result = (makeDocument document).Elements()
       let expected = baseline.Elements()
       recursiveValidateOpenCover result expected 0 true false
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithEmbedsOpenCoverStyle () =
+    let visitor, document = OpenCover.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      let expected = [1; 1; 1; 1; 1; 1; 1; 1; 0; 1; 0; 0; 0; 0; 0; 0]
+      //printfn "%A" (makeDocument document)
+      let result = (makeDocument document).Descendants("File".X)
+                   |> Seq.map(fun f -> if f.Attribute("fullPath".X).Value |> File.Exists |> not
+                                       then 1 else 0)
+                   |> Seq.toList
+      // Generated source does not exist at the specified path -- a check on the MSFT inputs
+      test <@ result = expected @>
+
+      // but we should have picked up the embedded source
+      let embeds = (makeDocument document).Descendants("File".X)
+                   |> Seq.map (fun f -> if f.Attribute("altcover.embed".X).IsNotNull
+                                         then 1 else 0)
+                   |> Seq.toList
+      test <@ embeds = expected  @>
+
+    finally
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- None
+
+  [<Test>]
+  let ShouldGenerateExpectedXmlReportWithPartialsOpenCoverStyle () =
+    let visitor, document = OpenCover.reportGenerator ()
+    let path = Path.Combine(SolutionDir(), "AltCover.Tests/SimpleMix.exe")
+
+    try
+      CoverageParameters.nameFilters.Clear()
+      CoverageParameters.theReportFormat <- Some ReportFormat.OpenCover
+
+      Visitor.visit
+        [ visitor ]
+        (Visitor.I.toSeq
+          { AssemblyPath = path
+            Destinations = [] })
+
+      // printfn "%A" (makeDocument document)
+      let results = (makeDocument document)
+      let classes = results.Descendants("Class".X)
+                    |> Seq.map (fun c -> (c.Element("FullName".X).Value,
+                                          c.Descendants("Method".X) |> Seq.toList))
+                    |> Seq.toList
+
+      let documents = classes
+                      |> List.map (fun (n,ml) -> (n, ml |> Seq.map (fun m -> [ m.Descendants("SequencePoint".X);
+                                                                               m.Descendants("Branch".X)]
+                                                                             |> Seq.concat
+                                                                             |> Seq.map (fun x -> x.Attribute("fileid".X).Value)
+                                                                             |> Seq.distinct
+                                                                             |> Seq.toList)))
+      let classdocs = documents
+                      |> List.map (fun (n,dl) -> (n, dl
+                                                     |> Seq.concat
+                                                     |> Seq.distinct
+                                                     |> Seq.toList))
+      let classcount = classdocs
+                       |> List.map (fun (n,dl) -> (n, dl |> List.length))
+                       |> List.sortBy fst
+
+      // printfn "%A" classcount
+
+      // snd > 1 => partial class at least
+      test <@ classcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 10);
+                            ("Example", 2)] @>
+
+      let mcount = documents
+                   |> List.map (fun (n,ml) -> (n, ml |> Seq.maxBy List.length |> List.length))
+                   |> List.sortBy fst
+
+      // snd > 1 => inlined method at least
+      test <@ mcount = [("<CrtImplementationDetails>.ModuleLoadException", 1);
+                            ("<CrtImplementationDetails>.ModuleLoadExceptionHandlerException", 1);
+                            ("<CrtImplementationDetails>.ModuleUninitializer", 1); ("<Module>", 2);
+                            ("Example", 2)] @>
+
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
@@ -4918,9 +5098,9 @@ module AltCoverTests =
     let visitor, document = OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net5.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net6.0/Sample21.dll")
 
-    Assert.That(File.Exists sample21, "Test file Sample21 for net5.0 not built")
+    Assert.That(File.Exists sample21, "Test file Sample21 for net6.0 not built")
 
     try
       "Program"

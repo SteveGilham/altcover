@@ -111,6 +111,7 @@ type internal InstrumentContext =
   { InstrumentedAssemblies: string list
     ModuleId: String
     RecordingAssembly: AssemblyDefinition
+    RecorderSource : Stream
     RecordingMethod: MethodDefinition list // initialised once
     RecordingMethodRef: RecorderRefs // updated each module
     MethodBody: MethodBody
@@ -120,6 +121,7 @@ type internal InstrumentContext =
     { InstrumentedAssemblies = assemblies
       ModuleId = String.Empty
       RecordingAssembly = null
+      RecorderSource = null
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
       MethodBody = null
@@ -128,10 +130,14 @@ type internal InstrumentContext =
 
 // Module to handle instrumentation visitor
 module internal Instrument =
-  let version =
-    typeof<AltCover.Recorder.Tracer>
-      .Assembly.GetName()
-      .Version.ToString()
+  let recorderVersion() =
+    use stream =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
+    use def = AssemblyDefinition.ReadAssembly stream
+    def.Name.Version.ToString()
+  let version = recorderVersion()
 
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
@@ -288,9 +294,9 @@ module internal Instrument =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
                                                       Justification = "Return confusing Gendarme -- TODO")>]
-    let internal prepareAssembly (location: string) =
+    let internal prepareAssembly (assembly: Stream) =
       let definition =
-        AssemblyDefinition.ReadAssembly(location)
+        AssemblyDefinition.ReadAssembly(assembly)
 
       prepareAssemblyDefinition definition
 
@@ -303,6 +309,11 @@ module internal Instrument =
         "packages"
       )
 
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUnusedParametersRule",
+                      Justification = "meets an interface")>]
+    [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                      Justification = "meets an interface")>]
     let internal resolveFromNugetCache _ (y: AssemblyNameReference) =
       let name = y.ToString()
 
@@ -979,13 +990,16 @@ module internal Instrument =
                                                       "EnsureLocalDisposalRule",
                                                       Justification = "Record return confusing Gendarme -- TODO")>]
     let private visitStart state =
-      let recorder = typeof<AltCover.Recorder.Tracer>
-
+      let stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
       let recordingAssembly =
-        prepareAssembly (recorder.Assembly.Location)
+        prepareAssembly (stream)
 
       { state with
-          RecordingAssembly = recordingAssembly }
+          RecordingAssembly = recordingAssembly
+          RecorderSource = stream }
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
@@ -999,7 +1013,7 @@ module internal Instrument =
         use stream =
           Assembly
             .GetExecutingAssembly()
-            .GetManifestResourceStream("AltCover.AltCover.Recorder.dll")
+            .GetManifestResourceStream("AltCover.AltCover.Recorder.net46.dll")
 
         let clr4 =
           state.AsyncSupport
@@ -1032,12 +1046,15 @@ module internal Instrument =
                       File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
-
+        state.RecorderSource
+        |> Option.ofObj
+        |> Option.iter (fun a -> a.Close())
         state.AsyncSupport
         |> Option.iter (fun a -> a.Close())
 
       { state with
           RecordingAssembly = null
+          RecorderSource = null
           AsyncSupport = None }
 
     // Perform visitor operations
@@ -1079,11 +1096,13 @@ module internal Instrument =
         match node with
         | Finish -> ()
         | _ ->
-            if state.RecordingAssembly |> isNull |> not then
+            if state.RecordingAssembly.IsNotNull then
               (state.RecordingAssembly :> IDisposable).Dispose()
-
-              state.AsyncSupport
-              |> Option.iter (fun a -> a.Close())
+            state.RecorderSource
+            |> Option.ofObj
+            |> Option.iter (fun a -> a.Close())
+            state.AsyncSupport
+            |> Option.iter (fun a -> a.Close())
 
         reraise ()
 

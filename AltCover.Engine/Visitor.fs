@@ -44,7 +44,8 @@ type internal SeqPnt =
     StartColumn: int
     EndLine: int
     EndColumn: int
-    Document: string
+    [<NonSerialized>]
+    Document: Cil.Document
     Offset: int }
   static member Build(codeSegment: Cil.SequencePoint) =
     { StartLine = codeSegment.StartLine
@@ -59,7 +60,7 @@ type internal SeqPnt =
           codeSegment.StartColumn + 1
         else
           codeSegment.EndColumn
-      Document = codeSegment.Document.Url
+      Document = codeSegment.Document
       Offset = codeSegment.Offset }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
@@ -212,7 +213,7 @@ type internal SequenceType =
 [<RequireQualifiedAccess>]
 module internal KeyStore =
   let private hash =
-    new System.Security.Cryptography.SHA1CryptoServiceProvider()
+    sha1Hash()
 
   let private publicKeyOfKey (key: StrongNameKeyData) = key.PublicKey
 
@@ -311,6 +312,11 @@ module internal CoverageParameters =
 
   let internal theOutputDirectories = List<string>()
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                    Justification = "meets an interface")>]
   let private defaultOutputDirectory _ =
     inplaceSelection "__Saved" "__Instrumented"
 
@@ -406,8 +412,8 @@ module internal Inspector =
       match nameProvider with
       | :? AssemblyDefinition as a ->
           (CoverageParameters.local.Value)
-          && a
-        |> ProgramDatabase.getAssemblyDocuments
+          && a.MainModule
+        |> ProgramDatabase.getModuleDocuments
         |> Seq.map (fun d -> d.Url)
         |> Seq.exists File.Exists
         |> not
@@ -454,7 +460,7 @@ module internal Visitor =
           .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
     let internal exists (url: Uri) =
-      let request = System.Net.WebRequest.CreateHttp(url)
+      let request = createHttp(url)
       request.Method <- "HEAD"
 
       try
@@ -622,7 +628,7 @@ module internal Visitor =
              (fun x ->
                x.CustomDebugInformations
                |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
-        |> Option.bind id
+        |> Option.flatten
         |> Option.map
              (fun i ->
                let c =

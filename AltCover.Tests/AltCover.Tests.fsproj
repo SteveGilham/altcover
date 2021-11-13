@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
@@ -13,7 +13,7 @@
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
     <WarningsAsErrors>3239;0058</WarningsAsErrors>
   </PropertyGroup>
 
@@ -48,6 +48,7 @@
     <EmbeddedResource Include="Sample4.coverlet.json" />
     <EmbeddedResource Include="Sample4.coverlet.lcov" />
     <EmbeddedResource Include="Sample5.native.json" />
+    <EmbeddedResource Include="Sample5.raw-native.xml" />
     <EmbeddedResource Include="Sample5.native.xml" />
     <EmbeddedResource Include="Sample5.native.cobertura" />
     <EmbeddedResource Include="Sample5.ncover.lcov" />
@@ -55,7 +56,16 @@
     <EmbeddedResource Include="Sample5.ncover.cobertura" />
     <EmbeddedResource Include="GenuineNCover158.json" />
     <EmbeddedResource Include="GenuineNCover158.Xml" />
+    <EmbeddedResource Include="JsonWithPartials.json" />
+    <EmbeddedResource Include="JsonWithPartialsToRawXml.xml" />
+    <EmbeddedResource Include="JsonWithPartialsToXml.xml" />
+    <EmbeddedResource Include="OpenCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="OpenCoverWithPartials.lcov" />
+    <EmbeddedResource Include="OpenCoverWithPartials.xml" />
     <EmbeddedResource Include="OpenCover.json" />
+    <EmbeddedResource Include="NCoverWithPartials.cob.xml" />
+    <EmbeddedResource Include="NCoverWithPartials.lcov" />
+    <EmbeddedResource Include="NCoverWithPartials.xml" />
     <EmbeddedResource Include="NCover.lcov" />
     <EmbeddedResource Include="OpenCover.lcov" />
     <EmbeddedResource Include="NCover.cobertura" />
@@ -82,6 +92,9 @@
     <EmbeddedResource Include="issue37.pd_" />
     <EmbeddedResource Include="issue122.xml" />
     <EmbeddedResource Include="issue122.cobertura" />
+    <EmbeddedResource Include="$(ProjectDir)../_Binaries/AltCover.Recorder/Release+AnyCPU/net20\/AltCover.Recorder.dll">
+      <Link>AltCover.Recorder.net20.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -104,12 +117,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AltCover.Recorder">
-      <HintPath>$(ProjectDir)..\_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net20\AltCover.Recorder.dll</HintPath>
-    </Reference>
     <PackageReference Include="Expecto" Version="9.0.4" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Expecto.TestResults" Version="8.13.2" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
@@ -126,11 +136,12 @@
     </Reference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
+    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.0">
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
+    <PackageReference Update="FSharp.Core" Version="6.0.1">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

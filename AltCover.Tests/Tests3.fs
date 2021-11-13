@@ -1072,7 +1072,7 @@ module AltCoverTests3 =
     try
       CoverageParameters.theInputDirectories.Clear()
       CoverageParameters.theOutputDirectories.Clear()
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
 
       let options = Main.I.declareOptions ()
 
@@ -1099,7 +1099,7 @@ module AltCoverTests3 =
           |> List.zip ([ "."; ".." ] |> List.map (pcom "__Instrumented"))
           |> List.iter Assert.AreEqual
 
-          CoverageParameters.inplace := true
+          CoverageParameters.inplace.Value <- true
           CoverageParameters.theOutputDirectories.Add "maybe"
 
           CoverageParameters.outputDirectories ()
@@ -1111,7 +1111,7 @@ module AltCoverTests3 =
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theInputDirectories.Clear()
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
 
   [<Test>]
   let ParsingDuplicateInputGivesFailure () =
@@ -1433,7 +1433,7 @@ module AltCoverTests3 =
       let here = Assembly.GetExecutingAssembly().Location
 
       let next =
-        Path.Combine(Path.GetDirectoryName here, "AltCover.Recorder.dll")
+        Path.Combine(Path.GetDirectoryName here, "AltCover.Engine.dll")
 
       let input = [| "-d"; here; "/d"; next |]
 
@@ -1452,7 +1452,7 @@ module AltCoverTests3 =
 
       Assert.That(
         String.Join(" ", expected),
-        Is.EqualTo("AltCover.Recorder AltCover.Tests")
+        Is.EqualTo("AltCover.Engine AltCover.Tests")
       )
     finally
       Instrument.resolutionTable.Clear()
@@ -1778,7 +1778,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      CoverageParameters.local := false
+      CoverageParameters.local.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--localSource" |]
 
@@ -1792,14 +1792,14 @@ module AltCoverTests3 =
 
       Assert.That(CoverageParameters.local.Value, Is.True)
     finally
-      CoverageParameters.local := false
+      CoverageParameters.local.Value <- false
 
   [<Test>]
   let ParsingMultipleLocalGivesFailure () =
     Main.init ()
 
     try
-      CoverageParameters.local := false
+      CoverageParameters.local.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "-l"; "--localSource" |]
 
@@ -1816,14 +1816,14 @@ module AltCoverTests3 =
             Is.EqualTo "--localSource : specify this only once"
           )
     finally
-      CoverageParameters.local := false
+      CoverageParameters.local.Value <- false
 
   [<Test>]
   let ParsingVisibleGivesVisible () =
     Main.init ()
 
     try
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--visibleBranches" |]
 
@@ -1837,14 +1837,14 @@ module AltCoverTests3 =
 
       Assert.That(CoverageParameters.coalesceBranches.Value, Is.True)
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
 
   [<Test>]
   let ParsingMultipleVisibleGivesFailure () =
     Main.init ()
 
     try
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "-v"; "--visibleBranches" |]
 
@@ -1861,7 +1861,7 @@ module AltCoverTests3 =
             Is.EqualTo "--visibleBranches : specify this only once"
           )
     finally
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
 
   [<Test>]
   let ParsingStaticGivesStatic () =
@@ -2271,7 +2271,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--inplace" |]
 
@@ -2285,14 +2285,14 @@ module AltCoverTests3 =
 
       Assert.That(CoverageParameters.inplace.Value, Is.True)
     finally
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
 
   [<Test>]
   let ParsingMultipleInPlaceGivesFailure () =
     Main.init ()
 
     try
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--inplace"; "--inplace" |]
 
@@ -2309,14 +2309,14 @@ module AltCoverTests3 =
             Is.EqualTo "--inplace : specify this only once"
           )
     finally
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
 
   [<Test>]
   let ParsingSaveGivesSave () =
     Main.init ()
 
     try
-      CoverageParameters.collect := false
+      CoverageParameters.collect.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--save" |]
 
@@ -2329,14 +2329,14 @@ module AltCoverTests3 =
           Assert.That(x, Is.Empty)
           Assert.That(CoverageParameters.collect.Value, Is.True)
     finally
-      CoverageParameters.collect := false
+      CoverageParameters.collect.Value <- false
 
   [<Test>]
   let ParsingMultipleSaveGivesFailure () =
     Main.init ()
 
     try
-      CoverageParameters.collect := false
+      CoverageParameters.collect.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--save"; "--save" |]
 
@@ -2353,7 +2353,7 @@ module AltCoverTests3 =
             Is.EqualTo "--save : specify this only once"
           )
     finally
-      CoverageParameters.collect := false
+      CoverageParameters.collect.Value <- false
 
   [<Test>]
   let ParsingSingleGivesSingle () =
@@ -2663,7 +2663,7 @@ module AltCoverTests3 =
     Main.init ()
 
     try
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
       let options = Main.I.declareOptions ()
       let input = [| "--dropReturnCode" |]
 
@@ -2677,14 +2677,14 @@ module AltCoverTests3 =
 
       Assert.That(CommandLine.dropReturnCode.Value, Is.True)
     finally
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
 
   [<Test>]
   let ParsingMultipleDropGivesFailure () =
     Main.init ()
 
     try
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
       let options = Main.I.declareOptions ()
 
       let input =
@@ -2704,7 +2704,7 @@ module AltCoverTests3 =
             Is.EqualTo "--dropReturnCode : specify this only once"
           )
     finally
-      CommandLine.dropReturnCode := false
+      CommandLine.dropReturnCode.Value <- false
 
   [<Test>]
   let ParsingDeferWorks () =
@@ -2725,7 +2725,7 @@ module AltCoverTests3 =
       Assert.That(CoverageParameters.defer.Value)
       Assert.That(CoverageParameters.deferOpCode (), Is.EqualTo OpCodes.Ldc_I4_1)
     finally
-      CoverageParameters.defer := false
+      CoverageParameters.defer.Value <- false
 
   [<Test>]
   let ParsingMultipleDeferGivesFailure () =
@@ -2749,7 +2749,7 @@ module AltCoverTests3 =
           )
 
     finally
-      CoverageParameters.defer := false
+      CoverageParameters.defer.Value <- false
 
   [<Test>]
   let ParsingQuietWorks () =
@@ -2992,7 +2992,7 @@ module AltCoverTests3 =
     let options = Main.I.declareOptions ()
     let saved = (Console.Out, Console.Error)
     CommandLine.error <- []
-    CoverageParameters.inplace := true
+    CoverageParameters.inplace.Value <- true
 
     try
       use stdout = new StringWriter()
@@ -3024,7 +3024,7 @@ module AltCoverTests3 =
                               + " already exists" ]
           )
     finally
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
 
@@ -3035,7 +3035,7 @@ module AltCoverTests3 =
     let options = Main.I.declareOptions ()
     let saved = (Console.Out, Console.Error)
     CommandLine.error <- []
-    CoverageParameters.inplace := true
+    CoverageParameters.inplace.Value <- true
 
     try
       use stdout = new StringWriter()
@@ -3101,7 +3101,7 @@ module AltCoverTests3 =
             Is.EqualTo here
           )
     finally
-      CoverageParameters.inplace := false
+      CoverageParameters.inplace.Value <- false
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
 
@@ -3110,8 +3110,8 @@ module AltCoverTests3 =
     Main.init ()
     let one = ref false
     let two = ref false
-    let set2 () = two := true
-    Main.I.imageLoadResilient (fun () -> one := true) set2
+    let set2 () = two.Value <- true
+    Main.I.imageLoadResilient (fun () -> one.Value <- true) set2
     Assert.That(one.Value)
     Assert.That(two.Value, Is.False)
     set2 ()
@@ -3125,11 +3125,11 @@ module AltCoverTests3 =
 
     let set1 f () =
       f ()
-      one := true
+      one.Value <- true
 
     let io () = IOException("fail") |> raise
 
-    Main.I.imageLoadResilient (set1 io) (fun () -> two := true)
+    Main.I.imageLoadResilient (set1 io) (fun () -> two.Value <- true)
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3143,12 +3143,12 @@ module AltCoverTests3 =
 
     let set1 f () =
       f ()
-      one := true
+      one.Value <- true
 
     let bif () =
       BadImageFormatException("fail") |> raise
 
-    Main.I.imageLoadResilient (set1 bif) (fun () -> two := true)
+    Main.I.imageLoadResilient (set1 bif) (fun () -> two.Value <- true)
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3162,11 +3162,11 @@ module AltCoverTests3 =
 
     let set1 f () =
       f ()
-      one := true
+      one.Value <- true
 
     let arg () = ArgumentException("fail") |> raise
 
-    Main.I.imageLoadResilient (set1 arg) (fun () -> two := true)
+    Main.I.imageLoadResilient (set1 arg) (fun () -> two.Value <- true)
     Assert.That(one.Value, Is.False)
     Assert.That(two.Value)
     set1 ignore ()
@@ -3897,8 +3897,7 @@ module AltCoverTests3 =
       let x =
         Assert.Throws<System.Reflection.TargetInvocationException>
           (fun () ->
-            message.Invoke(subject, [| "x" :> obj |])
-            |> ignore)
+            ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
         x.InnerException,
@@ -4051,8 +4050,7 @@ module AltCoverTests3 =
       let x =
         Assert.Throws<System.Reflection.TargetInvocationException>
           (fun () ->
-            message.Invoke(subject, [| "x" :> obj |])
-            |> ignore)
+            ignore (message.Invoke(subject, [| "x" :> obj |])))
 
       Assert.That(
         x.InnerException,

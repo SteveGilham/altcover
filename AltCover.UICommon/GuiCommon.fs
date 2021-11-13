@@ -3,6 +3,7 @@ namespace AltCover
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
+open System.IO.Compression
 open System.Xml.XPath
 open System.Net
 
@@ -58,6 +59,16 @@ module GuiCommon =
       (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
+  let Embed (node:XPathNavigator) (document: string) =
+    node.SelectAncestors("module", String.Empty, false)
+    |> Seq.cast<XPathNavigator>
+    |> Seq.collect(fun n -> n.SelectDescendants("altcover.file", String.Empty, false)
+                            |> Seq.cast<XPathNavigator>)
+    |> Seq.filter (fun n -> n.GetAttribute("document", String.Empty) = document)
+    |> Seq.map (fun n -> n.GetAttribute("embed", String.Empty))
+    |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+    |> Seq.tryHead
+
   [<NoComparison; AutoSerializable(false)>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
                                                     "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -65,12 +76,14 @@ module GuiCommon =
   type Source =
     | File of FileInfo
     | Url of Uri
+    | Embed of (string * string)
 
-    member self.Exists =
+    member internal self.Exists =
       match self with
       | File info -> info.Exists
+      | Embed (_, s) -> s |> String.IsNullOrWhiteSpace |> not
       | Url u ->
-          let request = WebRequest.CreateHttp(u)
+          let request = createHttp(u)
           request.Method <- "HEAD"
 
           try
@@ -80,8 +93,9 @@ module GuiCommon =
             && (response :?> HttpWebResponse).StatusCode |> int < 400
           with :? WebException -> false
 
-    member self.FullName =
+    member internal self.FullName =
       match self with
+      | Embed (name, _) -> name
       | File info ->
           if info |> isNull then
             String.Empty
@@ -89,19 +103,32 @@ module GuiCommon =
             info.FullName
       | Url u -> u.AbsoluteUri
 
-    member self.Outdated epoch =
+    member internal self.Outdated epoch =
       match self with
       | File info -> if info.Exists
                      then info.LastWriteTimeUtc > epoch
                      else false // can't tell; should show as non-existing
-      | _ -> false // Sensible SourceLink assumed
+      | _ -> false // Embed or ensible SourceLink assumed
 
     member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
-      | Url u ->
-          use client = new System.Net.WebClient()
-          client.DownloadString(u)
+      | Url u -> readAllText u
+      | Embed (_,source) -> let data = Convert.FromBase64String source
+                            use raw = new MemoryStream(data)
+                            use expanded = new MemoryStream()
+                            // Get deflation working with this one weird trick
+                            // Dispose the deflate stream w/o closing the one it points at!
+                            do
+                              use expand = new DeflateStream(raw, CompressionMode.Decompress, true)
+                              expand.CopyTo expanded
+                            System.Text.Encoding.UTF8.GetString(expanded.GetBuffer(),
+                                                                0, int expanded.Length)
+
+    member internal self.MakeEmbedded (filename: string) (source: string option) =
+      match (self, source) with
+      | (File info, Some _) -> Embed (filename, source.Value)
+      | _ -> self
 
   let GetSource (document: string) =
     if

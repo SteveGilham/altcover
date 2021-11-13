@@ -36,14 +36,23 @@ module AltCoverTests2 =
     stream.CopyTo(buffer)
     StrongNameKeyData.Make(buffer.ToArray())
 
+  let recorderStream () =
+    let recorder =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+    Assembly
+      .GetExecutingAssembly()
+      .GetManifestResourceStream(recorder)
+
   // Instrument.I.fs
   [<Test>]
   let ShouldBeAbleToGetTheVisitReportMethod () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -468,7 +477,7 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      let prepared = Instrument.I.prepareAssembly path
+      let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
 
       use raw =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -657,7 +666,7 @@ module AltCoverTests2 =
           "Unexpected sampling"
         )
 
-        let prepared = Instrument.I.prepareAssembly path
+        let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
 
         let traces =
           System.Collections.Generic.List<string>()
@@ -815,7 +824,7 @@ module AltCoverTests2 =
 
       try
         CoverageParameters.theReportPath <- Some unique
-        let prepared = Instrument.I.prepareAssembly path
+        let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
         Instrument.I.writeAssembly prepared outputdll
         // TODO -- see Instrument.I.WriteAssembly       Assert.That (File.Exists (outputdll + ".mdb"))
         use raw =
@@ -1290,13 +1299,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethod () =
-    let shift = "/../net5.0"
-
-    let path =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -1352,10 +1358,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethodWithTailCalls () =
-    let shift = "/../net5.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     let res =
       Assembly
@@ -1371,8 +1374,8 @@ module AltCoverTests2 =
     use def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly stream
 
-    let rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+    use rdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1432,10 +1435,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAMethodWithNonVoidReturn () =
-    let shift = "/../net5.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     let sample24 =
       Path.Combine(
@@ -1448,7 +1448,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1513,10 +1513,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAnAsyncMethod () =
-    let shift = "/../net5.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     let sample24 =
       Path.Combine(
@@ -1528,8 +1525,8 @@ module AltCoverTests2 =
     use def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly sample24
 
-    let rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+    use rdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1594,10 +1591,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToTrackAnFSAsyncMethod () =
-    let shift = "/../net5.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     let sample27 =
       Path.Combine(
@@ -1609,8 +1603,8 @@ module AltCoverTests2 =
     use def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly sample27
 
-    let rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+    use rdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1675,10 +1669,7 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldBeAbleToInstrumentASwitchForNCover () =
-    let shift = "/../net5.0"
-
-    let rpath =
-      Path.Combine(AltCoverTests.dir + shift, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     let res =
       Assembly
@@ -1713,7 +1704,7 @@ module AltCoverTests2 =
     def.MainModule.ReadSymbols(rr)
 
     use rdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod rdef
@@ -1810,11 +1801,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldNotChangeAnUntrackedMethod () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+    use recstream = recorderStream ()
 
     use def =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     let recorder =
       AltCover.Instrument.I.recordingMethod def
@@ -1946,7 +1936,7 @@ module AltCoverTests2 =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
     ProgramDatabase.readSymbols def
-    CoverageParameters.coalesceBranches := true
+    CoverageParameters.coalesceBranches.Value <- true
 
     let method =
       def.MainModule.GetAllTypes()
@@ -2026,7 +2016,7 @@ module AltCoverTests2 =
     finally
       CoverageParameters.nameFilters.Clear()
       CoverageParameters.theReportFormat <- None
-      CoverageParameters.coalesceBranches := false
+      CoverageParameters.coalesceBranches.Value <- false
 
   [<Test>]
   let SimpleBranchShouldInstrumentByPushingDown () =
@@ -2729,11 +2719,10 @@ module AltCoverTests2 =
         InstrumentContext.Build [ "nunit.framework"
                                   "nonesuch" ]
 
-      let path' =
-        Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+      use recstream = recorderStream ()
 
       use def' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+        Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
       let visit =
         def'.MainModule.GetAllTypes()
@@ -2884,11 +2873,10 @@ module AltCoverTests2 =
         InstrumentContext.Build [ "nunit.framework"
                                   "nonesuch" ]
 
-      let path' =
-        Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+      use recstream = recorderStream ()
 
       use def' =
-        Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+        Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
       let visit =
         def'.MainModule.GetAllTypes()
@@ -3090,10 +3078,12 @@ module AltCoverTests2 =
     use reader = new StreamReader(stream)
     let expected = reader.ReadToEnd()
 
-    let version =
-      typeof<AltCover.Recorder.Tracer>
-        .Assembly.GetName()
-        .Version.ToString()
+    let recorderVersion() =
+      use stream = recorderStream ()
+      use def = AssemblyDefinition.ReadAssembly stream
+      def.Name.Version.ToString()
+
+    let version = recorderVersion()
 
     let result =
       expected
@@ -3126,11 +3116,10 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          AfterType
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  AfterType))
     |> ignore
 
     let output = Path.GetTempFileName()
@@ -3171,11 +3160,10 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          AfterType
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  AfterType))
     |> ignore
 
     Assert.That(support.TaskAssembly.FullName, Is.Not.Null) // nothing to raise an object disposed exception with
@@ -3204,11 +3192,10 @@ module AltCoverTests2 =
     // Would be NullreferenceException if we tried it
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          AfterType
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  AfterType))
     |> ignore
 
   [<Test>]
@@ -3225,11 +3212,10 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        Instrument.I.instrumentationVisitorWrapper
-          (fun _ _ -> InvalidOperationException("Bang") |> raise)
-          state
-          Finish
-        |> ignore)
+        ignore (Instrument.I.instrumentationVisitorWrapper
+                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                  state
+                  Finish))
     |> ignore
 
     let output = Path.GetTempFileName()
