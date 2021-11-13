@@ -366,7 +366,7 @@ module OpenCover =
                          )))
 
   let private hash =
-    new System.Security.Cryptography.SHA1CryptoServiceProvider()
+    sha1Hash()
 
   let internal fixFormatModule (m: XElement) (files: string array) =
     // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
@@ -779,6 +779,110 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     (tracked: Map<string * string, TrackedMethod>)
     (methods: (string * XElement seq) seq)
     : (Summary * XElement array) =
+    let metadataToken (group: string * XElement seq) =
+      let mt = XElement(XName.Get "MetadataToken")
+      group
+      |> snd
+      |> Seq.map (fun m -> m.Element(XName.Get "MetadataToken").Value)
+      |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
+      |> Option.iter (fun t -> mt.Value <- t)
+      mt
+
+    let fileRef modu (group: string * XElement seq) =
+        group
+        |> snd
+        |> Seq.collect (fun x -> x.Elements(XName.Get "FileRef"))
+        |> Seq.map (fun f -> f.Attribute(XName.Get "uid"))
+        |> Seq.filter (isNull >> not)
+        |> Seq.tryHead
+        |> Option.map
+            (fun a ->
+              let fr0 = XElement(XName.Get "FileRef")
+              let newfile = mapFile files a modu
+              fr0.SetAttributeValue(XName.Get "uid", newfile)
+              fr0)
+
+    let sequencePoints modu (group: string * XElement seq) =
+      let sp = XElement(XName.Get "SequencePoints")
+      let sps =
+        group
+        |> snd
+        |> Seq.collect (fun m -> m.Descendants(XName.Get "SequencePoint"))
+        |> Seq.groupBy
+            (fun s ->
+              s
+              |> attributeOrEmpty "sl"
+              |> Int32.TryParse
+              |> snd,
+              s
+              |> attributeOrEmpty "sc"
+              |> Int32.TryParse
+              |> snd)
+
+      let (vs, newsps) = mergePoints files modu tracked sps
+      newsps
+      |> Seq.iter
+          (fun s ->
+            s.SetAttributeValue(XName.Get "bec", 0)
+            s.SetAttributeValue(XName.Get "bev", 0))
+
+      sp.Add newsps
+      (sp, newsps, vs)
+
+    let branchPoints modu (group: string * XElement seq) =
+        let bp = XElement(XName.Get "BranchPoints")
+
+        let bps =
+          group
+          |> snd
+          |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
+          |> Seq.groupBy
+              (fun s ->
+                (s
+                  |> attributeOrEmpty "sl"
+                  |> Int32.TryParse
+                  |> snd,
+                  s
+                  |> attributeOrEmpty "offset"
+                  |> Int32.TryParse
+                  |> snd),
+                s
+                |> attributeOrEmpty "endoffset"
+                |> Int32.TryParse
+                |> snd)
+
+        let (vb, newbps) = mergePoints files modu tracked bps
+        bp.Add newbps
+        (bp, newbps, vb)
+
+    let methodPoints  modu (group: string * XElement seq) =
+      let mpn = XName.Get "MethodPoint"
+
+      let methodPoints =
+        group
+        |> snd
+        |> Seq.collect (fun x -> x.Elements mpn)
+
+      let mpv = methodPoints |> mergeCounts
+
+      let mp =
+        methodPoints
+        |> Seq.tryHead
+        |> Option.map
+            (fun r ->
+              let mp0 = XElement r
+              mp0.SetAttributeValue(XName.Get "vc", mpv)
+
+              r.Attribute(XName.Get "fileid")
+              |> Option.ofObj
+              |> Option.iter
+                    (fun a ->
+                      let newfile = mapFile files a modu
+                      mp0.SetAttributeValue(XName.Get "fileid", newfile))
+
+              mp0)
+      (mp, mpv)
+
     let s, x =
       methods
       |> Seq.fold
@@ -786,111 +890,21 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
              let rep = group |> snd |> Seq.head
 
              let sm = XElement(XName.Get "Summary")
-             let mt = XElement(XName.Get "MetadataToken")
-
-             group
-             |> snd
-             |> Seq.map (fun m -> m.Element(XName.Get "MetadataToken").Value)
-             |> Seq.tryFind (String.IsNullOrWhiteSpace >> not)
-             |> Option.iter (fun t -> mt.Value <- t)
+             let mt = metadataToken group
 
              let name = XElement(XName.Get "Name", fst group)
              let modu = rep.Parent.Parent.Parent.Parent
 
-             let fr =
-               group
-               |> snd
-               |> Seq.collect (fun x -> x.Elements(XName.Get "FileRef"))
-               |> Seq.map (fun f -> f.Attribute(XName.Get "uid"))
-               |> Seq.filter (isNull >> not)
-               |> Seq.tryHead
-               |> Option.map
-                    (fun a ->
-                      let fr0 = XElement(XName.Get "FileRef")
-                      let newfile = mapFile files a modu
-                      fr0.SetAttributeValue(XName.Get "uid", newfile)
-                      fr0)
-
-             let sp = XElement(XName.Get "SequencePoints")
-
-             let sps =
-               group
-               |> snd
-               |> Seq.collect (fun m -> m.Descendants(XName.Get "SequencePoint"))
-               |> Seq.groupBy
-                    (fun s ->
-                      s
-                      |> attributeOrEmpty "sl"
-                      |> Int32.TryParse
-                      |> snd,
-                      s
-                      |> attributeOrEmpty "sc"
-                      |> Int32.TryParse
-                      |> snd)
-
-             let (vs, newsps) = mergePoints files modu tracked sps
-             sp.Add newsps
-
-             let bp = XElement(XName.Get "BranchPoints")
-
-             let bps =
-               group
-               |> snd
-               |> Seq.collect (fun m -> m.Descendants(XName.Get "BranchPoint"))
-               |> Seq.groupBy
-                    (fun s ->
-                      (s
-                       |> attributeOrEmpty "sl"
-                       |> Int32.TryParse
-                       |> snd,
-                       s
-                       |> attributeOrEmpty "offset"
-                       |> Int32.TryParse
-                       |> snd),
-                      s
-                      |> attributeOrEmpty "endoffset"
-                      |> Int32.TryParse
-                      |> snd)
-
-             let (vb, newbps) = mergePoints files modu tracked bps
-             bp.Add newbps
+             let fr = fileRef modu group
+             let (sp, newsps, vs) = sequencePoints modu group
+             let (bp, newbps, vb) = branchPoints modu group
 
              // bec, bev heuristic
-             newsps
-             |> Seq.iter
-                  (fun s ->
-                    s.SetAttributeValue(XName.Get "bec", 0)
-                    s.SetAttributeValue(XName.Get "bev", 0))
-
              if newsps |> Seq.isEmpty |> not
                 && newbps |> Seq.isEmpty |> not then
                branchEntryHeuristic newsps newbps
 
-             let mpn = XName.Get "MethodPoint"
-
-             let methodPoints =
-               group
-               |> snd
-               |> Seq.collect (fun x -> x.Elements mpn)
-
-             let mpv = methodPoints |> mergeCounts
-
-             let mp =
-               methodPoints
-               |> Seq.tryHead
-               |> Option.map
-                    (fun r ->
-                      let mp0 = XElement r
-                      mp0.SetAttributeValue(XName.Get "vc", mpv)
-
-                      r.Attribute(XName.Get "fileid")
-                      |> Option.ofObj
-                      |> Option.iter
-                           (fun a ->
-                             let newfile = mapFile files a modu
-                             mp0.SetAttributeValue(XName.Get "fileid", newfile))
-
-                      mp0)
+             let (mp, mpv) = methodPoints modu group
 
              let merge = XElement(XName.Get "Method")
 
@@ -1011,6 +1025,36 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
     (tracked: Map<string * string, TrackedMethod>)
     (modules: XElement seq)
     =
+    let findFiles (f:XElement) =
+      let foundFiles =
+        modules
+        |> Seq.collect (fun m -> m.Descendants(XName.Get "File"))
+        |> Seq.map (attributeOrEmpty "fullPath")
+        |> Seq.distinct
+        |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+        |> Seq.sort
+
+      foundFiles
+      |> Seq.iter
+            (fun file ->
+              XElement(
+                XName.Get "File",
+                XAttribute(XName.Get "uid", Map.find file files),
+                XAttribute(XName.Get "fullPath", file)
+              )
+              |> f.Add)
+
+    let findClasses (c:XElement) =
+      let classes =
+        modules
+        |> Seq.collect (fun m -> m.Descendants(XName.Get "Class"))
+        |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
+        |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
+
+      let msummary, merged = mergeClasses files tracked classes
+      c.Add merged
+      msummary
+
     let r = modules |> Seq.head
 
     let merge = XElement(XName.Get "Module")
@@ -1031,36 +1075,11 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
     let f = XElement(XName.Get "Files")
     merge.Add f
-
-    let foundFiles =
-      modules
-      |> Seq.collect (fun m -> m.Descendants(XName.Get "File"))
-      |> Seq.map (attributeOrEmpty "fullPath")
-      |> Seq.distinct
-      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-      |> Seq.sort
-
-    foundFiles
-    |> Seq.iter
-         (fun file ->
-           XElement(
-             XName.Get "File",
-             XAttribute(XName.Get "uid", Map.find file files),
-             XAttribute(XName.Get "fullPath", file)
-           )
-           |> f.Add)
+    findFiles f
 
     let c = XElement(XName.Get "Classes")
     merge.Add c
-
-    let classes =
-      modules
-      |> Seq.collect (fun m -> m.Descendants(XName.Get "Class"))
-      |> Seq.filter (fun x -> x.Attribute(XName.Get "skippedDueTo") |> isNull)
-      |> Seq.groupBy (fun x -> x.Element(XName.Get "FullName").Value)
-
-    let msummary, merged = mergeClasses files tracked classes
-    c.Add merged
+    let msummary = findClasses c
 
     msummary.Xml.Attributes()
     |> Seq.map XAttribute
@@ -1200,10 +1219,24 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
 
   [<System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
   let JsonToXml (document: string) =
-    document
-    |> NativeJson.fromJsonText
-    |> NativeJson.jsonToXml
-    |> NativeJson.orderXml
+    let json =
+      document
+      |> NativeJson.fromJsonText
+    let xml =
+      json
+      |> NativeJson.jsonToXml
+      |> NativeJson.orderXml
+
+    // heuristic for coverlet vs altcover
+    let sp = json.Values
+             |> Seq.collect (fun m -> m.Values)
+             |> Seq.collect (fun d -> d.Values)
+             |> Seq.collect (fun c -> c.Values)
+             |> Seq.filter (fun m -> m.SeqPnts.IsNotNull)
+             |> Seq.collect (fun m -> m.SeqPnts)
+             |> Seq.isEmpty |> not
+    PostProcess xml (if sp then BranchOrdinal.Offset else BranchOrdinal.SL)
+    xml
 
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",

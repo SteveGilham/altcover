@@ -32,6 +32,11 @@ type InvalidFile = { File: FileInfo; Fault: Exception }
 
 module Transformer =
   // now, what was this for??
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                    Justification = "meets an interface")>]
   let internal defaultHelper (_: XDocument) (document: XDocument) = document
 
   let internal loadTransform (path: string) =
@@ -136,29 +141,84 @@ module Transformer =
 
     report
 
-  // PartCover to NCover style sheet
+  let private resourceStream n =
+    new StreamReader(
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream(n)
+    )
+
+  let private processOpenCover
+    (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
+    (schemas:XmlSchemaSet) (document:XDocument)
+    (ocreader:XmlReader) (ncreader:XmlReader) : Either<Exception, XDocument> =
+    schemas.Add(String.Empty, ocreader) |> ignore
+    document.Validate(schemas, null)
+
+    let report = transformFromOpenCover document
+
+    let fixedup =
+      helper XmlCoverageType.OpenCover document report
+    // Consistency check our XSLT
+    let schemas2 = XmlSchemaSet()
+    schemas2.Add(String.Empty, ncreader) |> ignore
+    fixedup.Validate(schemas2, null)
+
+    // Fix for column-defective OpenCover
+    let lineOnly =
+      fixedup.Descendants(XName.Get "seqpnt")
+      |> Seq.forall
+            (fun s ->
+              let columns = (s.Attribute(XName.Get "column").Value,
+                            s.Attribute(XName.Get "endcolumn").Value)
+              s.Attribute(XName.Get "line").Value = s
+                .Attribute(
+                  XName.Get "endline"
+                )
+                .Value
+              && (columns = ("1", "2") || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+                  columns = ("0", "0")))  // For OpenCover on C++/CLI
+
+    if lineOnly then
+      fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
+
+    Right fixedup
+
+  let private processCobertura
+    (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
+    (schemas:XmlSchemaSet) (document:XDocument)
+    (ncreader:XmlReader) : Either<Exception, XDocument> =
+    use cr =
+      new StreamReader(
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.UICommon.Cobertura.xsd")
+      )
+
+    use creader = XmlReader.Create(cr)
+    schemas.Add(String.Empty, creader) |> ignore
+    document.Validate(schemas, null)
+    let report = transformFromCobertura document
+
+    let fixedup =
+      helper XmlCoverageType.Cobertura document report
+    // Consistency check our XSLT
+    let schemas2 = XmlSchemaSet()
+    schemas2.Add(String.Empty, ncreader) |> ignore
+    fixedup.Validate(schemas2, null)
+    Right fixedup
+
+  // OpenCover to NCover style sheet
   let internal convertFile
     (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
     (document: XDocument)
     =
     let schemas = XmlSchemaSet()
 
-    use sr1 =
-      new StreamReader(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.UICommon.OpenCover.xsd")
-      )
-
+    use sr1 = resourceStream "AltCover.UICommon.OpenCover.xsd"
     use ocreader = XmlReader.Create(sr1)
 
-    use sr2 =
-      new StreamReader(
-        Assembly
-          .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.UICommon.NCover.xsd")
-      )
-
+    use sr2 = resourceStream "AltCover.UICommon.NCoverEmbedded.xsd"
     use ncreader = XmlReader.Create(sr2)
 
     try
@@ -166,62 +226,14 @@ module Transformer =
       match document.Root.Name.LocalName with
       | x when x = "CoverageSession" ->
           // Assume OpenCover
-          schemas.Add(String.Empty, ocreader) |> ignore
-          document.Validate(schemas, null)
-
-          let report = transformFromOpenCover document
-
-          let fixedup =
-            helper XmlCoverageType.OpenCover document report
-          // Consistency check our XSLT
-          let schemas2 = XmlSchemaSet()
-          schemas2.Add(String.Empty, ncreader) |> ignore
-          fixedup.Validate(schemas2, null)
-
-          // Fix for column-defective OpenCover
-          let lineOnly =
-            fixedup.Descendants(XName.Get "seqpnt")
-            |> Seq.forall
-                 (fun s ->
-                   let columns = (s.Attribute(XName.Get "column").Value,
-                                  s.Attribute(XName.Get "endcolumn").Value)
-                   s.Attribute(XName.Get "line").Value = s
-                     .Attribute(
-                       XName.Get "endline"
-                     )
-                     .Value
-                   && (columns = ("1", "2") || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
-                       columns = ("0", "0")))  // For OpenCover on C++/CLI
-
-          if lineOnly then
-            fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
-
-          Right fixedup
+          processOpenCover helper schemas document ocreader ncreader
       | _ ->
           let root = document.Root
 
           if root.Name.LocalName = "coverage"
              && root.Attribute(XName.Get "line-rate").IsNotNull then
             // Cobertura
-            use cr =
-              new StreamReader(
-                Assembly
-                  .GetExecutingAssembly()
-                  .GetManifestResourceStream("AltCover.UICommon.Cobertura.xsd")
-              )
-
-            use creader = XmlReader.Create(cr)
-            schemas.Add(String.Empty, creader) |> ignore
-            document.Validate(schemas, null)
-            let report = transformFromCobertura document
-
-            let fixedup =
-              helper XmlCoverageType.Cobertura document report
-            // Consistency check our XSLT
-            let schemas2 = XmlSchemaSet()
-            schemas2.Add(String.Empty, ncreader) |> ignore
-            fixedup.Validate(schemas2, null)
-            Right fixedup
+            processCobertura helper schemas document ocreader
           else
             // Assume NCover
             schemas.Add(String.Empty, ncreader) |> ignore

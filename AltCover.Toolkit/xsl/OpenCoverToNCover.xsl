@@ -20,8 +20,6 @@
           </xsl:attribute>
           <xsl:for-each select="descendant::Method[not(@skippedDueTo)]">
             <xsl:variable name="class" select="../../FullName" />
-            <xsl:variable name="fileRef" select="./FileRef/@uid" />
-            <xsl:variable name="file" select="//File[@uid = $fileRef]/@fullPath" />
             <xsl:variable name="method" select="./Name" />
 
             <method excluded="false" instrumented="true">
@@ -36,6 +34,8 @@
               </xsl:attribute>
 
               <xsl:for-each select="descendant::SequencePoint">
+                <xsl:variable name="fileRef" select="@fileid" />
+                <xsl:variable name="file" select="../../../../../../Files/File[@uid = $fileRef]/@fullPath" />
                 <seqpnt visitcount="{@vc}" line="{@sl}" column="{@sc}" endline="{@el}" endcolumn="{@ec}" offset="{@offset}" excluded="false">
                   <xsl:attribute name="document">
                     <xsl:value-of select="$file" />
@@ -43,6 +43,9 @@
                 </seqpnt>
               </xsl:for-each>
             </method>
+          </xsl:for-each>
+          <xsl:for-each select="./Files/File[@altcover.embed]">
+            <altcover.file document="{@fullPath}" embed="{@altcover.embed}" />
           </xsl:for-each>
         </module>
       </xsl:for-each>

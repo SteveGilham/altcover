@@ -28,9 +28,9 @@ module M =
   [<Test>]
   let testMakeThing() =
     test <@ (makeThing "s").Thing = "s" @>
-    monitor (18, 6)
+    monitor (19, 6)
     test <@ (makeThing "aeiou").bytes().Length = 5 @>
-    monitor (21, 7)
+    monitor (22, 7)
 
 module DU =
   type MyUnion =
@@ -64,7 +64,7 @@ module DU =
     test <@ returnBar "s" = Bar "s" @>
     M.monitor (11, 3)
     test <@ (Foo 10).as_bar() = Bar "10" @>
-    M.monitor (15, 5)
+    M.monitor (16, 5)
     
 #if !NET472
 module Program =

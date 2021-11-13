@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CoverageSession>
+  <Summary numBranchPoints="22" visitedBranchPoints="0" numSequencePoints="89" visitedSequencePoints="0" maxCyclomaticComplexity="3" />
+  <Modules>
+    <Module hash="Sample5.dll">
+      <Summary numBranchPoints="22" visitedBranchPoints="0" numSequencePoints="89" visitedSequencePoints="0" />
+      <ModulePath>Sample5.dll</ModulePath>
+      <ModuleName>Sample5</ModuleName>
+      <Files>
+        <File uid="1" fullPath="altcover/Sample5/Class1.cs" />
+        <File uid="2" fullPath="altcover/Sample5/Class1a.cs" />
+      </Files>
+      <Classes>
+        <Class>
+          <Summary numBranchPoints="5" visitedBranchPoints="0" numSequencePoints="31" visitedSequencePoints="0" />
+          <FullName>Sample5.Class1</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="17" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Int32 Sample5.Class1::F1(System.String)</Name>
+              <FileRef uid="1" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="6" sl="12" sc="5" el="12" ec="6" uspid="3" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="7" sl="14" sc="7" el="14" ec="53" uspid="2" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="0" sl="14" sc="33" el="14" ec="34" uspid="60" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="1" sl="14" sc="35" el="14" ec="49" uspid="59" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="5" sl="14" sc="50" el="14" ec="51" uspid="58" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="0" sl="18" sc="7" el="18" ec="8" uspid="6" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="0" sl="21" sc="9" el="21" ec="10" uspid="9" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="1" sl="22" sc="11" el="22" ec="24" uspid="8" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="7" sl="23" sc="9" el="23" ec="10" uspid="7" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="2" sl="25" sc="9" el="25" ec="33" uspid="5" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="13" sl="26" sc="7" el="26" ec="8" uspid="4" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="45" sl="30" sc="7" el="34" ec="16" uspid="1" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="0" sl="31" sc="7" el="31" ec="8" uspid="57" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="1" sl="32" sc="9" el="32" ec="38" uspid="56" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="15" sl="33" sc="9" el="33" ec="48" uspid="55" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="41" sl="34" sc="7" el="34" ec="8" uspid="54" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" offset="71" sl="35" sc="5" el="35" ec="6" uspid="0" bec="0" bev="0" fileid="1" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="3" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="3" visitedBranchPoints="0" numSequencePoints="9" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.Generic.IEnumerable`1&lt;System.Int32&gt; Sample5.Class1::F2(System.String)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="31" sl="15" sc="5" el="15" ec="6" uspid="69" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="32" sl="17" sc="7" el="17" ec="14" uspid="68" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="54" sl="17" sc="16" el="17" ec="22" uspid="66" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="121" sl="17" sc="23" el="17" ec="25" uspid="62" bec="2" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="33" sl="17" sc="26" el="17" ec="31" uspid="67" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="77" sl="18" sc="7" el="18" ec="8" uspid="65" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="78" sl="19" sc="9" el="19" ec="24" uspid="64" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="106" sl="20" sc="7" el="20" ec="8" uspid="63" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="147" sl="21" sc="5" el="21" ec="6" uspid="61" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints>
+                <BranchPoint vc="0" sl="17" uspid="6" ordinal="0" offset="138" path="0" fileid="2" />
+                <BranchPoint vc="0" sl="17" uspid="7" ordinal="1" offset="138" path="1" fileid="2" />
+              </BranchPoints>
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="5" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Threading.Tasks.Task`1&lt;System.String&gt; Sample5.Class1::F3(System.String)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="14" sl="25" sc="5" el="25" ec="6" uspid="74" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="15" sl="27" sc="7" el="27" ec="54" uspid="73" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="37" sl="28" sc="7" el="28" ec="40" uspid="72" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="162" sl="29" sc="7" el="29" ec="16" uspid="71" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="211" sl="30" sc="5" el="30" ec="6" uspid="70" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numBranchPoints="8" visitedBranchPoints="0" numSequencePoints="44" visitedSequencePoints="0" />
+          <FullName>Sample5.Class1/Inner</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="20" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Int32 Sample5.Class1/Inner::G1(System.String)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="6" sl="37" sc="7" el="37" ec="8" uspid="13" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="7" sl="39" sc="9" el="39" ec="59" uspid="12" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="0" sl="39" sc="35" el="39" ec="36" uspid="38" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="39" sc="37" el="39" ec="55" uspid="37" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="7" sl="39" sc="56" el="39" ec="57" uspid="36" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="0" sl="42" sc="9" el="42" ec="10" uspid="25" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="43" sc="11" el="43" ec="30" uspid="24" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="18" sl="44" sc="9" el="44" ec="10" uspid="23" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="0" sl="48" sc="9" el="48" ec="10" uspid="28" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="0" sl="51" sc="11" el="51" ec="12" uspid="31" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="52" sc="13" el="52" ec="54" uspid="30" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="16" sl="53" sc="11" el="53" ec="12" uspid="29" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="2" sl="55" sc="11" el="55" ec="35" uspid="27" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="13" sl="56" sc="9" el="56" ec="10" uspid="26" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="46" sl="60" sc="9" el="64" ec="18" uspid="11" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="0" sl="61" sc="9" el="61" ec="10" uspid="35" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="62" sc="11" el="62" ec="40" uspid="34" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="15" sl="63" sc="11" el="63" ec="50" uspid="33" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="41" sl="64" sc="9" el="64" ec="10" uspid="32" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="72" sl="65" sc="7" el="65" ec="8" uspid="10" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="3" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Void Sample5.Class1/Inner::G1(System.Int32)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="68" sc="7" el="68" ec="8" uspid="16" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="69" sc="9" el="69" ec="38" uspid="15" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="10" sl="70" sc="7" el="70" ec="8" uspid="14" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="3" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Void Sample5.Class1/Inner::G2(System.Int32)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="84" sc="7" el="84" ec="8" uspid="19" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="85" sc="9" el="85" ec="38" uspid="18" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="10" sl="86" sc="7" el="86" ec="8" uspid="17" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="3" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Void Sample5.Class1/Inner::G3(System.Int32)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="98" sc="7" el="98" ec="8" uspid="22" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="99" sc="9" el="99" ec="38" uspid="21" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="10" sl="100" sc="7" el="100" ec="8" uspid="20" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="3" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="3" visitedBranchPoints="0" numSequencePoints="10" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.Generic.IEnumerable`1&lt;T&gt; Sample5.Class1/Inner::G2(T)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="31" sl="74" sc="7" el="74" ec="8" uspid="48" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="32" sl="76" sc="9" el="76" ec="38" uspid="47" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="57" sl="77" sc="9" el="77" ec="16" uspid="46" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="79" sl="77" sc="18" el="77" ec="23" uspid="44" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="158" sl="77" sc="24" el="77" ec="26" uspid="40" bec="2" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="58" sl="77" sc="27" el="77" ec="33" uspid="45" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="102" sl="78" sc="9" el="78" ec="10" uspid="43" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="103" sl="79" sc="11" el="79" ec="26" uspid="42" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="131" sl="80" sc="9" el="80" ec="10" uspid="41" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="181" sl="81" sc="7" el="81" ec="8" uspid="39" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints>
+                <BranchPoint vc="0" sl="77" uspid="4" ordinal="0" offset="172" path="0" fileid="2" />
+                <BranchPoint vc="0" sl="77" uspid="5" ordinal="1" offset="172" path="1" fileid="2" />
+              </BranchPoints>
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="5" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Threading.Tasks.Task`1&lt;System.String&gt; Sample5.Class1/Inner::G3(System.String)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="14" sl="90" sc="7" el="90" ec="8" uspid="53" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="15" sl="92" sc="9" el="92" ec="56" uspid="52" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="37" sl="93" sc="9" el="93" ec="42" uspid="51" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="162" sl="94" sc="9" el="94" ec="18" uspid="50" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="211" sl="95" sc="7" el="95" ec="8" uspid="49" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+          </Methods>
+        </Class>
+        <Class>
+          <Summary numBranchPoints="9" visitedBranchPoints="0" numSequencePoints="14" visitedSequencePoints="0" />
+          <FullName>Sample5.RecursiveSyntheticInvocation`2</FullName>
+          <Methods>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="3" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.Generic.IEnumerable`1&lt;T&gt; Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys()</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="137" sc="11" el="137" ec="12" uspid="77" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="1" sl="137" sc="13" el="137" ec="23" uspid="76" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="15" sl="137" sc="24" el="137" ec="60" uspid="75" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>K Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Item(T)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="143" sc="48" el="143" ec="83" uspid="78" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Int32 Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.get_Count()</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="144" sc="58" el="144" ec="93" uspid="79" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.ContainsKey(T)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="146" sc="58" el="146" ec="93" uspid="80" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.Generic.IEnumerator`1&lt;System.Collections.Generic.KeyValuePair`2&lt;T,K&gt;&gt; Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator()</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="148" sc="88" el="148" ec="123" uspid="81" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2::System.Collections.IEnumerable.GetEnumerator()</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="150" sc="48" el="150" ec="83" uspid="82" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="1" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Boolean Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.TryGetValue(T,K&amp;)</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="0" sl="152" sc="71" el="152" ec="106" uspid="83" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="2" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.Generic.IEnumerable`1&lt;K&gt; Sample5.RecursiveSyntheticInvocation`2::System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Values()</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="23" sl="117" sc="11" el="117" ec="12" uspid="85" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="24" sl="117" sc="13" el="117" ec="25" uspid="84" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+            <Method visited="false" cyclomaticComplexity="1" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="false" isGetter="false" isSetter="false">
+              <Summary numBranchPoints="1" visitedBranchPoints="0" numSequencePoints="3" visitedSequencePoints="0" />
+              <MetadataToken>0</MetadataToken>
+              <Name>System.Collections.Generic.IEnumerable`1&lt;K&gt; Sample5.RecursiveSyntheticInvocation`2::get_ValuesWorks()</Name>
+              <FileRef uid="2" />
+              <SequencePoints>
+                <SequencePoint vc="0" offset="31" sl="126" sc="7" el="126" ec="8" uspid="88" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="32" sl="127" sc="9" el="127" ec="33" uspid="87" bec="0" bev="0" fileid="2" />
+                <SequencePoint vc="0" offset="60" sl="128" sc="9" el="128" ec="21" uspid="86" bec="0" bev="0" fileid="2" />
+              </SequencePoints>
+              <BranchPoints />
+              <MethodPoint vc="0" />
+            </Method>
+          </Methods>
+        </Class>
+      </Classes>
+    </Module>
+  </Modules>
+</CoverageSession>

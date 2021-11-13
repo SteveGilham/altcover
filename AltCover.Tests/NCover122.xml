@@ -17,5 +17,6 @@
     <method name="Invoke" class="&lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1" metadataToken="100668877" excluded="false" instrumented="true" fullname="TKey &lt;StartupCode$FSharp-Core&gt;.$Map/System-Collections-Generic-IDictionary&lt;'Key, 'Value&gt;-get_Keys@669-1.Invoke(System.Collections.Generic.KeyValuePair`2&lt;TKey,TValue&gt;)">
         <seqpnt visitcount="0" line="669" column="45" endline="669" endcolumn="52" excluded="false" document="altcover/Sample1/Program.cs" />
     </method>
+    <altcover.file document="altcover/Sample1/Program.cs" embed="hU9NS8NAED0nkP/wzKnVkgavRT3Uk6gIDRQRD2ucJkuTnTC7SQjS/+5mq+DNwwzDvI9501ttKuwm66jdJHESr9dwZB064UpUGxYHFgh1LA4VGRLlNJuZbFRLtlMloeC+rAsvTOKvJI60cSRGNSgbZS1efs2iGYw60YNyBOu8U4mB9SeelDYL68THeXuHksouZ2rgR4MSGB5xg3uvK3RL2TOPm4DpAxYey17Jk25xned5UP5Ioy0byw1le9GOHrWhRbqvSQjaop0gXB7Jv6vK4x1SXGEXMmQP7POkl+nqnGV5PnYKnRpL/5woRjJOk6ux9UMv0wofPF2kf33m5uv0DQ==" />
   </module>
 </coverage>

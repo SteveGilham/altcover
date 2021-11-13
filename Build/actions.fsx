@@ -273,7 +273,8 @@ do ()"""
             |> Seq.toList
 
         let expected =
-            "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+          "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        //"0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
 
@@ -519,10 +520,10 @@ a:hover {color: #ecc;}
                 (fun x ->
                     match x.Name.LocalName with
                     | "h2" ->
-                        keep
-                        := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
+                        keep.Value <-
+                          (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
                            |> Option.isNone
-                    | "footer" -> keep := true
+                    | "footer" -> keep.Value <- true
                     | _ -> ()
 
                     if keep.Value then None else Some x)
@@ -586,8 +587,9 @@ a:hover {color: #ecc;}
             |> Seq.toList
 
         let expected =
-            "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
-        //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            // "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A in %s" recorded path)
         printfn "Visits OK"
 
@@ -641,6 +643,7 @@ a:hover {color: #ecc;}
             coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
             |> Seq.map (fun x -> x.ToString()),
             Is.EquivalentTo [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                              "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                               "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                               "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                               "<TrackedMethodRef uid=\"1\" vc=\"1\" />"

@@ -246,14 +246,14 @@ namespace AltCoverFake.DotNet.Testing
         /// Corresponds to command line option ` -q`
         ///</summary>
         Verbosity : System.Diagnostics.TraceLevel
-}
-      with
+      }
+    with
         ///<summary>
         /// Returns an instance with all fields empty that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
         ///</summary>
         ///<returns>a default instance</returns>
         static member Create : unit -> PrepareOptions
-      end
+    end
 // ```
 // `Create()` returns an instance that has all empty or `false` fields except `ExposeReturnCode`, `OpenCover`, `InPlace` and `Save` are `true`, and `ShowStatic` is `-`
 //
@@ -271,7 +271,7 @@ namespace AltCoverFake.DotNet.Testing
   ///</summary>
     [<NoComparison; NoEquality>]
     type LoggingOptions =
-      {
+        {
         ///<summary>
         /// Sink for informational messages
         ///</summary>
@@ -288,13 +288,13 @@ namespace AltCoverFake.DotNet.Testing
         /// Sink for command line/usage messages
         ///</summary>
         Echo : System.String -> unit }
-      with
+    with
         ///<summary>
         /// Returns an instance that just discards all strings input.
         ///</summary>
         ///<returns>a default instance</returns>
         static member Create : unit -> LoggingOptions
-      end
+    end
 // ```
 // `Create()` returns an instance that just discards all strings input.  For your particular use, direct message severities appropriately.  `Echo` is used to echo the synthetic command line in case of inconsistent inputs.
 #endif

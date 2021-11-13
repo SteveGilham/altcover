@@ -67,6 +67,19 @@ module internal Report =
         )
 
       head.Add(element)
+
+      // embed support <altcover.file document="{@fullPath}" embed="{@altcover.embed}" />
+      moduleDef.Module
+      |> ProgramDatabase.getModuleDocuments
+      |> Seq.iter (fun d -> let key = d.Url
+                                      |> Visitor.sourceLinkMapping
+                            d
+                            |> Metadata.getSource
+                            |> Option.iter (fun s -> let x = XElement("altcover.file".X,
+                                                                      XAttribute("document".X, key),
+                                                                      XAttribute("embed".X, s))
+                                                     element.Add x))
+
       element :: s
 
     let visitMethod
@@ -87,7 +100,9 @@ module internal Report =
           XAttribute("fullname".X, Naming.fullMethodName methodDef)
         )
 
-      head.Add(element)
+      (head.Elements("altcover.file".X) |> Seq.tryHead
+       |> Option.map (fun x -> x.AddBeforeSelf)
+       |> Option.defaultValue head.Add) [| element |]
       element :: s
 
     let visitMethodPoint (s: list<XElement>) (head: XElement) (e: StatementEntry) =
@@ -102,7 +117,7 @@ module internal Report =
               XAttribute("endline".X, codeSegment.EndLine),
               XAttribute("endcolumn".X, codeSegment.EndColumn),
               XAttribute("excluded".X, toExcluded e.Interesting),
-              XAttribute("document".X, codeSegment.Document |> Visitor.sourceLinkMapping)
+              XAttribute("document".X, codeSegment.Document.Url |> Visitor.sourceLinkMapping)
             )
 
           if head.IsEmpty then

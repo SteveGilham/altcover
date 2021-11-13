@@ -23,7 +23,7 @@ For Mono, .net framework and .net core
 
 * MSBuild tasks to drive the tool, including `dotnet test` integration
 * A PowerShell module for PowerShell 5.1 and PowerShell Core 6+ containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
-* APIs for the above functionality (run the tool or comdlet functionality in process)
+* APIs for the above functionality (run the tool or cmdlet functionality in process)
 * APIs for integration into Fake and Cake build scripts
 
 ## Why altcover?
@@ -50,3 +50,9 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 tl;dr -- legacy framework/Mono support is not going away any time soon.
 
 As `net472` can consume `netstandard2.0` libraries (everything but the recorder), and .net core 2+ can consume `net20` libraries (the recorder), legacy framework/Mono support continues until such a time as it is no longer possible to retain those API levels.
+
+## Other NuGet Packages in this suite
+* [![Nuget](https://buildstats.info/nuget/AltCover) General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the `dotnet test` API with FAKE and CAKE integration and the AvaloniaUI visualizer
+* [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
+* [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/Avalonia Visualizer as a global tool
+* [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.18.1 or later), only in this package

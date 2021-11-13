@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0.89" branch-rate="1" lines-covered="24" lines-valid="27" branches-covered="0" branches-valid="0" complexity="1" version="8.2.0.0" timestamp="xx">
+  <sources>
+    <source>C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include</source>
+    <source>C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix</source>
+    <source>d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt</source>
+  </sources>
+  <packages>
+    <package name="SimpleMix.exe" line-rate="0.89" branch-rate="1" complexity="1">
+      <classes>
+        <class name="&lt;Module&gt;" filename="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="41" hits="1" branch="false" />
+                <line number="42" hits="1" branch="false" />
+                <line number="43" hits="1" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="41" hits="1" branch="false" />
+            <line number="42" hits="1" branch="false" />
+            <line number="43" hits="1" branch="false" />
+          </lines>
+        </class>
+        <class name="&lt;Module&gt;" filename="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" line-rate="0.86" branch-rate="1" complexity="1">
+          <methods>
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="0.86" branch-rate="1" complexity="1">
+              <lines>
+                <line number="38" hits="1" branch="false" />
+                <line number="40" hits="1" branch="false" />
+                <line number="41" hits="1" branch="false" />
+                <line number="42" hits="1" branch="false" />
+                <line number="45" hits="1" branch="false" />
+                <line number="47" hits="1" branch="false" />
+                <line number="49" hits="0" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="38" hits="1" branch="false" />
+            <line number="40" hits="1" branch="false" />
+            <line number="41" hits="1" branch="false" />
+            <line number="42" hits="1" branch="false" />
+            <line number="45" hits="1" branch="false" />
+            <line number="47" hits="1" branch="false" />
+            <line number="49" hits="0" branch="false" />
+          </lines>
+        </class>
+        <class name="&lt;Module&gt;" filename="d:/a01/_work/5/s/src/vctools/crt/crtw32/msilcrt/mcrtexe.cpp" line-rate="0.78" branch-rate="1" complexity="1">
+          <methods>
+            <method name="mainCRTStartupStrArray" signature="System.Int32 (System.String[])" line-rate="0.78" branch-rate="1" complexity="1">
+              <lines>
+                <line number="223" hits="1" branch="false" />
+                <line number="228" hits="1" branch="false" />
+                <line number="241" hits="1" branch="false" />
+                <line number="247" hits="1" branch="false" />
+                <line number="278" hits="1" branch="false" />
+                <line number="279" hits="0" branch="false" />
+                <line number="284" hits="0" branch="false" />
+                <line number="287" hits="1" branch="false" />
+                <line number="288" hits="1" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="223" hits="1" branch="false" />
+            <line number="228" hits="1" branch="false" />
+            <line number="241" hits="1" branch="false" />
+            <line number="247" hits="1" branch="false" />
+            <line number="278" hits="1" branch="false" />
+            <line number="279" hits="0" branch="false" />
+            <line number="284" hits="0" branch="false" />
+            <line number="287" hits="1" branch="false" />
+            <line number="288" hits="1" branch="false" />
+          </lines>
+        </class>
+        <class name="Example" filename="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/include/vcclr.h" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="41" hits="1" branch="false" />
+                <line number="42" hits="1" branch="false" />
+                <line number="43" hits="1" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="41" hits="1" branch="false" />
+            <line number="42" hits="1" branch="false" />
+            <line number="43" hits="1" branch="false" />
+          </lines>
+        </class>
+        <class name="Example" filename="C:/Users/steve/Documents/GitHub/altcover/Samples/Sample29/SimpleMix/SimpleMix.cpp" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="main" signature="System.Int32 (System.String[])" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="25" hits="1" branch="false" />
+                <line number="26" hits="1" branch="false" />
+                <line number="27" hits="1" branch="false" />
+                <line number="30" hits="1" branch="false" />
+                <line number="32" hits="1" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="25" hits="1" branch="false" />
+            <line number="26" hits="1" branch="false" />
+            <line number="27" hits="1" branch="false" />
+            <line number="30" hits="1" branch="false" />
+            <line number="32" hits="1" branch="false" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

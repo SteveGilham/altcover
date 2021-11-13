@@ -31,7 +31,7 @@ module internal XmlUtilities =
     let resource =
       here.GetName().Name
       + match format with
-        | AltCover.ReportFormat.NCover -> ".xsd.NCover.xsd"
+        | AltCover.ReportFormat.NCover -> ".xsd.NCoverEmbedded.xsd"
         | _ -> ".xsd.OpenCover.xsd"
 
     use stream = here.GetManifestResourceStream(resource)

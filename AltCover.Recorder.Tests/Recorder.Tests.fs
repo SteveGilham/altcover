@@ -378,6 +378,34 @@ module AltCoverTests =
 
     let third = Directory.GetFiles(where, "*.exn")
     Assert.That(third.Length, Is.EqualTo before.Length)
+    
+  [<Test>]
+  let WrappedExceptionLoggedToFile () =
+    let path = Instance.ReportFile |> Path.GetFullPath
+    let where = path |> Path.GetDirectoryName
+    let before = Directory.GetFiles(where, "*.exn")
+    let unique = System.Guid.NewGuid().ToString()
+    Adapter.invokeCurriedIssue71Wrapper<NullReferenceException> unique
+    let after = Directory.GetFiles(where, "*.exn")
+    Assert.That(after.Length, Is.GreaterThan before.Length)
+    let all = HashSet<String>(after)
+    strip before all
+    Assert.That(all.Count, Is.EqualTo 1)
+    let file = all |> Seq.head
+    let lines = file |> File.ReadAllLines
+    File.Delete file
+    Assert.That(lines.Length, Is.GreaterThan 4)
+
+    lines
+    |> Seq.take 4
+    |> Seq.zip [ "ModuleId = \"b\""
+                 "hitPointId = \"c\""
+                 "context = \"d\""
+                 "exception = System.NullReferenceException: " + unique ]
+    |> Seq.iter (fun (a, b) -> Assert.That(b, Is.EqualTo a))
+
+    let third = Directory.GetFiles(where, "*.exn")
+    Assert.That(third.Length, Is.EqualTo before.Length)    
 
   [<Test>]
   let Issue71WrapperHandlesKeyNotFoundException () =

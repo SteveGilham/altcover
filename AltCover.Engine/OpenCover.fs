@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.IO.Compression
 open System.Linq
 open System.Xml.Linq
 
@@ -23,6 +24,7 @@ type internal OpenCoverContext =
   { Stack: XElement list
     Excluded: Exclusion
     Files: Map<string, int>
+    Embeds: Map<string, string>
     Index: int
     MethodSeq: int
     MethodBr: int
@@ -43,6 +45,7 @@ type internal OpenCoverContext =
     { Stack = List.empty<XElement>
       Excluded = Nothing
       Files = Map.empty<string, int>
+      Embeds = Map.empty<string, string>
       Index = 0
       MethodSeq = 0
       MethodBr = 0
@@ -125,6 +128,13 @@ module internal OpenCover =
       element.Add(modules)
       { s with Stack = modules :: s.Stack }
 
+    let recordFile (files: Map<string, int>) file =
+      if files.ContainsKey file then
+        files, files.Item file
+      else
+        let index = files.Count + 1
+        files.Add(file, index), index
+
     let visitModule (s: OpenCoverContext) (moduleDef: ModuleEntry) =
       let def = moduleDef.Module
       let instrumented = moduleDef.Inspection.IsInstrumented
@@ -142,8 +152,25 @@ module internal OpenCover =
       element.Add(XElement("ModuleTime".X, File.GetLastWriteTimeUtc def.FileName))
       element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
 
-      if instrumented then
-        element.Add(XElement("Files".X))
+      let (files, embeds) =
+          if instrumented then
+            element.Add(XElement("Files".X))
+            def
+            |> ProgramDatabase.getModuleDocuments
+            |> Seq.fold (fun f d -> let key = d.Url
+                                              |> Visitor.sourceLinkMapping
+                                    let map = snd f
+
+                                    let embed = d
+                                                |> Metadata.getSource
+                                                |> Option.map (fun s -> Map.add key s map)
+                                                |> Option.defaultValue map
+
+                                    (key
+                                     |> recordFile (fst f)
+                                     |> fst,
+                                     embed)) (s.Files, s.Embeds)
+           else (s.Files, s.Embeds)
 
       let classes = XElement("Classes".X)
       element.Add(classes)
@@ -156,6 +183,8 @@ module internal OpenCover =
       { s with
           Stack = classes :: s.Stack
           Excluded = Nothing
+          Files = files
+          Embeds = embeds
           ModuleSeq = 0
           ModuleBr = 0
           ModuleMethods = 0
@@ -277,16 +306,9 @@ module internal OpenCover =
         XAttribute("fileid".X, ref)
       )
 
-    let recordFile (s: OpenCoverContext) file =
-      if s.Files.ContainsKey file then
-        s.Files, s.Files.Item file
-      else
-        let index = s.Files.Count + 1
-        s.Files.Add(file, index), index
-
     let visitCodeSegment (s: OpenCoverContext) (codeSegment: SeqPnt) i vc =
       let fileset, ref =
-        recordFile s (codeSegment.Document |> Visitor.sourceLinkMapping)
+        recordFile s.Files (codeSegment.Document.Url |> Visitor.sourceLinkMapping)
 
       let element = methodPointElement codeSegment ref i vc
       let head = s.Stack |> Seq.head
@@ -319,7 +341,7 @@ module internal OpenCover =
 
     let visitGoTo s branch =
       let doc = branch.SequencePoint.Document.Url
-      let fileset, ref = recordFile s doc
+      let fileset, ref = recordFile s.Files doc
       let fileid = fileset.Item doc
 
       (XElement(
@@ -623,13 +645,15 @@ module internal OpenCover =
              files
              |> Seq.iter
                   (fun f ->
-                    f.Add(
+                    let file =
                       XElement(
                         "File".X,
                         XAttribute("uid".X, v),
                         XAttribute("fullPath".X, k)
                       )
-                    )))
+                    f.Add(file)
+                    if s.Embeds.ContainsKey k
+                    then file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
 
       { s with
           Stack = tail

@@ -1043,14 +1043,13 @@ module AltCoverXTests =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample4.dll")
 
-    let recpath =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
-
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    let recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recpath
+    use recstream = AltCoverTests2.recorderStream()
+
+    use recdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1076,7 +1075,8 @@ module AltCoverXTests =
 
       let input =
         { InstrumentContext.Build [] with
-            RecordingAssembly = recdef }
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
 
       let result =
         Instrument.I.instrumentationVisitor input visited
@@ -1086,11 +1086,8 @@ module AltCoverXTests =
       test' <@ File.Exists created @> (created + " not found")
 
       let isWindows =
-#if NET472
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-        true
-#endif
+
       test'
         <@ isWindows |> not
            || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
@@ -1108,11 +1105,10 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    let recpath =
-      Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+    use recstream = AltCoverTests2.recorderStream()
 
-    let recdef =
-      Mono.Cecil.AssemblyDefinition.ReadAssembly recpath
+    use recdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
 
     ProgramDatabase.readSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -1138,7 +1134,8 @@ module AltCoverXTests =
 
       let input =
         { InstrumentContext.Build [] with
-            RecordingAssembly = recdef }
+            RecordingAssembly = recdef
+            RecorderSource = recstream }
 
       let result =
         Instrument.I.instrumentationVisitor input visited
@@ -1193,11 +1190,8 @@ module AltCoverXTests =
       test' <@ File.Exists created @> (created + " not found")
 
       let isWindows =
-#if NET472
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-        true
-#endif
+
       test'
         <@ isWindows |> not
            || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
@@ -1272,9 +1266,10 @@ module AltCoverXTests =
     if create |> File.Exists |> not then
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.NCover
-
-        let from =
-          Path.Combine(AltCoverTests.dir, "AltCover.Recorder.dll")
+        use from =
+          Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
 
         let updated = Instrument.I.prepareAssembly from
         Instrument.I.writeAssembly updated create

@@ -1,6 +1,12 @@
 {
  "Sample4.dll": {
    "altcover/Sample4/Tests.fs": {
+     "\u00ABAltCover.embed\u00BB": {
+       "hVTvb9MwEP1eqf/DEb600sg6BAKNdtrP7gO0mrZ2QprQ5CbXxiKxi31ZyWD/O\u002Bc4adIxhPoh9vnd3fPzuyqRoV2LCGGGlmy3s78PS5sIs06losNYWrFIEWCC2QLN1KFhqtVVvkhldCvSHK0PXmOcq1gomuLmMxYbbeJuR69RwU1hCbOdTXiNyxQjklpV8a\u002B5ktTt1KgNKosqnKsfuSZ08buhsJZJpMXhSbW4RWO5wgmRkYucsBcchAP3C/pH317MGMsU/5MVa\u002Bj1fcOpPtPZWhhptXJHmY5z1mICo24H4G54kpO\u002BQSNFKh\u002BdSr2lSC2WVQCoWLOmiVQrDwf4VW0PwXJrXjz5eFZKC5RIGy4KQtvrw6gWaoY/KbxQkY45I5zPxh/DS6TTElZmlDVLwgApEmTiO/o\u002BlqvUPUe8e/Kgu\u002BFYRORJugSuRJM6ybX2rFwYhsfQawoGNuiHdT3ewPHRv7ECpc4ZX90o/IJqRQknvi/Ttmqez33HUq9JMVf8NjWH3zDWGvQS2Ip15FQYF/ESNsFHF4w12xK3Qb12wXNBOJMZ\u002Btvvyi3s/UKY5tJMwxT1kqGCoqREwkZS0hx4YgreHDk\u002Bveo9Vb\u002BNcJziZ4h4F8EE6RmCWggeRR4miITl\u002BVppVgESNNguce/SHcE66Hj6qBMqUFph8NLNJ4U7H7Vl8LDqHc5SHp5GmCr1QaRwZXhEDRWcPPDtVkh7YJEaExqk3Cin0QPDyu/ukWvujspv25efauOf6RjPtftma55aw7ZXaPgtY3fSmt6pdkVFmhbBHgTbOd41d2mrv83d8DwYVER58dzWDWVnek/6Rfv7/H7LVh57MAgq07\u002BWS3g1vZi9\u002B/B2OwEs6MqIrP5XuVDswSvNlm\u002BukQl\u002B\u002B3unOJdAFcvlHw==": {
+         "Lines": {},
+         "Branches": []
+        }
+      },
      "Tests.Program": {
        "System.Int32 Tests.Program::main(System.String[])": {
          "Lines": {

@@ -90,14 +90,24 @@ module private Gui =
 
     active
 
+#if NET472
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                    Justification = "meets an interface")>]
+  let private urlHook _ link =
+    Browser.ShowUrl(Uri link)
+#endif
+
   let private prepareAboutDialog (handler: Handler) =
 #if !NET472
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(fun _ link -> Browser.ShowUrl(Uri link))
+    AboutDialog.SetUrlHook(urlHook)
     |> ignore
 
-    LinkButton.SetUriHook(fun _ link -> Browser.ShowUrl(Uri link))
+    LinkButton.SetUriHook(urlHook)
     |> ignore
 
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
@@ -252,6 +262,11 @@ module private Gui =
   [<SuppressMessage("Microsoft.Globalization",
                     "CA1303:Do not pass literals as localized parameters",
                     Justification = "It's furniture, not user visible text")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "meets an interface")>]
+  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                    Justification = "meets an interface")>]
   let private prepareOpenFileDialog _ =
     let openFileDialog =
       new System.Windows.Forms.OpenFileDialog()
@@ -279,7 +294,7 @@ module private Gui =
 
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
-          fun (context:CoverageTreeContext<TreeStore, TreeIter>) 
+          fun (context:CoverageTreeContext<TreeStore, TreeIter>)
               (icon:Lazy<Gdk.Pixbuf>) name (tip : string option) ->
             let newrow =
               context.Model.AppendValues(
@@ -415,10 +430,10 @@ module private Gui =
   let private markBranches
     (root: XPathNavigator)
     (lineView: TextView)
-    (filename: string)
+    (file: Source)
     =
     let buff = lineView.Buffer
-    let branches = HandlerCommon.TagBranches root filename
+    let branches = HandlerCommon.TagBranches root file
 
     for l in 1 .. buff.LineCount do
       let image = new Image()
@@ -569,7 +584,6 @@ module private Gui =
       let showSource (info: Source) (line: int) =
         let buff = handler.codeView.Buffer
         let buff2 = handler.lineView.Buffer
-        let pathname = info.FullName
 
         buff.Text <- info.ReadAllText()
 
@@ -592,8 +606,8 @@ module private Gui =
 
         let root = m.Clone()
         root.MoveToRoot()
-        markBranches root handler.lineView pathname
-        markCoverage root buff buff2 pathname
+        markBranches root handler.lineView info
+        markCoverage root buff buff2 info
         handler.activeRow <- line
         handler.codeView.CursorVisible <- false
         handler.viewport1.QueueDraw()
@@ -907,7 +921,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@142.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target = "AltCover.Gui+prepareTreeView@152.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification = "Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",
