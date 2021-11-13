@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -65,6 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="FSharp.Core" Version="4.1.18" />
   </ItemGroup>
 

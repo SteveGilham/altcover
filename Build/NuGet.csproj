@@ -26,4 +26,7 @@
     <PackageReference Include="altcode.gendarme" version="2021.5.28.12260-pre-release" />
     <PackageReference Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
+  </ItemGroup>
 </Project>

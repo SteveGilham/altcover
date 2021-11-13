@@ -61,7 +61,7 @@
 
   <ItemGroup>
     <PackageReference Include="GtkSharp" Version="3.24.24.34" Condition="'$(TargetFramework)' != 'net472'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -107,6 +107,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="FSharp.Core" Version="6.0.1">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>

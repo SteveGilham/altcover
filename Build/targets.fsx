@@ -249,6 +249,7 @@ let toolPackages =
         |> XDocument.Load
 
     xml.Descendants(XName.Get("PackageReference"))
+    |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
     |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
     |> Map.ofSeq
 
@@ -3803,10 +3804,12 @@ _Target
                          ]
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
-             ("Fake.Core.Environment", "5.18.1")
-             ("Fake.DotNet.Cli", "5.18.1")
-             ("FSharp.Core", "4.7")
-             ("System.Collections.Immutable", "1.6.0") ],
+             ("BlackFox.CommandLine", "1.0.0")
+             ("FAKE.Core.Environment", "5.20.4")
+             ("FAKE.Core.Process", "5.20.4")
+             ("FAKE.DotNet.Cli", "5.19.1")
+             ("System.Collections.Immutable", "1.7.1")
+             ("FSharp.Core", "5.0.2") ],
            "_Packaging.fake",
            "./_Generated/altcover.fake.nuspec",
            "altcover.fake") ]
@@ -4187,7 +4190,6 @@ _Target
                                                           Path.GetFileName part)
                               x.Attribute(XName.Get "fullPath").Value <- newpath)
         xml.Save fixedReport
-
 
         ReportGenerator.generateReports
             (fun p ->
