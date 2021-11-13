@@ -38,6 +38,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample25", "Samples\Sample25\Sample25.fsproj", "{54E57C76-339C-496E-B6EF-832534C7D545}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,9 @@ Global
 		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25BF9131-91CD-41CA-87F7-041E40426B5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E57C76-339C-496E-B6EF-832534C7D545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E57C76-339C-496E-B6EF-832534C7D545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E57C76-339C-496E-B6EF-832534C7D545}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

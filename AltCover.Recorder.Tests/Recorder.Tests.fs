@@ -378,7 +378,7 @@ module AltCoverTests =
 
     let third = Directory.GetFiles(where, "*.exn")
     Assert.That(third.Length, Is.EqualTo before.Length)
-    
+
   [<Test>]
   let WrappedExceptionLoggedToFile () =
     let path = Instance.ReportFile |> Path.GetFullPath
@@ -405,7 +405,7 @@ module AltCoverTests =
     |> Seq.iter (fun (a, b) -> Assert.That(b, Is.EqualTo a))
 
     let third = Directory.GetFiles(where, "*.exn")
-    Assert.That(third.Length, Is.EqualTo before.Length)    
+    Assert.That(third.Length, Is.EqualTo before.Length)
 
   [<Test>]
   let Issue71WrapperHandlesKeyNotFoundException () =
@@ -2057,3 +2057,8 @@ module AltCoverTests =
     ZipFlushLeavesExpectedTraces()
 #endif
     FlushLeavesExpectedTraces()
+#if IDEMPOTENT_INSTRUMENT
+[<assembly: Instrumentation(Assembly = "AltCover+Recorder+g+",
+                            Configuration = "Uninstrumented++")>]
+()
+#endif

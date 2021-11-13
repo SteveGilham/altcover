@@ -13,6 +13,28 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
+#if IDEMPOTENT_INSTRUMENT
+/// <summary>
+/// An attribute to label an instrumented assembly by provenance
+/// </summary>
+[<AttributeUsage(AttributeTargets.Assembly)>]
+[<Sealed>]
+type InstrumentationAttribute() =
+  class
+    inherit Attribute()
+
+    /// <summary>
+    /// SHA-256 hash of the original assembly
+    /// </summary>
+    member val Assembly = "AltCover.Recorder.g!" with get, set
+
+    /// <summary>
+    /// SHA-256 hash of instrumentation parameters
+    /// </summary>
+    member val Configuration = "Uninstrumented!!" with get, set
+  end
+#endif
+
 module Instance =
   // Public "fields"
 
@@ -505,4 +527,9 @@ module Instance =
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
                             Justification = "Compiler generated")>]
+#if IDEMPOTENT_INSTRUMENT
+//[<assembly:Instrumentation(
+//  Assembly = "AltCover+Recorder+g+",
+//  Configuration = "Uninstrumented++")>] // self label
+#endif
 ()

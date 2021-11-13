@@ -4,10 +4,12 @@ module Say =
     let hello name =
         printfn "Hello %s" name
 
+#if IDEMPOTENT_INSTRUMENT
 [<AltCover.Recorder.InstrumentationAttribute(
   Assembly="YkSBYKm1rLNNQAObr3F/7E5EWmGzn6y25sn4NR/8gc0=",
   Configuration="L8ab9IPrbO8xD1JTWD0jOMmMVY7zH/hVbZcw6gbKrWM=")>]
 ()
+#endif
 
 (*
 Decompiles as

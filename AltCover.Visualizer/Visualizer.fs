@@ -151,43 +151,89 @@ module private Gui =
     |> Seq.iteri
          (fun i x -> // this line number
            let column = new Gtk.TreeViewColumn()
-           let cell = new Gtk.CellRendererText()
            let icon = new Gtk.CellRendererPixbuf()
            column.PackStart(icon, true)
+           let cell = new Gtk.CellRendererText()
            column.PackEnd(cell, true)
-
+#if VIS_PERCENT
+           let note = new Gtk.CellRendererText()
+           note.Alignment <- Pango.Alignment.Right
+           let font = Persistence.readFont ()
+                      |> Pango.FontDescription.FromString
+           let copy = note.FontDesc.Copy()
+           copy.Family <- font.Family
+           note.FontDesc <- copy
+           column.PackEnd(note, true)
+#endif
            handler.classStructureTree.AppendColumn(column)
            |> ignore
 
+#if !VIS_PERCENT
            column.AddAttribute(cell, "text", 2 * i)
-           column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+           column.AddAttribute(icon, "pixbuf", 1 + (2 * i))
+#else
+           column.AddAttribute(icon, "pixbuf", (3 * i))
+           column.AddAttribute(note, "text", (3 * i) + 1)
+           column.AddAttribute(cell, "text", (3 * i) + 2)
+#endif
+         )
 
     handler.classStructureTree.Model <-
       new TreeStore(
+#if !VIS_PERCENT
         typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>
+#else
         typeof<Gdk.Pixbuf>
+#endif
       )
 
     handler.auxModel <-
       new TreeStore(
+#if !VIS_PERCENT
         typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>
+#else
         typeof<Gdk.Pixbuf>
+#endif
       )
 
 #if !NET472
@@ -295,11 +341,15 @@ module private Gui =
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
           fun (context:CoverageTreeContext<TreeStore, TreeIter>)
-              (icon:Lazy<Gdk.Pixbuf>) name (tip : string option) ->
+              (icon:Lazy<Gdk.Pixbuf>) pc name (tip : string option) ->
             let newrow =
               context.Model.AppendValues(
                     context.Row,
+#if !VIS_PERCENT
                     [| name :> obj; icon.Force() :> obj |])
+#else
+                    [| icon.Force() :> obj; pc :> obj; name :> obj; |])
+#endif
 
             tip
             |> Option.iter
@@ -338,7 +388,7 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name icon tip ->
+          fun pc name icon tip ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
@@ -346,7 +396,7 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name, icon.Force())
+              model.AppendValues(name, pc, icon.Force())
 
             if tip |> String.IsNullOrWhiteSpace |> not
             then

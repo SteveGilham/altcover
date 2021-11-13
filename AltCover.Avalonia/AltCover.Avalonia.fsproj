@@ -9,7 +9,7 @@
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <GlobalDefineConstants>AVALONIA</GlobalDefineConstants>
+    <GlobalDefineConstants>AVALONIA;$(TOGGLE)</GlobalDefineConstants>
     <OutputPath>$(ProjectDir)..\_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(ProjectDir)..\_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>

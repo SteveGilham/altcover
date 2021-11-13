@@ -41,7 +41,7 @@ type MainWindow() as this =
   let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
   let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
-  let makeTreeNode leaf name icon =
+  let makeTreeNode pc leaf name icon =
     let tree = Image()
     tree.Source <- if leaf
                    then icons.Blank.Force()
@@ -50,6 +50,21 @@ type MainWindow() as this =
     let text = TextBlock()
     text.Text <- name
     text.Margin <- Thickness.Parse("2")
+#if !VIS_PERCENT
+    pc |> ignore
+#else
+    let note = TextBlock()
+    note.Text <- pc
+    note.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Right
+    note.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Bottom
+    text.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Bottom
+    note.Margin <- Thickness.Parse("2")
+
+    let logfont =
+      LogFont.TryParse(Persistence.readFont ()) |> snd
+
+    note.FontFamily <- FontFamily(logfont.faceName)
+#endif
     let image = Image()
     image.Source <- icon
     image.Margin <- Thickness.Parse("2")
@@ -57,6 +72,9 @@ type MainWindow() as this =
     display.Orientation <- Avalonia.Layout.Orientation.Horizontal
     display.Children.Add tree
     display.Children.Add image
+#if VIS_PERCENT
+    display.Children.Add note
+#endif
     display.Children.Add text
     display.Tag <- name
     display
@@ -489,7 +507,7 @@ type MainWindow() as this =
       this.FindControl<MenuItem>("Refresh").Click
       |> Event.map (fun _ -> 0)
 
-    let makeNewRow leaf name (anIcon: Lazy<Bitmap>) =
+    let makeNewRow note leaf name (anIcon: Lazy<Bitmap>) =
       let row = TreeViewItem()
       row.HorizontalAlignment <- Avalonia.Layout.HorizontalAlignment.Left
 
@@ -533,7 +551,7 @@ type MainWindow() as this =
             evt.Handled <- true)
 
       row.Items <- List<TreeViewItem>()
-      row.Header <- makeTreeNode leaf name <| anIcon.Force()
+      row.Header <- makeTreeNode note leaf name <| anIcon.Force()
       row
 
     select
@@ -546,15 +564,18 @@ type MainWindow() as this =
            let mutable auxModel =
              { Model = List<TreeViewItem>()
                Row = null }
+
            let addNode =
-                 fun leaf (context:CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon name (tip : string option) ->
-                   let newrow = makeNewRow leaf name icon
-                   (context.Row.Items :?> List<TreeViewItem>).Add newrow
-                   tip
-                   |> Option.iter(fun text ->
-                      ToolTip.SetTip(newrow, text))
-                   { context with
-                       Row = newrow }
+             fun leaf (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>) icon pc name (tip: string option) ->
+               let newrow = makeNewRow pc leaf name icon
+
+               (context.Row.Items :?> List<TreeViewItem>)
+                 .Add newrow
+
+               tip
+               |> Option.iter (fun text -> ToolTip.SetTip(newrow, text))
+
+               { context with Row = newrow }
 
            let environment =
              { Icons = icons
@@ -595,20 +616,22 @@ type MainWindow() as this =
                    tree.Items <- auxModel.Model
                    this.UpdateMRU info.FullName true
                SetXmlNode =
-                 fun name icon tip ->
+                 fun pc name icon tip ->
                    let model = auxModel.Model
-                   let row = makeNewRow false name icon
+                   let row = makeNewRow pc false name icon
                    model.Add row
-                   if tip |> String.IsNullOrWhiteSpace |> not
-                   then ToolTip.SetTip(row, tip)
-                   { Model = model
-                     Row =  row }
+
+                   if tip |> String.IsNullOrWhiteSpace |> not then
+                     ToolTip.SetTip(row, tip)
+
+                   { Model = model; Row = row }
                AddNode = (addNode false)
                AddLeafNode = (addNode true)
                Map = this.PrepareDoubleTap }
 
            Dispatcher.UIThread.Post
              (fun _ -> CoverageFileTree.DoSelected environment index))
+
     this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer "
                                                    + AssemblyVersionInformation.AssemblyFileVersion
 
