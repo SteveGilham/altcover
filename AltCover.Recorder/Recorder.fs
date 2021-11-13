@@ -260,20 +260,20 @@ module Instance =
           match counts.Count with
           | 0 -> ()
           | _ ->
-              withMutex
-                (fun own ->
-                  let delta =
-                    Counter.doFlushFile
-                      ignore
-                      (fun _ _ -> ())
-                      own
-                      counts
-                      CoverageFormat
-                      ReportFile
-                      None
+            withMutex
+              (fun own ->
+                let delta =
+                  Counter.doFlushFile
+                    ignore
+                    (fun _ _ -> ())
+                    own
+                    counts
+                    CoverageFormat
+                    ReportFile
+                    None
 
-                  getResource "Coverage statistics flushing took {0:N} seconds"
-                  |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
+                getResource "Coverage statistics flushing took {0:N} seconds"
+                |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
 
     let internal flushPause () =
       ("PauseHandler")
@@ -339,7 +339,8 @@ module Instance =
                internal issue71Wrapper visits moduleId hitPointId context handler add =
       try
         add visits moduleId hitPointId context
-      with x ->
+      with
+      | x ->
         match x with
         | :? KeyNotFoundException
         | :? NullReferenceException
@@ -354,61 +355,56 @@ module Instance =
       issue71Wrapper visits moduleId hitPointId context logException add
 
     let internal addVisit moduleId hitPointId context =
-      curriedIssue71Wrapper
-        visits
-        moduleId
-        hitPointId
-        context
-        Counter.addSingleVisit
+      curriedIssue71Wrapper visits moduleId hitPointId context Counter.addSingleVisit
 
     let internal takeSample strategy moduleId hitPointId (context: Track) =
       match strategy with
       | Sampling.All -> true
       | _ ->
-          match context with
-          | Null -> [ Visit hitPointId ]
-          | Time t ->
-              [ Visit hitPointId
-                TimeVisit(hitPointId, t) ]
-          | Call c ->
-              [ Visit hitPointId
-                CallVisit(hitPointId, c) ]
-          | Both b ->
-              [ Visit hitPointId
-                TimeVisit(hitPointId, b.Time)
-                CallVisit(hitPointId, b.Call) ]
-          | _ ->
-              context.ToString()
-              |> InvalidDataException
-              |> raise
-          |> Seq.map
-               (fun hit ->
-                 let mutable hasModuleKey = samples.ContainsKey(moduleId)
+        (match context with
+         | Null -> [ Visit hitPointId ]
+         | Time t ->
+           [ Visit hitPointId
+             TimeVisit(hitPointId, t) ]
+         | Call c ->
+           [ Visit hitPointId
+             CallVisit(hitPointId, c) ]
+         | Both b ->
+           [ Visit hitPointId
+             TimeVisit(hitPointId, b.Time)
+             CallVisit(hitPointId, b.Call) ]
+         | _ ->
+           context.ToString()
+           |> InvalidDataException
+           |> raise)
+        |> Seq.map
+             (fun hit ->
+               let mutable hasModuleKey = samples.ContainsKey(moduleId)
 
-                 if hasModuleKey |> not then
-                   lock
-                     samples
-                     (fun () ->
-                       hasModuleKey <- samples.ContainsKey(moduleId)
+               if hasModuleKey |> not then
+                 lock
+                   samples
+                   (fun () ->
+                     hasModuleKey <- samples.ContainsKey(moduleId)
 
-                       if hasModuleKey |> not then
-                         samples.Add(moduleId, Dictionary<Sampled, bool>()))
+                     if hasModuleKey |> not then
+                       samples.Add(moduleId, Dictionary<Sampled, bool>()))
 
-                 let next = samples.[moduleId]
+               let next = samples.[moduleId]
 
-                 let mutable hasPointKey = next.ContainsKey(hit)
+               let mutable hasPointKey = next.ContainsKey(hit)
 
-                 if hasPointKey |> not then
-                   lock
-                     next
-                     (fun () ->
-                       hasPointKey <- next.ContainsKey(hit)
+               if hasPointKey |> not then
+                 lock
+                   next
+                   (fun () ->
+                     hasPointKey <- next.ContainsKey(hit)
 
-                       if hasPointKey |> not then
-                         next.Add(hit, true))
+                     if hasPointKey |> not then
+                       next.Add(hit, true))
 
-                 (hasPointKey && hasModuleKey) |> not)
-          |> Seq.fold (||) false // true if any are novel -- all must be evaluated
+               (hasPointKey && hasModuleKey) |> not)
+        |> Seq.fold (||) false // true if any are novel -- all must be evaluated
 
     /// <summary>
     /// This method is executed from instrumented assemblies.
@@ -441,9 +437,9 @@ module Instance =
         | (t, None) -> Time(t * (clock () / t))
         | (0L, n) -> Call n.Value
         | (t, n) ->
-            Both
-              { Time = t * (clock () / t)
-                Call = n.Value }
+          Both
+            { Time = t * (clock () / t)
+              Call = n.Value }
       else
         Null
 
@@ -458,10 +454,10 @@ module Instance =
       | Resume -> flushResume ()
       | Pause -> flushPause ()
       | _ ->
-          recording <- false
+        recording <- false
 
-          if supervision |> not then
-            flushAll finish
+        if supervision |> not then
+          flushAll finish
 
     // Register event handling
     let internal doPause =

@@ -34,16 +34,16 @@ module Adapter =
 
   let VisitsAdd (name, line, number) =
     prepareName name
-    let v = init(number, [])
+    let v = init (number, [])
     Instance.I.visits.[name].Add(line, v)
 
   let VisitsAddTrack (name, line, number) =
     prepareName name
-    let v1 = init(number, [ Call 17; Call 42 ])
+    let v1 = init (number, [ Call 17; Call 42 ])
     Instance.I.visits.[name].Add(line, v1)
 
     let v2 =
-      init(
+      init (
         (number + 1L),
         [ Time 17L
           Both { Time = 42L; Call = 23 } ]
@@ -95,9 +95,9 @@ module Adapter =
 
     match t with
     | (n, p, Table d) ->
-        r.Add(n)
-        r.Add(p)
-        r.Add(d)
+      r.Add(n)
+      r.Add(p)
+      r.Add(d)
     | _ -> ()
 
     r
@@ -166,9 +166,10 @@ module Adapter =
           | _ -> x.Message = unique
 
     Instance.I.issue71Wrapper () () () () catcher pitcher
-    
+
   let internal invokeCurriedIssue71Wrapper<'T when 'T :> System.Exception>
-      (unique: string) =
+    (unique: string)
+    =
     let constructor =
       typeof<'T>.GetConstructor ([| typeof<System.String> |])
 

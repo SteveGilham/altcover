@@ -13,14 +13,14 @@ open System.Reflection
 type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   let makeIcon name =
     lazy
-     //try
+      //try
       (toIcon (
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceStream("AltCover.UICommon." + name + ".png")
       ))
-     //with
-     //| x -> System.InvalidOperationException(name, x) |> raise
+  //with
+  //| x -> System.InvalidOperationException(name, x) |> raise
 
   member self.Report = makeIcon "Report_16x"
   member self.ReportDated = makeIcon "ReportDated_16x"
@@ -49,8 +49,7 @@ type Icons<'TIcon>(toIcon: System.IO.Stream -> 'TIcon) =
   member self.SourceLink = makeIcon "TextFileWeb_16x"
   member self.NoSource = makeIcon "TextFileMissing_16x"
 
-  member self.MRUInactive =
-    makeIcon "ExpandDown_lightGray_16x"
+  member self.MRUInactive = makeIcon "ExpandDown_lightGray_16x"
 
   member self.RefreshActive = makeIcon "Refresh_16x"
   member self.Refresh = makeIcon "Refresh_greyThin_16x"

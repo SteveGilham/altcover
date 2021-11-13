@@ -129,7 +129,8 @@ module internal Counter =
 
       try
         doc.Load(stream)
-      with :? XmlException -> doc.LoadXml "<null/>"
+      with
+      | :? XmlException -> doc.LoadXml "<null/>"
 
       doc
 
@@ -168,11 +169,7 @@ module internal Counter =
       | ReportFormat.OpenCoverWithTracking
       | ReportFormat.OpenCover -> openCoverXml
       | ReportFormat.NCover -> nCoverXml
-      | _ ->
-          raise (
-            format
-            |> (sprintf "%A")
-            |> NotSupportedException)
+      | _ -> raise (format |> (sprintf "%A") |> NotSupportedException)
 
     let internal minTime (t1: DateTime) (t2: DateTime) = if t1 < t2 then t1 else t2
 
@@ -287,9 +284,9 @@ module internal Counter =
                     ((match format with
                       | ReportFormat.OpenCoverWithTracking
                       | ReportFormat.OpenCover ->
-                          "uspid"
-                          |> pt.GetAttribute
-                          |> (findIndexFromUspid flag)
+                        "uspid"
+                        |> pt.GetAttribute
+                        |> (findIndexFromUspid flag)
                       | _ -> counter),
                      pt))
              |> Seq.filter (fst >> moduleHits.ContainsKey)
@@ -414,8 +411,8 @@ module internal Counter =
     match context with
     | Table t -> I.addTable counts t
     | _ ->
-        addSingleVisit counts moduleId hitPointId context
-        1L
+      addSingleVisit counts moduleId hitPointId context
+      1L
 #endif
 
   [<SuppressMessage("Gendarme.Rules.Smells",
@@ -437,15 +434,15 @@ module internal Counter =
       match output with
       | None -> new MemoryStream() :> Stream
       | Some f ->
-          new FileStream(
-            f,
-            FileMode.OpenOrCreate,
-            FileAccess.Write,
-            FileShare.None,
-            4096,
-            FileOptions.SequentialScan
-          )
-          :> Stream
+        new FileStream(
+          f,
+          FileMode.OpenOrCreate,
+          FileAccess.Write,
+          FileShare.None,
+          4096,
+          FileOptions.SequentialScan
+        )
+        :> Stream
 
     let outputFile =
       if Option.isSome output then
@@ -493,15 +490,15 @@ module internal Counter =
         match output with
         | None -> new MemoryStream() :> Stream
         | Some f ->
-            new FileStream(
-              f,
-              FileMode.OpenOrCreate,
-              FileAccess.Write,
-              FileShare.None,
-              4096,
-              FileOptions.SequentialScan
-            )
-            :> Stream
+          new FileStream(
+            f,
+            FileMode.OpenOrCreate,
+            FileAccess.Write,
+            FileShare.None,
+            4096,
+            FileOptions.SequentialScan
+          )
+          :> Stream
 
       try
         ZipConstants.DefaultCodePage <- 65001 //UTF-8 as System.IO.Compression.ZipFile uses internally
@@ -530,7 +527,8 @@ module internal Counter =
           result
         finally
           zip.Close()
-      with :? ZipException ->
+      with
+      | :? ZipException ->
         use reader = new MemoryStream()
         I.doFlush postProcess pointProcess own counts format reader target
 

@@ -44,11 +44,7 @@ module GuiCommon =
   let HandleSpecialName (name: string) =
     if
       name.StartsWith("get_", StringComparison.Ordinal)
-      || name.StartsWith
-        (
-          "set_",
-          StringComparison.Ordinal
-        )
+      || name.StartsWith("set_", StringComparison.Ordinal)
     then
       (name.Substring(4), MethodType.Property)
     else if name.StartsWith("add_", StringComparison.Ordinal) then
@@ -59,11 +55,13 @@ module GuiCommon =
       (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
-  let Embed (node:XPathNavigator) (document: string) =
+  let Embed (node: XPathNavigator) (document: string) =
     node.SelectAncestors("module", String.Empty, false)
     |> Seq.cast<XPathNavigator>
-    |> Seq.collect(fun n -> n.SelectDescendants("altcover.file", String.Empty, false)
-                            |> Seq.cast<XPathNavigator>)
+    |> Seq.collect
+         (fun n ->
+           n.SelectDescendants("altcover.file", String.Empty, false)
+           |> Seq.cast<XPathNavigator>)
     |> Seq.filter (fun n -> n.GetAttribute("document", String.Empty) = document)
     |> Seq.map (fun n -> n.GetAttribute("embed", String.Empty))
     |> Seq.filter (String.IsNullOrWhiteSpace >> not)
@@ -83,61 +81,63 @@ module GuiCommon =
       | File info -> info.Exists
       | Embed (_, s) -> s |> String.IsNullOrWhiteSpace |> not
       | Url u ->
-          let request = createHttp(u)
-          request.Method <- "HEAD"
+        let request = createHttp (u)
+        request.Method <- "HEAD"
 
-          try
-            use response = request.GetResponse()
+        try
+          use response = request.GetResponse()
 
-            response.ContentLength > 0L
-            && (response :?> HttpWebResponse).StatusCode |> int < 400
-          with :? WebException -> false
+          response.ContentLength > 0L
+          && (response :?> HttpWebResponse).StatusCode |> int < 400
+        with
+        | :? WebException -> false
 
     member internal self.FullName =
       match self with
       | Embed (name, _) -> name
       | File info ->
-          if info |> isNull then
-            String.Empty
-          else
-            info.FullName
+        if info |> isNull then
+          String.Empty
+        else
+          info.FullName
       | Url u -> u.AbsoluteUri
 
     member internal self.Outdated epoch =
       match self with
-      | File info -> if info.Exists
-                     then info.LastWriteTimeUtc > epoch
-                     else false // can't tell; should show as non-existing
+      | File info ->
+        if info.Exists then
+          info.LastWriteTimeUtc > epoch
+        else
+          false // can't tell; should show as non-existing
       | _ -> false // Embed or ensible SourceLink assumed
 
     member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
       | Url u -> readAllText u
-      | Embed (_,source) -> let data = Convert.FromBase64String source
-                            use raw = new MemoryStream(data)
-                            use expanded = new MemoryStream()
-                            // Get deflation working with this one weird trick
-                            // Dispose the deflate stream w/o closing the one it points at!
-                            do
-                              use expand = new DeflateStream(raw, CompressionMode.Decompress, true)
-                              expand.CopyTo expanded
-                            System.Text.Encoding.UTF8.GetString(expanded.GetBuffer(),
-                                                                0, int expanded.Length)
+      | Embed (_, source) ->
+        let data = Convert.FromBase64String source
+        use raw = new MemoryStream(data)
+        use expanded = new MemoryStream()
+        // Get deflation working with this one weird trick
+        // Dispose the deflate stream w/o closing the one it points at!
+        do
+          use expand =
+            new DeflateStream(raw, CompressionMode.Decompress, true)
+
+          expand.CopyTo expanded
+
+        System.Text.Encoding.UTF8.GetString(expanded.GetBuffer(), 0, int expanded.Length)
 
     member internal self.MakeEmbedded (filename: string) (source: string option) =
       match (self, source) with
-      | (File info, Some _) -> Embed (filename, source.Value)
+      | (File info, Some _) -> Embed(filename, source.Value)
       | _ -> self
 
   let GetSource (document: string) =
     if
       document.StartsWith("http://", StringComparison.Ordinal)
-      || document.StartsWith
-        (
-          "https://",
-          StringComparison.Ordinal
-        )
+      || document.StartsWith("https://", StringComparison.Ordinal)
     then
       System.Uri(document) |> Url
     else

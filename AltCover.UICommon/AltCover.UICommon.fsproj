@@ -90,7 +90,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Compatibility.fs" />
+    <Compile Include="..\AltCover.Engine\Compatibility.fs" Link="Compatibility.fs" />
     <Compile Include="..\AltCover.Engine\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="..\AltCover.Engine\Augment.fs" Link="Augment.fs" />
     <Compile Include="Lcov.fs" />

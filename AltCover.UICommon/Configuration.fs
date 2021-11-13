@@ -61,11 +61,13 @@ module Configuration =
           schemas.Add(String.Empty, xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)
-        with xx -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
+        with
+        | xx -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
           let nl = Environment.NewLine
           printfn "%A%s%s%A" xx nl nl doc
           (file, defaultDocument ())
-      with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
+      with
+      | x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
         printfn "%A" x
         (file, defaultDocument ())
 
@@ -80,17 +82,18 @@ module Configuration =
       |> Seq.toList
       |> Seq.head
 
-    if (match (node.Attribute(XName.Get "GSettingsSchemaDir"), String.IsNullOrWhiteSpace s) with
+    if (match (node.Attribute(XName.Get "GSettingsSchemaDir"), String.IsNullOrWhiteSpace s)
+          with
         | (null, false) ->
-            node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
-            true
+          node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
+          true
         | (a, false) ->
-            a.Value <- s
-            true
+          a.Value <- s
+          true
         | (null, true) -> false
         | (a, true) ->
-            a.Remove()
-            true) then
+          a.Remove()
+          true) then
       config.Save file
 
   let SaveFont (font: string) =
@@ -102,8 +105,10 @@ module Configuration =
 
     let inject = XElement(XName.Get "Font", font)
 
-    match config.XPathSelectElements("//CoveragePath")
-          |> Seq.toList with
+    match
+      config.XPathSelectElements("//CoveragePath")
+      |> Seq.toList
+      with
     | [] -> (config.FirstNode :?> XElement).AddFirst(inject)
     | x :: _ -> inject |> x.AddAfterSelf
 
@@ -134,22 +139,26 @@ module Configuration =
   let SaveFolder (path: string) =
     let file, config = ensureFile ()
 
-    match config.XPathSelectElements("//CoveragePath")
-          |> Seq.toList with
+    match
+      config.XPathSelectElements("//CoveragePath")
+      |> Seq.toList
+      with
     | [] ->
-        (config.FirstNode :?> XElement)
-          .AddFirst(XElement(XName.Get "CoveragePath", path))
+      (config.FirstNode :?> XElement)
+        .AddFirst(XElement(XName.Get "CoveragePath", path))
     | x :: _ ->
-        x.RemoveAll()
-        x.Add path
+      x.RemoveAll()
+      x.Add path
 
     config.Save file
 
   let ReadFolder () =
     let _, config = ensureFile ()
 
-    match config.XPathSelectElements("//CoveragePath")
-          |> Seq.toList with
+    match
+      config.XPathSelectElements("//CoveragePath")
+      |> Seq.toList
+      with
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
@@ -201,8 +210,10 @@ module Configuration =
         XAttribute(XName.Get "height", height)
       )
 
-    match config.XPathSelectElements("//RecentlyOpened")
-          |> Seq.toList with
+    match
+      config.XPathSelectElements("//RecentlyOpened")
+      |> Seq.toList
+      with
     | [] -> (config.FirstNode :?> XElement).Add element
     | x :: _ -> x.AddBeforeSelf element
 

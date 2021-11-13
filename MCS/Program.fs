@@ -10,5 +10,7 @@ let main argv =
     |> Seq.filter (fun t -> t.FullName = "Mono.CSharp.Driver")
     |> Seq.head
 
-  let main = driver.GetMethod("Main", BindingFlags.Public ||| BindingFlags.Static)
+  let main =
+    driver.GetMethod("Main", BindingFlags.Public ||| BindingFlags.Static)
+
   main.Invoke(null, [| argv |]) :?> int

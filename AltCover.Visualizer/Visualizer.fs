@@ -94,21 +94,19 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
-  let private urlHook _ link =
-    Browser.ShowUrl(Uri link)
+  let private urlHook _ link = Browser.ShowUrl(Uri link)
 #endif
 
   let private prepareAboutDialog (handler: Handler) =
 #if !NET472
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(urlHook)
-    |> ignore
+    AboutDialog.SetUrlHook(urlHook) |> ignore
 
-    LinkButton.SetUriHook(urlHook)
-    |> ignore
+    LinkButton.SetUriHook(urlHook) |> ignore
 
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter
@@ -144,6 +142,7 @@ module private Gui =
 
   let private prepareTreeView (handler: Handler) =
     handler.classStructureTree.HasTooltip <- true
+
     [| icons.Assembly
        icons.Namespace
        icons.Class
@@ -158,8 +157,11 @@ module private Gui =
 #if VIS_PERCENT
            let note = new Gtk.CellRendererText()
            note.Alignment <- Pango.Alignment.Right
-           let font = Persistence.readFont ()
-                      |> Pango.FontDescription.FromString
+
+           let font =
+             Persistence.readFont ()
+             |> Pango.FontDescription.FromString
+
            let copy = note.FontDesc.Copy()
            copy.Family <- font.Family
            note.FontDesc <- copy
@@ -176,7 +178,7 @@ module private Gui =
            column.AddAttribute(note, "text", (3 * i) + 1)
            column.AddAttribute(cell, "text", (3 * i) + 2)
 #endif
-         )
+           )
 
     handler.classStructureTree.Model <-
       new TreeStore(
@@ -311,7 +313,8 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
   let private prepareOpenFileDialog _ =
     let openFileDialog =
@@ -340,23 +343,27 @@ module private Gui =
 
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
-          fun (context:CoverageTreeContext<TreeStore, TreeIter>)
-              (icon:Lazy<Gdk.Pixbuf>) pc name (tip : string option) ->
-            let newrow =
-              context.Model.AppendValues(
-                    context.Row,
+      fun (context: CoverageTreeContext<TreeStore, TreeIter>) (icon: Lazy<Gdk.Pixbuf>) pc name (tip: string option) ->
+        let newrow =
+          context.Model.AppendValues(
+            context.Row,
 #if !VIS_PERCENT
-                    [| name :> obj; icon.Force() :> obj |])
+            [| name :> obj; icon.Force() :> obj |]
+          )
 #else
-                    [| icon.Force() :> obj; pc :> obj; name :> obj; |])
+            [| icon.Force() :> obj
+               pc :> obj
+               name :> obj |]
+          )
 #endif
 
-            tip
-            |> Option.iter
-                           (fun text -> let path = context.Model.GetPath(newrow)
-                                        handler.classStructureTree.Data.Add(path, text))
-            { context with
-                Row = newrow }
+        tip
+        |> Option.iter
+             (fun text ->
+               let path = context.Model.GetPath(newrow)
+               handler.classStructureTree.Data.Add(path, text))
+
+        { context with Row = newrow }
 
     let environment =
       { Icons = icons
@@ -398,8 +405,7 @@ module private Gui =
             let topRow =
               model.AppendValues(name, pc, icon.Force())
 
-            if tip |> String.IsNullOrWhiteSpace |> not
-            then
+            if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)
               table.Add(path, tip)
 
@@ -477,11 +483,7 @@ module private Gui =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "IDisposables are added to the TextView")>]
-  let private markBranches
-    (root: XPathNavigator)
-    (lineView: TextView)
-    (file: Source)
-    =
+  let private markBranches (root: XPathNavigator) (lineView: TextView) (file: Source) =
     let buff = lineView.Buffer
     let branches = HandlerCommon.TagBranches root file
 
@@ -847,18 +849,21 @@ module private Gui =
     Application.Init()
 
     let handler = prepareGui ()
+
     handler.classStructureTree.QueryTooltip
-    |> Event.add (fun (x:QueryTooltipArgs) ->
-      let tip = x.Tooltip
-      x.RetVal <- null
-      let mutable path:TreePath = null
-      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path)
-      then
-        let table = handler.classStructureTree.Data
-        if table.ContainsKey path
-        then let text = table.[path] :?> string
-             tip.Text <- text
-             x.RetVal <- true) // <== magic happens here
+    |> Event.add
+         (fun (x: QueryTooltipArgs) ->
+           let tip = x.Tooltip
+           x.RetVal <- null
+           let mutable path: TreePath = null
+
+           if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path) then
+             let table = handler.classStructureTree.Data
+
+             if table.ContainsKey path then
+               let text = table.[path] :?> string
+               tip.Text <- text
+               x.RetVal <- true) // <== magic happens here
 
 #if !NET472
     handler.codeView.Drawn

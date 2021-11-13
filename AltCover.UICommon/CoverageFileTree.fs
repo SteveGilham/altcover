@@ -23,60 +23,81 @@ type CoverageModelDisplay<'TModel, 'TRow, 'TIcon> =
     GetFileInfo: int -> FileInfo
     UpdateMRUFailure: FileInfo -> unit
     UpdateUISuccess: FileInfo -> unit
-    SetXmlNode: String -> String -> Lazy<'TIcon> -> String -> CoverageTreeContext<'TModel, 'TRow>
-    AddNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
-    AddLeafNode: CoverageTreeContext<'TModel, 'TRow> -> Lazy<'TIcon> -> String -> String -> String option -> CoverageTreeContext<'TModel, 'TRow>
+    SetXmlNode: String
+      -> String
+      -> Lazy<'TIcon>
+      -> String
+      -> CoverageTreeContext<'TModel, 'TRow>
+    AddNode: CoverageTreeContext<'TModel, 'TRow>
+      -> Lazy<'TIcon>
+      -> String
+      -> String
+      -> String option
+      -> CoverageTreeContext<'TModel, 'TRow>
+    AddLeafNode: CoverageTreeContext<'TModel, 'TRow>
+      -> Lazy<'TIcon>
+      -> String
+      -> String
+      -> String option
+      -> CoverageTreeContext<'TModel, 'TRow>
     Map: CoverageTreeContext<'TModel, 'TRow> -> XPathNavigator -> unit }
 
 module CoverageFileTree =
 
   [<AutoSerializable(false)>]
-  type SourceFile<'TIcon> = {
-    FullName : string
-    FileName : string
-    Navigator : XPathNavigator
-    Icon : Lazy<'TIcon>
-    Exists : bool
-    Stale : bool
-  }
+  type SourceFile<'TIcon> =
+    { FullName: string
+      FileName: string
+      Navigator: XPathNavigator
+      Icon: Lazy<'TIcon>
+      Exists: bool
+      Stale: bool }
 
   [<SuppressMessage("Gendarme.Rules.Correctness",
-            "ReviewSelfAssignmentRule",
-            Justification = "Final line is a self-assignment for 'depth' -- compiler fault")>]
-  let rec private scan (s:string) index depth =
+                    "ReviewSelfAssignmentRule",
+                    Justification = "Final line is a self-assignment for 'depth' -- compiler fault")>]
+  let rec private scan (s: string) index depth =
     match s.[index] with
     | '<' -> scan s (index + 1) (depth + 1)
-    | '>' -> let d = depth - 1
-             if d = 0
-             then index
-             else scan s (index + 1) d
+    | '>' ->
+      let d = depth - 1
+
+      if d = 0 then
+        index
+      else
+        scan s (index + 1) d
     | _ -> scan s (index + 1) depth
 #if VIS_PERCENT
-  let private coverPoints (points:XPathNavigator seq) =
-    let visited = points
-                  |> Seq.filter(fun p -> p.GetAttribute("visitcount", String.Empty) <> "0")
+  let private coverPoints (points: XPathNavigator seq) =
+    let visited =
+      points
+      |> Seq.filter (fun p -> p.GetAttribute("visitcount", String.Empty) <> "0")
 
-    (100.0 * (visited |>  Seq.length |> float) / (points |>  Seq.length |> float))
+    (100.0 * (visited |> Seq.length |> float)
+     / (points |> Seq.length |> float))
     |> Math.Floor
     |> int
 
-  let private cover (navigator:XPathNavigator seq) =
-    let points = navigator
-                  |> Seq.collect (fun n -> n.SelectDescendants("seqpnt", String.Empty, false)
-                                           |> Seq.cast<XPathNavigator>)
+  let private cover (navigator: XPathNavigator seq) =
+    let points =
+      navigator
+      |> Seq.collect
+           (fun n ->
+             n.SelectDescendants("seqpnt", String.Empty, false)
+             |> Seq.cast<XPathNavigator>)
+
     coverPoints points
 
   let private coverText pc = sprintf "%3i%%" pc
 
-  let private pcCover (navigator:XPathNavigator seq) =
-     navigator |> cover |> coverText
+  let private pcCover (navigator: XPathNavigator seq) = navigator |> cover |> coverText
 #endif
 
   let private populateClassNode
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
     (nodes: seq<MethodKey>)
-    (epoch : DateTime)
+    (epoch: DateTime)
     =
     let applyToModel
       (theModel: CoverageTreeContext<'TModel, 'TRow>)
@@ -85,34 +106,49 @@ module CoverageFileTree =
       let ((display, special), keys) = item
 
       // C++/CLI fixups -- probably more will be needed
-      let modopt s = System.Text.RegularExpressions.Regex.Replace(s,
-                       @"modopt\(System\.Runtime\.\w+\.(\w+)?\)", "[$1]")
+      let modopt s =
+        System.Text.RegularExpressions.Regex.Replace(
+          s,
+          @"modopt\(System\.Runtime\.\w+\.(\w+)?\)",
+          "[$1]"
+        )
 
       let gcroot (s: string) =
-        let rec step (s: string) (i:int) =
-          let next = s.IndexOf("gcroot<", i, StringComparison.Ordinal)
-          if next < 0
-          then s
+        let rec step (s: string) (i: int) =
+          let next =
+            s.IndexOf("gcroot<", i, StringComparison.Ordinal)
+
+          if next < 0 then
+            s
           else
             let index = next + 7
             let stop = scan s index 1
             let start = s.Substring(0, index)
-            let middle = s.Substring(index, stop - index).Replace("::", ".")
+
+            let middle =
+              s
+                .Substring(index, stop - index)
+                .Replace("::", ".")
+
             let finish = s.Substring(stop)
             step (start + middle + finish) index
+
         step s 0
 
       let fixup = modopt >> gcroot
 
       let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
         let fullname =
-          fixup <| x.Navigator.GetAttribute("fullname", String.Empty)
+          fixup
+          <| x.Navigator.GetAttribute("fullname", String.Empty)
 
         let name = fixup x.Name
 
         let args =
-          if String.IsNullOrEmpty(fullname)
-             || charIndexOf name '(' > 0 then
+          if
+            String.IsNullOrEmpty(fullname)
+            || charIndexOf name '(' > 0
+          then
             String.Empty
           else
             let bracket = charIndexOf fullname '('
@@ -130,64 +166,66 @@ module CoverageFileTree =
           | o -> o + 2
 
         // multi-source??
-        let upcase (s:string) = s.ToUpperInvariant()
-        let getFileName (s:string) =
+        let upcase (s: string) = s.ToUpperInvariant()
+
+        let getFileName (s: string) =
           if
             s.StartsWith("http://", StringComparison.Ordinal)
-            || s.StartsWith
-              (
-                "https://",
-                StringComparison.Ordinal
-              )
+            || s.StartsWith("https://", StringComparison.Ordinal)
           then
-            {
-              FullName = s
+            { FullName = s
               FileName = System.Uri(s).LocalPath |> Path.GetFileName
               Navigator = null
               Icon = environment.Icons.SourceLink
               Exists = true
-              Stale = false
-            }
+              Stale = false }
 
           else
             let info = GetSource(s)
             let x = info.Exists
             let stale = info.Outdated epoch
-            {
-              FullName = s
+
+            { FullName = s
               FileName = Path.GetFileName s
               Navigator = null
-              Icon = match (x, stale) with
-                     | (false, _) -> environment.Icons.NoSource
-                     | (_, true) -> environment.Icons.SourceDated
-                     | _ -> environment.Icons.Source
+              Icon =
+                match (x, stale) with
+                | (false, _) -> environment.Icons.NoSource
+                | (_, true) -> environment.Icons.SourceDated
+                | _ -> environment.Icons.Source
               Exists = x
-              Stale = stale
-            }
+              Stale = stale }
 
         let sources =
           x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
           |> Seq.cast<XPathNavigator>
           |> Seq.map
-           (fun s ->
-              let d = s.GetAttribute("document", String.Empty)
-              let state = { (d |> getFileName) with Navigator = s }
-              // get any embed and tweak state and icon accordingly
-              match GuiCommon.Embed s d with
-              | None -> state
-              | Some _ -> { state with Exists = true
-                                       Stale = false
-                                       Icon = environment.Icons.Source }
-           )
+               (fun s ->
+                 let d = s.GetAttribute("document", String.Empty)
+
+                 let state =
+                   { (d |> getFileName) with
+                       Navigator = s }
+                 // get any embed and tweak state and icon accordingly
+                 match GuiCommon.Embed s d with
+                 | None -> state
+                 | Some _ ->
+                   { state with
+                       Exists = true
+                       Stale = false
+                       Icon = environment.Icons.Source })
           |> Seq.distinctBy (fun s -> s.FullName) // allows for same name, different path
           |> Seq.sortBy (fun s -> s.FileName |> upcase)
           |> Seq.toList
 
-        let hasSource = sources
-                        |> List.exists (fun s -> s.Exists)
-        let icon = if hasSource
-                   then environment.Icons.Method
-                   else environment.Icons.MethodMissingSource
+        let hasSource =
+          sources |> List.exists (fun s -> s.Exists)
+
+        let icon =
+          if hasSource then
+            environment.Icons.Method
+          else
+            environment.Icons.MethodMissingSource
 
         match sources with
         | [] ->
@@ -196,28 +234,35 @@ module CoverageFileTree =
             environment.Icons.MethodNoSource
             String.Empty // TODO maybe 0 or 100% ??
             (displayname.Substring(offset))
-            None |> ignore
+            None
+          |> ignore
 
-        | [source] ->
+        | [ source ] ->
           let newrow =
             environment.AddLeafNode
               mmodel
-              (if source.Stale then environment.Icons.MethodDated else icon)
+              (if source.Stale then
+                 environment.Icons.MethodDated
+               else
+                 icon)
 #if VIS_PERCENT
-              (pcCover [x.Navigator])
+              (pcCover [ x.Navigator ])
 #else
               String.Empty
 #endif
               (displayname.Substring(offset))
-              (if hasSource
-               then
-                if source.Stale
-                then Some <| Resource.Format("FileNewerThanReport", [| source.FullName |])
-                else None
-               else Some <| Resource.Format("FileNotFound", [| source.FullName |]))
+              (if hasSource then
+                 if source.Stale then
+                   Some
+                   <| Resource.Format("FileNewerThanReport", [| source.FullName |])
+                 else
+                   None
+               else
+                 Some
+                 <| Resource.Format("FileNotFound", [| source.FullName |]))
 
-          if hasSource && (not source.Stale)
-          then environment.Map newrow x.Navigator
+          if hasSource && (not source.Stale) then
+            environment.Map newrow x.Navigator
 
         | _ ->
           // If multi-source (has inlines), add the source file nodes to the hittable map
@@ -226,40 +271,48 @@ module CoverageFileTree =
               mmodel
               icon
 #if VIS_PERCENT
-              (pcCover [x.Navigator])
+              (pcCover [ x.Navigator ])
 #else
               String.Empty
 #endif
               (displayname.Substring(offset))
               None
+
           sources
-          |> List.iter (fun s ->
-            let srow =
-                environment.AddLeafNode
-                  newrow
-                  (if s.Stale then environment.Icons.SourceDated else icon)
+          |> List.iter
+               (fun s ->
+                 let srow =
+                   environment.AddLeafNode
+                     newrow
+                     (if s.Stale then
+                        environment.Icons.SourceDated
+                      else
+                        icon)
 #if VIS_PERCENT
-                  (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
-                   |> Seq.cast<XPathNavigator>
-                   |> Seq.filter(fun n -> n.GetAttribute("document", String.Empty) = s.FullName)
-                   |> coverPoints
-                   |> coverText
-                  )
+                     (x.Navigator.SelectDescendants("seqpnt", String.Empty, false)
+                      |> Seq.cast<XPathNavigator>
+                      |> Seq.filter
+                           (fun n ->
+                             n.GetAttribute("document", String.Empty) = s.FullName)
+                      |> coverPoints
+                      |> coverText)
 #else
-                  String.Empty
+                     String.Empty
 #endif
-                  s.FileName
-                  (if s.Exists
-                   then None
-                   else Some <| Resource.Format("FileNotFound", [| s.FullName |]))
-            if s.Exists && (not s.Stale) then environment.Map srow s.Navigator
-          )
+                     s.FileName
+                     (if s.Exists then
+                        None
+                      else
+                        Some
+                        <| Resource.Format("FileNotFound", [| s.FullName |]))
+
+                 if s.Exists && (not s.Stale) then
+                   environment.Map srow s.Navigator)
 
       if special <> MethodType.Normal then
 #if VIS_PERCENT
-        let pc = keys
-                 |> Seq.map (fun x -> x.Navigator)
-                 |> pcCover
+        let pc =
+          keys |> Seq.map (fun x -> x.Navigator) |> pcCover
 #else
         let pc = String.Empty
 #endif
@@ -313,7 +366,7 @@ module CoverageFileTree =
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
     (nodes: seq<MethodKey>)
-    (epoch : DateTime)
+    (epoch: DateTime)
     =
     let applyToModel
       (theModel: CoverageTreeContext<'TModel, 'TRow>)
@@ -326,29 +379,30 @@ module CoverageFileTree =
           (environment.Icons.Module, String.Empty) // TODO maybe
         else
 #if VIS_PERCENT
-          let pc = group
-                   |> snd
-                   |> Seq.map (fun x -> x.Navigator)
-                   |> pcCover
+          let pc =
+            group
+            |> snd
+            |> Seq.map (fun x -> x.Navigator)
+            |> pcCover
 #else
           let pc = String.Empty
 #endif
-          let names = group
-                      |> snd
-                      |> Seq.map
-                          (fun key -> key.Name |> DisplayName)
-                      |> Seq.filter (fun d -> d.[0] <> '.')
-                      |> Seq.toList
+          let names =
+            group
+            |> snd
+            |> Seq.map (fun key -> key.Name |> DisplayName)
+            |> Seq.filter (fun d -> d.[0] <> '.')
+            |> Seq.toList
 
-          if names |> List.isEmpty ||
-             names |> List.exists
-                     (fun d -> d.Equals("Invoke") |> not )
-          then
+          if names |> List.isEmpty
+             || names
+                |> List.exists (fun d -> d.Equals("Invoke") |> not) then
             (environment.Icons.Class, pc)
           else
             (environment.Icons.Effect, pc)
 
-      let newrow = environment.AddNode theModel (fst icon) (snd icon) name None
+      let newrow =
+        environment.AddNode theModel (fst icon) (snd icon) name None
 
       populateClassNode environment newrow (snd group) epoch
       newrow
@@ -416,7 +470,7 @@ module CoverageFileTree =
     (environment: CoverageModelDisplay<'TModel, 'TRow, 'TIcon>)
     (model: CoverageTreeContext<'TModel, 'TRow>)
     (node: XPathNavigator)
-    (epoch : DateTime)
+    (epoch: DateTime)
     =
     // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
     let applyToModel
@@ -425,10 +479,11 @@ module CoverageFileTree =
       =
       let name = fst group
 #if VIS_PERCENT
-      let pc = group
-                |> snd
-                |> Seq.map (fun x -> x.Navigator)
-                |> pcCover
+      let pc =
+        group
+        |> snd
+        |> Seq.map (fun x -> x.Navigator)
+        |> pcCover
 #else
       let pc = String.Empty
 #endif
@@ -468,84 +523,83 @@ module CoverageFileTree =
 
     match CoverageFile.LoadCoverageFile current with
     | Left failed ->
-        Messages.InvalidCoverageFileMessage environment.Display failed
-        environment.UpdateMRUFailure current
+      Messages.InvalidCoverageFileMessage environment.Display failed
+      environment.UpdateMRUFailure current
     | Right coverage ->
-        let navigator = coverage.Document.CreateNavigator()
+      let navigator = coverage.Document.CreateNavigator()
 
-        // check if coverage is newer that the source files
-        let sourceFiles =
-          navigator
-            .Select("//seqpnt/@document")
-          |> Seq.cast<XPathNavigator>
-          |> Seq.map (fun x -> x.Value)
-          |> Seq.distinct
+      // check if coverage is newer that the source files
+      let sourceFiles =
+        navigator.Select("//seqpnt/@document")
+        |> Seq.cast<XPathNavigator>
+        |> Seq.map (fun x -> x.Value)
+        |> Seq.distinct
 
-        let missing =
-          sourceFiles
-          |> Seq.map GetSource
-          |> Seq.filter (fun f -> not f.Exists)
+      let missing =
+        sourceFiles
+        |> Seq.map GetSource
+        |> Seq.filter (fun f -> not f.Exists)
 
-        let newer =
-          sourceFiles
-          |> Seq.map GetSource
-          |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
+      let newer =
+        sourceFiles
+        |> Seq.map GetSource
+        |> Seq.filter (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
 
-        let message = [
-                        (missing, "NotAllSourcePresent")
-                        (newer, "SomeSourceModified")
-                      ]
-                      |> Seq.filter (fun (x,y) -> x |> Seq.isEmpty |> not)
-                      |> Seq.map (fun (x,y) -> Resource.Format(y, [| |]))
+      let message =
+        [ (missing, "NotAllSourcePresent")
+          (newer, "SomeSourceModified") ]
+        |> Seq.filter (fun (x, y) -> x |> Seq.isEmpty |> not)
+        |> Seq.map (fun (x, y) -> Resource.Format(y, [||]))
 
-        let model = environment.SetXmlNode
+      let model =
+        environment.SetXmlNode
 #if VIS_PERCENT
-                      (pcCover [navigator])
+          (pcCover [ navigator ])
 #else
-                      String.Empty
+          String.Empty
 #endif
-                      current.Name
-                      (if Seq.isEmpty missing
-                       then
-                        if Seq.isEmpty newer
-                        then environment.Icons.Report
-                        else environment.Icons.ReportDated
-                       else
-                       environment.Icons.ReportWarning)
-                      (String.Join(Environment.NewLine, message))
+          current.Name
+          (if Seq.isEmpty missing then
+             if Seq.isEmpty newer then
+               environment.Icons.Report
+             else
+               environment.Icons.ReportDated
+           else
+             environment.Icons.ReportWarning)
+          (String.Join(Environment.NewLine, message))
 
-        let applyToModel
-          (theModel: CoverageTreeContext<'TModel, 'TRow>)
-          (group: XPathNavigator * string)
-          =
-          let name = snd group
+      let applyToModel
+        (theModel: CoverageTreeContext<'TModel, 'TRow>)
+        (group: XPathNavigator * string)
+        =
+        let name = snd group
 #if VIS_PERCENT
-          let pc = ([group |> fst] |> pcCover)
+        let pc = ([ group |> fst ] |> pcCover)
 #else
-          let pc = String.Empty
+        let pc = String.Empty
 #endif
 
-          let newModel =
-            environment.AddNode theModel environment.Icons.Assembly pc name None
+        let newModel =
+          environment.AddNode theModel environment.Icons.Assembly pc name None
 
-          populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
+        populateAssemblyNode environment newModel (fst group) current.LastWriteTimeUtc
 
-        let assemblies =
-          coverage
-            .Document
-            .CreateNavigator()
-            .Select("//module")
-          |> Seq.cast<XPathNavigator>
+      let assemblies =
+        coverage
+          .Document
+          .CreateNavigator()
+          .Select("//module")
+        |> Seq.cast<XPathNavigator>
 
-        assemblies
-        |> Seq.map
-             (fun node ->
-               (node,
-                node
-                  .GetAttribute("assemblyIdentity", String.Empty)
-                  .Split(',')
-                |> Seq.head))
-        |> Seq.sortBy snd
-        |> Seq.iter (applyToModel model)
+      assemblies
+      |> Seq.map
+           (fun node ->
+             (node,
+              node
+                .GetAttribute("assemblyIdentity", String.Empty)
+                .Split(',')
+              |> Seq.head))
+      |> Seq.sortBy snd
+      |> Seq.iter (applyToModel model)
 
-        environment.UpdateUISuccess current
+      environment.UpdateUISuccess current

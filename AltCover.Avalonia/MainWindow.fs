@@ -23,7 +23,7 @@ type MainWindow() as this =
   inherit Window()
   let mutable armed = false
   let mutable justOpened = String.Empty
-  let mutable coverageFiles : string list = []
+  let mutable coverageFiles: string list = []
   let ofd = OpenFileDialog()
   let iconMaker (x: Stream) = new Bitmap(x)
   let icons = Icons(iconMaker)
@@ -43,9 +43,13 @@ type MainWindow() as this =
 
   let makeTreeNode pc leaf name icon =
     let tree = Image()
-    tree.Source <- if leaf
-                   then icons.Blank.Force()
-                   else icons.TreeExpand.Force()
+
+    tree.Source <-
+      if leaf then
+        icons.Blank.Force()
+      else
+        icons.TreeExpand.Force()
+
     tree.Margin <- Thickness.Parse("2")
     let text = TextBlock()
     text.Text <- name
@@ -330,7 +334,8 @@ type MainWindow() as this =
                }
                |> Async.Start
 
-             with x ->
+             with
+             | x ->
                let caption = Resource.GetResourceString "LoadError"
                this.ShowMessageBox MessageType.Error caption x.Message
 
@@ -529,26 +534,27 @@ type MainWindow() as this =
 
       row.Tapped
       |> Event.add
-          (fun evt ->
-            row.IsExpanded <- not row.IsExpanded
-            if not leaf
-            then
-              let items = (row.Header :?> StackPanel).Children
-              items.RemoveAt(0)
-              let mark = Image()
+           (fun evt ->
+             row.IsExpanded <- not row.IsExpanded
 
-              mark.Source <-
-                if row.Items.OfType<Object>().Any() then
-                  if row.IsExpanded then
-                    icons.TreeCollapse.Force()
-                  else
-                    icons.TreeExpand.Force()
-                else
-                  icons.Blank.Force()
+             if not leaf then
+               let items = (row.Header :?> StackPanel).Children
+               items.RemoveAt(0)
+               let mark = Image()
 
-              mark.Margin <- Thickness.Parse("2")
-              items.Insert(0, mark)
-            evt.Handled <- true)
+               mark.Source <-
+                 if row.Items.OfType<Object>().Any() then
+                   if row.IsExpanded then
+                     icons.TreeCollapse.Force()
+                   else
+                     icons.TreeExpand.Force()
+                 else
+                   icons.Blank.Force()
+
+               mark.Margin <- Thickness.Parse("2")
+               items.Insert(0, mark)
+
+             evt.Handled <- true)
 
       row.Items <- List<TreeViewItem>()
       row.Header <- makeTreeNode note leaf name <| anIcon.Force()
@@ -656,6 +662,7 @@ type MainWindow() as this =
          (fun _ ->
            Avalonia.Dialogs.AboutAvaloniaDialog.OpenBrowser
              "http://www.github.com/SteveGilham/altcover")
+
     this.FindControl<TabItem>("AboutDetails").Header <- Resource.GetResourceString
                                                           "AboutDialog.About"
 
