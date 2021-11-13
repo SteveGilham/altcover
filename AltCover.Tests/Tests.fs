@@ -1044,6 +1044,7 @@ module AltCoverTests =
         |> XDocument.Load
 
       xml.Descendants(XName.Get("PackageReference"))
+      |> Seq.filter (fun x -> x.Attribute("Include".X).IsNotNull)
       |> Seq.map
            (fun x ->
              (x
