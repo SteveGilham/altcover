@@ -445,7 +445,7 @@ module AltCoverTests =
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
-#if NET5_0
+#if !NET472 && !NET20
   [<Test>]
   let NullRefShouldBeHandled () =
     getMyMethodName "=>"
