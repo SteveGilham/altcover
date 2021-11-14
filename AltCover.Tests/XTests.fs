@@ -1071,6 +1071,7 @@ module AltCoverXTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = CoverageParameters.outputDirectories () }
 
       let input =
@@ -1130,6 +1131,7 @@ module AltCoverXTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = CoverageParameters.outputDirectories () }
 
       let input =
@@ -1355,6 +1357,7 @@ module AltCoverXTests =
       [ visitor ]
       (Visitor.I.toSeq
         { AssemblyPath = path
+          Identity = Hallmark.Build()
           Destinations = [] })
 
     let expectedText =
@@ -1390,6 +1393,7 @@ module AltCoverXTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =

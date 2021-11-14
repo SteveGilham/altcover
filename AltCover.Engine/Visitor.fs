@@ -78,16 +78,26 @@ type internal GoTo =
     Representative: Reporting
     Key: int }
 
+[<ExcludeFromCodeCoverage>]
+type internal Hallmark =
+  { Assembly: string
+    Configuration : string }
+  static member Build() =
+    { Assembly = String.Empty
+      Configuration = String.Empty }
+
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyDespatch =
   { AssemblyPath: string
-    Destinations: string list }
+    Destinations: string list
+    Identity : Hallmark }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyEntry =
   { Assembly: AssemblyDefinition
     Inspection: Inspections
-    Destinations: string list }
+    Destinations: string list
+    Identity : Hallmark }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal ModuleEntry =
@@ -257,7 +267,7 @@ type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =
-
+  let internal hash = System.Security.Cryptography.SHA256.Create()
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
@@ -392,6 +402,51 @@ module internal CoverageParameters =
   let internal add (key: StrongNameKeyData) =
     let index = KeyStore.keyToIndex key
     keys.[index] <- KeyStore.keyToRecord key
+
+#if IDEMPOTENT_INSTRUMENT
+  let mutable internal configurationHash : option<String> = None
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+                                                    "UseStringEmptyRule",
+                                                    Justification = "Probably in the 'string' inline")>]
+  let private filterString (n: FilterClass) =
+    (string n)
+      .Replace('\r', ';')
+      .Replace('\n', ';')
+      .Replace(";;", ";")
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
+                                                    "UseStringEmptyRule",
+                                                    Justification = "Probably in the 'string' inline")>]
+  let internal makeConfiguration () =
+    let components =
+      [ string !methodPoint
+        String.Join("|", trackingNames)
+        String.Join("|", topLevel |> Seq.map filterString |> Seq.sort)
+        String.Join("|", nameFilters |> Seq.map filterString |> Seq.sort)
+        string staticFilter
+        string !showGenerated
+        string !coalesceBranches
+        string !local
+        string !sourcelink
+        string <| interval ()
+        string coverstyle
+        string <| reportFormat ()
+        defaultStrongNameKey
+        |> Option.map KeyStore.keyToIndex
+        |> string
+        recorderStrongNameKey
+        |> Option.map KeyStore.keyToIndex
+        |> string
+        String.Join("|", keys.Keys |> Seq.map string |> Seq.sort) ]
+
+    configurationHash <-
+      String.Join("||", components)
+      |> System.Text.Encoding.ASCII.GetBytes
+      |> hash.ComputeHash
+      |> Convert.ToBase64String
+      |> Some
+#endif
 
 [<AutoOpen>]
 module internal Inspector =
@@ -574,7 +629,8 @@ module internal Visitor =
                Assembly
                  { Assembly = x
                    Inspection = included
-                   Destinations = path.Destinations }
+                   Destinations = path.Destinations
+                   Identity = path.Identity }
 
              path.AssemblyPath
              |> (AssemblyDefinition.ReadAssembly

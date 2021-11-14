@@ -47,6 +47,26 @@ module AltCoverTests2 =
       .GetManifestResourceStream(recorder)
 
   // Instrument.I.fs
+#if IDEMPOTENT_INSTRUMENT
+  [<Test>]
+  let ShouldGetAbandonedMutex () =
+    use testMutex = new System.Threading.Mutex()
+    let abandon () = Instrument.I.safeWait testMutex
+
+    let t =
+      Threading.Thread(Threading.ThreadStart(abandon))
+
+    t.Start()
+    t.Join()
+
+    try
+      abandon ()
+    finally
+      testMutex.ReleaseMutex()
+
+    test <@ "Didn't lock!" |> String.IsNullOrWhiteSpace |> not @>
+#endif
+
   [<Test>]
   let ShouldBeAbleToGetTheVisitReportMethod () =
     use recstream = recorderStream ()
@@ -2553,6 +2573,7 @@ module AltCoverTests2 =
       Node.Assembly
         { Assembly = def
           Inspection = Inspections.Ignore
+          Identity = Hallmark.Build()
           Destinations = [] }
 
     let result =
@@ -2593,6 +2614,7 @@ module AltCoverTests2 =
       Node.Assembly
         { Assembly = def
           Inspection = Inspections.Instrument
+          Identity = Hallmark.Build()
           Destinations = [] }
 
     let result =

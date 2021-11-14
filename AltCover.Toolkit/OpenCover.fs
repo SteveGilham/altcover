@@ -349,7 +349,7 @@ module OpenCover =
                            )
 
                          if ok then
-                           let line = f.[index - 1]
+                           let line = f.[index - 1] // or Array.get f (index - 1)
                            let cols = line.Length + 1
 
                            point.SetAttribute(

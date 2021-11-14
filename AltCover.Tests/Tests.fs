@@ -2063,6 +2063,7 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = [] }
         Node.Module
           { Module = null
@@ -2094,6 +2095,7 @@ module AltCoverTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = [] }
         Node.Finish ]
 
@@ -2107,6 +2109,7 @@ module AltCoverTests =
         [ AfterAssembly
             { Assembly = def
               Inspection = Inspections.Instrument
+              Identity = Hallmark.Build()
               Destinations = [] } ]
         [ AfterModule ]
         [ AfterType ]
@@ -2172,6 +2175,7 @@ module AltCoverTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = [] }
         Node.Finish ]
 
@@ -2547,6 +2551,7 @@ module AltCoverTests =
         <| Node.Assembly
              { Assembly = def
                Inspection = Inspections.Instrument
+               Identity = Hallmark.Build()
                Destinations = [] }
         |> Seq.toList
 
@@ -2583,6 +2588,7 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Start [ { AssemblyPath = path
+                          Identity = Hallmark.Build()
                           Destinations = [] } ]
         |> Seq.toList
 
@@ -2597,6 +2603,7 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = [] }
 
       let expected =
@@ -2605,6 +2612,7 @@ module AltCoverTests =
                       [ AfterAssembly
                           { Assembly = def
                             Inspection = Inspections.Instrument
+                            Identity = Hallmark.Build()
                             Destinations = [] } ] ]
 
       //deeper |> Seq.map (fun x -> x.GetType().Name) |> Seq.iter (printfn "%A")
@@ -2635,6 +2643,7 @@ module AltCoverTests =
       let deeper =
         Visitor.I.deeper
         <| Node.Start [ { AssemblyPath = path
+                          Identity = Hallmark.Build()
                           Destinations = [] } ]
         |> Seq.toList
 
@@ -2649,6 +2658,7 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Ignore
+            Identity = Hallmark.Build()
             Destinations = [] }
 
       let expected =
@@ -2657,6 +2667,7 @@ module AltCoverTests =
                       [ AfterAssembly
                           { Assembly = def
                             Inspection = Inspections.Ignore
+                            Identity = Hallmark.Build()
                             Destinations = [] } ] ]
 
       Assert.That(deeper.Length, Is.EqualTo 4)
@@ -2722,6 +2733,7 @@ module AltCoverTests =
 
       Visitor.visit [ fix ] [
         { AssemblyPath = path
+          Identity = Hallmark.Build()
           Destinations = ux }
       ]
       // assembly definitions care about being separate references in equality tests
@@ -2735,16 +2747,19 @@ module AltCoverTests =
         Node.Assembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = ux }
 
       let expected =
         List.concat [ [ Start [ { AssemblyPath = path
+                                  Identity = Hallmark.Build()
                                   Destinations = ux } ]
                         assembly ]
                       (Visitor.I.deeper >> Seq.toList) assembly
                       [ AfterAssembly
                           { Assembly = def
                             Inspection = Inspections.Instrument
+                            Identity = Hallmark.Build()
                             Destinations = ux }
                         Finish ] ]
 
@@ -3223,6 +3238,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       use def =
@@ -3258,6 +3274,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       //printfn "%A" (makeDocument document)
@@ -3292,6 +3309,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       //printfn "%A" (makeDocument document)
@@ -3369,6 +3387,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       Assert.That(
@@ -3429,6 +3448,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let result = makeJson document
@@ -3497,6 +3517,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let result = makeJson document
@@ -3530,6 +3551,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       (makeDocument document)
@@ -3566,6 +3588,7 @@ module AltCoverTests =
         [ visitor1 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names1 =
@@ -3596,6 +3619,7 @@ module AltCoverTests =
         [ visitor2 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names2 =
@@ -3632,6 +3656,7 @@ module AltCoverTests =
         [ visitor3 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names3 =
@@ -3667,6 +3692,7 @@ module AltCoverTests =
         [ visitor5 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names5 =
@@ -3708,6 +3734,7 @@ module AltCoverTests =
         [ visitor6 ]
         (Visitor.I.toSeq
           { AssemblyPath = path6
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names6 =
@@ -3744,6 +3771,7 @@ module AltCoverTests =
         [ visitor7 ]
         (Visitor.I.toSeq
           { AssemblyPath = path6
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names7 =
@@ -3788,6 +3816,7 @@ module AltCoverTests =
         [ visitor8 ]
         (Visitor.I.toSeq
           { AssemblyPath = path5
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names8 =
@@ -3823,6 +3852,7 @@ module AltCoverTests =
         [ visitor9 ]
         (Visitor.I.toSeq
           { AssemblyPath = path5
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names9 =
@@ -3849,6 +3879,7 @@ module AltCoverTests =
         [ visitor4 ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let names4 =
@@ -3887,6 +3918,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       (makeDocument document)
@@ -3924,6 +3956,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       Assert.That(
@@ -3995,6 +4028,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       use def =
@@ -4040,6 +4074,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       use def =
@@ -4087,6 +4122,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       use def =
@@ -4386,6 +4422,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       Assert.That(
@@ -4449,6 +4486,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =
@@ -4484,6 +4522,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let expected = [1; 1; 1; 1; 1; 1; 1; 1; 0; 1; 0; 0; 0; 0; 0; 0]
@@ -4519,6 +4558,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       // printfn "%A" (makeDocument document)
@@ -4583,6 +4623,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =
@@ -4638,6 +4679,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =
@@ -4723,6 +4765,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let baseline =
@@ -4754,6 +4797,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -4800,6 +4844,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -4849,6 +4894,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =
@@ -4898,6 +4944,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let baseline =
@@ -4929,6 +4976,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =
@@ -4968,6 +5016,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =
@@ -5028,6 +5077,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let baseline =
@@ -5061,6 +5111,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = sample21trad
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let doc = makeDocument document
@@ -5113,6 +5164,7 @@ module AltCoverTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = sample21
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let doc = makeDocument document
@@ -5175,6 +5227,7 @@ module AltCoverTests =
       [ visitor ]
       (Visitor.I.toSeq
         { AssemblyPath = path
+          Identity = Hallmark.Build()
           Destinations = [] })
 
     let doc = makeDocument document

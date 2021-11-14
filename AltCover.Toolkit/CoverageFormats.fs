@@ -64,7 +64,12 @@ module CoverageFormats =
       assemblies
       |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
-      |> Seq.map (fun p -> { AssemblyPath = p; Destinations = [] })
+      |> Seq.map
+           (fun p ->
+             { AssemblyPath = p
+               Destinations = []
+               Identity = AltCover.Hallmark.Build()
+             })
 
     // ensure default state
     AltCover.Main.init ()

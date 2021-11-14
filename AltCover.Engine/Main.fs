@@ -15,6 +15,7 @@ open Mono.Options
 type internal AssemblyInfo =
   { Path: string list
     Name: string
+    Hash: string
     Refs: string list }
 
 module internal Main =
@@ -38,6 +39,9 @@ module internal Main =
     CoverageParameters.defer.Value <- false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
+#if IDEMPOTENT_INSTRUMENT
+    CoverageParameters.configurationHash <- None
+#endif
     ProgramDatabase.symbolFolders.Clear()
     Instrument.resolutionTable.Clear()
 
@@ -363,7 +367,7 @@ module internal Main =
               let found =
                 outputDirectories |> Seq.filter Directory.Exists
 
-              if CoverageParameters.inplace.Value
+              if CoverageParameters.inplace.Value // Maybe barf if saving somewhere contaminated
                  && CommandLine.error |> List.isEmpty
                  && found.Any() then
                 found
@@ -446,7 +450,17 @@ module internal Main =
                     |> Path.GetDirectoryName
                     |> Directory.CreateDirectory
                     |> ignore
+#if IDEMPOTENT_INSTRUMENT
+                    Instrument.I.withFileMutex
+                      fullName
+                      (fun () ->
+                        if copy |> File.Exists |> not
+                           || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
+                                                                fullName) then
+                          File.Copy(fullName, copy, true))))
+#else
                     File.Copy(fullName, copy, true)))
+#endif
 
       // Track the symbol-bearing assemblies
       let assemblies =
@@ -473,6 +487,12 @@ module internal Main =
 
                             { Path = [ fullName ]
                               Name = def.Name.Name
+                              Hash =
+                                use stream = File.OpenRead fullName
+
+                                stream
+                                |> CoverageParameters.hash.ComputeHash
+                                |> Convert.ToBase64String
                               Refs =
                                 def.MainModule.AssemblyReferences
                                 |> Seq.map (fun r -> r.Name)
@@ -484,7 +504,8 @@ module internal Main =
                     [])
         |> Seq.toList
         |> Seq.concat
-        |> Seq.groupBy (fun a -> a.Name) // assume name is unique
+//        |> Seq.groupBy (fun a -> a.Name) // assume name is unique
+        |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique
         |> Seq.map
              (fun (n, agroup) ->
                { (agroup |> Seq.head) with
@@ -540,6 +561,10 @@ module internal Main =
 
             bundle next waiting (stage :: collection) (n - 1)
 
+#if IDEMPOTENT_INSTRUMENT
+      CoverageParameters.makeConfiguration ()
+#endif
+
       let sorted =
         bundle simplified candidates [] (simplified |> List.length)
         |> List.concat
@@ -553,7 +578,16 @@ module internal Main =
                  |> List.map (Path.GetDirectoryName >> (fun d -> mapping.[d]))
 
                ({ AssemblyPath = proto
-                  Destinations = targets },
+                  Destinations = targets
+                  Identity = {
+                    Assembly = a.Hash
+                    Configuration =
+#if IDEMPOTENT_INSTRUMENT
+                                      CoverageParameters.configurationHash.Value
+#else
+                                      String.Empty
+#endif
+                  }},
                 a.Name))
 
       List.unzip sorted

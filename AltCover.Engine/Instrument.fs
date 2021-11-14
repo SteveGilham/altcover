@@ -142,6 +142,67 @@ module internal Instrument =
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
   module internal I =
+#if IDEMPOTENT_INSTRUMENT
+    let prelude =
+      [ 0x01uy
+        0x00uy
+        0x02uy
+        0x00uy
+        0x54uy
+        0x0euy
+        0x08uy
+        0x41uy
+        0x73uy
+        0x73uy
+        0x65uy
+        0x6duy
+        0x62uy
+        0x6cuy
+        0x79uy
+        0x2cuy ]
+
+    let interlude =
+      [ 0x54uy
+        0x0euy
+        0x0duy
+        0x43uy
+        0x6fuy
+        0x6euy
+        0x66uy
+        0x69uy
+        0x67uy
+        0x75uy
+        0x72uy
+        0x61uy
+        0x74uy
+        0x69uy
+        0x6fuy
+        0x6euy
+        0x2cuy ]
+
+    let internal injectInstrumentation
+      (recorder: AssemblyDefinition)
+      (assembly: AssemblyEntry)
+      =
+      let blob =
+        [| prelude |> List.toArray
+           System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+           interlude |> List.toArray
+           System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration) |] // slight inefficiency
+        |> Array.concat
+
+      let attribute =
+        recorder.MainModule.GetType("AltCover.Recorder.InstrumentationAttribute")
+
+      let constructor =
+        attribute.GetConstructors()
+        |> Seq.head
+        |> assembly.Assembly.MainModule.ImportReference
+
+      let inject = CustomAttribute(constructor, blob)
+
+      assembly.Assembly.CustomAttributes.Add inject
+#endif
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
@@ -394,6 +455,30 @@ module internal Instrument =
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
       | _ -> null
 
+#if IDEMPOTENT_INSTRUMENT
+    let internal safeWait (mutex: System.Threading.WaitHandle) =
+      try
+        mutex.WaitOne() |> ignore
+      with :? System.Threading.AbandonedMutexException -> ()
+
+    let internal withFileMutex (p: string) f =
+      let key =
+        p
+        |> System.Text.Encoding.UTF8.GetBytes
+        |> CoverageParameters.hash.ComputeHash
+        |> Convert.ToBase64String
+
+      use mutex =
+        new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
+
+      safeWait mutex
+
+      try
+        f ()
+      finally
+        mutex.ReleaseMutex()
+#endif
+
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
     // param name="path">The full path of the output file</param>
@@ -436,11 +521,25 @@ module internal Instrument =
       try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
+#if IDEMPOTENT_INSTRUMENT
+        let write (a: AssemblyDefinition) (p: string) pk =
+          withFileMutex
+            p
+            (fun () ->
+              if p |> File.Exists |> not
+                 || DateTime.Now.Year > 2000 // TODO -- check hashes
+              then
+                use sink =
+                  File.Open(p, FileMode.Create, FileAccess.ReadWrite)
+
+                a.Write(sink, pk))
+#else
         let write (a: AssemblyDefinition) p pk =
           use sink =
             File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
           a.Write(sink, pk)
+#endif
 
         let resolver = assembly.MainModule.AssemblyResolver
         hookResolver resolver
@@ -1057,6 +1156,17 @@ module internal Instrument =
           RecorderSource = null
           AsyncSupport = None }
 
+    let visitAssembly state assembly =
+      updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
+      |> ignore
+      //if included <> Inspections.Ignore then
+      assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+#if IDEMPOTENT_INSTRUMENT
+      // TODO -- react to source or destination being stamped
+      injectInstrumentation state.RecordingAssembly assembly
+#endif
+      state
+
     // Perform visitor operations
     // param name="state">Contextual information for the visit</param>
     // param name="node">The node being visited</param>
@@ -1064,16 +1174,16 @@ module internal Instrument =
     let internal instrumentationVisitorCore (state: InstrumentContext) (node: Node) =
       match node with
       | Start _ -> visitStart state
-      | Assembly assembly ->
-          updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
-          |> ignore
-
-          if assembly.Inspection <> Inspections.Ignore then
-            assembly.Assembly.MainModule.AssemblyReferences.Add(
-              state.RecordingAssembly.Name
-            )
-
-          state
+      | Assembly assembly -> visitAssembly state assembly
+          //updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
+          //|> ignore
+          //
+          //if assembly.Inspection <> Inspections.Ignore then
+          //  assembly.Assembly.MainModule.AssemblyReferences.Add(
+          //    state.RecordingAssembly.Name
+          //  )
+          //
+          //state
       | Module m -> visitModule state m
       | Type _ -> state
       | Method m -> visitMethod state m
