@@ -1159,11 +1159,11 @@ module internal Instrument =
     let visitAssembly state assembly =
       updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
       |> ignore
-      //if included <> Inspections.Ignore then
-      assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+      if assembly.Inspection <> Inspections.Ignore then
+        assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
 #if IDEMPOTENT_INSTRUMENT
-      // TODO -- react to source or destination being stamped
-      injectInstrumentation state.RecordingAssembly assembly
+        // TODO -- react to source or destination being stamped
+        injectInstrumentation state.RecordingAssembly assembly
 #endif
       state
 
