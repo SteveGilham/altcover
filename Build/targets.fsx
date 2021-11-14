@@ -694,7 +694,8 @@ module SolutionRoot =
         if not (old.Equals(hack)) then
             File.WriteAllText(path, hack)
 
-        [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
+        [ "./AltCover.Hallmark/AltCover.Hallmark.fsproj"
+          "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
           "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
           "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj" 
           "./Samples/Sample25/Sample25.fsproj" ]
@@ -959,6 +960,7 @@ _Target
         [ ("./Build/common-rules.xml",
            [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
              "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+             "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Hallmark.dll"
              "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
              "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
              "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
@@ -1125,7 +1127,8 @@ _Target
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
            [],
            defaultRules)
-          ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+          ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Hallmark.dll"
+             "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ],
            [],
            "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly"

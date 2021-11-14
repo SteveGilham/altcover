@@ -1,6 +1,7 @@
 ﻿namespace AltCover.Recorder
 
 open System
+open System.Diagnostics.CodeAnalysis
 
 /// <summary>
 /// An attribute to label an instrumented assembly by provenance
@@ -21,3 +22,11 @@ type InstrumentationAttribute() =
     /// </summary>
     member val Configuration = "Uninstrumented!!" with get, set
   end
+
+[<assembly: SuppressMessage("Gendarme.Rules.Design",
+                            "MarkAssemblyWithAssemblyVersionRule",
+                            Justification = "doing so fails static linkage because of attribute duplication")>]
+[<assembly: SuppressMessage("Microsoft.Design", 
+                            "CA1016:MarkAssembliesWithAssemblyVersion",
+                             Justification="Exactly as above")>]
+()

@@ -28,6 +28,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" / -->
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="InstrumentationAttribute.fs" />
   </ItemGroup>
 
