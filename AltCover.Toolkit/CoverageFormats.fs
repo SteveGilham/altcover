@@ -68,7 +68,9 @@ module CoverageFormats =
            (fun p ->
              { AssemblyPath = p
                Destinations = []
-               Identity = AltCover.Hallmark.Build()
+               Identity = {
+                Assembly = String.Empty
+                Configuration = String.Empty }
              })
 
     // ensure default state

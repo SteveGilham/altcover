@@ -82,9 +82,6 @@ type internal GoTo =
 type internal Hallmark =
   { Assembly: string
     Configuration : string }
-  static member Build() =
-    { Assembly = String.Empty
-      Configuration = String.Empty }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyDespatch =

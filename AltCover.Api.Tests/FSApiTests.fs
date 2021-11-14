@@ -735,7 +735,9 @@ module FSApiTests =
     Visitor.visit
       visitors
       [ { AssemblyPath = sample
-          Identity = Hallmark.Build()
+          Identity = {
+                Assembly = String.Empty
+                Configuration = String.Empty }
           Destinations = [] } ]
 
     let document =

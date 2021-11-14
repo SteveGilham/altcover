@@ -17,6 +17,13 @@ open N
 
 #nowarn "25"
 
+[<AutoOpen>]
+module Extra =
+    type Hallmark with
+      static member internal Build() =
+        { Assembly = String.Empty
+          Configuration = String.Empty }
+
 [<NUnit.Framework.IncludeExcludeAttribute>]
 type ProxyObject() =
   inherit MarshalByRefObject()
