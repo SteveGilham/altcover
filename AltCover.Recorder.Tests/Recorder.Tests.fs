@@ -57,6 +57,16 @@ module AltCoverTests =
            n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
   [<Test>]
+  let ShouldCoverTrivalClass () =
+    let mark = InstrumentationAttribute()
+    Assert.That(mark.Assembly, Is.EqualTo "AltCover.Recorder.g!")
+    Assert.That(mark.Configuration, Is.EqualTo "Uninstrumented!!")
+    mark.Assembly <- String.Empty
+    mark.Configuration <- String.Empty
+    Assert.True(String.IsNullOrEmpty mark.Assembly)
+    Assert.True(String.IsNullOrEmpty mark.Configuration)
+
+  [<Test>]
   let ShouldFailXmlDataForNativeJson () =
     Assert.Throws<NotSupportedException>
       (fun () ->
