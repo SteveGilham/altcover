@@ -976,7 +976,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@152.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target = "AltCover.Gui+prepareTreeView@151.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification = "Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

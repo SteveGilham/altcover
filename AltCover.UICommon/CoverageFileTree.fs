@@ -137,14 +137,7 @@ module CoverageFileTree =
 
       let fixup = modopt >> gcroot
 
-      let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
-        let fullname =
-          fixup
-          <| x.Navigator.GetAttribute("fullname", String.Empty)
-
-        let name = fixup x.Name
-
-        let args =
+      let extractArgs name fullname =
           if
             String.IsNullOrEmpty(fullname)
             || charIndexOf name '(' > 0
@@ -157,6 +150,15 @@ module CoverageFileTree =
               String.Empty
             else
               fullname.Substring(bracket)
+
+      let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
+        let fullname =
+          fixup
+          <| x.Navigator.GetAttribute("fullname", String.Empty)
+
+        let name = fixup x.Name
+
+        let args = extractArgs name fullname
 
         let displayname = name + args
 
