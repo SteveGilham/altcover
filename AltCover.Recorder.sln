@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample25", "Samples\Sample25\Sample25.fsproj", "{54E57C76-339C-496E-B6EF-832534C7D545}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Hallmark", "AltCover.Hallmark\AltCover.Hallmark.fsproj", "{38FC843D-8EE4-4C33-A0C0-CDA4781D75AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{54E57C76-339C-496E-B6EF-832534C7D545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{54E57C76-339C-496E-B6EF-832534C7D545}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54E57C76-339C-496E-B6EF-832534C7D545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38FC843D-8EE4-4C33-A0C0-CDA4781D75AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38FC843D-8EE4-4C33-A0C0-CDA4781D75AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38FC843D-8EE4-4C33-A0C0-CDA4781D75AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38FC843D-8EE4-4C33-A0C0-CDA4781D75AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

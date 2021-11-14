@@ -67,6 +67,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="AltCover.Hallmark">
+      <HintPath>..\_Binaries\AltCover.Recorder\Debug+AnyCPU\net20\AltCover.Hallmark.dll</HintPath>
+    </Reference>
     <Reference Include="AltCover.Recorder">
       <HintPath>..\_Binaries\AltCover.Recorder\Debug+AnyCPU\net20\AltCover.Recorder.dll</HintPath>
     </Reference>

@@ -60,6 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AltCover.Hallmark\AltCover.Hallmark.fsproj" />
     <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj" />
   </ItemGroup>
 

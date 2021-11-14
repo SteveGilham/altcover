@@ -2059,8 +2059,7 @@ module AltCoverTests =
     ZipFlushLeavesExpectedTraces()
 #endif
     FlushLeavesExpectedTraces()
-#if IDEMPOTENT_INSTRUMENT
+
 [<assembly: Instrumentation(Assembly = "AltCover+Recorder+g+",
                             Configuration = "Uninstrumented++")>]
 ()
-#endif
