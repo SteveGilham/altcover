@@ -865,6 +865,7 @@ _Target
           ("./_Mono/Sample3",
            [ "-target:library"
              "-debug"
+             "-D:MONO"
              "-out:./_Mono/Sample3/Sample3.dll"
              "-lib:./packages/Mono.Cecil.0.11.1/lib/net40"
              "-r:Mono.Cecil.dll"

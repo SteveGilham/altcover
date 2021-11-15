@@ -3,11 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil.Cil;
 
+// cheat to allow init-property
+namespace System.Runtime.CompilerServices
+{
+        internal static class IsExternalInit {}
+}
+
 namespace Sample3
 {
     public class Class1
     {
         public int Property { get; set; }
+#if !MONO       
+        public int Property2 { get; init; }
+#endif        
     }
 
     public class Class2

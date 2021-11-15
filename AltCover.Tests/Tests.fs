@@ -3013,7 +3013,8 @@ module AltCoverTests =
         "Class1"
         "Class2"
         "Class3"
-        "Class4" ]
+        "Class4"
+        "IsExternalInit" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3035,7 +3036,9 @@ module AltCoverTests =
         "Sample3.Class1"
         "Sample3.Class2"
         "Sample3.Class3"
-        "Sample3.Class3+Class4" ]
+        "Sample3.Class3+Class4"
+        "System.Runtime.CompilerServices.IsExternalInit"
+      ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3061,7 +3064,8 @@ module AltCoverTests =
         "Class1"
         "Class2"
         "Class3"
-        "Class4" ]
+        "Class4"
+        "IsExternalInit" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3097,7 +3101,8 @@ module AltCoverTests =
         "Sample3.Class1"
         "Sample3.Class2"
         "Sample3.Class3"
-        "Sample3.Class3+Class4" ]
+        "Sample3.Class3+Class4"
+        "System.Runtime.CompilerServices.IsExternalInit" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3118,6 +3123,8 @@ module AltCoverTests =
     let expected =
       [ "get_Property"
         "set_Property"
+        "get_Property2"
+        "set_Property2"
         "#ctor"
         "get_Property"
         "set_Property"
@@ -3163,6 +3170,8 @@ module AltCoverTests =
     let expected =
       [ "System.Int32 Sample3.Class1.get_Property()"
         "System.Void Sample3.Class1.set_Property(System.Int32)"
+        "System.Int32 Sample3.Class1.get_Property2()"
+        "System.Void modreq(System.Runtime.CompilerServices.IsExternalInit) Sample3.Class1.set_Property2(System.Int32)"
         "System.Void Sample3.Class1.#ctor()"
         "System.Int32 Sample3.Class2.get_Property()"
         "System.Void Sample3.Class2.set_Property(System.Int32)"
