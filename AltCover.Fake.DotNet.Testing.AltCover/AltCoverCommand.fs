@@ -27,55 +27,55 @@ module AltCoverCommand =
     match collect with
     | AltCover.Primitive p -> AltCover.Primitive { p with Executable = tool }
     | AltCover.TypeSafe t ->
-        AltCover.TypeSafe
-          { t with
-              Executable = TypeSafe.Tool tool }
+      AltCover.TypeSafe
+        { t with
+            Executable = TypeSafe.Tool tool }
     | AltCover.Abstract a ->
-        let copy : Primitive.CollectOptions =
-          { RecorderDirectory = a.RecorderDirectory
-            WorkingDirectory = a.WorkingDirectory
-            Executable = tool
-            LcovReport = a.LcovReport
-            Threshold = a.Threshold
-            Cobertura = a.Cobertura
-            OutputFile = a.OutputFile
-            CommandLine = a.CommandLine
-            ExposeReturnCode = a.ExposeReturnCode
-            SummaryFormat = a.SummaryFormat
-            Verbosity = a.Verbosity }
+      let copy: Primitive.CollectOptions =
+        { RecorderDirectory = a.RecorderDirectory
+          WorkingDirectory = a.WorkingDirectory
+          Executable = tool
+          LcovReport = a.LcovReport
+          Threshold = a.Threshold
+          Cobertura = a.Cobertura
+          OutputFile = a.OutputFile
+          CommandLine = a.CommandLine
+          ExposeReturnCode = a.ExposeReturnCode
+          SummaryFormat = a.SummaryFormat
+          Verbosity = a.Verbosity }
 
-        AltCover.Primitive copy
+      AltCover.Primitive copy
 
   let internal setCollectCommandLine (args: string seq) collect =
     match collect with
     | AltCover.Primitive p -> AltCover.Primitive { p with CommandLine = args }
     | AltCover.Abstract a ->
-        let copy : Primitive.CollectOptions =
-          { RecorderDirectory = a.RecorderDirectory
-            WorkingDirectory = a.WorkingDirectory
-            Executable = a.Executable
-            LcovReport = a.LcovReport
-            Threshold = a.Threshold
-            Cobertura = a.Cobertura
-            OutputFile = a.OutputFile
-            CommandLine = args |> toSeq
-            ExposeReturnCode = a.ExposeReturnCode
-            SummaryFormat = a.SummaryFormat
-            Verbosity = a.Verbosity }
+      let copy: Primitive.CollectOptions =
+        { RecorderDirectory = a.RecorderDirectory
+          WorkingDirectory = a.WorkingDirectory
+          Executable = a.Executable
+          LcovReport = a.LcovReport
+          Threshold = a.Threshold
+          Cobertura = a.Cobertura
+          OutputFile = a.OutputFile
+          CommandLine = args |> toSeq
+          ExposeReturnCode = a.ExposeReturnCode
+          SummaryFormat = a.SummaryFormat
+          Verbosity = a.Verbosity }
 
-        AltCover.Primitive copy
+      AltCover.Primitive copy
     | AltCover.TypeSafe t ->
-        AltCover.TypeSafe
-          { t with
-              CommandLine =
-                let newargs =
-                  args
-                  |> (Seq.map TypeSafe.CommandArgument)
-                  |> Seq.toList
+      AltCover.TypeSafe
+        { t with
+            CommandLine =
+              let newargs =
+                args
+                |> (Seq.map TypeSafe.CommandArgument)
+                |> Seq.toList
 
-                match newargs with
-                | [] -> TypeSafe.NoCommand
-                | _ -> TypeSafe.CommandArguments newargs }
+              match newargs with
+              | [] -> TypeSafe.NoCommand
+              | _ -> TypeSafe.CommandArguments newargs }
 
   let internal setPrepareCommandLine
     (args: string seq)
@@ -83,58 +83,58 @@ module AltCoverCommand =
     =
     match prepare with
     | AltCover.PrepareOptions.Primitive p ->
-        AltCover.PrepareOptions.Primitive { p with CommandLine = args }
+      AltCover.PrepareOptions.Primitive { p with CommandLine = args }
     | AltCover.PrepareOptions.Abstract a ->
-        let copy : Primitive.PrepareOptions =
-          { InputDirectories = a.InputDirectories
-            OutputDirectories = a.OutputDirectories
-            SymbolDirectories = a.SymbolDirectories
-            Dependencies = a.Dependencies
-            Keys = a.Keys
-            StrongNameKey = a.StrongNameKey
-            Report = a.Report
-            FileFilter = a.FileFilter
-            AssemblyFilter = a.AssemblyFilter
-            AssemblyExcludeFilter = a.AssemblyExcludeFilter
-            TypeFilter = a.TypeFilter
-            MethodFilter = a.MethodFilter
-            AttributeFilter = a.AttributeFilter
-            PathFilter = a.PathFilter
-            AttributeTopLevel = a.AttributeTopLevel
-            TypeTopLevel = a.TypeTopLevel
-            MethodTopLevel = a.MethodTopLevel
-            CallContext = a.CallContext
-            ReportFormat = a.ReportFormat
-            InPlace = a.InPlace
-            Save = a.Save
-            ZipFile = a.ZipFile
-            MethodPoint = a.MethodPoint
-            SingleVisit = a.SingleVisit
-            LineCover = a.LineCover
-            BranchCover = a.BranchCover
-            CommandLine = args |> toSeq
-            ExposeReturnCode = a.ExposeReturnCode
-            SourceLink = a.SourceLink
-            Defer = a.Defer
-            LocalSource = a.LocalSource
-            VisibleBranches = a.VisibleBranches
-            ShowStatic = a.ShowStatic
-            ShowGenerated = a.ShowGenerated
-            Verbosity = a.Verbosity }
+      let copy: Primitive.PrepareOptions =
+        { InputDirectories = a.InputDirectories
+          OutputDirectories = a.OutputDirectories
+          SymbolDirectories = a.SymbolDirectories
+          Dependencies = a.Dependencies
+          Keys = a.Keys
+          StrongNameKey = a.StrongNameKey
+          Report = a.Report
+          FileFilter = a.FileFilter
+          AssemblyFilter = a.AssemblyFilter
+          AssemblyExcludeFilter = a.AssemblyExcludeFilter
+          TypeFilter = a.TypeFilter
+          MethodFilter = a.MethodFilter
+          AttributeFilter = a.AttributeFilter
+          PathFilter = a.PathFilter
+          AttributeTopLevel = a.AttributeTopLevel
+          TypeTopLevel = a.TypeTopLevel
+          MethodTopLevel = a.MethodTopLevel
+          CallContext = a.CallContext
+          ReportFormat = a.ReportFormat
+          InPlace = a.InPlace
+          Save = a.Save
+          ZipFile = a.ZipFile
+          MethodPoint = a.MethodPoint
+          SingleVisit = a.SingleVisit
+          LineCover = a.LineCover
+          BranchCover = a.BranchCover
+          CommandLine = args |> toSeq
+          ExposeReturnCode = a.ExposeReturnCode
+          SourceLink = a.SourceLink
+          Defer = a.Defer
+          LocalSource = a.LocalSource
+          VisibleBranches = a.VisibleBranches
+          ShowStatic = a.ShowStatic
+          ShowGenerated = a.ShowGenerated
+          Verbosity = a.Verbosity }
 
-        AltCover.PrepareOptions.Primitive copy
+      AltCover.PrepareOptions.Primitive copy
     | AltCover.PrepareOptions.TypeSafe t ->
-        AltCover.PrepareOptions.TypeSafe
-          { t with
-              CommandLine =
-                let newargs =
-                  args
-                  |> (Seq.map TypeSafe.CommandArgument)
-                  |> Seq.toList
+      AltCover.PrepareOptions.TypeSafe
+        { t with
+            CommandLine =
+              let newargs =
+                args
+                |> (Seq.map TypeSafe.CommandArgument)
+                |> Seq.toList
 
-                match newargs with
-                | [] -> TypeSafe.NoCommand
-                | _ -> TypeSafe.CommandArguments newargs }
+              match newargs with
+              | [] -> TypeSafe.NoCommand
+              | _ -> TypeSafe.CommandArguments newargs }
 
   [<SuppressMessage("Gendarme.Rules.Naming",
                     "UseCorrectCasingRule",
@@ -208,24 +208,24 @@ module AltCoverCommand =
     member this.WithCreateProcess(command: CreateProcess<_>) =
       match command.Command with
       | RawCommand (tool, args) ->
-          match this.Args with
-          | Collect c ->
-              { this with
-                  Args =
-                    ArgumentType.Collect(
-                      c
-                      |> setExecutable tool
-                      |> setCollectCommandLine (Arguments.toList args)
-                    ) }
-          | Prepare p ->
-              { this with
-                  Args =
-                    ArgumentType.Prepare(
-                      p
-                      |> setPrepareCommandLine (tool :: (Arguments.toList args))
-                    ) }
-          | ImportModule -> this
-          | GetVersion -> this
+        match this.Args with
+        | Collect c ->
+          { this with
+              Args =
+                ArgumentType.Collect(
+                  c
+                  |> setExecutable tool
+                  |> setCollectCommandLine (Arguments.toList args)
+                ) }
+        | Prepare p ->
+          { this with
+              Args =
+                ArgumentType.Prepare(
+                  p
+                  |> setPrepareCommandLine (tool :: (Arguments.toList args))
+                ) }
+        | ImportModule -> this
+        | GetVersion -> this
       | _ -> this
 
   let internal createArgs options =
@@ -292,18 +292,18 @@ module AltCoverCommand =
          && Fake.Core.Environment.isWindows then
         match command.Command with
         | RawCommand (tool, args) ->
-            let newArgs =
-              tool :: "--debug" :: (Arguments.toList args)
+          let newArgs =
+            tool :: "--debug" :: (Arguments.toList args)
 
-            let newRaw =
-              RawCommand(
-                (match monoPath with
-                 | Some x -> x
-                 | _ -> "mono"),
-                Arguments.OfArgs newArgs
-              )
+          let newRaw =
+            RawCommand(
+              (match monoPath with
+               | Some x -> x
+               | _ -> "mono"),
+              Arguments.OfArgs newArgs
+            )
 
-            command |> CreateProcess.withCommand newRaw
+          command |> CreateProcess.withCommand newRaw
 
         | _ -> command
       else

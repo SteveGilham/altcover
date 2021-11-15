@@ -26,34 +26,36 @@ module XmlTypes =
 
     let cn = xmlDocument.ChildNodes
 
-    cn.OfType<XmlDocumentType>() 
+    cn.OfType<XmlDocumentType>()
     |> Seq.tryHead
-    |> Option.iter (fun doctype ->
-        let xDoctype = document.DocumentType
+    |> Option.iter
+         (fun doctype ->
+           let xDoctype = document.DocumentType
 
-        let newDoctype =
-          xmlDocument.CreateDocumentType(
-            nullIfEmpty xDoctype.Name,
-            nullIfEmpty xDoctype.PublicId,
-            nullIfEmpty xDoctype.SystemId,
-            nullIfEmpty xDoctype.InternalSubset
-          )
+           let newDoctype =
+             xmlDocument.CreateDocumentType(
+               nullIfEmpty xDoctype.Name,
+               nullIfEmpty xDoctype.PublicId,
+               nullIfEmpty xDoctype.SystemId,
+               nullIfEmpty xDoctype.InternalSubset
+             )
 
-        xmlDocument.ReplaceChild(newDoctype, doctype)
-        |> ignore)
+           xmlDocument.ReplaceChild(newDoctype, doctype)
+           |> ignore)
 
     document.Declaration
     |> Option.ofObj
-    |> Option.iter (fun xDeclaration ->
-      let xmlDeclaration =
-        xmlDocument.CreateXmlDeclaration(
-          xDeclaration.Version,
-          xDeclaration.Encoding,
-          xDeclaration.Standalone
-        )
+    |> Option.iter
+         (fun xDeclaration ->
+           let xmlDeclaration =
+             xmlDocument.CreateXmlDeclaration(
+               xDeclaration.Version,
+               xDeclaration.Encoding,
+               xDeclaration.Standalone
+             )
 
-      xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild)
-      |> ignore)
+           xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild)
+           |> ignore)
 
     xmlDocument
 
@@ -70,21 +72,23 @@ module XmlTypes =
     let cn = xmlDocument.ChildNodes
 
     cn.OfType<XmlDocumentType>()
-     |> Seq.tryHead
-     |> Option.iter (fun doctype ->
-        xdoc.AddFirst(
-          XDocumentType(
-            nullIfEmpty doctype.Name,
-            nullIfEmpty doctype.PublicId,
-            nullIfEmpty doctype.SystemId,
-            nullIfEmpty doctype.InternalSubset
-          )
-        ))
+    |> Seq.tryHead
+    |> Option.iter
+         (fun doctype ->
+           xdoc.AddFirst(
+             XDocumentType(
+               nullIfEmpty doctype.Name,
+               nullIfEmpty doctype.PublicId,
+               nullIfEmpty doctype.SystemId,
+               nullIfEmpty doctype.InternalSubset
+             )
+           ))
 
     cn.OfType<XmlDeclaration>()
     |> Seq.tryHead
-    |> Option.iter (fun decl ->
-        xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone))
+    |> Option.iter
+         (fun decl ->
+           xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone))
 
     cn.OfType<XmlProcessingInstruction>()
     |> Seq.rev

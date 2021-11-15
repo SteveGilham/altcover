@@ -138,18 +138,18 @@ module CoverageFileTree =
       let fixup = modopt >> gcroot
 
       let extractArgs name fullname =
-          if
-            String.IsNullOrEmpty(fullname)
-            || charIndexOf name '(' > 0
-          then
+        if
+          String.IsNullOrEmpty(fullname)
+          || charIndexOf name '(' > 0
+        then
+          String.Empty
+        else
+          let bracket = charIndexOf fullname '('
+
+          if bracket < 0 then
             String.Empty
           else
-            let bracket = charIndexOf fullname '('
-
-            if bracket < 0 then
-              String.Empty
-            else
-              fullname.Substring(bracket)
+            fullname.Substring(bracket)
 
       let applyMethod (mmodel: CoverageTreeContext<'TModel, 'TRow>) (x: MethodKey) =
         let fullname =

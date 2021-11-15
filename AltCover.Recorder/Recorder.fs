@@ -501,7 +501,6 @@ module Instance =
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
                             Justification = "Compiler generated")>]
-[<assembly:Instrumentation(
-  Assembly = "AltCover+Recorder+g+",    // static link a separate library as
-  Configuration = "Uninstrumented++")>] // self label fails compilation
+[<assembly: Instrumentation(Assembly = "AltCover+Recorder+g+",  // static link a separate library as
+                            Configuration = "Uninstrumented++")>] // self label fails compilation
 ()

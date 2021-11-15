@@ -15,6 +15,6 @@ module Carrier =
     match msg with
     | AsyncItem i -> 3 * i
     | Item i -> 5 * i
-    | Finish(Pause, i) -> 7 * i
-    | Finish(Resume, i) -> 11 * i
+    | Finish (Pause, i) -> 7 * i
+    | Finish (Resume, i) -> 11 * i
     | Finish _ -> 0

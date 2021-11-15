@@ -81,20 +81,20 @@ type internal GoTo =
 [<ExcludeFromCodeCoverage>]
 type internal Hallmark =
   { Assembly: string
-    Configuration : string }
+    Configuration: string }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyDespatch =
   { AssemblyPath: string
     Destinations: string list
-    Identity : Hallmark }
+    Identity: Hallmark }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal AssemblyEntry =
   { Assembly: AssemblyDefinition
     Inspection: Inspections
     Destinations: string list
-    Identity : Hallmark }
+    Identity: Hallmark }
 
 [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
 type internal ModuleEntry =
@@ -219,8 +219,7 @@ type internal SequenceType =
 
 [<RequireQualifiedAccess>]
 module internal KeyStore =
-  let private hash =
-    sha1Hash()
+  let private hash = sha1Hash ()
 
   let private publicKeyOfKey (key: StrongNameKeyData) = key.PublicKey
 
@@ -264,14 +263,16 @@ type internal Fix<'T> = delegate of 'T -> Fix<'T>
 
 [<RequireQualifiedAccess>]
 module internal CoverageParameters =
-  let internal hash = System.Security.Cryptography.SHA256.Create()
+  let internal hash =
+    System.Security.Cryptography.SHA256.Create()
+
   let internal methodPoint = ref false // ddFlag
   let internal collect = ref false // ddFlag
   let internal trackingNames = new List<String>()
   let internal topLevel = new List<FilterClass>()
   let internal nameFilters = new List<FilterClass>()
 
-  let mutable internal staticFilter : StaticFilter option = None
+  let mutable internal staticFilter: StaticFilter option = None
   let internal showGenerated = ref false
 
   let generationFilter =
@@ -322,7 +323,8 @@ module internal CoverageParameters =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
   let private defaultOutputDirectory _ =
     inplaceSelection "__Saved" "__Instrumented"
@@ -343,15 +345,15 @@ module internal CoverageParameters =
   let internal sourceDirectories () =
     (inplaceSelection outputDirectories inputDirectories) ()
 
-  let mutable internal theReportPath : Option<string> = None
+  let mutable internal theReportPath: Option<string> = None
   let internal zipReport = ref false // ddFlag
-  let mutable internal theInterval : Option<int> = None
+  let mutable internal theInterval: Option<int> = None
   let internal defaultInterval = 0
 
   let internal interval () =
     (Option.defaultValue defaultInterval theInterval)
 
-  let mutable internal theReportFormat : Option<ReportFormat> = None
+  let mutable internal theReportFormat: Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
   let internal reportKind () =
@@ -364,9 +366,12 @@ module internal CoverageParameters =
       "coverage.xml"
 
   let internal reportPath () =
-    let r = canonicalPath(Option.defaultValue (defaultReportPath ()) theReportPath)
+    let r =
+      canonicalPath (Option.defaultValue (defaultReportPath ()) theReportPath)
+
     let suffix = (Path.GetExtension r).ToUpperInvariant()
-    match (suffix, reportKind()) with
+
+    match (suffix, reportKind ()) with
     | (".XML", ReportFormat.NativeJson) -> Path.ChangeExtension(r, ".json")
     | (".JSON", ReportFormat.OpenCover)
     | (".JSON", ReportFormat.NCover) -> Path.ChangeExtension(r, ".xml")
@@ -392,8 +397,8 @@ module internal CoverageParameters =
 
   let withBranches () = reportFormat () <> ReportFormat.NCover
 
-  let mutable internal defaultStrongNameKey : option<StrongNameKeyData> = None
-  let mutable internal recorderStrongNameKey : option<StrongNameKeyData> = None
+  let mutable internal defaultStrongNameKey: option<StrongNameKeyData> = None
+  let mutable internal recorderStrongNameKey: option<StrongNameKeyData> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
   let internal add (key: StrongNameKeyData) =
@@ -401,7 +406,7 @@ module internal CoverageParameters =
     keys.[index] <- KeyStore.keyToRecord key
 
 #if IDEMPOTENT_INSTRUMENT
-  let mutable internal configurationHash : option<String> = None
+  let mutable internal configurationHash: option<String> = None
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
                                                     "UseStringEmptyRule",
@@ -463,21 +468,21 @@ module internal Inspector =
     member nameProvider.LocalFilter: bool =
       match nameProvider with
       | :? AssemblyDefinition as a ->
-          (CoverageParameters.local.Value)
-          && a.MainModule
-        |> ProgramDatabase.getModuleDocuments
-        |> Seq.map (fun d -> d.Url)
-        |> Seq.exists File.Exists
-        |> not
+        (CoverageParameters.local.Value)
+        && a.MainModule
+           |> ProgramDatabase.getModuleDocuments
+           |> Seq.map (fun d -> d.Url)
+           |> Seq.exists File.Exists
+           |> not
       | _ -> false
 
 [<RequireQualifiedAccess>]
 module internal Visitor =
   let private accumulator = HashSet<AssemblyDefinition>()
-  let mutable private pointNumber : int = 0
-  let mutable private branchNumber : int = 0
-  let mutable private methodNumber : int = 0
-  let mutable internal sourceLinkDocuments : Dictionary<string, string> option = None
+  let mutable private pointNumber: int = 0
+  let mutable private branchNumber: int = 0
+  let mutable private methodNumber: int = 0
+  let mutable internal sourceLinkDocuments: Dictionary<string, string> option = None
 
   let internal zeroPoints () =
     pointNumber <- 0
@@ -502,17 +507,22 @@ module internal Visitor =
     let internal getRelativeDirectoryPath (relativeTo: string) path =
       let rebase = canonicalDirectory relativeTo
       let canon = canonicalDirectory path
+
       if canon = rebase then
         String.Empty
       else
         let uri = Uri(Uri("file://"), rebase)
 
         Uri
-          .UnescapeDataString(uri.MakeRelativeUri(Uri(Uri("file://"), canon)).ToString())
+          .UnescapeDataString(
+            uri
+              .MakeRelativeUri(Uri(Uri("file://"), canon))
+              .ToString()
+          )
           .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) // overkill
 
     let internal exists (url: Uri) =
-      let request = createHttp(url)
+      let request = createHttp (url)
       request.Method <- "HEAD"
 
       try
@@ -522,7 +532,8 @@ module internal Visitor =
         && (response :?> System.Net.HttpWebResponse)
              .StatusCode
            |> int < 400
-      with :? WebException -> false
+      with
+      | :? WebException -> false
 
     let internal findClosestMatch file (dict: Dictionary<string, string>) =
       dict.Keys
@@ -530,7 +541,9 @@ module internal Visitor =
       |> Seq.map
            (fun x ->
              (x,
-              getRelativeDirectoryPath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+              getRelativeDirectoryPath
+                (x |> Path.GetDirectoryName)
+                (file |> Path.GetDirectoryName)))
       |> Seq.filter (fun (x, r) -> r.IndexOf("..", StringComparison.Ordinal) < 0)
       |> Seq.sortBy (fun (x, r) -> r.Length)
       |> Seq.tryHead
@@ -546,16 +559,16 @@ module internal Visitor =
 
       match find with
       | Some (best, relative) ->
-          let replacement =
-            Path
-              .Combine(relative, Path.GetFileName(file))
-              .Replace('\\', '/')
+        let replacement =
+          Path
+            .Combine(relative, Path.GetFileName(file))
+            .Replace('\\', '/')
 
-          let url = dict.[best].Replace("*", replacement)
+        let url = dict.[best].Replace("*", replacement)
 
-          let map = if Uri(url) |> exists then url else file
-          dict.Add(file, map)
-          map
+        let map = if Uri(url) |> exists then url else file
+        dict.Add(file, map)
+        map
       | _ -> file
 
     let internal isFSharpStaticClass (t: TypeDefinition) =
@@ -794,28 +807,30 @@ module internal Visitor =
       match candidates with
       | [ x ] -> Some x
       | _ ->
-          let tag = "<" + stripped + ">"
+        let tag = "<" + stripped + ">"
 
-          candidates
-            .Concat(methods
-                    |> Seq.filter
-                         (fun mx ->
-                           (mx.Name.IndexOf(tag, StringComparison.Ordinal)
-                            >= 0)
-                           && mx.HasBody))
-            .Concat(
-              ct.NestedTypes
-              |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
-              |> Seq.collect (fun tx -> tx.Methods)
-              |> Seq.filter
-                   (fun mx ->
-                     mx.HasBody
-                     && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
-                         >= 0
-                         || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
-                            >= 0))
-            )
-          |> Seq.tryFind predicate
+        candidates
+          .Concat(
+            methods
+            |> Seq.filter
+                 (fun mx ->
+                   (mx.Name.IndexOf(tag, StringComparison.Ordinal)
+                    >= 0)
+                   && mx.HasBody)
+          )
+          .Concat(
+            ct.NestedTypes
+            |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
+            |> Seq.collect (fun tx -> tx.Methods)
+            |> Seq.filter
+                 (fun mx ->
+                   mx.HasBody
+                   && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
+                       >= 0
+                       || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
+                          >= 0))
+          )
+        |> Seq.tryFind predicate
 
     let internal sameType (target: TypeReference) (candidate: TypeReference) =
       if target = candidate then
@@ -858,8 +873,7 @@ module internal Visitor =
       |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldsfld)
       |> Seq.exists
            (fun i ->
-             let tn =
-               (i.Operand :?> FieldReference).FieldType
+             let tn = (i.Operand :?> FieldReference).FieldType
 
              sameType t tn)
 
@@ -876,8 +890,10 @@ module internal Visitor =
         |> Seq.filter (fun m -> m.HasBody)
 
       candidates
-      |> Seq.tryFind (fun c -> (methodConstructsType tx c) ||
-                               (methodLoadsType tx c))
+      |> Seq.tryFind
+           (fun c ->
+             (methodConstructsType tx c)
+             || (methodLoadsType tx c))
 
     let internal methodCallsMethod (t: MethodReference) (m: MethodDefinition) =
       m.Body.Instructions
@@ -911,8 +927,10 @@ module internal Visitor =
                nesting > 0)
         |> Seq.length
 
-      if mname.StartsWith("<", StringComparison.Ordinal)
-         && charIndexOf mname '|' > 0 then
+      if
+        mname.StartsWith("<", StringComparison.Ordinal)
+        && charIndexOf mname '|' > 0
+      then
         let index =
           (indexOfMatchingClosingAngleBracket mname) - 1
 
@@ -955,7 +973,8 @@ module internal Visitor =
                            m.IsConstructor
                            && m.HasParameters
                            && (m.Parameters.Count = 1))
-                    |> Option.map (fun m -> m.Parameters |> Seq.head) with
+                    |> Option.map (fun m -> m.Parameters |> Seq.head)
+                with
               | None -> t :> TypeReference
               | Some other -> other.ParameterType
             else
@@ -979,16 +998,16 @@ module internal Visitor =
           match state with
           | None -> None
           | Some x ->
-              Some(
-                x,
-                if
-                  CoverageParameters.topLevel
-                  |> Seq.exists (Filter.``match`` x)
-                then
-                  None
-                else
-                  containingMethod x
-              ))
+            Some(
+              x,
+              if
+                CoverageParameters.topLevel
+                |> Seq.exists (Filter.``match`` x)
+              then
+                None
+              else
+                containingMethod x
+            ))
         (Some m)
       |> Seq.toList
 
@@ -1058,12 +1077,12 @@ module internal Visitor =
       =
       match seq with
       | null ->
-          if genuine = FakeAtReturn
-             && instruction.IsNotNull
-             && instruction.OpCode = OpCodes.Ret then
-            SequencePoint(instruction, Document(null))
-          else
-            null
+        if genuine = FakeAtReturn
+           && instruction.IsNotNull
+           && instruction.OpCode = OpCodes.Ret then
+          SequencePoint(instruction, Document(null))
+        else
+          null
       | _ -> seq
 
     let internal findEffectiveSequencePoint
@@ -1160,11 +1179,12 @@ module internal Visitor =
         // This covers a multitude of compiler generated branching cases
         // TODO can we simplify
         match (CoverageParameters.coalesceBranches.Value,
-               includedSequencePoint dbg toNext toJump) with
+               includedSequencePoint dbg toNext toJump)
+          with
         | (true, _)
         | (_, Some _) ->
-            [ (i, toNext, next.Offset, -1)
-              (i, toJump, jump.Offset, 0) ]
+          [ (i, toNext, next.Offset, -1)
+            (i, toJump, jump.Offset, 0) ]
         | _ -> []
 
     let private coalesceBranchPoints dbg (bps: GoTo seq) =
@@ -1451,6 +1471,6 @@ module internal Visitor =
     match sourceLinkDocuments with
     | None -> file
     | Some dict ->
-        match dict.TryGetValue file with
-        | (true, url) -> url
-        | _ -> I.locateMatch file dict
+      match dict.TryGetValue file with
+      | (true, url) -> url
+      | _ -> I.locateMatch file dict

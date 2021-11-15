@@ -12,9 +12,9 @@ open System.Linq
 module DotNet =
   type ICLIOptions =
     interface
-      abstract member ForceDelete : bool
-      abstract member FailFast : bool
-      abstract member ShowSummary : String
+      abstract member ForceDelete: bool
+      abstract member FailFast: bool
+      abstract member ShowSummary: String
     end
 
   [<NoComparison;
@@ -53,12 +53,13 @@ module DotNet =
       | Force _ -> String.Empty
       | Abstract a -> a.ShowSummary
       | Many s ->
-          match s
-                |> Seq.map (fun f -> f.ShowSummary)
-                |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-                |> Seq.tryHead with
-          | Some x -> x
-          | _ -> String.Empty
+        match s
+              |> Seq.map (fun f -> f.ShowSummary)
+              |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+              |> Seq.tryHead
+          with
+        | Some x -> x
+        | _ -> String.Empty
 
     interface ICLIOptions with
       member self.FailFast = self.FailFast

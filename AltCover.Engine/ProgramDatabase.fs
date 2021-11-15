@@ -74,13 +74,13 @@ module internal ProgramDatabase =
 
     match getPdbFromImage assembly with
     | None when path |> String.IsNullOrWhiteSpace |> not -> // i.e. assemblies read from disk only
-        let foldername = Path.GetDirectoryName path
-        let filename = Path.GetFileName path
+      let foldername = Path.GetDirectoryName path
+      let filename = Path.GetFileName path
 
-        foldername :: (Seq.toList symbolFolders)
-        |> Seq.map (I.getSymbolsByFolder filename)
-        |> Seq.choose id
-        |> Seq.tryFind (fun _ -> true)
+      foldername :: (Seq.toList symbolFolders)
+      |> Seq.map (I.getSymbolsByFolder filename)
+      |> Seq.choose id
+      |> Seq.tryFind (fun _ -> true)
     | pdbpath -> pdbpath
 
   // Ensure that we read symbols from the .pdb path we discovered.
@@ -90,7 +90,7 @@ module internal ProgramDatabase =
     getPdbWithFallback assembly
     |> Option.iter
          (fun pdbpath ->
-           let provider : ISymbolReaderProvider =
+           let provider: ISymbolReaderProvider =
              if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
                PdbReaderProvider() :> ISymbolReaderProvider
              else

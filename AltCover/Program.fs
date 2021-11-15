@@ -36,17 +36,17 @@ module EntryPoint =
 
       match first with
       | Select "TargetsPath" _ ->
-          let here = Assembly.GetExecutingAssembly().Location
+        let here = Assembly.GetExecutingAssembly().Location
 
-          let targets =
-            Path.Combine(
-              here |> Path.GetDirectoryName,
-              "../../../build/netstandard2.0/altcover.global.targets"
-            )
-            |> Path.GetFullPath
+        let targets =
+          Path.Combine(
+            here |> Path.GetDirectoryName,
+            "../../../build/netstandard2.0/altcover.global.targets"
+          )
+          |> Path.GetFullPath
 
-          targets |> Output.info
-          0
+        targets |> Output.info
+        0
       | _ ->
 #endif
       AltCover.Main.effectiveMain arguments

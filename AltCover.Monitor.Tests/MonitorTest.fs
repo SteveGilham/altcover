@@ -51,10 +51,12 @@ module MonitorTests =
     maybeIgnore (fun () -> not (a && a0))
     let code = b.Code
     let branch = b.Branch
+
     let text =
       Path.Combine(
         SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
       )
       |> File.ReadAllText
+
     test' <@ (code, branch) = (109, 14) @> text

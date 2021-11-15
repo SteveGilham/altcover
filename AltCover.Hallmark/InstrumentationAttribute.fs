@@ -26,7 +26,7 @@ type InstrumentationAttribute() =
 [<assembly: SuppressMessage("Gendarme.Rules.Design",
                             "MarkAssemblyWithAssemblyVersionRule",
                             Justification = "doing so fails static linkage because of attribute duplication")>]
-[<assembly: SuppressMessage("Microsoft.Design", 
+[<assembly: SuppressMessage("Microsoft.Design",
                             "CA1016:MarkAssembliesWithAssemblyVersion",
-                             Justification="Exactly as above")>]
+                            Justification = "Exactly as above")>]
 ()
