@@ -58,7 +58,7 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldCoverTrivalClass () =
-    let mark = InstrumentationAttribute()
+    let mark = InstrumentationAttribute() // Constructor has all the instrumented code
     Assert.That(mark.Assembly, Is.EqualTo "AltCover.Recorder.g!")
     Assert.That(mark.Configuration, Is.EqualTo "Uninstrumented!!")
     mark.Assembly <- String.Empty
