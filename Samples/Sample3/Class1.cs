@@ -6,23 +6,26 @@ using Mono.Cecil.Cil;
 // cheat to allow init-property
 namespace System.Runtime.CompilerServices
 {
-        internal static class IsExternalInit {}
+    internal static class IsExternalInit
+    { }
 }
 
-namespace Sample3
+namespace AltCover.Sample3
 {
     public class Class1
     {
         public int Property { get; set; }
-#if !MONO       
+#if !MONO
         public int Property2 { get; init; }
-#endif        
+#endif
     }
 
     public class Class2
     {
         private int _Property;
-        public int Property { get { return _Property; } set { _Property = value > 0 ? value : 0; } }
+
+        public int Property
+        { get { return _Property; } set { _Property = value > 0 ? value : 0; } }
     }
 
     public class Class3
