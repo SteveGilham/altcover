@@ -2550,20 +2550,22 @@ _Target
         let altcover =
             Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
+        ["Sample27"; "Sample30"]
+        |> List.iter (fun sample ->
         let simpleReport =
             (Path.getFullName "./_Reports")
-            @@ ("AltCoverFSAsyncTests.xml")
+            @@ (sample + "AltCoverFSAsyncTests.xml")
 
         let sampleRoot =
-            Path.getFullName "Samples/Sample27/_Binaries/Sample27/Debug+AnyCPU/netcoreapp3.1"
+            Path.getFullName "Samples/" + sample + "/_Binaries/" + sample + "/Debug+AnyCPU/netcoreapp3.1"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
 
-        "Sample27.fsproj"
+        sample + ".fsproj"
         |> DotNet.test
             (fun o ->
-                { o.WithCommon(withWorkingDirectoryVM "Samples/Sample27") with
+                { o.WithCommon(withWorkingDirectoryVM ("Samples/" + sample)) with
                       Framework = Some "netcoreapp3.1"
                       Configuration = DotNet.BuildConfiguration.Debug }
                 |> testWithCLIArguments)
@@ -2591,11 +2593,11 @@ _Target
 
         printfn "Execute the instrumented tests"
 
-        let sample27 =
-            Path.getFullName "./Samples/Sample27/Sample27.fsproj"
+        let sampled =
+            Path.getFullName "./Samples/" + sample + "/" + sample + ".fsproj"
 
         let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "netcoreapp3.1") sample27
+            defaultDotNetTestCommandLine (Some "netcoreapp3.1") sampled
 
         let collect =
             AltCover.CollectOptions.Primitive
@@ -2608,7 +2610,7 @@ _Target
         { AltCoverCommand.Options.Create collect with
               ToolPath = altcover
               ToolType = dotnetAltcover
-              WorkingDirectory = "Samples/Sample27" }
+              WorkingDirectory = "Samples/" + sample }
         |> AltCoverCommand.run
 
         let coverageDocument =
@@ -2631,7 +2633,7 @@ _Target
 
                 let name = m.Element(XName.Get("Name"))
 
-                Assert.That(tmrcount, Is.EqualTo visited, name.Value)))
+                Assert.That(tmrcount, Is.EqualTo visited, name.Value))))
 
 _Target
     "FSharpTypesDotNetRunner"
