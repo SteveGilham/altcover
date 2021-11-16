@@ -14,7 +14,7 @@ type internal Close =
   | Resume
 
 [<NoComparison; AutoSerializable(false)>]
-type Tracer =
+type internal Tracer =
   { Tracer: string
     Runner: bool
     Definitive: bool
