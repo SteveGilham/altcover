@@ -778,7 +778,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let theFiles =
-        (Maybe isWindows ("AltCover.Recorder.g.pdb" :: expected) expected)
+        expected
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       let actualFiles =
@@ -1013,7 +1013,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let expected =
-        (Maybe isWindows ("AltCover.Recorder.g.pdb" :: theFiles) theFiles)
+        theFiles
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       test <@ actual = expected @>

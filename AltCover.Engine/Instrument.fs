@@ -296,7 +296,7 @@ module internal Instrument =
         (fun () ->
 
           //if monoRuntime |> not then
-          ProgramDatabase.readSymbols definition
+          //ProgramDatabase.readSymbols definition
 
           definition.Name.Name <- (extractName definition) + ".g"
 

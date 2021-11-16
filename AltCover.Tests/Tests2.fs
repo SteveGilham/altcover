@@ -718,19 +718,6 @@ module AltCoverTests2 =
         let expectedSymbols =
           Maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
 
-        let isSymbols =
-#if NET472
-          System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-          false // recorder symbols not read here
-#endif
-        Assert.That(
-          (isSymbols |> not)
-          || // HACK HACK HACK
-          File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-          "unexpected symbols"
-        )
-
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
 
