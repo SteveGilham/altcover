@@ -293,7 +293,7 @@ module internal Instrument =
     let internal prepareAssemblyDefinition (definition: AssemblyDefinition) =
       guard
         definition
-        (fun () -> // set the timer interval in ticks
+        (fun () ->
 
           //if monoRuntime |> not then
           ProgramDatabase.readSymbols definition
@@ -302,6 +302,13 @@ module internal Instrument =
 
           let pair = CoverageParameters.recorderStrongNameKey
           updateStrongNaming definition pair
+
+          definition.MainModule.GetTypes()
+          |> Seq.iter (fun t ->
+            if t.IsPublic && (not <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal))
+            then
+              t.IsPublic <- false
+          )
 
           [ // set the coverage file path and unique token
             ("get_ReportFile",
