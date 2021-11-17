@@ -1013,7 +1013,7 @@ module internal Instrument =
 
                  (newstate, false)
                else
-                 (s, true)
+                 (s, unhandled)
 
              let isAsyncType () =
                [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
@@ -1067,7 +1067,7 @@ module internal Instrument =
 
                  (newstate, false)
                else
-                 (s, true)
+                 (s, unhandled)
 
              let processTaskReturns (s: InstrumentContext, unhandled: bool) =
                if unhandled && isTaskType () then
@@ -1109,7 +1109,7 @@ module internal Instrument =
 
                  (newstate, false)
                else
-                 (s, true)
+                 (s, unhandled)
 
              (state, true)
              |> processAsyncAwait
