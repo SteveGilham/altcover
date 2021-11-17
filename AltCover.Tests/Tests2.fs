@@ -900,13 +900,16 @@ module AltCoverTests2 =
           Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
         ProgramDatabase.readSymbols def
-        let clazz = def.MainModule.GetType("AltCover.Sample3.Class1")
+
+        let clazz =
+          def.MainModule.GetType("AltCover.Sample3.Class1")
 
         let func =
           clazz.GetMethods()
           |> Seq.find (fun x -> x.Name = "get_Property")
 
-        let clazz' = def.MainModule.GetType("AltCover.Sample3.Class3")
+        let clazz' =
+          def.MainModule.GetType("AltCover.Sample3.Class3")
 
         let func' =
           clazz'.GetMethods()

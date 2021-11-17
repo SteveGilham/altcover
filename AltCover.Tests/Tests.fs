@@ -3037,8 +3037,7 @@ module AltCoverTests =
         "AltCover.Sample3.Class2"
         "AltCover.Sample3.Class3"
         "AltCover.Sample3.Class3+Class4"
-        "System.Runtime.CompilerServices.IsExternalInit"
-      ]
+        "System.Runtime.CompilerServices.IsExternalInit" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 

@@ -304,11 +304,12 @@ module internal Instrument =
           updateStrongNaming definition pair
 
           definition.MainModule.GetTypes()
-          |> Seq.iter (fun t ->
-            if t.IsPublic && (not <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal))
-            then
-              t.IsPublic <- false
-          )
+          |> Seq.iter
+               (fun t ->
+                 if t.IsPublic
+                    && (not
+                        <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
+                   t.IsPublic <- false)
 
           [ // set the coverage file path and unique token
             ("get_ReportFile",
@@ -971,8 +972,8 @@ module internal Instrument =
 
              let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
-               if unhandled &&
-                  asyncChecks |> Seq.forall invokePredicate then
+               if unhandled
+                  && asyncChecks |> Seq.forall invokePredicate then
                  // the instruction list is
                  // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
                  // IL_0000: stloc V_1 <<== This one
@@ -1068,10 +1069,10 @@ module internal Instrument =
                else
                  (s, true)
 
-             let processTaskReturns  (s: InstrumentContext, unhandled: bool) =
+             let processTaskReturns (s: InstrumentContext, unhandled: bool) =
                if unhandled && isTaskType () then
-                  let newstate =
-                    { s with
+                 let newstate =
+                   { s with
                        AsyncSupport =
                          Some(
                            Option.defaultWith
@@ -1079,18 +1080,18 @@ module internal Instrument =
                              state.AsyncSupport
                          ) }
 
-                  let injectWait ilp (i: Instruction) =
-                    // before
-                    // IL_003f: stloc V1
-                    // IL_0040: leave.s IL_0054
+                 let injectWait ilp (i: Instruction) =
+                   // before
+                   // IL_003f: stloc V1
+                   // IL_0040: leave.s IL_0054
 
-                    // after
-                    // IL_003d: stloc V1
-                    //+IL_003e: ldloc V1
-                    //+IL_003f: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
-                    //+IL_0044: ldloc V1
-                    //+IL_0045: stloc.0
-                    // IL_0046: leave.s IL_005a
+                   // after
+                   // IL_003d: stloc V1
+                   //+IL_003e: ldloc V1
+                   //+IL_003f: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+                   //+IL_0044: ldloc V1
+                   //+IL_0045: stloc.0
+                   // IL_0046: leave.s IL_005a
 
                    bulkInsertBefore
                      ilp
@@ -1103,12 +1104,12 @@ module internal Instrument =
                        ilp.Create(OpCodes.Stloc_0) ]
                      true
 
-                  leave
-                  |> Seq.iter ((injectWait methodWorker) >> ignore)
+                 leave
+                 |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                  (newstate, false)
-                else
-                  (s, true)
+                 (newstate, false)
+               else
+                 (s, true)
 
              (state, true)
              |> processAsyncAwait

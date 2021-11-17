@@ -1218,9 +1218,9 @@ _Target
            && [ "APPVEYOR_BUILD_NUMBER"
                 "GITHUB_RUN_NUMBER" ]
               |> List.exists (
-                                Environment.environVar
-                                >> String.IsNullOrWhiteSpace
-                                >> not
+                  Environment.environVar
+                  >> String.IsNullOrWhiteSpace
+                  >> not
               ) then
             let coveralls =
                 ("./packages/"
@@ -1667,7 +1667,8 @@ _Target
                              weakDir
                              @@ "__ValidateGendarmeEmulationWithAltCover"
                              Recorder4Dir @@ "__RecorderTestWithAltCover"
-                             apiDir @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*)  |]
+                             apiDir
+                             @@ "__ApiTestWithAltCover" (*visDir @@ "__VisualizerTestWithAltCover"; monitorDir @@ "__MonitorTestWithAltCover"*)  |]
                       StrongNameKey = keyfile
                       ReportFormat = "NCover"
                       InPlace = false
@@ -2550,90 +2551,99 @@ _Target
         let altcover =
             Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
-        ["Sample27"; "Sample30"]
-        |> List.iter (fun sample ->
-        let simpleReport =
-            (Path.getFullName "./_Reports")
-            @@ (sample + "AltCoverFSAsyncTests.xml")
+        [ "Sample27"; "Sample30" ]
+        |> List.iter
+            (fun sample ->
+                let simpleReport =
+                    (Path.getFullName "./_Reports")
+                    @@ (sample + "AltCoverFSAsyncTests.xml")
 
-        let sampleRoot =
-            Path.getFullName "Samples/" + sample + "/_Binaries/" + sample + "/Debug+AnyCPU/netcoreapp3.1"
+                let sampleRoot =
+                    Path.getFullName "Samples/"
+                    + sample
+                    + "/_Binaries/"
+                    + sample
+                    + "/Debug+AnyCPU/netcoreapp3.1"
 
-        // Test the --inplace operation
-        Shell.cleanDir sampleRoot
+                // Test the --inplace operation
+                Shell.cleanDir sampleRoot
 
-        sample + ".fsproj"
-        |> DotNet.test
-            (fun o ->
-                { o.WithCommon(withWorkingDirectoryVM ("Samples/" + sample)) with
-                      Framework = Some "netcoreapp3.1"
-                      Configuration = DotNet.BuildConfiguration.Debug }
-                |> testWithCLIArguments)
+                sample + ".fsproj"
+                |> DotNet.test
+                    (fun o ->
+                        { o.WithCommon(withWorkingDirectoryVM ("Samples/" + sample)) with
+                              Framework = Some "netcoreapp3.1"
+                              Configuration = DotNet.BuildConfiguration.Debug }
+                        |> testWithCLIArguments)
 
-        // instrument
-        let prep =
-            AltCover.PrepareOptions.Primitive(
-                { Primitive.PrepareOptions.Create() with
-                      Report = simpleReport
-                      CallContext = [ "[Fact]" ]
-                      AssemblyFilter = [ "Adapter"; "xunit" ]
-                      TypeFilter = [ "System\\."; "Microsoft\\." ]
-                      InPlace = true
-                      LocalSource = true
-                      ReportFormat = "OpenCover"
-                      Save = false }
-            )
-            |> AltCoverCommand.Prepare
+                // instrument
+                let prep =
+                    AltCover.PrepareOptions.Primitive(
+                        { Primitive.PrepareOptions.Create() with
+                              Report = simpleReport
+                              CallContext = [ "[Fact]" ]
+                              AssemblyFilter = [ "Adapter"; "xunit" ]
+                              TypeFilter = [ "System\\."; "Microsoft\\." ]
+                              InPlace = true
+                              LocalSource = true
+                              ReportFormat = "OpenCover"
+                              Save = false }
+                    )
+                    |> AltCoverCommand.Prepare
 
-        { AltCoverCommand.Options.Create prep with
-              ToolPath = altcover
-              ToolType = dotnetAltcover
-              WorkingDirectory = sampleRoot }
-        |> AltCoverCommand.run
+                { AltCoverCommand.Options.Create prep with
+                      ToolPath = altcover
+                      ToolType = dotnetAltcover
+                      WorkingDirectory = sampleRoot }
+                |> AltCoverCommand.run
 
-        printfn "Execute the instrumented tests"
+                printfn "Execute the instrumented tests"
 
-        let sampled =
-            Path.getFullName "./Samples/" + sample + "/" + sample + ".fsproj"
+                let sampled =
+                    Path.getFullName "./Samples/"
+                    + sample
+                    + "/"
+                    + sample
+                    + ".fsproj"
 
-        let (dotnetexe, args) =
-            defaultDotNetTestCommandLine (Some "netcoreapp3.1") sampled
+                let (dotnetexe, args) =
+                    defaultDotNetTestCommandLine (Some "netcoreapp3.1") sampled
 
-        let collect =
-            AltCover.CollectOptions.Primitive
-                { Primitive.CollectOptions.Create() with
-                      Executable = dotnetexe
-                      RecorderDirectory = sampleRoot
-                      CommandLine = args }
-            |> AltCoverCommand.Collect
+                let collect =
+                    AltCover.CollectOptions.Primitive
+                        { Primitive.CollectOptions.Create() with
+                              Executable = dotnetexe
+                              RecorderDirectory = sampleRoot
+                              CommandLine = args }
+                    |> AltCoverCommand.Collect
 
-        { AltCoverCommand.Options.Create collect with
-              ToolPath = altcover
-              ToolType = dotnetAltcover
-              WorkingDirectory = "Samples/" + sample }
-        |> AltCoverCommand.run
+                { AltCoverCommand.Options.Create collect with
+                      ToolPath = altcover
+                      ToolType = dotnetAltcover
+                      WorkingDirectory = "Samples/" + sample }
+                |> AltCoverCommand.run
 
-        let coverageDocument =
-            XDocument.Load(XmlReader.Create(simpleReport))
+                let coverageDocument =
+                    XDocument.Load(XmlReader.Create(simpleReport))
 
-        coverageDocument.Descendants(XName.Get("Method"))
-        |> Seq.toList
-        |> Seq.iter
-            (fun m ->
-                let spts = m.Element(XName.Get "SequencePoints")
+                coverageDocument.Descendants(XName.Get("Method"))
+                |> Seq.toList
+                |> Seq.iter
+                    (fun m ->
+                        let spts = m.Element(XName.Get "SequencePoints")
 
-                let visited =
-                    spts.Elements()
-                    |> Seq.filter (fun sp -> sp.Attribute(XName.Get "vc").Value <> "0")
-                    |> Seq.length
+                        let visited =
+                            spts.Elements()
+                            |> Seq.filter (fun sp -> sp.Attribute(XName.Get "vc").Value <> "0")
+                            |> Seq.length
 
-                let tmrcount =
-                    spts.Descendants(XName.Get("TrackedMethodRef"))
-                    |> Seq.length
+                        let tmrcount =
+                            spts.Descendants(XName.Get("TrackedMethodRef"))
+                            |> Seq.length
 
-                let name = m.Element(XName.Get("Name"))
+                        let name = m.Element(XName.Get("Name"))
 
-                Assert.That(tmrcount, Is.EqualTo visited, name.Value))))
+                        Assert.That(tmrcount, Is.EqualTo visited, name.Value))))
 
 _Target
     "FSharpTypesDotNetRunner"
