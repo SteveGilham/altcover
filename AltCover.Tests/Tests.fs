@@ -3033,10 +3033,10 @@ module AltCoverTests =
 
     let expected =
       [ "<Module>"
-        "Sample3.Class1"
-        "Sample3.Class2"
-        "Sample3.Class3"
-        "Sample3.Class3+Class4"
+        "AltCover.Sample3.Class1"
+        "AltCover.Sample3.Class2"
+        "AltCover.Sample3.Class3"
+        "AltCover.Sample3.Class3+Class4"
         "System.Runtime.CompilerServices.IsExternalInit"
       ]
 
@@ -3098,10 +3098,10 @@ module AltCoverTests =
 
     let expected =
       [ "<Module>"
-        "Sample3.Class1"
-        "Sample3.Class2"
-        "Sample3.Class3"
-        "Sample3.Class3+Class4"
+        "AltCover.Sample3.Class1"
+        "AltCover.Sample3.Class2"
+        "AltCover.Sample3.Class3"
+        "AltCover.Sample3.Class3+Class4"
         "System.Runtime.CompilerServices.IsExternalInit" ]
 
     Assert.That(names, Is.EquivalentTo expected)
@@ -3168,35 +3168,35 @@ module AltCoverTests =
       |> Seq.toList
 
     let expected =
-      [ "System.Int32 Sample3.Class1.get_Property()"
-        "System.Void Sample3.Class1.set_Property(System.Int32)"
-        "System.Int32 Sample3.Class1.get_Property2()"
-        "System.Void modreq(System.Runtime.CompilerServices.IsExternalInit) Sample3.Class1.set_Property2(System.Int32)"
-        "System.Void Sample3.Class1.#ctor()"
-        "System.Int32 Sample3.Class2.get_Property()"
-        "System.Void Sample3.Class2.set_Property(System.Int32)"
-        "System.Void Sample3.Class2.#ctor()"
-        "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()"
-        "System.Void Sample3.Class3.Log(System.String,System.Int32)"
-        "System.Int32 Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)"
-        "System.Void Sample3.Class3.#ctor()"
-        "System.Void Sample3.Class3..cctor()"
-        "System.Boolean Sample3.Class3+Class4.get_Defer()"
-        "System.Void Sample3.Class3+Class4.set_Defer(System.Boolean)"
-        "Sample3.Class1 Sample3.Class3+Class4.get_Property()"
-        "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)"
-        "System.String Sample3.Class3+Class4.get_ReportFile()"
-        "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)"
-        "System.Int64 Sample3.Class3+Class4.get_Timer()"
-        "System.Void Sample3.Class3+Class4.set_Timer(System.Int64)"
-        "System.String Sample3.Class3+Class4.get_Token()"
-        "System.Void Sample3.Class3+Class4.set_Token(System.String)"
-        "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
-        "System.Void Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
-        "System.Int32 Sample3.Class3+Class4.get_Sample()"
-        "System.Void Sample3.Class3+Class4.set_Sample(System.Int32)"
-        "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)"
-        "System.Void Sample3.Class3+Class4.#ctor()" ]
+      [ "System.Int32 AltCover.Sample3.Class1.get_Property()"
+        "System.Void AltCover.Sample3.Class1.set_Property(System.Int32)"
+        "System.Int32 AltCover.Sample3.Class1.get_Property2()"
+        "System.Void modreq(System.Runtime.CompilerServices.IsExternalInit) AltCover.Sample3.Class1.set_Property2(System.Int32)"
+        "System.Void AltCover.Sample3.Class1.#ctor()"
+        "System.Int32 AltCover.Sample3.Class2.get_Property()"
+        "System.Void AltCover.Sample3.Class2.set_Property(System.Int32)"
+        "System.Void AltCover.Sample3.Class2.#ctor()"
+        "System.Collections.Generic.List`1 AltCover.Sample3.Class3.get_Visits()"
+        "System.Void AltCover.Sample3.Class3.Log(System.String,System.Int32)"
+        "System.Int32 AltCover.Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)"
+        "System.Void AltCover.Sample3.Class3.#ctor()"
+        "System.Void AltCover.Sample3.Class3..cctor()"
+        "System.Boolean AltCover.Sample3.Class3+Class4.get_Defer()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_Defer(System.Boolean)"
+        "AltCover.Sample3.Class1 AltCover.Sample3.Class3+Class4.get_Property()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_Property(AltCover.Sample3.Class1)"
+        "System.String AltCover.Sample3.Class3+Class4.get_ReportFile()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_ReportFile(System.String)"
+        "System.Int64 AltCover.Sample3.Class3+Class4.get_Timer()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_Timer(System.Int64)"
+        "System.String AltCover.Sample3.Class3+Class4.get_Token()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_Token(System.String)"
+        "System.Int32 AltCover.Sample3.Class3+Class4.get_CoverageFormat()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
+        "System.Int32 AltCover.Sample3.Class3+Class4.get_Sample()"
+        "System.Void AltCover.Sample3.Class3+Class4.set_Sample(System.Int32)"
+        "System.Collections.Generic.List`1 AltCover.Sample3.Class3+Class4.ToList<T>(T)"
+        "System.Void AltCover.Sample3.Class3+Class4.#ctor()" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -4302,7 +4302,7 @@ module AltCoverTests =
     let target =
       def
         .MainModule
-        .GetType("Sample3.Class2")
+        .GetType("AltCover.Sample3.Class2")
         .GetMethods()
       |> Seq.filter (fun m -> m.Name = "set_Property")
       |> Seq.head
@@ -4341,7 +4341,7 @@ module AltCoverTests =
     let target =
       def
         .MainModule
-        .GetType("Sample3.Class3")
+        .GetType("AltCover.Sample3.Class3")
         .GetMethods()
       |> Seq.filter (fun m -> m.Name = "GetOperandType")
       |> Seq.head

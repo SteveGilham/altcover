@@ -718,19 +718,6 @@ module AltCoverTests2 =
         let expectedSymbols =
           Maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
 
-        let isSymbols =
-#if NET472
-          System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-          false // recorder symbols not read here
-#endif
-        Assert.That(
-          (isSymbols |> not)
-          || // HACK HACK HACK
-          File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-          "unexpected symbols"
-        )
-
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
 
@@ -759,7 +746,7 @@ module AltCoverTests2 =
 
         try
           let proxyObject = alc.CreateObject()
-          proxyObject.InstantiateObject(outputdll, "Sample3.Class3+Class4", [||])
+          proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class3+Class4", [||])
 
           let report =
             proxyObject
@@ -873,7 +860,7 @@ module AltCoverTests2 =
 
         try
           let proxyObject = alc.CreateObject()
-          proxyObject.InstantiateObject(outputdll, "Sample3.Class3+Class4", [||])
+          proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class3+Class4", [||])
 
           let report =
             proxyObject
@@ -913,13 +900,13 @@ module AltCoverTests2 =
           Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
         ProgramDatabase.readSymbols def
-        let clazz = def.MainModule.GetType("Sample3.Class1")
+        let clazz = def.MainModule.GetType("AltCover.Sample3.Class1")
 
         let func =
           clazz.GetMethods()
           |> Seq.find (fun x -> x.Name = "get_Property")
 
-        let clazz' = def.MainModule.GetType("Sample3.Class3")
+        let clazz' = def.MainModule.GetType("AltCover.Sample3.Class3")
 
         let func' =
           clazz'.GetMethods()
@@ -973,7 +960,7 @@ module AltCoverTests2 =
 
         try
           let proxyObject = alc.CreateObject()
-          proxyObject.InstantiateObject(outputdll, "Sample3.Class1", [||])
+          proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class1", [||])
 
           let setting =
             proxyObject.InvokeMethod("set_Property", [| 17 |])
@@ -992,7 +979,7 @@ module AltCoverTests2 =
             System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
           let proxyObject' = alc.CreateObject()
-          proxyObject'.InstantiateObject(outputdll, "Sample3.Class3", [||])
+          proxyObject'.InstantiateObject(outputdll, "AltCover.Sample3.Class3", [||])
 
           let log =
             proxyObject'.InvokeMethod("get_Visits", [||]) :?> seq<Tuple<string, int>>
@@ -3172,7 +3159,7 @@ module AltCoverTests2 =
 
     let md =
       prepared.MainModule.Types
-      |> Seq.filter (fun t -> t.FullName = "Sample3.Class3")
+      |> Seq.filter (fun t -> t.FullName = "AltCover.Sample3.Class3")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.Name = "Log")
       |> Seq.head
