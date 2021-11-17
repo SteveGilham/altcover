@@ -962,9 +962,10 @@ module internal Instrument =
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
-             let processAsyncAwait (s: InstrumentContext) =
+             let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
-               if asyncChecks |> Seq.forall invokePredicate then
+               if unhandled &&
+                  asyncChecks |> Seq.forall invokePredicate then
                  // the instruction list is
                  // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
                  // IL_0000: stloc V_1 <<== This one
@@ -1002,17 +1003,17 @@ module internal Instrument =
                  leave
                  |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 newstate
+                 (newstate, false)
                else
-                 s
+                 (s, true)
 
              let isAsyncType () =
                [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
                |> Seq.exists (fun n -> n = e)
 
-             let processFSAsync (s: InstrumentContext) =
+             let processFSAsync (s: InstrumentContext, unhandled: bool) =
 
-               if isAsyncType () then
+               if unhandled && isAsyncType () then
                  let asyncOf =
                    (rtype :?> GenericInstanceType).GenericArguments
                    |> Seq.head // only one
@@ -1056,11 +1057,14 @@ module internal Instrument =
                  leave
                  |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 newstate
+                 (newstate, false)
                else
-                 s
+                 (s, true)
 
-             state |> processAsyncAwait |> processFSAsync
+             (state, true)
+             |> processAsyncAwait
+             |> processFSAsync
+             |> fst
 
              )
            state
