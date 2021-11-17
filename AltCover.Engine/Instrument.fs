@@ -969,9 +969,10 @@ module internal Instrument =
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
-             let processAsyncAwait (s: InstrumentContext) =
+             let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
-               if asyncChecks |> Seq.forall invokePredicate then
+               if unhandled &&
+                  asyncChecks |> Seq.forall invokePredicate then
                  // the instruction list is
                  // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
                  // IL_0000: stloc V_1 <<== This one
@@ -1009,17 +1010,17 @@ module internal Instrument =
                  leave
                  |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 newstate
+                 (newstate, false)
                else
-                 s
+                 (s, true)
 
              let isAsyncType () =
                [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
                |> Seq.exists (fun n -> n = e)
 
-             let processFSAsync (s: InstrumentContext) =
+             let processFSAsync (s: InstrumentContext, unhandled: bool) =
 
-               if isAsyncType () then
+               if unhandled && isAsyncType () then
                  let asyncOf =
                    (rtype :?> GenericInstanceType).GenericArguments
                    |> Seq.head // only one
@@ -1063,13 +1064,57 @@ module internal Instrument =
                  leave
                  |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 newstate
+                 (newstate, false)
                else
-                 s
+                 (s, true)
 
-             state |> processAsyncAwait |> processFSAsync
+             let processTaskReturns  (s: InstrumentContext, unhandled: bool) =
+               if unhandled && isTaskType () then
+                  let newstate =
+                    { s with
+                       AsyncSupport =
+                         Some(
+                           Option.defaultWith
+                             (fun () -> AsyncSupport.Update m.Method) // TODO
+                             state.AsyncSupport
+                         ) }
 
-             )
+                  let injectWait ilp (i: Instruction) =
+                    // before
+                    // IL_003f: stloc V1
+                    // IL_0040: leave.s IL_0054
+
+                    // after
+                    // IL_003d: stloc V1
+                    //+IL_003e: ldloc V1
+                    //+IL_003f: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+                    //+IL_0044: ldloc V1
+                    //+IL_0045: stloc.0
+                    // IL_0046: leave.s IL_005a
+
+                   bulkInsertBefore
+                     ilp
+                     i.Next
+                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                       ilp.Create(OpCodes.Ldc_I4, 65535)
+                       ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
+                       ilp.Create(OpCodes.Pop)
+                       ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                       ilp.Create(OpCodes.Stloc_0) ]
+                     true
+
+                  leave
+                  |> Seq.iter ((injectWait methodWorker) >> ignore)
+
+                  (newstate, false)
+                else
+                  (s, true)
+
+             (state, true)
+             |> processAsyncAwait
+             |> processFSAsync
+             |> processTaskReturns
+             |> fst)
            state
 
     let private visitAfterMethod state (m: MethodEntry) =
