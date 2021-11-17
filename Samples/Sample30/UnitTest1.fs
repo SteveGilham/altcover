@@ -31,6 +31,17 @@ module Tests =
       test <@ AddSynch(1, 1) = result @>
     }
 
+  let AddTaskReturnsTheSumOfXAndYAlter () =
+    try
+      let t = task {
+                let! result = AddTask(1, 1)
+                test <@ AddSynch(1, 1) = result @>
+              }
+      t.Wait()
+      t
+    finally
+      printfn "Done"
+
     //public IEnumerable<int> Yielder()
     //{
     //  yield return 1;
