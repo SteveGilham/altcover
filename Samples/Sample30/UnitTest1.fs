@@ -31,13 +31,23 @@ module Tests =
       test <@ AddSynch(1, 1) = result @>
     }
 
+  let AddTaskReturnsTheSumOfXAndYUnwait () =
+    try
+      let t = task {
+                let! result = AddTask(1, 1)
+                test <@ AddSynch(1, 1) = result @>
+              }
+      t
+    finally
+      printfn "Done"
+
   let AddTaskReturnsTheSumOfXAndYAlter () =
     try
       let t = task {
                 let! result = AddTask(1, 1)
                 test <@ AddSynch(1, 1) = result @>
               }
-      t.Wait()
+      t.Wait(65535) |> ignore
       t
     finally
       printfn "Done"

@@ -1711,7 +1711,7 @@ module AltCoverTests2 =
 
     let target =
       def.MainModule.GetType("Sample30.Tests").Methods
-      |> Seq.find (fun m -> m.Name = "AddTask")
+      |> Seq.find (fun m -> m.Name = "AddTaskReturnsTheSumOfXAndY")
 
     let raw = AltCover.InstrumentContext.Build([])
 
@@ -1750,7 +1750,7 @@ module AltCoverTests2 =
 
     Assert.That( // Adding the return value, too
       target.Body.Instructions.Count,
-      Is.EqualTo(countBefore + 9 + 5)
+      Is.EqualTo(countBefore + 9 + 6)
     )
 
     Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
