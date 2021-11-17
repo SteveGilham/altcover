@@ -109,6 +109,7 @@
     <ProjectReference Include="..\Samples\Sample24\Sample24.csproj" />
     <ProjectReference Include="..\Samples\Sample27\Sample27.fsproj" />
     <ProjectReference Include="..\Samples\Sample2\Sample2.fsproj" />
+    <ProjectReference Include="..\Samples\Sample30\Sample30.fsproj" />
     <ProjectReference Include="..\Samples\Sample3\Sample3.csproj" />
     <ProjectReference Include="..\Samples\Sample4\Sample4.fsproj" />
     <ProjectReference Include="..\Samples\Sample5\Sample5.csproj" />

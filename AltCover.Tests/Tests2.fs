@@ -1690,6 +1690,79 @@ module AltCoverTests2 =
     Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
 
   [<Test>]
+  let ShouldBeAbleToTrackAnFSTaskMethod () =
+    use recstream = recorderStream ()
+
+    let sample30 =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        "Sample30.dll"
+      )
+
+    use def =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly sample30
+
+    use rdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+
+    let recorder =
+      AltCover.Instrument.I.recordingMethod rdef
+
+    let target =
+      def.MainModule.GetType("Sample30.Tests").Methods
+      |> Seq.find (fun m -> m.Name = "AddTask")
+
+    let raw = AltCover.InstrumentContext.Build([])
+
+    let state =
+      { raw with
+          RecordingMethodRef =
+            { raw.RecordingMethodRef with
+                Visit = null
+                Push = recorder.[1]
+                Pop = recorder.[2] } }
+
+    let countBefore = target.Body.Instructions.Count
+
+    let tailsBefore =
+      target.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+      |> Seq.length
+
+    let nopsBefore =
+      target.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+      |> Seq.length
+
+    let handlersBefore = target.Body.ExceptionHandlers.Count
+
+    let state2 =
+      AltCover.Instrument.I.doTrack
+        state
+        { Method = target
+          VisibleMethod = target
+          Inspection = Inspections.Track
+          Track = Some(42, "hello")
+          DefaultVisitCount = Exemption.None }
+
+    Assert.That(state2.AsyncSupport |> Option.isSome)
+
+    Assert.That( // Adding the return value, too
+      target.Body.Instructions.Count,
+      Is.EqualTo(countBefore + 9 + 5)
+    )
+
+    Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+    let nopsAfter =
+      target.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+      |> Seq.length
+    // add 2 extra nop now and replace rather than remove .tails
+    Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
+
+  [<Test>]
   let ShouldBeAbleToInstrumentASwitchForNCover () =
     use recstream = recorderStream ()
 
