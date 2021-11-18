@@ -28,6 +28,7 @@
     <Compile Include="Tests3.fs" />
     <Compile Include="XTests.fs" />
     <Compile Include="Expecto.fs" Condition="'$(TargetFramework)' != 'net472'" />
+    <None Include="Expecto.fs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
