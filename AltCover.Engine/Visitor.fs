@@ -422,15 +422,15 @@ module internal CoverageParameters =
                                                     Justification = "Probably in the 'string' inline")>]
   let internal makeConfiguration () =
     let components =
-      [ string !methodPoint
-        String.Join("|", trackingNames)
-        String.Join("|", topLevel |> Seq.map filterString |> Seq.sort)
-        String.Join("|", nameFilters |> Seq.map filterString |> Seq.sort)
+      [ string methodPoint.Value
+        String.Join("\t", trackingNames)
+        String.Join("\t", topLevel |> Seq.map filterString |> Seq.sort)
+        String.Join("\t", nameFilters |> Seq.map filterString |> Seq.sort)
         string staticFilter
-        string !showGenerated
-        string !coalesceBranches
-        string !local
-        string !sourcelink
+        string showGenerated.Value
+        string coalesceBranches.Value
+        string local.Value
+        string sourcelink.Value
         string <| interval ()
         string coverstyle
         string <| reportFormat ()
@@ -440,10 +440,10 @@ module internal CoverageParameters =
         recorderStrongNameKey
         |> Option.map KeyStore.keyToIndex
         |> string
-        String.Join("|", keys.Keys |> Seq.map string |> Seq.sort) ]
+        String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort) ]
 
     configurationHash <-
-      String.Join("||", components)
+      String.Join("\n", components)
       |> System.Text.Encoding.ASCII.GetBytes
       |> hash.ComputeHash
       |> Convert.ToBase64String
