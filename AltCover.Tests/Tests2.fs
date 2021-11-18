@@ -2648,6 +2648,8 @@ module AltCoverTests2 =
 
   [<Test>]
   let IncludedAssemblyRefsAreUpdated () =
+    // do trivial coverage here where the type's absence is felt
+    let dummy = AltCover.Recorder.InstrumentationAttribute()
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 

@@ -144,7 +144,7 @@ module internal Instrument =
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
   module internal I =
-#if IDEMPOTENT_INSTRUMENT
+
     let prelude =
       [ 0x01uy
         0x00uy
@@ -204,7 +204,6 @@ module internal Instrument =
       let inject = CustomAttribute(constructor, blob)
 
       assembly.Assembly.CustomAttributes.Add inject
-#endif
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
@@ -1219,10 +1218,10 @@ module internal Instrument =
 
       if assembly.Inspection <> Inspections.Ignore then
         assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-#if IDEMPOTENT_INSTRUMENT
+
         // TODO -- react to source or destination being stamped
         injectInstrumentation state.RecordingAssembly assembly
-#endif
+
       state
 
     // Perform visitor operations
