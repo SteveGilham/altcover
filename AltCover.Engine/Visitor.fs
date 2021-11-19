@@ -690,11 +690,10 @@ module internal Visitor =
       sourceLinkDocuments <-
         Some x.Module
         |> Option.filter (fun _ -> CoverageParameters.sourcelink.Value)
-        |> Option.map
+        |> Option.bind
              (fun x ->
                x.CustomDebugInformations
                |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
-        |> Option.flatten
         |> Option.map
              (fun i ->
                let c =

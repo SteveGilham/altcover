@@ -116,15 +116,14 @@ module internal Json =
     =
     let td =
       def
-      |> Option.map
+      |> Option.bind
            (fun a ->
              a.MainModule.GetAllTypes()
              |> Seq.tryFind (fun t -> t.FullName = cname))
-      |> Option.flatten
 
     let md =
       td
-      |> Option.map
+      |> Option.bind
            (fun t ->
              t.Methods
              |> Seq.tryFind
@@ -139,7 +138,6 @@ module internal Json =
 
                                 pt.StartLine = sp.Value.SL
                                 && pt.StartColumn = sp.Value.SC)))))
-      |> Option.flatten
 
     let truemd =
       md

@@ -1047,7 +1047,6 @@ module
 
     makeSummary nb vb ns vs sd
 
-
   [<SuppressMessage("Gendarme.Rules.Maintainability",
                     "AvoidUnnecessarySpecializationRule",
                     Justification = "AvoidSpeculativeGenerality too")>]
@@ -1129,8 +1128,7 @@ module
 
            kvp.Value
            |> Seq.tryFind (fun kvp -> kvp.Key = "\u00ABAltCover.embed\u00BB")
-           |> Option.map (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
-           |> Option.flatten
+           |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
            |> Option.iter
                 (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
 

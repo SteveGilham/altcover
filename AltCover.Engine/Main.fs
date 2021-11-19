@@ -478,10 +478,34 @@ module internal Main =
                           use def = AssemblyDefinition.ReadAssembly(stream)
                           ProgramDatabase.readSymbols def
 
-                          if def.MainModule.HasSymbols
+                          let checkKey (a:AssemblyNameReference) =
+                            a.PublicKeyToken
+                            |> Option.ofObj
+                            |> Option.map (fun t -> String.Join(
+                                                      String.Empty,
+                                                      t |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture)))
+                                                      = "4ebffcaabf10ce6a") // recorder.snk
+                            |> Option.defaultValue false
+
+                          Some def
+                          |> Option.bind (fun a -> // already instrumented ?
+                            if a.CustomAttributes
+                               |> Seq.exists (fun a -> a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute") ||
+                               a.MainModule.AssemblyReferences
+                               |> Seq.cast<AssemblyNameReference>
+                               |> Seq.exists checkKey ||
+                               checkKey a.Name
+                            then
+                              CommandLine.Format.Local("alreadyInstrumented", fullName)
+                              |> Output.warn
+                              None
+                            else Some a)
+                          |> Option.filter (fun def ->
+                             def.MainModule.HasSymbols
                              && (def.IsIncluded).IsInstrumented
                              && (def.MainModule.Attributes
-                                 &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly) then
+                                 &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly))
+                          |> Option.map  (fun def ->
                             CommandLine.Format.Local("instrumenting", fullName)
                             |> Output.info
 
@@ -497,14 +521,12 @@ module internal Main =
                                 def.MainModule.AssemblyReferences
                                 |> Seq.map (fun r -> r.Name)
                                 |> Seq.toList }
-                            :: accumulator
-                          else
-                            accumulator)
+                            :: accumulator)
+                           |> Option.defaultValue accumulator)
                         (fun () -> accumulator))
                     [])
         |> Seq.toList
         |> Seq.concat
-//        |> Seq.groupBy (fun a -> a.Name) // assume name is unique
         |> Seq.groupBy (fun a -> a.Hash) // assume hash is unique
         |> Seq.map
              (fun (n, agroup) ->
