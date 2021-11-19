@@ -3202,6 +3202,77 @@ module AltCoverTests3 =
     test <@ (Main.I.isInDirectory file3 dir) @>
 
   [<Test>]
+  let ScreeningFilesShouldRejectTheInstrumentedOnes () =
+    Main.init ()
+    // because mono symbol-writing is broken, work around trying to
+    // examine the instrumented files in a self-test run.
+    let here =
+      Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy/net472")
+    maybeIgnore (fun () -> here |> Directory.Exists |> not)
+
+    //let there =
+    //  Path.Combine(
+    //    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+    //    Guid.NewGuid().ToString()
+    //  )
+
+    let save = Output.warn
+    try
+      let sb = System.Text.StringBuilder()
+      let warn (s:String) = s |> sb.Append |> ignore
+      Output.warn <- warn
+
+      here
+      |> Directory.GetFiles
+      |> Seq.filter (fun f -> match Path.GetExtension f with
+                              | ".dll"
+                              | ".exe" -> true
+                              | _ -> false )
+      |> Seq.iter(fun f ->
+          use stream = File.OpenRead(f)
+          use def = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream)
+          ProgramDatabase.readSymbols def
+          let result = Main.I.screenAssembly (Path.GetFileName f) def
+          Assert.True (result |> Option.isSome, f))
+
+      Assert.That (sb.ToString(), Is.Empty)
+
+      let path =
+        Path.Combine(AltCoverTests.dir, "Sample3.dll")
+
+      let prepared =
+        Instrument.I.prepareAssembly (File.OpenRead path)
+
+      //Instrument.I.writeAssembly prepared (Path.Combine(there, "Sample3.dll"))
+
+      let second = Path.Combine(here, "Sample4.dll")
+      use assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly second
+
+      assembly.MainModule.AssemblyReferences.Add(prepared.Name)
+      let entry = { Assembly = assembly
+                    Inspection = Inspections.Ignore
+                    Destinations = []
+                    Identity = { Assembly = "Sample4.dll"; Configuration = "ScreeningFilesShouldRejectTheInstrumentedOnes"} }
+
+      Instrument.I.injectInstrumentation prepared entry
+      //Instrument.I.writeAssembly assembly (Path.Combine(there, "Sample4.dll")
+
+      let s1 = Main.I.screenAssembly "Sample3.dll" prepared
+      Assert.True (s1 |> Option.isNone, "Sample3.dll")
+
+      Environment.NewLine |>sb.Append |> ignore
+
+      let s1 = Main.I.screenAssembly "Sample4.dll" assembly
+      Assert.True (s1 |> Option.isNone, "Sample4.dll")
+
+      let expected = "Skipping Sample3.dll as it has already been instrumented." + Environment.NewLine +
+                     "Skipping Sample4.dll as it has already been instrumented."
+      Assert.That (sb.ToString(), Is.EqualTo expected)
+
+    finally
+      Output.warn <- save
+
+  [<Test>]
   let PreparingNewPlaceShouldCopyEverything () =
     Main.init ()
     // because mono symbol-writing is broken, work around trying to
