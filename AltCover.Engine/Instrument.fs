@@ -1293,6 +1293,6 @@ module internal Instrument =
   // "Public" API
   // Higher-order function that returns a visitor
   // param name="assemblies">List of assembly paths to visit</param>
-  // returns>Stateful visitor function</returns>
+  // <returns>Stateful visitor function</returns>
   let internal instrumentGenerator (assemblies: string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)
