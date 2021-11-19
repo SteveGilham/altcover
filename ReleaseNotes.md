@@ -6,6 +6,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [BUGFIX] Make the static-linked parts of the recorder assembly internal, so only the AltCover instrumentation API is exposed -- removes type duplications from the environment that may confuse run-time assembly creation e.g. by Marten (issue #133)
 * For `CallContext`, add async-aware tracking for all methods returning `Task` or `Task<T>` not just ones with the C# `async` shape.  This includes functions returning the new F#6 `task{}` computation expression. 
   * **Note** there is a support gap : running this under .net Framework less than v4.6 (i.e. a test machine with a pre-2015-JUL-20 environment) will not work, even though `Task` is a .net 4.0 feature, as the tracking support relies on .net 4.6 `async` features.
+* Emit (a warning)[https://stevegilham.github.io/altcover/AltCover.Engine/AltCover/AltCover.LoggingOptions/Warn-apidoc] if any of the files input to the instrumentations have previously been instrumented, leaving those files untouched (apart from any Recorder assembly, which will be overwritten).  For `dotnet test` this is an MSBuild warning, for powershell, it is delivered via `Cmdlet.WriteWarning`.
 
 
 # 8.2.828 (Habu series release 8)
