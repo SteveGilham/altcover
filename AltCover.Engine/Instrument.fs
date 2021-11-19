@@ -160,8 +160,7 @@ module internal Instrument =
         0x6duy
         0x62uy
         0x6cuy
-        0x79uy
-        0x2cuy ]
+        0x79uy ]
 
     let interlude =
       [ 0x54uy
@@ -179,18 +178,21 @@ module internal Instrument =
         0x74uy
         0x69uy
         0x6fuy
-        0x6euy
-        0x2cuy ]
+        0x6euy ]
 
     let internal injectInstrumentation
       (recorder: AssemblyDefinition)
       (assembly: AssemblyEntry)
       =
+      let a = System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+      let c = System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration)
       let blob =
         [| prelude |> List.toArray
-           System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+           [| byte a.Length|]
+           a
            interlude |> List.toArray
-           System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration) |] // slight inefficiency
+           [| byte c.Length|]
+           c |] // slight inefficiency
         |> Array.concat
 
       let attribute =
