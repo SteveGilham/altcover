@@ -312,6 +312,15 @@ module internal Instrument =
                         <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
                    t.IsPublic <- false)
 
+          injectInstrumentation definition {
+            Assembly = definition
+            Inspection = Inspections.Ignore
+            Destinations = []
+            Identity = { Assembly = "AltCover+Recorder+g+"
+                         Configuration = "Uninstrumented++"
+            }
+          }
+
           [ // set the coverage file path and unique token
             ("get_ReportFile",
              (fun (w: ILProcessor) ->

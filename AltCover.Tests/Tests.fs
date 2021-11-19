@@ -3014,7 +3014,8 @@ module AltCoverTests =
         "Class2"
         "Class3"
         "Class4"
-        "IsExternalInit" ]
+        "IsExternalInit"
+        "InstrumentationAttribute" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3037,7 +3038,8 @@ module AltCoverTests =
         "AltCover.Sample3.Class2"
         "AltCover.Sample3.Class3"
         "AltCover.Sample3.Class3+Class4"
-        "System.Runtime.CompilerServices.IsExternalInit" ]
+        "System.Runtime.CompilerServices.IsExternalInit"
+        "AltCover.Recorder.InstrumentationAttribute" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3064,7 +3066,8 @@ module AltCoverTests =
         "Class2"
         "Class3"
         "Class4"
-        "IsExternalInit" ]
+        "IsExternalInit"
+        "InstrumentationAttribute" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3101,7 +3104,8 @@ module AltCoverTests =
         "AltCover.Sample3.Class2"
         "AltCover.Sample3.Class3"
         "AltCover.Sample3.Class3+Class4"
-        "System.Runtime.CompilerServices.IsExternalInit" ]
+        "System.Runtime.CompilerServices.IsExternalInit"
+        "AltCover.Recorder.InstrumentationAttribute" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3148,7 +3152,12 @@ module AltCoverTests =
         "get_Sample"
         "set_Sample"
         "ToList"
-        "#ctor" ]
+        "#ctor"
+        "#ctor"
+        "get_Assembly"
+        "get_Configuration"
+        "set_Assembly"
+        "set_Configuration" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3195,7 +3204,13 @@ module AltCoverTests =
         "System.Int32 AltCover.Sample3.Class3+Class4.get_Sample()"
         "System.Void AltCover.Sample3.Class3+Class4.set_Sample(System.Int32)"
         "System.Collections.Generic.List`1 AltCover.Sample3.Class3+Class4.ToList<T>(T)"
-        "System.Void AltCover.Sample3.Class3+Class4.#ctor()" ]
+        "System.Void AltCover.Sample3.Class3+Class4.#ctor()"
+        "System.String AltCover.Recorder.InstrumentationAttribute.get_Assembly()"
+        "System.String AltCover.Recorder.InstrumentationAttribute.get_Configuration()"
+        "System.Void AltCover.Recorder.InstrumentationAttribute.#ctor()"
+        "System.Void AltCover.Recorder.InstrumentationAttribute.set_Assembly(System.String)"
+        "System.Void AltCover.Recorder.InstrumentationAttribute.set_Configuration(System.String)"
+      ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3324,6 +3339,7 @@ module AltCoverTests =
         SolutionDir(),
         "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -3617,6 +3633,7 @@ module AltCoverTests =
         SolutionDir(),
         "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -4080,6 +4097,7 @@ module AltCoverTests =
 
     let path =
       Path.Combine(here, "_SourceLink/Sample14.dll")
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.sourcelink.Value <- true
@@ -4548,6 +4566,7 @@ module AltCoverTests =
 
     let path =
       Path.Combine(here, "_SourceLink/Sample14.dll")
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.theReportFormat <- Some ReportFormat.NCover
@@ -4612,6 +4631,7 @@ module AltCoverTests =
   let ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle () =
     let visitor, document = OpenCover.reportGenerator ()
     let path = sample1path
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.nameFilters.Clear()
@@ -4653,6 +4673,7 @@ module AltCoverTests =
         SolutionDir(),
         "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
+    maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
       CoverageParameters.nameFilters.Clear()

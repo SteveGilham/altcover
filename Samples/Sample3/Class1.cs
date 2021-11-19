@@ -152,3 +152,22 @@ namespace AltCover.Sample3
         }
     }
 }
+
+// AltCover.Recorder.InstrumentationAttribute
+namespace AltCover.Recorder
+{
+    [Serializable]
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public sealed class InstrumentationAttribute : Attribute
+    {
+        public string Assembly { get; set; }
+
+        public string Configuration { get; set; }
+
+        public InstrumentationAttribute()
+        {
+            Assembly = "Sample3 test assembly!";
+            Configuration = "Unit testing only!!";
+        }
+    }
+}

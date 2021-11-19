@@ -3208,6 +3208,7 @@ module AltCoverTests3 =
     // examine the instrumented files in a self-test run.
     let here =
       Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy/net472")
+    maybeIgnore (fun () -> here |> Directory.Exists |> not)
 
     let there =
       Path.Combine(

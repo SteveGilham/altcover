@@ -519,6 +519,10 @@ module AltCoverTests2 =
 
       Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
 
+      Assert.True(prepared.CustomAttributes
+                  |> Seq.exists (fun a -> a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute"),
+                  "Hallmark missing")
+
       let before =
         raw.MainModule.GetTypes()
         |> Seq.filter (fun t -> t.Name = "Class4")

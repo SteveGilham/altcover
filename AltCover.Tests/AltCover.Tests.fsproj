@@ -21,7 +21,7 @@
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover.Hallmark\InstrumentationAttribute.fs" Link="InstrumentationAttribute.fs" />
+    <Compile Include="..\AltCover.Recorder\InstrumentationAttribute.fs" Link="InstrumentationAttribute.fs" />
     <Compile Include="TestCommon.fs" />
     <Compile Include="Runner.Tests.fs" />
     <Compile Include="Tests.fs" />
