@@ -412,6 +412,28 @@ module internal Main =
     let internal isInDirectory (file:string) (dir:string) =
       file.StartsWith(dir, matchType)
 
+    let internal checkKey (a:AssemblyNameReference) =
+      a.PublicKeyToken
+      |> Option.ofObj
+      |> Option.map (fun t -> String.Join(
+                                String.Empty,
+                                t |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture)))
+                                = "4ebffcaabf10ce6a") // recorder.snk
+      |> Option.defaultValue false
+
+    let internal screenAssembly (fullName: String) (a:AssemblyDefinition) =
+      if a.CustomAttributes
+          |> Seq.exists (fun a -> a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute") ||
+          a.MainModule.AssemblyReferences
+          |> Seq.cast<AssemblyNameReference>
+          |> Seq.exists checkKey ||
+          checkKey a.Name
+      then
+        CommandLine.Format.Local("alreadyInstrumented", fullName)
+        |> Output.warn
+        None
+      else Some a
+
     let internal prepareTargetFiles
       (inputInfos: DirectoryInfo seq)
       (outputInfos: DirectoryInfo seq)
@@ -478,28 +500,8 @@ module internal Main =
                           use def = AssemblyDefinition.ReadAssembly(stream)
                           ProgramDatabase.readSymbols def
 
-                          let checkKey (a:AssemblyNameReference) =
-                            a.PublicKeyToken
-                            |> Option.ofObj
-                            |> Option.map (fun t -> String.Join(
-                                                      String.Empty,
-                                                      t |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture)))
-                                                      = "4ebffcaabf10ce6a") // recorder.snk
-                            |> Option.defaultValue false
-
                           Some def
-                          |> Option.bind (fun a -> // already instrumented ?
-                            if a.CustomAttributes
-                               |> Seq.exists (fun a -> a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute") ||
-                               a.MainModule.AssemblyReferences
-                               |> Seq.cast<AssemblyNameReference>
-                               |> Seq.exists checkKey ||
-                               checkKey a.Name
-                            then
-                              CommandLine.Format.Local("alreadyInstrumented", fullName)
-                              |> Output.warn
-                              None
-                            else Some a)
+                          |> Option.bind (screenAssembly fullName)
                           |> Option.filter (fun def ->
                              def.MainModule.HasSymbols
                              && (def.IsIncluded).IsInstrumented
