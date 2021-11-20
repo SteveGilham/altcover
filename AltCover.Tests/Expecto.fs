@@ -520,6 +520,7 @@ module ExpectoTestManifest =
        "Tests2.ShouldSymbolWriterAsExpected"
        Tests.AltCoverTests2.ShouldGetNewFilePathFromPreparedAssembly,
        "Tests2.ShouldGetNewFilePathFromPreparedAssembly"
+       Tests.AltCoverTests2.ShouldRescopeMonoMethodOK, "Tests2.ShouldRescopeMonoMethodOK"
        Tests.AltCoverTests2.ShouldWriteMonoAssemblyOK, "Tests2.ShouldWriteMonoAssemblyOK"
        Tests.AltCoverTests2.ShouldGetVisitFromWrittenAssembly,
        "Tests2.ShouldGetVisitFromWrittenAssembly"
