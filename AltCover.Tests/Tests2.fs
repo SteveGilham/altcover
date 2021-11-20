@@ -813,9 +813,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let ShouldRescopeMonoMethodOK () =
-    // Workround for Cecil 11.3 - 4
-    let path =
-        Path.Combine(SolutionRoot.location, "_Mono/Sample31/Sample31.dll")
+    // Workround for Cecil 11.4
+    let path = // Use a known good (bad) build rather than a local new one each time
+        // Path.Combine(SolutionRoot.location, "_Mono/Sample31/Sample31.dll")
+        Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
 
     use ``module`` = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.readSymbols ``module``
@@ -831,12 +832,12 @@ module AltCoverTests2 =
     let opcode = worker.Create (OpCodes.Ldc_I4_1)
     worker.InsertBefore (head, opcode)
 
-#if !MONO // 2nd one doesn't flag on Linux
+//#if WINDOWS // 2nd one doesn't flag on Linux
     Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "Scope.Start.IsEndOfMethod")
     Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
                  |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
                  "subscope.Start.IsEndOfMethod")
-#endif
+//#endif
 
     // big test -- if we can write w/o crashing when the previous asserts are removed
     let output = Path.GetTempFileName ()
@@ -847,10 +848,10 @@ module AltCoverTests2 =
     writer.WriteSymbols <- true
 
     use sink = File.Open (outputdll, FileMode.Create, FileAccess.ReadWrite)
-#if !MONO // 2nd one doesn't flag on Linux
+//#if WINDOWS // so this one doesn't flag on Linux either
     Assert.Throws<NotSupportedException>(fun () -> ``module``.Write (sink, writer))
     |> ignore
-#endif
+//#endif
 
     pruneLocalScopes pathGetterDef
     ``module``.Write (sink, writer)

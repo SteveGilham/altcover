@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT' AND '$(TargetFramework)' == 'net472'">MONO</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">LINUX;$(ExtraDefines)</ExtraDefines>
+    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">WINDOWS</ExtraDefines>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
@@ -19,6 +19,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Sample31.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample31.dll.mdb">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
     <Compile Include="..\_Generated\SolutionRoot.fs" Link="SolutionRoot.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="AssemblyInfo.fs" />
