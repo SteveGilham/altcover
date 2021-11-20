@@ -831,11 +831,12 @@ module AltCoverTests2 =
     let opcode = worker.Create (OpCodes.Ldc_I4_1)
     worker.InsertBefore (head, opcode)
 
-    // 2nd one doesn't flag on Linux
-    //Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "Scope.Start.IsEndOfMethod")
-    //Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-    //             |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
-    //             "subscope.Start.IsEndOfMethod")
+#if !MONO // 2nd one doesn't flag on Linux
+    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "Scope.Start.IsEndOfMethod")
+    Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
+                 |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
+                 "subscope.Start.IsEndOfMethod")
+#endif
 
     // big test -- if we can write w/o crashing when the previous asserts are removed
     let output = Path.GetTempFileName ()
@@ -846,15 +847,17 @@ module AltCoverTests2 =
     writer.WriteSymbols <- true
 
     use sink = File.Open (outputdll, FileMode.Create, FileAccess.ReadWrite)
+#if !MONO // 2nd one doesn't flag on Linux
     Assert.Throws<NotSupportedException>(fun () -> ``module``.Write (sink, writer))
     |> ignore
+#endif
 
     pruneLocalScopes pathGetterDef
     ``module``.Write (sink, writer)
-    //Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "pruned Scope.Start.IsEndOfMethod")
-    //Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-    //             |> Seq.forall (fun subscope -> subscope.Start.IsEndOfMethod |> not),
-    //             "pruned subscope.Start.IsEndOfMethod")
+    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "pruned Scope.Start.IsEndOfMethod")
+    Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
+                 |> Seq.forall (fun subscope -> subscope.Start.IsEndOfMethod |> not),
+                 "pruned subscope.Start.IsEndOfMethod")
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =
