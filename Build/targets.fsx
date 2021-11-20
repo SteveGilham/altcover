@@ -861,6 +861,15 @@ _Target
              "-out:./_Mono/Sample1/Sample1.exe"
              "./Samples/Sample1/Program.cs" ])
 
+          //("./_Mono/Sample31",
+          // [ "-target:library"
+          //   "-debug"
+          //   "-D:MONO"
+          //   "-out:./_Mono/Sample31/Sample31.dll"
+          //   "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
+          //   "-r:Mono.Cecil.dll"
+          //   "./Samples/Sample31/Class1.cs" ])
+
           ("./_Mono/Sample3",
            [ "-target:library"
              "-debug"
@@ -868,16 +877,7 @@ _Target
              "-out:./_Mono/Sample3/Sample3.dll"
              "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
              "-r:Mono.Cecil.dll"
-             "./Samples/Sample3/Class1.cs" ])
-
-          ("./_Mono/Sample31",
-           [ "-target:library"
-             "-debug"
-             "-D:MONO"
-             "-out:./_Mono/Sample31/Sample31.dll"
-             "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
-             "-r:Mono.Cecil.dll"
-             "./Samples/Sample31/Class1.cs" ]) ]
+             "./Samples/Sample3/Class1.cs" ]) ]
 
         |> Seq.iter
             (fun (dir, cmd) ->
@@ -889,8 +889,8 @@ _Target
                 |> Actions.Run(mcs, ".", cmd))
 
         Actions.FixMVId [ "./_Mono/Sample1/Sample1.exe"
-                          "./_Mono/Sample3/Sample3.dll"
-                          "./_Mono/Sample31/Sample31.dll" ])
+                          //"./_Mono/Sample31/Sample31.dll"
+                          "./_Mono/Sample3/Sample3.dll" ])
 
 // Code Analysis
 

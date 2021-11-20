@@ -832,12 +832,10 @@ module AltCoverTests2 =
     let opcode = worker.Create (OpCodes.Ldc_I4_1)
     worker.InsertBefore (head, opcode)
 
-//#if WINDOWS // 2nd one doesn't flag on Linux
     Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "Scope.Start.IsEndOfMethod")
     Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
                  |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
-                 "subscope.Start.IsEndOfMethod")
-//#endif
+                 "subscope.Start.IsEndOfMethod") // this one needs the home-built Sample31
 
     // big test -- if we can write w/o crashing when the previous asserts are removed
     let output = Path.GetTempFileName ()
@@ -848,10 +846,8 @@ module AltCoverTests2 =
     writer.WriteSymbols <- true
 
     use sink = File.Open (outputdll, FileMode.Create, FileAccess.ReadWrite)
-//#if WINDOWS // so this one doesn't flag on Linux either
     Assert.Throws<NotSupportedException>(fun () -> ``module``.Write (sink, writer))
     |> ignore
-//#endif
 
     pruneLocalScopes pathGetterDef
     ``module``.Write (sink, writer)
