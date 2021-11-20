@@ -39,9 +39,7 @@ module internal Main =
     CoverageParameters.defer.Value <- false // ddflag
     CoverageParameters.theInputDirectories.Clear()
     CoverageParameters.theOutputDirectories.Clear()
-#if IDEMPOTENT_INSTRUMENT
     CoverageParameters.configurationHash <- None
-#endif
     ProgramDatabase.symbolFolders.Clear()
     Instrument.resolutionTable.Clear()
 
@@ -585,9 +583,7 @@ module internal Main =
 
             bundle next waiting (stage :: collection) (n - 1)
 
-#if IDEMPOTENT_INSTRUMENT
       CoverageParameters.makeConfiguration ()
-#endif
 
       let sorted =
         bundle simplified candidates [] (simplified |> List.length)
@@ -605,12 +601,7 @@ module internal Main =
                   Destinations = targets
                   Identity = {
                     Assembly = a.Hash
-                    Configuration =
-#if IDEMPOTENT_INSTRUMENT
-                                      CoverageParameters.configurationHash.Value
-#else
-                                      String.Empty
-#endif
+                    Configuration = CoverageParameters.configurationHash.Value
                   }},
                 a.Name))
 

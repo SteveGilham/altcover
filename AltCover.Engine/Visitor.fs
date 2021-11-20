@@ -405,7 +405,6 @@ module internal CoverageParameters =
     let index = KeyStore.keyToIndex key
     keys.[index] <- KeyStore.keyToRecord key
 
-#if IDEMPOTENT_INSTRUMENT
   let mutable internal configurationHash: option<String> = None
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
@@ -422,25 +421,25 @@ module internal CoverageParameters =
                                                     Justification = "Probably in the 'string' inline")>]
   let internal makeConfiguration () =
     let components =
-      [ string methodPoint.Value
-        String.Join("\t", trackingNames)
-        String.Join("\t", topLevel |> Seq.map filterString |> Seq.sort)
-        String.Join("\t", nameFilters |> Seq.map filterString |> Seq.sort)
-        string staticFilter
-        string showGenerated.Value
-        string coalesceBranches.Value
-        string local.Value
-        string sourcelink.Value
-        string <| interval ()
-        string coverstyle
-        string <| reportFormat ()
-        defaultStrongNameKey
-        |> Option.map KeyStore.keyToIndex
-        |> string
-        recorderStrongNameKey
-        |> Option.map KeyStore.keyToIndex
-        |> string
-        String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort) ]
+      [ "--methodpoint\t" + string methodPoint.Value
+        "--callContext-A\t" + String.Join("\t", trackingNames)
+        "--topLevels\t" + String.Join("\t", topLevel |> Seq.map filterString |> Seq.sort)
+        "--filters\t" + String.Join("\t", nameFilters |> Seq.map filterString |> Seq.sort)
+        "--showstatic\t" + string staticFilter
+        "--showGenerated\t" + string showGenerated.Value
+        "--visibleBranches\t" + string coalesceBranches.Value
+        "--localSource\t" + string local.Value
+        "--sourceLink\t" + string sourcelink.Value
+        "--callContext-B\t" + (string <| interval ())
+        "--line/branch-cover\t" + string coverstyle
+        "--reportFormat\t" + (string <| reportFormat ())
+        "--strongNameKey\t" + (defaultStrongNameKey
+                             |> Option.map KeyStore.keyToIndex
+                             |> string)
+        "!!recorderStrongNameKey\t" + (recorderStrongNameKey
+                |> Option.map KeyStore.keyToIndex
+                |> string)
+        "--key\t" + String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort) ]
 
     configurationHash <-
       String.Join("\n", components)
@@ -448,7 +447,6 @@ module internal CoverageParameters =
       |> hash.ComputeHash
       |> Convert.ToBase64String
       |> Some
-#endif
 
 [<AutoOpen>]
 module internal Inspector =
