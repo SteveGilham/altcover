@@ -857,7 +857,7 @@ module AltCoverTests2 =
     ``module``.Write (sink, writer)
     Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "pruned Scope.Start.IsEndOfMethod")
     Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-                 |> Seq.forall (fun subscope -> subscope.Start.IsEndOfMethod |> not),
+                 |> Seq.isEmpty,
                  "pruned subscope.Start.IsEndOfMethod")
 
   [<Test>]
