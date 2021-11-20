@@ -831,9 +831,10 @@ module AltCoverTests2 =
     let opcode = worker.Create (OpCodes.Ldc_I4_1)
     worker.InsertBefore (head, opcode)
 
-    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False)
+    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "Scope.Start.IsEndOfMethod")
     Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-                 |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod))
+                 |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
+                 "subscope.Start.IsEndOfMethod")
 
     // big test -- if we can write w/o crashing when the previous asserts are removed
     let output = Path.GetTempFileName ()
@@ -849,9 +850,10 @@ module AltCoverTests2 =
 
     pruneLocalScopes pathGetterDef
     ``module``.Write (sink, writer)
-    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False)
+    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "pruned Scope.Start.IsEndOfMethod")
     Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-                 |> Seq.forall (fun subscope -> subscope.Start.IsEndOfMethod |> not))
+                 |> Seq.forall (fun subscope -> subscope.Start.IsEndOfMethod |> not),
+                 "pruned subscope.Start.IsEndOfMethod")
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =
