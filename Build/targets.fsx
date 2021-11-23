@@ -2367,8 +2367,10 @@ _Target
                 let spts = tmr.Parent.Parent.Parent
 
                 let sptcount =
-                    spts.Descendants(XName.Get("SequencePoint"))
-                    |> Seq.length
+                    (spts.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.length)
+                    + (spts.Descendants(XName.Get("BranchPoint"))
+                       |> Seq.length)
 
                 let tmrcount =
                     spts.Descendants(XName.Get("TrackedMethodRefs"))
@@ -2378,7 +2380,7 @@ _Target
                     spts.Parent.Descendants(XName.Get("Name"))
                     |> Seq.head
 
-                Assert.That(tmrcount, Is.EqualTo sptcount, name.Value)))
+                Assert.That(tmrcount, Is.LessThanOrEqualTo sptcount, name.Value)))
 
 _Target
     "AsyncAwaitTests"
@@ -2488,17 +2490,15 @@ _Target
         let altcover =
             Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
 
-        [ "Sample27"; "Sample30" ]
+        [ ("Sample27", 18); ("Sample30",27) ]
         |> List.iter
-            (fun sample ->
+            (fun (sample, methodcount) ->
                 let simpleReport =
                     (Path.getFullName "./_Reports")
                     @@ (sample + "AltCoverFSAsyncTests.xml")
 
                 let sampleRoot =
-                    Path.getFullName "Samples/"
-                    + sample
-                    + "/_Binaries/FSAsyncTests_"
+                    Path.getFullName "./_Binaries/FSAsyncTests_"
                     + sample
                     + "/Debug+AnyCPU/netcoreapp3.1"
 
@@ -2566,7 +2566,7 @@ _Target
                 let methods = coverageDocument.Descendants(XName.Get("Method"))
                               |> Seq.toList
       
-                Assert.That(methods |> Seq.length, Is.EqualTo 64, "ref count wrong")
+                Assert.That(methods |> Seq.length, Is.EqualTo methodcount, "method count wrong")
 
                 methods
                 |> Seq.iter
