@@ -287,8 +287,7 @@ let cliArguments =
           ConsoleLogParameters = []
           DistributedLoggers = None
           Properties =
-              [ ("CheckEolTargetFramework", "false")
-                ("ContinuousIntegrationBuild", "false") ]
+              [ ]
           DisableInternalBinLog = true }
 
 let withWorkingDirectoryVM dir o =
@@ -443,17 +442,17 @@ let msbuildCommon (p: MSBuildParams) =
           DistributedLoggers = None
           DisableInternalBinLog = true
           Properties =
-              [ "CheckEolTargetFramework", "false"
-                "ContinuousIntegrationBuild", "false"
-                "DebugSymbols", "True" ] }
+              [ "DebugSymbols", "True" ] }
 
 let withDebug (p: MSBuildParams) =
     { p with
-          Properties = ("Configuration", "Debug") :: p.Properties }
+          Properties = ("Configuration", "Debug") :: p.Properties
+          DoRestore = true }
 
 let withRelease (p: MSBuildParams) =
     { p with
-          Properties = ("Configuration", "Release") :: p.Properties }
+          Properties = ("Configuration", "Release") :: p.Properties
+          DoRestore = true }
 
 let splitCommandLine line =
     line
@@ -696,29 +695,6 @@ module SolutionRoot =
         if not (old.Equals(hack)) then
             File.WriteAllText(path, hack)
 
-        [ "./AltCover.Recorder/AltCover.Recorder.fsproj" // net20 resgen ?? https://docs.microsoft.com/en-us/visualstudio/msbuild/generateresource-task?view=vs-2019
-          "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
-          "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
-          "./Samples/Sample25/Sample25.fsproj" ]
-        |> Seq.iter
-            (fun f ->
-                let dir = Path.GetDirectoryName f
-                let proj = Path.GetFileName f
-
-                DotNet.restore
-                    (fun o ->
-                        let tmp = o.WithCommon(withWorkingDirectoryVM dir)
-
-                        let mparams =
-                            { tmp.MSBuildParams with
-                                  Properties =
-                                      ("CheckEolTargetFramework", "false")
-                                      :: ("ContinuousIntegrationBuild", "false")
-                                         :: tmp.MSBuildParams.Properties }
-
-                        { tmp with MSBuildParams = mparams })
-                    proj)
-
         do
             let xml =
                 XDocument.Load("./AltCover.Recorder/Strings.resx")
@@ -832,11 +808,12 @@ _Target
              Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs")
             "./Samples/Sample14/Sample14/Class3.txt"
 
-        [ "./AltCover.Recorder.sln" ]
-        |> Seq.iter (msbuildDebug MSBuildPath) // net20
-
-        [ "./AltCover.Recorder.sln" ]
-        |> Seq.iter (msbuildRelease MSBuildPath) // net20
+        // net20 and such
+        [
+          msbuildDebug MSBuildPath
+          msbuildRelease MSBuildPath
+        ]
+        |> List.iter (fun f -> f  "./AltCover.Recorder.sln")
 
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
@@ -2189,10 +2166,7 @@ _Target
 
                             let mparams =
                                 { tmp.MSBuildParams with
-                                      Properties =
-                                          ("CheckEolTargetFramework", "false")
-                                          :: ("ContinuousIntegrationBuild", "false")
-                                             :: tmp.MSBuildParams.Properties }
+                                      Properties = tmp.MSBuildParams.Properties }
 
                             { tmp with MSBuildParams = mparams })
                         proj
@@ -3948,10 +3922,7 @@ _Target
                       Configuration = DotNet.BuildConfiguration.Release
                       MSBuildParams =
                           { options.MSBuildParams with
-                                Properties =
-                                    ("CheckEolTargetFramework", "false")
-                                    :: ("ContinuousIntegrationBuild", "false")
-                                       :: options.MSBuildParams.Properties }
+                                Properties = options.MSBuildParams.Properties }
                       Framework = Some "netcoreapp2.0" })
             netcoresource
 
@@ -3962,10 +3933,7 @@ _Target
                       Configuration = DotNet.BuildConfiguration.Release
                       MSBuildParams =
                           { options.MSBuildParams with
-                                Properties =
-                                    ("CheckEolTargetFramework", "false")
-                                    :: ("ContinuousIntegrationBuild", "false")
-                                       :: options.MSBuildParams.Properties }
+                                Properties = options.MSBuildParams.Properties }
                       Framework = Some "netcoreapp2.1" })
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
@@ -5410,10 +5378,7 @@ _Target
 
                 let mparams =
                     { tmp.MSBuildParams with
-                          Properties =
-                              ("CheckEolTargetFramework", "false")
-                              :: ("ContinuousIntegrationBuild", "false")
-                                 :: tmp.MSBuildParams.Properties }
+                          Properties = tmp.MSBuildParams.Properties }
 
                 { tmp with MSBuildParams = mparams })
             (build @@ "msbuildtest.proj")
@@ -5436,8 +5401,6 @@ _Target
                       Properties =
                           [ "Configuration", "Debug"
                             "MSBuildTest", "true"
-                            "CheckEolTargetFramework", "false"
-                            "ContinuousIntegrationBuild", "false"
                             "AltCoverPath", unpack.Replace('\\', '/')
                             "DebugSymbols", "True" ] })
             "./Samples/Sample4/Sample4LongForm.fsproj")
@@ -5582,8 +5545,7 @@ _Target "DoIt"
     { MSBuild.CliArguments.Create() with
         ConsoleLogParameters = []
         DistributedLoggers = None
-        Properties = [("CheckEolTargetFramework", "false")
-                      ("ContinuousIntegrationBuild", "false")]
+        Properties = []
         DisableInternalBinLog = true }
 
   DotNet.test
@@ -6412,10 +6374,7 @@ _Target
 
                     let mparams =
                         { tmp.MSBuildParams with
-                              Properties =
-                                  ("CheckEolTargetFramework", "false")
-                                  :: ("ContinuousIntegrationBuild", "false")
-                                     :: tmp.MSBuildParams.Properties }
+                              Properties = tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
                 ""
@@ -6427,10 +6386,7 @@ _Target
 
                     let mparams =
                         { tmp.MSBuildParams with
-                              Properties =
-                                  ("CheckEolTargetFramework", "false")
-                                  :: ("ContinuousIntegrationBuild", "false")
-                                     :: tmp.MSBuildParams.Properties }
+                              Properties = tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
                 ""
@@ -6546,10 +6502,7 @@ _Target
 
                     let mparams =
                         { tmp.MSBuildParams with
-                              Properties =
-                                  ("CheckEolTargetFramework", "false")
-                                  :: ("ContinuousIntegrationBuild", "false")
-                                     :: tmp.MSBuildParams.Properties }
+                              Properties = tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
                 ""
@@ -6630,10 +6583,7 @@ _Target
 
                     let mparams =
                         { tmp.MSBuildParams with
-                              Properties =
-                                  ("CheckEolTargetFramework", "false")
-                                  :: ("ContinuousIntegrationBuild", "false")
-                                     :: tmp.MSBuildParams.Properties }
+                              Properties = tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
                 ""
@@ -7051,10 +7001,7 @@ _Target
 
                     let mparams =
                         { tmp.MSBuildParams with
-                              Properties =
-                                  ("CheckEolTargetFramework", "false")
-                                  :: ("ContinuousIntegrationBuild", "false")
-                                     :: tmp.MSBuildParams.Properties }
+                              Properties = tmp.MSBuildParams.Properties }
 
                     { tmp with MSBuildParams = mparams })
                 ""

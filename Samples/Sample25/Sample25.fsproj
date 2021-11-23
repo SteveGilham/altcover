@@ -4,9 +4,6 @@
     <TargetFrameworks>net20</TargetFrameworks>
     <AssemblyName>Sample25</AssemblyName>
     <RootNamespace>Sample25</RootNamespace>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -15,10 +12,6 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>52</NoWarn>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
   </PropertyGroup>
 
   <ItemGroup>
