@@ -2287,68 +2287,6 @@ _Target
         Actions.ValidateFSharpTypes simpleReport [])
 
 _Target
-    "FSharpTypesDotNet"
-    (fun _ -> // obsolete
-
-        Directory.ensure "./_Reports"
-
-        let simpleReport =
-            (Path.getFullName "./_Reports")
-            @@ ("AltCoverFSharpTypesDotNet.xml")
-
-        let sampleRoot =
-            Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
-
-        // Test the --inplace operation
-        Shell.cleanDir sampleRoot
-
-        "Sample2.fsproj"
-        |> DotNet.test
-            (fun o ->
-                { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
-                      Configuration = DotNet.BuildConfiguration.Debug
-                      Framework = Some "netcoreapp2.1" }
-                |> testWithCLIArguments)
-
-        let prep =
-            AltCover.PrepareOptions.Primitive(
-                { Primitive.PrepareOptions.Create() with
-                      Report = simpleReport
-                      AssemblyFilter = [ "Adapter"; "nunit"; "FSharp" ]
-                      TypeFilter = [ "System\\."; "Microsoft\\." ]
-                      InPlace = true
-                      ReportFormat = "NCover"
-                      Save = false }
-            )
-            |> AltCoverCommand.Prepare
-
-        { AltCoverCommand.Options.Create prep with
-              ToolPath = (Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll")
-              ToolType = dotnetAltcover
-              WorkingDirectory = sampleRoot }
-        |> AltCoverCommand.run
-
-        Actions.ValidateFSharpTypes simpleReport [ "main" ]
-
-        Assert.That(
-            Path.Combine(sampleRoot, "__Saved")
-            |> Directory.Exists
-        )
-
-        printfn "Execute the instrumented tests"
-
-        "Sample2.fsproj"
-        |> DotNet.test
-            (fun o ->
-                { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
-                      Configuration = DotNet.BuildConfiguration.Debug
-                      Framework = Some "netcoreapp2.1"
-                      NoBuild = true }
-                |> testWithCLIArguments)
-
-        Actions.ValidateFSharpTypesCoverage simpleReport)
-
-_Target
     "FSharpTests"
     (fun _ ->
         Directory.ensure "./_Reports"
@@ -2413,7 +2351,34 @@ _Target
               ToolPath = altcover
               ToolType = dotnetAltcover
               WorkingDirectory = "Samples/Sample7" }
-        |> AltCoverCommand.run) // TODO assert something
+        |> AltCoverCommand.run
+
+        let coverageDocument =
+            XDocument.Load(XmlReader.Create(simpleReport))
+
+        let refs = coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+                   |> Seq.toList
+
+        Assert.That(refs |> Seq.length, Is.EqualTo 64, "ref count wrong")
+
+        refs
+        |> Seq.iter
+            (fun tmr ->
+                let spts = tmr.Parent.Parent.Parent
+
+                let sptcount =
+                    spts.Descendants(XName.Get("SequencePoint"))
+                    |> Seq.length
+
+                let tmrcount =
+                    spts.Descendants(XName.Get("TrackedMethodRefs"))
+                    |> Seq.length
+
+                let name =
+                    spts.Parent.Descendants(XName.Get("Name"))
+                    |> Seq.head
+
+                Assert.That(tmrcount, Is.EqualTo sptcount, name.Value)))
 
 _Target
     "AsyncAwaitTests"
@@ -2598,8 +2563,12 @@ _Target
                 let coverageDocument =
                     XDocument.Load(XmlReader.Create(simpleReport))
 
-                coverageDocument.Descendants(XName.Get("Method"))
-                |> Seq.toList
+                let methods = coverageDocument.Descendants(XName.Get("Method"))
+                              |> Seq.toList
+      
+                Assert.That(methods |> Seq.length, Is.EqualTo 64, "ref count wrong")
+
+                methods
                 |> Seq.iter
                     (fun m ->
                         let spts = m.Element(XName.Get "SequencePoints")
@@ -7173,10 +7142,6 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "FSAsyncTests"
 ==> "OperationalTest"
-
-//"Compilation"
-//==> "FSharpTypesDotNet"
-//=?> ("OperationalTest", Environment.isWindows) -- timing window hits
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
