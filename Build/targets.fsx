@@ -2886,93 +2886,6 @@ _Target
         Actions.ValidateSample1 simpleReport "CSharpDotNetWithFramework")
 
 _Target
-    "SelfTest"
-    (fun _ ->
-        Directory.ensure "./_Reports/_Instrumented"
-
-        let targetDir =
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/net472"
-
-        let reports = Path.getFullName "./_Reports"
-        let report = reports @@ "OpenCoverSelfTest.xml"
-        let altReport = reports @@ "AltCoverSelfTest.xml"
-        let keyfile = Path.getFullName "Build/SelfTest.snk"
-
-        printfn "Self-instrument under OpenCover"
-
-        let prep =
-            AltCover.PrepareOptions.Primitive(
-                { Primitive.PrepareOptions.Create() with
-                      Report = altReport
-                      OutputDirectories = [| "__SelfTest" |]
-                      AssemblyExcludeFilter = [ "xunit"; "NUnit" ]
-                      StrongNameKey = keyfile
-                      ReportFormat = "NCover"
-                      InPlace = false
-                      Save = false }
-            )
-            |> AltCoverCommand.Prepare
-
-        let args =
-            ({ AltCoverCommand.Options.Create prep with
-                   ToolPath = String.Empty
-                   WorkingDirectory = "." }
-             |> AltCoverCommand.composeCommandLine)
-                .CommandLine
-
-        let OpenCoverFilter =
-            "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.* -[*]ICSharpCode.*"
-
-        OpenCover.run
-            (fun p ->
-                { p with
-                      WorkingDir = targetDir
-                      ExePath = openCoverConsole
-                      TestRunnerExePath = "./_Binaries/AltCover/Release+AnyCPU/net472/AltCover.exe"
-                      Filter = OpenCoverFilter
-                      MergeByHash = true
-                      OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-                      Register = OpenCover.RegisterType.Path64
-                      Output = report })
-            args
-
-        ReportGenerator.generateReports
-            (fun p ->
-                { p with
-                      ToolType = ToolType.CreateLocalTool()
-                      TargetDir = "_Reports/_OpenCoverSelfTest" })
-            [ report ]
-
-        printfn "Re-instrument everything"
-        let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
-
-        let prep =
-            AltCover.PrepareOptions.Primitive(
-                { Primitive.PrepareOptions.Create() with
-                      Report = altReport2
-                      OutputDirectories = [| "./__SelfTestDummy" |]
-                      StrongNameKey = keyfile
-                      ReportFormat = "NCover"
-                      InPlace = false
-                      Save = false }
-                |> AltCoverFilter
-            )
-            |> AltCoverCommand.Prepare
-
-        { AltCoverCommand.Options.Create prep with
-              ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__SelfTest/AltCover.exe"
-              ToolType = frameworkAltcover
-              WorkingDirectory = "_Binaries/AltCover.Tests/Debug+AnyCPU/net472" }
-        |> AltCoverCommand.run
-
-        ReportGenerator.generateReports
-            (fun p ->
-                { p with
-                      ToolType = ToolType.CreateLocalTool()
-                      TargetDir = "_Reports/_AltCoverSelfTest" })
-            [ altReport ])
-
-_Target
     "RecordResumeTest"
     (fun _ ->
         Directory.ensure "./_Reports"
@@ -3319,127 +3232,6 @@ _Target
 
             Assert.That(hits, Is.GreaterThanOrEqualTo 4)
             Assert.That(hits, Is.LessThanOrEqualTo 8))
-
-_Target
-    "RecordResumeTestUnderMono"
-    (fun _ -> // Fails : System.EntryPointNotFoundException: CreateZStream
-        Directory.ensure "./_Reports"
-
-        let simpleReport =
-            (Path.getFullName "./_Reports")
-            @@ ("RecordResumeTestUnderMono.xml")
-
-        let binRoot =
-            Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net472"
-
-        let sampleRoot =
-            Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/net20"
-
-        let instrumented = "__RecordResumeTestUnderMono"
-
-        let prep =
-            AltCover.PrepareOptions.Primitive(
-                { Primitive.PrepareOptions.Create() with
-                      Report = simpleReport
-                      OutputDirectories = [ instrumented ]
-                      TypeFilter = [ "System\\."; "Microsoft\\." ]
-                      AssemblyFilter = [ "Adapter"; "nunit" ]
-                      InPlace = false
-                      ReportFormat = "NCover"
-                      Save = false }
-            )
-            |> AltCoverCommand.Prepare
-
-        { AltCoverCommand.Options.Create prep with
-              ToolPath = binRoot @@ "AltCover.exe"
-              ToolType = frameworkAltcover
-              WorkingDirectory = sampleRoot }
-        |> AltCoverCommand.run
-
-        match monoOnWindows with
-        | Some mono ->
-            let testing =
-                (sampleRoot @@ instrumented) @@ "Sample8.exe"
-
-            let r =
-                CreateProcess.fromRawCommand mono [ testing; simpleReport + ".acv" ]
-                |> CreateProcess.withWorkingDirectory sampleRoot
-                |> Proc.run
-
-            Assert.That(r.ExitCode, Is.EqualTo 0, "RecordResumeTestUnderMono 2")
-        | None -> Trace.traceError "No mono found!!"
-
-        do
-            use coverageFile =
-                new FileStream(
-                    simpleReport,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.None,
-                    4096,
-                    FileOptions.SequentialScan
-                )
-
-            let coverageDocument =
-                XDocument.Load(XmlReader.Create(coverageFile))
-
-            let recorded =
-                coverageDocument.Descendants(XName.Get("seqpnt"))
-                |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-                |> Seq.toList
-
-            let expected = Array.create 20 "0"
-
-            Assert.That(
-                recorded,
-                expected |> Is.EquivalentTo,
-                sprintf "Bad visit list %A -- should be empty now" recorded
-            )
-
-        let collect =
-            AltCover.CollectOptions.Primitive
-                { Primitive.CollectOptions.Create() with
-                      RecorderDirectory = instrumented }
-            |> AltCoverCommand.Collect
-
-        { AltCoverCommand.Options.Create collect with
-              ToolPath = binRoot @@ "AltCover.exe"
-              ToolType = frameworkAltcover
-              WorkingDirectory = sampleRoot }
-        |> AltCoverCommand.run
-
-        do
-            use coverageFile =
-                new FileStream(
-                    simpleReport,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.None,
-                    4096,
-                    FileOptions.SequentialScan
-                )
-
-            let coverageDocument =
-                XDocument.Load(XmlReader.Create(coverageFile))
-
-            let recorded =
-                coverageDocument.Descendants(XName.Get("seqpnt"))
-                |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-                |> Seq.toList
-
-            let expected = Array.create 20 "0"
-
-            Assert.That(
-                recorded,
-                expected |> Is.Not.EquivalentTo,
-                sprintf "Bad visit list %A -- should no longer be empty now" recorded
-            )
-
-            Assert.That(
-                recorded |> Seq.length,
-                Is.EqualTo 20,
-                sprintf "Bad visit list %A -- should no longer be empty now" recorded
-            ))
 
 // Packaging
 
@@ -7184,15 +6976,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "RecordResumeTrackingTest"
 ==> "OperationalTest" // AltCover.exe conditional
 
-"Compilation" ==> "RecordResumeTestUnderMono"
-//=?> ("OperationalTest", Option.isSome monoOnWindows) // Still fails, but not because entrypoint
-
 "Compilation"
 ==> "RecordResumeTestDotNet"
 ==> "OperationalTest"
-
-"Compilation" ==> "SelfTest"
-// =?> ("OperationalTest", Environment.isWindows)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
 
 "Compilation" ?=> "Packaging"
 
