@@ -419,6 +419,9 @@ module internal CoverageParameters =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
                                                     "UseStringEmptyRule",
                                                     Justification = "Probably in the 'string' inline")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Portability",
+                                                    "NewLineLiteralRule",
+                                                    Justification = "Constant string exactly for portability")>]
   let internal makeConfiguration () =
     let components =
       [ "--methodpoint\t" + string methodPoint.Value
