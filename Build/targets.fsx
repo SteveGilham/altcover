@@ -4255,60 +4255,6 @@ _Target
             Environment.SetEnvironmentVariable("platform", ""))
 
 _Target
-    "ReleaseXUnitFSharpTypesDotNet"
-    (fun _ ->
-        Directory.ensure "./_Reports"
-
-        let unpack =
-            Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
-
-        let x =
-            Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNet.xml"
-
-        let o =
-            Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
-
-        let i =
-            Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
-
-        Shell.cleanDir o
-
-        // Instrument the code
-        let prep =
-            AltCover.PrepareOptions.Primitive(
-                { Primitive.PrepareOptions.Create() with
-                      Report = x
-                      OutputDirectories = [ o ]
-                      InputDirectories = [ i ]
-                      AssemblyFilter = [ "xunit" ]
-                      InPlace = false
-                      ReportFormat = "NCover"
-                      Save = false }
-            )
-            |> AltCoverCommand.Prepare
-
-        { AltCoverCommand.Options.Create prep with
-              ToolPath = "AltCover.dll"
-              ToolType = dotnetAltcover
-              WorkingDirectory = unpack }
-        |> AltCoverCommand.run
-
-        Actions.ValidateFSharpTypes x [ "main" ]
-
-        printfn "Execute the instrumented tests"
-
-        "Sample4.fsproj"
-        |> DotNet.test
-            (fun o ->
-                { o.WithCommon(withWorkingDirectoryVM "Samples/Sample4") with
-                      Configuration = DotNet.BuildConfiguration.Debug
-                      Framework = Some "netcoreapp2.1"
-                      NoBuild = true }
-                |> testWithCLIArguments)
-
-        Actions.ValidateFSharpTypesCoverage x)
-
-_Target
     "ReleaseXUnitFSharpTypesDotNetRunner"
     (fun _ ->
         Directory.ensure "./_Reports"
@@ -6754,6 +6700,8 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation" ?=> "UnitTest"
 
+// deadweight/duplicate/restricted unit tests
+
 "Compilation" ==> "JustUnitTest"
 // ==> "UnitTest" // deadweight
 
@@ -6767,6 +6715,8 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation" ==> "UnitTestWithAltCover"
 // ==> "UnitTest" // deadweight
+
+// meaningful coverage tests
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
@@ -6917,10 +6867,6 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack" ==> "ReleaseFSharpTypesX86DotNetRunner"
 =?> ("Deployment", Option.isSome dotnetPath86)
-
-//"Unpack"
-//==> "ReleaseXUnitFSharpTypesDotNet"
-//==> "Deployment"  -- timing window hits
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesShowVisualized"
