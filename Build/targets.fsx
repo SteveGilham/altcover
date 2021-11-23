@@ -290,6 +290,14 @@ let cliArguments =
               [ ]
           DisableInternalBinLog = true }
 
+let cliTaggedArguments tag =
+    { MSBuild.CliArguments.Create() with
+          ConsoleLogParameters = [ ]
+          DistributedLoggers = None
+          Properties =
+              [ "AltCoverTag", (tag + "_") ]
+          DisableInternalBinLog = true }          
+
 let withWorkingDirectoryVM dir o =
     { dotnetOptions o with
           WorkingDirectory = Path.getFullName dir
@@ -306,6 +314,9 @@ let withWorkingDirectoryOnly dir o =
 
 let testWithCLIArguments (o: Fake.DotNet.DotNet.TestOptions) = { o with MSBuildParams = cliArguments }
 let buildWithCLIArguments (o: Fake.DotNet.DotNet.BuildOptions) = { o with MSBuildParams = cliArguments }
+
+let testWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.TestOptions) = { o with MSBuildParams = cliTaggedArguments tag }
+let buildWithCLITaggedArguments tag (o: Fake.DotNet.DotNet.BuildOptions) = { o with MSBuildParams = cliTaggedArguments tag }
 
 let NuGetAltCover =
     toolPackages
@@ -517,12 +528,18 @@ printfn "Build at %A" infoV
 //----------------------------------------------------------------
 
 let _Target s f =
+    let doTarget s f =
+      let banner x = printfn ""
+                     printfn " ****************** %s ******************" s
+                     f x
+      Target.create s banner
+
     Target.description s
-    Target.create s f
+    doTarget s f
 
     let s2 = "Replay" + s
     Target.description s2
-    Target.create s2 f
+    doTarget s2 f
 
 // Preparation
 
@@ -645,35 +662,6 @@ _Target
                     )
 
                 File.WriteAllText(f, newtext))
-
-        //let v' = Version.Value
-        //let assemblyAttributes =
-        //       [ AssemblyInfo.Product "AltCover"
-        //         AssemblyInfo.Version(majmin + ".0.0")
-        //         AssemblyInfo.FileVersion v'
-        //         AssemblyInfo.Company "Steve Gilham"
-        //         AssemblyInfo.Trademark ""
-        //         AssemblyInfo.InformationalVersion(infoV)
-        //         AssemblyInfo.Copyright copy
-        //         // Not available in net20 for recorder
-        //         // .fs would need post-processing
-        //         AssemblyInfo.Metadata("RepositoryUrl", "https://github.com/SteveGilham/altcover")
-        //         AssemblyInfo.Metadata("CommitHash", commitHash)
-        //         AssemblyInfo.Metadata("Branch", Information.getBranchName("."))
-        //       ]
-        //assemblyAttributes
-        //|> List.map (fun a -> a.GetType().FullName)
-        //|> List.iter (printfn "%A")
-
-        //[ "./_Generated/AssemblyVersion.fs"; "./_Generated/AssemblyVersion.cs" ]
-        //|> List.iter (fun file ->
-        //     AssemblyInfoFile.create file assemblyAttributes (Some AssemblyInfoFileConfig.Default))
-        //printfn "%A" AssemblyInfoFileConfig.Default
-
-        //let lite = AssemblyInfoFileConfig(false)
-        //[ "./_Generated/AssemblyVersionLite.fs"; "./_Generated/AssemblyVersionLite.cs" ]
-        //|> List.iter (fun file ->
-        //     AssemblyInfoFile.create file assemblyAttributes (Some lite))
 
         let hack =
             """namespace AltCover
@@ -838,6 +826,7 @@ _Target
              "-out:./_Mono/Sample1/Sample1.exe"
              "./Samples/Sample1/Program.cs" ])
 
+          // My machine only
           //("./_Mono/Sample31",
           // [ "-target:library"
           //   "-debug"
@@ -866,6 +855,7 @@ _Target
                 |> Actions.Run(mcs, ".", cmd))
 
         Actions.FixMVId [ "./_Mono/Sample1/Sample1.exe"
+                          // My machine only
                           //"./_Mono/Sample31/Sample31.dll"
                           "./_Mono/Sample3/Sample3.dll" ])
 
@@ -1274,8 +1264,8 @@ _Target
 
         try
             [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
-              // Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
-              // Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
               //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
               //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
               Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
@@ -1321,7 +1311,7 @@ _Target
                     { p.WithCommon dotnetOptions with
                           Configuration = DotNet.BuildConfiguration.Debug
                           Framework = Some "net6.0" }
-                    |> buildWithCLIArguments)
+                    |> (buildWithCLITaggedArguments "UnitTestDotNet"))
 
         !!(@"./*Test*/*Tests.fsproj")
         |> Seq.filter (fun s -> s.Contains("Recorder") |> not) // net20
@@ -1342,12 +1332,12 @@ _Target
                           Configuration = DotNet.BuildConfiguration.Debug
                           Framework = Some "net6.0"
                           NoBuild = true }
-                    |> testWithCLIArguments)
+                    |> (testWithCLITaggedArguments "UnitTestDotNet"))
 
         try
             [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
               Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-              // Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
+              //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
               Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
               Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
               Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
@@ -1366,7 +1356,7 @@ _Target
 
         [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
           Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-          // Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
+          //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
           Path.getFullName "./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj"
           Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj" ] // project
         |> Seq.iter (
@@ -1375,7 +1365,7 @@ _Target
                     { p.WithCommon dotnetOptions with
                           Configuration = DotNet.BuildConfiguration.Debug
                           Framework = Some "net6.0" }
-                    |> buildWithCLIArguments)
+                    |> (buildWithCLITaggedArguments "Coverlet"))
         ))
 
 _Target
@@ -1387,7 +1377,7 @@ _Target
             let l =
                 [ Path.getFullName "./AltCover.Expecto.Tests/AltCover.Expecto.Tests.fsproj"
                   Path.getFullName "./AltCover.Api.Tests/AltCover.Api.Tests.fsproj"
-                  // Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
+                  //Path.getFullName "./AltCover.Monitor.Tests/AltCover.Monitor.Tests.fsproj"
                   Path.getFullName "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
                   Path.getFullName "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
                   Path.getFullName "./AltCover.Visualizer.Tests/AltCover.Visualizer.Tests.fsproj"
@@ -1471,8 +1461,8 @@ _Target
 
         let testFiles =
             [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
-              // Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
-              // Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
+              //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
               //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
               //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
               Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
@@ -2371,7 +2361,7 @@ _Target
             @@ ("AltCoverFSharpTests.xml")
 
         let sampleRoot =
-            Path.getFullName "Samples/Sample7/_Binaries/Sample7/Debug+AnyCPU/netcoreapp2.1"
+            Path.getFullName "_Binaries/FSharpTests_Sample7/Debug+AnyCPU/netcoreapp2.1"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
@@ -2381,7 +2371,7 @@ _Target
             (fun o ->
                 { o.WithCommon(withWorkingDirectoryVM "Samples/Sample7") with
                       Configuration = DotNet.BuildConfiguration.Debug }
-                |> testWithCLIArguments)
+                |> (testWithCLITaggedArguments "FSharpTests"))
 
         // inplace instrument
         let prep =
@@ -2416,14 +2406,14 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = sampleRoot
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=FSharpTests_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
               ToolPath = altcover
               ToolType = dotnetAltcover
               WorkingDirectory = "Samples/Sample7" }
-        |> AltCoverCommand.run)
+        |> AltCoverCommand.run) // TODO assert something
 
 _Target
     "AsyncAwaitTests"
@@ -2447,7 +2437,7 @@ _Target
             @@ ("AltCoverAsyncAwaitTests.xml")
 
         let sampleRoot =
-            Path.getFullName "Samples/Sample24/_Binaries/Sample24/Debug+AnyCPU/netcoreapp3.1"
+            Path.getFullName "_Binaries/AsyncAwaitTests_Sample24/Debug+AnyCPU/netcoreapp3.1"
 
         // Test the --inplace operation
         Shell.cleanDir sampleRoot
@@ -2458,7 +2448,7 @@ _Target
                 { o.WithCommon(withWorkingDirectoryVM "Samples/Sample24") with
                       Framework = Some "netcoreapp3.1"
                       Configuration = DotNet.BuildConfiguration.Debug }
-                |> testWithCLIArguments)
+                |> (testWithCLITaggedArguments "AsyncAwaitTests"))
 
         // instrument
         let prep =
@@ -2493,7 +2483,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = sampleRoot
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=AsyncAwaitTests_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -2543,7 +2533,7 @@ _Target
                 let sampleRoot =
                     Path.getFullName "Samples/"
                     + sample
-                    + "/_Binaries/"
+                    + "/_Binaries/FSAsyncTests_"
                     + sample
                     + "/Debug+AnyCPU/netcoreapp3.1"
 
@@ -2556,7 +2546,7 @@ _Target
                         { o.WithCommon(withWorkingDirectoryVM ("Samples/" + sample)) with
                               Framework = Some "netcoreapp3.1"
                               Configuration = DotNet.BuildConfiguration.Debug }
-                        |> testWithCLIArguments)
+                        |> (testWithCLITaggedArguments "FSAsyncTests"))
 
                 // instrument
                 let prep =
@@ -2596,7 +2586,7 @@ _Target
                         { Primitive.CollectOptions.Create() with
                               Executable = dotnetexe
                               RecorderDirectory = sampleRoot
-                              CommandLine = args }
+                              CommandLine = args @ ["/p:AltCoverTag=FSAsyncTests_"] }
                     |> AltCoverCommand.Collect
 
                 { AltCoverCommand.Options.Create collect with
@@ -2643,7 +2633,7 @@ _Target
             Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net6.0"
 
         let instrumented =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
+            Path.getFullName "_Binaries/FSharpTypesDotNetRunner_Sample2/Debug+AnyCPU/net6.0"
 
         // Instrument the code
         let prep =
@@ -2680,7 +2670,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = instrumented
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=FSharpTypesDotNetRunner_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -2712,7 +2702,7 @@ _Target
             @@ ("AltCoverFSharpTypesDotNetCollecter.xml")
 
         let sampleRoot =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
+            Path.getFullName "_Binaries/FSharpTypesDotNetCollecter_Sample2/Debug+AnyCPU/net6.0"
 
         printfn "Build and test normally"
         Shell.cleanDir sampleRoot
@@ -2722,7 +2712,7 @@ _Target
             (fun o ->
                 { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
                       Configuration = DotNet.BuildConfiguration.Debug }
-                |> testWithCLIArguments)
+                |> (testWithCLITaggedArguments "FSharpTypesDotNetCollecter"))
 
         printfn "inplace instrument and save"
 
@@ -2762,7 +2752,7 @@ _Target
                 { o.WithCommon(withWorkingDirectoryVM "Samples/Sample2") with
                       Configuration = DotNet.BuildConfiguration.Debug
                       NoBuild = true }
-                |> testWithCLIArguments)
+                |> (testWithCLITaggedArguments "FSharpTypesDotNetCollecter"))
 
         printfn "Collect the results"
 
