@@ -5366,6 +5366,7 @@ _Target
                         |> Seq.head
 
                     targets.SetValue "net6.0"
+                    targets.AddAfterSelf(XElement(XName.Get "DocumentationFile"))
 
                     fsproj.Descendants(XName.Get("HintPath"))
                     |> Seq.iter
@@ -5386,7 +5387,8 @@ _Target
                         )
 
                     pack.AddBeforeSelf inject
-                    fsproj.Save(d + "/dotnettest." + t)
+                    let projName = d.Substring(2)
+                    fsproj.Save(d + "/" + projName + "." + t)
                     Shell.copy d !!("./Samples/" + p + "/*." + t.Substring(0, 2))
                     Shell.copy d !!("./Samples/" + p + "/*.json")
 
@@ -5431,9 +5433,9 @@ _Target
                         cc0
                         ForceTrue
                     |> testWithCLIArguments)
-                "dotnettest.fsproj"
+                "_DotnetTest.fsproj"
 
-            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net6.0/__Instrumented_dotnettest")
+            assertCopied ("_Binaries/_DotnetTest/Debug+AnyCPU/net6.0/__Instrumented__DotnetTest")
 
             DotNet.test
                 (fun to' ->
@@ -5446,9 +5448,9 @@ _Target
                         cc0
                         ForceTrue
                     |> testWithCLIArguments)
-                "dotnettest.fsproj" // TODO validate output as per JsonReporting
+                "_DotnetTestJson.fsproj" // TODO validate output as per JsonReporting
 
-            assertCopied ("_DotnetTest/_Binaries/Sample4/Debug+AnyCPU/net6.0/__Instrumented_dotnettest")
+            assertCopied ("_Binaries/_DotnetTestJson/Debug+AnyCPU/net6.0/__Instrumented__DotnetTestJson")
 
             let x =
                 Path.getFullName "./_DotnetTest/coverage.net6.0.xml"
@@ -5466,7 +5468,7 @@ _Target
                         cc0
                         ForceTrue
                     |> testWithCLIArguments)
-                "dotnettest.fsproj"
+                "_DotnetTestInPlace.fsproj"
 
             let x =
                 Path.getFullName "./_DotnetTestInPlace/coverage.net6.0.xml"
@@ -5504,7 +5506,7 @@ _Target
                             cc0
                             ForceTrue
                         |> testWithCLIArguments)
-                    "dotnettest.fsproj"
+                    "_DotnetTestFailInstrumentation.fsproj"
 
                 Assert.Fail("Build exception should be raised")
             with
@@ -5528,7 +5530,7 @@ _Target
                             cc0
                             ForceTrue
                         |> testWithCLIArguments)
-                    "dotnettest.fsproj"
+                    "_DotnetTestFailInstrumentationInPlace.fsproj"
 
                 Assert.Fail("Build exception should be raised")
             with
@@ -5571,16 +5573,16 @@ _Target
                             cc0
                             ForceTrue
                         |> testWithCLIArguments)
-                    "dotnettest.fsproj"
+                    "_DotnetTestFail.fsproj"
 
                 Assert.Fail("Build exception should be raised")
             with
             | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFail/bin/Debug/net6.0/dotnettest.dll.txt"
+                "./_Binaries/_DotnetTestFail/Debug+AnyCPU/net6.0/_DotnetTestFail.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFail/bin/Debug/net6.0/dotnettest.dll.txt should exist"
+                "./_Binaries/_DotnetTestFail/Debug+AnyCPU/net6.0/_DotnetTestFail.dll.txt should exist"
             )
 
             do
@@ -5606,14 +5608,14 @@ _Target
                             cc0
                             ForceTrue
                         |> testWithCLIArguments)
-                    "dotnettest.fsproj"
+                    "_DotnetTestFailInPlace.fsproj"
 
                 Assert.Fail("Build exception should be raised")
             with
             | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             let filepath =
-                Path.GetFullPath "./_DotnetTestFailInPlace/bin/Debug/net6.0/dotnettest.dll.txt"
+                Path.GetFullPath "./_Binaries/_DotnetTestFailInPlace/Debug+AnyCPU/net6.0/_DotnetTestFailInPlace.dll.txt"
 
             Assert.That(filepath |> File.Exists, filepath + " should exist")
 
@@ -5666,16 +5668,16 @@ _Target
                             cc0
                             FailTrue
                         |> testWithCLIArguments)
-                    "dotnettest.fsproj"
+                    "_DotnetTestFailFast.fsproj"
 
                 Assert.Fail("Build exception should be raised")
             with
             | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFast/bin/Debug/net6.0/dotnettest.dll.txt"
+                "./_Binaries/_DotnetTestFailFast/Debug+AnyCPU/net6.0/_DotnetTestFailFast.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFast/bin/Debug/net6.0/dotnettest.dll.txt should exist"
+                "./_Binaries/_DotnetTestFailFast/Debug+AnyCPU/net6.0/_DotnetTestFailFast.dll.txt should exist"
             )
 
             do
@@ -5701,16 +5703,16 @@ _Target
                             cc0
                             FailTrue
                         |> testWithCLIArguments)
-                    "dotnettest.fsproj"
+                    "_DotnetTestFailFastInPlace.fsproj"
 
                 Assert.Fail("Build exception should be raised")
             with
             | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
 
             Assert.That(
-                "./_DotnetTestFailFastInPlace/bin/Debug/net6.0/dotnettest.dll.txt"
+                "./_Binaries/_DotnetTestFailFastInPlace/Debug+AnyCPU/net6.0/_DotnetTestFailFastInPlace.dll.txt"
                 |> File.Exists,
-                "./_DotnetTestFailFastInPlace/bin/Debug/net6.0/dotnettest.dll.txt should exist"
+                "./_Binaries/_DotnetTestFailFastInPlace/Debug+AnyCPU/net6.0/_DotnetTestFailFastInPlace.dll.txt should exist"
             )
 
             do
