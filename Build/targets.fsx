@@ -1562,12 +1562,12 @@ _Target
                           ExePath = openCoverConsole
                           TestRunnerExePath = nunitConsole // OK, not on Linux
                           Filter =
-                              "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]*"
+                              "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]* -[AltCover.*]*StartupCode*SolutionRoot"
                           MergeByHash = true
                           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                           OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                           Register = OpenCover.RegisterType.Path64
-                          Output = coverage
+                          Output = vcoverage
                           TimeOut = TimeSpan(0, 10, 0) })
                 (String.Join(" ", VisualizerFiles)
                  + " --result=./_Reports/VisualizerTestWithOpenCoverReport.xml")
@@ -1579,7 +1579,7 @@ _Target
                           ExePath = openCoverConsole
                           TestRunnerExePath = nunitConsole // OK, not on Linux
                           Filter =
-                              "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]*"
+                              "+[AltCover]* +[AltCover.*]* -[*]Microsoft.* -[*]System.* -[Sample*]* -[*]ICSharpCode.* -[FSharp.Core]* -[Gendarme.*]* -[xunit.*]* -[AltCover.*]*StartupCode*SolutionRoot"
                           MergeByHash = true
                           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                           OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
@@ -1595,7 +1595,7 @@ _Target
                           WorkingDir = "."
                           ExePath = openCoverConsole
                           TestRunnerExePath = nunitConsole // OK, not on Linux
-                          Filter = "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.*"
+                          Filter = "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.* -[AltCover.*]*StartupCode*SolutionRoot"
                           MergeByHash = true
                           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                           OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
@@ -1610,7 +1610,7 @@ _Target
                           WorkingDir = "."
                           ExePath = openCoverConsole
                           TestRunnerExePath = nunitConsole // OK, not on Linux
-                          Filter = "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.*"
+                          Filter = "+[AltCover.Recorder]* +[AltCover.Recorder.Tests]* -[*]ICSharpCode.* -[*]System.* -[AltCover.*]*StartupCode*SolutionRoot"
                           MergeByHash = true
                           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                           OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
