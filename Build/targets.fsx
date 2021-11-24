@@ -392,8 +392,8 @@ let coverletTaggedTestOptions tag (o: DotNet.TestOptions) =
           Collect = Some "XPlat Code Coverage" }
     |> (testWithCLITaggedArguments tag)
 
-let coverletTestOptionsSample (o: DotNet.TestOptions) =
-    { coverletTestOptions o with
+let coverletTestOptionsSample tag (o: DotNet.TestOptions) =
+    { coverletTaggedTestOptions tag o with
           Settings = Some "./Build/coverletArgs.sample.runsettings"
           Collect = Some "XPlat Code Coverage" }
 
@@ -1806,13 +1806,13 @@ _Target
 //                      WorkingDir = "." })
 //            "./_Reports/Recorder4TestWithAltCoverReport.xml"
 
-//        let recArgs = [
-//                             "--noheader"
-//                             "--work=."
-//                             "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
-//                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
-//                             ]
-//        Actions.Run(nunitConsole, ".", recArgs) "Recorder net472 NUnit failed"
+        let rec4Args = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+                             ]
+        Actions.Run(nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
 
         ReportGenerator.generateReports
             (fun p ->
@@ -1822,7 +1822,7 @@ _Target
                           [ ReportGenerator.ReportType.Html
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_UnitTestWithAltCover" })
-            [ altReport; RecorderReport ]
+            [ altReport; RecorderReport; "./_Reports/Recorder4TestWithAltCoverReport.xml" ]
 
         uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
         |> List.map fst
@@ -1874,12 +1874,12 @@ _Target
               //   baseFilter,
               //   keyfile
               // )
-              (Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472",  // test directory
+              (Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472",  // test directory
                "./__VisualizerTestWithAltCoverRunner",  // relative output
                "VisualizerTestWithAltCoverRunner.xml",  // coverage report
                "./_Reports/VisualizerTestWithAltCoverRunnerReport.xml",  // relative nunit reporting
                [ Path.getFullName // test assemblies
-                     "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/__VisualizerTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ],
+                     "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/__VisualizerTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ],
                baseFilter,
                keyfile)
               (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472",
@@ -4182,7 +4182,7 @@ _Target
             Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
 
         let o =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
+            Path.getFullName "./_Binaries/ReleaseFSharpTypesDotNetRunner_Sample2/Debug+AnyCPU/net6.0"
 
         let i =
             Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net6.0"
@@ -4228,7 +4228,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = o
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=ReleaseFSharpTypesDotNetRunner_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -4253,7 +4253,7 @@ _Target
             Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
 
         let o =
-            Path.getFullName "Samples/Sample2/_Binaries/Sample2/Debug+x86/net6.0"
+            Path.getFullName "./_Binaries/ReleaseFSharpTypesX86DotNetRunner_Sample2/Debug+x86/net6.0"
 
         let i =
             Path.getFullName "_Binaries/Sample2/Debug+x86/net6.0"
@@ -4325,7 +4325,7 @@ _Target
                         { Primitive.CollectOptions.Create() with
                               Executable = dotnetexe
                               RecorderDirectory = o
-                              CommandLine = args }
+                              CommandLine = args @ ["/p:AltCoverTag=ReleaseFSharpTypesX86DotNetRunner_"] }
                     |> AltCoverCommand.Collect
 
                 { AltCoverCommand.Options.Create collect with
@@ -4354,7 +4354,7 @@ _Target
             Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
 
         let o =
-            Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+            Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesDotNetRunner_Sample4/Debug+AnyCPU/netcoreapp2.1"
 
         let i =
             Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
@@ -4400,7 +4400,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = o
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=ReleaseXUnitFSharpTypesDotNetRunner_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -4428,7 +4428,7 @@ _Target
             Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
 
         let o =
-            Path.getFullName "Samples/Sample18/_Binaries/Sample18/Debug+AnyCPU/net6.0"
+            Path.getFullName "./_Binaries/OpenCoverForPester_Sample18/Debug+AnyCPU/net6.0"
 
         let i =
             Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/net6.0"
@@ -4472,7 +4472,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = o
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=OpenCoverForPester_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -4493,10 +4493,10 @@ _Target
                 (fun p ->
                     { p.WithCommon dotnetOptions with
                           Configuration = DotNet.BuildConfiguration.Debug }
-                    |> buildWithCLIArguments)
+                    |>(buildWithCLITaggedArguments "CoverletForPester" ))
                 sample
 
-            DotNet.test coverletTestOptionsSample sample
+            DotNet.test (coverletTestOptionsSample "CoverletForPester") sample
         with
         | x -> eprintf "%A" x
 
@@ -4509,16 +4509,12 @@ _Target
 
         Shell.copyFile target covxml
 
-        let binary =
-            here
-            @@ "_Binaries/Sample18/Debug+AnyCPU/net6.0/Sample18.dll"
+        let binary = "_Binaries/CoverletForPester_Sample18/Debug+AnyCPU/net6.0/Sample18.dll"
 
         let binaryTarget = reportDir @@ "Sample18.dll"
         Shell.copyFile binaryTarget binary
 
-        let binary2 =
-            here
-            @@ "_Binaries/Sample18/Debug+AnyCPU/net6.0/Sample18.pdb"
+        let binary2 = "_Binaries/CoverletForPester_Sample18/Debug+AnyCPU/net6.0/Sample18.pdb"
 
         let binary2Target = reportDir @@ "Sample18.pdb"
         Shell.copyFile binary2Target binary2)
@@ -4544,7 +4540,7 @@ _Target
             Path.getFullName "./_Reports/ShowGeneratedRun.xml"
 
         let o =
-            Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+            Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesShowVisualized_Sample4/Debug+AnyCPU/netcoreapp2.1"
 
         let i =
             Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
@@ -4706,7 +4702,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = o
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=ReleaseXUnitFSharpTypesShowVisualized_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -4746,7 +4742,7 @@ _Target
             Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
 
         let o =
-            Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+            Path.getFullName "./_Binaries/ReleaseXUnitFSharpTypesDotNetFullRunner_Sample4/Debug+AnyCPU/netcoreapp2.1"
 
         let i =
             Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
@@ -4792,7 +4788,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = o
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=ReleaseXUnitFSharpTypesDotNetFullRunner_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -4815,14 +4811,14 @@ _Target
             Path.getFullName "./_Reports/JsonReporting.json"
 
         let o =
-            Path.getFullName "Samples/Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+            Path.getFullName "./_Binaries/JsonReporting_Sample4/Debug+AnyCPU/netcoreapp2.1"
 
         let i =
             Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
         // Test data gathering only
         //let x = Path.getFullName "./AltCover.Tests/Sample5.native.json"
-        //let o = Path.getFullName "Samples/Sample5/_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
+        //let o = Path.getFullName "./_Binaries/JsonReporting_Sample5/Debug+AnyCPU/netstandard2.0"
         //let i = Path.getFullName "_Binaries/Sample5/Debug+AnyCPU/netstandard2.0"
 
         Shell.cleanDir o
@@ -4902,7 +4898,7 @@ _Target
                 { Primitive.CollectOptions.Create() with
                       Executable = dotnetexe
                       RecorderDirectory = o
-                      CommandLine = args }
+                      CommandLine = args @ ["/p:AltCoverTag=JsonReporting_"] }
             |> AltCoverCommand.Collect
 
         { AltCoverCommand.Options.Create collect with
@@ -6542,7 +6538,7 @@ _Target
                 Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
 
             let o =
-                Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+                Path.getFullName "./_Binaries/DotnetGlobalIntegration_Sample4/Debug+AnyCPU/netcoreapp2.1"
 
             [ AltCoverCommand.ArgumentType.ImportModule
               AltCoverCommand.ArgumentType.GetVersion ]
@@ -6583,7 +6579,7 @@ _Target
                     { Primitive.CollectOptions.Create() with
                           Executable = dotnetexe
                           RecorderDirectory = o
-                          CommandLine = args }
+                          CommandLine = args @ ["/p:AltCoverTag=DotnetGlobalIntegration_"] }
                 |> AltCoverCommand.Collect
 
             { AltCoverCommand.Options.Create collect with
