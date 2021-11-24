@@ -10,7 +10,7 @@
     <OutputPathWithoutEndSlash>$(BuildDir)$(ProjectBuildDirectoryName)</OutputPathWithoutEndSlash>
     <OutputPath>$(OutputPathWithoutEndSlash)/</OutputPath>
     <KeyDir>$(MSBuildThisFileDirectory)Build\</KeyDir>
-    <InfrastructureKey>$(KeyDir)infrastructure.snk</InfrastructureKey>
+    <InfrastructureKey>$(KeyDir)Infrastructure.snk</InfrastructureKey>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
     <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
     <RollForward>Major</RollForward>
