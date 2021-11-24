@@ -805,12 +805,12 @@ _Target
 
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
+          "./MCS.sln"
           "./Samples/Sample14/Sample14.sln"
-          "./Samples/Sample28/SourceGenerators.sln"
-          "MCS.sln" ]
+          "./Samples/Sample28/SourceGenerators.sln" ]
         |> Seq.iter dotnetBuildDebug
 
-        Shell.copy "./_SourceLink" (!! "./Samples/Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
+        Shell.copy "./_SourceLink" (!! "./_Binaries/Sample14/Debug+AnyCPU/netcoreapp2.1/*"))
 
 _Target
     "BuildMonoSamples"
@@ -1263,37 +1263,65 @@ _Target
         Directory.ensure "./_Reports"
 
         try
-            [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
-              //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
-              //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
-              //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
-              //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
-              Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
-              Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
-              Path.getFullName
-                  "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
-            |> NUnitRetry
-                (fun p ->
-                    { p with
-                          ToolPath = nunitConsole
-                          WorkingDir = "." })
-                "./_Reports/JustUnitTestReport.xml"
+//            [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
+//              //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
+//              //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
+//              //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
+//              //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
+//              Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
+//              Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
+//              Path.getFullName
+//                  "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
+//            |> NUnitRetry
+//                (fun p ->
+//                    { p with
+//                          ToolPath = nunitConsole
+//                          WorkingDir = "." })
+//                "./_Reports/JustUnitTestReport.xml"
+                
+            let baseArgs = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/JustUnitTestReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
+                             Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
+                             Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
+                             Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll"
+                             ]
+            Actions.Run(nunitConsole, ".", baseArgs) "Main NUnit failed"
 
-            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll")
-            |> NUnitRetry
-                (fun p ->
-                    { p with
-                          ToolPath = nunitConsole
-                          WorkingDir = "." })
-                "./_Reports/RecorderUnitTestReport.xml"
+//            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll")
+//            |> NUnitRetry
+//                (fun p ->
+//                    { p with
+//                          ToolPath = nunitConsole
+//                          WorkingDir = "." })
+//                "./_Reports/RecorderUnitTestReport.xml"
 
-            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
-            |> NUnitRetry
-                (fun p ->
-                    { p with
-                          ToolPath = nunitConsole
-                          WorkingDir = "." })
-                "./_Reports/Recorder2UnitTestReport.xml"
+            let recArgs  = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/RecorderUnitTestReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
+                             ]
+            Actions.Run(nunitConsole, ".", recArgs) "Recorder NUnit failed"
+
+//            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
+//            |> NUnitRetry
+//                (fun p ->
+//                    { p with
+//                          ToolPath = nunitConsole
+//                          WorkingDir = "." })
+//                "./_Reports/Recorder2UnitTestReport.xml"
+
+            let rec2Args = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/Recorder2UnitTestReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll"
+                             ]
+            Actions.Run(nunitConsole, ".", rec2Args) "Recorder NUnit failed"
+                
         with
         | x ->
             printfn "%A" x
