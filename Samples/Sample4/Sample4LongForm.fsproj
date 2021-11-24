@@ -32,8 +32,8 @@
     <ItemGroup>
       <AssemblyFilter Include="xunit" />
       <FSharpXml Include="$(OutputPath)/FSharp.*.xml" />
-      <InputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/Sample4LongForm/Debug+AnyCPU/legacy/net472" />
-      <OutputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
+      <InputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/MSBuildTest_Sample4LongForm/Debug+AnyCPU/legacy/net472" />
+      <OutputDirectory Include="$(MSBuildThisFileDirectory)../../_Binaries/MSBuildTest_Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>
     <Delete Files="@(FSharpXml)" />
     <AltCover.Prepare Condition="'$(MSBuildTest)' == 'true'" InputDirectories="@(InputDirectory)" OutputDirectories="@(OutputDirectory)" Report="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml" AssemblyFilter="@(AssemblyFilter)" />

@@ -5018,7 +5018,7 @@ _Target
 
         // Run
         let before = Actions.ticksNow ()
-        Shell.cleanDir (sample @@ "_Binaries")
+        Shell.cleanDir ("./_Binaries/MSBuildTest_Sample4LongForm")
 
         DotNet.msbuild
             (fun opt ->
@@ -5030,7 +5030,7 @@ _Target
 
                 let mparams =
                     { tmp.MSBuildParams with
-                          Properties = tmp.MSBuildParams.Properties }
+                          Properties = ("AltCoverTag","MSBuildTest_") :: tmp.MSBuildParams.Properties }
 
                 { tmp with MSBuildParams = mparams })
             (build @@ "msbuildtest.proj")
@@ -5053,6 +5053,7 @@ _Target
                       Properties =
                           [ "Configuration", "Debug"
                             "MSBuildTest", "true"
+                            "AltCoverTag","MSBuildTest_"
                             "AltCoverPath", unpack.Replace('\\', '/')
                             "DebugSymbols", "True" ] })
             "./Samples/Sample4/Sample4LongForm.fsproj")
