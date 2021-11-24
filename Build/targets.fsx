@@ -1650,6 +1650,11 @@ _Target
 
 // Hybrid (Self) Tests
 
+// Timeout plagued UnitTestWithAltCoverCore deleted in this commit
+// https://github.com/SteveGilham/altcover/commit/3b8d20b546a719b5f57dcd55976a667dfac5349b#diff-30d5a45f470e8be0a3a8dc6a59e6c49156c055230b965a3a8a606a4104548c44
+// could it be collectorised??
+
+
 _Target
     "UnitTestWithAltCover"
     (fun _ ->
@@ -1669,7 +1674,7 @@ _Target
         let sn =
             "sn" |> Fake.Core.ProcessUtils.tryFindFileOnPath
 
-        // net4x tests -- TODO API
+        // net4x tests
         let testDirectory =
             Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472"
 
@@ -1682,6 +1687,7 @@ _Target
         let apiDir =
             Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472"
 
+        // TODO/maybes
         //let monitorDir = Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472"
 
         // let visDir =
@@ -1802,28 +1808,47 @@ _Target
 //            "./_Reports/RecorderTestWithAltCoverReport.xml"
 
         let recArgs = [
-                             "--noheader"
-                             "--work=."
-                             "--result=./_Reports/RecorderTestWithAltCoverReport.xml"
-                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
-                             ]
+                        "--noheader"
+                        "--work=."
+                        "--result=./_Reports/RecorderTestWithAltCoverReport.xml"
+                        Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+                      ]
         Actions.Run(nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
         
-        printfn "Execute the net472 Recorder tests"
+        printfn "Instrument the net472 Recorder tests"
 
-//        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*.Test*.dll")
-//        |> NUnitRetry
-//            (fun p ->
-//                { p with
-//                      ToolPath = nunitConsole
-//                      WorkingDir = "." })
-//            "./_Reports/Recorder4TestWithAltCoverReport.xml"
+        let Recorder472Dir =
+            Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472"
+
+        let Recorder472Report =
+            reports @@ "Recorder472TestWithAltCover.xml"
+
+        let prep =
+            AltCover.PrepareOptions.Primitive(
+                { Primitive.PrepareOptions.Create() with
+                      Report = Recorder472Report
+                      OutputDirectories = [| "./__Recorder472TestWithAltCover" |]
+                      StrongNameKey = shadowkeyfile
+                      ReportFormat = "NCover"
+                      InPlace = false
+                      Save = false }
+                |> AltCoverFilter
+            )
+            |> AltCoverCommand.Prepare
+
+        { AltCoverCommand.Options.Create prep with
+              ToolPath = altcover
+              ToolType = frameworkAltcover
+              WorkingDirectory = Recorder472Dir }
+        |> AltCoverCommand.run
+
+        printfn "Execute the net472 Recorder tests"
 
         let rec4Args = [
                              "--noheader"
                              "--work=."
                              "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
-                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__Recorder472TestWithAltCover/AltCover.Recorder.Tests.dll"
                              ]
         Actions.Run(nunitConsole, ".", rec4Args) "Recorder net472 NUnit failed"
 
@@ -1835,7 +1860,7 @@ _Target
                           [ ReportGenerator.ReportType.Html
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_UnitTestWithAltCover" })
-            [ altReport; RecorderReport; "./_Reports/Recorder4TestWithAltCoverReport.xml" ]
+            [ altReport; RecorderReport; Recorder472Report ]
 
         uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
         |> List.map fst
