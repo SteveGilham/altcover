@@ -607,14 +607,16 @@ _Target
         project1.Save("./Build/NuGet.csproj")
 
         let project2 =
-            XDocument.Load("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+            XDocument.Load("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj",
+                      System.Xml.Linq.LoadOptions.PreserveWhitespace)
 
         let gv =
             project2.Descendants(XName.Get "GendarmeVersion")
             |> Seq.head
 
         gv.Value <- gendarmeVersion
-        project2.Save("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj")
+        project2.Save("./AltCover.ValidateGendarmeEmulation/AltCover.ValidateGendarmeEmulation.fsproj",
+                      System.Xml.Linq.SaveOptions.DisableFormatting)
 
         // patch coveralls.io for github actions
         let coverallsdll =
