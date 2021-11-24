@@ -6504,6 +6504,7 @@ _Target
                 |> Seq.head
 
             targets.SetValue "netcoreapp2.1"
+            targets.AddAfterSelf(XElement(XName.Get "DocumentationFile"))
 
             fsproj.Descendants(XName.Get("HintPath"))
             |> Seq.iter
@@ -6512,7 +6513,7 @@ _Target
                     |> Path.getFullName
                     |> hint.SetValue)
 
-            fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
+            fsproj.Save "./_DotnetGlobalTest/_DotnetGlobalTest.fsproj"
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.fs")
             Shell.copy "./_DotnetGlobalTest" (!! "./Samples/Sample4/*.json")
             Shell.copyDir "./_DotnetGlobalTest/Data" "./Samples/Sample4/Data" File.Exists
@@ -6552,7 +6553,7 @@ _Target
                 Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
 
             let o =
-                Path.getFullName "./_Binaries/DotnetGlobalIntegration_Sample4/Debug+AnyCPU/netcoreapp2.1"
+                Path.getFullName "./_Binaries/_DotnetGlobalTest/Debug+AnyCPU/netcoreapp2.1"
 
             [ AltCoverCommand.ArgumentType.ImportModule
               AltCoverCommand.ArgumentType.GetVersion ]
@@ -6593,7 +6594,7 @@ _Target
                     { Primitive.CollectOptions.Create() with
                           Executable = dotnetexe
                           RecorderDirectory = o
-                          CommandLine = args @ ["/p:AltCoverTag=DotnetGlobalIntegration_"] }
+                          CommandLine = args }
                 |> AltCoverCommand.Collect
 
             { AltCoverCommand.Options.Create collect with
