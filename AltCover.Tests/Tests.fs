@@ -173,8 +173,9 @@ module AltCoverTests =
 
            match snd x with
            // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
-           | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
+           //| None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
            | Some name ->
+             //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
              let probe = Path.ChangeExtension(f, ".pdb")
              let file = FileInfo(probe)
              let filename = file.Name.Replace("\\", "/")

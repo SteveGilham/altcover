@@ -383,6 +383,15 @@ let coverletTestOptions (o: DotNet.TestOptions) =
           Collect = Some "XPlat Code Coverage" }
     |> testWithCLIArguments
 
+let coverletTaggedTestOptions tag (o: DotNet.TestOptions) =
+    { o.WithCommon dotnetOptions with
+          Configuration = DotNet.BuildConfiguration.Debug
+          NoBuild = true
+          Framework = Some "net6.0"
+          Settings = Some "./_Generated/coverletArgs.runsettings"
+          Collect = Some "XPlat Code Coverage" }
+    |> (testWithCLITaggedArguments tag)
+
 let coverletTestOptionsSample (o: DotNet.TestOptions) =
     { coverletTestOptions o with
           Settings = Some "./Build/coverletArgs.sample.runsettings"
@@ -1278,7 +1287,7 @@ _Target
 //                          ToolPath = nunitConsole
 //                          WorkingDir = "." })
 //                "./_Reports/JustUnitTestReport.xml"
-                
+
             let baseArgs = [
                              "--noheader"
                              "--work=."
@@ -1330,6 +1339,12 @@ _Target
 _Target
     "BuildForUnitTestDotNet"
     (fun _ ->
+        let withTagDebug (p: MSBuildParams) =
+            { p with
+                  Properties = ("AltCoverTag", "UnitTestDotNet_") :: ("Configuration", "Debug") :: p.Properties
+                  DoRestore = true }
+
+        let msbuildDebug = doMSBuild withTagDebug
         msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
         msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
@@ -1379,6 +1394,13 @@ _Target
 _Target
     "BuildForCoverlet"
     (fun _ ->
+        let withTagDebug (p: MSBuildParams) =
+            { p with
+                  Properties = ("AltCoverTag", "Coverlet_") :: ("Configuration", "Debug") :: p.Properties
+                  DoRestore = true }
+
+        let msbuildDebug = doMSBuild withTagDebug
+
         msbuildDebug MSBuildPath "./AltCover.Recorder.Tests/AltCover.Recorder.Tests.fsproj"
         msbuildDebug MSBuildPath "./AltCover.Recorder2.Tests/AltCover.Recorder2.Tests.fsproj"
 
@@ -1421,7 +1443,7 @@ _Target
                         Shell.cleanDir tr
 
                         try
-                            f |> DotNet.test coverletTestOptions
+                            f |> DotNet.test (coverletTaggedTestOptions "Coverlet")
                         with
                         | x -> eprintf "%A" x
 
@@ -1505,7 +1527,7 @@ _Target
             !!(@"_Binaries/*Tests/Debug+AnyCPU/net20/AltCover*Test*.dll")
 
         let VisualizerFiles =
-            !!(@"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Test*.dll")
+            !!(@"_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Test*.dll")
 
         let coverage =
             Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
@@ -1697,21 +1719,33 @@ _Target
         printfn "Unit test the instrumented net4x code"
 
         try
-            [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
-              !! "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
-              //!!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
-              //!!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.*.dll"
-              !! "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
-              !! "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
-              !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
-            |> Seq.concat
-            |> Seq.distinct
-            |> NUnitRetry
-                (fun p ->
-                    { p with
-                          ToolPath = nunitConsole
-                          WorkingDir = "." })
-                "./_Reports/UnitTestWithAltCoverReport.xml"
+//            [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
+//              !! "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
+//              //!!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
+//              //!!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.*.dll"
+//              !! "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
+//              !! "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
+//              !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
+//            |> Seq.concat
+//            |> Seq.distinct
+//            |> NUnitRetry
+//                (fun p ->
+//                    { p with
+//                          ToolPath = nunitConsole
+//                          WorkingDir = "." })
+//                "./_Reports/UnitTestWithAltCoverReport.xml"
+
+            let baseArgs = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/UnitTestWithAltCoverReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/AltCover.Tests.dll"
+                             Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/AltCover.Api.Tests.dll"
+                             Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/AltCover.ValidateGendarmeEmulation.dll"
+                             //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+                             Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/Sample2.dll"
+                             ]
+            Actions.Run(nunitConsole, ".", baseArgs) "Main NUnit failed"
         with
         | x ->
             printfn "UnitTestWithAltCover caught %A" x
@@ -1746,13 +1780,39 @@ _Target
 
         printfn "Execute the net20 Recorder tests"
 
-        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
-        |> NUnitRetry
-            (fun p ->
-                { p with
-                      ToolPath = nunitConsole
-                      WorkingDir = "." })
-            "./_Reports/RecorderTestWithAltCoverReport.xml"
+//        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
+//        |> NUnitRetry
+//            (fun p ->
+//                { p with
+//                      ToolPath = nunitConsole
+//                      WorkingDir = "." })
+//            "./_Reports/RecorderTestWithAltCoverReport.xml"
+
+        let recArgs = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/RecorderTestWithAltCoverReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+                             ]
+        Actions.Run(nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
+        
+        printfn "Execute the net472 Recorder tests"
+
+//        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*.Test*.dll")
+//        |> NUnitRetry
+//            (fun p ->
+//                { p with
+//                      ToolPath = nunitConsole
+//                      WorkingDir = "." })
+//            "./_Reports/Recorder4TestWithAltCoverReport.xml"
+
+//        let recArgs = [
+//                             "--noheader"
+//                             "--work=."
+//                             "--result=./_Reports/Recorder4TestWithAltCoverReport.xml"
+//                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
+//                             ]
+//        Actions.Run(nunitConsole, ".", recArgs) "Recorder net472 NUnit failed"
 
         ReportGenerator.generateReports
             (fun p ->
