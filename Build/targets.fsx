@@ -31,6 +31,17 @@ open Swensen.Unquote
 
 let Copyright = ref String.Empty
 let Version = ref String.Empty
+let lastGoodPackage () =
+  let n = !!"./_Packaging/altcover.*.nupkg"
+          |> Seq.map(fun p -> System.Version((Path.GetFileNameWithoutExtension p).Substring(9)))
+  if n |> Seq.isEmpty |> not
+  then
+    let v = n |> Seq.max
+    Version.Value <- v.ToString()
+    printfn "Default version = %A" v
+
+lastGoodPackage ()
+
 
 let consoleBefore =
     (Console.ForegroundColor, Console.BackgroundColor)
