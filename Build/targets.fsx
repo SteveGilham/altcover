@@ -847,16 +847,6 @@ _Target
              "-out:./_Mono/Sample1/Sample1.exe"
              "./Samples/Sample1/Program.cs" ])
 
-          // My machine only
-          //("./_Mono/Sample31",
-          // [ "-target:library"
-          //   "-debug"
-          //   "-D:MONO"
-          //   "-out:./_Mono/Sample31/Sample31.dll"
-          //   "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
-          //   "-r:Mono.Cecil.dll"
-          //   "./Samples/Sample31/Class1.cs" ])
-
           ("./_Mono/Sample3",
            [ "-target:library"
              "-debug"
@@ -873,12 +863,7 @@ _Target
                 ("Mono compilation of '"
                  + String.Join(" ", cmd)
                  + "' failed")
-                |> Actions.Run(mcs, ".", cmd))
-
-        Actions.FixMVId [ "./_Mono/Sample1/Sample1.exe"
-                          // My machine only
-                          //"./_Mono/Sample31/Sample31.dll"
-                          "./_Mono/Sample3/Sample3.dll" ])
+                |> Actions.Run(mcs, ".", cmd)))
 
 _Target
     "BuildSample31"
@@ -902,9 +887,7 @@ _Target
                 ("Mono compilation of '"
                  + String.Join(" ", cmd)
                  + "' failed")
-                |> Actions.Run(mcs, ".", cmd))
-
-        Actions.FixMVId [ "./_Mono/Sample31/Sample31.dll" ])
+                |> Actions.Run(mcs, ".", cmd)))
 
 // Code Analysis
 

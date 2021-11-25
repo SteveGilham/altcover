@@ -212,22 +212,6 @@ do ()"""
         printfn "Build version : %s" version
         (result, majmin, now.Year)
 
-    let FixMVId files =
-        // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
-        files
-        |> Seq.iter
-            (fun f ->
-                let assembly =
-                    System.Reflection.Assembly.LoadFrom(Path.GetFullPath f)
-
-                let mvid = assembly.ManifestModule.ModuleVersionId
-                let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
-
-                mvid.ToByteArray()
-                |> Array.iteri (fun i x -> symbols.[i + 16] <- x)
-
-                System.IO.File.WriteAllBytes(f + ".mdb", symbols))
-
     let ValidateFSharpTypes simpleReport others =
         use coverageFile =
             new FileStream(
