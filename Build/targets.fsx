@@ -824,6 +824,11 @@ _Target
         ]
         |> List.iter (fun f -> f  "./AltCover.Recorder.sln")
 
+        let startPath = "./_Recorder"
+        let zipPath = "./_Binaries/AltCover.Recorder/Release+AnyCPU/Recorder.zip"
+
+        System.IO.Compression.ZipFile.CreateFromDirectory(startPath, zipPath)
+
         [ "./AltCover.sln"
           "./AltCover.Visualizer.sln"
           "./MCS.sln"

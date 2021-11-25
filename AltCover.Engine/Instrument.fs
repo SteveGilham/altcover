@@ -8,6 +8,7 @@ open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
+open System.IO.Compression
 open System.Reflection
 
 open Manatee.Json
@@ -112,6 +113,7 @@ type internal InstrumentContext =
     ModuleId: String
     RecordingAssembly: AssemblyDefinition
     RecorderSource: Stream
+    RecorderArchive: ZipArchive
     RecordingMethod: MethodDefinition list // initialised once
     RecordingMethodRef: RecorderRefs // updated each module
     MethodBody: MethodBody
@@ -122,6 +124,7 @@ type internal InstrumentContext =
       ModuleId = String.Empty
       RecordingAssembly = null
       RecorderSource = null
+      RecorderArchive = null
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
       MethodBody = null
@@ -134,9 +137,15 @@ module internal Instrument =
     use stream =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
+        .GetManifestResourceStream("AltCover.Recorder.zip")
+    use archive = new ZipArchive(stream, ZipArchiveMode.Read)
+    let entry = archive.GetEntry("AltCover.Recorder.net20.dll")
+    use entryStream = entry.Open()
+    use mstream = new MemoryStream()
+    entryStream.CopyTo(mstream)
+    mstream.Position <- 0L
 
-    use def = AssemblyDefinition.ReadAssembly stream
+    use def = AssemblyDefinition.ReadAssembly mstream
     def.Name.Version.ToString()
 
   let version = recorderVersion ()
@@ -1157,13 +1166,20 @@ module internal Instrument =
       let stream =
         Assembly
           .GetExecutingAssembly()
-          .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
+          .GetManifestResourceStream("AltCover.Recorder.zip")
+      let archive = new ZipArchive(stream, ZipArchiveMode.Read)
+      let entry = archive.GetEntry("AltCover.Recorder.net20.dll")
+      use entryStream = entry.Open()
+      use mstream = new MemoryStream()
+      entryStream.CopyTo(mstream)
+      mstream.Position <- 0L
 
-      let recordingAssembly = prepareAssembly (stream)
+      let recordingAssembly = prepareAssembly (mstream)
 
       { state with
           RecordingAssembly = recordingAssembly
-          RecorderSource = stream }
+          RecorderSource = stream
+          RecorderArchive = archive }
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
@@ -1174,14 +1190,15 @@ module internal Instrument =
 
     let private finishVisit (state: InstrumentContext) =
       try
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream("AltCover.AltCover.Recorder.net46.dll")
+        let entry = state.RecorderArchive.GetEntry("AltCover.Recorder.net46.dll")
+        use stream = entry.Open()
+        use mstream = new MemoryStream()
+        stream.CopyTo(mstream)
+        mstream.Position <- 0L
 
         let clr4 =
           state.AsyncSupport
-          |> Option.map (fun _ -> loadClr4AssemblyFromResources stream)
+          |> Option.map (fun _ -> loadClr4AssemblyFromResources mstream)
 
         let recorder =
           Option.defaultValue state.RecordingAssembly clr4
@@ -1215,11 +1232,16 @@ module internal Instrument =
         |> Option.ofObj
         |> Option.iter (fun a -> a.Close())
 
+        state.RecorderArchive
+        |> Option.ofObj
+        |> Option.iter (fun a -> a.Dispose())
+
         state.AsyncSupport
         |> Option.iter (fun a -> a.Close())
 
       { state with
           RecordingAssembly = null
+          RecorderArchive = null
           RecorderSource = null
           AsyncSupport = None }
 
@@ -1281,6 +1303,10 @@ module internal Instrument =
           state.RecorderSource
           |> Option.ofObj
           |> Option.iter (fun a -> a.Close())
+
+          state.RecorderArchive
+          |> Option.ofObj
+          |> Option.iter (fun a -> a.Dispose())
 
           state.AsyncSupport
           |> Option.iter (fun a -> a.Close())

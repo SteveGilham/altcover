@@ -61,4 +61,15 @@
     <PackageReference Update="FSharp.Core" Version="4.1.18" />
   </ItemGroup>
 
+  <Target Name="SavePayload" AfterTargets="CopyFilesToOutputDirectory" Condition=" '$(Configuration)' == 'Release' ">
+    <ItemGroup>
+      <Payload Include="$(TargetPath)"/>
+    </ItemGroup>
+    <Message Text="Copying @(Payload)" Importance="High" />
+    <Copy
+            SourceFiles="@(Payload)"
+            DestinationFiles="@(Payload->'$(ProjectDir)../_Recorder/%(Filename).$(TargetFramework)%(Extension)')"
+        />
+    </Target>
+
 </Project>
