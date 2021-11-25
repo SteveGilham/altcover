@@ -5057,6 +5057,7 @@ _Target
         // Run
         let before = Actions.ticksNow ()
         Shell.cleanDir ("./_Binaries/MSBuildTest_Sample4LongForm")
+        Shell.cleanDir ("./_Binaries/MSBuildTest_Sample4")
 
         DotNet.msbuild
             (fun opt ->

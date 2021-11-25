@@ -8,11 +8,11 @@
     <CallContext Include="0" />
     <CallContext Include="[Fact]" />
     <AssemblyFilter Include="xunit" />
-    <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1" />
+    <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/netcoreapp2.1" />
     <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/netcoreapp2.1/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
   </ItemGroup>
   <Target Name="MSBuildTest">
-    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj -f netcoreapp2.1" />
+    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj -f netcoreapp2.1 /p:AltCoverTag=$(AltCoverTag)" />
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories= "@(OutputDirectory)"
@@ -20,8 +20,8 @@
       Report="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
       AssemblyFilter="@(AssemblyFilter)" />
-    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f netcoreapp2.1" />
+    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Samples/Sample4/Sample4.fsproj  -f netcoreapp2.1 /p:AltCoverTag=$(AltCoverTag)" />
     <AltCover.Collect
-      RecorderDirectory="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1" />
+      RecorderDirectory="$(MSBuildThisFileDirectory)../_Binaries/$(AltCoverTag)Sample4/Debug+AnyCPU/netcoreapp2.1" />
   </Target>
 </Project>
