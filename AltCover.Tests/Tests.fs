@@ -173,8 +173,9 @@ module AltCoverTests =
 
            match snd x with
            // Case of <DeterministicSourcePaths>true</DeterministicSourcePaths>
-           | None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
+           //| None -> Assert.That(f |> Path.GetFileName, Is.EqualTo "Sample2.dll", f)
            | Some name ->
+             //Assert.That(f |> Path.GetFileName, Is.Not.EqualTo "Sample2.dll", f)
              let probe = Path.ChangeExtension(f, ".pdb")
              let file = FileInfo(probe)
              let filename = file.Name.Replace("\\", "/")
@@ -3337,7 +3338,7 @@ module AltCoverTests =
     let path =
       Path.Combine(
         SolutionDir(),
-        "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll"
+        "_Binaries/CSharpGeneratedDemo/Debug+AnyCPU/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
@@ -3631,7 +3632,7 @@ module AltCoverTests =
     let path =
       Path.Combine(
         SolutionDir(),
-        "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll"
+        "_Binaries/CSharpGeneratedDemo/Debug+AnyCPU/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
@@ -4671,7 +4672,7 @@ module AltCoverTests =
     let path =
       Path.Combine(
         SolutionDir(),
-        "Samples/Sample28/GeneratedDemo/bin/Debug/netcoreapp3.1/CSharpGeneratedDemo.dll"
+        "_Binaries/CSharpGeneratedDemo/Debug+AnyCPU/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
@@ -5307,7 +5308,7 @@ module AltCoverTests =
     let visitor, document = OpenCover.reportGenerator ()
 
     let sample21trad =
-      Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net472/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net472/Sample21.dll")
 
     Assert.That(File.Exists sample21trad, "Test file Sample21 for net47 not built")
 
@@ -5360,7 +5361,7 @@ module AltCoverTests =
     let visitor, document = OpenCover.reportGenerator ()
 
     let sample21 =
-      Path.Combine(SolutionDir(), "./Samples/Sample21/bin/Debug/net6.0/Sample21.dll")
+      Path.Combine(SolutionDir(), "./_Binaries/Sample21/Debug+AnyCPU/net6.0/Sample21.dll")
 
     Assert.That(File.Exists sample21, "Test file Sample21 for net6.0 not built")
 

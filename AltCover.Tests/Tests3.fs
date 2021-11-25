@@ -3207,7 +3207,7 @@ module AltCoverTests3 =
     // because mono symbol-writing is broken, work around trying to
     // examine the instrumented files in a self-test run.
     let here =
-      Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy/net472")
+      Path.Combine(SolutionRoot.location, "_Binaries/Sample4LongForm/Debug+AnyCPU/legacy/net472")
     maybeIgnore (fun () -> here |> Directory.Exists |> not)
 
     //let there =
@@ -3278,7 +3278,7 @@ module AltCoverTests3 =
     // because mono symbol-writing is broken, work around trying to
     // examine the instrumented files in a self-test run.
     let here =
-      Path.Combine(SolutionRoot.location, "_Binaries/Sample4/Debug+AnyCPU/legacy/net472")
+      Path.Combine(SolutionRoot.location, "_Binaries/Sample4LongForm/Debug+AnyCPU/legacy/net472")
     maybeIgnore (fun () -> here |> Directory.Exists |> not)
 
     let there =
