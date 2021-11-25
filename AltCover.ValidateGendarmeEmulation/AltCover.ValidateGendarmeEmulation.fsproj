@@ -78,7 +78,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.12" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.13" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
   
   <ItemGroup>
