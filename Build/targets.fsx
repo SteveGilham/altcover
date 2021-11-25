@@ -42,7 +42,6 @@ let lastGoodPackage () =
 
 lastGoodPackage ()
 
-
 let consoleBefore =
     (Console.ForegroundColor, Console.BackgroundColor)
 
@@ -307,7 +306,7 @@ let cliTaggedArguments tag =
           DistributedLoggers = None
           Properties =
               [ "AltCoverTag", (tag + "_") ]
-          DisableInternalBinLog = true }          
+          DisableInternalBinLog = true }
 
 let withWorkingDirectoryVM dir o =
     { dotnetOptions o with
@@ -881,6 +880,32 @@ _Target
                           //"./_Mono/Sample31/Sample31.dll"
                           "./_Mono/Sample3/Sample3.dll" ])
 
+_Target
+    "BuildSample31"
+    (fun _ ->
+        let mcs =
+            "_Binaries/MCS/Release+AnyCPU/net472/MCS.exe"
+
+        [
+          ("./_Mono/Sample31",
+           [ "-target:library"
+             "-debug"
+             "-D:MONO"
+             "-out:./_Mono/Sample31/Sample31.dll"
+             "-lib:./packages/Mono.Cecil.0.11.4/lib/net40"
+             "-r:Mono.Cecil.dll"
+             "./Samples/Sample31/Class1.cs" ]) ]
+        |> Seq.iter
+            (fun (dir, cmd) ->
+                Directory.ensure dir
+
+                ("Mono compilation of '"
+                 + String.Join(" ", cmd)
+                 + "' failed")
+                |> Actions.Run(mcs, ".", cmd))
+
+        Actions.FixMVId [ "./_Mono/Sample31/Sample31.dll" ])
+
 // Code Analysis
 
 _Target "Analysis" ignore
@@ -1343,7 +1368,7 @@ _Target
                              Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll"
                              ]
             Actions.Run(nunitConsole, ".", rec2Args) "Recorder NUnit failed"
-                
+
         with
         | x ->
             printfn "%A" x
@@ -1654,7 +1679,6 @@ _Target
 // https://github.com/SteveGilham/altcover/commit/3b8d20b546a719b5f57dcd55976a667dfac5349b#diff-30d5a45f470e8be0a3a8dc6a59e6c49156c055230b965a3a8a606a4104548c44
 // could it be collectorised??
 
-
 _Target
     "UnitTestWithAltCover"
     (fun _ ->
@@ -1814,7 +1838,7 @@ _Target
                         Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/AltCover.Recorder.Tests.dll"
                       ]
         Actions.Run(nunitConsole, ".", recArgs) "Recorder net20 NUnit failed"
-        
+
         printfn "Instrument the net472 Recorder tests"
 
         let Recorder472Dir =
@@ -2562,7 +2586,7 @@ _Target
 
                 let methods = coverageDocument.Descendants(XName.Get("Method"))
                               |> Seq.toList
-      
+
                 Assert.That(methods |> Seq.length, Is.EqualTo methodcount, "method count wrong")
 
                 methods
@@ -6815,6 +6839,10 @@ Target.activateFinal "ResetConsoleColours"
 "BuildRelease"
 ==> "BuildMonoSamples"
 ==> "Compilation"
+
+// My machine only
+"BuildMonoSamples"
+==> "BuildSample31"
 
 "BuildDebug" ==> "Lint" ==> "Analysis"
 
