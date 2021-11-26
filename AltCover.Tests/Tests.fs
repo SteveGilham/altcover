@@ -3210,8 +3210,7 @@ module AltCoverTests =
         "System.String AltCover.Recorder.InstrumentationAttribute.get_Configuration()"
         "System.Void AltCover.Recorder.InstrumentationAttribute.#ctor()"
         "System.Void AltCover.Recorder.InstrumentationAttribute.set_Assembly(System.String)"
-        "System.Void AltCover.Recorder.InstrumentationAttribute.set_Configuration(System.String)"
-      ]
+        "System.Void AltCover.Recorder.InstrumentationAttribute.set_Configuration(System.String)" ]
 
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -3340,6 +3339,7 @@ module AltCoverTests =
         SolutionDir(),
         "_Binaries/CSharpGeneratedDemo/Debug+AnyCPU/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
+
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
@@ -3634,6 +3634,7 @@ module AltCoverTests =
         SolutionDir(),
         "_Binaries/CSharpGeneratedDemo/Debug+AnyCPU/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
+
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
@@ -4098,6 +4099,7 @@ module AltCoverTests =
 
     let path =
       Path.Combine(here, "_SourceLink/Sample14.dll")
+
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
@@ -4567,6 +4569,7 @@ module AltCoverTests =
 
     let path =
       Path.Combine(here, "_SourceLink/Sample14.dll")
+
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try
@@ -4674,6 +4677,7 @@ module AltCoverTests =
         SolutionDir(),
         "_Binaries/CSharpGeneratedDemo/Debug+AnyCPU/netcoreapp3.1/CSharpGeneratedDemo.dll"
       )
+
     maybeIgnore (fun () -> path |> File.Exists |> not)
 
     try

@@ -425,24 +425,31 @@ module internal CoverageParameters =
   let internal makeConfiguration () =
     let components =
       [ "--methodpoint\t" + string methodPoint.Value
-        "--callContext-A\t" + String.Join("\t", trackingNames)
-        "--topLevels\t" + String.Join("\t", topLevel |> Seq.map filterString |> Seq.sort)
-        "--filters\t" + String.Join("\t", nameFilters |> Seq.map filterString |> Seq.sort)
+        "--callContext-A\t"
+        + String.Join("\t", trackingNames)
+        "--topLevels\t"
+        + String.Join("\t", topLevel |> Seq.map filterString |> Seq.sort)
+        "--filters\t"
+        + String.Join("\t", nameFilters |> Seq.map filterString |> Seq.sort)
         "--showstatic\t" + string staticFilter
         "--showGenerated\t" + string showGenerated.Value
-        "--visibleBranches\t" + string coalesceBranches.Value
+        "--visibleBranches\t"
+        + string coalesceBranches.Value
         "--localSource\t" + string local.Value
         "--sourceLink\t" + string sourcelink.Value
         "--callContext-B\t" + (string <| interval ())
         "--line/branch-cover\t" + string coverstyle
         "--reportFormat\t" + (string <| reportFormat ())
-        "--strongNameKey\t" + (defaultStrongNameKey
-                             |> Option.map KeyStore.keyToIndex
-                             |> string)
-        "!!recorderStrongNameKey\t" + (recorderStrongNameKey
-                |> Option.map KeyStore.keyToIndex
-                |> string)
-        "--key\t" + String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort) ]
+        "--strongNameKey\t"
+        + (defaultStrongNameKey
+           |> Option.map KeyStore.keyToIndex
+           |> string)
+        "!!recorderStrongNameKey\t"
+        + (recorderStrongNameKey
+           |> Option.map KeyStore.keyToIndex
+           |> string)
+        "--key\t"
+        + String.Join("\t", keys.Keys |> Seq.map string |> Seq.sort) ]
 
     configurationHash <-
       String.Join("\n", components)

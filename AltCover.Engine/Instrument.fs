@@ -184,14 +184,18 @@ module internal Instrument =
       (recorder: AssemblyDefinition)
       (assembly: AssemblyEntry)
       =
-      let a = System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
-      let c = System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration)
+      let a =
+        System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+
+      let c =
+        System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration)
+
       let blob =
         [| prelude |> List.toArray
-           [| byte a.Length|]
+           [| byte a.Length |]
            a
            interlude |> List.toArray
-           [| byte c.Length|]
+           [| byte c.Length |]
            c |] // slight inefficiency
         |> Array.concat
 
@@ -312,14 +316,14 @@ module internal Instrument =
                         <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
                    t.IsPublic <- false)
 
-          injectInstrumentation definition {
-            Assembly = definition
-            Inspection = Inspections.Ignore
-            Destinations = []
-            Identity = { Assembly = "AltCover+Recorder+g+"
-                         Configuration = "Uninstrumented++"
-            }
-          }
+          injectInstrumentation
+            definition
+            { Assembly = definition
+              Inspection = Inspections.Ignore
+              Destinations = []
+              Identity =
+                { Assembly = "AltCover+Recorder+g+"
+                  Configuration = "Uninstrumented++" } }
 
           [ // set the coverage file path and unique token
             ("get_ReportFile",
@@ -477,30 +481,30 @@ module internal Instrument =
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
       | _ -> null
 
-#if IDEMPOTENT_INSTRUMENT
-    let internal safeWait (mutex: System.Threading.WaitHandle) =
-      try
-        mutex.WaitOne() |> ignore
-      with
-      | :? System.Threading.AbandonedMutexException -> ()
+// #if IDEMPOTENT_INSTRUMENT
+//     let internal safeWait (mutex: System.Threading.WaitHandle) =
+//       try
+//         mutex.WaitOne() |> ignore
+//       with
+//       | :? System.Threading.AbandonedMutexException -> ()
 
-    let internal withFileMutex (p: string) f =
-      let key =
-        p
-        |> System.Text.Encoding.UTF8.GetBytes
-        |> CoverageParameters.hash.ComputeHash
-        |> Convert.ToBase64String
+//     let internal withFileMutex (p: string) f =
+//       let key =
+//         p
+//         |> System.Text.Encoding.UTF8.GetBytes
+//         |> CoverageParameters.hash.ComputeHash
+//         |> Convert.ToBase64String
 
-      use mutex =
-        new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
+//       use mutex =
+//         new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
 
-      safeWait mutex
+//       safeWait mutex
 
-      try
-        f ()
-      finally
-        mutex.ReleaseMutex()
-#endif
+//       try
+//         f ()
+//       finally
+//         mutex.ReleaseMutex()
+// #endif
 
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
@@ -544,25 +548,25 @@ module internal Instrument =
       try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
-#if IDEMPOTENT_INSTRUMENT
-        let write (a: AssemblyDefinition) (p: string) pk =
-          withFileMutex
-            p
-            (fun () ->
-              if p |> File.Exists |> not
-                 || DateTime.Now.Year > 2000 // TODO -- check hashes
-              then
-                use sink =
-                  File.Open(p, FileMode.Create, FileAccess.ReadWrite)
+// #if IDEMPOTENT_INSTRUMENT
+//         let write (a: AssemblyDefinition) (p: string) pk =
+//           withFileMutex
+//             p
+//             (fun () ->
+//               if p |> File.Exists |> not
+//                  || DateTime.Now.Year > 2000 // TODO -- check hashes
+//               then
+//                 use sink =
+//                   File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
-                a.Write(sink, pk))
-#else
+//                 a.Write(sink, pk))
+// #else
         let write (a: AssemblyDefinition) p pk =
           use sink =
             File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
           a.Write(sink, pk)
-#endif
+// #endif
 
         let resolver = assembly.MainModule.AssemblyResolver
         hookResolver resolver

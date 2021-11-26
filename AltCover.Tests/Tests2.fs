@@ -519,9 +519,13 @@ module AltCoverTests2 =
 
       Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
 
-      Assert.True(prepared.CustomAttributes
-                  |> Seq.exists (fun a -> a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute"),
-                  "Hallmark missing")
+      Assert.True(
+        prepared.CustomAttributes
+        |> Seq.exists
+             (fun a ->
+               a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute"),
+        "Hallmark missing"
+      )
 
       let before =
         raw.MainModule.GetTypes()
@@ -815,46 +819,66 @@ module AltCoverTests2 =
   let ShouldRescopeMonoMethodOK () =
     // Workround for Cecil 11.4
     let path = // Use a known good (bad) build rather than a local new one each time
-        // Path.Combine(SolutionRoot.location, "_Mono/Sample31/Sample31.dll")
-        Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
+      // Path.Combine(SolutionRoot.location, "_Mono/Sample31/Sample31.dll")
+      Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
 
-    use ``module`` = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use ``module`` =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+
     ProgramDatabase.readSymbols ``module``
 
-    let pathGetterDef = ``module``.MainModule.GetTypes ()
-                          |> Seq.collect (fun t -> t.Methods)
-                          |> Seq.find (fun m -> m.Name.Equals ("get_Defer"))
+    let pathGetterDef =
+      ``module``.MainModule.GetTypes()
+      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.find (fun m -> m.Name.Equals("get_Defer"))
 
     let body = pathGetterDef.Body
-    let worker = body.GetILProcessor ()
+    let worker = body.GetILProcessor()
     let initialBody = body.Instructions |> Seq.toList
     let head = initialBody |> Seq.head
-    let opcode = worker.Create (OpCodes.Ldc_I4_1)
-    worker.InsertBefore (head, opcode)
+    let opcode = worker.Create(OpCodes.Ldc_I4_1)
+    worker.InsertBefore(head, opcode)
 
-    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "Scope.Start.IsEndOfMethod")
-    Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-                 |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
-                 "subscope.Start.IsEndOfMethod") // this one needs the home-built Sample31
+    Assert.That(
+      pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod,
+      Is.False,
+      "Scope.Start.IsEndOfMethod"
+    )
+
+    Assert.True(
+      pathGetterDef.DebugInformation.Scope.Scopes
+      |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
+      "subscope.Start.IsEndOfMethod"
+    ) // this one needs the home-built Sample31
 
     // big test -- if we can write w/o crashing when the previous asserts are removed
-    let output = Path.GetTempFileName ()
+    let output = Path.GetTempFileName()
     let outputdll = output + ".dll"
 
-    let writer = WriterParameters ()
-    writer.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider ()
+    let writer = WriterParameters()
+    writer.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider()
     writer.WriteSymbols <- true
 
-    use sink = File.Open (outputdll, FileMode.Create, FileAccess.ReadWrite)
-    Assert.Throws<NotSupportedException>(fun () -> ``module``.Write (sink, writer))
+    use sink =
+      File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
+
+    Assert.Throws<NotSupportedException>(fun () -> ``module``.Write(sink, writer))
     |> ignore
 
     pruneLocalScopes pathGetterDef
-    ``module``.Write (sink, writer)
-    Assert.That (pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod, Is.False, "pruned Scope.Start.IsEndOfMethod")
-    Assert.True (pathGetterDef.DebugInformation.Scope.Scopes
-                 |> Seq.isEmpty,
-                 "pruned subscope.Start.IsEndOfMethod")
+    ``module``.Write(sink, writer)
+
+    Assert.That(
+      pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod,
+      Is.False,
+      "pruned Scope.Start.IsEndOfMethod"
+    )
+
+    Assert.True(
+      pathGetterDef.DebugInformation.Scope.Scopes
+      |> Seq.isEmpty,
+      "pruned subscope.Start.IsEndOfMethod"
+    )
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =
@@ -2698,7 +2722,9 @@ module AltCoverTests2 =
   [<Test>]
   let IncludedAssemblyRefsAreUpdated () =
     // do trivial coverage here where the type's absence is felt
-    let dummy = AltCover.Recorder.InstrumentationAttribute()
+    let dummy =
+      AltCover.Recorder.InstrumentationAttribute()
+
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
