@@ -445,6 +445,14 @@ module internal Main =
       =
       // Copy all the files into the target directory
       let mapping = Dictionary<string, string>()
+      let hashmapping = Dictionary<string, string>()
+
+      let getFileHash fullName =
+        use stream = File.OpenRead fullName
+
+        stream
+        |> CoverageParameters.hash.ComputeHash
+        |> Convert.ToBase64String
 
       Seq.zip instrumentFromInfos instrumentToPaths
       |> Seq.map
@@ -487,10 +495,33 @@ module internal Main =
                       |> ignore
 
                       d.Add(fullName, copy)
+                      let hash = getFileHash fullName
+
+                      let key =
+                        if CoverageParameters.inplace.Value then
+                          copy
+                        else
+                          fullName
+
+                      hashmapping.[ key ] <- hash
                       d)
                     (Dictionary<string, string>())
 
              // filter no-ops here
+             let drop =
+               filemap
+               // process (don't drop) where the target doesn't exist
+               // process (don't drop) all if in-place (copy to save all)
+               |> Seq.filter
+                    (fun kvp ->
+                      kvp.Value |> File.Exists
+                      && not CoverageParameters.inplace.Value)
+               |> Seq.filter // process (don't drop) ones that have changed -- TODO or are instrumented
+                    (fun kvp -> ((kvp.Value |> getFileHash) = hashmapping.[kvp.Key])) //||
+               |> Seq.toList
+
+             drop
+             |> Seq.iter (fun kvp -> filemap.Remove kvp.Key |> ignore)
 
              // maybe mutex??
 // #if IDEMPOTENT_INSTRUMENT
@@ -539,12 +570,7 @@ module internal Main =
 
                                  { Path = [ fullName ]
                                    Name = def.Name.Name
-                                   Hash =
-                                     use stream = File.OpenRead fullName
-
-                                     stream
-                                     |> CoverageParameters.hash.ComputeHash
-                                     |> Convert.ToBase64String
+                                   Hash = hashmapping.[fullName]
                                    Refs =
                                      def.MainModule.AssemblyReferences
                                      |> Seq.map (fun r -> r.Name)
