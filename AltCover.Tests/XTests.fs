@@ -4,6 +4,7 @@ namespace Tests
 open System
 open System.Collections.Generic
 open System.IO
+open System.IO.Compression
 open System.Reflection
 open System.Text.RegularExpressions
 open System.Xml.Linq
@@ -1183,9 +1184,15 @@ module AltCoverXTests =
     try
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.Add output
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.Tests.Recorder.zip")
+      let archive = new ZipArchive(stream, ZipArchiveMode.Read)
 
       let input =
         { InstrumentContext.Build [] with
+            RecorderArchive = archive
             RecordingAssembly = def }
 
       let result =
@@ -1239,10 +1246,16 @@ module AltCoverXTests =
     try
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.Add output
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.Tests.Recorder.zip")
+      let archive = new ZipArchive(stream, ZipArchiveMode.Read)
 
       let input =
         { InstrumentContext.Build [] with
             RecordingAssembly = def
+            RecorderArchive = archive
             AsyncSupport = Some support }
 
       let result =

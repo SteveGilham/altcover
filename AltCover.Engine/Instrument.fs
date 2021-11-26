@@ -113,6 +113,7 @@ type internal InstrumentContext =
     ModuleId: String
     RecordingAssembly: AssemblyDefinition
     RecorderSource: Stream
+    RecorderEntry: Stream
     RecorderArchive: ZipArchive
     RecordingMethod: MethodDefinition list // initialised once
     RecordingMethodRef: RecorderRefs // updated each module
@@ -124,6 +125,7 @@ type internal InstrumentContext =
       ModuleId = String.Empty
       RecordingAssembly = null
       RecorderSource = null
+      RecorderEntry = null
       RecorderArchive = null
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
@@ -1162,6 +1164,9 @@ module internal Instrument =
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
                                                       "EnsureLocalDisposalRule",
                                                       Justification = "Record return confusing Gendarme -- TODO")>]
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", 
+                                                      "CA2000:Dispose objects before losing scope",
+                                                      Justification = "Record return of MemoryStream")>]
     let private visitStart state =
       let stream =
         Assembly
@@ -1170,7 +1175,7 @@ module internal Instrument =
       let archive = new ZipArchive(stream, ZipArchiveMode.Read)
       let entry = archive.GetEntry("AltCover.Recorder.net20.dll")
       use entryStream = entry.Open()
-      use mstream = new MemoryStream()
+      let mstream = new MemoryStream()
       entryStream.CopyTo(mstream)
       mstream.Position <- 0L
 
@@ -1179,6 +1184,7 @@ module internal Instrument =
       { state with
           RecordingAssembly = recordingAssembly
           RecorderSource = stream
+          RecorderEntry = mstream
           RecorderArchive = archive }
 
     [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
@@ -1187,6 +1193,24 @@ module internal Instrument =
     let private loadClr4AssemblyFromResources (stream: Stream) =
       AssemblyDefinition.ReadAssembly(stream)
       |> prepareAssemblyDefinition
+
+    let private mayClose (s:Stream) =
+      s
+      |> Option.ofObj
+      |> Option.iter (fun a -> a.Close())
+
+    let private mayDispose (d:IDisposable) =
+      d
+      |> Option.ofObj
+      |> Option.iter (fun a -> a.Dispose())
+
+    let private clearState state =
+        state.RecordingAssembly |> mayDispose
+        state.RecorderSource |> mayClose
+        state.RecorderEntry |> mayClose
+        state.RecorderArchive |> mayDispose
+        state.AsyncSupport
+        |> Option.iter (fun a -> a.Close())
 
     let private finishVisit (state: InstrumentContext) =
       try
@@ -1226,22 +1250,12 @@ module internal Instrument =
 
                       File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))))
       finally
-        (state.RecordingAssembly :> IDisposable).Dispose()
-
-        state.RecorderSource
-        |> Option.ofObj
-        |> Option.iter (fun a -> a.Close())
-
-        state.RecorderArchive
-        |> Option.ofObj
-        |> Option.iter (fun a -> a.Dispose())
-
-        state.AsyncSupport
-        |> Option.iter (fun a -> a.Close())
+        clearState state
 
       { state with
           RecordingAssembly = null
           RecorderArchive = null
+          RecorderEntry = null
           RecorderSource = null
           AsyncSupport = None }
 
@@ -1297,19 +1311,7 @@ module internal Instrument =
         match node with
         | Finish -> ()
         | _ ->
-          if state.RecordingAssembly.IsNotNull then
-            (state.RecordingAssembly :> IDisposable).Dispose()
-
-          state.RecorderSource
-          |> Option.ofObj
-          |> Option.iter (fun a -> a.Close())
-
-          state.RecorderArchive
-          |> Option.ofObj
-          |> Option.iter (fun a -> a.Dispose())
-
-          state.AsyncSupport
-          |> Option.iter (fun a -> a.Close())
+          clearState state
 
         reraise ()
 
