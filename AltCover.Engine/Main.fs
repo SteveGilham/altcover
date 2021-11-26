@@ -437,6 +437,69 @@ module internal Main =
       else
         Some a
 
+    let internal getFileHash fullName =
+      use stream = File.OpenRead fullName
+
+      stream
+      |> CoverageParameters.hash.ComputeHash
+      |> Convert.ToBase64String
+
+    [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+    type PairContext =
+      { HashMapping: Dictionary<string, string>
+        OutputInfo: DirectoryInfo
+        InputInfo: DirectoryInfo
+        InPlace: bool }
+
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
+                                                      "AvoidUnnecessarySpecializationRule",
+                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    let internal makeCopyPair
+      (context: PairContext)
+      (pairs: Dictionary<string, string>)
+      (info: FileInfo)
+      =
+      let fullName = info.FullName
+      let dirname = info.DirectoryName
+
+      let reldir =
+        Visitor.I.getRelativeDirectoryPath context.InputInfo.FullName dirname
+
+      let copy =
+        Path.Combine(context.OutputInfo.FullName, reldir, info.Name)
+
+      copy
+      |> Path.GetDirectoryName
+      |> Directory.CreateDirectory
+      |> ignore
+
+      pairs.Add(fullName, copy)
+      let hash = getFileHash fullName
+
+      let key = // file instrumented from
+        if context.InPlace then
+          copy // to cover
+        else
+          fullName
+
+      context.HashMapping.[key] <- hash
+      pairs
+
+    let internal idempotentFilter
+      (hashMapping: Dictionary<string, string>)
+      (copypairs: Dictionary<string, string>)
+      =
+      let drop =
+        copypairs
+        // process (don't drop) where the target doesn't exist
+        |> Seq.filter (fun kvp -> kvp.Value |> File.Exists)
+        |> Seq.filter // process (don't drop) ones that have changed -- TODO or are instrumented
+             (fun kvp -> ((kvp.Value |> getFileHash) = hashMapping.[kvp.Key])) //||
+        |> Seq.toList
+
+      drop // to cover the iter fun
+      |> Seq.iter (fun kvp -> copypairs.Remove kvp.Key |> ignore)
+
     let internal prepareTargetFiles
       (inputInfos: DirectoryInfo seq)
       (outputInfos: DirectoryInfo seq)
@@ -447,13 +510,6 @@ module internal Main =
       let mapping = Dictionary<string, string>()
       let hashmapping = Dictionary<string, string>()
 
-      let getFileHash fullName =
-        use stream = File.OpenRead fullName
-
-        stream
-        |> CoverageParameters.hash.ComputeHash
-        |> Convert.ToBase64String
-
       Seq.zip instrumentFromInfos instrumentToPaths
       |> Seq.map
            (fun (x, y) ->
@@ -462,7 +518,7 @@ module internal Main =
       |> Seq.iter mapping.Add
 
       Seq.zip inputInfos outputInfos
-      |> Seq.iter
+      |> Seq.iter // TODO : need to pass info out from here -- make it a fold
            (fun (inputInfo, outputInfo) ->
              // recurse here
 
@@ -475,62 +531,29 @@ module internal Main =
                       |> Seq.exists (fun o -> isInDirectory i.FullName o.FullName)
                       |> not)
 
+             let context =
+               { HashMapping = hashmapping
+                 OutputInfo = outputInfo
+                 InputInfo = inputInfo
+                 InPlace = CoverageParameters.inplace.Value }
+
              // mutable bucket
              let filemap =
                files
-               |> Seq.fold
-                    (fun (d: Dictionary<string, string>) info ->
-                      let fullName = info.FullName
-                      let dirname = info.DirectoryName
+               |> Seq.fold (makeCopyPair context) (Dictionary<string, string>())
 
-                      let reldir =
-                        Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
-
-                      let copy =
-                        Path.Combine(outputInfo.FullName, reldir, info.Name)
-
-                      copy
-                      |> Path.GetDirectoryName
-                      |> Directory.CreateDirectory
-                      |> ignore
-
-                      d.Add(fullName, copy)
-                      let hash = getFileHash fullName
-
-                      let key =
-                        if CoverageParameters.inplace.Value then
-                          copy
-                        else
-                          fullName
-
-                      hashmapping.[ key ] <- hash
-                      d)
-                    (Dictionary<string, string>())
-
+             // process (don't drop) all if in-place
+             // copy all to assumed clean save location
+             if not CoverageParameters.inplace.Value
              // filter no-ops here
-             let drop =
-               filemap
-               // process (don't drop) where the target doesn't exist
-               // process (don't drop) all if in-place (copy to save all)
-               |> Seq.filter
-                    (fun kvp ->
-                      kvp.Value |> File.Exists
-                      && not CoverageParameters.inplace.Value)
-               |> Seq.filter // process (don't drop) ones that have changed -- TODO or are instrumented
-                    (fun kvp -> ((kvp.Value |> getFileHash) = hashmapping.[kvp.Key])) //||
-               |> Seq.toList
-
-             drop
-             |> Seq.iter (fun kvp -> filemap.Remove kvp.Key |> ignore)
+             then
+               idempotentFilter hashmapping filemap
 
              // maybe mutex??
 // #if IDEMPOTENT_INSTRUMENT
 //                     Instrument.I.withFileMutex
 //                       fullName
 //                       (fun () ->
-//                         if copy |> File.Exists |> not
-//                            || (File.GetLastWriteTime copy) < (File.GetLastWriteTime
-//                                                                 fullName) then
 //                           File.Copy(fullName, copy, true))))
 // #else
 //                     File.Copy(fullName, copy, true)))
@@ -540,6 +563,7 @@ module internal Main =
              |> Seq.iter (fun kvp -> File.Copy(kvp.Key, kvp.Value, true)))
 
       // Track the symbol-bearing assemblies
+      // TODO filter out ones excluded previously
       let assemblies =
         instrumentFromInfos
         |> Seq.map
