@@ -1,0 +1,40 @@
+<Project>
+  <PropertyGroup Label="OutputBuildProps">
+    <!-- based on https://nietras.com/2021/11/19/bendingdotnet-common-flat-build-output/ -->
+    <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+    <Platform Condition="$(Platform) == ''">AnyCPU</Platform>
+    <BuildDir>$(MSBuildThisFileDirectory)_Binaries\</BuildDir>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)_Intermediate/$(MSBuildProjectName)/$(Configuration)</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)+$(Platform)</IntermediateOutputPath>
+    <ProjectBuildDirectoryName>$(AltCoverTag)$(MSBuildProjectName)/$(Configuration)+$(Platform)</ProjectBuildDirectoryName>
+    <OutputPathWithoutEndSlash>$(BuildDir)$(ProjectBuildDirectoryName)</OutputPathWithoutEndSlash>
+    <OutputPath>$(OutputPathWithoutEndSlash)/</OutputPath>
+    <KeyDir>$(MSBuildThisFileDirectory)Build\</KeyDir>
+    <InfrastructureKey>$(KeyDir)Infrastructure.snk</InfrastructureKey>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
+    <OtherFlags>--keyfile:$(InfrastructureKey)</OtherFlags>
+    <RollForward>Major</RollForward>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(InfrastructureKey)</AssemblyOriginatorKeyFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>52</NoWarn>
+    <Tailcalls>true</Tailcalls>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
+</Project>

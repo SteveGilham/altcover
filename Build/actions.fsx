@@ -77,7 +77,8 @@ module Actions =
 
         clean1 0
 
-    let template = """namespace AltCover
+    let template =
+        """namespace AltCover
 open System.Reflection
 open System.Runtime.CompilerServices
 
@@ -211,22 +212,6 @@ do ()"""
         printfn "Build version : %s" version
         (result, majmin, now.Year)
 
-    let FixMVId files =
-        // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
-        files
-        |> Seq.iter
-            (fun f ->
-                let assembly =
-                    System.Reflection.Assembly.LoadFrom(Path.GetFullPath f)
-
-                let mvid = assembly.ManifestModule.ModuleVersionId
-                let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
-
-                mvid.ToByteArray()
-                |> Array.iteri (fun i x -> symbols.[i + 16] <- x)
-
-                System.IO.File.WriteAllBytes(f + ".mdb", symbols))
-
     let ValidateFSharpTypes simpleReport others =
         use coverageFile =
             new FileStream(
@@ -273,7 +258,7 @@ do ()"""
             |> Seq.toList
 
         let expected =
-          "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+            "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
         //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
@@ -472,7 +457,10 @@ do ()"""
 
     let PrepareReadMe packingCopyright readmemd =
         let readme = Path.getFullName readmemd
-        let name = Path.GetFileNameWithoutExtension readmemd
+
+        let name =
+            Path.GetFileNameWithoutExtension readmemd
+
         let document = File.ReadAllText readme
         let markdown = Markdown.ToHtml(document)
 
@@ -521,8 +509,8 @@ a:hover {color: #ecc;}
                     match x.Name.LocalName with
                     | "h2" ->
                         keep.Value <-
-                          (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
-                           |> Option.isNone
+                            (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
+                            |> Option.isNone
                     | "footer" -> keep.Value <- true
                     | _ -> ()
 
@@ -588,8 +576,8 @@ a:hover {color: #ecc;}
 
         let expected =
             "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
-            // "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
-            //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        // "0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        //"0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
         Assert.That(String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A in %s" recorded path)
         printfn "Visits OK"
 
@@ -605,7 +593,8 @@ a:hover {color: #ecc;}
 
                 Assert.That(vc, Is.EqualTo vx, sp.Value))
 
-        let trackedFormat = """<TrackedMethods>
+        let trackedFormat =
+            """<TrackedMethods>
         <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" entry="{0}" exit="{1}" />
         <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" entry="{2}" exit="{3}" />
       </TrackedMethods>"""

@@ -43,7 +43,8 @@ module internal Gendarme =
 
         match cases
               |> Seq.head
-              |> findFirstUnconditionalBranchTarget with
+              |> findFirstUnconditionalBranchTarget
+          with
         | Some unc when unc = operand -> ()
         | _ -> operand |> targets.Add |> ignore
 
@@ -71,38 +72,39 @@ module internal Gendarme =
              (fun c i ->
                match i.OpCode.FlowControl with
                | FlowControl.Branch ->
-                   c
-                   + (Option.ofObj i.Previous
-                      |> Option.map
-                           (fun (previous: Instruction) ->
-                             do
-                               if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
-                                 match previous.Operand with
-                                 | :? Cil.Instruction as branch ->
-                                     if targets.Contains branch then
-                                       i |> targets.Add |> ignore
-                                 | _ -> ()
+                 c
+                 + (Option.ofObj i.Previous
+                    |> Option.map
+                         (fun (previous: Instruction) ->
+                           do
+                             if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
+                               match previous.Operand with
+                               | :? Cil.Instruction as branch ->
+                                 if targets.Contains branch then
+                                   i |> targets.Add |> ignore
+                               | _ -> ()
 
-                             previous.OpCode.Code)
-                      |> ``detect ternary pattern``)
+                           previous.OpCode.Code)
+                    |> ``detect ternary pattern``)
                | FlowControl.Cond_Branch ->
-                   if i.OpCode = OpCodes.Switch then
-                     accumulateSwitchTargets i targets
-                     c
-                   else
-                     let branch = i.Operand :?> Cil.Instruction
+                 if i.OpCode = OpCodes.Switch then
+                   accumulateSwitchTargets i targets
+                   c
+                 else
+                   let branch = i.Operand :?> Cil.Instruction
 
-                     c
-                     + (Option.ofObj branch.Previous
-                        |> Option.filter
-                             (fun (previous: Instruction) ->
-                               let pp = previous.Previous
-                               // !previous.Previous.Is (Code.Switch)
-                               // where Is(i, code) => i != null && i.OpCode.Code == code
-                               (pp |> isNull || pp.OpCode.Code <> OpCodes.Switch.Code)
-                               && branch |> targets.Contains |> not)
-                        |> Option.map (fun _ -> 1)
-                        |> Option.defaultValue 0)
+                   c
+                   + (Option.ofObj branch.Previous
+                      |> Option.filter
+                           (fun (previous: Instruction) ->
+                             let pp = previous.Previous
+                             // !previous.Previous.Is (Code.Switch)
+                             // where Is(i, code) => i != null && i.OpCode.Code == code
+                             (pp |> isNull
+                              || pp.OpCode.Code <> OpCodes.Switch.Code)
+                             && branch |> targets.Contains |> not)
+                      |> Option.map (fun _ -> 1)
+                      |> Option.defaultValue 0)
                | _ -> c)
              1
 
@@ -114,21 +116,21 @@ module internal Gendarme =
         m.Body.Instructions |> Seq.cast<Cil.Instruction>
 
       match instructions
-            |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Switch) with
+            |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Switch)
+        with
       | None ->
-          instructions
-          |> Seq.fold
-               (fun c i ->
-                 match i.OpCode.FlowControl with
-                 | FlowControl.Cond_Branch -> c + 1
-                 | FlowControl.Branch ->
-                     c
-                     + (Option.ofObj i.Previous
-                        |> Option.map
-                             (fun (previous: Instruction) -> previous.OpCode.Code)
-                        |> I.``detect ternary pattern``)
-                 | _ -> c)
-               1
+        instructions
+        |> Seq.fold
+             (fun c i ->
+               match i.OpCode.FlowControl with
+               | FlowControl.Cond_Branch -> c + 1
+               | FlowControl.Branch ->
+                 c
+                 + (Option.ofObj i.Previous
+                    |> Option.map (fun (previous: Instruction) -> previous.OpCode.Code)
+                    |> I.``detect ternary pattern``)
+               | _ -> c)
+             1
       | _ -> I.switchCyclomaticComplexity instructions
     else
       1

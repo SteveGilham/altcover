@@ -45,10 +45,12 @@ module HandlerCommon =
       window.Title <- "AltCover.Visualizer - " + filename
       // get embed if any & fold it in here
       let embed = GuiCommon.Embed methodPath filename
-      let info = GetSource(filename).MakeEmbedded filename embed
+
+      let info =
+        GetSource(filename).MakeEmbedded filename embed
 
       let lineNumber =
-          Int32.TryParse(line |> Option.get) |> snd
+        Int32.TryParse(line |> Option.get) |> snd
 
       showSource info lineNumber
 
@@ -61,11 +63,7 @@ module HandlerCommon =
   let private (|Select|_|) (pattern: String) offered =
     if
       (fst offered) |> String.IsNullOrWhiteSpace |> not
-      && pattern.StartsWith
-        (
-          fst offered,
-          StringComparison.Ordinal
-        )
+      && pattern.StartsWith(fst offered, StringComparison.Ordinal)
     then
       Some offered
     else

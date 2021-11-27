@@ -2,6 +2,14 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.829 (Habu series release 9)
+* [BUGFIX] Make the static-linked parts of the recorder assembly internal, so only the AltCover instrumentation API is exposed -- removes type duplications from the environment that may confuse run-time assembly creation e.g. by Marten (issue #133)
+* For `CallContext`, add async-aware tracking for all methods returning `Task` or `Task<T>` not just ones with the C# `async` shape.  This includes functions returning the new F#6 `task{}` computation expression. 
+  * **Note** there is a support gap : running this under .net Framework less than v4.6 (i.e. a test machine with a pre-2015-JUL-20 environment) will not work, even though `Task` is a .net 4.0 feature, as the tracking support relies on .net 4.6 `async` features.
+* Emit (a warning)[https://stevegilham.github.io/altcover/AltCover.Engine/AltCover/AltCover.LoggingOptions/Warn-apidoc] if any of the files input to the instrumentations have previously been instrumented, leaving those files untouched (apart from any Recorder assembly, which will still be overwritten).  For `dotnet test` this is an MSBuild warning, for powershell, it is delivered via `Cmdlet.WriteWarning`.
+  * This behaviour is subject to change in future releases
+* Rework of the build process to keep artifacts out of the tracked directories
+
 # 8.2.828 (Habu series release 8)
 * Absorb .net 6 release into build tooling (awaiting a non-preview updated release of (`fake.build`)[https://fake.build/] to be able to upgrade to FSharp.Core 6.x -- still have to target the v5.x library even if the build uses the F#6 compiler)
 * Where the debug symbols used in the instrumentation contain embedded source (e.g. from source generators), represent that within the generated report --

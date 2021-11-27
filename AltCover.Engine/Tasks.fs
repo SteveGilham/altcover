@@ -387,9 +387,9 @@ type RunSettings() =
         match parent.Descendants(xname childName) |> Seq.tryHead with
         | Some child -> child
         | _ ->
-            let extra = XElement(xname childName)
-            parent.Add extra
-            extra
+          let extra = XElement(xname childName)
+          parent.Add extra
+          extra
 
       let here = Assembly.GetExecutingAssembly().Location
 
@@ -469,21 +469,23 @@ type ContingentCopy() =
     //base.Log.LogMessage(MessageImportance.High, sprintf "BuildOutputDirectory %A" self.BuildOutputDirectory)
     //base.Log.LogMessage(MessageImportance.High, sprintf "InstrumentDirectory %A" self.InstrumentDirectory)
 
-    let relativeDir = if self.ProjectDir |> String.IsNullOrWhiteSpace |> not &&
-                         self.ProjectDir  |> Path.IsPathRooted &&
-                         self.RelativeDir |> Path.IsPathRooted
-                      then Visitor.I.getRelativeDirectoryPath self.ProjectDir self.RelativeDir
-                      else self.RelativeDir
+    let relativeDir =
+      if self.ProjectDir
+         |> String.IsNullOrWhiteSpace
+         |> not
+         && self.ProjectDir |> Path.IsPathRooted
+         && self.RelativeDir |> Path.IsPathRooted then
+        Visitor.I.getRelativeDirectoryPath self.ProjectDir self.RelativeDir
+      else
+        self.RelativeDir
 
     // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
 
     if (self.CopyToOutputDirectory = "Always"
         || self.CopyToOutputDirectory = "PreserveNewest")
        && (relativeDir |> Path.IsPathRooted |> not)
-      //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
-       && (relativeDir
-           |> String.IsNullOrWhiteSpace
-           |> not)
+       //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
+       && (relativeDir |> String.IsNullOrWhiteSpace |> not)
        && (self.FileName |> String.IsNullOrWhiteSpace |> not) then
       let toDir =
         Path.Combine(self.InstrumentDirectory, relativeDir)
@@ -497,6 +499,7 @@ type ContingentCopy() =
       if File.Exists from then
         if toDir |> Directory.Exists |> not then
           toDir |> Directory.CreateDirectory |> ignore
+
         File.Copy(from, toFile, true)
 
     true

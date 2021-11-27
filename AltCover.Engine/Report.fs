@@ -25,11 +25,11 @@ module internal Report =
             "profilerVersion".X,
             "AltCover "
             + (System.Diagnostics.FileVersionInfo.GetVersionInfo(
-                System
-                  .Reflection
-                  .Assembly
-                  .GetExecutingAssembly()
-                  .Location
+              System
+                .Reflection
+                .Assembly
+                .GetExecutingAssembly()
+                .Location
             ))
               .FileVersion
           ),
@@ -71,14 +71,22 @@ module internal Report =
       // embed support <altcover.file document="{@fullPath}" embed="{@altcover.embed}" />
       moduleDef.Module
       |> ProgramDatabase.getModuleDocuments
-      |> Seq.iter (fun d -> let key = d.Url
-                                      |> Visitor.sourceLinkMapping
-                            d
-                            |> Metadata.getSource
-                            |> Option.iter (fun s -> let x = XElement("altcover.file".X,
-                                                                      XAttribute("document".X, key),
-                                                                      XAttribute("embed".X, s))
-                                                     element.Add x))
+      |> Seq.iter
+           (fun d ->
+             let key = d.Url |> Visitor.sourceLinkMapping
+
+             d
+             |> Metadata.getSource
+             |> Option.iter
+                  (fun s ->
+                    let x =
+                      XElement(
+                        "altcover.file".X,
+                        XAttribute("document".X, key),
+                        XAttribute("embed".X, s)
+                      )
+
+                    element.Add x))
 
       element :: s
 
@@ -100,30 +108,37 @@ module internal Report =
           XAttribute("fullname".X, Naming.fullMethodName methodDef)
         )
 
-      (head.Elements("altcover.file".X) |> Seq.tryHead
+      (head.Elements("altcover.file".X)
+       |> Seq.tryHead
        |> Option.map (fun x -> x.AddBeforeSelf)
-       |> Option.defaultValue head.Add) [| element |]
+       |> Option.defaultValue head.Add)
+        [| element |]
+
       element :: s
 
     let visitMethodPoint (s: list<XElement>) (head: XElement) (e: StatementEntry) =
       match e.SeqPnt with
       | Some codeSegment ->
-          let element =
-            XElement(
-              "seqpnt".X,
-              XAttribute("visitcount".X, int e.DefaultVisitCount),
-              XAttribute("line".X, codeSegment.StartLine),
-              XAttribute("column".X, codeSegment.StartColumn),
-              XAttribute("endline".X, codeSegment.EndLine),
-              XAttribute("endcolumn".X, codeSegment.EndColumn),
-              XAttribute("excluded".X, toExcluded e.Interesting),
-              XAttribute("document".X, codeSegment.Document.Url |> Visitor.sourceLinkMapping)
+        let element =
+          XElement(
+            "seqpnt".X,
+            XAttribute("visitcount".X, int e.DefaultVisitCount),
+            XAttribute("line".X, codeSegment.StartLine),
+            XAttribute("column".X, codeSegment.StartColumn),
+            XAttribute("endline".X, codeSegment.EndLine),
+            XAttribute("endcolumn".X, codeSegment.EndColumn),
+            XAttribute("excluded".X, toExcluded e.Interesting),
+            XAttribute(
+              "document".X,
+              codeSegment.Document.Url
+              |> Visitor.sourceLinkMapping
             )
+          )
 
-          if head.IsEmpty then
-            head.Add(element)
-          else
-            head.FirstNode.AddBeforeSelf(element)
+        if head.IsEmpty then
+          head.Add(element)
+        else
+          head.FirstNode.AddBeforeSelf(element)
       | None -> ()
 
       s
@@ -139,8 +154,8 @@ module internal Report =
       | Method m -> visitMethod s head m.Method (m.Inspection.IsInstrumented)
       | MethodPoint m -> visitMethodPoint s head m
       | AfterMethod _ ->
-          if head.IsEmpty then head.Remove()
-          tail
+        if head.IsEmpty then head.Remove()
+        tail
       | AfterModule _ -> tail
       | Finish -> s
       | _ -> s

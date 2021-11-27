@@ -37,7 +37,8 @@ let options =
 let rest =
     try
         options.Parse(fsi.CommandLineArgs)
-    with :? OptionException ->
+    with
+    | :? OptionException ->
         Usage "Error - usage is:" options
         new List<String>()
 

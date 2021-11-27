@@ -12,16 +12,17 @@ open Mono.Cecil.Cil
 [<AutoOpen>]
 module internal CecilExtension =
   // workround for old MCS + Cecil 0.11.4
-  let pruneLocalScopes(m:MethodDefinition) =
-    let rec pruneScope (scope:ScopeDebugInformation) =
-      if scope.IsNotNull
-      then
+  let pruneLocalScopes (m: MethodDefinition) =
+    let rec pruneScope (scope: ScopeDebugInformation) =
+      if scope.IsNotNull then
         let scopes = scope.Scopes
-        if scopes.IsNotNull
-        then
+
+        if scopes.IsNotNull then
           scopes
-          |> Seq.filter(fun subScope -> pruneScope subScope
-                                        subScope.Start.IsEndOfMethod)
+          |> Seq.filter
+               (fun subScope ->
+                 pruneScope subScope
+                 subScope.Start.IsEndOfMethod)
           |> Seq.toList
           |> List.iter (scopes.Remove >> ignore)
 
@@ -61,20 +62,20 @@ module internal CecilExtension =
     match instruction.OpCode.OperandType with
     | OperandType.InlineBrTarget
     | OperandType.ShortInlineBrTarget ->
-        if instruction.Operand = (oldValue :> Object) then
-          instruction.Operand <- newValue
+      if instruction.Operand = (oldValue :> Object) then
+        instruction.Operand <- newValue
     // At this point instruction.Operand will be either Operand != oldOperand
     // or instruction.Operand will be of type Instruction[]
     // (in other words - it will be a switch operator's operand)
     | OperandType.InlineSwitch ->
-        let operands =
-          instruction.Operand :?> Instruction array
+      let operands =
+        instruction.Operand :?> Instruction array
 
-        operands
-        |> Array.iteri
-             (fun i x ->
-               if x = oldValue then
-                 Array.set operands i newValue)
+      operands
+      |> Array.iteri
+           (fun i x ->
+             if x = oldValue then
+               Array.set operands i newValue)
     | _ -> ()
 
   let replaceInstructionReferences

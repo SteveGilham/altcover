@@ -19,7 +19,8 @@ module AltCoverXTests =
   let monoSample1path =
     Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 
-  let MonoBaseline = "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
+  let MonoBaseline =
+    "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
   <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
     <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
@@ -66,22 +67,22 @@ module AltCoverXTests =
                   | "startTime"
                   | "measureTime" -> ()
                   | "document" ->
-                      test'
-                        <@ a1
-                          .Value
-                          .Replace("\\", "/")
-                          .EndsWith(a2.Value.Replace("\\", "/")) @>
-                        (a1.Name.ToString()
-                         + " : "
-                         + r.ToString()
-                         + " -> document")
+                    test'
+                      <@ a1
+                        .Value
+                        .Replace("\\", "/")
+                        .EndsWith(a2.Value.Replace("\\", "/")) @>
+                      (a1.Name.ToString()
+                       + " : "
+                       + r.ToString()
+                       + " -> document")
                   | "visitcount" ->
-                      let expected = Maybe zero "0" a2.Value
-                      test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+                    let expected = Maybe zero "0" a2.Value
+                    test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
                   | _ ->
-                      test'
-                        <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
-                        (r.ToString() + " -> " + a1.Name.ToString()))
+                    test'
+                      <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
+                      (r.ToString() + " -> " + a1.Name.ToString()))
 
            RecursiveValidate(r.Elements()) (e.Elements()) (depth + 1) zero)
 
@@ -139,26 +140,29 @@ module AltCoverXTests =
                   | "crapScore"
                   | "hash" -> ()
                   | "fullPath" ->
-                      test'
-                        <@ a1
-                          .Value
-                          .Replace("\\", "/")
-                          .Replace("altcover", "AltCover")
-                          .Replace("Samples/", String.Empty)
-                          .EndsWith(a2.Value
-                                      .Replace("\\", "/")
-                                      .Replace("altcover", "AltCover")) @>
-                        (a1.Name.ToString()
-                         + " : "
-                         + r.ToString()
-                         + " -> document")
+                    test'
+                      <@ a1
+                        .Value
+                        .Replace("\\", "/")
+                        .Replace("altcover", "AltCover")
+                        .Replace("Samples/", String.Empty)
+                        .EndsWith(
+                          a2
+                            .Value
+                            .Replace("\\", "/")
+                            .Replace("altcover", "AltCover")
+                        ) @>
+                      (a1.Name.ToString()
+                       + " : "
+                       + r.ToString()
+                       + " -> document")
                   | "vc" ->
-                      let expected = Maybe zero "0" a2.Value
-                      test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
+                    let expected = Maybe zero "0" a2.Value
+                    test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
                   | _ ->
-                      test'
-                        <@ a1.Value = a2.Value @>
-                        (r.ToString() + " -> " + a1.Name.ToString()))
+                    test'
+                      <@ a1.Value = a2.Value @>
+                      (r.ToString() + " -> " + a1.Name.ToString()))
 
            RecursiveValidateOpenCover
              (r.Elements())
@@ -774,7 +778,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let theFiles =
-        ( Maybe isWindows  ("AltCover.Recorder.g.pdb" :: expected) expected)
+        expected
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       let actualFiles =
@@ -851,9 +855,9 @@ module AltCoverXTests =
     let reset =
       match existingDependencies with
       | Some p ->
-          (p.Value :?> JObject).Properties()
-          |> Seq.map (fun p -> p.Name)
-          |> Set.ofSeq
+        (p.Value :?> JObject).Properties()
+        |> Seq.map (fun p -> p.Name)
+        |> Set.ofSeq
 
     test <@ reset |> Set.contains "AltCover.Recorder.g" @>
 
@@ -1009,7 +1013,7 @@ module AltCoverXTests =
         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
       let expected =
-        (Maybe isWindows ("AltCover.Recorder.g.pdb" :: theFiles) theFiles)
+        theFiles
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       test <@ actual = expected @>
@@ -1046,7 +1050,7 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    use recstream = AltCoverTests2.recorderStream()
+    use recstream = AltCoverTests2.recorderStream ()
 
     use recdef =
       Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
@@ -1071,6 +1075,7 @@ module AltCoverXTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = CoverageParameters.outputDirectories () }
 
       let input =
@@ -1105,7 +1110,7 @@ module AltCoverXTests =
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-    use recstream = AltCoverTests2.recorderStream()
+    use recstream = AltCoverTests2.recorderStream ()
 
     use recdef =
       Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
@@ -1130,6 +1135,7 @@ module AltCoverXTests =
         Node.AfterAssembly
           { Assembly = def
             Inspection = Inspections.Instrument
+            Identity = Hallmark.Build()
             Destinations = CoverageParameters.outputDirectories () }
 
       let input =
@@ -1266,6 +1272,7 @@ module AltCoverXTests =
     if create |> File.Exists |> not then
       try
         CoverageParameters.theReportFormat <- Some ReportFormat.NCover
+
         use from =
           Assembly
             .GetExecutingAssembly()
@@ -1355,6 +1362,7 @@ module AltCoverXTests =
       [ visitor ]
       (Visitor.I.toSeq
         { AssemblyPath = path
+          Identity = Hallmark.Build()
           Destinations = [] })
 
     let expectedText =
@@ -1390,6 +1398,7 @@ module AltCoverXTests =
         [ visitor ]
         (Visitor.I.toSeq
           { AssemblyPath = path
+            Identity = Hallmark.Build()
             Destinations = [] })
 
       let resource =

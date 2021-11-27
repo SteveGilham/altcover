@@ -4,13 +4,10 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>Sample18</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(ProjectDir)..\..\Build\Infrastructure.snk</OtherFlags>
-    <RollForward>Major</RollForward>
     <DebugType>portable</DebugType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
+  
+  <PropertyGroup Condition="'$(TargetFramework)'=='net6.0'">
     <NoWarn>988</NoWarn>
   </PropertyGroup>
 

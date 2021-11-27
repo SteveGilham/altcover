@@ -64,7 +64,13 @@ module CoverageFormats =
       assemblies
       |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
-      |> Seq.map (fun p -> { AssemblyPath = p; Destinations = [] })
+      |> Seq.map
+           (fun p ->
+             { AssemblyPath = p
+               Destinations = []
+               Identity =
+                 { Assembly = String.Empty
+                   Configuration = String.Empty } })
 
     // ensure default state
     AltCover.Main.init ()
@@ -106,7 +112,9 @@ module CoverageFormats =
            |> Seq.iter
                 (fun f ->
                   files.Add(
-                    f.Attribute(XName.Get "fullPath").Value.Replace('\\', '/'),
+                    f
+                      .Attribute(XName.Get "fullPath")
+                      .Value.Replace('\\', '/'),
                     f.Attribute(XName.Get "uid").Value
                   ))
 
@@ -118,8 +126,14 @@ module CoverageFormats =
                   let sc = s.Attribute(XName.Get "column").Value
                   let el = s.Attribute(XName.Get "endline").Value
                   let ec = s.Attribute(XName.Get "endcolumn").Value
-                  let key = s.Attribute(XName.Get "document").Value.Replace('\\', '/')
+
+                  let key =
+                    s
+                      .Attribute(XName.Get "document")
+                      .Value.Replace('\\', '/')
+
                   let uid = files.[key]
+
                   let vc =
                     parse <| s.Attribute(XName.Get "visitcount").Value
 

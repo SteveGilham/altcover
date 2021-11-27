@@ -67,7 +67,8 @@ module internal OpenCover =
   let internal safeMultiply x y =
     try
       Checked.op_Multiply x <| Math.Max(1, y)
-    with :? OverflowException -> Int32.MaxValue
+    with
+    | :? OverflowException -> Int32.MaxValue
 
   module internal I =
     let internal setChain (xbranch: XElement) branch =
@@ -79,11 +80,11 @@ module internal OpenCover =
         match chain with
         | [] -> null
         | l ->
-            String.Join(
-              " ",
-              l
-              |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))
-            )
+          String.Join(
+            " ",
+            l
+            |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))
+          )
       )
 
   let internal reportGenerator () =
@@ -153,24 +154,26 @@ module internal OpenCover =
       element.Add(XElement("ModuleName".X, def.Assembly.Name.Name))
 
       let (files, embeds) =
-          if instrumented then
-            element.Add(XElement("Files".X))
-            def
-            |> ProgramDatabase.getModuleDocuments
-            |> Seq.fold (fun f d -> let key = d.Url
-                                              |> Visitor.sourceLinkMapping
-                                    let map = snd f
+        if instrumented then
+          element.Add(XElement("Files".X))
 
-                                    let embed = d
-                                                |> Metadata.getSource
-                                                |> Option.map (fun s -> Map.add key s map)
-                                                |> Option.defaultValue map
+          def
+          |> ProgramDatabase.getModuleDocuments
+          |> Seq.fold
+               (fun f d ->
+                 let key = d.Url |> Visitor.sourceLinkMapping
+                 let map = snd f
 
-                                    (key
-                                     |> recordFile (fst f)
-                                     |> fst,
-                                     embed)) (s.Files, s.Embeds)
-           else (s.Files, s.Embeds)
+                 let embed =
+                   d
+                   |> Metadata.getSource
+                   |> Option.map (fun s -> Map.add key s map)
+                   |> Option.defaultValue map
+
+                 (key |> recordFile (fst f) |> fst, embed))
+               (s.Files, s.Embeds)
+        else
+          (s.Files, s.Embeds)
 
       let classes = XElement("Classes".X)
       element.Add(classes)
@@ -308,7 +311,10 @@ module internal OpenCover =
 
     let visitCodeSegment (s: OpenCoverContext) (codeSegment: SeqPnt) i vc =
       let fileset, ref =
-        recordFile s.Files (codeSegment.Document.Url |> Visitor.sourceLinkMapping)
+        recordFile
+          s.Files
+          (codeSegment.Document.Url
+           |> Visitor.sourceLinkMapping)
 
       let element = methodPointElement codeSegment ref i vc
       let head = s.Stack |> Seq.head
@@ -336,7 +342,7 @@ module internal OpenCover =
 
       match (e.Interesting, e.SeqPnt, s.Excluded) with
       | (true, Some codeSegment, Nothing) ->
-          visitCodeSegment s codeSegment e.Uid e.DefaultVisitCount
+        visitCodeSegment s codeSegment e.Uid e.DefaultVisitCount
       | _ -> s
 
     let visitGoTo s branch =
@@ -427,8 +433,8 @@ module internal OpenCover =
                (fun (np0, bec, sq: XElement) x ->
                  match x.Name.LocalName with
                  | "SequencePoint" ->
-                     sq.SetAttributeValue("bec".X, bec)
-                     (safeMultiply np0 bec, 0, x)
+                   sq.SetAttributeValue("bec".X, bec)
+                   (safeMultiply np0 bec, 0, x)
                  | _ -> (np0, bec + 1, sq))
                (1, 0, sp.Head)
 
@@ -651,9 +657,11 @@ module internal OpenCover =
                         XAttribute("uid".X, v),
                         XAttribute("fullPath".X, k)
                       )
+
                     f.Add(file)
-                    if s.Embeds.ContainsKey k
-                    then file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
+
+                    if s.Embeds.ContainsKey k then
+                      file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
 
       { s with
           Stack = tail
