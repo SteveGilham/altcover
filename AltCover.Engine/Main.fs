@@ -437,27 +437,21 @@ module internal Main =
       else
         Some a
 
-    let internal prepareTargetFiles
+    let internal destinationPath (rootInfo:DirectoryInfo) targetPath filepath =
+      let name = filepath |> Path.GetFileName
+      let dirname = filepath |> Path.GetDirectoryName
+      let reldir =
+        Visitor.I.getRelativeDirectoryPath rootInfo.FullName dirname
+      Path.Combine(targetPath, reldir, name)
+      |> canonicalPath
+
+    let internal copyAllOut
       (inputInfos: DirectoryInfo seq)
       (outputInfos: DirectoryInfo seq)
-      (instrumentFromInfos: DirectoryInfo seq)
-      (instrumentToPaths: string seq)
       =
-      // Copy all the files into the target directory
-      let mapping = Dictionary<string, string>()
-
-      Seq.zip instrumentFromInfos instrumentToPaths
-      |> Seq.map
-           (fun (x, y) ->
-             let f = x.FullName // trim separator
-             (Path.Combine(f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
-      |> Seq.iter mapping.Add
-
       Seq.zip inputInfos outputInfos
       |> Seq.iter
            (fun (inputInfo, outputInfo) ->
-             // recurse here
-
              // all files in/under the input but not in/under any output
              let files =
                inputInfo.GetFiles("*", SearchOption.AllDirectories)
@@ -473,13 +467,7 @@ module internal Main =
                |> Seq.fold
                     (fun (d: Dictionary<string, string>) info ->
                       let fullName = info.FullName
-                      let dirname = info.DirectoryName
-
-                      let reldir =
-                        Visitor.I.getRelativeDirectoryPath inputInfo.FullName dirname
-
-                      let copy =
-                        Path.Combine(outputInfo.FullName, reldir, info.Name)
+                      let copy = destinationPath inputInfo outputInfo.FullName fullName
 
                       copy
                       |> Path.GetDirectoryName
@@ -508,12 +496,47 @@ module internal Main =
              filemap
              |> Seq.iter (fun kvp -> File.Copy(kvp.Key, kvp.Value, true)))
 
-      // Track the symbol-bearing assemblies
+    let internal prepareTargetFiles
+      (inputInfos: DirectoryInfo seq)
+      (outputInfos: DirectoryInfo seq)
+      (instrumentFromInfos: DirectoryInfo seq)
+      (instrumentToPaths: string seq)
+      =
+      // For in-place, copy all the files into the target directory, regardless
+      if CoverageParameters.inplace.Value then
+        copyAllOut inputInfos outputInfos
+
+      // Populate the "instrument to" collection
+      // Files are
+      // * Assemblies to instrument and their symbols
+      // * Assemblies not instrumented and any associated symbols
+      // * All the rest
+      // The same file by content may appear in many places
+
+      let filesToProcess = // from,to unstructured pairs
+        Seq.zip instrumentFromInfos instrumentToPaths
+        |> Seq.collect
+             (fun (sourceInfo, toPath) ->
+               sourceInfo.GetFiles("*", SearchOption.AllDirectories)
+               |> Seq.filter
+                    (fun f ->
+                      CoverageParameters.inplace.Value ||
+                      instrumentToPaths
+                      |> Seq.exists (fun t -> isInDirectory f.FullName t)
+                      |> not)
+               |> Seq.map (fun f -> (f, destinationPath sourceInfo toPath f.FullName)))
+        |> Seq.toList
+
       let assemblies =
         instrumentFromInfos
         |> Seq.map
              (fun sourceInfo ->
-               sourceInfo.GetFiles()
+               sourceInfo.GetFiles("*", SearchOption.AllDirectories)
+               |> Seq.filter
+                    (fun f ->
+                      instrumentToPaths
+                      |> Seq.exists (fun t -> isInDirectory f.FullName t)
+                      |> not)
                |> Seq.fold
                     (fun (accumulator: AssemblyInfo list) info ->
                       let fullName = info.FullName
