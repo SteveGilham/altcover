@@ -5,32 +5,15 @@
     <RootNamespace>AltCover.FontSupport</RootNamespace>
     <AssemblyName>AltCover.FontSupport</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(SolutionDir)\Build\Infrastructure.snk</AssemblyOriginatorKeyFile>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <NoWarn>1701;1702;8002</NoWarn>
     <WarningsAsErrors>NU1605</WarningsAsErrors>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DeterministicSourcePaths>false</DeterministicSourcePaths>
-    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DeterministicSourcePaths>true</DeterministicSourcePaths>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DocumentationFile />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
   </PropertyGroup>
 

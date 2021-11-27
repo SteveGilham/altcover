@@ -47,6 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\coverletArgs.runsettings = Build\coverletArgs.runsettings
 		Build\coverletArgs.sample.runsettings = Build\coverletArgs.sample.runsettings
 		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		.config\dotnet-tools.json = .config\dotnet-tools.json
 		Build\dump-uncovered.ps1 = Build\dump-uncovered.ps1
 		Build\get-token.fsx = Build\get-token.fsx
@@ -56,6 +57,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\merge-coverage.ps1 = Build\merge-coverage.ps1
 		Build\msbuildtest.proj = Build\msbuildtest.proj
 		Build\NuPacker.xml = Build\NuPacker.xml
+		OutputBuildProps.props = OutputBuildProps.props
+		OutputBuildTargets.props = OutputBuildTargets.props
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\prepareDocumentation.ps1 = Build\prepareDocumentation.ps1
@@ -111,6 +114,8 @@ EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Monitor.Tests", "AltCover.Monitor.Tests\AltCover.Monitor.Tests.fsproj", "{CF022111-D220-4514-83B6-5CE46E4B83A7}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample27", "Samples\Sample27\Sample27.fsproj", "{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Sample30", "Samples\Sample30\Sample30.fsproj", "{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -300,6 +305,14 @@ Global
 		{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10FB27A2-9C4D-474D-A3B9-1C554038AA7E}.Release|x86.ActiveCfg = Release|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Debug|x86.Build.0 = Debug|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Release|x86.ActiveCfg = Release|Any CPU
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -324,6 +337,7 @@ Global
 		{C5548F5A-AED5-45C5-8E27-71E38647B87D} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 		{B1A78802-5C8E-4C3C-AA66-1D2EB72BFE07} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 		{10FB27A2-9C4D-474D-A3B9-1C554038AA7E} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
+		{B42E9FBA-BDE8-4B15-B7E7-DDF237CA7881} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C31111CF-68A2-403F-9B06-9625FCBD48E3}

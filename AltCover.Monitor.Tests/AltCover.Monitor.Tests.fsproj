@@ -9,12 +9,8 @@
     <OutputType Condition="'$(TargetFramework)' == 'net472'">Library</OutputType>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net472'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
     <DefineConstants Condition="'$(APPVEYOR)' == ''">DEBUG;TRACE;CODE_ANALYSIS;Monitor</DefineConstants>
     <DefineConstants Condition="'$(APPVEYOR)' != ''">DEBUG;TRACE;CODE_ANALYSIS;Monitor;BUILD_ON_APPVEYOR</DefineConstants>
-    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +24,7 @@
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net472'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.12" Condition="'$(TargetFramework)' != 'net472'" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.12.13" Condition="'$(TargetFramework)' != 'net472'" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

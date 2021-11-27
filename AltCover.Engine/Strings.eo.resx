@@ -453,4 +453,7 @@ Se la opcio ne ĉeestas, tiam la defaŭlta estas 'OC'.</value>
   <data name="q" xml:space="preserve">
     <value>Laŭvola, multnombra: Kvieta reĝimo - unufoje por malŝalti informajn mesaĝojn, dufoje por malŝalti ankaŭ avertojn, tri (aŭ pli) fojojn por malŝalti ĉiujn mesaĝojn.</value>
   </data>
+  <data name="alreadyInstrumented" xml:space="preserve">
+    <value>Preterpasi {0} ĉar ĝi jam estis instrumentita.</value>
+  </data>
 </root>

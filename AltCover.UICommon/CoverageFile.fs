@@ -35,7 +35,8 @@ module Transformer =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
   let internal defaultHelper (_: XDocument) (document: XDocument) = document
 
@@ -150,8 +151,11 @@ module Transformer =
 
   let private processOpenCover
     (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
-    (schemas:XmlSchemaSet) (document:XDocument)
-    (ocreader:XmlReader) (ncreader:XmlReader) : Either<Exception, XDocument> =
+    (schemas: XmlSchemaSet)
+    (document: XDocument)
+    (ocreader: XmlReader)
+    (ncreader: XmlReader)
+    : Either<Exception, XDocument> =
     schemas.Add(String.Empty, ocreader) |> ignore
     document.Validate(schemas, null)
 
@@ -168,16 +172,15 @@ module Transformer =
     let lineOnly =
       fixedup.Descendants(XName.Get "seqpnt")
       |> Seq.forall
-            (fun s ->
-              let columns = (s.Attribute(XName.Get "column").Value,
-                            s.Attribute(XName.Get "endcolumn").Value)
-              s.Attribute(XName.Get "line").Value = s
-                .Attribute(
-                  XName.Get "endline"
-                )
-                .Value
-              && (columns = ("1", "2") || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
-                  columns = ("0", "0")))  // For OpenCover on C++/CLI
+           (fun s ->
+             let columns =
+               (s.Attribute(XName.Get "column").Value,
+                s.Attribute(XName.Get "endcolumn").Value)
+
+             s.Attribute(XName.Get "line").Value = s.Attribute(XName.Get "endline").Value
+             && (columns = ("1", "2")
+                 || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
+                 columns = ("0", "0"))) // For OpenCover on C++/CLI
 
     if lineOnly then
       fixedup.Root.Add(XAttribute(XName.Get "lineonly", "true"))
@@ -186,8 +189,10 @@ module Transformer =
 
   let private processCobertura
     (helper: XmlCoverageType -> XDocument -> XDocument -> XDocument)
-    (schemas:XmlSchemaSet) (document:XDocument)
-    (ncreader:XmlReader) : Either<Exception, XDocument> =
+    (schemas: XmlSchemaSet)
+    (document: XDocument)
+    (ncreader: XmlReader)
+    : Either<Exception, XDocument> =
     use cr =
       new StreamReader(
         Assembly
@@ -215,30 +220,34 @@ module Transformer =
     =
     let schemas = XmlSchemaSet()
 
-    use sr1 = resourceStream "AltCover.UICommon.OpenCover.xsd"
+    use sr1 =
+      resourceStream "AltCover.UICommon.OpenCover.xsd"
+
     use ocreader = XmlReader.Create(sr1)
 
-    use sr2 = resourceStream "AltCover.UICommon.NCoverEmbedded.xsd"
+    use sr2 =
+      resourceStream "AltCover.UICommon.NCoverEmbedded.xsd"
+
     use ncreader = XmlReader.Create(sr2)
 
     try
       // identify coverage type
       match document.Root.Name.LocalName with
       | x when x = "CoverageSession" ->
-          // Assume OpenCover
-          processOpenCover helper schemas document ocreader ncreader
+        // Assume OpenCover
+        processOpenCover helper schemas document ocreader ncreader
       | _ ->
-          let root = document.Root
+        let root = document.Root
 
-          if root.Name.LocalName = "coverage"
-             && root.Attribute(XName.Get "line-rate").IsNotNull then
-            // Cobertura
-            processCobertura helper schemas document ocreader
-          else
-            // Assume NCover
-            schemas.Add(String.Empty, ncreader) |> ignore
-            document.Validate(schemas, null)
-            Right document
+        if root.Name.LocalName = "coverage"
+           && root.Attribute(XName.Get "line-rate").IsNotNull then
+          // Cobertura
+          processCobertura helper schemas document ocreader
+        else
+          // Assume NCover
+          schemas.Add(String.Empty, ncreader) |> ignore
+          document.Validate(schemas, null)
+          Right document
     with
     | :? ArgumentNullException as x -> Left(x :> Exception)
     | :? NullReferenceException as x -> Left(x :> Exception)
@@ -287,9 +296,9 @@ type CoverageFile =
       let rawDocument =
         match filetype with
         | Json ->
-            name
-            |> NativeJson.fileToJson
-            |> NativeJson.jsonToXml
+          name
+          |> NativeJson.fileToJson
+          |> NativeJson.jsonToXml
         | LCov -> Lcov.toXml name
         | _ -> XDocument.Load name // let invalid files throw XML parse errors
 
@@ -301,7 +310,7 @@ type CoverageFile =
     | :? XmlException as e -> Left { Fault = e; File = file }
     | :? Manatee.Json.JsonSyntaxException as e -> Left { Fault = e; File = file }
     | :? Manatee.Json.JsonValueIncorrectTypeException as e ->
-        Left { Fault = e; File = file }
+      Left { Fault = e; File = file }
     | :? Lcov.LcovParseException as e -> Left { Fault = e; File = file }
     | :? IOException as e -> Left { Fault = e; File = file }
 

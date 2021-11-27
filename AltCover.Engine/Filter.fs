@@ -64,23 +64,23 @@ module internal Filter =
     let rec internal matchAttribute (name: Regex) f (nameProvider: Object) =
       (match nameProvider with
        | :? MethodDefinition as m ->
-           if m.IsGetter || m.IsSetter then
-             let owner =
-               m.DeclaringType.Properties
-               |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
-               |> Seq.head
+         if m.IsGetter || m.IsSetter then
+           let owner =
+             m.DeclaringType.Properties
+             |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
+             |> Seq.head
 
-             matchAttribute name f owner
-           else
-             false
+           matchAttribute name f owner
+         else
+           false
        | _ -> false)
       || (match nameProvider with
           | :? ICustomAttributeProvider as attributeProvider ->
-              attributeProvider.HasCustomAttributes
-              && attributeProvider.CustomAttributes
-                 |> Seq.cast<CustomAttribute>
-                 |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
-                 |> f
+            attributeProvider.HasCustomAttributes
+            && attributeProvider.CustomAttributes
+               |> Seq.cast<CustomAttribute>
+               |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
+               |> f
           | _ -> false)
 
     let internal matchItem<'a>
@@ -126,7 +126,8 @@ module internal Filter =
                  ) // (x.ConstructorArguments |> Seq.head).Value
 
                match (arg1 :?> SourceConstructFlags)
-                     &&& SourceConstructFlags.KindMask with
+                     &&& SourceConstructFlags.KindMask
+                 with
                | SourceConstructFlags.SumType
                | SourceConstructFlags.RecordType -> true
                | _ -> false)
@@ -136,28 +137,28 @@ module internal Filter =
         match m.IsGetter with
         | false -> false
         | _ ->
-            let owner =
-              m.DeclaringType.Properties
-              |> Seq.filter (fun x -> x.GetMethod = m)
-              |> Seq.head
+          let owner =
+            m.DeclaringType.Properties
+            |> Seq.filter (fun x -> x.GetMethod = m)
+            |> Seq.head
 
-            if owner.HasCustomAttributes then
-              owner.CustomAttributes
-              |> Seq.filter
-                   (fun x ->
-                     x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
-              |> Seq.exists
-                   (fun x ->
-                     let arg1 =
-                       Enum.ToObject(
-                         typeof<SourceConstructFlags>,
-                         x.GetBlob() |> Seq.skip 2 |> Seq.head
-                       ) // (x.ConstructorArguments |> Seq.head).Value
+          if owner.HasCustomAttributes then
+            owner.CustomAttributes
+            |> Seq.filter
+                 (fun x ->
+                   x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
+            |> Seq.exists
+                 (fun x ->
+                   let arg1 =
+                     Enum.ToObject(
+                       typeof<SourceConstructFlags>,
+                       x.GetBlob() |> Seq.skip 2 |> Seq.head
+                     ) // (x.ConstructorArguments |> Seq.head).Value
 
-                     (arg1 :?> SourceConstructFlags)
-                     &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
-            else
-              false
+                   (arg1 :?> SourceConstructFlags)
+                   &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
+          else
+            false
 
       mappings
       && (fieldGetter
@@ -205,43 +206,45 @@ module internal Filter =
     match filter.Scope with
     | File -> I.matchItem<string> filter.Regex f nameProvider Path.GetFileName
     | Assembly ->
-        I.matchItem<AssemblyDefinition>
-          filter.Regex
-          f
-          nameProvider
-          (fun assembly -> assembly.Name.Name)
+      I.matchItem<AssemblyDefinition>
+        filter.Regex
+        f
+        nameProvider
+        (fun assembly -> assembly.Name.Name)
     | Module ->
-        I.matchItem<ModuleDefinition>
-          filter.Regex
-          f
-          nameProvider
-          (fun ``module`` -> ``module``.Assembly.Name.Name)
+      I.matchItem<ModuleDefinition>
+        filter.Regex
+        f
+        nameProvider
+        (fun ``module`` -> ``module``.Assembly.Name.Name)
     | Type ->
-        I.matchItem<TypeDefinition>
-          filter.Regex
-          f
-          nameProvider
-          (fun typeDef -> typeDef.FullName)
+      I.matchItem<TypeDefinition>
+        filter.Regex
+        f
+        nameProvider
+        (fun typeDef -> typeDef.FullName)
     | Method ->
-        I.matchItem<MethodDefinition>
-          filter.Regex
-          f
-          nameProvider
-          // Interfaces w/implementation have no base type
-          (fun methodDef ->
-            let decltype =
-              methodDef.DeclaringType.BaseType
-              |> Option.ofObj
-              |> Option.map (fun x -> x.Name)
-              |> Option.defaultValue String.Empty
+      I.matchItem<MethodDefinition>
+        filter.Regex
+        f
+        nameProvider
+        // Interfaces w/implementation have no base type
+        (fun methodDef ->
+          let decltype =
+            methodDef.DeclaringType.BaseType
+            |> Option.ofObj
+            |> Option.map (fun x -> x.Name)
+            |> Option.defaultValue String.Empty
 
-            let name = methodDef.Name
+          let name = methodDef.Name
 
-            if decltype.StartsWith("FSharpFunc", StringComparison.Ordinal)
-               || decltype = "FSharpTypeFunc" then
-              methodDef.DeclaringType.Name + "." + name
-            else
-              name)
+          if
+            decltype.StartsWith("FSharpFunc", StringComparison.Ordinal)
+            || decltype = "FSharpTypeFunc"
+          then
+            methodDef.DeclaringType.Name + "." + name
+          else
+            name)
     | Attribute -> I.matchAttribute filter.Regex f nameProvider
     | Path -> I.matchItem<string> filter.Regex f nameProvider canonicalPath
 

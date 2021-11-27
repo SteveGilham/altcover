@@ -41,12 +41,34 @@ module AltCoverTests2 =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceNames()
-        |> Seq.find (fun n -> n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+      |> Seq.find
+           (fun n -> n.EndsWith("AltCover.Recorder.net20.dll", StringComparison.Ordinal))
+
     Assembly
       .GetExecutingAssembly()
       .GetManifestResourceStream(recorder)
 
   // Instrument.I.fs
+#if IDEMPOTENT_INSTRUMENT
+  [<Test>]
+  let ShouldGetAbandonedMutex () =
+    use testMutex = new System.Threading.Mutex()
+    let abandon () = Instrument.I.safeWait testMutex
+
+    let t =
+      Threading.Thread(Threading.ThreadStart(abandon))
+
+    t.Start()
+    t.Join()
+
+    try
+      abandon ()
+    finally
+      testMutex.ReleaseMutex()
+
+    test <@ "Didn't lock!" |> String.IsNullOrWhiteSpace |> not @>
+#endif
+
   [<Test>]
   let ShouldBeAbleToGetTheVisitReportMethod () =
     use recstream = recorderStream ()
@@ -146,7 +168,7 @@ module AltCoverTests2 =
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-      provideKeyPair() |> CoverageParameters.add
+      provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownKey def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -162,7 +184,7 @@ module AltCoverTests2 =
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-      provideKeyPair() |> CoverageParameters.add
+      provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -205,7 +227,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
-      provideKeyPair() |> CoverageParameters.add
+      provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownKey def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -238,7 +260,7 @@ module AltCoverTests2 =
       use def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
-      provideKeyPair() |> CoverageParameters.add
+      provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isSome (Instrument.I.knownToken def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -256,7 +278,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       AltCover.Instrument.I.updateStrongNaming def None
-      provideKeyPair() |> CoverageParameters.add
+      provideKeyPair () |> CoverageParameters.add
       Assert.That(Option.isNone (Instrument.I.knownToken def.Name))
     finally
       CoverageParameters.keys.Clear()
@@ -265,7 +287,7 @@ module AltCoverTests2 =
   let ForeignTokenIsNotMatchedInIndex () =
     try
       CoverageParameters.keys.Clear()
-      provideKeyPair() |> CoverageParameters.add
+      provideKeyPair () |> CoverageParameters.add
 
       let path =
         typeof<System.IO.FileAccess>.Assembly.Location
@@ -477,7 +499,8 @@ module AltCoverTests2 =
       let path =
         Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
-      let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
+      let prepared =
+        Instrument.I.prepareAssembly (File.OpenRead path)
 
       use raw =
         Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -495,6 +518,14 @@ module AltCoverTests2 =
         )
 
       Assert.That(token', Is.EqualTo("4ebffcaabf10ce6a"))
+
+      Assert.True(
+        prepared.CustomAttributes
+        |> Seq.exists
+             (fun a ->
+               a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute"),
+        "Hallmark missing"
+      )
 
       let before =
         raw.MainModule.GetTypes()
@@ -666,7 +697,8 @@ module AltCoverTests2 =
           "Unexpected sampling"
         )
 
-        let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
+        let prepared =
+          Instrument.I.prepareAssembly (File.OpenRead path)
 
         let traces =
           System.Collections.Generic.List<string>()
@@ -693,19 +725,6 @@ module AltCoverTests2 =
 
         let expectedSymbols =
           Maybe ("Mono.Runtime" |> Type.GetType).IsNotNull ".dll.mdb" ".pdb"
-
-        let isSymbols =
-#if NET472
-          System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#else
-          false // recorder symbols not read here
-#endif
-        Assert.That(
-          (isSymbols |> not)
-          || // HACK HACK HACK
-          File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-          "unexpected symbols"
-        )
 
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
@@ -735,7 +754,7 @@ module AltCoverTests2 =
 
         try
           let proxyObject = alc.CreateObject()
-          proxyObject.InstantiateObject(outputdll, "Sample3.Class3+Class4", [||])
+          proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class3+Class4", [||])
 
           let report =
             proxyObject
@@ -797,6 +816,71 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
   [<Test>]
+  let ShouldRescopeMonoMethodOK () =
+    // Workround for Cecil 11.4
+    let path = // Use a known good (bad) build rather than a local new one each time
+      // Path.Combine(SolutionRoot.location, "_Mono/Sample31/Sample31.dll")
+      Path.Combine(SolutionRoot.location, "AltCover.Tests/Sample31.dll")
+
+    use ``module`` =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly path
+
+    ProgramDatabase.readSymbols ``module``
+
+    let pathGetterDef =
+      ``module``.MainModule.GetTypes()
+      |> Seq.collect (fun t -> t.Methods)
+      |> Seq.find (fun m -> m.Name.Equals("get_Defer"))
+
+    let body = pathGetterDef.Body
+    let worker = body.GetILProcessor()
+    let initialBody = body.Instructions |> Seq.toList
+    let head = initialBody |> Seq.head
+    let opcode = worker.Create(OpCodes.Ldc_I4_1)
+    worker.InsertBefore(head, opcode)
+
+    Assert.That(
+      pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod,
+      Is.False,
+      "Scope.Start.IsEndOfMethod"
+    )
+
+    Assert.True(
+      pathGetterDef.DebugInformation.Scope.Scopes
+      |> Seq.exists (fun subscope -> subscope.Start.IsEndOfMethod),
+      "subscope.Start.IsEndOfMethod"
+    ) // this one needs the home-built Sample31
+
+    // big test -- if we can write w/o crashing when the previous asserts are removed
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+
+    let writer = WriterParameters()
+    writer.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider()
+    writer.WriteSymbols <- true
+
+    use sink =
+      File.Open(outputdll, FileMode.Create, FileAccess.ReadWrite)
+
+    Assert.Throws<NotSupportedException>(fun () -> ``module``.Write(sink, writer))
+    |> ignore
+
+    pruneLocalScopes pathGetterDef
+    ``module``.Write(sink, writer)
+
+    Assert.That(
+      pathGetterDef.DebugInformation.Scope.Start.IsEndOfMethod,
+      Is.False,
+      "pruned Scope.Start.IsEndOfMethod"
+    )
+
+    Assert.True(
+      pathGetterDef.DebugInformation.Scope.Scopes
+      |> Seq.isEmpty,
+      "pruned subscope.Start.IsEndOfMethod"
+    )
+
+  [<Test>]
   let ShouldWriteMonoAssemblyOK () =
     try
       CoverageParameters.keys.Clear()
@@ -824,7 +908,10 @@ module AltCoverTests2 =
 
       try
         CoverageParameters.theReportPath <- Some unique
-        let prepared = Instrument.I.prepareAssembly (File.OpenRead path)
+
+        let prepared =
+          Instrument.I.prepareAssembly (File.OpenRead path)
+
         Instrument.I.writeAssembly prepared outputdll
         // TODO -- see Instrument.I.WriteAssembly       Assert.That (File.Exists (outputdll + ".mdb"))
         use raw =
@@ -846,7 +933,7 @@ module AltCoverTests2 =
 
         try
           let proxyObject = alc.CreateObject()
-          proxyObject.InstantiateObject(outputdll, "Sample3.Class3+Class4", [||])
+          proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class3+Class4", [||])
 
           let report =
             proxyObject
@@ -886,13 +973,16 @@ module AltCoverTests2 =
           Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
         ProgramDatabase.readSymbols def
-        let clazz = def.MainModule.GetType("Sample3.Class1")
+
+        let clazz =
+          def.MainModule.GetType("AltCover.Sample3.Class1")
 
         let func =
           clazz.GetMethods()
           |> Seq.find (fun x -> x.Name = "get_Property")
 
-        let clazz' = def.MainModule.GetType("Sample3.Class3")
+        let clazz' =
+          def.MainModule.GetType("AltCover.Sample3.Class3")
 
         let func' =
           clazz'.GetMethods()
@@ -911,7 +1001,7 @@ module AltCoverTests2 =
         Instrument.I.writeAssembly def outputdll
 
         let expectedSymbols =
-          Maybe ("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
+          Maybe("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
 
         let isSymbols =
 #if !NET472
@@ -923,8 +1013,8 @@ module AltCoverTests2 =
           (isSymbols |> not)
           || // HACK HACK HACK
           File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-            "bad symbols"
-          )
+          "bad symbols"
+        )
 
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
@@ -946,7 +1036,7 @@ module AltCoverTests2 =
 
         try
           let proxyObject = alc.CreateObject()
-          proxyObject.InstantiateObject(outputdll, "Sample3.Class1", [||])
+          proxyObject.InstantiateObject(outputdll, "AltCover.Sample3.Class1", [||])
 
           let setting =
             proxyObject.InvokeMethod("set_Property", [| 17 |])
@@ -965,7 +1055,7 @@ module AltCoverTests2 =
             System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
           let proxyObject' = alc.CreateObject()
-          proxyObject'.InstantiateObject(outputdll, "Sample3.Class3", [||])
+          proxyObject'.InstantiateObject(outputdll, "AltCover.Sample3.Class3", [||])
 
           let log =
             proxyObject'.InvokeMethod("get_Visits", [||]) :?> seq<Tuple<string, int>>
@@ -1610,12 +1700,7 @@ module AltCoverTests2 =
       AltCover.Instrument.I.recordingMethod rdef
 
     let target =
-      def
-        .MainModule
-        .GetType(
-          "Sample27.Tests"
-        )
-        .Methods
+      def.MainModule.GetType("Sample27.Tests").Methods
       |> Seq.find (fun m -> m.Name = "AddAsync")
 
     let raw = AltCover.InstrumentContext.Build([])
@@ -1656,6 +1741,79 @@ module AltCoverTests2 =
     Assert.That( // Adding the return value, too
       target.Body.Instructions.Count,
       Is.EqualTo(countBefore + 9 + 5)
+    )
+
+    Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+    let nopsAfter =
+      target.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+      |> Seq.length
+    // add 2 extra nop now and replace rather than remove .tails
+    Assert.That(nopsAfter, Is.EqualTo(nopsBefore + tailsBefore + 2))
+
+  [<Test>]
+  let ShouldBeAbleToTrackAnFSTaskMethod () =
+    use recstream = recorderStream ()
+
+    let sample30 =
+      Path.Combine(
+        Assembly.GetExecutingAssembly().Location
+        |> Path.GetDirectoryName,
+        "Sample30.dll"
+      )
+
+    use def =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly sample30
+
+    use rdef =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly recstream
+
+    let recorder =
+      AltCover.Instrument.I.recordingMethod rdef
+
+    let target =
+      def.MainModule.GetType("Sample30.Tests").Methods
+      |> Seq.find (fun m -> m.Name = "AddTaskReturnsTheSumOfXAndY")
+
+    let raw = AltCover.InstrumentContext.Build([])
+
+    let state =
+      { raw with
+          RecordingMethodRef =
+            { raw.RecordingMethodRef with
+                Visit = null
+                Push = recorder.[1]
+                Pop = recorder.[2] } }
+
+    let countBefore = target.Body.Instructions.Count
+
+    let tailsBefore =
+      target.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+      |> Seq.length
+
+    let nopsBefore =
+      target.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = OpCodes.Nop)
+      |> Seq.length
+
+    let handlersBefore = target.Body.ExceptionHandlers.Count
+
+    let state2 =
+      AltCover.Instrument.I.doTrack
+        state
+        { Method = target
+          VisibleMethod = target
+          Inspection = Inspections.Track
+          Track = Some(42, "hello")
+          DefaultVisitCount = Exemption.None }
+
+    Assert.That(state2.AsyncSupport |> Option.isSome)
+
+    Assert.That( // Adding the return value, too
+      target.Body.Instructions.Count,
+      Is.EqualTo(countBefore + 9 + 6)
     )
 
     Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
@@ -1869,9 +2027,9 @@ module AltCoverTests2 =
 
       match branches with
       | [ b1; b2 ] ->
-          Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Switch)
-          Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Switch)
-          Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Switch)
+        Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Switch)
+        Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
 
       let raw = AltCover.InstrumentContext.Build([])
 
@@ -1968,10 +2126,10 @@ module AltCoverTests2 =
 
       match branches with
       | [ b1; b2 ] ->
-          //Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
-          //Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+        //Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+        //Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
 
-          Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
 
       let raw = AltCover.InstrumentContext.Build([])
 
@@ -2553,6 +2711,7 @@ module AltCoverTests2 =
       Node.Assembly
         { Assembly = def
           Inspection = Inspections.Ignore
+          Identity = Hallmark.Build()
           Destinations = [] }
 
     let result =
@@ -2562,6 +2721,10 @@ module AltCoverTests2 =
 
   [<Test>]
   let IncludedAssemblyRefsAreUpdated () =
+    // do trivial coverage here where the type's absence is felt
+    let dummy =
+      AltCover.Recorder.InstrumentationAttribute()
+
     let path =
       Path.Combine(AltCoverTests.dir, "Sample2.dll")
 
@@ -2593,6 +2756,7 @@ module AltCoverTests2 =
       Node.Assembly
         { Assembly = def
           Inspection = Inspections.Instrument
+          Identity = Hallmark.Build()
           Destinations = [] }
 
     let result =
@@ -3078,12 +3242,12 @@ module AltCoverTests2 =
     use reader = new StreamReader(stream)
     let expected = reader.ReadToEnd()
 
-    let recorderVersion() =
+    let recorderVersion () =
       use stream = recorderStream ()
       use def = AssemblyDefinition.ReadAssembly stream
       def.Name.Version.ToString()
 
-    let version = recorderVersion()
+    let version = recorderVersion ()
 
     let result =
       expected
@@ -3116,10 +3280,12 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        ignore (Instrument.I.instrumentationVisitorWrapper
-                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
-                  state
-                  AfterType))
+        ignore (
+          Instrument.I.instrumentationVisitorWrapper
+            (fun _ _ -> InvalidOperationException("Bang") |> raise)
+            state
+            AfterType
+        ))
     |> ignore
 
     let output = Path.GetTempFileName()
@@ -3146,7 +3312,7 @@ module AltCoverTests2 =
 
     let md =
       prepared.MainModule.Types
-      |> Seq.filter (fun t -> t.FullName = "Sample3.Class3")
+      |> Seq.filter (fun t -> t.FullName = "AltCover.Sample3.Class3")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.filter (fun m -> m.Name = "Log")
       |> Seq.head
@@ -3160,10 +3326,12 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        ignore (Instrument.I.instrumentationVisitorWrapper
-                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
-                  state
-                  AfterType))
+        ignore (
+          Instrument.I.instrumentationVisitorWrapper
+            (fun _ _ -> InvalidOperationException("Bang") |> raise)
+            state
+            AfterType
+        ))
     |> ignore
 
     Assert.That(support.TaskAssembly.FullName, Is.Not.Null) // nothing to raise an object disposed exception with
@@ -3192,10 +3360,12 @@ module AltCoverTests2 =
     // Would be NullreferenceException if we tried it
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        ignore (Instrument.I.instrumentationVisitorWrapper
-                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
-                  state
-                  AfterType))
+        ignore (
+          Instrument.I.instrumentationVisitorWrapper
+            (fun _ _ -> InvalidOperationException("Bang") |> raise)
+            state
+            AfterType
+        ))
     |> ignore
 
   [<Test>]
@@ -3212,10 +3382,12 @@ module AltCoverTests2 =
 
     Assert.Throws<InvalidOperationException>
       (fun () ->
-        ignore (Instrument.I.instrumentationVisitorWrapper
-                  (fun _ _ -> InvalidOperationException("Bang") |> raise)
-                  state
-                  Finish))
+        ignore (
+          Instrument.I.instrumentationVisitorWrapper
+            (fun _ _ -> InvalidOperationException("Bang") |> raise)
+            state
+            Finish
+        ))
     |> ignore
 
     let output = Path.GetTempFileName()
@@ -3408,12 +3580,12 @@ module AltCoverTests2 =
            let c0 = c |> Seq.head
            let p = c0.GetParameters().Length
 
-           let o = c0.Invoke(Maybe (p = 0) null [| sink |])
+           let o = c0.Invoke(Maybe(p = 0) null [| sink |])
 
            let invoke = t.GetMethod("Invoke")
            let param = invoke.GetParameters() |> Seq.head
 
-           let arg : obj =
+           let arg: obj =
              if param.ParameterType = typeof<String> then
                String.Empty :> obj
              else

@@ -42,7 +42,7 @@ Describe "Add-Accelerator" {
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
-        $o = "./Samples/Sample2/_Binaries/Sample2/Debug+AnyCPU/net6.0"
+        $o = "./_Binaries/Invoke-Altcover_Sample2/Debug+AnyCPU/net6.0"
         $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
         $i = "./_Binaries/Sample2/Debug+AnyCPU/net6.0"
         if (Test-Path $o) {
@@ -68,7 +68,7 @@ Describe "Invoke-Altcover" {
         $result | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net6.0", "Sample2.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Samples/Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "net6.0", "Sample2.fsproj", "/p:AltCoverTag=Invoke-Altcover_")
         $xm2 = [xml](Get-Content $x)
         $result = [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount)
         $result | Should -Be "0 1 1 1 0 1 0 1 0 1 1 1 0 0 0 0 0 0 0 0 0 2 1 0 1 0 1"

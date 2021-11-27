@@ -10,7 +10,7 @@ open System.Globalization
                                                   "CA1704",
                                                   Justification = "'Cobertura' is jargon")>]
 module internal Cobertura =
-  let internal path : Option<string> ref = ref None
+  let internal path: Option<string> ref = ref None
 
   module internal I =
 
@@ -51,8 +51,10 @@ module internal Cobertura =
     let internal nCover (report: XDocument) (packages: XElement) =
       let processSeqPnts document (method: XElement) (lines: XElement) =
         method.Descendants("seqpnt".X)
-        |> Seq.filter (fun s -> s.Attribute("excluded".X).Value <> "true"
-                                && s.Attribute("document".X).Value = document)
+        |> Seq.filter
+             (fun s ->
+               s.Attribute("excluded".X).Value <> "true"
+               && s.Attribute("document".X).Value = document)
         |> Seq.fold
              (fun (h, t) s ->
                let vc = s.Attribute("visitcount".X)
@@ -71,7 +73,12 @@ module internal Cobertura =
                (h + (if vx = "0" then 0 else 1), t + 1))
              (0, 0)
 
-      let processMethod document (methods: XElement) (hits, total) (key, (signature, method)) =
+      let processMethod
+        document
+        (methods: XElement)
+        (hits, total)
+        (key, (signature, method))
+        =
         let mtx =
           XElement(
             "method".X,
@@ -138,19 +145,23 @@ module internal Cobertura =
 
       let extractClasses (``module``: XElement) classes =
         ``module``.Descendants("method".X)
-        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value <> "true"
-                                && m.Descendants("seqpnt".X) |> Seq.isEmpty |> not)
+        |> Seq.filter
+             (fun m ->
+               m.Attribute("excluded".X).Value <> "true"
+               && m.Descendants("seqpnt".X) |> Seq.isEmpty |> not)
 
-        |> Seq.collect (fun method ->
-          let cname = method.Attribute("class".X).Value
-          method.Descendants("seqpnt".X)
-          |> Seq.map (fun s -> s.Attribute("document".X).Value)
-          |> Seq.distinct
-          |> Seq.sort
-          |> Seq.map (fun d -> (cname, d), method))
+        |> Seq.collect
+             (fun method ->
+               let cname = method.Attribute("class".X).Value
+
+               method.Descendants("seqpnt".X)
+               |> Seq.map (fun s -> s.Attribute("document".X).Value)
+               |> Seq.distinct
+               |> Seq.sort
+               |> Seq.map (fun d -> (cname, d), method))
         |> Seq.groupBy fst
-        |> Seq.map (fun (k,s) -> k, s |> Seq.map (fun (k,m) -> m))
-        |> Seq.sortBy (fun ((c,d), _) -> c + "\u0000" + d) // short classes sort first
+        |> Seq.map (fun (k, s) -> k, s |> Seq.map (fun (k, m) -> m))
+        |> Seq.sortBy (fun ((c, d), _) -> c + "\u0000" + d) // short classes sort first
         |> Seq.fold (processClass classes) (0, 0)
 
       let processModule (hits, total) (``module``: XElement) =
@@ -192,8 +203,12 @@ module internal Cobertura =
 
         let branches = owner.Descendants("BranchPoint".X)
         let b = branches |> Seq.length
-        let bv = branches |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
-                          |> Seq.length
+
+        let bv =
+          branches
+          |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+          |> Seq.length
+
         let s = valueOf "numSequencePoints"
         let sv = valueOf "visitedSequencePoints"
 
@@ -210,8 +225,9 @@ module internal Cobertura =
           copyup "branches-covered" bv
 
           target.Attribute("complexity".X).Value <- (summary.Attribute(
-                                                        "maxCyclomaticComplexity".X
-                                                      )).Value
+            "maxCyclomaticComplexity".X
+          ))
+            .Value
 
       let doBranch bec bev uspid (line: XElement) =
         let pc =
@@ -325,7 +341,12 @@ module internal Cobertura =
          c + 1,
          cv + ccplex)
 
-      let arrangeMethods (name: String) fileid (methods: XElement) (methodSet: XElement seq) =
+      let arrangeMethods
+        (name: String)
+        fileid
+        (methods: XElement)
+        (methodSet: XElement seq)
+        =
         methodSet
         |> Seq.map
              (fun method ->
@@ -352,8 +373,14 @@ module internal Cobertura =
                |> not)
         |> Seq.fold (processMethod fileid methods) (0, 0, 0, 0, 0, 0)
 
-      let processClass files (classes: XElement) (cvcum, ccum) ((name, fileid), methodSet) =
+      let processClass
+        files
+        (classes: XElement)
+        (cvcum, ccum)
+        ((name, fileid), methodSet)
+        =
         let document = files |> Map.find fileid
+
         let ``class`` =
           XElement(
             "class".X,
@@ -364,7 +391,10 @@ module internal Cobertura =
         classes.Add(``class``)
         let methods = XElement("methods".X)
         ``class``.Add(methods)
-        let (b, bv, s, sv, c, cv) = arrangeMethods name fileid methods methodSet
+
+        let (b, bv, s, sv, c, cv) =
+          arrangeMethods name fileid methods methodSet
+
         setRate sv s "line-rate" ``class``
         setRate bv b "branch-rate" ``class``
         setRate cv c "complexity" ``class``
@@ -372,24 +402,31 @@ module internal Cobertura =
 
       let processModule files classes (``module``: XElement) =
         ``module``.Descendants("Method".X)
-        |> Seq.filter (fun m -> m.Descendants("SequencePoint".X) |> Seq.isEmpty |> not ||
-                                m.Descendants("BranchPoint".X) |> Seq.isEmpty |> not)
-        |> Seq.collect (fun method ->
-          let cname = (method.Parent.Parent.Descendants("FullName".X)
-                       |> Seq.head)
-                       .Value
-          [
-            method.Descendants("SequencePoint".X)
-            method.Descendants("BranchPoint".X)
-          ]
-          |> Seq.concat
-          |> Seq.map (fun s -> s.Attribute("fileid".X).Value)
-          |> Seq.distinct
-          |> Seq.sort
-          |> Seq.map (fun d -> (cname, d), method))
+        |> Seq.filter
+             (fun m ->
+               m.Descendants("SequencePoint".X)
+               |> Seq.isEmpty
+               |> not
+               || m.Descendants("BranchPoint".X)
+                  |> Seq.isEmpty
+                  |> not)
+        |> Seq.collect
+             (fun method ->
+               let cname =
+                 (method.Parent.Parent.Descendants("FullName".X)
+                  |> Seq.head)
+                   .Value
+
+               [ method.Descendants("SequencePoint".X)
+                 method.Descendants("BranchPoint".X) ]
+               |> Seq.concat
+               |> Seq.map (fun s -> s.Attribute("fileid".X).Value)
+               |> Seq.distinct
+               |> Seq.sort
+               |> Seq.map (fun d -> (cname, d), method))
         |> Seq.groupBy fst
-        |> Seq.map (fun (k,s) -> k, s |> Seq.map (fun (k,m) -> m))
-        |> Seq.sortBy (fun ((c,d), _) -> c + "\u0000" + (files |> Map.find d)) // short classes sort first
+        |> Seq.map (fun (k, s) -> k, s |> Seq.map (fun (k, m) -> m))
+        |> Seq.sortBy (fun ((c, d), _) -> c + "\u0000" + (files |> Map.find d)) // short classes sort first
         |> Seq.fold (processClass files classes) (0, 0)
 
       let lookUpFiles (``module``: XElement) =

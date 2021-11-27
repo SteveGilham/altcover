@@ -111,7 +111,7 @@ type internal InstrumentContext =
   { InstrumentedAssemblies: string list
     ModuleId: String
     RecordingAssembly: AssemblyDefinition
-    RecorderSource : Stream
+    RecorderSource: Stream
     RecordingMethod: MethodDefinition list // initialised once
     RecordingMethodRef: RecorderRefs // updated each module
     MethodBody: MethodBody
@@ -130,18 +130,86 @@ type internal InstrumentContext =
 
 // Module to handle instrumentation visitor
 module internal Instrument =
-  let recorderVersion() =
+  let recorderVersion () =
     use stream =
       Assembly
         .GetExecutingAssembly()
         .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
+
     use def = AssemblyDefinition.ReadAssembly stream
     def.Name.Version.ToString()
-  let version = recorderVersion()
+
+  let version = recorderVersion ()
 
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
   module internal I =
+
+    let prelude =
+      [ 0x01uy
+        0x00uy
+        0x02uy
+        0x00uy
+        0x54uy
+        0x0euy
+        0x08uy
+        0x41uy
+        0x73uy
+        0x73uy
+        0x65uy
+        0x6duy
+        0x62uy
+        0x6cuy
+        0x79uy ]
+
+    let interlude =
+      [ 0x54uy
+        0x0euy
+        0x0duy
+        0x43uy
+        0x6fuy
+        0x6euy
+        0x66uy
+        0x69uy
+        0x67uy
+        0x75uy
+        0x72uy
+        0x61uy
+        0x74uy
+        0x69uy
+        0x6fuy
+        0x6euy ]
+
+    let internal injectInstrumentation
+      (recorder: AssemblyDefinition)
+      (assembly: AssemblyEntry)
+      =
+      let a =
+        System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Assembly)
+
+      let c =
+        System.Text.Encoding.ASCII.GetBytes(assembly.Identity.Configuration)
+
+      let blob =
+        [| prelude |> List.toArray
+           [| byte a.Length |]
+           a
+           interlude |> List.toArray
+           [| byte c.Length |]
+           c |] // slight inefficiency
+        |> Array.concat
+
+      let attribute =
+        recorder.MainModule.GetType("AltCover.Recorder.InstrumentationAttribute")
+
+      let constructor =
+        attribute.GetConstructors()
+        |> Seq.head
+        |> assembly.Assembly.MainModule.ImportReference
+
+      let inject = CustomAttribute(constructor, blob)
+
+      assembly.Assembly.CustomAttributes.Add inject
 
     // Locate the method that must be called to register a code point for coverage visit.
     // param name="assembly">The assembly containing the recorder method</param>
@@ -168,16 +236,16 @@ module internal Instrument =
 
       match key with
       | None ->
-          assembly.MainModule.Attributes <-
-            assembly.MainModule.Attributes
-            &&& (~~~ModuleAttributes.StrongNameSigned)
+        assembly.MainModule.Attributes <-
+          assembly.MainModule.Attributes
+          &&& (~~~ModuleAttributes.StrongNameSigned)
 
-          assemblyName.HasPublicKey <- false
-          assemblyName.PublicKey <- null
-          assemblyName.PublicKeyToken <- null
+        assemblyName.HasPublicKey <- false
+        assemblyName.PublicKey <- null
+        assemblyName.PublicKeyToken <- null
       | Some key' ->
-          assemblyName.HasPublicKey <- true
-          assemblyName.PublicKey <- key'.PublicKey |> Seq.toArray // sets token implicitly
+        assemblyName.HasPublicKey <- true
+        assemblyName.PublicKey <- key'.PublicKey |> Seq.toArray // sets token implicitly
 
     // Locate the key, if any, which was used to name this assembly.
     // param name="name">The name of the assembly</param>
@@ -220,7 +288,8 @@ module internal Instrument =
       try
         f ()
         assembly
-      with _ ->
+      with
+      | _ ->
         (assembly :> IDisposable).Dispose()
         reraise ()
 
@@ -229,15 +298,32 @@ module internal Instrument =
     let internal prepareAssemblyDefinition (definition: AssemblyDefinition) =
       guard
         definition
-        (fun () -> // set the timer interval in ticks
+        (fun () ->
 
           //if monoRuntime |> not then
-          ProgramDatabase.readSymbols definition
+          //ProgramDatabase.readSymbols definition
 
           definition.Name.Name <- (extractName definition) + ".g"
 
           let pair = CoverageParameters.recorderStrongNameKey
           updateStrongNaming definition pair
+
+          definition.MainModule.GetTypes()
+          |> Seq.iter
+               (fun t ->
+                 if t.IsPublic
+                    && (not
+                        <| t.FullName.StartsWith("AltCover", StringComparison.Ordinal)) then
+                   t.IsPublic <- false)
+
+          injectInstrumentation
+            definition
+            { Assembly = definition
+              Inspection = Inspections.Ignore
+              Destinations = []
+              Identity =
+                { Assembly = "AltCover+Recorder+g+"
+                  Configuration = "Uninstrumented++" } }
 
           [ // set the coverage file path and unique token
             ("get_ReportFile",
@@ -312,7 +398,8 @@ module internal Instrument =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUnusedParametersRule",
                       Justification = "meets an interface")>]
-    [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+    [<SuppressMessage("Microsoft.Usage",
+                      "CA1801:ReviewUnusedParameters",
                       Justification = "meets an interface")>]
     let internal resolveFromNugetCache _ (y: AssemblyNameReference) =
       let name = y.ToString()
@@ -365,17 +452,17 @@ module internal Instrument =
         match candidate sources with
         | None -> null
         | Some x ->
-            String.Format(
-              System.Globalization.CultureInfo.CurrentCulture,
-              CommandLine.resources.GetString "resolved",
-              y.ToString(),
-              x
-            )
-            |> (Output.warnOn true)
+          String.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            CommandLine.resources.GetString "resolved",
+            y.ToString(),
+            x
+          )
+          |> (Output.warnOn true)
 
-            let a = AssemblyDefinition.ReadAssembly x
-            resolutionTable.[name] <- a
-            a
+          let a = AssemblyDefinition.ReadAssembly x
+          resolutionTable.[name] <- a
+          a
 
     let internal hookResolveHandler =
       new AssemblyResolveEventHandler(resolveFromNugetCache)
@@ -393,6 +480,31 @@ module internal Instrument =
       | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
       | _ -> null
+
+// #if IDEMPOTENT_INSTRUMENT
+//     let internal safeWait (mutex: System.Threading.WaitHandle) =
+//       try
+//         mutex.WaitOne() |> ignore
+//       with
+//       | :? System.Threading.AbandonedMutexException -> ()
+
+//     let internal withFileMutex (p: string) f =
+//       let key =
+//         p
+//         |> System.Text.Encoding.UTF8.GetBytes
+//         |> CoverageParameters.hash.ComputeHash
+//         |> Convert.ToBase64String
+
+//       use mutex =
+//         new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
+
+//       safeWait mutex
+
+//       try
+//         f ()
+//       finally
+//         mutex.ReleaseMutex()
+// #endif
 
     // Commit an instrumented assembly to disk
     // param name="assembly">The instrumented assembly object</param>
@@ -436,11 +548,25 @@ module internal Instrument =
       try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
+// #if IDEMPOTENT_INSTRUMENT
+//         let write (a: AssemblyDefinition) (p: string) pk =
+//           withFileMutex
+//             p
+//             (fun () ->
+//               if p |> File.Exists |> not
+//                  || DateTime.Now.Year > 2000 // TODO -- check hashes
+//               then
+//                 use sink =
+//                   File.Open(p, FileMode.Create, FileAccess.ReadWrite)
+
+//                 a.Write(sink, pk))
+// #else
         let write (a: AssemblyDefinition) p pk =
           use sink =
             File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
           a.Write(sink, pk)
+// #endif
 
         let resolver = assembly.MainModule.AssemblyResolver
         hookResolver resolver
@@ -501,28 +627,24 @@ module internal Instrument =
              let effectiveKey =
                match token with
                | None ->
-                   CoverageParameters.defaultStrongNameKey
-                   |> Option.map KeyStore.keyToRecord
+                 CoverageParameters.defaultStrongNameKey
+                 |> Option.map KeyStore.keyToRecord
                | Some _ -> token
 
              match effectiveKey with
              | None ->
-                 r.HasPublicKey <- false
-                 r.PublicKeyToken <- null
-                 r.PublicKey <- null
+               r.HasPublicKey <- false
+               r.PublicKeyToken <- null
+               r.PublicKey <- null
              | Some key ->
-                 r.HasPublicKey <- true
-                 r.PublicKey <- key.Pair.PublicKey |> Seq.toArray // implicitly sets token
+               r.HasPublicKey <- true
+               r.PublicKey <- key.Pair.PublicKey |> Seq.toArray // implicitly sets token
 
              let updated = r.ToString()
 
              if
                not
-               <| updated.Equals
-                 (
-                   original,
-                   StringComparison.Ordinal
-                 )
+               <| updated.Equals(original, StringComparison.Ordinal)
              then
                assemblyReferenceSubstitutions.[original] <- updated)
 
@@ -559,9 +681,9 @@ module internal Instrument =
         match existingDependencies with
         | None -> Set.empty<string>
         | Some p ->
-            p.Value.Object
-            |> Seq.map (fun p -> p.Key)
-            |> Set.ofSeq
+          p.Value.Object
+          |> Seq.map (fun p -> p.Key)
+          |> Set.ofSeq
 
       let addFirst
         (properties: KeyValuePair<string, JsonValue> seq)
@@ -586,11 +708,12 @@ module internal Instrument =
             |> Seq.find (fun p -> p.Key = "dependencies")
 
           match app
-                |> Seq.tryFind (fun p -> p.Key = "dependencies") with
+                |> Seq.tryFind (fun p -> p.Key = "dependencies")
+            with
           | None -> app |> addFirst [ rawDependencies ]
           | Some p ->
-              let recorder = rawDependencies.Value.Object |> Seq.head
-              p.Value.Object.[recorder.Key] <- recorder.Value
+            let recorder = rawDependencies.Value.Object |> Seq.head
+            p.Value.Object.[recorder.Key] <- recorder.Value
 
         updateDependencies ()
 
@@ -643,27 +766,27 @@ module internal Instrument =
       let restate =
         match m.Inspection <> Inspections.Ignore with
         | true ->
-            let recordingMethod =
-              match state.RecordingMethod with
-              | [] -> recordingMethod state.RecordingAssembly
-              | _ -> state.RecordingMethod
+          let recordingMethod =
+            match state.RecordingMethod with
+            | [] -> recordingMethod state.RecordingAssembly
+            | _ -> state.RecordingMethod
 
-            let refs =
-              recordingMethod
-              |> List.map m.Module.ImportReference
+          let refs =
+            recordingMethod
+            |> List.map m.Module.ImportReference
 
-            { state with
-                RecordingMethodRef =
-                  { Visit = refs.[0]
-                    Push = refs.[1]
-                    Pop = refs.[2] }
-                RecordingMethod = recordingMethod
-                AsyncSupport =
-                  state.AsyncSupport
-                  |> Option.map
-                       (fun a ->
-                         { a with
-                             LocalWait = a.Wait |> m.Module.ImportReference }) }
+          { state with
+              RecordingMethodRef =
+                { Visit = refs.[0]
+                  Push = refs.[1]
+                  Pop = refs.[2] }
+              RecordingMethod = recordingMethod
+              AsyncSupport =
+                state.AsyncSupport
+                |> Option.map
+                     (fun a ->
+                       { a with
+                           LocalWait = a.Wait |> m.Module.ImportReference }) }
         | _ -> state
 
       { restate with
@@ -676,11 +799,11 @@ module internal Instrument =
     let private visitMethod (state: InstrumentContext) m =
       match m.Inspection.IsInstrumented with
       | true ->
-          let body = m.Method.Body
+        let body = m.Method.Body
 
-          { state with
-              MethodBody = body
-              MethodWorker = body.GetILProcessor() }
+        { state with
+            MethodBody = body
+            MethodWorker = body.GetILProcessor() }
       | _ -> state
 
     let private updateBranchReferences (body: MethodBody) instruction injected =
@@ -730,59 +853,59 @@ module internal Instrument =
 
         match branch.Indexes |> Seq.tryFind (fun i -> i = -1) with
         | Some _ ->
-            // before
-            // Cond_Branch xxx
-            // Next
-            //
-            // after
-            // Cond_Branch xxx
-            // jump instrument#-1
-            // instrument#-1
-            // Next
-            let target = branch.Start.Next
-            let preamble = instrument target
+          // before
+          // Cond_Branch xxx
+          // Next
+          //
+          // after
+          // Cond_Branch xxx
+          // jump instrument#-1
+          // instrument#-1
+          // Next
+          let target = branch.Start.Next
+          let preamble = instrument target
 
-            let jump =
-              state.MethodWorker.Create(OpCodes.Br, preamble)
+          let jump =
+            state.MethodWorker.Create(OpCodes.Br, preamble)
 
-            state.MethodWorker.InsertAfter(branch.Start, jump)
+          state.MethodWorker.InsertAfter(branch.Start, jump)
 
-            if branch.Start.OpCode = OpCodes.Switch then
-              updateSwitch jump
+          if branch.Start.OpCode = OpCodes.Switch then
+            updateSwitch jump
         | None ->
-            // before
-            // Cond_Branch #n
-            // jump instrument#-1
-            // ...
-            // instrument#-1
-            // Next
-            //
-            // after
-            // Cond_Branch instrument#n
-            // jump instrument#-1
-            // instrument#n
-            // jump #n
-            // ...
-            // instrument#-1
-            // Next
-            let target =
-              if branch.Start.OpCode = OpCodes.Switch then
-                branch.Start.Operand :?> Instruction []
-                |> Seq.skip (branch.Indexes.Head)
-                |> Seq.head
-              else
-                branch.Start.Operand :?> Instruction
-
-            let jump =
-              state.MethodWorker.Create(OpCodes.Br, target)
-
-            state.MethodWorker.InsertAfter(branch.Start.Next, jump)
-            let preamble = instrument jump
-
+          // before
+          // Cond_Branch #n
+          // jump instrument#-1
+          // ...
+          // instrument#-1
+          // Next
+          //
+          // after
+          // Cond_Branch instrument#n
+          // jump instrument#-1
+          // instrument#n
+          // jump #n
+          // ...
+          // instrument#-1
+          // Next
+          let target =
             if branch.Start.OpCode = OpCodes.Switch then
-              updateSwitch preamble
+              branch.Start.Operand :?> Instruction []
+              |> Seq.skip (branch.Indexes.Head)
+              |> Seq.head
             else
-              branch.Start.Operand <- preamble
+              branch.Start.Operand :?> Instruction
+
+          let jump =
+            state.MethodWorker.Create(OpCodes.Br, target)
+
+          state.MethodWorker.InsertAfter(branch.Start.Next, jump)
+          let preamble = instrument jump
+
+          if branch.Start.OpCode = OpCodes.Switch then
+            updateSwitch preamble
+          else
+            branch.Start.Operand <- preamble
 
       state
 
@@ -861,9 +984,10 @@ module internal Instrument =
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
-             let processAsyncAwait (s: InstrumentContext) =
+             let processAsyncAwait (s: InstrumentContext, unhandled: bool) =
 
-               if asyncChecks |> Seq.forall invokePredicate then
+               if unhandled
+                  && asyncChecks |> Seq.forall invokePredicate then
                  // the instruction list is
                  // IL_0040: call System.Threading.Tasks.Task`1<!0> System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1<System.Int32>::get_Task()
                  // IL_0000: stloc V_1 <<== This one
@@ -901,17 +1025,17 @@ module internal Instrument =
                  leave
                  |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 newstate
+                 (newstate, false)
                else
-                 s
+                 (s, unhandled)
 
              let isAsyncType () =
                [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
                |> Seq.exists (fun n -> n = e)
 
-             let processFSAsync (s: InstrumentContext) =
+             let processFSAsync (s: InstrumentContext, unhandled: bool) =
 
-               if isAsyncType () then
+               if unhandled && isAsyncType () then
                  let asyncOf =
                    (rtype :?> GenericInstanceType).GenericArguments
                    |> Seq.head // only one
@@ -955,13 +1079,57 @@ module internal Instrument =
                  leave
                  |> Seq.iter ((injectWait methodWorker) >> ignore)
 
-                 newstate
+                 (newstate, false)
                else
-                 s
+                 (s, unhandled)
 
-             state |> processAsyncAwait |> processFSAsync
+             let processTaskReturns (s: InstrumentContext, unhandled: bool) =
+               if unhandled && isTaskType () then
+                 let newstate =
+                   { s with
+                       AsyncSupport =
+                         Some(
+                           Option.defaultWith
+                             (fun () -> AsyncSupport.Update m.Method) // TODO
+                             state.AsyncSupport
+                         ) }
 
-             )
+                 let injectWait ilp (i: Instruction) =
+                   // before
+                   // IL_003f: stloc V1
+                   // IL_0040: leave.s IL_0054
+
+                   // after
+                   // IL_003d: stloc V1
+                   //+IL_003e: ldloc V1
+                   //+IL_003f: callvirt instance void [System.Runtime]System.Threading.Tasks.Task::Wait()
+                   //+IL_0044: ldloc V1
+                   //+IL_0045: stloc.0
+                   // IL_0046: leave.s IL_005a
+
+                   bulkInsertBefore
+                     ilp
+                     i.Next
+                     [ ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                       ilp.Create(OpCodes.Ldc_I4, 65535)
+                       ilp.Create(OpCodes.Callvirt, newstate.AsyncSupport.Value.LocalWait)
+                       ilp.Create(OpCodes.Pop)
+                       ilp.Create(OpCodes.Ldloc, i.Operand :?> VariableDefinition)
+                       ilp.Create(OpCodes.Stloc_0) ]
+                     true
+
+                 leave
+                 |> Seq.iter ((injectWait methodWorker) >> ignore)
+
+                 (newstate, false)
+               else
+                 (s, unhandled)
+
+             (state, true)
+             |> processAsyncAwait
+             |> processFSAsync
+             |> processTaskReturns
+             |> fst)
            state
 
     let private visitAfterMethod state (m: MethodEntry) =
@@ -994,8 +1162,8 @@ module internal Instrument =
         Assembly
           .GetExecutingAssembly()
           .GetManifestResourceStream("AltCover.AltCover.Recorder.net20.dll")
-      let recordingAssembly =
-        prepareAssembly (stream)
+
+      let recordingAssembly = prepareAssembly (stream)
 
       { state with
           RecordingAssembly = recordingAssembly
@@ -1046,9 +1214,11 @@ module internal Instrument =
                       File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))))
       finally
         (state.RecordingAssembly :> IDisposable).Dispose()
+
         state.RecorderSource
         |> Option.ofObj
         |> Option.iter (fun a -> a.Close())
+
         state.AsyncSupport
         |> Option.iter (fun a -> a.Close())
 
@@ -1057,6 +1227,18 @@ module internal Instrument =
           RecorderSource = null
           AsyncSupport = None }
 
+    let visitAssembly state assembly =
+      updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
+      |> ignore
+
+      if assembly.Inspection <> Inspections.Ignore then
+        assembly.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+
+        // TODO -- react to source or destination being stamped
+        injectInstrumentation state.RecordingAssembly assembly
+
+      state
+
     // Perform visitor operations
     // param name="state">Contextual information for the visit</param>
     // param name="node">The node being visited</param>
@@ -1064,16 +1246,16 @@ module internal Instrument =
     let internal instrumentationVisitorCore (state: InstrumentContext) (node: Node) =
       match node with
       | Start _ -> visitStart state
-      | Assembly assembly ->
-          updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
-          |> ignore
-
-          if assembly.Inspection <> Inspections.Ignore then
-            assembly.Assembly.MainModule.AssemblyReferences.Add(
-              state.RecordingAssembly.Name
-            )
-
-          state
+      | Assembly assembly -> visitAssembly state assembly
+      //updateStrongReferences assembly.Assembly state.InstrumentedAssemblies
+      //|> ignore
+      //
+      //if assembly.Inspection <> Inspections.Ignore then
+      //  assembly.Assembly.MainModule.AssemblyReferences.Add(
+      //    state.RecordingAssembly.Name
+      //  )
+      //
+      //state
       | Module m -> visitModule state m
       | Type _ -> state
       | Method m -> visitMethod state m
@@ -1092,17 +1274,20 @@ module internal Instrument =
       =
       try
         core state node
-      with _ ->
+      with
+      | _ ->
         match node with
         | Finish -> ()
         | _ ->
-            if state.RecordingAssembly.IsNotNull then
-              (state.RecordingAssembly :> IDisposable).Dispose()
-            state.RecorderSource
-            |> Option.ofObj
-            |> Option.iter (fun a -> a.Close())
-            state.AsyncSupport
-            |> Option.iter (fun a -> a.Close())
+          if state.RecordingAssembly.IsNotNull then
+            (state.RecordingAssembly :> IDisposable).Dispose()
+
+          state.RecorderSource
+          |> Option.ofObj
+          |> Option.iter (fun a -> a.Close())
+
+          state.AsyncSupport
+          |> Option.iter (fun a -> a.Close())
 
         reraise ()
 
@@ -1112,6 +1297,6 @@ module internal Instrument =
   // "Public" API
   // Higher-order function that returns a visitor
   // param name="assemblies">List of assembly paths to visit</param>
-  // returns>Stateful visitor function</returns>
+  // <returns>Stateful visitor function</returns>
   let internal instrumentGenerator (assemblies: string list) =
     Visitor.encloseState I.instrumentationVisitor (InstrumentContext.Build assemblies)

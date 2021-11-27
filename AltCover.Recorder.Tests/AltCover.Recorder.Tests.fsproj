@@ -5,24 +5,16 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
     <!-- see https://github.com/NuGet/Home/issues/8797 -->
     <NoWarn>NU1702</NoWarn>
     <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
-    <RollForward>Major</RollForward>
-    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths>false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
-    <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;RELEASE;ALTCOVER_TEST;$(ExtraDefines)</DefineConstants>
-    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -77,7 +69,7 @@
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageReference Update="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Update="FSharp.Core" Version="6.0.0" Condition="'$(TargetFramework)' != 'net20'">
+    <PackageReference Update="FSharp.Core" Version="6.0.1" Condition="'$(TargetFramework)' != 'net20'">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="FSharp.Core" Version="4.1.18" Condition="'$(TargetFramework)' == 'net20'" />

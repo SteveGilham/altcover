@@ -94,21 +94,19 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
-  let private urlHook _ link =
-    Browser.ShowUrl(Uri link)
+  let private urlHook _ link = Browser.ShowUrl(Uri link)
 #endif
 
   let private prepareAboutDialog (handler: Handler) =
 #if !NET472
     handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
-    AboutDialog.SetUrlHook(urlHook)
-    |> ignore
+    AboutDialog.SetUrlHook(urlHook) |> ignore
 
-    LinkButton.SetUriHook(urlHook)
-    |> ignore
+    LinkButton.SetUriHook(urlHook) |> ignore
 
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter
@@ -144,6 +142,7 @@ module private Gui =
 
   let private prepareTreeView (handler: Handler) =
     handler.classStructureTree.HasTooltip <- true
+
     [| icons.Assembly
        icons.Namespace
        icons.Class
@@ -151,43 +150,92 @@ module private Gui =
     |> Seq.iteri
          (fun i x -> // this line number
            let column = new Gtk.TreeViewColumn()
-           let cell = new Gtk.CellRendererText()
            let icon = new Gtk.CellRendererPixbuf()
            column.PackStart(icon, true)
+           let cell = new Gtk.CellRendererText()
            column.PackEnd(cell, true)
+#if VIS_PERCENT
+           let note = new Gtk.CellRendererText()
+           note.Alignment <- Pango.Alignment.Right
 
+           let font =
+             Persistence.readFont ()
+             |> Pango.FontDescription.FromString
+
+           let copy = note.FontDesc.Copy()
+           copy.Family <- font.Family
+           note.FontDesc <- copy
+           column.PackEnd(note, true)
+#endif
            handler.classStructureTree.AppendColumn(column)
            |> ignore
 
+#if !VIS_PERCENT
            column.AddAttribute(cell, "text", 2 * i)
-           column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+           column.AddAttribute(icon, "pixbuf", 1 + (2 * i))
+#else
+           column.AddAttribute(icon, "pixbuf", (3 * i))
+           column.AddAttribute(note, "text", (3 * i) + 1)
+           column.AddAttribute(cell, "text", (3 * i) + 2)
+#endif
+           )
 
     handler.classStructureTree.Model <-
       new TreeStore(
+#if !VIS_PERCENT
         typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>
+#else
         typeof<Gdk.Pixbuf>
+#endif
       )
 
     handler.auxModel <-
       new TreeStore(
+#if !VIS_PERCENT
         typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>,
+#endif
         typeof<Gdk.Pixbuf>,
         typeof<string>,
+#if VIS_PERCENT
+        typeof<string>
+#else
         typeof<Gdk.Pixbuf>
+#endif
       )
 
 #if !NET472
@@ -265,7 +313,8 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
   let private prepareOpenFileDialog _ =
     let openFileDialog =
@@ -294,19 +343,27 @@ module private Gui =
 
   let private doSelected (handler: Handler) doUpdateMRU index =
     let addNode =
-          fun (context:CoverageTreeContext<TreeStore, TreeIter>)
-              (icon:Lazy<Gdk.Pixbuf>) name (tip : string option) ->
-            let newrow =
-              context.Model.AppendValues(
-                    context.Row,
-                    [| name :> obj; icon.Force() :> obj |])
+      fun (context: CoverageTreeContext<TreeStore, TreeIter>) (icon: Lazy<Gdk.Pixbuf>) pc name (tip: string option) ->
+        let newrow =
+          context.Model.AppendValues(
+            context.Row,
+#if !VIS_PERCENT
+            [| name :> obj; icon.Force() :> obj |]
+          )
+#else
+            [| icon.Force() :> obj
+               pc :> obj
+               name :> obj |]
+          )
+#endif
 
-            tip
-            |> Option.iter
-                           (fun text -> let path = context.Model.GetPath(newrow)
-                                        handler.classStructureTree.Data.Add(path, text))
-            { context with
-                Row = newrow }
+        tip
+        |> Option.iter
+             (fun text ->
+               let path = context.Model.GetPath(newrow)
+               handler.classStructureTree.Data.Add(path, text))
+
+        { context with Row = newrow }
 
     let environment =
       { Icons = icons
@@ -338,7 +395,7 @@ module private Gui =
             ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName handler.coverageFiles) MessageType.Info
             Handler.InvokeOnGuiThread(updateUI handler.auxModel info)
         SetXmlNode =
-          fun name icon tip ->
+          fun pc name icon tip ->
             let model = handler.auxModel
             model.Clear()
             mappings.Clear()
@@ -346,10 +403,9 @@ module private Gui =
             table.Clear()
 
             let topRow =
-              model.AppendValues(name, icon.Force())
+              model.AppendValues(name, pc, icon.Force())
 
-            if tip |> String.IsNullOrWhiteSpace |> not
-            then
+            if tip |> String.IsNullOrWhiteSpace |> not then
               let path = model.GetPath(topRow)
               table.Add(path, tip)
 
@@ -427,11 +483,7 @@ module private Gui =
   [<SuppressMessage("Microsoft.Reliability",
                     "CA2000:DisposeObjectsBeforeLosingScope",
                     Justification = "IDisposables are added to the TextView")>]
-  let private markBranches
-    (root: XPathNavigator)
-    (lineView: TextView)
-    (file: Source)
-    =
+  let private markBranches (root: XPathNavigator) (lineView: TextView) (file: Source) =
     let buff = lineView.Buffer
     let branches = HandlerCommon.TagBranches root file
 
@@ -797,18 +849,21 @@ module private Gui =
     Application.Init()
 
     let handler = prepareGui ()
+
     handler.classStructureTree.QueryTooltip
-    |> Event.add (fun (x:QueryTooltipArgs) ->
-      let tip = x.Tooltip
-      x.RetVal <- null
-      let mutable path:TreePath = null
-      if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path)
-      then
-        let table = handler.classStructureTree.Data
-        if table.ContainsKey path
-        then let text = table.[path] :?> string
-             tip.Text <- text
-             x.RetVal <- true) // <== magic happens here
+    |> Event.add
+         (fun (x: QueryTooltipArgs) ->
+           let tip = x.Tooltip
+           x.RetVal <- null
+           let mutable path: TreePath = null
+
+           if handler.classStructureTree.GetPathAtPos(x.X, x.Y, &path) then
+             let table = handler.classStructureTree.Data
+
+             if table.ContainsKey path then
+               let text = table.[path] :?> string
+               tip.Text <- text
+               x.RetVal <- true) // <== magic happens here
 
 #if !NET472
     handler.codeView.Drawn
@@ -921,7 +976,7 @@ module private Gui =
 [<assembly: SuppressMessage("Microsoft.Reliability",
                             "CA2000:Dispose objects before losing scope",
                             Scope = "member",
-                            Target = "AltCover.Gui+prepareTreeView@152.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
+                            Target = "AltCover.Gui+prepareTreeView@151.#Invoke(System.Int32,System.Lazy`1<Gdk.Pixbuf>)",
                             Justification = "Added to GUI widget tree")>]
 [<assembly: SuppressMessage("Microsoft.Usage",
                             "CA2208:InstantiateArgumentExceptionsCorrectly",

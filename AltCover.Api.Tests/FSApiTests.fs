@@ -161,7 +161,10 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
     CoverageFormats.ConvertToLcov doc stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
+    use stream2a =
+      new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
     use rdr = new StreamReader(stream2a)
 
     let result =
@@ -190,7 +193,10 @@ module FSApiTests =
     let doc = XDocument.Load(stream)
     use stream2 = new MemoryStream()
     CoverageFormats.ConvertToLcov doc stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
+    use stream2a =
+      new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
     use rdr = new StreamReader(stream2a)
 
     let result =
@@ -252,8 +258,8 @@ module FSApiTests =
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
         .Replace("\u00FF\u00FF", "\u00FF")
-        .Replace("8.12", "8.13")  // CRAP score rounding
-        .Replace("4.12", "4.13")  // CRAP score rounding
+        .Replace("8.12", "8.13") // CRAP score rounding
+        .Replace("4.12", "4.13") // CRAP score rounding
         .Trim([| '\u00FF' |]) = expected
         .Replace('\r', '\u00FF')
         .Replace('\n', '\u00FF')
@@ -309,7 +315,7 @@ module FSApiTests =
         .Trim([| '\u00FF' |]) @>
 
   [<Test>]
-  let JsonFromCoverletShouldHaveBranchExitValuesOK() =
+  let JsonFromCoverletShouldHaveBranchExitValuesOK () =
     use stream =
       Assembly
         .GetExecutingAssembly()
@@ -319,8 +325,9 @@ module FSApiTests =
       use reader = new StreamReader(stream)
       reader.ReadToEnd()
 
-    let result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\u00FF" +
-                    (OpenCover.JsonToXml doc).ToString()
+    let result =
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\u00FF"
+      + (OpenCover.JsonToXml doc).ToString()
 
     use stream3 =
       Assembly
@@ -613,8 +620,10 @@ module FSApiTests =
     use rdr = new StreamReader(mstream2)
 
     let result =
-      rdr.ReadToEnd().Replace("\r", String.Empty)
-                     .Replace("ID0ES", "ID0ET") // flakiness in label autogenerator
+      rdr
+        .ReadToEnd()
+        .Replace("\r", String.Empty)
+        .Replace("ID0ES", "ID0ET") // flakiness in label autogenerator
 
     use stream2 =
       Assembly
@@ -687,6 +696,7 @@ module FSApiTests =
     // fix up file path
     let exe =
       Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
+
     doc.Descendants("ModulePath".X)
     |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
 
@@ -735,6 +745,9 @@ module FSApiTests =
     Visitor.visit
       visitors
       [ { AssemblyPath = sample
+          Identity =
+            { Assembly = String.Empty
+              Configuration = String.Empty }
           Destinations = [] } ]
 
     let document =
@@ -758,12 +771,12 @@ module FSApiTests =
     let exe =
       Path.Combine(SolutionRoot.location, "AltCover.Tests/SimpleMix.exe")
 
-    let document =
-      XDocument.Load stream
+    let document = XDocument.Load stream
     let now = DateTime.UtcNow.ToLongDateString()
 
     let rewrite =
       CoverageFormats.ConvertFromNCover document [ exe ]
+
     rewrite.Descendants("ModuleTime".X)
     |> Seq.iter (fun x -> x.Value <- now)
 
@@ -781,12 +794,16 @@ module FSApiTests =
     use stream2 =
       Assembly
         .GetExecutingAssembly()
-        .GetManifestResourceStream("AltCover.Api.Tests.OpenCoverFromNCoverWithPartials.xml")
+        .GetManifestResourceStream(
+          "AltCover.Api.Tests.OpenCoverFromNCoverWithPartials.xml"
+        )
 
     use rdr2 = new StreamReader(stream2)
     let doc2 = XDocument.Load rdr2
+
     doc2.Descendants("ModulePath".X)
     |> Seq.iter (fun x -> x.Value <- exe |> Canonical.canonicalPath)
+
     doc2.Descendants("ModuleTime".X)
     |> Seq.iter (fun x -> x.Value <- now)
 
@@ -797,9 +814,7 @@ module FSApiTests =
     use rdr3 = new StreamReader(stream3)
 
     let expected =
-      rdr3
-        .ReadToEnd()
-        .Replace("\r", String.Empty)
+      rdr3.ReadToEnd().Replace("\r", String.Empty)
     //printfn "%A" result
     NUnit.Framework.Assert.That(result, NUnit.Framework.Is.EqualTo expected)
 
@@ -903,7 +918,10 @@ module FSApiTests =
     let cob = CoverageFormats.ConvertToCobertura doc
     use stream2 = new MemoryStream()
     cob.Save stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
+    use stream2a =
+      new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
     use rdr = new StreamReader(stream2a)
 
     let result =
@@ -953,13 +971,17 @@ module FSApiTests =
     let cob = CoverageFormats.ConvertToCobertura doc
     use stream2 = new MemoryStream()
     cob.Save stream2
-    use stream2a = new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
+    use stream2a =
+      new MemoryStream(stream2.GetBuffer(), 0, int stream2.Length)
+
     use rdr = new StreamReader(stream2a)
 
     let result =
-      rdr.ReadToEnd()
-         .Replace("\r", String.Empty)
-         .Replace("\\", "/")
+      rdr
+        .ReadToEnd()
+        .Replace("\r", String.Empty)
+        .Replace("\\", "/")
 
     //printfn "FSApi.NCoverToCobertura\r\n%s" result
 
@@ -1346,7 +1368,12 @@ module FSApiTests =
 
     let doc2 = XDocument.Load stream2
 
-    let merge = AltCover.OpenCover.Merge [ doc1; doc2; doc1; doc2 ]
+    let merge =
+      AltCover.OpenCover.Merge [ doc1
+                                 doc2
+                                 doc1
+                                 doc2 ]
+
     let summary = merge.Root.Element(XName.Get "Summary")
 
     //printfn "%A" merge

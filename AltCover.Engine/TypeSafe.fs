@@ -83,18 +83,18 @@ module TypeSafe =
       match self with
       | NoThreshold -> String.Empty
       | Threshold t ->
-          let facet k n =
-            (if n <> 0uy then
-               k + n.ToString(CultureInfo.InvariantCulture)
-             else
-               String.Empty)
+        let facet k n =
+          (if n <> 0uy then
+             k + n.ToString(CultureInfo.InvariantCulture)
+           else
+             String.Empty)
 
-          (facet "S" t.Statements)
-          + (facet "B" t.Branches)
-          + (facet "M" t.Methods)
-          + (facet "C" t.MaxCrap)
-          + (facet "AM" t.AltMethods)
-          + (facet "AC" t.AltMaxCrap)
+        (facet "S" t.Statements)
+        + (facet "B" t.Branches)
+        + (facet "M" t.Methods)
+        + (facet "C" t.MaxCrap)
+        + (facet "AM" t.AltMethods)
+        + (facet "AC" t.AltMaxCrap)
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type Flag =
@@ -211,12 +211,12 @@ module TypeSafe =
       | BPlus -> "BOC"
       | RPlus -> "ROC"
       | Many s ->
-          let raw =
-            String.Join(String.Empty, s |> Seq.map (fun x -> x.AsString()))
-            |> Seq.distinct
-            |> Seq.toArray
+        let raw =
+          String.Join(String.Empty, s |> Seq.map (fun x -> x.AsString()))
+          |> Seq.distinct
+          |> Seq.toArray
 
-          String(raw)
+        String(raw)
 
   [<ExcludeFromCodeCoverage; NoComparison>]
   type StaticFormat =

@@ -108,11 +108,11 @@ type internal UsageInfo =
     Options2: OptionSet }
 
 module internal Output =
-  let mutable internal info : String -> unit = ignore
-  let mutable internal warn : String -> unit = ignore
-  let mutable internal echo : String -> unit = ignore
-  let mutable internal error : String -> unit = ignore
-  let mutable internal usage : UsageInfo -> unit = ignore
+  let mutable internal info: String -> unit = ignore
+  let mutable internal warn: String -> unit = ignore
+  let mutable internal echo: String -> unit = ignore
+  let mutable internal error: String -> unit = ignore
+  let mutable internal usage: UsageInfo -> unit = ignore
 
   let internal warnOn x = if x then warn else info
 
@@ -148,8 +148,8 @@ module internal CommandLine =
 
   let mutable internal verbosity = 0
   let mutable internal help = false
-  let mutable internal error : string list = []
-  let mutable internal exceptions : Exception list = []
+  let mutable internal error: string list = []
+  let mutable internal exceptions: Exception list = []
   let internal dropReturnCode = ref false // ddFlag
 
   let internal resources =
@@ -218,7 +218,9 @@ module internal CommandLine =
       proc.BeginErrorReadLine()
       proc.BeginOutputReadLine()
       proc.WaitForExitCustom()
-      proc.ExitCode * (dropReturnCode.Value |> not).ToInt32
+
+      proc.ExitCode
+      * (dropReturnCode.Value |> not).ToInt32
 
     let logException store (e: Exception) =
       error <- e.Message :: error
@@ -236,7 +238,7 @@ module internal CommandLine =
       | :? NotSupportedException as n -> n :> Exception |> (logException store)
       | :? IOException as i -> i :> Exception |> (logException store)
       | :? System.Security.SecurityException as s ->
-          s :> Exception |> (logException store)
+        s :> Exception |> (logException store)
       | :? UnauthorizedAccessException as u -> u :> Exception |> (logException store)
 
       result
@@ -247,16 +249,17 @@ module internal CommandLine =
     let rec internal doRetry action log limit (rest: int) depth f =
       try
         action f
-      with x ->
+      with
+      | x ->
         match x with
         | :? IOException
         | :? System.Security.SecurityException
         | :? UnauthorizedAccessException ->
-            if depth < limit then
-              Threading.Thread.Sleep(rest)
-              doRetry action log limit rest (depth + 1) f
-            else
-              x.ToString() |> log
+          if depth < limit then
+            Threading.Thread.Sleep(rest)
+            doRetry action log limit rest (depth + 1) f
+          else
+            x.ToString() |> log
 
         | _ -> reraise ()
 
@@ -316,7 +319,8 @@ module internal CommandLine =
     let internal transformCryptographicException f =
       try
         f ()
-      with :? CryptographicException as c -> raise ((c.Message, c) |> SecurityException)
+      with
+      | :? CryptographicException as c -> raise ((c.Message, c) |> SecurityException)
 
     [<SuppressMessage("Microsoft.Globalization",
                       "CA1307:SpecifyStringComparison",
@@ -359,17 +363,18 @@ module internal CommandLine =
         Left("UsageError", options)
       else
         Right(after, options)
-    with :? OptionException -> Left("UsageError", options)
+    with
+    | :? OptionException -> Left("UsageError", options)
 
   let internal processHelpOption
     (parse: Either<string * OptionSet, string list * OptionSet>)
     =
     match parse with
     | Right (_, options) ->
-        if help then
-          Left("HelpText", options)
-        else
-          parse
+      if help then
+        Left("HelpText", options)
+      else
+        parse
     | fail -> fail
 
   let internal applyVerbosity () =
@@ -408,7 +413,7 @@ module internal CommandLine =
     reportErrors String.Empty extend
     Output.usage info
 
-  let internal ddFlag (name: string) (flag:bool ref) =
+  let internal ddFlag (name: string) (flag: bool ref) =
     (name,
      (fun (_: string) ->
        if flag.Value then
@@ -426,12 +431,12 @@ module internal CommandLine =
     match rest |> Seq.toList with
     | [] -> 0
     | cmd :: t ->
-        let args = t |> CmdLine.fromSeq |> CmdLine.toString
+      let args = t |> CmdLine.fromSeq |> CmdLine.toString
 
-        let cmd' =
-          [ cmd ] |> CmdLine.fromSeq |> CmdLine.toString
+      let cmd' =
+        [ cmd ] |> CmdLine.fromSeq |> CmdLine.toString
 
-        I.launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
+      I.launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let internal validateAssembly assembly x =
     if I.validateFile assembly x then

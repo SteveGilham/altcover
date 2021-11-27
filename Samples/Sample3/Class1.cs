@@ -3,17 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil.Cil;
 
-namespace Sample3
+// cheat to allow init-property
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit
+    { }
+}
+
+namespace AltCover.Sample3
 {
     public class Class1
     {
         public int Property { get; set; }
+#if !MONO
+        public int Property2 { get; init; }
+#endif
     }
 
     public class Class2
     {
         private int _Property;
-        public int Property { get { return _Property; } set { _Property = value > 0 ? value : 0; } }
+
+        public int Property
+        { get { return _Property; } set { _Property = value > 0 ? value : 0; } }
     }
 
     public class Class3
@@ -137,6 +149,25 @@ namespace Sample3
             }
             Console.WriteLine("end");
             return i;
+        }
+    }
+}
+
+// AltCover.Recorder.InstrumentationAttribute
+namespace AltCover.Recorder
+{
+    [Serializable]
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public sealed class InstrumentationAttribute : Attribute
+    {
+        public string Assembly { get; set; }
+
+        public string Configuration { get; set; }
+
+        public InstrumentationAttribute()
+        {
+            Assembly = "Sample3 test assembly!";
+            Configuration = "Unit testing only!!";
         }
     }
 }

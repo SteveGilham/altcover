@@ -54,8 +54,10 @@ type Command private () =
       | Framework _ -> "AltCover.exe"
       | _ -> "AltCover.dll"
 
-    match Directory.GetFiles(root, target, SearchOption.AllDirectories)
-          |> Seq.tryHead with
+    match
+      Directory.GetFiles(root, target, SearchOption.AllDirectories)
+      |> Seq.tryHead
+      with
     | Some path -> path |> Path.GetFullPath
     | None -> String.Empty
 #else

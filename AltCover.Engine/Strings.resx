@@ -457,4 +457,7 @@ If the option is not present, then the default is 'OC'.</value>
   <data name="q" xml:space="preserve">
     <value>Optional, multiple: Quiet mode -- once to switch off informational messages, twice to switch off warnings as well, three (or more) times to switch off all messages.</value>
   </data>
+  <data name="alreadyInstrumented" xml:space="preserve">
+    <value>Skipping {0} as it has already been instrumented.</value>
+  </data>
 </root>
