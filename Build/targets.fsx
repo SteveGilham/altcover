@@ -38,7 +38,12 @@ let lastGoodPackage () =
   then
     let v = n |> Seq.max
     Version.Value <- v.ToString()
-    printfn "Default version = %A" v
+    printfn "Default version from packages = %A" v
+  else
+    let version = Actions.GetVersionFromYaml()
+    let (result,_,_) = Actions.LocalVersion "none" version
+    Version.Value <- result
+    printfn "Default version from date = %A" result
 
 lastGoodPackage ()
 
@@ -804,6 +809,14 @@ _Target
             reraise ())
 
 _Target
+    "BuildRecorder"
+    (fun _ -> msbuildDebug MSBuildPath "./AltCover.Recorder.sln")
+
+_Target
+    "BuildReleaseRecorder"
+    (fun _ -> msbuildRelease MSBuildPath "./AltCover.Recorder.sln")
+
+_Target
     "BuildDebug"
     (fun _ ->
         Directory.ensure "./_SourceLink"
@@ -1286,6 +1299,34 @@ let NUnitRetry f spec =
                 reraise ()
 
     doNUnitRetry 0 f spec
+
+_Target
+    "JustRecorderUnitTest"
+    (fun _ ->
+        Directory.ensure "./_Reports"
+
+        try
+            let recArgs  = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/JustRecorderUnitTestReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
+                             ]
+            Actions.Run(nunitConsole, ".", recArgs) "Recorder NUnit failed"
+
+            let rec2Args = [
+                             "--noheader"
+                             "--work=."
+                             "--result=./_Reports/JustRecorder2UnitTestReport.xml"
+                             Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll"
+                             ]
+            Actions.Run(nunitConsole, ".", rec2Args) "Recorder NUnit failed"
+
+        with
+        | x ->
+            printfn "%A" x
+            reraise ())
+"BuildRecorder" ==> "JustRecorderUnitTest"
 
 _Target
     "JustUnitTest"
