@@ -5156,7 +5156,7 @@ _Target
                 )
 
             pack.AddBeforeSelf inject
-            fsproj.Save "./_ApiUse/_DotnetTest/dotnettest.fsproj"
+            fsproj.Save "./_ApiUse/_DotnetTest/apiuse_dotnettest.fsproj"
             Shell.copy "./_ApiUse/_DotnetTest" (!! "./Samples/Sample4/*.fs")
             Shell.copy "./_ApiUse/_DotnetTest" (!! "./Samples/Sample4/*.json")
             Shell.copyDir "./_ApiUse/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
@@ -5250,7 +5250,7 @@ _Target "DoIt"
   DotNet.test
     (fun to' ->
     { to'.WithCommon(setBaseOptions).WithAltCoverOptions pp2 cc2 ForceTrue with
-        MSBuildParams = cliArguments }) "dotnettest.fsproj"
+        MSBuildParams = cliArguments }) "apiuse_dotnettest.fsproj"
   let ImportModule =
     (AltCover.Command.ImportModule().Trim().Split()
      |> Seq.take 2
@@ -5330,7 +5330,7 @@ group NetcoreBuild
             Actions.RunDotnet
                 (withWorkingDirectoryOnly "_ApiUse")
                 "fake"
-                "-v run ./DriveApi.fsx"
+                "run ./DriveApi.fsx" // "-v run ./DriveApi.fsx" for verbose mode
                 "running fake script returned with a non-zero exit code"
 
             let x =
