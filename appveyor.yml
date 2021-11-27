@@ -4,7 +4,7 @@ branches:
   - /release.*/
   - /feature.*/
 skip_tags: true
-image: Visual Studio 2019
+image: Visual Studio 2022
 clone_depth: 2
 environment:
   COVERALLS_REPO_TOKEN:
