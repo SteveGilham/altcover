@@ -481,7 +481,7 @@ let msbuildCommon (p: MSBuildParams) =
 
 let withDebug (p: MSBuildParams) =
     { p with
-          Properties = ("Configuration", "Debug") :: p.Properties
+          Properties = ("DebugType", "Portable")  :: ("Configuration", "Debug") :: p.Properties
           DoRestore = true }
 
 let withRelease (p: MSBuildParams) =
