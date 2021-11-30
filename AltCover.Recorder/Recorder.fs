@@ -81,14 +81,9 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let mutable internal modules = [| String.Empty |]
 
-  let internal fixedNames =
-    [| String.Empty
-       Track.Entry
-       Track.Exit |]
-
   let internal makeReverse (m: string array) =
     [ m // name to index
-      fixedNames ]
+      Counter.fixedNames ]
     |> Seq.concat
     |> Seq.mapi (fun i m -> (m, i))
     |> Map.ofSeq

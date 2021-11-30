@@ -10,19 +10,19 @@ module Adapter =
   let DoUnload () = Instance.I.doUnload
   let DoExit () = Instance.I.doExit
 
-  let private VisitsClear () =
+  let private visitsClear () =
     Instance.I.clear ()
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
-  let private SamplesClear () =
+  let private samplesClear () =
     Instance.I.samples <- Instance.I.makeSamples ()
 
   let private reset () =
     Instance.reverse <- Instance.makeReverse Instance.modules
     Instance.I.isRunner <- false
-    VisitsClear()
-    SamplesClear()
+    visitsClear()
+    samplesClear()
 
   let ModuleReset (m: string array) =
     Instance.modules <- m
@@ -67,7 +67,7 @@ module Adapter =
     Instance.I.visits.[key] |> Seq.cast<obj>
 
   let VisitCount (key, key2) = (Instance.I.visits.[key].[key2]).Count
-  let Lock = Instance.fixedNames :> obj
+  let Lock = Counter.fixedNames :> obj
 
   let VisitImplNone (moduleId, hitPointId) =
     Instance.I.visitImpl moduleId hitPointId Track.Null

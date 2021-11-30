@@ -1438,11 +1438,11 @@ module internal Runner =
               |> J.getFirstOperandAsNumber
               |> enum
 
-            // TODO read modules + extra arrays from instance
+            // TODO read modules from instance
+            // get all the ldstr operands as strings
+            // append fixed names, assumed compatible
             let table =
-              [| String.Empty
-                 Track.Entry
-                 Track.Exit |]
+              Counter.fixedNames // shared code
 
             let hits =
               Dictionary<string, Dictionary<int, PointVisit>>()

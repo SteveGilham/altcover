@@ -107,6 +107,14 @@ module internal Counter =
                     Justification = "Access by reflection in the monitor")>]
   let mutable internal branchVisits = 0L
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Type compatibility")>]
+  let internal fixedNames =
+    [| String.Empty
+       Track.Entry
+       Track.Exit |]
+
   // Implementation details
 #if DEBUG
   module internal I =
