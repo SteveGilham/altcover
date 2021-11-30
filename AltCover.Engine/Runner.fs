@@ -953,6 +953,7 @@ module internal Runner =
       result
 
     let internal collectResults
+      (table: string array)
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       report
       =
@@ -983,7 +984,8 @@ module internal Runner =
                let rec sink hitcount =
                  let hit =
                    try
-                     let id = formatter.ReadString()
+                     let index = formatter.ReadInt32()
+                     let id = table.[index]
                      let strike = formatter.ReadInt32()
                      let tag = formatter.ReadByte() |> int
 
@@ -1002,7 +1004,8 @@ module internal Runner =
                            Dictionary<string, Dictionary<int, PointVisit>>()
 
                          let rec ``module`` () =
-                           let m = formatter.ReadString()
+                           let index = formatter.ReadInt32()
+                           let m = table.[index]
 
                            if String.IsNullOrEmpty m then
                              ()
@@ -1055,6 +1058,7 @@ module internal Runner =
                        | _ -> Null
                      )
                    with
+                   | :? IndexOutOfRangeException
                    | :? EndOfStreamException -> None
 
                  match hit with
@@ -1102,6 +1106,7 @@ module internal Runner =
         (visits = 0L)
 
     let internal monitorBase
+      (table: string array)
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       report
       (payload: string list -> int)
@@ -1113,7 +1118,7 @@ module internal Runner =
         else
           runProcess report payload args
 
-      collectResults hits report
+      collectResults table hits report
       result
 
     let internal postProcess
@@ -1433,11 +1438,20 @@ module internal Runner =
               |> J.getFirstOperandAsNumber
               |> enum
 
+            // TODO read modules + extra arrays from instance
+            let table =
+              [| String.Empty
+                 Track.Entry
+                 Track.Exit |]
+
             let hits =
               Dictionary<string, Dictionary<int, PointVisit>>()
 
             let payload = J.getPayload
-            let result = J.getMonitor hits report payload rest
+
+            let result =
+              J.getMonitor table hits report payload rest
+
             let delta = J.doReport hits format report output
 
             CommandLine.writeResourceWithFormatItems

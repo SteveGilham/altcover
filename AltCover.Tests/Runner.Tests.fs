@@ -3237,6 +3237,8 @@ module AltCoverRunnerTests =
   let NullPayloadShouldReportNothing () =
     Runner.init ()
 
+    let table = [| "nonesuch " |]
+
     let counts =
       Dictionary<string, Dictionary<int, PointVisit>>()
 
@@ -3252,11 +3254,23 @@ module AltCoverRunnerTests =
       s.Close()
 
     let r =
-      Runner.J.getMonitor counts unique List.length []
+      Runner.J.getMonitor table counts unique List.length []
 
     Assert.That(r, Is.EqualTo 0)
     Assert.That(File.Exists(unique + ".acv"))
     Assert.That(counts, Is.Empty)
+
+  let internal fixedNames =
+    [| String.Empty
+       Track.Entry
+       Track.Exit |]
+
+  let internal makeReverse (m: string array) =
+    [ m // name to index
+      fixedNames ]
+    |> Seq.concat
+    |> Seq.mapi (fun i m -> (m, i))
+    |> Map.ofSeq
 
   [<Test>]
   let ActivePayloadShouldReportAsExpected () =
@@ -3272,8 +3286,16 @@ module AltCoverRunnerTests =
     let unique =
       Path.Combine(where, Guid.NewGuid().ToString())
 
+    let modules = [| "a"; "b"; "c" |]
+
+    let table =
+      [| modules; fixedNames |] |> Array.concat
+
+    let reverse = makeReverse modules
+
     let r =
       Runner.J.getMonitor
+        table
         counts
         unique
         (fun l ->
@@ -3285,7 +3307,7 @@ module AltCoverRunnerTests =
           l
           |> List.mapi
                (fun i x ->
-                 formatter.Write x
+                 formatter.Write(Map.find x reverse)
                  formatter.Write i
                  formatter.Write 0uy
                  x)
@@ -3324,6 +3346,12 @@ module AltCoverRunnerTests =
   [<Test>]
   let CollectShouldReportAsExpected () =
     Runner.init ()
+    let modules = [| "a"; "b"; "c" |]
+
+    let table =
+      [| modules; fixedNames |] |> Array.concat
+
+    let reverse = makeReverse modules
 
     try
       Runner.collect.Value <- true
@@ -3347,7 +3375,7 @@ module AltCoverRunnerTests =
         l
         |> List.mapi
              (fun i x ->
-               formatter.Write x
+               formatter.Write(Map.find x reverse)
                formatter.Write i
                formatter.Write 0uy
                x)
@@ -3364,6 +3392,7 @@ module AltCoverRunnerTests =
 
       let r =
         Runner.J.getMonitor
+          table
           counts
           unique
           (processing unique)
@@ -3383,6 +3412,12 @@ module AltCoverRunnerTests =
   [<Test>]
   let JunkPayloadShouldReportAsExpected () =
     Runner.init ()
+    let modules = [| "a"; "b"; "c" |]
+
+    let table =
+      [| modules; fixedNames |] |> Array.concat
+
+    let reverse = makeReverse modules
 
     let counts =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -3401,6 +3436,7 @@ module AltCoverRunnerTests =
 
     let r =
       Runner.J.getMonitor
+        table
         counts
         unique
         (fun l ->
@@ -3463,8 +3499,16 @@ module AltCoverRunnerTests =
         String.Empty
         "e" ]
 
+    let modules = [| "a"; "b"; "c"; "d"; "e"; "Extra" |]
+
+    let names =
+      [| modules; fixedNames |] |> Array.concat
+
+    let reverse = makeReverse modules
+
     let r =
       Runner.J.getMonitor
+        names
         counts
         unique
         (fun l ->
@@ -3477,7 +3521,7 @@ module AltCoverRunnerTests =
           |> List.zip payloads
           |> List.mapi
                (fun i (y, x) ->
-                 formatter.Write x
+                 formatter.Write(Map.find x reverse)
                  formatter.Write i
 
                  match y with
@@ -3498,7 +3542,7 @@ module AltCoverRunnerTests =
                    t.Keys
                    |> Seq.iter
                         (fun m ->
-                          formatter.Write m
+                          formatter.Write(Map.find m reverse)
                           formatter.Write t.[m].Keys.Count
 
                           t.[m].Keys
@@ -3527,7 +3571,7 @@ module AltCoverRunnerTests =
 
                                  formatter.Write(Tag.Null |> byte)))
 
-                   formatter.Write String.Empty
+                   formatter.Write(Map.find String.Empty reverse)
 
                  x)
           |> List.length)

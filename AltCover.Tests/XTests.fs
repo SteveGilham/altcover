@@ -1163,7 +1163,9 @@ module AltCoverXTests =
   [<Test>]
   let FinishCommitsTheRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(AltCoverTests.dir, "Sample3.dll")
+
+    let path =
+      Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -1300,11 +1302,13 @@ module AltCoverXTests =
       test <@ payload [ "test"; "1" ] = 255 @>
 
       let monitor
+        (table: string array)
         (hits: Dictionary<string, Dictionary<int, PointVisit>>)
         (token: string)
         _
         _
         =
+        test <@ table |> Seq.isEmpty |> not @>
         test' <@ token = codedreport @> "should be default coverage file"
         test <@ hits |> Seq.isEmpty @>
         127
