@@ -1438,11 +1438,19 @@ module internal Runner =
               |> J.getFirstOperandAsNumber
               |> enum
 
-            // TODO read modules from instance
+            // Read modules from instance -- 
             // get all the ldstr operands as strings
             // append fixed names, assumed compatible
+            // make an array
             let table =
-              Counter.fixedNames // shared code
+              [ (J.getMethod instance "get_modules")
+                  .Body
+                  .Instructions
+                |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldstr)
+                |> Seq.map (fun i -> i.Operand :?> string)
+                Counter.fixedNames ] // shared code
+              |> Seq.concat
+              |> Seq.toArray
 
             let hits =
               Dictionary<string, Dictionary<int, PointVisit>>()
