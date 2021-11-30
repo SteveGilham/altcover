@@ -81,6 +81,24 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let mutable internal modules = [| String.Empty |]
 
+  let internal fixedNames =
+    [| String.Empty
+       Track.Entry
+       Track.Exit |]
+
+  let internal makeReverse (m: string array) =
+    [ m // name to index
+      fixedNames ]
+    |> Seq.concat
+    |> Seq.mapi (fun i m -> (m, i))
+    |> Map.ofSeq
+
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let mutable internal reverse = makeReverse modules
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
@@ -262,7 +280,7 @@ module Instance =
       clear ()
 
       trace.OnConnected
-        (fun () -> trace.OnFinish counts)
+        (fun () -> trace.OnFinish reverse counts)
         (fun () ->
           match counts.Values |> Seq.sumBy (fun x -> x.Count) with
           | 0 -> ()
@@ -314,7 +332,7 @@ module Instance =
           if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
             clear ()
 
-          trace.OnVisit counts moduleId hitPointId context)
+          trace.OnVisit reverse counts moduleId hitPointId context)
 
     [<SuppressMessage("Microsoft.Usage",
                       "CA2202:DisposeObjectsBeforeLosingScope",

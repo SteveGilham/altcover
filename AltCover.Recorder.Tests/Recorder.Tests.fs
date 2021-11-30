@@ -246,7 +246,6 @@ module AltCoverTests =
     try
       Instance.I.isRunner <- true
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-      Adapter.VisitsClear()
 
       Assert.True(Instance.I.callerId () |> Option.isNone)
       Assert.True(Adapter.payloadSelector false = Adapter.asNull ())
@@ -1112,13 +1111,13 @@ module AltCoverTests =
         let saved = Console.Out
 
         try
-          Adapter.VisitsClear()
+          Adapter.HardReset()
           use stdout = new StringWriter()
           Console.SetOut stdout
           Instance.FlushFinish()
           Assert.That(stdout.ToString(), Is.Empty)
         finally
-          Adapter.VisitsClear()
+          Adapter.HardReset()
           Console.SetOut saved)
 
     getMyMethodName "<="
@@ -1152,11 +1151,16 @@ module AltCoverTests =
   let PauseLeavesExpectedTraces () =
     getMyMethodName "=>"
 
+    // Any asserts get reported as sycnh code called when unsynched
+    // i.e. a trywithrelease bug
+    //let mutable message = String.Empty
     lock
       Adapter.Lock
       (fun () ->
         trywithrelease
           (fun () ->
+            //try
+            Adapter.ModuleReset [| "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" |]
             let saved = Console.Out
             let here = Directory.GetCurrentDirectory()
 
@@ -1177,7 +1181,6 @@ module AltCoverTests =
 
             try
               Instance.I.isRunner <- true
-              Adapter.VisitsClear()
 
               use stdout = new StringWriter()
               Console.SetOut stdout
@@ -1247,11 +1250,15 @@ module AltCoverTests =
             finally
               Instance.I.trace <- save
               AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               Instance.I.isRunner <- false
               Console.SetOut saved
               Directory.SetCurrentDirectory(here)
-              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
+              AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))
+            //with
+            //| x -> message <- x.ToString() ))
+            //Assert.True(message |> String.IsNullOrEmpty, message)
+            ))
 
     getMyMethodName "<="
 
@@ -1358,7 +1365,7 @@ module AltCoverTests =
               Adapter.HardReset()
               Instance.I.trace <- save
               AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               Console.SetOut saved
               Directory.SetCurrentDirectory(here)
               File.Delete tag
@@ -1390,7 +1397,7 @@ module AltCoverTests =
             Instance.I.trace <- Adapter.makeNullTrace null
 
             try
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               use stdout = new StringWriter()
               Console.SetOut stdout
               Directory.CreateDirectory(unique) |> ignore
@@ -1462,7 +1469,7 @@ module AltCoverTests =
             finally
               Instance.I.trace <- save
               AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               Console.SetOut saved
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
@@ -1494,7 +1501,7 @@ module AltCoverTests =
             Instance.supervision <- true
 
             try
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               use stdout = new StringWriter()
               Console.SetOut stdout
               Directory.CreateDirectory(unique) |> ignore
@@ -1559,7 +1566,7 @@ module AltCoverTests =
               Instance.I.trace <- save
               Instance.supervision <- false
               AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               Console.SetOut saved
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))
@@ -1985,7 +1992,7 @@ module AltCoverTests =
             Instance.I.trace <- Adapter.makeNullTrace null
 
             try
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               use stdout = new StringWriter()
               Console.SetOut stdout
               Directory.CreateDirectory(unique) |> ignore
@@ -2069,7 +2076,7 @@ module AltCoverTests =
             finally
               Instance.I.trace <- save
               AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
-              Adapter.VisitsClear()
+              Adapter.HardReset()
               Console.SetOut saved
               Directory.SetCurrentDirectory(here)
               AltCoverCoreTests.maybeIOException (fun () -> Directory.Delete(unique))))

@@ -10,15 +10,16 @@ module Adapter =
   let DoUnload () = Instance.I.doUnload
   let DoExit () = Instance.I.doExit
 
-  let VisitsClear () =
+  let private VisitsClear () =
     Instance.I.clear ()
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
-  let SamplesClear () =
+  let private SamplesClear () =
     Instance.I.samples <- Instance.I.makeSamples ()
 
   let private reset () =
+    Instance.reverse <- Instance.makeReverse Instance.modules
     Instance.I.isRunner <- false
     VisitsClear()
     SamplesClear()
@@ -66,15 +67,13 @@ module Adapter =
     Instance.I.visits.[key] |> Seq.cast<obj>
 
   let VisitCount (key, key2) = (Instance.I.visits.[key].[key2]).Count
-  let Lock = Instance.I.visits :> obj
+  let Lock = Instance.fixedNames :> obj
 
   let VisitImplNone (moduleId, hitPointId) =
     Instance.I.visitImpl moduleId hitPointId Track.Null
 
   let VisitImplMethod (moduleId, hitPointId, mId) =
     Instance.I.visitImpl moduleId hitPointId (Call mId)
-  //let internal VisitImpl (a, b, c) =
-  //  Instance.I.visitImpl a b c
 
   let internal addSample (moduleId, hitPointId, context) =
     Instance.I.takeSample Sampling.Single moduleId hitPointId context
@@ -189,7 +188,6 @@ module Adapter =
 
     Instance.I.curriedIssue71Wrapper "a" "b" "c" "d" pitcher
 
-  let internal tracePush (a, b, c) = Instance.I.trace.Push a b c
-//let LogException (a, b, c, d) = Instance.I.logException a b c d
-//let FindIndexFromUspid (a,b) = Counter.I.findIndexFromUspid a b
+  let internal tracePush (a, b, c) =
+    Instance.I.trace.Push Instance.reverse a b c
 #endif

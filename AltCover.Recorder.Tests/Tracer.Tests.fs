@@ -93,10 +93,18 @@ module AltCoverCoreTests =
     let hits = List<string * int * Track>()
     use formatter = new System.IO.BinaryReader(stream)
 
+    let indexing =
+      [| Instance.modules
+         [| String.Empty
+            Track.Entry
+            Track.Exit |] |]
+      |> Array.concat
+
     let rec sink () =
       maybeIOException
         (fun () ->
-          let id = formatter.ReadString()
+          let index = formatter.ReadInt32()
+          let id = indexing.[index]
           let strike = formatter.ReadInt32()
           let tag = formatter.ReadByte() |> int
 
@@ -114,7 +122,9 @@ module AltCoverCoreTests =
                Dictionary<string, Dictionary<int, PointVisit>>()
 
              let rec ``module`` () =
-               let m = formatter.ReadString()
+               let index = formatter.ReadInt32()
+
+               let m = indexing.[index]
 
                if String.IsNullOrEmpty m then
                  ()
@@ -180,6 +190,7 @@ module AltCoverCoreTests =
 
     let tag = unique + ".acv"
 
+    Adapter.ModuleReset [| "name" |]
     let expected = [ ("name", 23, Adapter.asNull ()) ]
 
     do
@@ -190,7 +201,6 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
 
       try
-        Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
@@ -235,6 +245,7 @@ module AltCoverCoreTests =
       Path.Combine(where, Guid.NewGuid().ToString())
 
     let tag = unique + ".acv"
+    Adapter.ModuleReset [| "name" |]
 
     let t =
       Dictionary<string, Dictionary<int, PointVisit>>()
@@ -265,7 +276,6 @@ module AltCoverCoreTests =
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
 
-        Adapter.HardReset()
         Adapter.VisitsAddTrack("name", 23, 1L)
         Adapter.VisitImplMethod("name", 23, 5)
       finally
@@ -381,11 +391,12 @@ module AltCoverCoreTests =
     try
       let client = Tracer.Create unique
 
+      Adapter.ModuleReset [| "name" |]
+
       let expected =
         [ ("name", client.GetHashCode(), Adapter.asNull ()) ]
 
       try
-        Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
         Assert.That(Instance.I.trace.Equals client, Is.False)
         Assert.That(Instance.I.trace.Equals expected, Is.False)
@@ -422,4 +433,4 @@ module AltCoverCoreTests =
 
       Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
-      Adapter.VisitsClear()
+      Adapter.HardReset()

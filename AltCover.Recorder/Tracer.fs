@@ -68,7 +68,7 @@ type internal Tracer =
     | :? ObjectDisposedException
     | :? NullReferenceException -> ()
 
-  member private this.PushContext context =
+  member private this.PushContext (table: Map<string, int>) context =
     match context with
     | Null -> this.Formatter.Write(Tag.Null |> byte)
     | Time t ->
@@ -88,7 +88,7 @@ type internal Tracer =
       |> Seq.filter (fun k -> t.[k].Count > 0)
       |> Seq.iter
            (fun m ->
-             this.Formatter.Write m
+             this.Formatter.Write(Map.find m table)
              this.Formatter.Write t.[m].Count
 
              t.[m].Keys
@@ -97,19 +97,29 @@ type internal Tracer =
                     this.Formatter.Write p
                     let v = t.[m].[p]
                     this.Formatter.Write v.Count
-                    v.Tracks |> Seq.iter this.PushContext
-                    this.PushContext Null))
+                    v.Tracks |> Seq.iter (this.PushContext table)
+                    this.PushContext table Null))
 
-      this.Formatter.Write String.Empty
+      this.Formatter.Write(Map.find String.Empty table)
 
-  member internal this.Push (moduleId: string) (hitPointId: int) context =
-    this.Formatter.Write moduleId
+  member internal this.Push
+    (table: Map<string, int>)
+    (moduleId: string)
+    (hitPointId: int)
+    context
+    =
+    this.Formatter.Write(Map.find moduleId table)
     this.Formatter.Write hitPointId
-    this.PushContext context
+    this.PushContext table context
 
-  member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
+  member internal this.CatchUp
+    (table: Map<string, int>)
+    (visits: Dictionary<string, Dictionary<int, PointVisit>>)
+    =
     if visits.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
-      visits |> Table |> this.Push String.Empty 0
+      visits
+      |> Table
+      |> (this.Push table String.Empty 0)
 
   member internal this.OnStart() =
     let running =
@@ -122,12 +132,12 @@ type internal Tracer =
 
   member internal this.OnConnected f g = if this.IsConnected then f () else g ()
 
-  member internal this.OnFinish visits =
-    this.CatchUp visits
+  member internal this.OnFinish table visits =
+    this.CatchUp table visits
     this.Close()
 
-  member internal this.OnVisit visits moduleId hitPointId context =
-    this.CatchUp visits
-    this.Push moduleId hitPointId context
+  member internal this.OnVisit table visits moduleId hitPointId context =
+    this.CatchUp table visits
+    this.Push table moduleId hitPointId context
     this.Formatter.Flush()
     this.Stream.Flush()
