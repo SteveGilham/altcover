@@ -135,7 +135,7 @@ module Instance =
     /// </summary>
     let mutable internal visits = makeVisits ()
 
-    let private makeSamples () =
+    let internal makeSamples () =
       modules
       |> Seq.fold
            (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
@@ -389,31 +389,23 @@ module Instance =
            |> raise)
         |> Seq.map
              (fun hit ->
-               let mutable hasModuleKey = samples.ContainsKey(moduleId)
+               if samples.ContainsKey(moduleId) then
+                 let next = samples.[moduleId]
 
-               if hasModuleKey |> not then
-                 lock
-                   samples
-                   (fun () ->
-                     hasModuleKey <- samples.ContainsKey(moduleId)
+                 let mutable hasPointKey = next.ContainsKey(hit)
 
-                     if hasModuleKey |> not then
-                       samples.Add(moduleId, Dictionary<Sampled, bool>()))
+                 if hasPointKey |> not then
+                   lock
+                     next
+                     (fun () ->
+                       hasPointKey <- next.ContainsKey(hit)
 
-               let next = samples.[moduleId]
+                       if hasPointKey |> not then
+                         next.Add(hit, true))
 
-               let mutable hasPointKey = next.ContainsKey(hit)
-
-               if hasPointKey |> not then
-                 lock
-                   next
-                   (fun () ->
-                     hasPointKey <- next.ContainsKey(hit)
-
-                     if hasPointKey |> not then
-                       next.Add(hit, true))
-
-               (hasPointKey && hasModuleKey) |> not)
+                 not hasPointKey
+               else
+                 false)
         |> Seq.fold (||) false // true if any are novel -- all must be evaluated
 
     /// <summary>

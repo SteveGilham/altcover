@@ -1066,6 +1066,11 @@ module internal Runner =
                         || ((String.IsNullOrEmpty key)
                             && hitPointId = 0
                             && visit.GetType().ToString() = "AltCover.Track+Table") then
+                       if hits.ContainsKey key |> not
+                          && key |> String.IsNullOrWhiteSpace |> not // terminator
+                       then
+                         hits.Add(key, Dictionary<int, PointVisit>())
+
                        Counter.addVisit hits key hitPointId visit
                      else
                        0L

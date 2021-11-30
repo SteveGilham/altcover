@@ -104,19 +104,33 @@ module AltCoverTests =
       Adapter.Lock
       (fun () ->
         try
-          Adapter.SamplesClear()
-          Assert.True(Adapter.addSample ("module", 23, Null))
-          Assert.True(Adapter.addSample ("module", 24, Null))
-          Assert.True(Adapter.addSample ("newmodule", 23, Null))
-          Assert.True(Adapter.addSample ("module", 23, Null) |> not)
-          Assert.True(Adapter.addSampleUnconditional ("module", 23, Null))
-          Assert.True(Adapter.addSample ("module", 23, Call 1))
-          Assert.True(Adapter.addSample ("module", 23, Time 0L))
-          Assert.True(Adapter.addSample ("module", 24, Both { Call = 1; Time = 0L }))
-          Assert.True(Adapter.addSample ("module", 25, Both { Call = 1; Time = 0L }))
-          Assert.True(Adapter.addSample ("module", 25, Call 1) |> not)
-          Assert.True(Adapter.addSample ("module", 25, Call 1) |> not)
-          Assert.True(Adapter.addSample ("module", 25, Null) |> not)
+          Adapter.ModuleReset [| "module"
+                                 "newmodule" |]
+
+          Assert.True(Adapter.addSample ("module", 23, Null), "Test 1")
+          Assert.True(Adapter.addSample ("module", 24, Null), "Test 2")
+          Assert.True(Adapter.addSample ("newmodule", 23, Null), "Test 3")
+          Assert.True(Adapter.addSample ("module", 23, Null) |> not, "Test 4")
+          Assert.True(Adapter.addSampleUnconditional ("module", 23, Null), "Test 5")
+          Assert.True(Adapter.addSample ("module", 23, Call 1), "Test 6")
+          Assert.True(Adapter.addSample ("module", 23, Time 0L), "Test 7")
+
+          Assert.True(
+            Adapter.addSample ("module", 24, Both { Call = 1; Time = 0L }),
+            "Test 8"
+          )
+
+          Assert.True(
+            Adapter.addSample ("module", 25, Both { Call = 1; Time = 0L }),
+            "Test 9"
+          )
+
+          Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 10")
+          Assert.True(Adapter.addSample ("module", 25, Call 1) |> not, "Test 11")
+          Assert.True(Adapter.addSample ("module", 25, Null) |> not, "Test 12")
+
+          // out of band example
+          Assert.True(Adapter.addSample ("nonesuch", 25, Null) |> not, "Test 12a")
 
           Assert.Throws<InvalidDataException>
             (fun () ->
@@ -124,7 +138,7 @@ module AltCoverTests =
               |> ignore)
           |> ignore
         finally
-          Adapter.SamplesClear())
+          Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -330,15 +344,15 @@ module AltCoverTests =
         Adapter.ModuleReset [| key |]
 
         try
-          Instance.I.visits.Clear()
           Instance.I.trace <- Adapter.makeNullTrace null
 
           Instance.I.visitSelection (Adapter.asNull ()) key 23
 
           Assert.That(
-            Instance.I.visits.Count,
-            Is.EqualTo 1,
-            "A visit that should have happened, didn't"
+            Instance.I.visits.Keys,
+            Is.EquivalentTo [ key
+                              Track.Entry
+                              Track.Exit ]
           )
 
           Assert.That(
@@ -351,7 +365,7 @@ module AltCoverTests =
           Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
           Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
         finally
-          Instance.I.visits.Clear()
+          Adapter.HardReset()
           Instance.I.trace <- save)
 
     getMyMethodName "<="
@@ -520,13 +534,20 @@ module AltCoverTests =
       Instance.I.visits
       (fun () ->
         try
-          Instance.I.visits.Clear()
           let key = " "
+          Adapter.ModuleReset [| key; "key" |]
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Instance.I.visitImpl "key" 42 (Adapter.asNull ())
-          Assert.That(Instance.I.visits.Count, Is.EqualTo 2)
+
+          Assert.That(
+            Instance.I.visits.Keys,
+            Is.EquivalentTo [ key
+                              "key"
+                              Track.Entry
+                              Track.Exit ]
+          )
         finally
-          Instance.I.visits.Clear())
+          Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -538,14 +559,21 @@ module AltCoverTests =
       Instance.I.visits
       (fun () ->
         try
-          Instance.I.visits.Clear()
           let key = " "
+          Adapter.ModuleReset [| key |]
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Instance.I.visitImpl key 42 (Adapter.asNull ())
-          Assert.That(Instance.I.visits.Count, Is.EqualTo 1)
+
+          Assert.That(
+            Instance.I.visits.Keys,
+            Is.EquivalentTo [ key
+                              Track.Entry
+                              Track.Exit ]
+          )
+
           Assert.That(Instance.I.visits.[key].Count, Is.EqualTo 2)
         finally
-          Adapter.VisitsClear())
+          Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -560,13 +588,12 @@ module AltCoverTests =
         Adapter.ModuleReset [| key |]
 
         try
-          Instance.I.visits.Clear()
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
           Assert.That(Instance.I.visits.[key].[23].Tracks, Is.Empty)
         finally
-          Instance.I.visits.Clear())
+          Adapter.HardReset())
 
     getMyMethodName "<="
 
@@ -581,43 +608,15 @@ module AltCoverTests =
         Adapter.ModuleReset [| key |]
 
         try
-          Instance.I.visits.Clear()
-          let key = " "
           let payload = Adapter.time DateTime.UtcNow.Ticks
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Instance.I.visitImpl key 23 payload
           Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 1)
           Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo [ payload ])
         finally
-          Instance.I.visits.Clear())
+          Adapter.HardReset())
 
     getMyMethodName "<="
-
-  //[<Test>]
-  //let TabledVisitsShouldIncrementCount() =
-  //  getMyMethodName "=>"
-  //  lock Instance.I.visits (fun () ->
-  //    Adapter.Reset()
-  //    try
-  //      Instance.I.visits.Clear()
-  //      let key = " "
-  //      Instance.I.visitImpl(key, 23, (Adapter.Null()))
-  //      let table = Dictionary<string, Dictionary<int, PointVisit>>()
-  //      table.Add(key, Dictionary<int, PointVisit>())
-  //      let payloads =
-  //        [ Adapter.Call 17
-  //          Adapter.Time 23L
-  //          Adapter.NewBoth(5L, 42) ]
-
-  //      let pv = pointVisitInit 42L payloads
-  //      table.[key].Add(23, pv)
-  //      let n = Counter.AddTable(Instance.I.visits, table)
-  //      Assert.That(n, Is.EqualTo 45)
-  //      Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 43)
-  //      Assert.That(Instance.I.visits.[key].[23].Tracks, Is.EquivalentTo payloads)
-  //    finally
-  //      Instance.I.visits.Clear())
-  //  getMyMethodName "<="
 
   [<Test>]
   let OldDocumentStartIsNotUpdated () =

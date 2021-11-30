@@ -319,17 +319,6 @@ module internal Counter =
 
       flushStart
 
-    let internal ensureModule
-      (counts: Dictionary<string, Dictionary<int, PointVisit>>)
-      moduleId
-      =
-      if not (counts.ContainsKey moduleId) then
-        lock
-          counts
-          (fun () ->
-            if not (counts.ContainsKey moduleId) then
-              counts.Add(moduleId, Dictionary<int, PointVisit>()))
-
     let internal ensurePoint (counts: Dictionary<int, PointVisit>) hitPointId =
       if not (counts.ContainsKey hitPointId) then
         lock
@@ -355,7 +344,9 @@ module internal Counter =
       t.Keys
       |> Seq.iter
            (fun m ->
-             ensureModule counts m
+             if counts.ContainsKey m |> not then
+               counts.Add(m, Dictionary<int, PointVisit>())
+
              let next = counts.[m]
              let here = t.[m]
 
@@ -391,15 +382,15 @@ module internal Counter =
     hitPointId
     context
     =
-    I.ensureModule counts moduleId
-    let next = counts.[moduleId]
-    I.ensurePoint next hitPointId
+    if counts.ContainsKey moduleId then
+      let next = counts.[moduleId]
+      I.ensurePoint next hitPointId
 
-    let v = next.[hitPointId]
+      let v = next.[hitPointId]
 
-    match context with
-    | Null -> v.Step()
-    | something -> v.Track something
+      match context with
+      | Null -> v.Step()
+      | something -> v.Track something
 
 #if RUNNER
   let internal addVisit

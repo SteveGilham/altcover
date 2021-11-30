@@ -15,7 +15,8 @@ module Adapter =
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
-  let SamplesClear () = Instance.I.samples.Clear()
+  let SamplesClear () =
+    Instance.I.samples <- Instance.I.makeSamples ()
 
   let private reset () =
     Instance.I.isRunner <- false

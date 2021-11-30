@@ -100,6 +100,8 @@ module AltCoverRunnerTests =
     let visits =
       new Dictionary<string, Dictionary<int, PointVisit>>()
 
+    visits.Add(" ", Dictionary<int, PointVisit>())
+
     let key = " "
     let v1 = Counter.addVisit visits key 23 Null
     Assert.That(v1, Is.EqualTo 1)
@@ -115,6 +117,8 @@ module AltCoverRunnerTests =
 
     let visits =
       new Dictionary<string, Dictionary<int, PointVisit>>()
+
+    visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
@@ -133,6 +137,9 @@ module AltCoverRunnerTests =
     let visits =
       new Dictionary<string, Dictionary<int, PointVisit>>()
 
+    visits.Add(" ", Dictionary<int, PointVisit>())
+    visits.Add("key", Dictionary<int, PointVisit>())
+
     let key = " "
     let v3 = Counter.addVisit visits key 23 Null
     Assert.That(v3, Is.EqualTo 1)
@@ -146,6 +153,8 @@ module AltCoverRunnerTests =
 
     let visits =
       new Dictionary<string, Dictionary<int, PointVisit>>()
+
+    visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
     let v5 = Counter.addVisit visits key 23 Null
@@ -162,6 +171,8 @@ module AltCoverRunnerTests =
     let visits =
       new Dictionary<string, Dictionary<int, PointVisit>>()
 
+    visits.Add(" ", Dictionary<int, PointVisit>())
+
     let key = " "
     let v7 = Counter.addVisit visits key 23 Null
     Assert.That(v7, Is.EqualTo 1)
@@ -177,6 +188,8 @@ module AltCoverRunnerTests =
 
     let visits =
       new Dictionary<string, Dictionary<int, PointVisit>>()
+
+    visits.Add(" ", Dictionary<int, PointVisit>())
 
     let key = " "
     let payload = Time DateTime.UtcNow.Ticks
@@ -2739,6 +2752,9 @@ module AltCoverRunnerTests =
       hits
       |> Seq.iter
            (fun (moduleId, hitPointId, hit) ->
+             if counts.ContainsKey moduleId |> not then
+               counts.Add(moduleId, Dictionary<int, PointVisit>())
+
              AltCover.Counter.addVisit counts moduleId hitPointId hit
              |> ignore)
 
@@ -2860,6 +2876,9 @@ module AltCoverRunnerTests =
       hits
       |> Seq.iter
            (fun (moduleId, hitPointId, hit) ->
+             if counts.ContainsKey moduleId |> not then
+               counts.Add(moduleId, Dictionary<int, PointVisit>())
+
              AltCover.Counter.addVisit counts moduleId hitPointId hit
              |> ignore)
 
@@ -2978,6 +2997,9 @@ module AltCoverRunnerTests =
       hits
       |> Seq.iter
            (fun (moduleId, hitPointId, hit) ->
+             if counts.ContainsKey moduleId |> not then
+               counts.Add(moduleId, Dictionary<int, PointVisit>())
+
              AltCover.Counter.addVisit counts moduleId hitPointId hit
              |> ignore)
 
@@ -3129,6 +3151,9 @@ module AltCoverRunnerTests =
       hits
       |> Seq.iter
            (fun (moduleId, hitPointId, hit) ->
+             if counts.ContainsKey moduleId |> not then
+               counts.Add(moduleId, Dictionary<int, PointVisit>())
+
              AltCover.Counter.addVisit counts moduleId hitPointId hit
              |> ignore)
 
