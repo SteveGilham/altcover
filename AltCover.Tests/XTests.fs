@@ -1162,8 +1162,8 @@ module AltCoverXTests =
 
   [<Test>]
   let FinishCommitsTheRecordingAssembly () =
-    let path =
-      Path.Combine(AltCoverTests.dir, "Sample4.dll")
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -1192,7 +1192,7 @@ module AltCoverXTests =
         Instrument.I.instrumentationVisitor input Finish
 
       test <@ result.RecordingAssembly |> isNull @>
-      let created = Path.Combine(output, "Sample4.dll")
+      let created = Path.Combine(output, "Sample3.dll")
       test' <@ File.Exists created @> (created + " not found")
 
       let isWindows =

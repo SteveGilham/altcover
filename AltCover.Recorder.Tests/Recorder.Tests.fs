@@ -137,10 +137,10 @@ module AltCoverTests =
         let save = Instance.I.trace
 
         try
-          Adapter.VisitsClear()
+          let key = " "
+          Adapter.ModuleReset [| key |]
           Instance.I.trace <- Adapter.makeNullTrace null
 
-          let key = " "
           Instance.I.recording <- false
           Instance.Visit "key" 17
           Instance.I.recording <- true
@@ -148,15 +148,26 @@ module AltCoverTests =
           Instance.Visit key -23
           Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
           Instance.Visit key -23
-          Assert.True(Adapter.VisitsSeq() |> Seq.length = 1)
-          Assert.True(Adapter.VisitsEntrySeq key |> Seq.length = 1)
+
+          Assert.True(
+            Adapter.VisitsSeq() |> Seq.length = 3,
+            sprintf "Adapter.VisitsSeq() = %A"
+            <| Adapter.VisitsSeq()
+          )
+
+          Assert.True(
+            Adapter.VisitsEntrySeq key |> Seq.length = 1,
+            sprintf "Adapter.VisitsEntrySeq() = %A"
+            <| Adapter.VisitsEntrySeq
+          )
+
           Assert.True(Adapter.VisitCount(key, -23) = 2L)
           Assert.That(Counter.totalVisits, Is.EqualTo 1L)
           Assert.That(Counter.branchVisits, Is.EqualTo 1L)
         finally
           Instance.CoverageFormat <- ReportFormat.NCover
           Instance.I.recording <- true
-          Adapter.VisitsClear()
+          Adapter.HardReset()
           Instance.I.trace <- save)
 
     getMyMethodName "<="
@@ -216,6 +227,8 @@ module AltCoverTests =
 
   [<Test>]
   let PayloadWithEntryExitGeneratedIsAsExpected () =
+    Adapter.ModuleReset [||]
+
     try
       Instance.I.isRunner <- true
       Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
@@ -303,7 +316,7 @@ module AltCoverTests =
 
     Assert.That(d2 >= c2, sprintf "%A >= %A" d2 c2)
 
-    Adapter.VisitsClear()
+    Adapter.HardReset()
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously () =
@@ -313,13 +326,13 @@ module AltCoverTests =
       Instance.I.visits
       (fun () ->
         let save = Instance.I.trace
-        Adapter.Reset()
+        let key = " "
+        Adapter.ModuleReset [| key |]
 
         try
           Instance.I.visits.Clear()
           Instance.I.trace <- Adapter.makeNullTrace null
 
-          let key = " "
           Instance.I.visitSelection (Adapter.asNull ()) key 23
 
           Assert.That(
@@ -543,11 +556,11 @@ module AltCoverTests =
     lock
       Instance.I.visits
       (fun () ->
-        Adapter.Reset()
+        let key = " "
+        Adapter.ModuleReset [| key |]
 
         try
           Instance.I.visits.Clear()
-          let key = " "
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Instance.I.visitImpl key 23 (Adapter.asNull ())
           Assert.That(Instance.I.visits.[key].[23].Count, Is.EqualTo 2)
@@ -564,7 +577,8 @@ module AltCoverTests =
     lock
       Instance.I.visits
       (fun () ->
-        Adapter.Reset()
+        let key = " "
+        Adapter.ModuleReset [| key |]
 
         try
           Instance.I.visits.Clear()
@@ -1200,7 +1214,13 @@ module AltCoverTests =
                      ))
 
               Adapter.DoPause().Invoke(null, null)
-              Assert.That(Adapter.VisitsSeq(), Is.Empty)
+
+              Adapter.VisitsSeq()
+              |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+              |> Seq.iter
+                   (fun v ->
+                     Assert.That(v.Value, Is.Empty, sprintf "Unexpected write %A" v))
+
               let recorded = stdout.ToString().Trim()
               Assert.That(recorded, Is.EqualTo "Pausing...")
 
@@ -1262,7 +1282,8 @@ module AltCoverTests =
               ()
 
             try
-              Adapter.Reset()
+              let key = "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"
+              Adapter.ModuleReset [| key |]
               Instance.I.trace <- Tracer.Create(tag)
 
               use stdout = new StringWriter()
@@ -1290,16 +1311,19 @@ module AltCoverTests =
                 ()
 
               [ 0 .. 9 ]
-              |> Seq.iter
-                   (fun i ->
-                     Adapter.VisitsAdd(
-                       "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f",
-                       i,
-                       (int64 (i + 1))
-                     ))
+              |> Seq.iter (fun i -> Adapter.VisitsAdd(key, i, (int64 (i + 1))))
 
               Adapter.DoResume().Invoke(null, null)
-              Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
+
+              Adapter.VisitsSeq()
+              |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+              |> Seq.iter
+                   (fun v ->
+                     Assert.That(
+                       v.Value,
+                       Is.Empty,
+                       sprintf "Visits should be cleared %A" v
+                     ))
 
               Assert.That(
                 Object.ReferenceEquals(Instance.I.trace, save),
@@ -1332,7 +1356,7 @@ module AltCoverTests =
                                   "-1" ]
               )
             finally
-              Adapter.Reset()
+              Adapter.HardReset()
               Instance.I.trace <- save
               AltCoverCoreTests.maybeDeleteFile Instance.ReportFile
               Adapter.VisitsClear()

@@ -68,6 +68,19 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Token = "AltCover"
 
+  /// <summary>
+  /// Gets the indexed module tokens
+  /// This property's IL code is modified to store instrumentation results
+  /// </summary>
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Code more easily rewritten thus")>]
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let mutable internal modules = [| String.Empty |]
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
@@ -107,14 +120,30 @@ module Instance =
       |> Seq.map (fun l -> resources.GetString(s + "." + l))
       |> Seq.tryFind (String.IsNullOrEmpty >> not)
 
+    let private makeVisits () =
+      [ modules
+        [| Track.Entry; Track.Exit |] ]
+      |> Seq.concat
+      |> Seq.fold
+           (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
+             d.Add(k, new Dictionary<int, PointVisit>())
+             d)
+           (Dictionary<string, Dictionary<int, PointVisit>>())
+
     /// <summary>
     /// Accumulation of visit records
     /// </summary>
-    let mutable internal visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+    let mutable internal visits = makeVisits ()
 
-    let mutable internal samples =
-      new Dictionary<string, Dictionary<Sampled, bool>>()
+    let private makeSamples () =
+      modules
+      |> Seq.fold
+           (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
+             d.Add(k, new Dictionary<Sampled, bool>())
+             d)
+           (Dictionary<string, Dictionary<Sampled, bool>>())
+
+    let mutable internal samples = makeSamples ()
 
     let mutable internal isRunner = false
 
@@ -221,7 +250,7 @@ module Instance =
     let mutable internal recording = true
 
     let internal clear () =
-      visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+      visits <- makeVisits ()
       Counter.branchVisits <- 0L
       Counter.totalVisits <- 0L
 
@@ -235,7 +264,7 @@ module Instance =
       trace.OnConnected
         (fun () -> trace.OnFinish counts)
         (fun () ->
-          match counts.Count with
+          match counts.Values |> Seq.sumBy (fun x -> x.Count) with
           | 0 -> ()
           | _ ->
             withMutex
@@ -271,7 +300,7 @@ module Instance =
       initialiseTrace trace
 
       if (wasConnected <> isRunner) then
-        samples <- Dictionary<string, Dictionary<Sampled, bool>>()
+        samples <- makeSamples ()
         clear ()
 
       recording <- true
@@ -281,7 +310,10 @@ module Instance =
         synchronize
         (fun () ->
           let counts = visits
-          if counts.Count > 0 then clear ()
+
+          if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
+            clear ()
+
           trace.OnVisit counts moduleId hitPointId context)
 
     [<SuppressMessage("Microsoft.Usage",

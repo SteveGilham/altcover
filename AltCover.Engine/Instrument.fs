@@ -143,6 +143,8 @@ module internal Instrument =
 
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
+  let internal modules = List<string>()
+
   module internal I =
 
     let prelude =
@@ -1190,6 +1192,49 @@ module internal Instrument =
         let recorder =
           Option.defaultValue state.RecordingAssembly clr4
 
+        // write the module ID values
+        let keys = modules |> Seq.distinct |> Seq.toList
+
+        let getterDef =
+          recorder.MainModule.GetTypes()
+          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.filter (fun m -> m.Name = "get_modules")
+          |> Seq.head
+
+        let body = getterDef.Body
+        let worker = body.GetILProcessor()
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+
+        let stringtype =
+          getterDef.MethodReturnType.ReturnType.GetElementType()
+
+        let makeArray =
+          [ worker.Create(OpCodes.Ldc_I4, keys |> List.length)
+            worker.Create(OpCodes.Newarr, stringtype) ]
+
+        bulkInsertBefore worker head makeArray true
+        |> ignore
+
+        keys
+        |> Seq.iteri
+             (fun i k ->
+               let addElement =
+                 [ worker.Create(OpCodes.Dup)
+                   worker.Create(OpCodes.Ldc_I4, i)
+                   worker.Create(OpCodes.Ldstr, k)
+                   worker.Create(OpCodes.Stelem_Any, stringtype) ]
+
+               bulkInsertBefore worker head addElement true
+               |> ignore)
+
+        let store =
+          [ worker.Create(OpCodes.Stsfld, head.Operand :?> FieldReference) ]
+
+        bulkInsertBefore worker head store true |> ignore
+
+        pruneLocalScopes getterDef
+
         let recorderFileName =
           (extractName state.RecordingAssembly) + ".dll"
 
@@ -1263,7 +1308,9 @@ module internal Instrument =
       | BranchPoint branch -> visitBranchPoint state branch
       | AfterMethod m -> visitAfterMethod state m
       | AfterType -> state
-      | AfterModule -> state
+      | AfterModule ->
+        modules.Add state.ModuleId
+        state
       | AfterAssembly assembly -> visitAfterAssembly state assembly
       | Finish -> finishVisit state
 

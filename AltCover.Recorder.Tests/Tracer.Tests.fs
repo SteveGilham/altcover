@@ -190,7 +190,7 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
 
       try
-        Adapter.VisitsClear()
+        Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
@@ -205,10 +205,23 @@ module AltCoverCoreTests =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
 
       let results = readResults stream |> Seq.toList
-      Assert.True(Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
-      Assert.True((results = expected), "unexpected result")
+
+      Adapter.VisitsSeq()
+      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      |> Seq.iter
+           (fun v ->
+             Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+
+      Assert.That(
+        Adapter.VisitsSeq() |> Seq.length,
+        Is.EqualTo 3,
+        sprintf "unexpected local write %A"
+        <| Adapter.VisitsSeq()
+      )
+
+      Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
-      Adapter.Reset()
+      Adapter.HardReset()
 
   [<Test>]
   let VisitShouldSignalTrack () =
@@ -252,7 +265,7 @@ module AltCoverCoreTests =
         Assert.True(Instance.I.trace.IsConnected, "connection failed")
         Instance.I.isRunner <- true
 
-        Adapter.VisitsClear()
+        Adapter.HardReset()
         Adapter.VisitsAddTrack("name", 23, 1L)
         Adapter.VisitImplMethod("name", 23, 5)
       finally
@@ -271,12 +284,24 @@ module AltCoverCoreTests =
         |> Seq.isEmpty
       )
 
-      Assert.True(Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
+      Adapter.VisitsSeq()
+      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      |> Seq.iter
+           (fun v ->
+             Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+
+      Assert.That(
+        Adapter.VisitsSeq() |> Seq.length,
+        Is.EqualTo 3,
+        sprintf "unexpected local write %A"
+        <| Adapter.VisitsSeq()
+      )
+
       Assert.True(results.Count = 2)
 
       Assert.True(
         (results |> Seq.skip 1 |> Seq.head) = (expected |> Seq.skip 1 |> Seq.head),
-        "unexpected result"
+        sprintf "unexpected result %A" results
       )
 
       let [ n'; p'; d' ] =
@@ -334,7 +359,7 @@ module AltCoverCoreTests =
 
       Assert.True((left2 = right2))
     finally
-      Adapter.VisitsClear()
+      Adapter.HardReset()
 
   [<Test>]
   let FlushShouldTidyUp () = // also throw a bone to OpenCover 615
@@ -360,7 +385,7 @@ module AltCoverCoreTests =
         [ ("name", client.GetHashCode(), Adapter.asNull ()) ]
 
       try
-        Adapter.VisitsClear()
+        Adapter.HardReset()
         Instance.I.trace <- client.OnStart()
         Assert.That(Instance.I.trace.Equals client, Is.False)
         Assert.That(Instance.I.trace.Equals expected, Is.False)
@@ -381,7 +406,20 @@ module AltCoverCoreTests =
         new DeflateStream(File.OpenRead(root + ".0.acv"), CompressionMode.Decompress)
 
       let results = stream |> readResults |> Seq.toList
-      Assert.True(Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
-      Assert.True((results = expected), "unexpected result")
+
+      Adapter.VisitsSeq()
+      |> Seq.cast<KeyValuePair<string, Dictionary<int, PointVisit>>>
+      |> Seq.iter
+           (fun v ->
+             Assert.That(v.Value, Is.Empty, sprintf "Unexpected local write %A" v))
+
+      Assert.That(
+        Adapter.VisitsSeq() |> Seq.length,
+        Is.EqualTo 3,
+        sprintf "unexpected local write %A"
+        <| Adapter.VisitsSeq()
+      )
+
+      Assert.True((results = expected), sprintf "unexpected result %A" results)
     finally
       Adapter.VisitsClear()
