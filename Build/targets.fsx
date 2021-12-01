@@ -2434,6 +2434,8 @@ _Target
                             (withDebug
                              >> fun p ->
                                  { p with
+                                       Properties = ("AltCoverTag", "UnitTestWithCoreRunner_")
+                                                        :: p.Properties
                                        Verbosity = Some MSBuildVerbosity.Minimal })
                             MSBuildPath
                             newproj
@@ -2447,7 +2449,7 @@ _Target
                                 prep
                                 coll
                                 ForceTrue
-                            |> testWithCLIArguments)
+                            |> (testWithCLITaggedArguments "UnitTestWithCoreRunner"))
                         proj)
         finally
             let folder =
