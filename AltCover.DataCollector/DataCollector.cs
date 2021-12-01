@@ -17,7 +17,7 @@ namespace AltCover
 {
   public class DataCollector : InProcDataCollection
   {
-    private static bool supervising = false;
+    private bool supervising = false;
 
     // Use the Null Object pattern here
     private static IEnumerable<Type> RecorderInstance
