@@ -6587,7 +6587,11 @@ module AltCoverRunnerTests =
       assembly.MainModule.GetType("Tests.AltCoverRunnerTests")
 
     let m = Runner.J.getMethod instance "someData"
-    let data = Runner.J.getStrings m
+
+    let data =
+      Runner.J.getStrings m
+      // allow for instrumentation injection
+      |> Seq.filter (fun x -> someData () |> Seq.exists (fun s -> s = x))
 
     someData ()
     |> Seq.zip data

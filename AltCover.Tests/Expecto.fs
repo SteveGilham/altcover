@@ -270,6 +270,7 @@ module ExpectoTestManifest =
        Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported,
        "Runner.ThresholdViolationShouldBeReported"
        Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
+       Tests.AltCoverRunnerTests.CanExtractStringArray, "Runner.CanExtractStringArray"
        Tests.AltCoverTests.ReportFileShouldBeCorrectlySuffixed,
        "Tests.ReportFileShouldBeCorrectlySuffixed"
        Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
