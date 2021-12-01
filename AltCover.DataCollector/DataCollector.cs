@@ -17,6 +17,8 @@ namespace AltCover
 {
   public class DataCollector : InProcDataCollection
   {
+    private static bool supervising = false;
+
     // Use the Null Object pattern here
     private static IEnumerable<Type> RecorderInstance
     {
@@ -72,6 +74,7 @@ namespace AltCover
           else
           {
             supervision.SetValue(null, true);
+            supervising = true;
           }
         }
       );
@@ -79,6 +82,7 @@ namespace AltCover
 
     public void Initialize(IDataCollectionSink dataCollectionSink)
     {
+      supervising = false;
       Debug.WriteLine("Initialize {0}", dataCollectionSink);
       Supervise();
     }
@@ -102,6 +106,7 @@ namespace AltCover
 
     public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
     {
+      if (!supervising) Supervise ();
       Debug.WriteLine("TestCaseStart {0}", testCaseStartArgs);
     }
 
