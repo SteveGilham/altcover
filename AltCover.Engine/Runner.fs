@@ -935,6 +935,11 @@ module internal Runner =
       |> Seq.map (fun i -> i.Operand :?> int)
       |> Seq.head
 
+    let internal getStrings (m: MethodDefinition) =
+      m.Body.Instructions
+      |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldstr)
+      |> Seq.map (fun i -> i.Operand :?> string)
+
     let internal payloadBase (rest: string list) =
       CommandLine.doPathOperation
         (fun () ->
@@ -1058,7 +1063,7 @@ module internal Runner =
                        | _ -> Null
                      )
                    with
-                   | :? IndexOutOfRangeException
+                   | :? IndexOutOfRangeException // Bailing is probably best
                    | :? EndOfStreamException -> None
 
                  match hit with
@@ -1438,16 +1443,13 @@ module internal Runner =
               |> J.getFirstOperandAsNumber
               |> enum
 
-            // Read modules from instance -- 
+            // Read modules from instance --
             // get all the ldstr operands as strings
             // append fixed names, assumed compatible
             // make an array
             let table =
               [ (J.getMethod instance "get_modules")
-                  .Body
-                  .Instructions
-                |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldstr)
-                |> Seq.map (fun i -> i.Operand :?> string)
+                |> J.getStrings
                 Counter.fixedNames ] // shared code
               |> Seq.concat
               |> Seq.toArray

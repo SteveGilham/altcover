@@ -6573,3 +6573,22 @@ module AltCoverRunnerTests =
     Runner.init ()
     let dict: Dictionary<int, int> = null
     Assert.That(PostProcess.tryGetValue dict 0 |> fst, Is.False)
+
+  let someData () = [ "first"; "next"; "last" ]
+
+  [<Test>]
+  let CanExtractStringArray () =
+    let here = Assembly.GetExecutingAssembly().Location
+
+    use assembly =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly here
+
+    let instance =
+      assembly.MainModule.GetType("Tests.AltCoverRunnerTests")
+
+    let m = Runner.J.getMethod instance "someData"
+    let data = Runner.J.getStrings m
+
+    someData ()
+    |> Seq.zip data
+    |> Seq.iter (fun (a, b) -> Assert.That(a, Is.EqualTo b))
