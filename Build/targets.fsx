@@ -92,22 +92,6 @@ let AltCoverFilterTypeSafe (p: TypeSafe.PrepareOptions) =
               |> Seq.map TypeSafe.Raw
               |> p.TypeFilter.Join }
 
-let AltCoverApiFilter (p: Primitive.PrepareOptions) =
-    { p with
-          AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-          AssemblyFilter =
-              [ "?^AltCover\." ]
-              @ (p.AssemblyFilter |> Seq.toList)
-          LocalSource = true
-          TypeFilter =
-              [ @"System\."
-                @"Sample3\.Class2"
-                "Microsoft"
-                "ICSharpCode"
-                "<Start"
-                "UnitTestStub" ]
-              @ (p.TypeFilter |> Seq.toList) }
-
 let AltCoverFilterX (p: Primitive.PrepareOptions) =
     { p with
           MethodFilter =
@@ -145,22 +129,6 @@ let AltCoverFilterXTypeSafe (p: TypeSafe.PrepareOptions) =
                 "SolutionRoot" ]
               |> Seq.map TypeSafe.Raw
               |> p.TypeFilter.Join }
-
-let AltCoverFilterG (p: Primitive.PrepareOptions) =
-    { p with
-          MethodFilter =
-              "WaitForExitCustom"
-              :: (p.MethodFilter |> Seq.toList)
-          AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-          AssemblyFilter =
-              [ @"\.Recorder\.g"; "Sample" ]
-              @ (p.AssemblyFilter |> Seq.toList)
-          LocalSource = true
-          TypeFilter =
-              [ @"System\."
-                @"Sample3\.Class2"
-                "Microsoft" ]
-              @ (p.TypeFilter |> Seq.toList) }
 
 let programFiles = Environment.environVar "ProgramFiles"
 
@@ -2191,7 +2159,7 @@ _Target
 _Target
     "UnitTestWithAltCoverCore"
     (fun _ ->
-        Directory.ensure "./_Reports/_UnitTestWithAltCover"
+        Directory.ensure "./_Reports/_UnitTestWithAltCoverCore"
         let keyfile = Path.getFullName "Build/SelfTest.snk"
         let reports = Path.getFullName "./_Reports"
 
@@ -2203,57 +2171,44 @@ _Target
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Expecto.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "UnitTestWithAltCoverCore.xml",  // report
                "AltCover.Expecto.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Expecto.Tests",  // workingDirectory
-               AltCoverFilter
-               >> (fun p ->
-                   { p with
-                         AssemblyExcludeFilter = [ "?^AltCover$" ] })) // filter
+               Path.getFullName "AltCover.Expecto.Tests")  // workingDirectory
               (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
                reports @@ "RecorderTestWithAltCoverCore.xml",
                "AltCover.Recorder.Tests.fsproj",
-               Path.getFullName "AltCover.Recorder.Tests",
-               AltCoverFilterG)
+               Path.getFullName "AltCover.Recorder.Tests")
               (Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net6.0",
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder2.Tests/Debug+AnyCPU/net6.0",
                reports @@ "Recorder2TestWithAltCoverCore.xml",
                "AltCover.Recorder2.Tests.fsproj",
-               Path.getFullName "AltCover.Recorder2.Tests",
-               AltCoverFilterG)
+               Path.getFullName "AltCover.Recorder2.Tests")
               (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "ApiUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Api.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Api.Tests",  // workingDirectory
-               AltCoverApiFilter) // filter
+               Path.getFullName "AltCover.Api.Tests")  // workingDirectory
               (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "MonitorTestWithAltCoverCore.xml",  // report
                "AltCover.Monitor.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Monitor.Tests",  // workingDirectory
-               AltCoverApiFilter) // filter
+               Path.getFullName "AltCover.Monitor.Tests")  // workingDirectory
               (Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Visualizer.Tests/Debug+AnyCPU/net6.0",  // output
                reports
                @@ "VisualizerUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Visualizer.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Visualizer.Tests",  // workingDirectory
-               AltCoverApiFilter) // filter
+               Path.getFullName "AltCover.Visualizer.Tests")  // workingDirectory
               (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName
                    "_Binaries/UnitTestWithAltCoverCore_AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // output
                reports
                @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml",  // report
                "AltCover.ValidateGendarmeEmulation.fsproj",  // project
-               Path.getFullName "AltCover.ValidateGendarmeEmulation",  // workingDirectory
-               (fun p ->
-                   { p with
-                         TypeFilter = [ "<Start"; "Expecto"; "Tests" ] })
-               >> AltCoverFilter) ] // filter
+               Path.getFullName "AltCover.ValidateGendarmeEmulation") ] // workingDirectory
 
         tests
         |> List.iter
-            (fun (testDirectory, output, report, project, workingDirectory, _) ->
+            (fun (testDirectory, output, report, project, workingDirectory) ->
 
                 printfn "Instrument the code %s" testDirectory
 
@@ -2301,7 +2256,7 @@ _Target
 
         let xmlreports =
             tests
-            |> List.map (fun (_, _, report, _, _, _) -> report)
+            |> List.map (fun (_, _, report, _, _) -> report)
             |> List.filter (fun f -> f.Contains("Visualizer") |> not)
 
         ReportGenerator.generateReports
@@ -2323,7 +2278,7 @@ _Target
                             ReportGenerator.ReportType.XmlSummary ]
                       TargetDir = "_Reports/_VisualizerWithAltCoverCore" })
             (tests
-             |> List.map (fun (_, _, report, _, _, _) -> report)
+             |> List.map (fun (_, _, report, _, _) -> report)
              |> List.filter (fun f -> f.Contains("Visualizer")))
 
         uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
