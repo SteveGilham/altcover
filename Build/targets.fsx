@@ -2123,6 +2123,142 @@ _Target
         |> printfn "%A uncovered lines")
 
 _Target
+    "UnitTestWithAltCoverCore"
+    (fun _ ->
+        Directory.ensure "./_Reports/_UnitTestWithAltCover"
+        let keyfile = Path.getFullName "Build/SelfTest.snk"
+        let reports = Path.getFullName "./_Reports"
+
+        let altcover =
+            Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+
+        let tests = // TODo monitor!not, Visualizer
+            [ (Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Expecto.Tests/Debug+AnyCPU/net6.0",  // output
+               reports @@ "UnitTestWithAltCoverCore.xml",  // report
+               "AltCover.Expecto.Tests.fsproj",  // project
+               Path.getFullName "AltCover.Expecto.Tests",  // workingDirectory
+               AltCoverFilter
+               >> (fun p ->
+                   { p with
+                         AssemblyExcludeFilter = [ "?^AltCover$" ] })) // filter
+              (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
+               Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
+               reports @@ "RecorderTestWithAltCoverCore.xml",
+               "AltCover.Recorder.Tests.fsproj",
+               Path.getFullName "AltCover.Recorder.Tests",
+               AltCoverFilterG)
+              (Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net6.0",
+               Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder2.Tests/Debug+AnyCPU/net6.0",
+               reports @@ "Recorder2TestWithAltCoverCore.xml",
+               "AltCover.Recorder2.Tests.fsproj",
+               Path.getFullName "AltCover.Recorder2.Tests",
+               AltCoverFilterG)
+              (Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // output
+               reports @@ "ApiUnitTestWithAltCoverCore.xml",  // report
+               "AltCover.Api.Tests.fsproj",  // project
+               Path.getFullName "AltCover.Api.Tests",  // workingDirectory
+               AltCoverApiFilter) // filter
+              (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // output
+               reports @@ "MonitorTestWithAltCoverCore.xml",  // report
+               "AltCover.Monitor.Tests.fsproj",  // project
+               Path.getFullName "AltCover.Monitor.Tests",  // workingDirectory
+               AltCoverApiFilter) // filter
+              (Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Visualizer.Tests/Debug+AnyCPU/net6.0",  // output
+               reports
+               @@ "VisualizerUnitTestWithAltCoverCore.xml",  // report
+               "AltCover.Visualizer.Tests.fsproj",  // project
+               Path.getFullName "AltCover.Visualizer.Tests",  // workingDirectory
+               AltCoverApiFilter) // filter
+              (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // testDirectory
+               Path.getFullName
+                   "_Binaries/UnitTestWithAltCoverCore_AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // output
+               reports
+               @@ "ValidateGendarmeEmulationUnitTestWithAltCoverCore.xml",  // report
+               "AltCover.ValidateGendarmeEmulation.fsproj",  // project
+               Path.getFullName "AltCover.ValidateGendarmeEmulation",  // workingDirectory
+               (fun p ->
+                   { p with
+                         TypeFilter = [ "<Start"; "Expecto"; "Tests" ] })
+               >> AltCoverFilter) ] // filter
+
+        tests
+        |> List.iter
+            (fun (testDirectory, output, report, project, workingDirectory, filter) ->
+
+                printfn "Instrument the code %s" testDirectory
+
+                let prep =
+                    AltCover.PrepareOptions.Primitive(
+                        { Primitive.PrepareOptions.Create() with
+                              Report = report
+                              OutputDirectories = [| output |]
+                              StrongNameKey = keyfile
+                              ReportFormat = "NCover"
+                              InPlace = false
+                              Save = false }
+                        |> filter
+                    )
+                    |> AltCoverCommand.Prepare
+
+                { AltCoverCommand.Options.Create prep with
+                      ToolPath = altcover
+                      ToolType = dotnetAltcover
+                      WorkingDirectory = testDirectory }
+                |> AltCoverCommand.run
+
+                printfn "Unit test the instrumented code %s" project
+
+                // AltCoverTag =
+                try
+                    project
+                    |> DotNet.test
+                        (fun p ->
+                            { p.WithCommon(withWorkingDirectoryVM workingDirectory) with
+                                  Configuration = DotNet.BuildConfiguration.Debug
+                                  Framework = Some "net6.0"
+                                  NoBuild = true }
+                            |> (testWithCLITaggedArguments "UnitTestWithAltCoverCore"))
+                with
+                | x ->
+                    printfn "%A" x
+                    reraise ())
+
+        let xmlreports =
+            tests
+            |> List.map (fun (_, _, report, _, _, _) -> report)
+            |> List.filter (fun f -> f.Contains("Visualizer") |> not)
+
+        ReportGenerator.generateReports
+            (fun p ->
+                { p with
+                      ToolType = ToolType.CreateLocalTool()
+                      ReportTypes =
+                          [ ReportGenerator.ReportType.Html
+                            ReportGenerator.ReportType.XmlSummary ]
+                      TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
+            xmlreports
+
+        ReportGenerator.generateReports
+            (fun p ->
+                { p with
+                      ToolType = ToolType.CreateLocalTool()
+                      ReportTypes =
+                          [ ReportGenerator.ReportType.Html
+                            ReportGenerator.ReportType.XmlSummary ]
+                      TargetDir = "_Reports/_VisializerWithAltCoverCore" })
+            (tests
+             |> List.map (fun (_, _, report, _, _, _) -> report)
+             |> List.filter (fun f -> f.Contains("Visualizer")))
+
+        uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
+        |> List.map fst
+        |> printfn "%A uncovered lines")
+
+_Target
     "UnitTestWithAltCoverCoreRunner"
     (fun _ ->
         Directory.ensure "./_Reports/_UnitTestWithAltCoverCoreRunner"
@@ -6893,6 +7029,9 @@ Target.activateFinal "ResetConsoleColours"
 // =?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support; deadweight
 
 "Compilation" ==> "UnitTestWithAltCover"
+// ==> "UnitTest" // deadweight
+
+"Compilation" ==> "UnitTestWithAltCoverCore"
 // ==> "UnitTest" // deadweight
 
 // meaningful coverage tests

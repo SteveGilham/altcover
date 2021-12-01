@@ -8,6 +8,18 @@ open AltCover
 
 module MonitorTests =
 
+  let coverageXml () =
+    [ Path.Combine(SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
+      (97, 0)
+      Path.Combine(
+        SolutionRoot.location,
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
+      ),
+      (122, 14) ]
+    |> List.filter (fst >> File.Exists)
+    |> List.sortBy (fst >> File.GetCreationTimeUtc)
+    |> List.last
+
   [<Test>]
   let ShouldRecordPointTotals () =
     let (a, b) = AltCover.Monitor.TryGetPointTotals()
@@ -16,13 +28,7 @@ module MonitorTests =
     let code = b.Code
     let branch = b.Branch
 
-    let xml =
-      Path.Combine(
-        SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
-      )
-
-    let doc = XDocument.Load(xml)
+    let doc = XDocument.Load(() |> coverageXml |> fst)
 
     let seqpnt =
       doc.Descendants(XName.Get("seqpnt")) |> Seq.length
@@ -52,11 +58,7 @@ module MonitorTests =
     let code = b.Code
     let branch = b.Branch
 
-    let text =
-      Path.Combine(
-        SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
-      )
-      |> File.ReadAllText
+    let xml, expect = coverageXml ()
+    let text = xml |> File.ReadAllText
 
-    test' <@ (code, branch) = (109, 14) @> text
+    test' <@ (code, branch) = expect @> text
