@@ -2264,6 +2264,7 @@ _Target
                               OutputDirectories = [| output |]
                               StrongNameKey = keyfile
                               ReportFormat = "NCover"
+                              Defer = true
                               InPlace = false
                               Save = false }
                         |> filter
@@ -2319,7 +2320,7 @@ _Target
                       ReportTypes =
                           [ ReportGenerator.ReportType.Html
                             ReportGenerator.ReportType.XmlSummary ]
-                      TargetDir = "_Reports/_VisializerWithAltCoverCore" })
+                      TargetDir = "_Reports/_VisualizerWithAltCoverCore" })
             (tests
              |> List.map (fun (_, _, report, _, _, _) -> report)
              |> List.filter (fun f -> f.Contains("Visualizer")))
