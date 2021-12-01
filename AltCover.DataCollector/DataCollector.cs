@@ -57,7 +57,7 @@ namespace AltCover
       }
     }
 
-    private static void Supervise()
+    private void Supervise()
     {
       RecorderInstance.ToList().ForEach(
         i =>
