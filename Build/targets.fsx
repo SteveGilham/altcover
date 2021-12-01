@@ -2253,13 +2253,14 @@ _Target
 
         tests
         |> List.iter
-            (fun (testDirectory, output, report, project, workingDirectory, filter) ->
+            (fun (testDirectory, output, report, project, workingDirectory, _) ->
 
                 printfn "Instrument the code %s" testDirectory
 
                 let prep =
                     AltCover.PrepareOptions.Primitive(
                         { Primitive.PrepareOptions.Create() with
+                              TypeFilter = [ "SolutionRoot"; "Expecto" ]
                               Report = report
                               OutputDirectories = [| output |]
                               StrongNameKey = keyfile
@@ -2267,7 +2268,7 @@ _Target
                               Defer = true
                               InPlace = false
                               Save = false }
-                        |> filter
+                        |> AltCoverFilter
                     )
                     |> AltCoverCommand.Prepare
 
