@@ -10,7 +10,7 @@ module MonitorTests =
 
   let coverageXml () =
     [ Path.Combine(SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
-      (218, 0)
+      (239, 0)
       Path.Combine(
         SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
@@ -19,6 +19,22 @@ module MonitorTests =
     |> List.filter (fst >> File.Exists)
     |> List.sortBy (fst >> File.GetCreationTimeUtc)
     |> List.last
+
+  [<Test>]
+  let ShouldCountOpenCoverTotals () =
+    use stream =
+      System.Reflection.Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Monitor.Tests.HandRolledMonoCoverage.xml")
+
+    let doc = System.Xml.XmlDocument()
+    doc.Load(stream)
+    let b = Monitor.CountVisitPoints(doc)
+    let code = b.Code
+    let branch = b.Branch
+
+    test <@ (code, branch) = (15, 2) @>
+    ()
 
   [<Test>]
   let ShouldRecordPointTotals () =
