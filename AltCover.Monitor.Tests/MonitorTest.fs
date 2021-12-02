@@ -4,18 +4,18 @@ open System
 open System.IO
 open System.Xml.Linq
 
-open AltCover
+open AltCover.Local
 
 module MonitorTests =
 
   let coverageXml () =
-    [ Path.Combine(SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
+    [ Path.Combine(AltCover.SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
       (242, 0) // 0 because NCover format
       Path.Combine(
-        SolutionRoot.location,
+        AltCover.SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
       ),
-      (201, 40) ]
+      (240, 39) ]
     |> List.filter (fst >> File.Exists)
     |> List.sortBy (fst >> File.GetCreationTimeUtc)
     |> List.last
@@ -38,7 +38,7 @@ module MonitorTests =
 
   [<Test>]
   let ShouldRecordPointTotals () =
-    let (a, b) = AltCover.Monitor.TryGetPointTotals()
+    let (a, b) = Monitor.TryGetPointTotals()
     maybeIgnore (fun () -> not a)
 
     let code = b.Code
@@ -68,8 +68,8 @@ module MonitorTests =
 
   [<Test>]
   let ShouldRecordVisitTotals () =
-    let (a0, _) = AltCover.Monitor.TryGetPointTotals()
-    let (a, b) = AltCover.Monitor.TryGetVisitTotals()
+    let (a0, _) = Monitor.TryGetPointTotals()
+    let (a, b) = Monitor.TryGetVisitTotals()
     maybeIgnore (fun () -> not (a && a0))
     let code = b.Code
     let branch = b.Branch

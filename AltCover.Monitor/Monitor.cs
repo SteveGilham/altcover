@@ -6,7 +6,12 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 
+#if !DEBUG
 namespace AltCover
+#else
+
+namespace AltCover.Local
+#endif
 {
     /// <summary>
     /// A simple data type tp hold sequence and branch point counts.
