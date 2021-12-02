@@ -10,7 +10,7 @@ module MonitorTests =
 
   let coverageXml () =
     [ Path.Combine(SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
-      (239, 0)
+      (242, 0) // 0 because NCover format
       Path.Combine(
         SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
