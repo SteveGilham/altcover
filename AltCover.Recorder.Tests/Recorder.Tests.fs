@@ -163,16 +163,16 @@ module AltCoverTests =
           Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
           Instance.Visit key -23
 
+          let vs = Adapter.VisitsSeq()
           Assert.True(
-            Adapter.VisitsSeq() |> Seq.length = 3,
-            sprintf "Adapter.VisitsSeq() = %A"
-            <| Adapter.VisitsSeq()
+            vs |> Seq.length = 3,
+            sprintf "Adapter.VisitsSeq() = %A" vs
           )
 
+          let vesk = Adapter.VisitsEntrySeq key
           Assert.True(
-            Adapter.VisitsEntrySeq key |> Seq.length = 1,
-            sprintf "Adapter.VisitsEntrySeq() = %A"
-            <| Adapter.VisitsEntrySeq
+            vesk |> Seq.length = 1,
+            sprintf "Adapter.VisitsEntrySeq %A = %A" key vesk
           )
 
           Assert.True(Adapter.VisitCount(key, -23) = 2L)
