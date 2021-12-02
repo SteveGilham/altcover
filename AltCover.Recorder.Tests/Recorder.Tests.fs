@@ -2092,7 +2092,3 @@ module AltCoverTests =
     ZipFlushLeavesExpectedTraces()
 #endif
     FlushLeavesExpectedTraces()
-
-[<assembly: Instrumentation(Assembly = "AltCover+Recorder+g+",
-                            Configuration = "Uninstrumented++")>]
-()
