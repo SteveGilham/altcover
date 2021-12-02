@@ -151,14 +151,6 @@ namespace AltCover.Local
         /// </summary>
         /// <param name="totals">The total point counts if running under AltCover coverage</param>
         /// <returns>True if running under AltCover coverage</returns>
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-
-        [SuppressMessage("Gendarme.Rules.Correctness",
-                         "EnsureLocalDisposalRule",
-                         Justification = "Carrier type does it")]
-        [SuppressMessage("Gendarme.Rules.Performance",
-                         "AvoidRepetitiveCallsToPropertiesRule",
-                         Justification = "Once per instance")]
         public static bool TryGetPointTotals(out PointCount totals)
         {
             var instance = TypeInstance("Instance");
@@ -183,8 +175,19 @@ namespace AltCover.Local
         /// Counts the visitable points in an XmlDocument
         /// </summary>
         /// <param name="doc">The XML document to scan</param>
-        /// <returns></returns>
-        public static PointCount CountVisitPoints(XmlDocument doc)
+        /// <returns>The value from the document</returns>
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+
+        [SuppressMessage("Gendarme.Rules.Correctness",
+                         "EnsureLocalDisposalRule",
+                         Justification = "Carrier type does it")]
+        [SuppressMessage("Gendarme.Rules.Performance",
+                         "AvoidRepetitiveCallsToPropertiesRule",
+                         Justification = "Once per instance")]
+        [SuppressMessage("Gendarme.Rules.Design",
+                         "PreferXmlAbstractionsRule",
+                         Justification = "There is no use case")]
+        internal static PointCount CountVisitPoints(XmlDocument doc)
         {
             var totals = new PointCount();
             using (var scans = new Carrier())

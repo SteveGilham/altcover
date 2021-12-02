@@ -1024,7 +1024,7 @@ _Target
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
           ("./Build/csharp-rules.xml",
            [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
-             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
              "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
              "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
         |> Seq.iter
@@ -1178,7 +1178,7 @@ _Target
            [],
            defaultRules)
           ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
-             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Monitor.dll" ],
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
            [],
            "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly"
            :: defaultRules) // Esperanto resources in-line
