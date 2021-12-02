@@ -15,7 +15,7 @@ module MonitorTests =
         SolutionRoot.location,
         "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
       ),
-      (130, 15) ]
+      (201, 40) ]
     |> List.filter (fst >> File.Exists)
     |> List.sortBy (fst >> File.GetCreationTimeUtc)
     |> List.last

@@ -2369,6 +2369,15 @@ _Target
                             { tmp with MSBuildParams = mparams })
                         proj
 
+                    let ExtraFilter proj (p: Primitive.PrepareOptions) =
+                      match proj with
+                      | "AltCover.Monitor.Tests.fsproj" ->
+                        { p with
+                              AssemblyFilter =
+                                  [ @"?AltCover" ]
+                              LocalSource = false }
+                      | _ -> p
+
                     let prep =
                         AltCover.PrepareOptions.Primitive(
                             { Primitive.PrepareOptions.Create() with
@@ -2378,6 +2387,7 @@ _Target
                                   StrongNameKey = keyfile
                                   SingleVisit = true }
                             |> AltCoverFilter
+                            |> (ExtraFilter proj)
                         )
 
                     let coll =
