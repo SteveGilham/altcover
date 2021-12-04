@@ -2171,7 +2171,7 @@ _Target
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Expecto.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "UnitTestWithAltCoverCore.xml",  // report
                "AltCover.Expecto.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Expecto.Tests")  // workingDirectory
+               Path.getFullName "AltCover.Expecto.Tests") // workingDirectory
               (Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Recorder.Tests/Debug+AnyCPU/net6.0",
                reports @@ "RecorderTestWithAltCoverCore.xml",
@@ -2186,18 +2186,18 @@ _Target
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Api.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "ApiUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Api.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Api.Tests")  // workingDirectory
+               Path.getFullName "AltCover.Api.Tests") // workingDirectory
               (Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Monitor.Tests/Debug+AnyCPU/net6.0",  // output
                reports @@ "MonitorTestWithAltCoverCore.xml",  // report
                "AltCover.Monitor.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Monitor.Tests")  // workingDirectory
+               Path.getFullName "AltCover.Monitor.Tests") // workingDirectory
               (Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName "_Binaries/UnitTestWithAltCoverCore_AltCover.Visualizer.Tests/Debug+AnyCPU/net6.0",  // output
                reports
                @@ "VisualizerUnitTestWithAltCoverCore.xml",  // report
                "AltCover.Visualizer.Tests.fsproj",  // project
-               Path.getFullName "AltCover.Visualizer.Tests")  // workingDirectory
+               Path.getFullName "AltCover.Visualizer.Tests") // workingDirectory
               (Path.getFullName "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // testDirectory
                Path.getFullName
                    "_Binaries/UnitTestWithAltCoverCore_AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net6.0",  // output
@@ -2245,10 +2245,7 @@ _Target
                                   Framework = Some "net6.0"
                                   NoBuild = true }
                             |> (testWithCLITaggedArguments "UnitTestWithAltCoverCore")
-                            |> (collectorTestOptions (
-                                                        project
-                                                        |> Path.GetFileNameWithoutExtension
-                            )))
+                            |> (collectorTestOptions (project |> Path.GetFileNameWithoutExtension)))
                 with
                 | x ->
                     printfn "%A" x
@@ -2389,8 +2386,9 @@ _Target
                             (withDebug
                              >> fun p ->
                                  { p with
-                                       Properties = ("AltCoverTag", "UnitTestWithCoreRunner_")
-                                                        :: p.Properties
+                                       Properties =
+                                           ("AltCoverTag", "UnitTestWithCoreRunner_")
+                                           :: p.Properties
                                        Verbosity = Some MSBuildVerbosity.Minimal })
                             MSBuildPath
                             newproj
@@ -3847,10 +3845,17 @@ _Target
                                                       "  * \u00A0\u00A0\u25E6\u00A0"
                                                   )
 
+                                              let v =
+                                                  System.Text.RegularExpressions.Regex.Replace(
+                                                      u,
+                                                      "^\s\s\s+\*\s", // ⁃ U+2043 HYPHEN BULLET,
+                                                      "    * \u00A0\u00A0\u00A0\u00A0\u2043\u00A0"
+                                                  )
+
                                               System.Text.RegularExpressions.Regex.Replace(
-                                                  u,
-                                                  "^\s\s\s+\*\s", // ⁃ U+2043 HYPHEN BULLET,
-                                                  "    * \u00A0\u00A0\u00A0\u00A0\u2043\u00A0"
+                                                  v,
+                                                  "^#\s", // ⁋ U+204B REVERSED PILCROW SIGN
+                                                  "# \u204B"
                                               ))
                                       |> (fun s -> String.Join(Environment.NewLine, s))
 
@@ -3858,11 +3863,18 @@ _Target
                                   // printfn "tweaked = %A" source
                                   Markdig.Markdown.ToPlainText(source, w) |> ignore
 
-                                  "This build from https://github.com/SteveGilham/altcover/tree/"
-                                  + commitHash
-                                  + Environment.NewLine
-                                  + Environment.NewLine
-                                  + w.ToString()
+                                  let releaseNotes =
+                                      "This build from https://github.com/SteveGilham/altcover/tree/"
+                                      + commitHash
+                                      + Environment.NewLine
+                                      + Environment.NewLine
+                                      + w
+                                          .ToString()
+                                          .Replace("\u204B", Environment.NewLine)
+
+                                  printfn "release notes are %A characters" releaseNotes.Length
+                                  Assert.That(releaseNotes.Length, Is.LessThan 35000)
+                                  releaseNotes
                               ToolPath =
                                   ("./packages/"
                                    + (packageVersion "NuGet.CommandLine")
