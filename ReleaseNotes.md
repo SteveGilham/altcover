@@ -61,5 +61,4 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [BUGFIX] issue #125 -- prevent an NullReferenceException is some cases of computing cyclomatic complexity (a failure to exactly copy the algorithm from Mono.Gendarme)
 * [ENHANCEMENT; API] issue #126 -- further generalise the relative-directory support for `CopyAlways`/`CopyIfNewer` from v7.4; extends the `ContingentCopy` MSBuild task
 
-
-For previous releases (8.1.x and earlier) go here -- [https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md)
+⁋For previous releases (8.1.x and earlier) go here -- [https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md](https://github.com/SteveGilham/altcover/blob/master/ReleaseNotes%20-%20Previously.md)
