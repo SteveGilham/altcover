@@ -3843,14 +3843,14 @@ _Target
                                               let u =
                                                   System.Text.RegularExpressions.Regex.Replace(
                                                       t,
-                                                      "^\s\s\*\s",
-                                                      "  * \u00A0\u00A0◦\u00A0"
+                                                      "^\s\s\*\s", // ◦ U+25E6 WHITE BULLET
+                                                      "  * \u00A0\u00A0\u25E6\u00A0"
                                                   )
 
                                               System.Text.RegularExpressions.Regex.Replace(
                                                   u,
-                                                  "^\s\s\s+\*\s",
-                                                  "    * \u00A0\u00A0\u00A0\u00A0⁃\u00A0"
+                                                  "^\s\s\s+\*\s", // ⁃ U+2043 HYPHEN BULLET,
+                                                  "    * \u00A0\u00A0\u00A0\u00A0\u2043\u00A0"
                                               ))
                                       |> (fun s -> String.Join(Environment.NewLine, s))
 
