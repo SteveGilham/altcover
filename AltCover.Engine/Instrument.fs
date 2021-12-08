@@ -801,7 +801,9 @@ module internal Instrument =
     let private visitMethod (state: InstrumentContext) m =
       match m.Inspection.IsInstrumented with
       | true ->
-        let body = m.Method.Body
+        let mt = m.Method
+        if mt.HasBody then prepareLocalScopes mt
+        let body = mt.Body
 
         { state with
             MethodBody = body
