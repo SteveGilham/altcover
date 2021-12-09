@@ -1090,13 +1090,6 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
 
-      let isWindows =
-        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-
-      test'
-        <@ isWindows |> not
-           || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
-        (created + " pdb not found")
     finally
       CoverageParameters.theOutputDirectories.AddRange saved
 
@@ -1150,12 +1143,6 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample1.exe")
       test' <@ File.Exists created @> (created + " not found")
 
-      let isDotNet =
-        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-
-      test'
-        <@ (isDotNet |> not) || File.Exists(created + ".mdb") @>
-        (created + ".mdb not found")
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.AddRange saved
@@ -1195,13 +1182,6 @@ module AltCoverXTests =
       let created = Path.Combine(output, "Sample3.dll")
       test' <@ File.Exists created @> (created + " not found")
 
-      let isWindows =
-        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-
-      test'
-        <@ isWindows |> not
-           || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
-        (created + " pdb not found")
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.AddRange saved

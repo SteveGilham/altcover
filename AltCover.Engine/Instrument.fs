@@ -303,7 +303,7 @@ module internal Instrument =
         (fun () ->
 
           //if monoRuntime |> not then
-          //ProgramDatabase.readSymbols definition
+          ProgramDatabase.readSymbols definition
 
           definition.Name.Name <- (extractName definition) + ".g"
 
@@ -477,12 +477,6 @@ module internal Instrument =
         hook.Invoke(resolver, [| hookResolveHandler :> obj |])
         |> ignore
 
-    let internal findProvider pdb write =
-      match (pdb, write) with
-      | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-      | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-      | _ -> null
-
 // #if IDEMPOTENT_INSTRUMENT
 //     let internal safeWait (mutex: System.Threading.WaitHandle) =
 //       try
@@ -515,32 +509,8 @@ module internal Instrument =
     // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
     let internal writeAssembly (assembly: AssemblyDefinition) (path: string) =
       let pkey = Mono.Cecil.WriterParameters()
-
-      let isWindows =
-        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-
-      let pdb =
-        ProgramDatabase.getPdbWithFallback assembly
-        |> Option.defaultValue "x.pdb"
-        |> Path.GetExtension
-
-      let separatePdb =
-        ProgramDatabase.getPdbFromImage assembly
-        |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
-        |> Option.isSome
-
-      //Non-windows embedded symbols => do not write, else
-      //Unhandled exception. System.Runtime.InteropServices.MarshalDirectiveException: Cannot marshal 'parameter #2': Invalid managed/unmanaged type combination (Marshaling to and from COM interface pointers isn't supported).
-      //   at Mono.Cecil.Pdb.SymWriter.CoCreateInstance(Guid& rclsid, Object pUnkOuter, UInt32 dwClsContext, Guid& riid, Object& ppv)
-      //   at Mono.Cecil.Pdb.SymWriter..ctor() in C:/sources/cecil/symbols/pdb/Mono.Cecil.Pdb/SymWriter.cs:line 39
-      //   at Mono.Cecil.Pdb.NativePdbWriterProvider.CreateWriter(ModuleDefinition module, String pdb) in C:/sources/cecil/symbols/pdb/Mono.Cecil.Pdb/PdbHelper.cs:line 81
-
-      let shouldWrite =
-        assembly.MainModule.HasSymbols
-        && (isWindows || separatePdb)
-
-      pkey.SymbolWriterProvider <- findProvider pdb shouldWrite
-      pkey.WriteSymbols <- pkey.SymbolWriterProvider.IsNotNull
+      pkey.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider() :> ISymbolWriterProvider
+      pkey.WriteSymbols <- true
 
       knownKey assembly.Name
       |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)

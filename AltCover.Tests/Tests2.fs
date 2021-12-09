@@ -326,13 +326,6 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
   [<Test>]
-  let MonoCombinationCanBeExercisedOnNetCore () =
-    let provider =
-      Instrument.I.findProvider "thing.mdb" true
-
-    Assert.That(provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
-
-  [<Test>]
   let GuardShouldDisposeRecordingAssemblyOnException () =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
@@ -616,21 +609,6 @@ module AltCoverTests2 =
 
     CoverageParameters.trackingNames.Clear()
 
-  [<Test>]
-  let ShouldSymbolWriterAsExpected () =
-    match Instrument.I.findProvider ".pdb" true with
-    | :? Mono.Cecil.Pdb.PdbWriterProvider -> ()
-    //| x -> Assert.Fail("Mono.Cecil.Pdb.PdbWriterProvider expected but got " + x.GetType().FullName)
-    match Instrument.I.findProvider ".exe" true with
-    | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
-    //| x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
-    match Instrument.I.findProvider ".pdb" false with
-    | null -> ()
-    //| x -> Assert.Fail("null expected for .pdb but got " + x.GetType().FullName)
-    match Instrument.I.findProvider ".exe" false with
-    | null -> ()
-  //| x -> Assert.Fail("null expected for non-.pdb but got " + x.GetType().FullName)
-
 #if !NET472
   type TestAssemblyLoadContext(_dummy: string, _dummy2: string) =
     inherit System.Runtime.Loader.AssemblyLoadContext(true)
@@ -856,7 +834,8 @@ module AltCoverTests2 =
     let outputdll = output + ".dll"
 
     let writer = WriterParameters()
-    writer.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider()
+    writer.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider()
+      //Mono.Cecil.Mdb.MdbWriterProvider()
     writer.WriteSymbols <- true
 
     use sink =
@@ -1063,22 +1042,6 @@ has been prefixed with Ldc_I4_1 (1 byte)
         Assert.That(newValue.Operand, Is.EqualTo unique, "bad operand")
         Assert.That(newValue.OpCode, Is.EqualTo OpCodes.Ldstr, "bad opcode")
         Instrument.I.writeAssembly def outputdll
-
-        let expectedSymbols =
-          Maybe("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
-
-        let isSymbols =
-#if !NET472
-          true
-#else
-          System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
-        Assert.That(
-          (isSymbols |> not)
-          || // HACK HACK HACK
-          File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-          "bad symbols"
-        )
 
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
