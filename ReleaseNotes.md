@@ -2,6 +2,15 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.83X (Habu series release 10)
+* [BUGFIX] Work-round more (problems with ill-formed debug data)[https://github.com/jbevain/cecil/issues/816]
+* [BUGFIX] Address issue #71 by pre-allocating storage for each instrumented assembly; rather than allocating on demand, with any timing related issues not adequately dealt with subject to catch-and-ignore
+* For instrumented assemblies, write embedded debug symbols, independent of the input choice.
+* Improved release note formatting
+* Some overhaul and updating of neglected parts of the build and test script
+* Reduce to a minimum the differences in the source between the net20 and net46-for-async versions of the recorder.
+* Some minor improvements to the data collector for `dotnet test` use, with example of how to employ explicitly in AltCover "classic" mode in the "`UnitTestWithAltCoverCore`" fake build target
+
 # 8.2.831 (Habu series release 9)
 * [BUGFIX] Make the static-linked parts of the recorder assembly internal, so only the AltCover instrumentation API is exposed -- removes type duplications from the environment that may confuse run-time assembly creation e.g. by Marten (issue #133)
 * For `CallContext`, add async-aware tracking for all methods returning `Task` or `Task<T>` not just ones with the C# `async` shape.  This includes functions returning the new F#6 `task{}` computation expression. 
