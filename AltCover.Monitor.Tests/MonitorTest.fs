@@ -4,25 +4,47 @@ open System
 open System.IO
 open System.Xml.Linq
 
-open AltCover
+open AltCover.Local
 
 module MonitorTests =
 
+  let coverageXml () =
+    [ Path.Combine(AltCover.SolutionRoot.location, "_Reports/MonitorTestWithAltCoverCore.xml"),
+      (239, 0) // 0 because NCover format
+      Path.Combine(
+        AltCover.SolutionRoot.location,
+        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
+      ),
+      (240, 39) ]
+    |> List.filter (fst >> File.Exists)
+    |> List.sortBy (fst >> File.GetCreationTimeUtc)
+    |> List.last
+
+  [<Test>]
+  let ShouldCountOpenCoverTotals () =
+    use stream =
+      System.Reflection.Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Monitor.Tests.HandRolledMonoCoverage.xml")
+
+    let doc = System.Xml.XmlDocument()
+    doc.Load(stream)
+    let b = Monitor.CountVisitPoints(doc)
+    let code = b.Code
+    let branch = b.Branch
+
+    test <@ (code, branch) = (15, 2) @>
+    ()
+
   [<Test>]
   let ShouldRecordPointTotals () =
-    let (a, b) = AltCover.Monitor.TryGetPointTotals()
+    let (a, b) = Monitor.TryGetPointTotals()
     maybeIgnore (fun () -> not a)
 
     let code = b.Code
     let branch = b.Branch
 
-    let xml =
-      Path.Combine(
-        SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
-      )
-
-    let doc = XDocument.Load(xml)
+    let doc = XDocument.Load(() |> coverageXml |> fst)
 
     let seqpnt =
       doc.Descendants(XName.Get("seqpnt")) |> Seq.length
@@ -46,17 +68,13 @@ module MonitorTests =
 
   [<Test>]
   let ShouldRecordVisitTotals () =
-    let (a0, _) = AltCover.Monitor.TryGetPointTotals()
-    let (a, b) = AltCover.Monitor.TryGetVisitTotals()
+    let (a0, _) = Monitor.TryGetPointTotals()
+    let (a, b) = Monitor.TryGetVisitTotals()
     maybeIgnore (fun () -> not (a && a0))
     let code = b.Code
     let branch = b.Branch
 
-    let text =
-      Path.Combine(
-        SolutionRoot.location,
-        "_Reports/MonitorTestWithAltCoverCoreRunner.net6.0.xml"
-      )
-      |> File.ReadAllText
+    let xml, expect = coverageXml ()
+    let text = xml |> File.ReadAllText
 
-    test' <@ (code, branch) = (109, 14) @> text
+    test' <@ (code, branch) = expect @> text

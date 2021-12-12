@@ -15,12 +15,21 @@ module Adapter =
     Counter.branchVisits <- 0L
     Counter.totalVisits <- 0L
 
-  let SamplesClear () = Instance.I.samples.Clear()
+  let SamplesClear () =
+    Instance.I.samples <- Instance.I.makeSamples ()
 
-  let Reset () =
+  let private reset () =
     Instance.I.isRunner <- false
     VisitsClear()
     SamplesClear()
+
+  let ModuleReset (m: string array) =
+    Instance.modules <- m
+    reset ()
+
+  let HardReset () =
+    Instance.modules <- [| System.String.Empty |]
+    reset ()
 
   let internal prepareName name =
     if name |> Instance.I.visits.ContainsKey |> not then

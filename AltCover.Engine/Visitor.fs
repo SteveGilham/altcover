@@ -807,7 +807,13 @@ module internal Visitor =
       let methods = ct.Methods
 
       let candidates =
-        methods
+        (methods.Concat(
+          ct.DeclaringType // Hope we don't have to generalise this
+          |> Option.ofObj
+          |> Option.filter (fun _ -> ct.Name.StartsWith("<", StringComparison.Ordinal))
+          |> Option.map (fun c -> c.Methods |> Seq.toList)
+          |> Option.defaultValue []
+        ))
         |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
         |> Seq.toList
 
@@ -816,28 +822,45 @@ module internal Visitor =
       | _ ->
         let tag = "<" + stripped + ">"
 
+        let sibs =
+          ct.DeclaringType // Hope we don't have to generalise this
+          |> Option.ofObj
+          |> Option.map
+               (fun c ->
+                 c.NestedTypes
+                 |> Seq.filter
+                      (fun t -> t.Name.IndexOf(tag, StringComparison.Ordinal) >= 0)
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.filter (fun m -> m.HasBody))
+          |> Option.defaultValue ([] |> Seq.ofList)
+
+        let peers =
+          methods
+          |> Seq.filter
+               (fun mx ->
+                 (mx.Name.IndexOf(tag, StringComparison.Ordinal)
+                  >= 0)
+                 && mx.HasBody)
+
+        let children =
+          ct.NestedTypes
+          |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
+          |> Seq.collect (fun tx -> tx.Methods)
+          |> Seq.filter
+               (fun mx ->
+                 mx.HasBody
+                 && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
+                     >= 0
+                     || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
+                        >= 0))
+
         candidates
-          .Concat(
-            methods
-            |> Seq.filter
-                 (fun mx ->
-                   (mx.Name.IndexOf(tag, StringComparison.Ordinal)
-                    >= 0)
-                   && mx.HasBody)
-          )
-          .Concat(
-            ct.NestedTypes
-            |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
-            |> Seq.collect (fun tx -> tx.Methods)
-            |> Seq.filter
-                 (fun mx ->
-                   mx.HasBody
-                   && (mx.Name.IndexOf(tag, StringComparison.Ordinal)
-                       >= 0
-                       || mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal)
-                          >= 0))
-          )
-        |> Seq.tryFind predicate
+          .Concat(sibs)
+          .Concat(peers)
+          .Concat(children)
+        |> Seq.filter predicate
+        |> Seq.sortBy (fun mx -> mx.DeclaringType.FullName.Split('/').Length) // strive upwards
+        |> Seq.tryHead
 
     let internal sameType (target: TypeReference) (candidate: TypeReference) =
       if target = candidate then
@@ -904,7 +927,7 @@ module internal Visitor =
 
     let internal methodCallsMethod (t: MethodReference) (m: MethodDefinition) =
       m.Body.Instructions
-      |> Seq.filter (fun i -> i.OpCode = OpCodes.Call)
+      |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Call)
       |> Seq.exists
            (fun i ->
              let tn = (i.Operand :?> MethodReference)
@@ -941,7 +964,14 @@ module internal Visitor =
         let index =
           (indexOfMatchingClosingAngleBracket mname) - 1
 
-        cSharpContainingMethod mname t index (methodCallsMethod m)
+        cSharpContainingMethod
+          mname
+          t
+          index
+          (fun mx ->
+            (mx.FullName <> m.FullName)
+            && (methodCallsMethod m mx))
+
       else
         let n = t.Name
 
@@ -1013,7 +1043,8 @@ module internal Visitor =
               then
                 None
               else
-                containingMethod x
+                let next = containingMethod x
+                next
             ))
         (Some m)
       |> Seq.toList

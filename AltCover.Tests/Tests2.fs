@@ -326,13 +326,6 @@ module AltCoverTests2 =
       CoverageParameters.keys.Clear()
 
   [<Test>]
-  let MonoCombinationCanBeExercisedOnNetCore () =
-    let provider =
-      Instrument.I.findProvider "thing.mdb" true
-
-    Assert.That(provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
-
-  [<Test>]
   let GuardShouldDisposeRecordingAssemblyOnException () =
     let path =
       Path.Combine(AltCoverTests.dir, "Sample3.dll")
@@ -616,21 +609,6 @@ module AltCoverTests2 =
 
     CoverageParameters.trackingNames.Clear()
 
-  [<Test>]
-  let ShouldSymbolWriterAsExpected () =
-    match Instrument.I.findProvider ".pdb" true with
-    | :? Mono.Cecil.Pdb.PdbWriterProvider -> ()
-    //| x -> Assert.Fail("Mono.Cecil.Pdb.PdbWriterProvider expected but got " + x.GetType().FullName)
-    match Instrument.I.findProvider ".exe" true with
-    | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
-    //| x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
-    match Instrument.I.findProvider ".pdb" false with
-    | null -> ()
-    //| x -> Assert.Fail("null expected for .pdb but got " + x.GetType().FullName)
-    match Instrument.I.findProvider ".exe" false with
-    | null -> ()
-  //| x -> Assert.Fail("null expected for non-.pdb but got " + x.GetType().FullName)
-
 #if !NET472
   type TestAssemblyLoadContext(_dummy: string, _dummy2: string) =
     inherit System.Runtime.Loader.AssemblyLoadContext(true)
@@ -856,7 +834,8 @@ module AltCoverTests2 =
     let outputdll = output + ".dll"
 
     let writer = WriterParameters()
-    writer.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider()
+    writer.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider()
+      //Mono.Cecil.Mdb.MdbWriterProvider()
     writer.WriteSymbols <- true
 
     use sink =
@@ -879,6 +858,70 @@ module AltCoverTests2 =
       |> Seq.isEmpty,
       "pruned subscope.Start.IsEndOfMethod"
     )
+    (* was
+    IL_0000: ldarg.0
+    IL_0001: ldfld bool Sample31.Class3/Class4::'<Defer>k__BackingField'
+    IL_0006: stloc.0
+    IL_0007: br IL_000c
+
+    IL_000c: ldloc.0
+    IL_000d: ret
+has been prefixed with Ldc_I4_1 (1 byte)
+  *)
+
+    let start =
+      pathGetterDef.Body.Instructions |> Seq.head
+
+    let finish =
+      pathGetterDef.Body.Instructions |> Seq.last
+
+    let rescope = ScopeDebugInformation(start, null)
+    let size = finish.Offset + finish.GetSize()
+
+    pathGetterDef.DebugInformation.Scope <- rescope
+
+    [ -1
+      4
+      finish.Offset
+      size - 1
+      size
+      Int32.MaxValue ]
+    |> Seq.iter
+         (fun i ->
+           let s = ScopeDebugInformation(start, null)
+           s.Start <- InstructionOffset(i)
+           s.End <- InstructionOffset(size)
+           rescope.Scopes.Add s)
+
+    rescope.Scopes.Add rescope
+
+    prepareLocalScopes pathGetterDef
+
+    Assert.True(
+      InstructionOffset() |> safeOffset |> Option.isNone,
+      "End should go to none"
+    )
+
+    // prune 1 recursion and 2 at end
+    Assert.That(rescope.Scopes |> Seq.length, Is.EqualTo 4)
+
+    test <@ start.Offset = 0 @>
+    test <@ start.Next.Offset = 1 @>
+    test <@ start.Next.Next.Offset = 2 @>
+    test <@ start.Next.Next.Next.Offset = 7 @>
+
+    let expected =
+      [ Some start.Offset
+        Some start.Next.Next.Offset
+        Some finish.Offset
+        Some finish.Offset ]
+
+    let result =
+      rescope.Scopes
+      |> Seq.map (fun s -> safeOffset s.Start)
+      |> Seq.toList
+
+    test <@ result = expected @>
 
   [<Test>]
   let ShouldWriteMonoAssemblyOK () =
@@ -999,22 +1042,6 @@ module AltCoverTests2 =
         Assert.That(newValue.Operand, Is.EqualTo unique, "bad operand")
         Assert.That(newValue.OpCode, Is.EqualTo OpCodes.Ldstr, "bad opcode")
         Instrument.I.writeAssembly def outputdll
-
-        let expectedSymbols =
-          Maybe("Mono.Runtime" |> Type.GetType |> isNull |> not) ".dll.mdb" ".pdb"
-
-        let isSymbols =
-#if !NET472
-          true
-#else
-          System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
-        Assert.That(
-          (isSymbols |> not)
-          || // HACK HACK HACK
-          File.Exists(outputdll.Replace(".dll", expectedSymbols)),
-          "bad symbols"
-        )
 
         use raw =
           Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll

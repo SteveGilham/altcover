@@ -12,6 +12,7 @@ open System.Reflection
 
 open System.Resources
 open System.Runtime.CompilerServices
+open System.Threading
 
 module Instance =
   // Public "fields"
@@ -68,6 +69,19 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Token = "AltCover"
 
+  /// <summary>
+  /// Gets the indexed module tokens
+  /// This property's IL code is modified to store instrumentation results
+  /// </summary>
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUncalledPrivateCodeRule",
+                    Justification = "Unit test accessor")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidReturningArraysOnPropertiesRule",
+                    Justification = "Code more easily rewritten thus")>]
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let mutable internal modules = [| String.Empty |]
+
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUncalledPrivateCodeRule",
                     Justification = "Access by reflection in the data collector")>]
@@ -107,88 +121,83 @@ module Instance =
       |> Seq.map (fun l -> resources.GetString(s + "." + l))
       |> Seq.tryFind (String.IsNullOrEmpty >> not)
 
+    let private makeVisits () =
+      [ modules
+        [| Track.Entry; Track.Exit |] ]
+      |> Seq.concat
+      |> Seq.fold
+           (fun (d: Dictionary<string, Dictionary<int, PointVisit>>) k ->
+             d.Add(k, new Dictionary<int, PointVisit>())
+             d)
+           (Dictionary<string, Dictionary<int, PointVisit>>())
+
     /// <summary>
     /// Accumulation of visit records
     /// </summary>
-    let mutable internal visits =
-      new Dictionary<string, Dictionary<int, PointVisit>>()
+    let mutable internal visits = makeVisits ()
 
-    let mutable internal samples =
-      new Dictionary<string, Dictionary<Sampled, bool>>()
+    let internal makeSamples () =
+      modules
+      |> Seq.fold
+           (fun (d: Dictionary<string, Dictionary<Sampled, bool>>) k ->
+             d.Add(k, new Dictionary<Sampled, bool>())
+             d)
+           (Dictionary<string, Dictionary<Sampled, bool>>())
+
+    let mutable internal samples = makeSamples ()
 
     let mutable internal isRunner = false
 
     let internal synchronize = Object()
 
-#if NET46
-    /// <summary>
-    /// Gets or sets the current test method
-    /// </summary>
-    // [<Sealed; AbstractClass>] = static class not required
-    module CallTrack =
-      // Option chosen for the default value
-      // [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
-      let instance =
-        System.Threading.AsyncLocal<Option<int list>>()
+#if NET20
+    // class needed for "[ThreadStatic] static val mutable"
+    [<Sealed>]
+    type private AsyncLocal<'a>() =
+      [<ThreadStatic; DefaultValue>]
+      static val mutable private item: 'a
 
-      let private Update l = // fsharplint:disable-line NonPublicValuesNames
-        instance.Value <- Some l //.Value
-
-      // no race conditions here
-      let Instance () =
-        match instance.Value with //.Value
-        | None -> Update []
-        | _ -> ()
-
-        instance.Value.Value //.Value
-
-      let Peek () =
-        match Instance() with
-        | [] -> ([], None)
-        | h :: xs -> (xs, Some h)
-
-      let Push x = Update(x :: Instance())
-
-      let Pop () =
-        let (stack, head) = Peek()
-        Update stack
-        head
-#else
-    /// <summary>
-    /// Gets or sets the current test method
-    /// </summary>
-    [<Sealed; AbstractClass>] // = static class
-    type private CallTrack =
-      // Option chosen for the default value
-      [<ThreadStatic; DefaultValue>] // class needed for "[ThreadStatic] static val mutable"
-      static val mutable private instance: Option<int list>
-
-      static member private Update l = CallTrack.instance <- Some l
-
-      static member Instance =
-        match CallTrack.instance with
-        | None -> CallTrack.Update []
-        | _ -> ()
-
-        CallTrack.instance.Value
-
-      static member Peek() =
-        match CallTrack.Instance with
-        | [] -> ([], None)
-        | h :: xs -> (xs, Some h)
-
-      static member Push x =
-        CallTrack.Update(x :: CallTrack.Instance)
-
-      static member Pop() =
-        let (stack, head) = CallTrack.Peek()
-        CallTrack.Update stack
-        head
+      [<SuppressMessage("Gendarme.Rules.Correctness",
+                        "MethodCanBeMadeStaticRule",
+                        Justification = "It's a compatibility hack")>]
+      [<SuppressMessage("Microsoft.Performance",
+                        "CA1822:MarkMembersAsStatic",
+                        Justification = "It's a compatibility hack")>]
+      member this.Value
+        with get () = AsyncLocal<'a>.item
+        and set (value) = AsyncLocal<'a>.item <- value
 #endif
 
-    let internal callerId () = CallTrack.Peek() |> snd
-    let internal push x = CallTrack.Push x
-    let internal pop () = CallTrack.Pop()
+    /// <summary>
+    /// Gets or sets the current test method
+    /// </summary>
+    module private CallTrack =
+      let value = AsyncLocal<Stack<int>>()
+
+      // no race conditions here
+      let instance () =
+        match value.Value with
+        | null -> value.Value <- Stack<int>()
+        | _ -> ()
+
+        value.Value
+
+      let private look op =
+        let i = instance ()
+
+        match i.Count with
+        | 0 -> None
+        | _ -> Some(op i)
+
+      let peek () = look (fun i -> i.Peek())
+
+      let push x = instance().Push x
+
+      let pop () = look (fun i -> i.Pop())
+
+    let internal callerId () = CallTrack.peek ()
+    let internal push x = CallTrack.push x
+    let internal pop () = CallTrack.pop ()
 
     /// <summary>
     /// Serialize access to the report file across AppDomains for the classic mode
@@ -221,7 +230,7 @@ module Instance =
     let mutable internal recording = true
 
     let internal clear () =
-      visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+      visits <- makeVisits ()
       Counter.branchVisits <- 0L
       Counter.totalVisits <- 0L
 
@@ -235,7 +244,7 @@ module Instance =
       trace.OnConnected
         (fun () -> trace.OnFinish counts)
         (fun () ->
-          match counts.Count with
+          match counts.Values |> Seq.sumBy (fun x -> x.Count) with
           | 0 -> ()
           | _ ->
             withMutex
@@ -271,7 +280,7 @@ module Instance =
       initialiseTrace trace
 
       if (wasConnected <> isRunner) then
-        samples <- Dictionary<string, Dictionary<Sampled, bool>>()
+        samples <- makeSamples ()
         clear ()
 
       recording <- true
@@ -281,7 +290,10 @@ module Instance =
         synchronize
         (fun () ->
           let counts = visits
-          if counts.Count > 0 then clear ()
+
+          if counts.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
+            clear ()
+
           trace.OnVisit counts moduleId hitPointId context)
 
     [<SuppressMessage("Microsoft.Usage",
@@ -357,31 +369,23 @@ module Instance =
            |> raise)
         |> Seq.map
              (fun hit ->
-               let mutable hasModuleKey = samples.ContainsKey(moduleId)
+               if samples.ContainsKey(moduleId) then
+                 let next = samples.[moduleId]
 
-               if hasModuleKey |> not then
-                 lock
-                   samples
-                   (fun () ->
-                     hasModuleKey <- samples.ContainsKey(moduleId)
+                 let mutable hasPointKey = next.ContainsKey(hit)
 
-                     if hasModuleKey |> not then
-                       samples.Add(moduleId, Dictionary<Sampled, bool>()))
+                 if hasPointKey |> not then
+                   lock
+                     next
+                     (fun () ->
+                       hasPointKey <- next.ContainsKey(hit)
 
-               let next = samples.[moduleId]
+                       if hasPointKey |> not then
+                         next.Add(hit, true))
 
-               let mutable hasPointKey = next.ContainsKey(hit)
-
-               if hasPointKey |> not then
-                 lock
-                   next
-                   (fun () ->
-                     hasPointKey <- next.ContainsKey(hit)
-
-                     if hasPointKey |> not then
-                       next.Add(hit, true))
-
-               (hasPointKey && hasModuleKey) |> not)
+                 not hasPointKey
+               else
+                 false)
         |> Seq.fold (||) false // true if any are novel -- all must be evaluated
 
     /// <summary>
@@ -501,7 +505,4 @@ module Instance =
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Recorder>.$Recorder.#.cctor()",
                             Justification = "Compiler generated")>]
-// add during instrumentation process
-//[<assembly: Instrumentation(Assembly = "AltCover+Recorder+g+",  // static link a separate library as
-//                            Configuration = "Uninstrumented++")>] // self label fails compilation
 ()

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <AssemblyName>AltCover.Local.Monitor</AssemblyName>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -16,6 +17,7 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
+    <Compile Include="..\_Generated\VisibleToTest.cs" Link="VisibleToTest.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -143,6 +143,8 @@ module internal Instrument =
 
   let internal resolutionTable = Dictionary<string, AssemblyDefinition>()
 
+  let internal modules = List<string>()
+
   module internal I =
 
     let prelude =
@@ -301,7 +303,7 @@ module internal Instrument =
         (fun () ->
 
           //if monoRuntime |> not then
-          //ProgramDatabase.readSymbols definition
+          ProgramDatabase.readSymbols definition
 
           definition.Name.Name <- (extractName definition) + ".g"
 
@@ -475,12 +477,6 @@ module internal Instrument =
         hook.Invoke(resolver, [| hookResolveHandler :> obj |])
         |> ignore
 
-    let internal findProvider pdb write =
-      match (pdb, write) with
-      | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-      | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-      | _ -> null
-
 // #if IDEMPOTENT_INSTRUMENT
 //     let internal safeWait (mutex: System.Threading.WaitHandle) =
 //       try
@@ -513,32 +509,8 @@ module internal Instrument =
     // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
     let internal writeAssembly (assembly: AssemblyDefinition) (path: string) =
       let pkey = Mono.Cecil.WriterParameters()
-
-      let isWindows =
-        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-
-      let pdb =
-        ProgramDatabase.getPdbWithFallback assembly
-        |> Option.defaultValue "x.pdb"
-        |> Path.GetExtension
-
-      let separatePdb =
-        ProgramDatabase.getPdbFromImage assembly
-        |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
-        |> Option.isSome
-
-      //Non-windows embedded symbols => do not write, else
-      //Unhandled exception. System.Runtime.InteropServices.MarshalDirectiveException: Cannot marshal 'parameter #2': Invalid managed/unmanaged type combination (Marshaling to and from COM interface pointers isn't supported).
-      //   at Mono.Cecil.Pdb.SymWriter.CoCreateInstance(Guid& rclsid, Object pUnkOuter, UInt32 dwClsContext, Guid& riid, Object& ppv)
-      //   at Mono.Cecil.Pdb.SymWriter..ctor() in C:/sources/cecil/symbols/pdb/Mono.Cecil.Pdb/SymWriter.cs:line 39
-      //   at Mono.Cecil.Pdb.NativePdbWriterProvider.CreateWriter(ModuleDefinition module, String pdb) in C:/sources/cecil/symbols/pdb/Mono.Cecil.Pdb/PdbHelper.cs:line 81
-
-      let shouldWrite =
-        assembly.MainModule.HasSymbols
-        && (isWindows || separatePdb)
-
-      pkey.SymbolWriterProvider <- findProvider pdb shouldWrite
-      pkey.WriteSymbols <- pkey.SymbolWriterProvider.IsNotNull
+      pkey.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider() :> ISymbolWriterProvider
+      pkey.WriteSymbols <- true
 
       knownKey assembly.Name
       |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
@@ -799,7 +771,9 @@ module internal Instrument =
     let private visitMethod (state: InstrumentContext) m =
       match m.Inspection.IsInstrumented with
       | true ->
-        let body = m.Method.Body
+        let mt = m.Method
+        if mt.HasBody then prepareLocalScopes mt
+        let body = mt.Body
 
         { state with
             MethodBody = body
@@ -1169,26 +1143,217 @@ module internal Instrument =
           RecordingAssembly = recordingAssembly
           RecorderSource = stream }
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-                                                      "EnsureLocalDisposalRule",
-                                                      Justification = "Return confusing Gendarme -- TODO")>]
-    let private loadClr4AssemblyFromResources (stream: Stream) =
-      AssemblyDefinition.ReadAssembly(stream)
-      |> prepareAssemblyDefinition
+    [<ExcludeFromCodeCoverage; NoComparison; AutoSerializable(false)>]
+    type CallTracker =
+      { CallTrack: TypeDefinition
+        Value: PropertyDefinition
+        GetValue: MethodDefinition
+        Instance: MethodDefinition
+        Field: FieldDefinition
+        FieldType: GenericInstanceType
+        Maker: MethodDefinition }
+
+    // make the assembly net46 targeted
+    [<SuppressMessage("Gendarme.Rules.Exceptions",
+                      "InstantiateArgumentExceptionCorrectlyRule",
+                      Justification = "Library method inlined")>]
+    [<SuppressMessage("Microsoft.Usage",
+                      "CA2208:InstantiateArgumentExceptionsCorrectly",
+                      Justification = "Library method inlined")>]
+    let framework46 (make: MethodDefinition) (r: AssemblyDefinition) =
+      let constructor =
+        make.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
+        |> Seq.map (fun i -> i.Operand :?> MethodReference)
+        |> Seq.head
+        |> r.MainModule.ImportReference
+
+      let blob =
+        "01 00 1a 2e 4e 45 54 46 72 61 6d 65 77 6f 72 6b 2c 56 65 72 73 69 6f 6e 3d 76 34 2e 36 01 00 54 0e 14 46 72 61 6d 65 77 6f 72 6b 44 69 73 70 6c 61 79 4e 61 6d 65 12 2e 4e 45 54 20 46 72 61 6d 65 77 6f 72 6b 20 34 2e 36"
+          .Split(' ')
+        |> Array.map (fun x -> Convert.ToByte(x, 16))
+
+      let inject = CustomAttribute(constructor, blob)
+
+      r.CustomAttributes.Add inject
+
+    let internal uprateRecorder (recorder: AssemblyDefinition) =
+      let m = recorder.MainModule
+
+      // make it net4+
+      let uprateReferences () =
+        m.AssemblyReferences
+        |> Seq.filter (fun a -> a.Version = Version(2, 0, 0, 0))
+        |> Seq.iter (fun a -> a.Version <- Version(4, 0, 0, 0))
+
+        m.RuntimeVersion <- "v4.0.30319"
+        m.Runtime <- TargetRuntime.Net_4_0
+
+      uprateReferences ()
+
+      use stream =
+        Assembly
+          .GetExecutingAssembly()
+          .GetManifestResourceStream("AltCover.AltCover.Async.net46.dll")
+
+      use delta = AssemblyDefinition.ReadAssembly(stream)
+
+      // get a handle on the property
+      let readCallTrackType (m: ModuleDefinition) =
+        let calltrack =
+          m.GetType("AltCover.Recorder.Instance/I/CallTrack")
+
+        let value =
+          calltrack.Properties
+          |> Seq.find (fun m -> m.Name = "value")
+
+        let getValue = value.GetMethod
+
+        let field =
+          ((getValue.Body.Instructions |> Seq.head).Operand :?> FieldReference)
+            .Resolve()
+
+        { CallTrack = calltrack
+          Value = value
+          GetValue = getValue
+          Instance =
+            calltrack.Methods
+            |> Seq.find (fun m -> m.Name = "instance")
+          Field = field
+          FieldType = field.FieldType :?> GenericInstanceType
+          Maker =
+            field
+              .Resolve()
+              .DeclaringType.GetStaticConstructor() }
+
+      let net20 = readCallTrackType m
+      let asy46 = readCallTrackType delta.MainModule
+
+      let field =
+        ((net20.GetValue.Body.Instructions |> Seq.head)
+          .Operand
+        :?> FieldReference)
+          .Resolve()
+
+      let localAsync = field.FieldType.Resolve()
+      let oldtype = field.FieldType :?> GenericInstanceType
+
+      // replace the type references in the recorder
+      let generics = asy46.FieldType.GenericArguments
+      generics.Clear()
+
+      net20.FieldType.GenericArguments
+      |> Seq.iter (m.ImportReference >> generics.Add)
+
+      let async2 = (asy46.FieldType |> m.ImportReference)
+
+      let maker =
+        asy46.Maker.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
+        |> Seq.map (fun i -> i.Operand :?> MethodReference)
+        |> Seq.skip 1
+        |> Seq.head
+        |> m.ImportReference
+
+      let build =
+        net20.Maker.Body.Instructions
+        |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
+        |> Seq.find
+             (fun i -> (i.Operand :?> MethodReference).DeclaringType.Name = oldtype.Name)
+
+      net20.Field.FieldType <- async2
+      net20.Value.PropertyType <- async2
+      net20.GetValue.ReturnType <- async2
+      build.Operand <- maker
+
+      let copyInstance (old: CallTracker) (updated: MethodDefinition) =
+        let body = old.Instance.Body
+        let worker = body.GetILProcessor()
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+
+        bulkInsertBefore
+          worker
+          head
+          (updated.Body.Instructions
+           |> Seq.map
+                (fun i ->
+                  match i.OpCode.FlowControl with
+                  | FlowControl.Call ->
+                    i.Operand <-
+                      let mr = (i.Operand :?> MethodReference)
+
+                      if mr.DeclaringType.FullName = old.CallTrack.FullName then
+                        old.GetValue :> MethodReference
+                      else
+                        mr |> m.ImportReference
+
+                    i
+                  | _ -> i))
+          true
+        |> ignore
+
+        initialBody |> Seq.iter worker.Remove
+
+      copyInstance net20 asy46.Instance
+
+      // delete the placeholder type
+      m
+        .GetType("AltCover.Recorder.Instance/I")
+        .NestedTypes.Remove(localAsync)
+      |> ignore
+
+      framework46 asy46.Maker recorder
 
     let private finishVisit (state: InstrumentContext) =
       try
-        use stream =
-          Assembly
-            .GetExecutingAssembly()
-            .GetManifestResourceStream("AltCover.AltCover.Recorder.net46.dll")
+        let recorder = state.RecordingAssembly
 
-        let clr4 =
-          state.AsyncSupport
-          |> Option.map (fun _ -> loadClr4AssemblyFromResources stream)
+        state.AsyncSupport
+        |> Option.iter (fun _ -> uprateRecorder recorder)
 
-        let recorder =
-          Option.defaultValue state.RecordingAssembly clr4
+        // write the module ID values
+        let keys = modules |> Seq.distinct |> Seq.toList
+
+        let getterDef =
+          recorder.MainModule.GetTypes()
+          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.filter (fun m -> m.Name = "get_modules")
+          |> Seq.head
+
+        let body = getterDef.Body
+        let worker = body.GetILProcessor()
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+
+        let stringtype =
+          getterDef.MethodReturnType.ReturnType.GetElementType()
+
+        let makeArray =
+          [ worker.Create(OpCodes.Ldc_I4, keys |> List.length)
+            worker.Create(OpCodes.Newarr, stringtype) ]
+
+        bulkInsertBefore worker head makeArray true
+        |> ignore
+
+        keys
+        |> Seq.iteri
+             (fun i k ->
+               let addElement =
+                 [ worker.Create(OpCodes.Dup)
+                   worker.Create(OpCodes.Ldc_I4, i)
+                   worker.Create(OpCodes.Ldstr, k)
+                   worker.Create(OpCodes.Stelem_Any, stringtype) ]
+
+               bulkInsertBefore worker head addElement true
+               |> ignore)
+
+        let store =
+          [ worker.Create(OpCodes.Stsfld, head.Operand :?> FieldReference) ]
+
+        bulkInsertBefore worker head store true |> ignore
+
+        pruneLocalScopes getterDef
 
         let recorderFileName =
           (extractName state.RecordingAssembly) + ".dll"
@@ -1263,7 +1428,9 @@ module internal Instrument =
       | BranchPoint branch -> visitBranchPoint state branch
       | AfterMethod m -> visitAfterMethod state m
       | AfterType -> state
-      | AfterModule -> state
+      | AfterModule ->
+        modules.Add state.ModuleId
+        state
       | AfterAssembly assembly -> visitAfterAssembly state assembly
       | Finish -> finishVisit state
 

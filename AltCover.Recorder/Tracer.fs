@@ -85,10 +85,11 @@ type internal Tracer =
       this.Formatter.Write(Tag.Table |> byte)
 
       t.Keys
+      |> Seq.filter (fun k -> t.[k].Count > 0)
       |> Seq.iter
            (fun m ->
              this.Formatter.Write m
-             this.Formatter.Write t.[m].Keys.Count
+             this.Formatter.Write t.[m].Count
 
              t.[m].Keys
              |> Seq.iter
@@ -107,7 +108,7 @@ type internal Tracer =
     this.PushContext context
 
   member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
-    if visits.Count > 0 then
+    if visits.Values |> Seq.sumBy (fun x -> x.Count) > 0 then
       visits |> Table |> this.Push String.Empty 0
 
   member internal this.OnStart() =
