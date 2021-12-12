@@ -1163,7 +1163,9 @@ module AltCoverXTests =
   [<Test>]
   let FinishCommitsTheRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(AltCoverTests.dir, "Sample3.dll")
+
+    let path =
+      Path.Combine(AltCoverTests.dir, "Sample3.dll")
 
     let def =
       Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -1216,6 +1218,16 @@ module AltCoverXTests =
 
     ProgramDatabase.readSymbols def
 
+    use from =
+      Assembly
+        .GetExecutingAssembly()
+        .GetManifestResourceStream("AltCover.Tests.AltCover.Recorder.net20.dll")
+
+    use recorder =
+      Mono.Cecil.AssemblyDefinition.ReadAssembly from
+
+    ProgramDatabase.readSymbols recorder
+
     let md =
       def.MainModule.Types
       |> Seq.filter (fun t -> t.FullName = "Tests.M")
@@ -1242,7 +1254,7 @@ module AltCoverXTests =
 
       let input =
         { InstrumentContext.Build [] with
-            RecordingAssembly = def
+            RecordingAssembly = recorder
             AsyncSupport = Some support }
 
       let result =
@@ -1250,8 +1262,56 @@ module AltCoverXTests =
 
       test <@ result.RecordingAssembly |> isNull @>
       test <@ result.AsyncSupport |> Option.isNone @>
-      let created = Path.Combine(output, "Sample4.dll")
+
+      let created =
+        Path.Combine(output, "AltCover.Recorder.dll")
+
       test' <@ File.Exists created @> (created + " not found")
+      printfn "%A" created
+
+      let alc =
+        new AltCoverTests2.TestAssemblyLoadContext(
+          "FinishCommitsTheAsyncRecordingAssembly",
+          created |> Path.GetDirectoryName
+        )
+
+      try
+#if !NET472
+        let assembly = alc.LoadFromAssemblyPath(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+#else
+        let assembly = Assembly.LoadFrom(created) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+#endif
+
+        let t =
+          assembly.DefinedTypes
+          |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+          |> Seq.head
+
+        let t1 =
+          t.GetNestedType("I", BindingFlags.NonPublic)
+
+        let t2 =
+          t1.GetNestedType("CallTrack", BindingFlags.NonPublic)
+
+        let p =
+          t2.GetProperty("value", BindingFlags.NonPublic ||| BindingFlags.Static)
+
+        let v = p.GetValue(null)
+
+        test <@ v.IsNotNull @>
+        test <@ v.GetType() = typeof<System.Threading.AsyncLocal<Stack<int>>> @>
+
+        let m =
+          t2.GetMethod("instance", BindingFlags.NonPublic ||| BindingFlags.Static)
+
+        let v2 = m.Invoke(null, [||])
+
+        test <@ v2.IsNotNull @>
+        test <@ v2.GetType() = typeof<Stack<int>> @>
+
+      finally
+        alc.Unload()
+
     finally
       CoverageParameters.theOutputDirectories.Clear()
       CoverageParameters.theOutputDirectories.AddRange saved
