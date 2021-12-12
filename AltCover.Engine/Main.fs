@@ -38,6 +38,7 @@ module internal Main =
     CoverageParameters.configurationHash <- None
     ProgramDatabase.symbolFolders.Clear()
     Instrument.resolutionTable.Clear()
+    Instrument.modules.Clear()
 
     CoverageParameters.keys.Clear()
     CoverageParameters.defaultStrongNameKey <- None

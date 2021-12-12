@@ -76,6 +76,25 @@ module Actions =
                 Assert.Fail "Could not clean all the files"
 
         clean1 0
+        
+    let CleanDir folder =
+        let rec clean1 depth =
+            try
+              Shell.deleteDir folder
+            with
+            | :? System.IO.IOException as x -> clean' (x :> Exception) depth
+            | :? System.UnauthorizedAccessException as x -> clean' (x :> Exception) depth
+
+        and clean' x depth =
+            printfn "looping after %A" x
+            System.Threading.Thread.Sleep(500)
+
+            if depth < 10 then
+                clean1 (depth + 1)
+            else
+                Assert.Fail "Could not clean all the files"
+
+        clean1 0
 
     let template =
         """namespace AltCover
@@ -100,6 +119,20 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
 do ()"""
+
+    let templatecsharp =
+        """using System.Reflection;
+using System.Runtime.CompilerServices;
+
+[assembly: AssemblyDescription("Part of a cross-platform coverage gathering and processing tool set for .net/.net core and Mono")]
+
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug {0}")]
+[assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={1}")]
+[assembly: InternalsVisibleTo("AltCover.Monitor.Tests, PublicKey={2}")]
+#else
+[assembly: AssemblyConfiguration("Release {0}")]
+#endif"""
 
     let prefix =
         [| 0x00uy
@@ -145,26 +178,29 @@ do ()"""
         let key =
             stream |> GetPublicKey |> BitConverter.ToString
 
-        let file =
-            String.Format(
-                System.Globalization.CultureInfo.InvariantCulture,
-                template,
-                version,
-                key.Replace("-", String.Empty),
-                key2.Replace("-", String.Empty)
-            )
+        [
+          template,"_Generated/VisibleToTest.fs"
+          templatecsharp, "_Generated/VisibleToTest.cs"
+        ]
+        |> Seq.iter (fun (model, path) ->
+          let file =
+              String.Format(
+                  System.Globalization.CultureInfo.InvariantCulture,
+                  model,
+                  version,
+                  key.Replace("-", String.Empty),
+                  key2.Replace("-", String.Empty)
+              )
 
-        let path = "_Generated/VisibleToTest.fs"
+          // Update the file only if it would change
+          let old =
+              if File.Exists(path) then
+                  File.ReadAllText(path)
+              else
+                  String.Empty
 
-        // Update the file only if it would change
-        let old =
-            if File.Exists(path) then
-                File.ReadAllText(path)
-            else
-                String.Empty
-
-        if not (old.Equals(file)) then
-            File.WriteAllText(path, file)
+          if not (old.Equals(file)) then
+              File.WriteAllText(path, file))
 
     let GetVersionFromYaml () =
         use yaml =

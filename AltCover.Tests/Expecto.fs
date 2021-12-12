@@ -502,8 +502,6 @@ module ExpectoTestManifest =
        "Tests2.ForeignTokenIsNotMatchedInIndex"
        Tests.AltCoverTests2.FakedUpTokenIsMatchedInIndex,
        "Tests2.FakedUpTokenIsMatchedInIndex"
-       Tests.AltCoverTests2.MonoCombinationCanBeExercisedOnNetCore,
-       "Tests2.MonoCombinationCanBeExercisedOnNetCore"
        Tests.AltCoverTests2.GuardShouldDisposeRecordingAssemblyOnException,
        "Tests2.GuardShouldDisposeRecordingAssemblyOnException"
        Tests.AltCoverTests2.ShouldBeAbleToTellAnAssembly,
@@ -516,8 +514,6 @@ module ExpectoTestManifest =
        "Tests2.ShouldBeAbleToPrepareTheAssembly"
        Tests.AltCoverTests2.ShouldGetTrackingStyleIfSet,
        "Tests2.ShouldGetTrackingStyleIfSet"
-       Tests.AltCoverTests2.ShouldSymbolWriterAsExpected,
-       "Tests2.ShouldSymbolWriterAsExpected"
        Tests.AltCoverTests2.ShouldGetNewFilePathFromPreparedAssembly,
        "Tests2.ShouldGetNewFilePathFromPreparedAssembly"
        Tests.AltCoverTests2.ShouldRescopeMonoMethodOK, "Tests2.ShouldRescopeMonoMethodOK"

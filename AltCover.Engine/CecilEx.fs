@@ -11,22 +11,102 @@ open Mono.Cecil.Cil
 
 [<AutoOpen>]
 module internal CecilExtension =
+  let internal scopesSeen =
+    System.Collections.Generic.HashSet<ScopeDebugInformation>()
+
+  let internal safeOffset (point: InstructionOffset) =
+    if point.IsEndOfMethod then
+      None
+    else
+      Some point.Offset
+
   // workround for old MCS + Cecil 0.11.4
   let pruneLocalScopes (m: MethodDefinition) =
+    scopesSeen.Clear()
+
     let rec pruneScope (scope: ScopeDebugInformation) =
+      let novel = scopesSeen.Add scope
+
+      if novel then
+        let scopes = scope.Scopes // non-null by construction
+
+        scopes
+        |> Seq.filter
+             (fun subScope ->
+               let repeat =
+                 subScope
+                 |> Option.ofObj
+                 |> Option.map pruneScope
+                 |> Option.defaultValue true
+
+               repeat || subScope.Start.IsEndOfMethod)
+        |> Seq.toList
+        |> List.iter (scopes.Remove >> ignore)
+
+      not novel
+
+    m.DebugInformation.Scope
+    |> Option.ofObj
+    |> Option.map pruneScope
+    |> ignore
+
+  // address issue 135
+  let internal isResolvedProp =
+    typeof<InstructionOffset>.GetProperty
+      ("IsResolved",
+       System.Reflection.BindingFlags.Instance
+       ||| System.Reflection.BindingFlags.NonPublic)
+
+  let internal offsetTable =
+    System.Collections.Generic.SortedDictionary<int, Instruction>()
+
+  let unresolved (point: InstructionOffset) =
+    isResolvedProp.GetValue(point) :?> bool |> not
+
+  let prepareLocalScopes (m: MethodDefinition) =
+    offsetTable.Clear()
+    scopesSeen.Clear()
+
+    let size =
+      m.Body.Instructions
+      |> Seq.fold
+           (fun _ i ->
+             offsetTable.Add(i.Offset, i)
+             i.Offset + i.GetSize())
+           0
+
+    let resolvePoint (point: InstructionOffset) =
+      point
+      |> safeOffset
+      |> Option.map
+           (fun offset ->
+             let o = Math.Max(offset, 0)
+             let ok, i = offsetTable.TryGetValue(o)
+
+             if ok then
+               InstructionOffset(i)
+             else
+               offsetTable.Keys
+               |> Seq.filter (fun kk -> o < size && kk <= o)
+               |> Seq.tryLast
+               |> Option.map (fun k -> InstructionOffset(offsetTable.[k]))
+               |> Option.defaultValue (InstructionOffset()))
+      |> Option.defaultValue (InstructionOffset())
+
+    let rec resolveScope (scope: ScopeDebugInformation) =
       if scope.IsNotNull then
-        let scopes = scope.Scopes
+        if scopesSeen.Add scope then
+          scope.Scopes // non-null by construction
+          |> Seq.iter resolveScope
 
-        if scopes.IsNotNull then
-          scopes
-          |> Seq.filter
-               (fun subScope ->
-                 pruneScope subScope
-                 subScope.Start.IsEndOfMethod)
-          |> Seq.toList
-          |> List.iter (scopes.Remove >> ignore)
+          if unresolved scope.Start then
+            scope.Start <- resolvePoint scope.Start
 
-    m.DebugInformation.Scope |> pruneScope
+          if unresolved scope.End then
+            scope.End <- resolvePoint scope.End
+
+    m.DebugInformation.Scope |> resolveScope
+    pruneLocalScopes m
 
   // Adjust the IL for exception handling
   // param name="handler">The exception handler</param>

@@ -6,9 +6,6 @@
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover.Engine</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
-    <!-- If static linking, fix up in the Unpack documentation stage!!-->
-    <!-- Maybe this to publish -->
-    <!-- CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -72,8 +69,8 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Recorder\Release+AnyCPU\net20\AltCover.Recorder.dll">
       <Link>AltCover.Recorder.net20.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Recorder\Release+AnyCPU\net46\AltCover.Recorder.dll">
-      <Link>AltCover.Recorder.net46.dll</Link>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\_Binaries\AltCover.Async\Release+AnyCPU\net46\AltCover.Async.dll">
+      <Link>AltCover.Async.net46.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
 
@@ -85,26 +82,20 @@
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="System.ValueTuple" />
-    <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
-    <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
-    <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
-    <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
-    <!-- Maybe this to publish -->
-    <!-- PackageReference Include="System.Buffers" version="4.5.1">
-        <PrivateAssets>All</PrivateAssets>
-        <Publish>true</Publish>
-      </PackageReference -->
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Manatee.Json">
       <HintPath>..\ThirdParty\Manatee.Json.dll</HintPath>
+      <!-- Last static linkable version; the local version of [Nullable] kills later version linkage -->
+      <!-- PackageReference Include="Manatee.Json" Version="11.0.4" / -->
+      <!-- Last official version; moved to ThirdParty; see https://github.com/gregsdennis/Manatee.Json and https://graphqello.com/ -->
+      <!-- PackageReference Include="Manatee.Json" Version="13.0.5" / -->
     </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\ThirdParty\Mono.Options.dll</HintPath>
