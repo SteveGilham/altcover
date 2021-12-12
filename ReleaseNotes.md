@@ -9,7 +9,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * For instrumented assemblies, write embedded debug symbols, independent of the input choice.
 * Improved release note formatting
 * Some overhaul and updating of neglected parts of the build and test script
-* Reduce to a minimum the differences in the source between the net20 and net46-for-async versions of the recorder.
+* Reduce to a minimum the differences in the source between the net20 and net46-for-async versions of the recorder; then just rewrite the net20 version with the delta on demand.
 * Some minor improvements to the data collector for `dotnet test` use, with example of how to employ explicitly in AltCover "classic" mode in the "`UnitTestWithAltCoverCore`" fake build target
 
 # 8.2.831 (Habu series release 9)

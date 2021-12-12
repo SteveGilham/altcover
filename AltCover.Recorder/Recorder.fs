@@ -172,31 +172,30 @@ module Instance =
     /// Gets or sets the current test method
     /// </summary>
     module private CallTrack =
-      let value = AsyncLocal<Option<int list>>()
-
-      let private update l = value.Value <- Some l
+      let value = AsyncLocal<Stack<int>>()
 
       // no race conditions here
       let instance () =
         match value.Value with
-        | None -> update []
+        | null -> value.Value <- Stack<int>()
         | _ -> ()
 
-        value.Value.Value
+        value.Value
 
-      let peek () =
-        match instance () with
-        | [] -> ([], None)
-        | h :: xs -> (xs, Some h)
+      let private look op =
+        let i = instance ()
 
-      let push x = update (x :: instance ())
+        match i.Count with
+        | 0 -> None
+        | _ -> Some(op i)
 
-      let pop () =
-        let (stack, head) = peek ()
-        update stack
-        head
+      let peek () = look (fun i -> i.Peek())
 
-    let internal callerId () = CallTrack.peek () |> snd
+      let push x = instance().Push x
+
+      let pop () = look (fun i -> i.Pop())
+
+    let internal callerId () = CallTrack.peek ()
     let internal push x = CallTrack.push x
     let internal pop () = CallTrack.pop ()
 
