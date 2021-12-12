@@ -2409,7 +2409,7 @@ _Target
                 (nugetCache @@ "altcover") @@ Version.Value
             //printfn "Should clear %A" folder
             Shell.mkdir folder
-            Shell.deleteDir folder
+            Actions.CleanDir folder
 
         let xmlreports =
             tests
@@ -5581,7 +5581,7 @@ group NetcoreBuild
                 (fun f ->
                     let folder = (nugetCache @@ f) @@ Version.Value
                     Shell.mkdir folder
-                    Shell.deleteDir folder))
+                    Actions.CleanDir folder))
 
 _Target
     "DotnetTestIntegration"
@@ -6272,7 +6272,7 @@ _Target
                 (nugetCache @@ "altcover") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 _Target
     "Issue20"
@@ -6395,7 +6395,7 @@ _Target
                 (nugetCache @@ "altcover") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 _Target
     "Issue23"
@@ -6470,7 +6470,7 @@ _Target
                 (nugetCache @@ "altcover") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 _Target
     "Issue67"
@@ -6560,7 +6560,7 @@ _Target
                 (nugetCache @@ "altcover") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 _Target
     "Issue72"
@@ -6755,7 +6755,7 @@ _Target
                 (nugetCache @@ "altcover") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 _Target
     "DotnetGlobalIntegration"
@@ -6896,7 +6896,7 @@ _Target
                 (nugetCache @@ "altcover.global") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 _Target
     "Issue114"
@@ -6974,7 +6974,7 @@ _Target
                 (nugetCache @@ "altcover.api") @@ Version.Value
 
             Shell.mkdir folder
-            Shell.deleteDir folder)
+            Actions.CleanDir folder)
 
 // AOB
 

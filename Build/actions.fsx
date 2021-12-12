@@ -76,6 +76,25 @@ module Actions =
                 Assert.Fail "Could not clean all the files"
 
         clean1 0
+        
+    let CleanDir folder =
+        let rec clean1 depth =
+            try
+              Shell.deleteDir folder
+            with
+            | :? System.IO.IOException as x -> clean' (x :> Exception) depth
+            | :? System.UnauthorizedAccessException as x -> clean' (x :> Exception) depth
+
+        and clean' x depth =
+            printfn "looping after %A" x
+            System.Threading.Thread.Sleep(500)
+
+            if depth < 10 then
+                clean1 (depth + 1)
+            else
+                Assert.Fail "Could not clean all the files"
+
+        clean1 0
 
     let template =
         """namespace AltCover
