@@ -72,7 +72,7 @@ let dixon =
 let fxcop =
     if Environment.isWindows then
         BlackFox.VsWhere.VsInstances.getAll ()
-        |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
+        |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 17)
         |> Seq.map
             (fun i ->
                 i.InstallationPath
