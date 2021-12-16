@@ -7111,9 +7111,7 @@ _Target
                                        (snd x).Validate(opencover, null)
                                        false
                                       with
-                                      :? XmlSchemaValidationException as xx -> 
-                                        printfn "%A -> %A" (fst x) xx.Message
-                                        true)
+                                      :? XmlSchemaValidationException -> true)
             |> List.map fst
         let o1expect =
           [
@@ -7137,21 +7135,66 @@ _Target
                                        (snd x).Validate(opencoverStrict, null)
                                        false
                                       with
-                                      :? XmlSchemaValidationException as xx -> 
-                                        printfn "strict %A -> %A" (fst x) xx.Message
-                                        true)
+                                      :? XmlSchemaValidationException -> true)
             |> List.map fst
-        Assert.That(opencover2Files, Is.EquivalentTo o1expect, "opencover2Files")
 
-        let noncoverFiles =
-            xml
-            |> List.filter (fun x -> let root = (snd x).Root
-                                     root.Name.LocalName <> "CoverageSession" &&
-                                     root.Name.LocalName <> "coverage")
+        let o2expect =
+         [ // embeds
+            "__AltCover.Api.Tests/OpenCover.xml"
+            "AltCover.Api.Tests/OpenCover.xml"
+            "_DotnetTestBranchCover/coverage.xml"
+            "_DotnetTestBranchCoverInPlace/coverage.xml"
+            "_DotnetTestLineCover/coverage.xml"
+            "_DotnetTestLineCoverInPlace/coverage.xml"
+            "_Issue23/coverage.xml"
+            "_Issue67/coverage.xml"
+            "AltCover.Tests/HandRolledMonoCoverage.xml"
+            "AltCover.Tests/OpenCoverWithEmbeds.xml"
+            "AltCover.Tests/OpenCoverWithPartials.xml"
+            "AltCover.Tests\Sample4FullTracking.xml"
+            // coverlet
+            "AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
+            "AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
+            "__AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
+            "AltCover.Tests/Sample21.coverage.opencover.xml"
+            "AltCover.Tests/Sample4.coverlet.xml"
+         ]
 
-            |> List.map fst
-        Assert.That(noncoverFiles, Is.EquivalentTo [])
+        let o3expect = // embeds
+           !!(@"./**/JsonWithPartials*Xml.xml") 
+            |> Seq.toList;
 
+        let o4expect = // coverlet
+           !!(@"./_Reports/**/*.coverlet.xml") 
+            |> Seq.toList;
+
+        let o5expect = // coverlet
+           !!(@"./**/coverage.opencover.xml") 
+            |> Seq.toList;
+
+
+        let oexpect =
+         [
+            o1expect
+            o2expect
+            o3expect
+            o4expect
+            o5expect
+         ]
+         |> List.concat
+         |> List.map Path.getFullName
+         |> List.filter File.Exists
+
+        Assert.That(opencover2Files, Is.EquivalentTo oexpect, "opencover2Files")
+
+        // let noncoverFiles =
+        //     xml
+        //     |> List.filter (fun x -> let root = (snd x).Root
+        //                              root.Name.LocalName <> "CoverageSession" &&
+        //                              root.Name.LocalName <> "coverage")
+
+        //     |> List.map fst
+        // Assert.That(noncoverFiles, Is.EquivalentTo [])
 
         let issue71 = !!(@"./**/*.exn") |> Seq.toList
 
