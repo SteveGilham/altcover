@@ -110,7 +110,7 @@ nuget Markdig >= 0.24.0
 nuget Manatee.Json >= 13.0.4
 nuget NUnit >= 3.12.0
 nuget Fuchu >= 1.1.0
-nuget System.Text.Json >= 5.0.1
+nuget System.Text.Encoding.CodePages >= 5.0.0
 nuget Unquote >= 5.0.0
 nuget YamlDotNet >= 8.1.2 //"
 #r "System.IO.Compression.FileSystem.dll"

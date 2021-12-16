@@ -7,6 +7,7 @@ open System.Reflection
 open System.Text
 open System.Xml
 open System.Xml.Linq
+open System.Xml.Schema
 
 open Actions
 open AltCode.Fake.DotNet
@@ -6998,6 +6999,142 @@ _Target
         printfn "Overall coverage reporting"
 
         // coverageSummary ()
+
+        // Cobertura .xsd windows-1252 support
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+
+        let schemaOf x =
+          let result = XmlSchemaSet()
+          use stream = File.OpenRead x
+          use reader = XmlReader.Create(stream)
+          result.Add(String.Empty, reader) |> ignore
+          result
+
+        let coberturaStrict = schemaOf "./AltCover.Tests/coverage-04.xsd"
+        let cobertura34 = schemaOf "./AltCover.Toolkit/xsd/Cobertura.xsd"
+        let ncover = schemaOf "./AltCover.Toolkit/xsd/NCover.xsd"
+        let ncoverEmbedded = schemaOf "./AltCover.Toolkit/xsd/NCoverEmbedded.xsd"
+        let opencover = schemaOf "./AltCover.Toolkit/xsd/OpenCover.xsd"
+        let opencoverStrict = schemaOf "./AltCover.Toolkit/xsd/OpenCoverStrict.xsd"
+
+        let packages = "packages" |> Path.getFullName
+        let files = !!(@"./**/*.xml") 
+                    |> Seq.filter (fun f -> f.StartsWith(packages, StringComparison.Ordinal) |> not)
+                    |> Seq.toList
+        let xml = files
+                  |> List.map (fun x -> x, XDocument.Load x)
+
+        let ncover2Files =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName ="coverage"
+                                      && isNull <| root.Attribute(XName.Get "line-rate"))
+            |> List.filter (fun x -> try
+                                       (snd x).Validate(ncoverEmbedded, null)
+                                       false
+                                      with
+                                      :? XmlSchemaValidationException -> true)
+            |> List.map fst
+        let expected =  [ // 3 broken visit counts + 1 alien format
+                         "AltCover.Recorder.Tests/SimpleCoverage.xml"
+                         "AltCover.Tests/NCover122.xml"
+                         "__AltCover.Recorder.Tests/SimpleCoverage.xml"
+                         "Samples/Sample20/Reports/mprof-report.xml"
+                        ]
+                        |> List.map Path.getFullName
+                        |> List.filter File.Exists
+        Assert.That(ncover2Files, Is.EquivalentTo expected, "ncover2Files")
+        let ncoverFiles =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName ="coverage"
+                                      && isNull <| root.Attribute(XName.Get "line-rate"))
+            |> List.filter (fun x -> try
+                                       (snd x).Validate(ncover, null)
+                                       false
+                                      with
+                                      :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        let expectedStrict = 
+          [
+            expected; // add embedded source cases
+           !!(@"./_Binaries/**/FlushLeavesExpectedTracesWhenDiverted.xml") 
+            |> Seq.toList;
+            [
+              "_Packaging/HandRolledMonoNCover.xml"
+              "AltCover.Tests/HandRolledToNCover.xml"
+              "AltCover.Tests/NCoverWithEmbeds.xml"
+              "AltCover.Tests/NCoverWithPartials.xml"
+            ] 
+            |> List.map Path.getFullName
+          ] |> List.concat
+
+        Assert.That(ncoverFiles, Is.EquivalentTo expectedStrict, "ncoverFiles")
+
+        let coberturaFiles =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName ="coverage"
+                                      && not (isNull <| root.Attribute(XName.Get "line-rate")))
+            |> List.filter (fun x -> try
+                                       (snd x).Validate(cobertura34, null)
+                                       false
+                                      with
+                                      :? XmlSchemaValidationException -> true)
+            |> List.map fst
+        Assert.That(coberturaFiles, Is.EquivalentTo [], "coberturaFiles")
+
+        let cobertura2Files =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName ="coverage"
+                                     && not (isNull <| root.Attribute(XName.Get "line-rate")))
+            |> List.filter (fun x -> try
+                                      (snd x).Validate(coberturaStrict, null)
+                                      false
+                                     with
+                                     :? XmlSchemaValidationException -> true)
+            |> List.map fst
+        let c2expect = [
+                          "Samples/Sample20/Reports/Cobertura_altcover.xml"
+                          "Samples/Sample20/Reports/Cobertura_coverlet.xml"
+                       ] |> List.map Path.getFullName
+        Assert.That(cobertura2Files, Is.EquivalentTo c2expect, "cobertura2Files")
+
+        let opencoverFiles =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName ="CoverageSession")
+            |> List.filter (fun x -> try
+                                       (snd x).Validate(opencover, null)
+                                       false
+                                      with
+                                      :? XmlSchemaValidationException -> true)
+            |> List.map fst
+        Assert.That(opencoverFiles, Is.EquivalentTo [], "opencoverFiles")
+
+        let opencover2Files =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName ="CoverageSession")
+            |> List.filter (fun x -> try
+                                       (snd x).Validate(opencoverStrict, null)
+                                       false
+                                      with
+                                      :? XmlSchemaValidationException -> true)
+            |> List.map fst
+        Assert.That(opencover2Files, Is.EquivalentTo [], "opencover2Files")
+
+        let noncoverFiles =
+            xml
+            |> List.filter (fun x -> let root = (snd x).Root
+                                     root.Name.LocalName <> "CoverageSession" &&
+                                     root.Name.LocalName <> "coverage")
+
+            |> List.map fst
+        Assert.That(noncoverFiles, Is.EquivalentTo [])
+
 
         let issue71 = !!(@"./**/*.exn") |> Seq.toList
 
