@@ -7118,25 +7118,16 @@ _Target
         let o1expect =
           [
             "AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
-            "AltCover.Tests/issue122.xml" //  + embeds
+            "AltCover.Tests/issue122.xml" // ditto
             "AltCover.Tests/Sample1WithOpenCover.xml" // ditto
-            "_Packaging/OpenCoverCombination-1.xml" // "The element 'TrackedMethodRefs' has invalid child element 'Time'. List of possible elements expected: 'TrackedMethodRef'."
-            "_Reports/AltCover.Recorder.Tests.coverlet.xml" // "The element 'Modules' has incomplete content. List of possible elements expected: 'Summary, Module'."
-            "_Reports/AltCover.Recorder2.Tests.coverlet.xml" // ditto
+            "_Packaging/OpenCoverCombination-1.xml" // ??? "The element 'TrackedMethodRefs' has invalid child element 'Time'. List of possible elements expected: 'TrackedMethodRef'."
             "__AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
-            "Samples/Sample20/Reports/OpenCoverWithTrackedMethods.xml" // MyBug "The element 'MethodPoint' cannot contain child element 'TrackedMethodRefs' because the parent element's content model is empty."
-            "Samples/Sample20/Reports/OpenCover_coverlet.xml" // "The required attribute 'uspid' is missing."
+            "Samples/Sample20/Reports/OpenCover_coverlet.xml" // coverlet spelling error upsid "The required attribute 'uspid' is missing."
           ]
           |> List.map Path.getFullName
           |> List.filter File.Exists
             
-        let o1expect2 = // "The element 'Modules' has incomplete content. List of possible elements expected: 'Summary, Module'."
-           !!(@"./AltCover.Recorde*.Tests/TestResults/**/coverage.opencover.xml") 
-            |> Seq.toList;
-
-        let oc = o1expect @ o1expect2
-
-        Assert.That(opencoverFiles, Is.EquivalentTo oc , "opencoverFiles")
+        Assert.That(opencoverFiles, Is.EquivalentTo o1expect , "opencoverFiles")
 
         let opencover2Files =
             xml
@@ -7146,9 +7137,11 @@ _Target
                                        (snd x).Validate(opencoverStrict, null)
                                        false
                                       with
-                                      :? XmlSchemaValidationException -> true)
+                                      :? XmlSchemaValidationException as xx -> 
+                                        printfn "strict %A -> %A" (fst x) xx.Message
+                                        true)
             |> List.map fst
-        Assert.That(opencover2Files, Is.EquivalentTo oc, "opencover2Files")
+        Assert.That(opencover2Files, Is.EquivalentTo o1expect, "opencover2Files")
 
         let noncoverFiles =
             xml
