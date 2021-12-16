@@ -363,26 +363,18 @@ let coverletOptions (o: DotNet.Options) =
     { dotnetOptions o with
           CustomParams = Some "--collect:\"XPlat Code Coverage\"" }
 
-let coverletTestOptions (o: DotNet.TestOptions) =
+let coverletTaggedTestOptions report tag (o: DotNet.TestOptions) =
     { o.WithCommon dotnetOptions with
           Configuration = DotNet.BuildConfiguration.Debug
-          NoBuild = true
-          Framework = Some "net6.0"
-          Settings = Some "./_Generated/coverletArgs.runsettings"
-          Collect = Some "XPlat Code Coverage" }
-    |> testWithCLIArguments
-
-let coverletTaggedTestOptions tag (o: DotNet.TestOptions) =
-    { o.WithCommon dotnetOptions with
-          Configuration = DotNet.BuildConfiguration.Debug
+          ResultsDirectory = Some report
           NoBuild = true
           Framework = Some "net6.0"
           Settings = Some "./_Generated/coverletArgs.runsettings"
           Collect = Some "XPlat Code Coverage" }
     |> (testWithCLITaggedArguments tag)
 
-let coverletTestOptionsSample tag (o: DotNet.TestOptions) =
-    { coverletTaggedTestOptions tag o with
+let coverletTestOptionsSample report tag (o: DotNet.TestOptions) =
+    { coverletTaggedTestOptions report tag o with
           Settings = Some "./Build/coverletArgs.sample.runsettings"
           Collect = Some "XPlat Code Coverage" }
 
@@ -1529,13 +1521,15 @@ _Target
                 |> Seq.fold
                     (fun l f ->
                         let here = Path.GetDirectoryName f
-                        let tr = here @@ "TestResults"
+                        let name = here |> Path.GetFileName
+                        let report = Path.Combine(Path.getFullName "./_Reports", "Coverlet_" + name)
+                        let tr = report @@ "TestResults"
                         Directory.ensure tr
                         Shell.cleanDir tr
 
                         try
                             f
-                            |> DotNet.test (coverletTaggedTestOptions "Coverlet")
+                            |> DotNet.test (coverletTaggedTestOptions tr "Coverlet")
                         with
                         | x -> eprintf "%A" x
 
@@ -4756,9 +4750,8 @@ _Target
         |> AltCoverCommand.run
 
         // now do it for coverlet
-        let here = Path.GetDirectoryName sample
-        let tr = here @@ "TestResults"
-        Directory.ensure tr
+        let report = (Path.getFullName "./_Reports") @@ "Coverlet_OpenCoverForPester"
+        let tr = report @@ "TestResults"
         Directory.ensure tr
         Shell.cleanDir tr
 
@@ -4770,7 +4763,7 @@ _Target
                     |> (buildWithCLITaggedArguments "CoverletForPester"))
                 sample
 
-            DotNet.test (coverletTestOptionsSample "CoverletForPester") sample
+            DotNet.test (coverletTestOptionsSample tr "CoverletForPester") sample
         with
         | x -> eprintf "%A" x
 
