@@ -3473,8 +3473,8 @@ _Target
                 "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
 
         if (poshHelp |> File.Exists |> not)
-           && (Environment.isWindows |> not) then
-            File.WriteAllText(poshHelp, "DUMMY TEXT")
+           && (Environment.isWindows |> not) then // as the cmdletdoc tool uses a windows-only toolkit
+            File.WriteAllText(poshHelp, "<?xml version="1.0" encoding="utf-8"?><helpItems schema=\"maml\" xmlns=\"http://msh\" />")
 
         let vis =
             Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/net472/AltCover.Visualizer.exe"
