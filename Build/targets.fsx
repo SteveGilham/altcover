@@ -822,6 +822,8 @@ _Target
                 |> Path.getFullName
 
             if Environment.isWindows then // the Jolt comment reader library is sadly windows/fullframework bound
+                                          // see Jolt.XmlDocCommentReaderSettings.CreateDefaultSettings()
+                                          //  https://github.com/red-gate/JoltNet-core/tree/master/Jolt
                 Actions.RunDotnet
                     dotnetOptions
                     ""
