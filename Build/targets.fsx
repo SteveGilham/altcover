@@ -7144,7 +7144,7 @@ _Target
             "AltCover.Tests/HandRolledMonoCoverage.xml"
             "AltCover.Tests/OpenCoverWithEmbeds.xml"
             "AltCover.Tests/OpenCoverWithPartials.xml"
-            "AltCover.Tests\Sample4FullTracking.xml"
+            "AltCover.Tests/Sample4FullTracking.xml"
             // coverlet
             "AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
             "AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
