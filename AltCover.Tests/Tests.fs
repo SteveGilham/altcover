@@ -1078,6 +1078,7 @@ module AltCoverTests =
         |> Path.GetFullPath
         |> XDocument.Load
 
+      // beware conditionals like on NUnit.ConsoleRunner
       xml.Descendants(XName.Get("PackageReference"))
       |> Seq.filter (fun x -> x.Attribute("Include".X).IsNotNull)
       |> Seq.map

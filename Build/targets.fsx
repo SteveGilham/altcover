@@ -237,6 +237,12 @@ let toolPackages =
 
     xml.Descendants(XName.Get("PackageReference"))
     |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
+    |> Seq.filter (fun x -> match x.Attribute(XName.Get("Condition")) with
+                            | null -> true
+                            | a -> match (a.Value = "'$(OS)' == 'Windows_NT'", Environment.isWindows) with
+                                   | (true, true)
+                                   | (false, false) -> true
+                                   | _ -> false)
     |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
     |> Map.ofSeq
 
