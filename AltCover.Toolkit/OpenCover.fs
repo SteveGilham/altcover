@@ -696,7 +696,7 @@ module OpenCover =
 
     if tracks |> Seq.isEmpty |> not then
       let t = XElement(XName.Get "TrackedMethodRefs")
-      times |> Seq.toArray |> t.Add
+      tracks |> Seq.toArray |> t.Add
       np0.Add t
 
     (mc, np0)

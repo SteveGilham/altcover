@@ -7111,7 +7111,6 @@ _Target
             "AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
             "AltCover.Tests/issue122.xml" // ditto
             "AltCover.Tests/Sample1WithOpenCover.xml" // ditto
-            "_Packaging/OpenCoverCombination-1.xml" // ??? "The element 'TrackedMethodRefs' has invalid child element 'Time'. List of possible elements expected: 'TrackedMethodRef'."
             "__AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
             "Samples/Sample20/Reports/OpenCover_coverlet.xml" // coverlet spelling error upsid "The required attribute 'uspid' is missing."
           ]

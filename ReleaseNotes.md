@@ -2,6 +2,9 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 8.2.83x (Habu series release 11)
+* [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet
+
 # 8.2.833 (Habu series release 10)
 * [BUGFIX] Work-round more (problems with ill-formed debug data)[https://github.com/jbevain/cecil/issues/816] (issue #135)
 * [BUGFIX] An infinite loop while instrumenting when faced with an inner function that is also a closure (also issue #135)
