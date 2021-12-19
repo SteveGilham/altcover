@@ -1135,7 +1135,7 @@ module internal Instrument =
           ("\u0410lt\u0421over."
            + (CoverageParameters.reportKind ()).ToString()),
           ManifestResourceAttributes.Private,
-          System.Text.Encoding.UTF8.GetBytes("<dummy>")
+          System.Text.Encoding.UTF8.GetBytes(Visitor.moduleReport)
         )
 
       ``module``.Resources.Add extra
