@@ -1396,7 +1396,12 @@ module
           Type = null
           VisibleType = null }
 
-    let visitAfterModule s = { s with Documents = null }
+    let visitAfterModule s =
+      let w =
+        StringBuilder() |> documentsToBuilder s.Documents
+
+      Visitor.moduleReport <- w.ToString()
+      { s with Documents = null }
 
     let reportVisitor (s: JsonContext) (node: Node) =
       match node with
