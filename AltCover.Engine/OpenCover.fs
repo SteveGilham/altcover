@@ -663,6 +663,8 @@ module internal OpenCover =
                     if s.Embeds.ContainsKey k then
                       file.Add(XAttribute("altcover.embed".X, s.Embeds.Item k))))
 
+      Visitor.moduleReport <- head.Parent.ToString()
+
       { s with
           Stack = tail
           TotalSeq = s.TotalSeq + s.ModuleSeq
