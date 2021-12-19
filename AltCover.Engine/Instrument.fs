@@ -509,7 +509,10 @@ module internal Instrument =
     // when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
     let internal writeAssembly (assembly: AssemblyDefinition) (path: string) =
       let pkey = Mono.Cecil.WriterParameters()
-      pkey.SymbolWriterProvider <- Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider() :> ISymbolWriterProvider
+
+      pkey.SymbolWriterProvider <-
+        Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider() :> ISymbolWriterProvider
+
       pkey.WriteSymbols <- true
 
       knownKey assembly.Name
@@ -1122,8 +1125,20 @@ module internal Instrument =
                                                       "AvoidUnnecessarySpecializationRule",
                                                       Justification = "AvoidSpeculativeGenerality too")>]
     let private visitAfterAssembly (state: InstrumentContext) (assembly: AssemblyEntry) =
-      let originalFileName =
-        Path.GetFileName assembly.Assembly.MainModule.FileName
+      let ``module`` = assembly.Assembly.MainModule
+
+      let originalFileName = Path.GetFileName ``module``.FileName
+
+      // Cyrillic capitals in "АltСover"
+      let extra =
+        EmbeddedResource(
+          ("\u0410lt\u0421over."
+           + (CoverageParameters.reportKind ()).ToString()),
+          ManifestResourceAttributes.Private,
+          System.Text.Encoding.UTF8.GetBytes("<dummy>")
+        )
+
+      ``module``.Resources.Add extra
 
       writeAssemblies assembly.Assembly originalFileName assembly.Destinations Output.info
       state
