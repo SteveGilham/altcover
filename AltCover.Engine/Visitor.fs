@@ -486,6 +486,7 @@ module internal Inspector =
 
 [<RequireQualifiedAccess>]
 module internal Visitor =
+  let mutable internal moduleReport = String.Empty
   let private accumulator = HashSet<AssemblyDefinition>()
   let mutable private pointNumber: int = 0
   let mutable private branchNumber: int = 0
