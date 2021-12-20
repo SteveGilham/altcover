@@ -1129,13 +1129,28 @@ module internal Instrument =
 
       let originalFileName = Path.GetFileName ``module``.FileName
 
+      use mem = new System.IO.MemoryStream()
+
+      use crush =
+        new System.IO.Compression.DeflateStream(
+          mem,
+          System.IO.Compression.CompressionMode.Compress
+        )
+
+      let data =
+        System.Text.Encoding.UTF8.GetBytes(Visitor.moduleReport)
+
+      crush.Write(data, 0, data.Length)
+      crush.Flush()
+      mem.Position <- 0L
+
       // Cyrillic capitals in "АltСover"
       let extra =
         EmbeddedResource(
           ("\u0410lt\u0421over."
            + (CoverageParameters.reportKind ()).ToString()),
           ManifestResourceAttributes.Private,
-          System.Text.Encoding.UTF8.GetBytes(Visitor.moduleReport)
+          mem
         )
 
       ``module``.Resources.Add extra
