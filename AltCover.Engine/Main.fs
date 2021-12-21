@@ -422,15 +422,40 @@ module internal Main =
              ) = "4ebffcaabf10ce6a") // recorder.snk
       |> Option.defaultValue false
 
+    let checkInstrumentation (a: AssemblyDefinition) =
+      match a.CustomAttributes
+            |> Seq.tryFind
+                 (fun a ->
+                   a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute")
+        with
+      | None -> (false, false)
+      | Some attr ->
+        let hasResource =
+          a.MainModule.Resources
+          |> Seq.exists
+               (fun r ->
+                 r.Name = "\u0410lt\u0421over."
+                          + (CoverageParameters.reportKind ()).ToString())
+
+        let hasConfig =
+          attr.Properties
+          |> Seq.exists
+               (fun i ->
+                 i.Name = "Configuration"
+                 && i.Argument.Value.ToString() = CoverageParameters.configurationHash.Value)
+
+        (hasResource && hasConfig, true)
+
     let internal screenAssembly (fullName: String) (a: AssemblyDefinition) =
-      if a.CustomAttributes
-         |> Seq.exists
-              (fun a ->
-                a.AttributeType.FullName = "AltCover.Recorder.InstrumentationAttribute")
-         || a.MainModule.AssemblyReferences
-            |> Seq.cast<AssemblyNameReference>
-            |> Seq.exists checkKey
-         || checkKey a.Name then
+      let (ok, attr) = checkInstrumentation a
+
+      if (attr && not ok)
+         || (not attr
+             && // yet still refers to recorder.g
+             (a.MainModule.AssemblyReferences
+              |> Seq.cast<AssemblyNameReference>
+              |> Seq.exists checkKey
+              || checkKey a.Name)) then
         CommandLine.Format.Local("alreadyInstrumented", fullName)
         |> Output.warn
 
