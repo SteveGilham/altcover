@@ -159,7 +159,8 @@ _Target
                 let check t pf (f: string) =
                     let destination = t @@ (f.Substring pf)
                     // printfn "%A" destination
-                    destination |> File.Exists |> not
+                    destination |> File.Exists |> not &&
+                    destination |> Path.GetFileName <> "SecurityTransparencyRules.dll"
 
                 Shell.copyDir target fx (check target prefix)
 
