@@ -66,7 +66,7 @@ let nuget =
 let dixon =
     ("./packages/"
      + (packageVersion "AltCode.Dixon")
-     + "/Rules")
+     + "/tools" )
     |> Path.getFullName
 
 let fxcop =
@@ -163,8 +163,7 @@ _Target
 
                 Shell.copyDir target fx (check target prefix)
 
-                let rules = target @@ "Rules"
-                Shell.copyDir rules dixon (fun _ -> true)))
+                Shell.copyDir target dixon (fun _ -> true)))
 
 _Target "Preparation" ignore
 
