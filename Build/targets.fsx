@@ -1161,20 +1161,21 @@ _Target
                   "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]),  // TODO netcore support
            [],
            standardRules)
-          (fxcop,
-           String.Empty,
-           [ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
            [],
            List.concat [ defaultRules
                          cantStrongName ]) // can't strongname this as Fake isn't strongnamed
           (fxcop,
            String.Empty,
+           // netstandard2.0 : An error was encountered while parsing IL for method: 'AltCoverFake.DotNet.Testing.AltCoverCommand+Pipe #1 stage #1 at line 144@145.Invoke(System.String)', instruction at offset '0x8' with opcode 'Call'.
            [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
            [],
            defaultRules)
-          (fxcop,
-           String.Empty,
-           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/net472/AltCover.Cake.dll" ],
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
            [],
            List.concat [ defaultCSharpRules
                          cantStrongName ]) // can't strongname this as Cake isn't strongnamed
@@ -1215,6 +1216,13 @@ _Target
                               WorkingDirectory = "."
                               DependencyDirectories = [
                                                         "./ThirdParty/gtk-sharp2"
+                                                        nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
+                                                        nugetCache @@ "cake.common/1.1.0/lib/netstandard2.0"
+                                                        nugetCache @@ "cake.core/1.1.0/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.environment/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.process/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.trace/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.dotnet.cli/5.20.4/lib/netstandard2.0"
                                                         nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
                                                         nugetCache @@ "mono.cecil/0.11.4/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.build.framework/16.0.461/lib/netstandard2.0"
