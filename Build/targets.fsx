@@ -1178,14 +1178,13 @@ _Target
            [],
            List.concat [ defaultCSharpRules
                          cantStrongName ]) // can't strongname this as Cake isn't strongnamed
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+             "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll" ], [], defaultRules)
           (fxcop,
            String.Empty,
-           [ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net472/AltCover.Toolkit.dll"
-             "_Binaries/AltCover.DotNet/Debug+AnyCPU/net472/AltCover.DotNet.dll" ],
-           [],
-           defaultRules)
-          (fxcop,
-           String.Empty,
+           // netstandard2.0 : The following error was encountered while reading module 'System.Core': Security attribute type does not have a default constructor: System.Security.Permissions.HostProtectionAttribute, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089.
            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
           (fxcop,
            String.Empty,
