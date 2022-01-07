@@ -40,7 +40,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" />
+    <Reference Include="BlackFox.CommandLine">
+      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
+    </Reference>
     <PackageReference Include="FAKE.Core.Environment" Version="5.20.4" />
     <PackageReference Include="FAKE.Core.Process" Version="5.20.4" />
     <PackageReference Include="FAKE.DotNet.Cli" Version="5.20.4" />

@@ -1246,7 +1246,7 @@ _Target
                               WorkingDirectory = "."
                               DependencyDirectories = [
                                                         "./ThirdParty/gtk-sharp2"
-                                                        nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
+                                                        "./ThirdParty" //nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
                                                         nugetCache @@ "cake.common/1.1.0/lib/netstandard2.0"
                                                         nugetCache @@ "cake.core/1.1.0/lib/netstandard2.0"
                                                         nugetCache @@ "fake.core.environment/5.20.4/lib/netstandard2.0"
