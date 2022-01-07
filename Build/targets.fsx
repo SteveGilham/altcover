@@ -1149,7 +1149,33 @@ _Target
                           standardRules
                           [ "-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed" ] ]
 
-        let refdir = @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO
+        let refdir = @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO generate
+
+        [ ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
+           [],
+           "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly"
+           :: defaultRules) ]
+        |> Seq.iter
+            (fun (files, types, ruleset) ->
+                try
+                    files
+                    |> FxCop.run
+                        { FxCop.Params.Create() with
+                              WorkingDirectory = "."
+                              ToolPath = Option.get fxcop
+                              UseGAC = true
+                              Verbose = false
+                              ReportFileName = "_Reports/FxCopReport.xml"
+                              Types = types
+                              Rules = ruleset
+                              FailOnError = FxCop.ErrorLevel.Warning
+                              IgnoreGeneratedCode = true }
+                with
+                | _ ->
+                    dumpSuppressions "_Reports/FxCopReport.xml"
+                    reraise ())
+
         [ (fxcop,
            String.Empty,
            (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
@@ -1159,6 +1185,22 @@ _Target
                 [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
            [],
            standardRules)
+          (fxcop,
+           String.Empty,
+           [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
+             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
+           [],
+           defaultRules)
+          (fxcop,
+           String.Empty,
+           // netstandard2.0 : The following error was encountered while reading module 'System.Core': Security attribute type does not have a default constructor: System.Security.Permissions.HostProtectionAttribute, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089.
+           [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
+          (fxcop,
+           String.Empty,
+           // netstandard2.0 : An error was encountered while parsing IL for method: 'AltCoverFake.DotNet.Testing.AltCoverCommand+Pipe #1 stage #1 at line 144@145.Invoke(System.String)', instruction at offset '0x8' with opcode 'Call'.
+           [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+           [],
+           defaultRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
@@ -1176,12 +1218,6 @@ _Target
            [],
            List.concat [ defaultRules
                          cantStrongName ]) // can't strongname this as Fake isn't strongnamed
-          (fxcop,
-           String.Empty,
-           // netstandard2.0 : An error was encountered while parsing IL for method: 'AltCoverFake.DotNet.Testing.AltCoverCommand+Pipe #1 stage #1 at line 144@145.Invoke(System.String)', instruction at offset '0x8' with opcode 'Call'.
-           [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
-           [],
-           defaultRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
@@ -1195,23 +1231,6 @@ _Target
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
              // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
              "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll" ], [], defaultRules)
-          (fxcop,
-           String.Empty,
-           // netstandard2.0 : The following error was encountered while reading module 'System.Core': Security attribute type does not have a default constructor: System.Security.Permissions.HostProtectionAttribute, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089.
-           [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
-          (fxcop,
-           String.Empty,
-           [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
-             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
-           [],
-           defaultRules)
-          (fxcop,
-           String.Empty,
-           [ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
-             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
-           [],
-           "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly"
-           :: defaultRules) // Esperanto resources in-line
           (dixon,
            refdir,
            [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
@@ -1241,6 +1260,7 @@ _Target
                                                         nugetCache @@ "microsoft.build.framework/16.0.461/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.build.utilities.core/16.0.461/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.testplatform.objectmodel/16.1.1/lib/netstandard1.5"
+                                                        nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
                                                       ]
                               ToolPath = Option.get tool
                               PlatformDirectory = platform
@@ -1255,6 +1275,7 @@ _Target
                 | _ ->
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
+
 
         try
             [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
