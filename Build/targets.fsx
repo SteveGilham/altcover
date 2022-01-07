@@ -1153,14 +1153,23 @@ _Target
         [ (fxcop,
            String.Empty,
            (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
-                [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
-                  "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-                  "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
+                [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
+                  "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]
             else // HACK HACK HACK
-                [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-                  "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]),  // TODO netcore support
+                [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
            [],
            standardRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
+             // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+             "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ], [], standardRules)
+          //(dixon, // new platform
+          // refdir,
+          // [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" ], [], standardRules)
+          //(dixon, // new platform
+          // refdir,
+          // [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ], [], defaultRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
@@ -1181,7 +1190,10 @@ _Target
                          cantStrongName ]) // can't strongname this as Cake isn't strongnamed
           (dixon,
            refdir,
-           [ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+           [ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
+             "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
+             // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
              "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll" ], [], defaultRules)
           (fxcop,
            String.Empty,
@@ -1189,7 +1201,7 @@ _Target
            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
           (fxcop,
            String.Empty,
-           [ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net472/AltCover.UICommon.dll"
+           [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
            [],
            defaultRules)
@@ -1224,9 +1236,11 @@ _Target
                                                         nugetCache @@ "fake.core.trace/5.20.4/lib/netstandard2.0"
                                                         nugetCache @@ "fake.dotnet.cli/5.20.4/lib/netstandard2.0"
                                                         nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
+                                                        nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
                                                         nugetCache @@ "mono.cecil/0.11.4/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.build.framework/16.0.461/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.build.utilities.core/16.0.461/lib/netstandard2.0"
+                                                        nugetCache @@ "microsoft.testplatform.objectmodel/16.1.1/lib/netstandard1.5"
                                                       ]
                               ToolPath = Option.get tool
                               PlatformDirectory = platform
