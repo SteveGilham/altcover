@@ -1191,10 +1191,9 @@ _Target
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
            [],
            defaultRules)
-          (fxcop,
-           String.Empty,
-           // netstandard2.0 : The following error was encountered while reading module 'System.Core': Security attribute type does not have a default constructor: System.Security.Permissions.HostProtectionAttribute, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089.
-           [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ], [], defaultRules)
           (fxcop,
            String.Empty,
            // netstandard2.0 : An error was encountered while parsing IL for method: 'AltCoverFake.DotNet.Testing.AltCoverCommand+Pipe #1 stage #1 at line 144@145.Invoke(System.String)', instruction at offset '0x8' with opcode 'Call'.
@@ -1261,6 +1260,7 @@ _Target
                                                         nugetCache @@ "microsoft.build.utilities.core/16.0.461/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.testplatform.objectmodel/16.1.1/lib/netstandard1.5"
                                                         nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                                        nugetCache @@ "powershellstandard.library/5.1.0/lib/netstandard2.0"
                                                       ]
                               ToolPath = Option.get tool
                               PlatformDirectory = platform
