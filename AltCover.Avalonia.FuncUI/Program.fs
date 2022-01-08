@@ -24,7 +24,11 @@ module Program =
 
     [<EntryPoint>]
     let main (args: string []) =
+#if NETSTANDARD2_0 // no AppBuilder here
+            args.Length
+#else
         AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .UseSkia()
             .StartWithClassicDesktopLifetime(args)
+#endif

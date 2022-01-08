@@ -7,11 +7,13 @@ open Avalonia.Logging
 open Mono.Options
 
 module VisualizerMain =
+#if !NETSTANDARD2_0 // no AppBuilder here
   let BuildAvaloniaApp () =
     AppBuilderBase<AppBuilder>
       .Configure<App>()
       .UsePlatformDetect()
       .LogToTrace(LogEventLevel.Warning)
+#endif
 
   [<EntryPoint>]
   let main arguments =
@@ -28,5 +30,9 @@ module VisualizerMain =
 
     options.Parse(arguments) |> ignore
 
+#if !NETSTANDARD2_0
     BuildAvaloniaApp()
       .StartWithClassicDesktopLifetime(arguments)
+#else
+    0
+#endif
