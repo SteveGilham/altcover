@@ -1141,16 +1141,11 @@ module AltCoverTests =
     ProgramDatabase.readSymbols f
 
     // work round the instrumented assemblies having unreliable symbols
-#if !NET472
     let dir =
       Path.Combine(
         SolutionRoot.location,
         "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0"
       )
-#else
-    let dir =
-      Path.Combine(SolutionRoot.location, "_Binaries/AltCover.Engine/Debug+AnyCPU/net472")
-#endif
 
     let localAssembly =
       Path.Combine(dir, "AltCover.Engine.dll")

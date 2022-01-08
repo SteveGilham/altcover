@@ -168,18 +168,18 @@ let dotnetOptionsWithRollForwards (o: DotNet.Options) =
 
     o.WithEnvironment env
 
-let fxcop =
+let (fxcop, dixon) =
     if Environment.isWindows then
         let expect =
             "./packages/fxcop/FxCopCmd.exe"
             |> Path.getFullName
 
         if File.Exists expect then
-            Some expect
+            (Some expect, Some ("./packages/fxcop/DixonCmd.exe" |> Path.getFullName))
         else
-            None
+            (None, None)
     else
-        None
+        (None, None)
 
 let monoOnWindows =
     if Environment.isWindows then
@@ -1149,45 +1149,14 @@ _Target
                           standardRules
                           [ "-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed" ] ]
 
-        [ ((if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
-                [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
-                  "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-                  "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
-            else // HACK HACK HACK
-                [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-                  "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]),  // TODO netcore support
-           [],
-           standardRules)
-          ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
-           [],
-           List.concat [ defaultRules
-                         cantStrongName ]) // can't strongname this as Fake isn't strongnamed
-          ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
-           [],
-           defaultRules)
-          ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net472/AltCover.Cake.dll" ],
-           [],
-           List.concat [ defaultCSharpRules
-                         cantStrongName ]) // can't strongname this as Cake isn't strongnamed
-          ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net472/AltCover.Toolkit.dll"
-             "_Binaries/AltCover.DotNet/Debug+AnyCPU/net472/AltCover.DotNet.dll" ],
-           [],
-           defaultRules)
-          ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
-          ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net472/AltCover.UICommon.dll"
-             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
-           [],
-           defaultRules)
-          ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+        let refdir = @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO generate
+
+        // net20 targets
+        [ ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
            [],
            "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly"
-           :: defaultRules) // Esperanto resources in-line
-          ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
-           [],
-           List.concat [ defaultRules
-                         [ "-Microsoft.Naming#CA1703" // spelling in resources
-                           "-Microsoft.Performance#CA1810" ] ]) ] // Static module initializers in $Type classes
+           :: defaultRules) ]
         |> Seq.iter
             (fun (files, types, ruleset) ->
                 try
@@ -1195,7 +1164,6 @@ _Target
                     |> FxCop.run
                         { FxCop.Params.Create() with
                               WorkingDirectory = "."
-                              DependencyDirectories = [ "./ThirdParty/gtk-sharp2" ]
                               ToolPath = Option.get fxcop
                               UseGAC = true
                               Verbose = false
@@ -1209,12 +1177,117 @@ _Target
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
 
+        [ (fxcop, // framework targets
+           String.Empty,
+           (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
+                [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
+                  "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]
+            else // HACK HACK HACK
+                [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
+           [],
+           standardRules)
+          (fxcop, // framework targets
+           String.Empty,
+           [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
+             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
+           [],
+           defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ], [], defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+           [],
+           defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
+             // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+             "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ], [], standardRules)
+          //(dixon, // new platform
+          // refdir,
+          // [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" ], [], standardRules)
+          //(dixon, // new platform
+          // refdir,
+          // [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ], [], defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
+           [],
+           List.concat [ defaultRules
+                         cantStrongName ]) // can't strongname this as Fake isn't strongnamed
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
+           [],
+           List.concat [ defaultCSharpRules
+                         cantStrongName ]) // can't strongname this as Cake isn't strongnamed
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
+             "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
+             // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
+             "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll" ], [], defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
+           [],
+           List.concat [ defaultRules
+                         [ "-Microsoft.Naming#CA1703" // spelling in resources
+                           "-Microsoft.Performance#CA1810" ] ]) ] // Static module initializers in $Type classes
+        |> Seq.iter
+            (fun (tool, platform, files, types, ruleset) ->
+                try
+                    files
+                    |> FxCop.run
+                        { FxCop.Params.Create() with
+                              WorkingDirectory = "."
+                              DependencyDirectories = [
+                                                        "./ThirdParty/gtk-sharp2"
+                                                        nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
+                                                        nugetCache @@ "cake.common/1.1.0/lib/netstandard2.0"
+                                                        nugetCache @@ "cake.core/1.1.0/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.environment/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.process/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.trace/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.dotnet.cli/5.20.4/lib/netstandard2.0"
+                                                        nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
+                                                        nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                                                        nugetCache @@ "mono.cecil/0.11.4/lib/netstandard2.0"
+                                                        nugetCache @@ "microsoft.build.framework/16.0.461/lib/netstandard2.0"
+                                                        nugetCache @@ "microsoft.build.utilities.core/16.0.461/lib/netstandard2.0"
+                                                        nugetCache @@ "microsoft.testplatform.objectmodel/16.1.1/lib/netstandard1.5"
+                                                        nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                                        nugetCache @@ "powershellstandard.library/5.1.0/lib/netstandard2.0"
+                                                      ]
+                              ToolPath = Option.get tool
+                              PlatformDirectory = platform
+                              UseGAC = true
+                              Verbose = false
+                              ReportFileName = "_Reports/FxCopReport.xml"
+                              Types = types
+                              Rules = ruleset
+                              FailOnError = FxCop.ErrorLevel.Warning
+                              IgnoreGeneratedCode = true }
+                with
+                | _ ->
+                    dumpSuppressions "_Reports/FxCopReport.xml"
+                    reraise ())
+
+
         try
-            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
+            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
             |> FxCop.run
                 { FxCop.Params.Create() with
                       WorkingDirectory = "."
-                      ToolPath = Option.get fxcop
+                      ToolPath = Option.get dixon
+                      PlatformDirectory = refdir
+                      DependencyDirectories = [
+                                                nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
+                                                nugetCache @@ "powershellstandard.library/5.1.0/lib/netstandard2.0"
+                                              ]
                       UseGAC = true
                       Verbose = false
                       ReportFileName = "_Reports/FxCopReport.xml"

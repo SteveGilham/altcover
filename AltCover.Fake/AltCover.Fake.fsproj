@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
-    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.Fake</RootNamespace>
     <AssemblyName>AltCover.Fake</AssemblyName>
     <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
@@ -35,13 +34,6 @@
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Engine\AltCover.Engine.fsproj" />
     <ProjectReference Include="..\AltCover.DotNet\AltCover.DotNet.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

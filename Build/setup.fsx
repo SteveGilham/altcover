@@ -66,7 +66,7 @@ let nuget =
 let dixon =
     ("./packages/"
      + (packageVersion "AltCode.Dixon")
-     + "/Rules")
+     + "/tools" )
     |> Path.getFullName
 
 let fxcop =
@@ -159,12 +159,16 @@ _Target
                 let check t pf (f: string) =
                     let destination = t @@ (f.Substring pf)
                     // printfn "%A" destination
-                    destination |> File.Exists |> not
+                    destination |> File.Exists |> not &&
+                    destination |> Path.GetFileName <> "SecurityTransparencyRules.dll"
 
                 Shell.copyDir target fx (check target prefix)
 
-                let rules = target @@ "Rules"
-                Shell.copyDir rules dixon (fun _ -> true)))
+                Shell.copyDir target dixon (fun _ -> true)
+                
+                let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
+                // Maybe process here...
+                config.Save "./packages/fxcop/DixonCmd.exe.config"))
 
 _Target "Preparation" ignore
 
