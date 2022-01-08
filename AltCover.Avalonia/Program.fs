@@ -16,7 +16,7 @@ module VisualizerMain =
 #endif
 
   [<EntryPoint>]
-  let main arguments =
+  let private main arguments =
     let options =
       [ ("g|geometry",
          (fun _ ->

@@ -1,6 +1,7 @@
 namespace AltCover
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Collections.Generic
 open System.Globalization
 open System.IO
@@ -23,9 +24,16 @@ type MainWindow() as this =
   inherit Window()
   let mutable armed = false
   let mutable justOpened = String.Empty
+
+  [<NonSerialized>]
   let mutable coverageFiles: string list = []
+
+  [<NonSerialized>]
   let ofd = OpenFileDialog()
+
   let iconMaker (x: Stream) = new Bitmap(x)
+
+  [<NonSerialized>]
   let icons = Icons(iconMaker)
 
   let getIcon name =
@@ -34,11 +42,22 @@ type MainWindow() as this =
     let value = named.GetValue(icons) :?> Lazy<Bitmap>
     value.Force()
 
+  [<NonSerialized>]
   let visited = SolidColorBrush.Parse "#0000CD" // "#F5F5F5" // Medium Blue on White Smoke
+
+  [<NonSerialized>]
   let declared = SolidColorBrush.Parse "#FFA500" // "#F5F5F5" // Orange on White Smoke
+
+  [<NonSerialized>]
   let staticAnalysis = SolidColorBrush.Parse "#000000" // "#F5F5F5" // Black on White Smoke
+
+  [<NonSerialized>]
   let automatic = SolidColorBrush.Parse "#FFD700" // "#F5F5F5" // Gold on White Smoke
+
+  [<NonSerialized>]
   let notVisited = SolidColorBrush.Parse "#DC143C" // "#F5F5F5"// Crimson on White Smoke
+
+  [<NonSerialized>]
   let excluded = SolidColorBrush.Parse "#87CEEB" // "#F5F5F5" // Sky Blue on White Smoke
 
   let makeTreeNode pc leaf name icon =
@@ -87,6 +106,9 @@ type MainWindow() as this =
     this.InitializeComponent()
     this.Show()
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidSwitchStatementsRule",
+                    Justification = "This is FP, not OO")>]
   member private this.DisplayMessage (status: MessageType) message =
     let caption =
       match status with
@@ -151,6 +173,9 @@ type MainWindow() as this =
          icons.Refresh)
         .Force()
 
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "AvoidUnusedParametersRule",
+                    Justification = "Meets an interface")>]
   member private this.HideAboutBox _ =
     this.FindControl<StackPanel>("AboutBox").IsVisible <- false
     this.FindControl<Menu>("Menu").IsVisible <- true
@@ -172,6 +197,17 @@ type MainWindow() as this =
              | 0uy -> FontStyle.Normal
              | 255uy -> FontStyle.Italic
              | _ -> FontStyle.Oblique)
+
+  [<SuppressMessage("Gendarme.Rules.Exceptions",
+                    "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+                    Justification = "Problem is displayed to the user")>]
+  member private this.CatchAllAndWarn f =
+    try
+      f ()
+    with
+    | x ->
+      let caption = Resource.GetResourceString "LoadError"
+      this.ShowMessageBox MessageType.Error caption x.Message
 
   member private this.PrepareDoubleTap
     (context: CoverageTreeContext<List<TreeViewItem>, TreeViewItem>)
@@ -287,57 +323,53 @@ type MainWindow() as this =
              )
 
            let showSource (info: Source) (line: int) =
-             try
-               this.UpdateTextFonts text text2
-               text.Text <- info.ReadAllText().Replace('\t', '\u2192')
+             this.CatchAllAndWarn
+               (fun () ->
+                 this.UpdateTextFonts text text2
+                 text.Text <- info.ReadAllText().Replace('\t', '\u2192')
 
-               let textLines =
-                 text.FormattedText.GetLines() |> Seq.toList
+                 let textLines =
+                   text.FormattedText.GetLines() |> Seq.toList
 
-               text2.Text <-
-                 String.Join(
-                   Environment.NewLine,
-                   textLines
-                   // Font limitation or Avalonia limitation?
-                   // character \u2442 just shows as a box.
-                   |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i))
-                 )
+                 text2.Text <-
+                   String.Join(
+                     Environment.NewLine,
+                     textLines
+                     // Font limitation or Avalonia limitation?
+                     // character \u2442 just shows as a box.
+                     |> Seq.mapi (fun i _ -> sprintf "%6d " (1 + i))
+                   )
 
-               let sample = textLines |> Seq.head
-               let depth = sample.Height * float (line - 1)
-               let root = xpath.Clone()
-               root.MoveToRoot()
+                 let sample = textLines |> Seq.head
+                 let depth = sample.Height * float (line - 1)
+                 let root = xpath.Clone()
+                 root.MoveToRoot()
 
-               let (formats, linemark) =
-                 markCoverage root text text2 textLines info
+                 let (formats, linemark) =
+                   markCoverage root text text2 textLines info
 
-               let stack = this.FindControl<StackPanel>("Branches")
-               root.MoveToRoot()
-               markBranches root stack textLines info
+                 let stack = this.FindControl<StackPanel>("Branches")
+                 root.MoveToRoot()
+                 markBranches root stack textLines info
 
-               async {
-                 Threading.Thread.Sleep(300)
+                 async {
+                   Threading.Thread.Sleep(300)
 
-                 Dispatcher.UIThread.Post
-                   (fun _ ->
-                     text.FormattedText.Spans <- formats
-                     text.Tag <- formats
-                     text.InvalidateVisual()
-                     text2.FormattedText.Spans <- linemark
-                     text2.Tag <- linemark
-                     text2.InvalidateVisual()
+                   Dispatcher.UIThread.Post
+                     (fun _ ->
+                       text.FormattedText.Spans <- formats
+                       text.Tag <- formats
+                       text.InvalidateVisual()
+                       text2.FormattedText.Spans <- linemark
+                       text2.Tag <- linemark
+                       text2.InvalidateVisual()
 
-                     let midpoint = scroller.Viewport.Height / 2.0
+                       let midpoint = scroller.Viewport.Height / 2.0
 
-                     if (depth > midpoint) then
-                       scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
-               }
-               |> Async.Start
-
-             with
-             | x ->
-               let caption = Resource.GetResourceString "LoadError"
-               this.ShowMessageBox MessageType.Error caption x.Message
+                       if (depth > midpoint) then
+                         scroller.Offset <- scroller.Offset.WithY(depth - midpoint))
+                 }
+                 |> Async.Start)
 
            HandlerCommon.DoRowActivation xpath this noSource showSource)
 

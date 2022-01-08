@@ -16,17 +16,18 @@ module Persistence =
   let internal saveFolder = Configuration.SaveFolder
   let internal saveCoverageFiles = Configuration.SaveCoverageFiles
 
-  let readCoverageFiles () =
+  let internal readCoverageFiles () =
     let mutable l = []
     Configuration.ReadCoverageFiles(fun files -> l <- files)
     l
 
-  let saveGeometry (w: Window) =
+  let internal saveGeometry (w: Window) =
+    let p = w.Position
     Configuration.SaveGeometry
-      (fun () -> w.Position.X, w.Position.Y)
+      (fun () -> p.X, p.Y)
       (fun () -> w.Width, w.Height)
 
-  let readGeometry (w: Window) =
+  let internal readGeometry (w: Window) =
     Configuration.ReadGeometry
       (fun (width, height) (x, y) ->
         w.Height <- float height
@@ -52,4 +53,4 @@ module Persistence =
 
         w.Position <- PixelPoint(x', y'))
 
-  let clearGeometry = Configuration.ClearGeometry
+  let internal clearGeometry = Configuration.ClearGeometry
