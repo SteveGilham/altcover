@@ -1186,6 +1186,27 @@ _Target
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
 
+        try
+            [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ]
+            |> FxCop.run
+                { FxCop.Params.Create() with
+                      WorkingDirectory = "."
+                      ToolPath = Option.get dixon
+                      PlatformDirectory = "./packages/fxcop"
+                      DependencyDirectories = [
+                                                nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                              ]
+                      UseGAC = true
+                      Verbose = false
+                      ReportFileName = "_Reports/FxCopReport.xml"
+                      Rules = defaultRules
+                      FailOnError = FxCop.ErrorLevel.Warning
+                      IgnoreGeneratedCode = true }
+        with
+        | _ ->
+            dumpSuppressions "_Reports/FxCopReport.xml"
+            reraise ()
+
         [ (fxcop, // framework targets
            String.Empty,
            (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
@@ -1218,11 +1239,6 @@ _Target
            refdir,
            [ // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll"
              "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], [], standardRules)
-          (dixon, // new platform
-           refdir,
-           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
-             //  GetReaderForFile returned an unexpected HResult: 0x80004005.
-             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ], [], defaultRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
