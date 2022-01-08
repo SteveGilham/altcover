@@ -21,6 +21,14 @@ open System.Reflection
 open AltCoverFake.DotNet.Testing
 open Fake.Core
 open Fake.DotNet
+
+[<assembly: SuppressMessage("Microsoft.Naming",
+                            "CA1724:TypeNamesShouldNotMatchNamespaces",
+                            Scope = "type",
+                            Target = "AltCoverFake.DotNet.Testing.AltCover",
+                            Justification = "Design decision")>]
+()
+
 #endif
 
 [<RequireQualifiedAccess>]

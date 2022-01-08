@@ -1194,23 +1194,26 @@ _Target
            defaultRules)
           (dixon,
            refdir,
-           [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ], [], defaultRules)
-          (dixon,
-           refdir,
-           [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+           [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
+             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
+             "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
+             "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
            [],
            defaultRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
-             // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+             // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll" // same as net472
              "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ], [], standardRules)
-          //(dixon, // new platform
-          // refdir,
-          // [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" ], [], standardRules)
-          //(dixon, // new platform
-          // refdir,
-          // [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ], [], defaultRules)
+          (dixon,
+           refdir,
+           [ // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll"
+             "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], [], standardRules)
+//          (dixon, // new platform
+//           refdir,
+//           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
+//             //  GetReaderForFile returned an unexpected HResult: 0x80004005.
+//             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ], [], defaultRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
@@ -1255,11 +1258,16 @@ _Target
                                                         nugetCache @@ "fake.dotnet.cli/5.20.4/lib/netstandard2.0"
                                                         nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
                                                         nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                                                        nugetCache @@ "gdksharp/3.24.24.34/lib/netstandard2.0"
+                                                        nugetCache @@ "glibsharp/3.24.24.34/lib/netstandard2.0"
+                                                        nugetCache @@ "gtksharp/3.24.24.34/lib/netstandard2.0"
                                                         nugetCache @@ "mono.cecil/0.11.4/lib/netstandard2.0"
+                                                        nugetCache @@ "mono.options/6.12.0.148/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.build.framework/16.0.461/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.build.utilities.core/16.0.461/lib/netstandard2.0"
                                                         nugetCache @@ "microsoft.testplatform.objectmodel/16.1.1/lib/netstandard1.5"
                                                         nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                                        nugetCache @@ "pangosharp/3.24.24.34/lib/netstandard2.0"
                                                         nugetCache @@ "powershellstandard.library/5.1.0/lib/netstandard2.0"
                                                       ]
                               ToolPath = Option.get tool
