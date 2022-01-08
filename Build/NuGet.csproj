@@ -21,11 +21,11 @@
     <!-- This one w/just net20/net40 agents works as before on Linux for the AltCoverRunner test -->
     <PackageReference Include="NUnit.ConsoleRunner" Condition="'$(OS)' != 'Windows_NT'" version="3.12.0" />
     <!-- This one w/extra netcore3.1 agent causes mono vs framework problems for some reason on the AltCoverRunner test -->
-    <PackageReference Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.13.0" />
+    <PackageReference Include="NUnit.ConsoleRunner" Condition="'$(OS)' == 'Windows_NT'" version="3.13.2" />
     <PackageReference Include="OpenCover" version="4.7.1221" />
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
     <PackageReference Include="Pester" version="5.3.1" />
-    <PackageReference Include="AltCode.Dixon" version="2022.1.6.21150-pre-release" />
+    <PackageReference Include="AltCode.Dixon" version="2022.1.8.13182" />
     <PackageReference Include="altcode.gendarme" version="2021.5.28.12260-pre-release" />
     <PackageReference Include="XmlDoc2CmdletDoc" version="0.4.0-dotnetcore0001" />
   </ItemGroup>
