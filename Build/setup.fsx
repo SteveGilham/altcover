@@ -164,7 +164,11 @@ _Target
 
                 Shell.copyDir target fx (check target prefix)
 
-                Shell.copyDir target dixon (fun _ -> true)))
+                Shell.copyDir target dixon (fun _ -> true)
+                
+                let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
+                // Maybe process here...
+                config.Save "./packages/fxcop/DixonCmd.exe.config"))
 
 _Target "Preparation" ignore
 

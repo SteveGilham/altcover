@@ -1151,6 +1151,7 @@ _Target
 
         let refdir = @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO generate
 
+        // net20 targets
         [ ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
            [],
@@ -1176,7 +1177,7 @@ _Target
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
 
-        [ (fxcop,
+        [ (fxcop, // framework targets
            String.Empty,
            (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
                 [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
@@ -1185,7 +1186,7 @@ _Target
                 [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
            [],
            standardRules)
-          (fxcop,
+          (fxcop, // framework targets
            String.Empty,
            [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
@@ -1194,10 +1195,9 @@ _Target
           (dixon,
            refdir,
            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ], [], defaultRules)
-          (fxcop,
-           String.Empty,
-           // netstandard2.0 : An error was encountered while parsing IL for method: 'AltCoverFake.DotNet.Testing.AltCoverCommand+Pipe #1 stage #1 at line 144@145.Invoke(System.String)', instruction at offset '0x8' with opcode 'Call'.
-           [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
            [],
            defaultRules)
           (dixon,
@@ -1246,7 +1246,7 @@ _Target
                               WorkingDirectory = "."
                               DependencyDirectories = [
                                                         "./ThirdParty/gtk-sharp2"
-                                                        "./ThirdParty" //nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
+                                                        nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
                                                         nugetCache @@ "cake.common/1.1.0/lib/netstandard2.0"
                                                         nugetCache @@ "cake.core/1.1.0/lib/netstandard2.0"
                                                         nugetCache @@ "fake.core.environment/5.20.4/lib/netstandard2.0"
@@ -1278,11 +1278,16 @@ _Target
 
 
         try
-            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
+            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
             |> FxCop.run
                 { FxCop.Params.Create() with
                       WorkingDirectory = "."
-                      ToolPath = Option.get fxcop
+                      ToolPath = Option.get dixon
+                      PlatformDirectory = refdir
+                      DependencyDirectories = [
+                                                nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
+                                                nugetCache @@ "powershellstandard.library/5.1.0/lib/netstandard2.0"
+                                              ]
                       UseGAC = true
                       Verbose = false
                       ReportFileName = "_Reports/FxCopReport.xml"
