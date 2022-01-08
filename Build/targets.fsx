@@ -1218,8 +1218,8 @@ _Target
            refdir,
            [ // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll"
              "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], [], standardRules)
-          (fxcop, // new platform
-           String.Empty,
+          (dixon, // new platform
+           refdir,
            [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
              //  GetReaderForFile returned an unexpected HResult: 0x80004005.
              "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ], [], defaultRules)
