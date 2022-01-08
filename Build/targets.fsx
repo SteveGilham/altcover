@@ -1021,8 +1021,11 @@ _Target
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
              "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
           ("./Build/common-rules.xml",
-           [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool build
+           [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" // framework build
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
+          ("./Build/common-rules.xml",
+           [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool build
+             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
           ("./Build/csharp-rules.xml",
            [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
