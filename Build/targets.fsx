@@ -1020,6 +1020,8 @@ _Target
              "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
              "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
+          ("./Build/avalonia-rules.xml", // Weird Framework builds
+           [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
           ("./Build/common-rules.xml", // Framework builds
            [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" // framework build
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
