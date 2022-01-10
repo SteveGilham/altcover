@@ -1197,6 +1197,7 @@ _Target
                                                 nugetCache @@ "avalonia/0.10.11/lib/netstandard2.0"
                                                 nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
                                                 nugetCache @@ "mono.options/6.12.0.148/lib/netstandard2.0"
+                                                @"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\3.1.22"
                                               ]
                       UseGAC = true
                       Verbose = false
