@@ -1187,14 +1187,16 @@ _Target
                     reraise ())
 
         try
-            [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ]
+            [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ]
             |> FxCop.run
                 { FxCop.Params.Create() with
                       WorkingDirectory = "."
                       ToolPath = Option.get dixon
-                      PlatformDirectory = "./packages/fxcop"
+                      PlatformDirectory = refdir
                       DependencyDirectories = [
-                                                nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                                nugetCache @@ "avalonia/0.10.11/lib/netstandard2.0"
+                                                nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                                                nugetCache @@ "mono.options/6.12.0.148/lib/netstandard2.0"
                                               ]
                       UseGAC = true
                       Verbose = false
