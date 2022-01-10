@@ -1184,6 +1184,31 @@ _Target
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
 
+        try
+            [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ]
+            |> FxCop.run
+                { FxCop.Params.Create() with
+                      WorkingDirectory = "."
+                      ToolPath = Option.get fxcop
+                      //PlatformDirectory = "./packages/fxcop"
+                      DependencyDirectories = [
+//                                                nugetCache @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                                //@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\3.1.22"
+                                                //refdir
+                                                "./packages/platform" // netstandard2.0 only
+                                              ]
+                      UseGAC = true
+                      Verbose = false
+                      ReportFileName = "_Reports/FxCopReport.xml"
+                      Rules = defaultRules
+                      FailOnError = FxCop.ErrorLevel.Warning
+                      IgnoreGeneratedCode = true }
+        with
+        | _ ->
+            dumpSuppressions "_Reports/FxCopReport.xml"
+            reraise ()
+
+
         [ (fxcop, // framework targets
            String.Empty,
            (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
