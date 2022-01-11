@@ -20,6 +20,13 @@ open Avalonia.Threading
 
 type Thickness = Avalonia.Thickness
 
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidUnneededFieldInitializationRule",
+                            Scope = "member",
+                            Target = "AltCover.MainWindow::.ctor()",
+                            Justification = "Initialization specifies type")>]
+()
+
 type MainWindow() as this =
   inherit Window()
   let mutable armed = false
@@ -373,6 +380,9 @@ type MainWindow() as this =
 
            HandlerCommon.DoRowActivation xpath this noSource showSource)
 
+  [<SuppressMessage("Gendarme.Rules.Smells",
+                    "AvoidLongMethodsRule",
+                    Justification = "work to be done here")>]
   member this.InitializeComponent() =
     AvaloniaXamlLoader.Load(this)
     Persistence.readGeometry this
@@ -511,7 +521,7 @@ type MainWindow() as this =
 
            async {
              (ofd.ShowAsync(this)
-              |> Async.AwaitTask
+              |> Async.AwaitTask // task not disposed??
               |> Async.RunSynchronously)
              |> Option.ofObj
              |> Option.map (fun x -> x.FirstOrDefault() |> Option.ofObj)
@@ -754,3 +764,10 @@ type MainWindow() as this =
       and set (value) = self.Title <- value
 
     member self.ShowMessageOnGuiThread mtype message = self.DisplayMessage mtype message
+
+[<assembly: SuppressMessage("Gendarme.Rules.Correctness",
+                            "EnsureLocalDisposalRule",
+                            Scope = "member",
+                            Target = "<StartupCode$AltCover-Visualizer>.$MainWindow/Pipe #1 input at line 522@523::Invoke(Microsoft.FSharp.Core.Unit)",
+                            Justification = "Local of type 'Task`1' is not disposed of. Hmm.")>]
+()

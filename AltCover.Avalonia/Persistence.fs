@@ -8,10 +8,8 @@ open Avalonia.Controls
 module Persistence =
   let mutable internal save = true
 
-  let internal saveSchemaDir = Configuration.SaveSchemaDir
   let internal saveFont = Configuration.SaveFont
   let internal readFont = Configuration.ReadFont
-  let internal readSchemaDir = Configuration.ReadSchemaDir
   let internal readFolder = Configuration.ReadFolder
   let internal saveFolder = Configuration.SaveFolder
   let internal saveCoverageFiles = Configuration.SaveCoverageFiles
