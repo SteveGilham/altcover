@@ -198,6 +198,7 @@ NUGET
       System.Memory (>= 4.5.4)
       System.Security.AccessControl (>= 5.0)
       System.Security.Principal.Windows (>= 5.0)
+    Mono.Cecil (0.11.4)
     Mono.Posix.NETStandard (1.0)
     MSBuild.StructuredLogger (2.1.545)
       Microsoft.Build (>= 16.10)

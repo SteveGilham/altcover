@@ -27,6 +27,8 @@ open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
 open Fake.Tools.Git
 
+open Mono.Cecil
+
 open NUnit.Framework
 open Swensen.Unquote
 
@@ -1185,6 +1187,20 @@ _Target
                     reraise ())
 
         try
+            // we can hack this one
+            do
+              use sink = File.Open("_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/Avalonia.Base.dll", FileMode.Open, FileAccess.ReadWrite)
+
+              use def = AssemblyDefinition.ReadAssembly sink
+              let sec = def.SecurityDeclarations
+                        |> Seq.toList
+              sec
+              |> List.iter (def.SecurityDeclarations.Remove >> ignore)
+
+              let pkey = WriterParameters()
+              pkey.StrongNameKeyBlob <- File.ReadAllBytes("./Build/avalonia.snk")
+              def.Write pkey
+
             [ "_Binaries/AltCover.Avalonia/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ]
             |> FxCop.run
                 { FxCop.Params.Create() with

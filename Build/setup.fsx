@@ -108,6 +108,7 @@ nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.1.0
 nuget Markdig >= 0.24.0
 nuget Manatee.Json >= 13.0.4
+nuget Mono.Cecil >= 0.11.4
 nuget NUnit >= 3.12.0
 nuget Fuchu >= 1.1.0
 nuget System.Text.Encoding.CodePages >= 5.0.0
