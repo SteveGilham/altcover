@@ -7,6 +7,8 @@ open System.Management.Automation
 open System.Xml
 open System.Xml.Linq
 
+open AltCover.Shared
+
 /// <summary>
 /// <para type="synopsis">Converts `XDocument` to `[xml]`.</para>
 /// <para type="description">Takes an `XDocument` in and puts an `[xml]` to the object pipeline.</para>
@@ -132,7 +134,7 @@ type ConvertToLcovCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       use stream =
@@ -188,7 +190,7 @@ type ConvertToCoverageJsonCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       AltCover.CoverageFormats.ConvertToJson self.XDocument
@@ -258,7 +260,7 @@ type ConvertToCoberturaCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       let rewrite =
@@ -333,7 +335,7 @@ type ConvertToNCoverCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       let rewrite =
@@ -427,7 +429,7 @@ type ConvertFromNCoverCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.XDocument <- XDocument.Load self.InputFile
 
       let converted =
@@ -657,7 +659,7 @@ type ConvertFromCoverageJsonCommand() =
 
       Directory.SetCurrentDirectory where
 
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName == "FromFile" then
         self.Json <- File.ReadAllText self.InputFile
 
       let rewrite = AltCover.OpenCover.JsonToXml self.Json

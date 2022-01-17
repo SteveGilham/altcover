@@ -6,6 +6,8 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
 
+open AltCover.Shared
+
 #if RUNNER
 open System.Text
 open Mono.Cecil
@@ -975,7 +977,7 @@ module
 
     let vb =
       branches
-      |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+      |> Seq.filter (fun x -> x.Attribute("vc".X).Value != "0")
       |> Seq.length
 
     let points = sp.Descendants("SequencePoint".X)
@@ -983,7 +985,7 @@ module
 
     let vs =
       points
-      |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+      |> Seq.filter (fun x -> x.Attribute("vc".X).Value != "0")
       |> Seq.length
 
     if ns > 0 then
@@ -1127,7 +1129,7 @@ module
              )
 
            kvp.Value
-           |> Seq.tryFind (fun kvp -> kvp.Key = "\u00ABAltCover.embed\u00BB")
+           |> Seq.tryFind (fun kvp -> kvp.Key == "\u00ABAltCover.embed\u00BB")
            |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
            |> Option.iter
                 (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))

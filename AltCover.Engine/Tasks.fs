@@ -7,6 +7,8 @@ open System.Xml
 open System.Xml.Linq
 open System.Diagnostics.CodeAnalysis
 
+open AltCover.Shared
+
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open TaskIO
@@ -481,8 +483,8 @@ type ContingentCopy() =
 
     // base.Log.LogMessage(MessageImportance.High, sprintf "Actual Relative dir %A" relativeDir)
 
-    if (self.CopyToOutputDirectory = "Always"
-        || self.CopyToOutputDirectory = "PreserveNewest")
+    if (self.CopyToOutputDirectory == "Always"
+        || self.CopyToOutputDirectory == "PreserveNewest")
        && (relativeDir |> Path.IsPathRooted |> not)
        //  && (relativeDir.StartsWith(".." + Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) |> not)
        && (relativeDir |> String.IsNullOrWhiteSpace |> not)

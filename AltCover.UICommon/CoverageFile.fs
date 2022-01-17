@@ -3,13 +3,13 @@ namespace AltCover
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
-open System.Linq
 open System.Reflection
 open System.Xml
 open System.Xml.Xsl
 open System.Xml.Linq
 open System.Xml.Schema
-open System.Xml.XPath
+
+open AltCover.Shared
 
 // LCov : TN:  // line-based; branches
 // JSON : {
@@ -177,7 +177,7 @@ module Transformer =
                (s.Attribute(XName.Get "column").Value,
                 s.Attribute(XName.Get "endcolumn").Value)
 
-             s.Attribute(XName.Get "line").Value = s.Attribute(XName.Get "endline").Value
+             s.Attribute(XName.Get "line").Value == s.Attribute(XName.Get "endline").Value
              && (columns = ("1", "2")
                  || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
                  columns = ("0", "0"))) // For OpenCover on C++/CLI
@@ -233,13 +233,13 @@ module Transformer =
     try
       // identify coverage type
       match document.Root.Name.LocalName with
-      | x when x = "CoverageSession" ->
+      | x when x == "CoverageSession" ->
         // Assume OpenCover
         processOpenCover helper schemas document ocreader ncreader
       | _ ->
         let root = document.Root
 
-        if root.Name.LocalName = "coverage"
+        if root.Name.LocalName == "coverage"
            && root.Attribute(XName.Get "line-rate").IsNotNull then
           // Cobertura
           processCobertura helper schemas document ocreader
@@ -344,4 +344,14 @@ module Extensions =
                             Target = "AltCover.XmlCoverageType+Tags.#Cobertura",
                             MessageId = "Cobertura",
                             Justification = "It is jargon")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Transformer/transformFromCobertura@103-2::Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Override not in netstandard2.0")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Transformer/lineOnly@175::Invoke(System.Xml.Linq.XElement)",
+                            Justification = "Compiler generated tuple equality")>]
 ()

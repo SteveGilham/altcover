@@ -204,3 +204,10 @@ module internal Lcov =
     root.Add(file |> File.ReadAllLines |> ofLines)
 
     XDocument([| root |])
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Lcov/Pipe #1 stage #1 at line 152@153::Invoke(System.String)",
+                            Justification = "")>]
+()

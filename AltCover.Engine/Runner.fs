@@ -10,6 +10,8 @@ open System.Text
 open System.Xml
 open System.Xml.Linq
 
+open AltCover.Shared
+
 open Mono.Cecil
 open Mono.Options
 
@@ -37,6 +39,9 @@ type internal SummaryFormat =
     | Many l -> l
     | f -> [ f ]
 
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Compiler generated")>]
   static member Factory(s: string) =
     let expanded =
       match s with
@@ -228,7 +233,7 @@ module internal Runner =
 
       let methods =
         report.Descendants("method".X)
-        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value = "false")
+        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value == "false")
         |> Seq.toList
 
       let classes =
@@ -238,7 +243,7 @@ module internal Runner =
 
       let isVisited (x: XElement) =
         let v = x.Attribute("visitcount".X)
-        (v |> isNull |> not) && (v.Value <> "0")
+        (v |> isNull |> not) && (v.Value != "0")
 
       let vclasses =
         classes
@@ -255,7 +260,7 @@ module internal Runner =
 
       let points =
         report.Descendants("seqpnt".X)
-        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value = "false")
+        |> Seq.filter (fun m -> m.Attribute("excluded".X).Value == "false")
         |> Seq.toList
 
       let vpoints =
@@ -328,7 +333,7 @@ module internal Runner =
         |> Seq.filter
              (fun c ->
                c.Descendants("Method".X)
-               |> Seq.exists (fun m -> m.Attribute("visited".X).Value = "true"))
+               |> Seq.exists (fun m -> m.Attribute("visited".X).Value == "true"))
         |> Seq.length
 
       let nc = classes.Length
@@ -352,7 +357,7 @@ module internal Runner =
 
       let vm =
         methods
-        |> Seq.filter (fun m -> m.Attribute("visited".X).Value = "true")
+        |> Seq.filter (fun m -> m.Attribute("visited".X).Value == "true")
         |> Seq.length
 
       let nm = methods.Length
@@ -398,7 +403,7 @@ module internal Runner =
       let pc =
         match precalc with
         | None ->
-          if nc = "0" then
+          if nc == "0" then
             "n/a"
           else
             let vc1 = vc |> Int32.TryParse |> snd |> float
@@ -920,7 +925,7 @@ module internal Runner =
 
     let internal getMethod (t: TypeDefinition) (name: string) =
       t.Methods
-      |> Seq.filter (fun m -> m.Name = name)
+      |> Seq.filter (fun m -> m.Name == name)
       |> Seq.head
 
     let internal getFirstOperandAsString (m: MethodDefinition) =
@@ -1065,7 +1070,7 @@ module internal Runner =
                      if key |> String.IsNullOrWhiteSpace |> not
                         || ((String.IsNullOrEmpty key)
                             && hitPointId = 0
-                            && visit.GetType().ToString() = "AltCover.Track+Table") then
+                            && visit.GetType().ToString() == "AltCover.Track+Table") then
                        if hits.ContainsKey key |> not
                           && key |> String.IsNullOrWhiteSpace |> not // terminator
                        then

@@ -5,6 +5,43 @@ open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open System.Runtime.InteropServices
 
+[<AutoOpen>]
+[<SuppressMessage("Gendarme.Rules.Smells",
+                   "AvoidSpeculativeGeneralityRule",
+                   Justification = "Delegation is DRYing the codebase")>]
+module internal Extensions =
+#if !NETCOREAPP2_1
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Not available this platform")>]
+#endif
+  let
+#if !DEBUG
+      inline
+#endif
+             replace (y: string, z: string) (x: string) =
+#if !NETCOREAPP2_1
+             x.Replace(y, z)
+#else
+             x.Replace(y, z, System.StringComparison.Ordinal)
+#endif
+
+#if !NETCOREAPP2_1
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Not available this platform")>]
+#endif
+  let
+#if !DEBUG
+      inline
+#endif
+             indexOf (y: char) (x: string) =
+#if !NETCOREAPP2_1
+             x.IndexOf y
+#else
+             x.IndexOf(y, System.StringComparison.Ordinal)
+#endif
+
 module Browser =
 
   [<SuppressMessage("Gendarme.Rules.Portability",
@@ -12,7 +49,7 @@ module Browser =
                     Justification = "I know what I'm doing here")>]
   // browser launch from Avalonia
   let private shellExec (cmd: string) waitForExit =
-    let escapedArgs = cmd.Replace("\"", "\\\"") // use Blackfox instead???
+    let escapedArgs = cmd |> replace ("\"", "\\\"") // use Blackfox instead???
     let psi = ProcessStartInfo()
     psi.FileName <- "/bin/sh"
     psi.Arguments <- "-c \"" + escapedArgs + "\""

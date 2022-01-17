@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.XPath
+open AltCover.Shared
 open Augment
 open GuiCommon
 
@@ -398,7 +399,7 @@ module CoverageFileTree =
 
           if names |> List.isEmpty
              || names
-                |> List.exists (fun d -> d.Equals("Invoke") |> not) then
+                |> List.exists (fun d -> d != "Invoke") then
             (environment.Icons.Class, pc)
           else
             (environment.Icons.Effect, pc)
@@ -605,3 +606,10 @@ module CoverageFileTree =
       |> Seq.iter (applyToModel model)
 
       environment.UpdateUISuccess current
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.CoverageFileTree/step@119::Invoke(System.String,System.Int32)",
+                            Justification = "Replace overload not in netstandard2.0")>]
+()

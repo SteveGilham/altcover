@@ -15,6 +15,8 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
+open AltCover.Shared
+
 [<assembly: SuppressMessage("Microsoft.Globalization",
                             "CA1307:SpecifyStringComparison",
                             Scope = "member",
@@ -218,10 +220,10 @@ module internal Instrument =
     // returns>A representation of the method to call to signal a coverage visit.</returns>
     let internal recordingMethod (recordingAssembly: AssemblyDefinition) =
       recordingAssembly.MainModule.GetAllTypes()
-      |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+      |> Seq.filter (fun t -> t.FullName == "AltCover.Recorder.Instance")
       |> Seq.collect (fun t -> t.Methods)
       |> Seq.map (fun t -> (t.Name, t))
-      |> Seq.filter (fun (n, _) -> n = "Visit" || n = "Push" || n = "Pop")
+      |> Seq.filter (fun (n, _) -> n == "Visit" || n == "Push" || n == "Pop")
       |> Seq.sortBy fst
       |> Seq.map snd
       |> Seq.toList
@@ -347,7 +349,7 @@ module internal Instrument =
                  let pathGetterDef =
                    definition.MainModule.GetTypes()
                    |> Seq.collect (fun t -> t.Methods)
-                   |> Seq.filter (fun m -> m.Name = property)
+                   |> Seq.filter (fun m -> m.Name == property)
                    |> Seq.head
 
                  let body = pathGetterDef.Body
@@ -366,7 +368,7 @@ module internal Instrument =
                  let pathGetterDef =
                    definition.MainModule.GetTypes()
                    |> Seq.collect (fun t -> t.Methods)
-                   |> Seq.filter (fun m -> m.Name = property)
+                   |> Seq.filter (fun m -> m.Name == property)
                    |> Seq.head
 
                  let body = pathGetterDef.Body
@@ -586,7 +588,7 @@ module internal Instrument =
         |> Seq.filter
              (fun x ->
                assemblies
-               |> List.exists (fun y -> y.Equals(x.Name)))
+               |> List.exists (fun y -> y == x.Name))
         |> Seq.toList
 
       // The return value is for unit testing purposes, only
@@ -637,12 +639,12 @@ module internal Instrument =
         oo.["runtimeTarget"].Object.["name"].String
 
       let targets =
-        (oo |> Seq.find (fun kv -> kv.Key = "targets"))
+        (oo |> Seq.find (fun kv -> kv.Key == "targets"))
           .Value
           .Object
 
       let targeted =
-        (targets |> Seq.find (fun p -> p.Key = target))
+        (targets |> Seq.find (fun p -> p.Key == target))
           .Value
           .Object
 
@@ -650,7 +652,7 @@ module internal Instrument =
 
       let existingDependencies =
         app
-        |> Seq.tryFind (fun p -> p.Key = "dependencies")
+        |> Seq.tryFind (fun p -> p.Key == "dependencies")
 
       let prior =
         match existingDependencies with
@@ -680,10 +682,10 @@ module internal Instrument =
         let updateDependencies () =
           let rawDependencies =
             (JsonValue.Parse dependencies).Object
-            |> Seq.find (fun p -> p.Key = "dependencies")
+            |> Seq.find (fun p -> p.Key == "dependencies")
 
           match app
-                |> Seq.tryFind (fun p -> p.Key = "dependencies")
+                |> Seq.tryFind (fun p -> p.Key == "dependencies")
             with
           | None -> app |> addFirst [ rawDependencies ]
           | Some p ->
@@ -714,7 +716,7 @@ module internal Instrument =
         updateRuntime ()
 
       let libraries =
-        (oo |> Seq.find (fun p -> p.Key = "libraries"))
+        (oo |> Seq.find (fun p -> p.Key == "libraries"))
           .Value
           .Object
 
@@ -951,13 +953,13 @@ module internal Instrument =
              let isTaskType () =
                [ "System.Threading.Tasks.Task"
                  "System.Threading.Tasks.Task`1" ]
-               |> Seq.exists (fun n -> n = e)
+               |> Seq.exists (fun n -> n == e)
 
              let isStateMachine () =
                m.Method.CustomAttributes // could improve this
                |> Seq.exists
                     (fun a ->
-                      a.AttributeType.FullName = "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+                      a.AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
@@ -1008,7 +1010,7 @@ module internal Instrument =
 
              let isAsyncType () =
                [ "Microsoft.FSharp.Control.FSharpAsync`1" ]
-               |> Seq.exists (fun n -> n = e)
+               |> Seq.exists (fun n -> n == e)
 
              let processFSAsync (s: InstrumentContext, unhandled: bool) =
 
@@ -1235,7 +1237,7 @@ module internal Instrument =
 
         let value =
           calltrack.Properties
-          |> Seq.find (fun m -> m.Name = "value")
+          |> Seq.find (fun m -> m.Name == "value")
 
         let getValue = value.GetMethod
 
@@ -1248,7 +1250,7 @@ module internal Instrument =
           GetValue = getValue
           Instance =
             calltrack.Methods
-            |> Seq.find (fun m -> m.Name = "instance")
+            |> Seq.find (fun m -> m.Name == "instance")
           Field = field
           FieldType = field.FieldType :?> GenericInstanceType
           Maker =
@@ -1289,7 +1291,7 @@ module internal Instrument =
         net20.Maker.Body.Instructions
         |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
         |> Seq.find
-             (fun i -> (i.Operand :?> MethodReference).DeclaringType.Name = oldtype.Name)
+             (fun i -> (i.Operand :?> MethodReference).DeclaringType.Name == oldtype.Name)
 
       net20.Field.FieldType <- async2
       net20.Value.PropertyType <- async2
@@ -1313,7 +1315,7 @@ module internal Instrument =
                     i.Operand <-
                       let mr = (i.Operand :?> MethodReference)
 
-                      if mr.DeclaringType.FullName = old.CallTrack.FullName then
+                      if mr.DeclaringType.FullName == old.CallTrack.FullName then
                         old.GetValue :> MethodReference
                       else
                         mr |> m.ImportReference
@@ -1348,7 +1350,7 @@ module internal Instrument =
         let getterDef =
           recorder.MainModule.GetTypes()
           |> Seq.collect (fun t -> t.Methods)
-          |> Seq.filter (fun m -> m.Name = "get_modules")
+          |> Seq.filter (fun m -> m.Name == "get_modules")
           |> Seq.head
 
         let body = getterDef.Body

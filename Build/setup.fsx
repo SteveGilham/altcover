@@ -116,6 +116,7 @@ nuget YamlDotNet >= 8.1.2 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
+#load "../AltCover.Engine/StringExtension.fs"
 #load "../AltCover.Engine/Canonical.fs"
 #load "../AltCover.Engine/NativeJson.fs"
 #load "../AltCover.Engine/Abstract.fs"
@@ -165,7 +166,7 @@ _Target
                 Shell.copyDir target fx (check target prefix)
 
                 Shell.copyDir target dixon (fun _ -> true)
-                
+
                 let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
                 // Maybe process here...
                 config.Save "./packages/fxcop/DixonCmd.exe.config"))

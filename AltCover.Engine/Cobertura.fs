@@ -5,6 +5,8 @@ open System.IO
 open System.Xml.Linq
 open System.Globalization
 
+open AltCover.Shared
+
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
                                                   "CA1704",
@@ -53,8 +55,8 @@ module internal Cobertura =
         method.Descendants("seqpnt".X)
         |> Seq.filter
              (fun s ->
-               s.Attribute("excluded".X).Value <> "true"
-               && s.Attribute("document".X).Value = document)
+               s.Attribute("excluded".X).Value != "true"
+               && s.Attribute("document".X).Value == document)
         |> Seq.fold
              (fun (h, t) s ->
                let vc = s.Attribute("visitcount".X)
@@ -70,7 +72,7 @@ module internal Cobertura =
                  )
 
                lines.Add line
-               (h + (if vx = "0" then 0 else 1), t + 1))
+               (h + (if vx == "0" then 0 else 1), t + 1))
              (0, 0)
 
       let processMethod
@@ -147,7 +149,7 @@ module internal Cobertura =
         ``module``.Descendants("method".X)
         |> Seq.filter
              (fun m ->
-               m.Attribute("excluded".X).Value <> "true"
+               m.Attribute("excluded".X).Value != "true"
                && m.Descendants("seqpnt".X) |> Seq.isEmpty |> not)
 
         |> Seq.collect
@@ -206,7 +208,7 @@ module internal Cobertura =
 
         let bv =
           branches
-          |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+          |> Seq.filter (fun x -> x.Attribute("vc".X).Value != "0")
           |> Seq.length
 
         let s = valueOf "numSequencePoints"
@@ -323,7 +325,7 @@ module internal Cobertura =
         mtx.Add(XAttribute("complexity".X, ccplex))
 
         method.Descendants("SequencePoint".X)
-        |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = fileid)
+        |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == fileid)
         |> Seq.groupBy (fun b -> b.Attribute("sl".X).Value |> Int32.TryParse |> snd)
         |> Seq.sortBy fst
         |> Seq.iter (copySeqPnt lines)

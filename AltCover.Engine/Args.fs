@@ -6,6 +6,7 @@ namespace AltCoverFake.DotNet.Testing
 
 open System
 open System.Diagnostics.CodeAnalysis
+open AltCover.Shared
 
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -19,7 +20,7 @@ module internal Args =
 
   let private optionalItem a x l =
     if x |> String.IsNullOrWhiteSpace
-       || l |> List.exists (fun i -> i = x) then
+       || l |> List.exists (fun i -> i == x) then
       []
     else
       [ a + ":" + x ]

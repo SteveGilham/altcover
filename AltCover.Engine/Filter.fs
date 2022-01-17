@@ -10,6 +10,8 @@ open System.Text.RegularExpressions
 open Mono.Cecil
 open Mono.Cecil.Cil
 
+open AltCover.Shared
+
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterSense =
   | Exclude
@@ -116,7 +118,7 @@ module internal Filter =
         Seq.concat [ baseType; thisType ]
         |> Seq.filter
              (fun x ->
-               x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
+               x.AttributeType.FullName == "Microsoft.FSharp.Core.CompilationMappingAttribute")
         |> Seq.exists
              (fun x ->
                let arg1 =
@@ -146,7 +148,7 @@ module internal Filter =
             owner.CustomAttributes
             |> Seq.filter
                  (fun x ->
-                   x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
+                   x.AttributeType.FullName == "Microsoft.FSharp.Core.CompilationMappingAttribute")
             |> Seq.exists
                  (fun x ->
                    let arg1 =
@@ -169,9 +171,9 @@ module internal Filter =
                       (fun x ->
                         let fullName = x.AttributeType.FullName
 
-                        fullName = typeof<CompilerGeneratedAttribute>.FullName
-                        || fullName = typeof<DebuggerNonUserCodeAttribute>.FullName
-                        || fullName = typeof<CompilationMappingAttribute>.FullName)))
+                        fullName == typeof<CompilerGeneratedAttribute>.FullName
+                        || fullName == typeof<DebuggerNonUserCodeAttribute>.FullName
+                        || fullName == typeof<CompilationMappingAttribute>.FullName)))
 
     let internal isFSharpAutoProperty (m: MethodDefinition) =
       let body = m.Body.Instructions
@@ -183,8 +185,8 @@ module internal Filter =
              (fun i ->
                let f = i.Operand :?> FieldReference
 
-               (f.DeclaringType.FullName = m.DeclaringType.FullName)
-               && m.Name.Replace("set_", String.Empty) + "@" = f.Name)
+               (f.DeclaringType.FullName == m.DeclaringType.FullName)
+               && m.Name.Replace("set_", String.Empty) + "@" == f.Name)
         |> Option.defaultValue false
       else if m.IsGetter then
         body
@@ -193,8 +195,8 @@ module internal Filter =
              (fun i ->
                let f = i.Operand :?> FieldReference
 
-               (f.DeclaringType.FullName = m.DeclaringType.FullName)
-               && m.Name.Replace("get_", String.Empty) + "@" = f.Name)
+               (f.DeclaringType.FullName == m.DeclaringType.FullName)
+               && m.Name.Replace("get_", String.Empty) + "@" == f.Name)
         |> Option.defaultValue false
       else
         false
@@ -240,7 +242,7 @@ module internal Filter =
 
           if
             decltype.StartsWith("FSharpFunc", StringComparison.Ordinal)
-            || decltype = "FSharpTypeFunc"
+            || decltype == "FSharpTypeFunc"
           then
             methodDef.DeclaringType.Name + "." + name
           else
@@ -258,7 +260,7 @@ module internal Filter =
     && m.CustomAttributes
        |> Seq.exists
             (fun x ->
-              x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
+              x.AttributeType.FullName == typeof<CompilerGeneratedAttribute>.FullName)
 
 [<assembly: SuppressMessage("Microsoft.Globalization",
                             "CA1307:SpecifyStringComparison",
@@ -271,5 +273,17 @@ module internal Filter =
                             Scope = "member",
                             Target = "AltCover.Filter+I+isFSharpAutoProperty@182-2.#Invoke(Mono.Cecil.Cil.Instruction)",
                             MessageId = "System.String.Replace(System.String,System.String)",
+                            Justification = "No suitable overload in netstandard2.0/net472")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            MessageId = "System.String.Replace(System.String,System.String)",
+                            Target = "AltCover.Filter/I/Pipe #1 stage #2 at line 184@185::Invoke(Mono.Cecil.Cil.Instruction)",
+                            Justification = "No suitable overload in netstandard2.0/net472")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            MessageId = "System.String.Replace(System.String,System.String)",
+                            Target = "AltCover.Filter/I/Pipe #2 stage #2 at line 194@195::Invoke(Mono.Cecil.Cil.Instruction)",
                             Justification = "No suitable overload in netstandard2.0/net472")>]
 ()

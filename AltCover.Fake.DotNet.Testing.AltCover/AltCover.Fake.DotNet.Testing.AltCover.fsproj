@@ -21,6 +21,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Toolkit\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
+    <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
     <Compile Include="..\AltCover.Engine\Abstract.fsi" Link="Abstract.fsi" />
     <Compile Include="..\AltCover.Engine\Abstract.fs" Link="Abstract.fs" />
     <Compile Include="..\AltCover.Engine\Primitive.fsi" Link="Primitive.fsi" />

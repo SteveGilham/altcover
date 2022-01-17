@@ -9,6 +9,7 @@ open System.Linq
 open System.Xml.Linq
 
 open Mono.Cecil
+open AltCover.Shared
 
 [<ExcludeFromCodeCoverage>]
 type internal Exclusion =
@@ -453,7 +454,7 @@ module internal OpenCover =
            (fun (uid, strategy) ->
              let classes =
                s.Stack
-               |> Seq.find (fun x -> x.Name.LocalName = "Classes")
+               |> Seq.find (fun x -> x.Name.LocalName == "Classes")
 
              let tracked =
                classes.Parent.Elements("TrackedMethods".X)
@@ -714,3 +715,10 @@ module internal OpenCover =
       Visitor.encloseState reportVisitor (OpenCoverContext.Build())
 
     (result, (fun (s: Stream) -> document.Save s)) // fsharplint:disable-line
+
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.OpenCover/handleOrdinals@434-3::Invoke(System.Tuple`3<System.Int32,System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
+                            Justification = "Compiler generated")>]
+()

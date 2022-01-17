@@ -19,6 +19,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="StringExtension.fs" />
     <Compile Include="Compatibility.fs" />
     <Compile Include="Exemption.fs" />
     <Compile Include="Abstraction.fs" />

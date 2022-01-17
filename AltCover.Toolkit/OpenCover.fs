@@ -9,6 +9,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 
 open Mono.Cecil
+open AltCover.Shared
 open AltCover.XmlExtensions
 
 [<RequireQualifiedAccess>]
@@ -178,7 +179,7 @@ module OpenCover =
     m.RemoveAttributes()
 
     let filterVisted =
-      fun (x: XElement) -> x.Attribute(XName.Get "vc").Value <> "0"
+      fun (x: XElement) -> x.Attribute(XName.Get "vc").Value != "0"
 
     let seqpts =
       m.Descendants(XName.Get "SequencePoint")
@@ -225,7 +226,7 @@ module OpenCover =
 
     let methodDef =
       declaringType.Methods
-      |> Seq.tryFind (fun n -> n.FullName = methodFullName)
+      |> Seq.tryFind (fun n -> n.FullName == methodFullName)
 
     methodDef
     |> Option.iter
@@ -379,7 +380,7 @@ module OpenCover =
 
     let assemblyPath =
       files
-      |> Seq.tryFind (fun f -> assemblyFileName = Path.GetFileName f)
+      |> Seq.tryFind (fun f -> assemblyFileName == Path.GetFileName f)
 
     let hashFile sPath =
       use stream = File.OpenRead sPath
@@ -617,7 +618,7 @@ module OpenCover =
 
     let source =
       modu.Descendants(XName.Get "File")
-      |> Seq.find (fun f -> f.Attribute(XName.Get "uid").Value = oldfile)
+      |> Seq.find (fun f -> f.Attribute(XName.Get "uid").Value == oldfile)
 
     Map.find (source.Attribute(XName.Get "fullPath").Value) files
 
@@ -628,7 +629,7 @@ module OpenCover =
     let tm =
       x.Ancestors(XName.Get "CoverageSession")
       |> Seq.collect (fun c -> c.Descendants(XName.Get "TrackedMethod"))
-      |> Seq.find (fun t -> (attributeOrEmpty "uid" t) = key)
+      |> Seq.find (fun t -> (attributeOrEmpty "uid" t) == key)
 
     let token = attributeOrEmpty "token" tm
     let hash = attributeOrEmpty "hash" tm.Parent.Parent
@@ -752,7 +753,7 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
       |> Seq.sortBy
            (fun (n, x) ->
              (n <<< 1)
-             + (if x.Name.LocalName = "SequencePoint" then
+             + (if x.Name.LocalName == "SequencePoint" then
                   0
                 else
                   1))
@@ -1257,5 +1258,15 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             "CA1810:InitializeReferenceTypeStaticFieldsInline",
                             Scope = "member",
                             Target = "<StartupCode$AltCover-Toolkit>.$OpenCover.#.cctor()",
+                            Justification = "Compiler Generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.OpenCover/Pipe #6 stage #1 at line 50@51::Invoke(System.Tuple`2<System.Xml.Linq.XElement,Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>>,System.Xml.Linq.XElement)",
+                            Justification = "Compiler Generated")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 764@765::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()
