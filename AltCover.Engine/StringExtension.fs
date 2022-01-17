@@ -1,18 +1,20 @@
 ﻿namespace AltCover.Shared
 
-[<AutoOpen>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-                                                  "AvoidSpeculativeGeneralityRule",
-                                                  Justification = "Delegation is DRYing the codebase")>]
-module internal StringExtension =
+open System.Diagnostics.CodeAnalysis
+open System.Runtime.CompilerServices
 
-  let
-#if !DEBUG
-      inline
+[<AutoOpen>]
+[<SuppressMessage("Gendarme.Rules.Smells",
+                  "AvoidSpeculativeGeneralityRule",
+                  Justification = "Delegation is DRYing the codebase")>]
+module internal StringExtension =
+#if !DEBUG && !NET20
+  [<MethodImplAttribute(MethodImplOptions.AggressiveInlining)>]
 #endif
-             (==) (x: string) (y: string) = x.Equals(y, System.StringComparison.Ordinal)
-  let
-#if !DEBUG
-      inline
+  let (==) (x: string) (y: string) =
+    x.Equals(y, System.StringComparison.Ordinal)
+
+#if !DEBUG && !NET20
+  [<MethodImplAttribute(MethodImplOptions.AggressiveInlining)>]
 #endif
-             (!=) (x: string) (y: string) = (x == y) |> not
+  let (!=) (x: string) (y: string) = (x == y) |> not
