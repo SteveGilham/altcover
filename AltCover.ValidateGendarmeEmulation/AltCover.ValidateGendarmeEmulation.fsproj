@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <NuGetCache Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)\.nuget\packages</NuGetCache>
     <NuGetCache Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.nuget/packages</NuGetCache>
-    <GendarmeVersion>2021.5.28.12260-pre-release</GendarmeVersion>
+    <GendarmeVersion>2022.1.17.12282-pre-release</GendarmeVersion>
     <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
     <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/$(GendarmeVersion)/tools/netcoreapp2.1/any/</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
