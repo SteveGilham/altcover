@@ -64,7 +64,10 @@ module GuiCommon =
          (fun n ->
            n.SelectDescendants("altcover.file", String.Empty, false)
            |> Seq.cast<XPathNavigator>)
-    |> Seq.filter (fun n -> n.GetAttribute("document", String.Empty) == document)
+    |> Seq.filter
+         (fun n ->
+           n.GetAttribute("document", String.Empty)
+           == document)
     |> Seq.map (fun n -> n.GetAttribute("embed", String.Empty))
     |> Seq.filter (String.IsNullOrWhiteSpace >> not)
     |> Seq.tryHead

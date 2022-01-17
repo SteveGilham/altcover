@@ -421,14 +421,16 @@ module internal Main =
                String.Empty,
                t
                |> Seq.map (fun x -> x.ToString("x2", CultureInfo.InvariantCulture))
-             ) == "4ebffcaabf10ce6a") // recorder.snk
+             )
+             == "4ebffcaabf10ce6a") // recorder.snk
       |> Option.defaultValue false
 
     let internal screenAssembly (fullName: String) (a: AssemblyDefinition) =
       if a.CustomAttributes
          |> Seq.exists
               (fun a ->
-                a.AttributeType.FullName == "AltCover.Recorder.InstrumentationAttribute")
+                a.AttributeType.FullName
+                == "AltCover.Recorder.InstrumentationAttribute")
          || a.MainModule.AssemblyReferences
             |> Seq.cast<AssemblyNameReference>
             |> Seq.exists checkKey

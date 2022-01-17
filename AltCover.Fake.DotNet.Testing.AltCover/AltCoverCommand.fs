@@ -290,7 +290,8 @@ module AltCoverCommand =
                     Justification = "Fake.build style")>]
   let runWithMono monoPath options =
     let withMono (command: CreateProcess<_>) = // withMono line
-      if options.ToolType.GetType().FullName == "Fake.DotNet.ToolType+FullFramework"
+      if options.ToolType.GetType().FullName
+         == "Fake.DotNet.ToolType+FullFramework"
          && Fake.Core.Environment.isWindows then
         match command.Command with
         | RawCommand (tool, args) ->

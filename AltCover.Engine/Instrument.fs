@@ -479,26 +479,26 @@ module internal Instrument =
         hook.Invoke(resolver, [| hookResolveHandler :> obj |])
         |> ignore
 
-// #if IDEMPOTENT_INSTRUMENT
+    // #if IDEMPOTENT_INSTRUMENT
 //     let internal safeWait (mutex: System.Threading.WaitHandle) =
 //       try
 //         mutex.WaitOne() |> ignore
 //       with
 //       | :? System.Threading.AbandonedMutexException -> ()
 
-//     let internal withFileMutex (p: string) f =
+    //     let internal withFileMutex (p: string) f =
 //       let key =
 //         p
 //         |> System.Text.Encoding.UTF8.GetBytes
 //         |> CoverageParameters.hash.ComputeHash
 //         |> Convert.ToBase64String
 
-//       use mutex =
+    //       use mutex =
 //         new System.Threading.Mutex(false, "AltCover-" + key.Replace('/', '.') + ".mutex")
 
-//       safeWait mutex
+    //       safeWait mutex
 
-//       try
+    //       try
 //         f ()
 //       finally
 //         mutex.ReleaseMutex()
@@ -525,7 +525,7 @@ module internal Instrument =
       try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
 
-// #if IDEMPOTENT_INSTRUMENT
+        // #if IDEMPOTENT_INSTRUMENT
 //         let write (a: AssemblyDefinition) (p: string) pk =
 //           withFileMutex
 //             p
@@ -536,14 +536,14 @@ module internal Instrument =
 //                 use sink =
 //                   File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
-//                 a.Write(sink, pk))
+        //                 a.Write(sink, pk))
 // #else
         let write (a: AssemblyDefinition) p pk =
           use sink =
             File.Open(p, FileMode.Create, FileAccess.ReadWrite)
 
           a.Write(sink, pk)
-// #endif
+        // #endif
 
         let resolver = assembly.MainModule.AssemblyResolver
         hookResolver resolver
@@ -585,10 +585,7 @@ module internal Instrument =
       let interestingReferences =
         assembly.MainModule.AssemblyReferences
         |> Seq.cast<AssemblyNameReference>
-        |> Seq.filter
-             (fun x ->
-               assemblies
-               |> List.exists (fun y -> y == x.Name))
+        |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y == x.Name))
         |> Seq.toList
 
       // The return value is for unit testing purposes, only
@@ -959,7 +956,8 @@ module internal Instrument =
                m.Method.CustomAttributes // could improve this
                |> Seq.exists
                     (fun a ->
-                      a.AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+                      a.AttributeType.FullName
+                      == "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
 
              let asyncChecks = [ isTaskType; isStateMachine ]
 
@@ -1291,7 +1289,9 @@ module internal Instrument =
         net20.Maker.Body.Instructions
         |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
         |> Seq.find
-             (fun i -> (i.Operand :?> MethodReference).DeclaringType.Name == oldtype.Name)
+             (fun i ->
+               (i.Operand :?> MethodReference).DeclaringType.Name
+               == oldtype.Name)
 
       net20.Field.FieldType <- async2
       net20.Value.PropertyType <- async2
@@ -1315,7 +1315,8 @@ module internal Instrument =
                     i.Operand <-
                       let mr = (i.Operand :?> MethodReference)
 
-                      if mr.DeclaringType.FullName == old.CallTrack.FullName then
+                      if mr.DeclaringType.FullName
+                         == old.CallTrack.FullName then
                         old.GetValue :> MethodReference
                       else
                         mr |> m.ImportReference

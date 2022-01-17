@@ -1070,7 +1070,8 @@ module internal Runner =
                      if key |> String.IsNullOrWhiteSpace |> not
                         || ((String.IsNullOrEmpty key)
                             && hitPointId = 0
-                            && visit.GetType().ToString() == "AltCover.Track+Table") then
+                            && visit.GetType().ToString()
+                               == "AltCover.Track+Table") then
                        if hits.ContainsKey key |> not
                           && key |> String.IsNullOrWhiteSpace |> not // terminator
                        then

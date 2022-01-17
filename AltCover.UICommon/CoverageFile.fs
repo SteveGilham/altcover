@@ -177,7 +177,8 @@ module Transformer =
                (s.Attribute(XName.Get "column").Value,
                 s.Attribute(XName.Get "endcolumn").Value)
 
-             s.Attribute(XName.Get "line").Value == s.Attribute(XName.Get "endline").Value
+             s.Attribute(XName.Get "line").Value
+             == s.Attribute(XName.Get "endline").Value
              && (columns = ("1", "2")
                  || // For coverlet derived OpenCover (either from coverlet XML or via JsonToXml)
                  columns = ("0", "0"))) // For OpenCover on C++/CLI
@@ -346,12 +347,12 @@ module Extensions =
                             Justification = "It is jargon")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.Transformer/transformFromCobertura@103-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.Transformer/lineOnly@175::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()

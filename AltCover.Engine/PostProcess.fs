@@ -512,7 +512,7 @@ module internal PostProcess =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.PostProcess/Pipe #2 stage #1 at line 336@337-1::Invoke(AltCover.XmlElementAbstraction)",
                             Justification = "Compiler generated")>]
 ()

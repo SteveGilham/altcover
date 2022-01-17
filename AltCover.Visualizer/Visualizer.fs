@@ -638,8 +638,8 @@ module private Gui =
             "No source location",
             [ (activation.Column.Cells.[1] :?> Gtk.CellRendererText)
                 .Text
-                |> replace("<", "&lt;")
-                |> replace(">", "&gt;") ]
+              |> replace ("<", "&lt;")
+              |> replace (">", "&gt;") ]
           )
 
         (handler :> IVisualizerWindow)
@@ -717,8 +717,8 @@ module private Gui =
     tag.Underline <- Pango.Underline.Single
     tt.Add tag |> ignore
 
-    let start = keytext.[1] |> indexOf('_')
-    buffer.Text <- keytext.[1] |> replace("_", String.Empty)
+    let start = keytext.[1] |> indexOf ('_')
+    buffer.Text <- keytext.[1] |> replace ("_", String.Empty)
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
 
     buffer.ApplyTag(
@@ -992,7 +992,7 @@ module private Gui =
 #if NET472
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.Gui::prepareOpenFileDialog(a)",
                             Justification = "Replace overload not available this platform")>]
 #endif

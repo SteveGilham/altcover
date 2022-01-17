@@ -207,7 +207,7 @@ module internal Lcov =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.Lcov/Pipe #1 stage #1 at line 152@153::Invoke(System.String)",
-                            Justification = "")>]
+                            Justification = "Compiler generated")>]
 ()

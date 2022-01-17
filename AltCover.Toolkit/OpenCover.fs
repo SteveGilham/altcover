@@ -1261,12 +1261,12 @@ coverlet on Tests.AltCoverRunnerTests/PostprocessShouldRestoreDegenerateOpenCove
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.OpenCover/Pipe #6 stage #1 at line 50@51::Invoke(System.Tuple`2<System.Xml.Linq.XElement,Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.OpenCover/Pipe #4 stage #1 at line 764@765::Invoke(System.Tuple`2<System.Int32,System.Xml.Linq.XElement>,System.Xml.Linq.XElement)",
                             Justification = "Compiler Generated")>]
 ()

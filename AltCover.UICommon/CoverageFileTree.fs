@@ -398,8 +398,7 @@ module CoverageFileTree =
             |> Seq.toList
 
           if names |> List.isEmpty
-             || names
-                |> List.exists (fun d -> d != "Invoke") then
+             || names |> List.exists (fun d -> d != "Invoke") then
             (environment.Icons.Class, pc)
           else
             (environment.Icons.Effect, pc)
@@ -609,7 +608,7 @@ module CoverageFileTree =
 
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
-                            Scope = "member", // MethodDefinition
+                            Scope = "member",  // MethodDefinition
                             Target = "AltCover.CoverageFileTree/step@119::Invoke(System.String,System.Int32)",
                             Justification = "Replace overload not in netstandard2.0")>]
 ()

@@ -70,7 +70,8 @@ namespace AltCover.FontSupport
         {
           var sol = so.ReadLine();
           found = string.IsNullOrEmpty(sol) ||
-            sol.Equals("***fontchosen***");
+            sol.Equals("***fontchosen***",
+             StringComparison.Ordinal);
         }
 
         if (!found)

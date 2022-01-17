@@ -3,11 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <NuGetCache Condition="'$(OS)' == 'Windows_NT'">$(USERPROFILE)\.nuget\packages</NuGetCache>
-    <NuGetCache Condition="'$(OS)' != 'Windows_NT'">$(HOME)/.nuget/packages</NuGetCache>
     <GendarmeVersion>2022.1.17.12282-pre-release</GendarmeVersion>
-    <GendarmeToolDir Condition="'$(TargetFramework)' == 'net472'">..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
-    <GendarmeToolDir Condition="'$(TargetFramework)' != 'net472'">$(NuGetCache)/altcode.gendarme-tool/$(GendarmeVersion)/tools/netcoreapp2.1/any/</GendarmeToolDir>
+    <GendarmeToolDir>..\packages\altcode.gendarme\$(GendarmeVersion)\tools\</GendarmeToolDir>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>AltCover.ValidateGendarmeEmulation</AssemblyName>
     <OtherFlags />

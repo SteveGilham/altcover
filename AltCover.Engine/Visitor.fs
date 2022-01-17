@@ -594,7 +594,8 @@ module internal Visitor =
             (fun x a ->
               let fn = a.AttributeType.FullName
 
-              if fn == "Microsoft.FSharp.Core.AbstractClassAttribute" then
+              if fn
+                 == "Microsoft.FSharp.Core.AbstractClassAttribute" then
                 x ||| 1
               else if fn == "Microsoft.FSharp.Core.SealedAttribute" then
                 x ||| 2
@@ -621,11 +622,13 @@ module internal Visitor =
                && t.CustomAttributes
                   |> Seq.exists
                        (fun a ->
-                         a.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+                         a.AttributeType.FullName
+                         == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
               || m.CustomAttributes
                  |> Seq.exists
                       (fun a ->
-                        a.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
+                        a.AttributeType.FullName
+                        == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))) ]
       |> Seq.exists (fun f -> f m)
       |> not
 

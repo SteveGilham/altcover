@@ -299,4 +299,19 @@ module VisualizerMain =
                             Scope = "member",
                             Target = "CompiledAvaloniaXaml.!EmbeddedResource/NamespaceInfo:AltCover.App.xaml::.ctor()",
                             Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
+                            "DoNotDecreaseVisibilityRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
+                            Justification = "")>]
+[<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
+                            "DoNotDecreaseVisibilityRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.App::!XamlIlPopulateTrampoline(AltCover.App)",
+                            Justification = "Generated code")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Globalization",
+                            "PreferStringComparisonOverrideRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "CompiledAvaloniaXaml.!XamlLoader::TryLoad(System.String)",
+                            Justification = "Generated code")>]
 ()
