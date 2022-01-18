@@ -487,10 +487,16 @@ let doMSBuild config overrider proj =
 let msbuildRelease = doMSBuild withRelease
 let msbuildDebug = doMSBuild withDebug
 
+let dotnetOptionsWithSkipGtkInstall (o: DotNet.Options) =
+    let env =
+        o.Environment.Add("SkipGtkInstall", "True")
+
+    o.WithEnvironment env
+
 let dotnetBuildRelease proj =
     DotNet.build
         (fun p ->
-            { p.WithCommon dotnetOptions with
+            { p.WithCommon (dotnetOptions >> dotnetOptionsWithSkipGtkInstall) with
                   Configuration = DotNet.BuildConfiguration.Release }
             |> buildWithCLIArguments)
         (Path.GetFullPath proj)
@@ -498,7 +504,7 @@ let dotnetBuildRelease proj =
 let dotnetBuildDebug proj =
     DotNet.build
         (fun p ->
-            { p.WithCommon dotnetOptions with
+            { p.WithCommon (dotnetOptions >> dotnetOptionsWithSkipGtkInstall) with
                   Configuration = DotNet.BuildConfiguration.Debug }
             |> buildWithCLIArguments)
         (Path.GetFullPath proj)
