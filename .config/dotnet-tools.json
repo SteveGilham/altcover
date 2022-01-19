@@ -21,7 +21,7 @@
       ]
     },
     "altcode.gendarme-tool": {
-      "version": "2022.1.17.12282-pre-release",
+      "version": "2022.1.19.15132-pre-release",
       "commands": [
         "gendarme"
       ]
