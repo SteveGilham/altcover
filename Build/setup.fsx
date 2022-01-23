@@ -165,7 +165,8 @@ _Target
 
                 Shell.copyDir target fx (check target prefix)
 
-                Shell.copyDir target dixon (fun _ -> true)
+                Shell.copyDir target dixon (fun f -> 
+                    Path.GetFileNameWithoutExtension f <> "AltCode.Dixon")
 
                 let config = XDocument.Load "./packages/fxcop/FxCopCmd.exe.config"
                 // Maybe process here...
