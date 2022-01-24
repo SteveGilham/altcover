@@ -21,9 +21,9 @@ open System.Net
 open AltCover.Shared
 
 [<Flags>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design",
-                                                  "FlagsShouldNotDefineAZeroValueRule",
-                                                  Justification = "Gives the unset state a name")>]
+[<SuppressMessage("Gendarme.Rules.Design",
+                  "FlagsShouldNotDefineAZeroValueRule",
+                  Justification = "Gives the unset state a name")>]
 type internal Inspections =
   | Ignore = 0
   | Instrument = 1
@@ -424,12 +424,12 @@ module internal CoverageParameters =
       .Replace('\n', ';')
       .Replace(";;", ";")
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                    "UseStringEmptyRule",
-                                                    Justification = "Probably in the 'string' inline")>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Portability",
-                                                    "NewLineLiteralRule",
-                                                    Justification = "Constant string exactly for portability")>]
+  [<SuppressMessage("Gendarme.Rules.Performance",
+                    "UseStringEmptyRule",
+                    Justification = "Probably in the 'string' inline")>]
+  [<SuppressMessage("Gendarme.Rules.Portability",
+                    "NewLineLiteralRule",
+                    Justification = "Constant string exactly for portability")>]
   let internal makeConfiguration () =
     let components =
       [ "--methodpoint\t" + string methodPoint.Value
@@ -919,9 +919,9 @@ module internal Visitor =
 
              sameType t tn)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let private fSharpContainingMethod (t: TypeDefinition) (tx: TypeReference) =
       let candidates =
         t.DeclaringType.Methods.Concat(

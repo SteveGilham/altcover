@@ -212,8 +212,7 @@ type Collect() =
 
   [<SuppressMessage("Microsoft.Naming",
                     "CA1704",
-                    Justification = "'  member val Cobertura = String.Empty with get, set
-' is jargon")>]
+                    Justification = "'Cobertura' is jargon")>]
   member val Cobertura = String.Empty with get, set
 
   member val OutputFile = String.Empty with get, set

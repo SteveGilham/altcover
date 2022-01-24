@@ -215,9 +215,9 @@ module internal Runner =
                       Justification = "Library method inlined")>]
     let internal contains o l = l |> Seq.contains o
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let internal nCoverSummary (report: XDocument) =
       let makepc v n =
         if n = 0 then
@@ -314,9 +314,9 @@ module internal Runner =
 
       value.ToString(CultureInfo.InvariantCulture)
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let internal altSummary go extra (report: XDocument) =
       "Alternative"
       |> CommandLine.resources.GetString
@@ -906,14 +906,14 @@ module internal Runner =
       | fail -> fail
 
     // mocking point
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
     let mutable internal recorderName = "AltCover.Recorder.g.dll"
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-                                                      "EnsureLocalDisposalRule",
-                                                      Justification = "Tuple return confusing Gendarme -- TODO")>]
+    [<SuppressMessage("Gendarme.Rules.Correctness",
+                      "EnsureLocalDisposalRule",
+                      Justification = "Tuple return confusing Gendarme -- TODO")>]
     let internal recorderInstance () =
       let recorderPath =
         Path.Combine(Option.get recordingDirectory, recorderName)
@@ -1168,9 +1168,9 @@ module internal Runner =
       point pt times "Times" "Time" "time"
       point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
-                                                      "AvoidUnnecessarySpecializationRule",
-                                                      Justification = "AvoidSpeculativeGenerality too")>]
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+                      "AvoidUnnecessarySpecializationRule",
+                      Justification = "AvoidSpeculativeGenerality too")>]
     let updateNativeJsonMethod
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       (visits: Dictionary<int, PointVisit>)
@@ -1367,19 +1367,19 @@ module internal Runner =
       reporter
 
     // mocking points
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
     let mutable internal getPayload = payloadBase
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
     let mutable internal getMonitor = monitorBase
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Performance",
-                                                      "AvoidUncalledPrivateCodeRule",
-                                                      Justification = "Unit test accessor")>]
+    [<SuppressMessage("Gendarme.Rules.Performance",
+                      "AvoidUncalledPrivateCodeRule",
+                      Justification = "Unit test accessor")>]
     let mutable internal doReport = writeReportBase
 
     let internal doSummaries (document: DocumentType) (format: ReportFormat) result =

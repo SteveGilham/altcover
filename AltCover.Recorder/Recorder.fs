@@ -320,9 +320,9 @@ module Instance =
       text
       |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-                                                      "AvoidLongParameterListsRule",
-                                                      Justification = "Self-contained internal decorator")>]
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Self-contained internal decorator")>]
 
     let
 #if !DEBUG
