@@ -94,9 +94,6 @@ module private Gui =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA1801:ReviewUnusedParameters",
-                    Justification = "meets an interface")>]
   let private urlHook _ link = Browser.ShowUrl(Uri link)
 #endif
 
@@ -325,9 +322,6 @@ module private Gui =
                     Justification = "It's furniture, not user visible text")>]
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
-                    Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA1801:ReviewUnusedParameters",
                     Justification = "meets an interface")>]
   let private prepareOpenFileDialog _ =
     let openFileDialog =

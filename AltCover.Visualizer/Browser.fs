@@ -66,9 +66,6 @@ module Browser =
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
                     Justification = "A call to native code")>]
-  [<SuppressMessage("Microsoft.Design",
-                    "CA1031:DoNotCatchGeneralExceptionTypes",
-                    Justification = "A call to native code")>]
   let ShowUrl (url: Uri) =
     let isLinux =
       RuntimeInformation.IsOSPlatform(OSPlatform.Linux)

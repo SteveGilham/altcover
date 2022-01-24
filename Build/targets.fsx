@@ -1019,6 +1019,7 @@ _Target
            [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
              "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
              "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+             "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
              "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
              "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
              "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
@@ -1136,6 +1137,18 @@ _Target
 
         let deprecatedRules = [ "-Microsoft.Usage#CA2202" ] // double dispose
 
+        let gendarmeRules =
+            [
+              "-Microsoft.Design#CA1016" // :MarkAssembliesWithAssemblyVersion"
+              "-Microsoft.Performance#CA1822" // :MarkMembersAsStatic"
+              "-Microsoft.Design#CA1031" // :DoNotCatchGeneralExceptionTypes"
+              //"-Microsoft.Usage#CA2208" // :InstantiateArgumentExceptionsCorrectly"
+              "-Microsoft.Usage#CA1801" // :ReviewUnusedParameters"
+              //"-Microsoft.Globalization#CA1307" // :SpecifyStringComparison"
+              "-Microsoft.Design#CA1028" // :EnumStorageShouldBeInt32"
+              "-Microsoft.Design#CA1002" // :DoNotExposeGenericLists"
+            ]
+
         let nonFsharpRules =
             [ "-Microsoft.Design#CA1006" // nested generics
               "-Microsoft.Design#CA1034" // nested classes being visible
@@ -1146,19 +1159,27 @@ _Target
               "-Microsoft.Maintainability#CA1506" ] // AvoidExcessiveClassCoupling
 
         let standardRules =
-            [ "-Microsoft.Design#CA1020"
-              "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly" ] // small namespaces
+            [ "-Microsoft.Design#CA1020" // small namespaces
+              "-Microsoft.Usage#CA2243" // :AttributeStringLiteralsShouldParseCorrectly"
+            ]
 
         let cantStrongName = [ "-Microsoft.Design#CA2210" ] // should strongname
+
+        let minimalRules =
+            List.concat [ deprecatedRules
+                          standardRules
+                          gendarmeRules ]
 
         let defaultRules =
             List.concat [ deprecatedRules
                           standardRules
+                          gendarmeRules
                           nonFsharpRules ]
 
         let defaultCSharpRules =
             List.concat [ deprecatedRules
                           standardRules
+                          gendarmeRules
                           [ "-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed" ] ]
 
         let refdir = @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO generate
@@ -1197,7 +1218,7 @@ _Target
             else // HACK HACK HACK
                 [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
            [],
-           standardRules)
+           minimalRules)
           (fxcop, // framework targets
            String.Empty,
            [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
@@ -1216,11 +1237,11 @@ _Target
            refdir,
            [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
              // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll" // same as net472
-             "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ], [], standardRules)
+             "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ], [], minimalRules)
           (dixon,
            refdir,
            [ // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll"
-             "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], [], standardRules)
+             "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], [], minimalRules)
 //          (dixon, // new platform
 //           refdir,
 //           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
@@ -1295,7 +1316,6 @@ _Target
                 | _ ->
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
-
 
         try
             [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
@@ -7112,7 +7132,7 @@ _Target
         let opencoverStrict = schemaOf "./AltCover.Toolkit/xsd/OpenCoverStrict.xsd"
 
         let packages = "packages" |> Path.getFullName
-        let files = !!(@"./**/*.xml") 
+        let files = !!(@"./**/*.xml")
                     |> Seq.filter (fun f -> f.StartsWith(packages, StringComparison.Ordinal) |> not)
                     |> Seq.toList
         let xml = files
@@ -7150,17 +7170,17 @@ _Target
                                       :? XmlSchemaValidationException -> true)
             |> List.map fst
 
-        let expectedStrict = 
+        let expectedStrict =
           [
             expected; // add embedded source cases
-           !!(@"./_Binaries/**/FlushLeavesExpectedTracesWhenDiverted.xml") 
+           !!(@"./_Binaries/**/FlushLeavesExpectedTracesWhenDiverted.xml")
             |> Seq.toList;
             [
               "_Packaging/HandRolledMonoNCover.xml"
               "AltCover.Tests/HandRolledToNCover.xml"
               "AltCover.Tests/NCoverWithEmbeds.xml"
               "AltCover.Tests/NCoverWithPartials.xml"
-            ] 
+            ]
             |> List.map Path.getFullName
           ] |> List.concat
           |> List.filter File.Exists
@@ -7217,7 +7237,7 @@ _Target
           ]
           |> List.map Path.getFullName
           |> List.filter File.Exists
-            
+
         Assert.That(opencoverFiles, Is.EquivalentTo o1expect , "opencoverFiles")
 
         let opencover2Files =
@@ -7254,17 +7274,16 @@ _Target
          ]
 
         let o3expect = // embeds
-           !!(@"./**/JsonWithPartials*Xml.xml") 
+           !!(@"./**/JsonWithPartials*Xml.xml")
             |> Seq.toList;
 
         let o4expect = // coverlet
-           !!(@"./_Reports/**/*.coverlet.xml") 
+           !!(@"./_Reports/**/*.coverlet.xml")
             |> Seq.toList;
 
         let o5expect = // coverlet
-           !!(@"./**/coverage.opencover.xml") 
+           !!(@"./**/coverage.opencover.xml")
             |> Seq.toList;
-
 
         let oexpect =
          [

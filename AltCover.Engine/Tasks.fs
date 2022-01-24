@@ -227,10 +227,7 @@ type Collect() =
   member val Verbosity = "Info" with get, set
 
   [<Output>]
-  [<SuppressMessage("Microsoft.Performance",
-                    "CA1822:MarkMembersAsStatic",
-                    Justification = "Instance property needed");
-    SuppressMessage("Gendarme.Rules.Correctness",
+  [<SuppressMessage("Gendarme.Rules.Correctness",
                     "MethodCanBeMadeStaticRule",
                     Justification = "Instance property needed")>]
   member self.Summary = Command.Summary()

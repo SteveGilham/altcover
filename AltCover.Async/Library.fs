@@ -21,9 +21,6 @@ module Instance =
         value.Value
 
 [<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1016:MarkAssembliesWithAssemblyVersion",
-                            Justification = "Bytecode delta only")>]
-[<assembly: SuppressMessage("Microsoft.Design",
                             "CA1014:MarkAssembliesWithClsCompliant",
                             Justification = "Bytecode delta only")>]
 [<assembly: SuppressMessage("Microsoft.Design",
@@ -54,5 +51,10 @@ module Instance =
                             "CA1811:AvoidUncalledPrivateCode",
                             Scope = "member",
                             Target = "AltCover.Recorder.Instance+I+CallTrack.#get_value()",
+                            Justification = "Bytecode delta only")>]
+[<assembly: SuppressMessage("Gendarme.Rules.Performance",
+                            "AvoidRepetitiveCallsToPropertiesRule",
+                            Scope = "member", // MethodDefinition
+                            Target = "AltCover.Recorder.Instance/I/CallTrack::instance()",
                             Justification = "Bytecode delta only")>]
 ()

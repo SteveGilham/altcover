@@ -303,7 +303,7 @@ module VisualizerMain =
                             "DoNotDecreaseVisibilityRule",
                             Scope = "member", // MethodDefinition
                             Target = "AltCover.MainWindow::!XamlIlPopulateTrampoline(AltCover.MainWindow)",
-                            Justification = "")>]
+                            Justification = "Generated code")>]
 [<assembly: SuppressMessage("Gendarme.Rules.BadPractice",
                             "DoNotDecreaseVisibilityRule",
                             Scope = "member", // MethodDefinition

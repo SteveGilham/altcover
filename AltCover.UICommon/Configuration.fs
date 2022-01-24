@@ -27,10 +27,7 @@ module Configuration =
 
   [<SuppressMessage("Gendarme.Rules.Exceptions",
                     "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
-                    Justification = "need to exhaustively list the espected ones")>]
-  [<SuppressMessage("Microsoft.Design",
-                    "CA1031:DoNotCatchGeneralExceptionTypes",
-                    Justification = "ditto, ditto")>]
+                    Justification = "need to exhaustively list the expected ones")>]
   let private ensureFile () =
     let profileDir =
       Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)

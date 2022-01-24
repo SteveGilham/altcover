@@ -645,8 +645,6 @@ namespace AltCover.FontSupport
 #pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
-    Justification = "Represents a byte-valued field"),
 #pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontCharSet : byte
@@ -695,8 +693,6 @@ namespace AltCover.FontSupport
 #pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
-    Justification = "Represents a byte-valued field"),
 #pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontPrecision : byte
@@ -716,8 +712,6 @@ namespace AltCover.FontSupport
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
-    Justification = "Represents a byte-valued field"),
-   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
 #pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
@@ -742,8 +736,6 @@ namespace AltCover.FontSupport
 #pragma warning disable IDE0079 // Remove unnecessary suppression
   [SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
     Justification = "Represents a byte-valued field"),
-   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
-    Justification = "Represents a byte-valued field"),
 #pragma warning restore IDE0079 // Remove unnecessary suppression
    Serializable]
   public enum FontQuality : byte
@@ -760,8 +752,6 @@ namespace AltCover.FontSupport
   [Flags,
 #pragma warning disable IDE0079 // Remove unnecessary suppression
    SuppressMessage("Gendarme.Rules.Design", "EnumsShouldUseInt32Rule",
-    Justification = "Represents a byte-valued field"),
-   SuppressMessage("Microsoft.Design", "CA1028:EnumStorageShouldBeInt32",
     Justification = "Represents a byte-valued field"),
    SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue",
     Justification = "Seriously, u wot m8!?"),

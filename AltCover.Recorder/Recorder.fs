@@ -162,9 +162,6 @@ module Instance =
       [<SuppressMessage("Gendarme.Rules.Correctness",
                         "MethodCanBeMadeStaticRule",
                         Justification = "It's a compatibility hack")>]
-      [<SuppressMessage("Microsoft.Performance",
-                        "CA1822:MarkMembersAsStatic",
-                        Justification = "It's a compatibility hack")>]
       member this.Value
         with get () = AsyncLocal<'a>.item
         and set (value) = AsyncLocal<'a>.item <- value

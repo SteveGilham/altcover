@@ -35,9 +35,6 @@ module Transformer =
   [<SuppressMessage("Gendarme.Rules.Performance",
                     "AvoidUnusedParametersRule",
                     Justification = "meets an interface")>]
-  [<SuppressMessage("Microsoft.Usage",
-                    "CA1801:ReviewUnusedParameters",
-                    Justification = "meets an interface")>]
   let internal defaultHelper (_: XDocument) (document: XDocument) = document
 
   let internal loadTransform (path: string) =
@@ -348,11 +345,11 @@ module Extensions =
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/transformFromCobertura@103-2::Invoke(System.Xml.Linq.XElement)",
+                            Target = "AltCover.Transformer/transformFromCobertura@100-2::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Override not in netstandard2.0")>]
 [<assembly: SuppressMessage("Gendarme.Rules.Globalization",
                             "PreferStringComparisonOverrideRule",
                             Scope = "member",  // MethodDefinition
-                            Target = "AltCover.Transformer/lineOnly@175::Invoke(System.Xml.Linq.XElement)",
+                            Target = "AltCover.Transformer/lineOnly@172::Invoke(System.Xml.Linq.XElement)",
                             Justification = "Compiler generated tuple equality")>]
 ()

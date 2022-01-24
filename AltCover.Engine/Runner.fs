@@ -1286,9 +1286,6 @@ module internal Runner =
     [<SuppressMessage("Gendarme.Rules.Performance",
                       "AvoidUnusedParametersRule",
                       Justification = "meets an interface")>]
-    [<SuppressMessage("Microsoft.Usage",
-                      "CA1801:ReviewUnusedParameters",
-                      Justification = "meets an interface")>]
     let writeNativeJsonReport
       (hits: Dictionary<string, Dictionary<int, PointVisit>>)
       _
