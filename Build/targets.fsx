@@ -1282,6 +1282,7 @@ _Target
                                                         nugetCache @@ "fake.core.process/5.21.0/lib/netstandard2.0"
                                                         nugetCache @@ "fake.core.trace/5.21.0/lib/netstandard2.0"
                                                         nugetCache @@ "fake.dotnet.cli/5.21.0/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.dotnet.msbuild/5.21.0/lib/netstandard2.0"
                                                         nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
                                                         nugetCache @@ "gdksharp/3.24.24.34/lib/netstandard2.0"
                                                         nugetCache @@ "glibsharp/3.24.24.34/lib/netstandard2.0"
@@ -1889,22 +1890,6 @@ _Target
         printfn "Unit test the instrumented net4x code"
 
         try
-//            [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
-//              !! "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
-//              //!!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
-//              //!!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.*.dll"
-//              !! "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
-//              !! "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
-//              !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
-//            |> Seq.concat
-//            |> Seq.distinct
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/UnitTestWithAltCoverReport.xml"
-
             let baseArgs =
                 [ "--noheader"
                   "--work=."
