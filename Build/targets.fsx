@@ -1135,7 +1135,9 @@ _Target
 
                     printfn "%s" (finish text text2))
 
-        let deprecatedRules = [ "-Microsoft.Usage#CA2202" ] // double dispose
+        let deprecatedRules = [ 
+          "-Microsoft.Usage#CA2202" // double dispose
+          "-Microsoft.Design#CA2210" ] // should strongname
 
         let gendarmeRules =
             [
@@ -1162,8 +1164,6 @@ _Target
             [ "-Microsoft.Design#CA1020" // small namespaces
               "-Microsoft.Usage#CA2243" // :AttributeStringLiteralsShouldParseCorrectly"
             ]
-
-        let cantStrongName = [ "-Microsoft.Design#CA2210" ] // should strongname
 
         let minimalRules =
             List.concat [ deprecatedRules
@@ -1222,14 +1222,15 @@ _Target
           (fxcop, // framework targets
            String.Empty,
            [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
-             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
+             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ], // GTK2
            [],
            defaultRules)
           (dixon,
            refdir,
-           [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
+           [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
              "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
+             "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
              "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
            [],
            defaultRules)
@@ -1244,27 +1245,19 @@ _Target
              "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], [], minimalRules)
 //          (dixon, // new platform
 //           refdir,
-//           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
-//             //  GetReaderForFile returned an unexpected HResult: 0x80004005.
+//           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // Avalonia
+//             //  GetReaderForFile returned an unexpected HResult: 0x80004005. // same at net472 if built thus
 //             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ], [], defaultRules)
-          (dixon,
-           refdir,
-           [ "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll" ],
-           [],
-           List.concat [ defaultRules
-                         cantStrongName ]) // can't strongname this as Fake isn't strongnamed
           (dixon,
            refdir,
            [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
            [],
-           List.concat [ defaultCSharpRules
-                         cantStrongName ]) // can't strongname this as Cake isn't strongnamed
+           defaultCSharpRules)
           (dixon,
            refdir,
            [ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
              "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
-             // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll"
              "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll" ], [], defaultRules)
           (dixon,
            refdir,
@@ -1470,22 +1463,6 @@ _Target
         Directory.ensure "./_Reports"
 
         try
-//            [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
-//              Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
-//              Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
-//              Path.getFullName
-//                  "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/JustUnitTestReport.xml"
-
             let baseArgs =
                 [ "--noheader"
                   "--work=."
@@ -1499,14 +1476,6 @@ _Target
 
             Actions.Run(nunitConsole, ".", baseArgs) "Main NUnit failed"
 
-//            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll")
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/RecorderUnitTestReport.xml"
-
             let recArgs =
                 [ "--noheader"
                   "--work=."
@@ -1514,14 +1483,6 @@ _Target
                   Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll" ]
 
             Actions.Run(nunitConsole, ".", recArgs) "Recorder NUnit failed"
-
-//            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/Recorder2UnitTestReport.xml"
 
             let rec2Args =
                 [ "--noheader"
