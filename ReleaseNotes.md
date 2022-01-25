@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 8.2.83x (Habu series release 11)
 * [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet
+* Move Fake.Build support to 5.21 as minimum
 
 # 8.2.833 (Habu series release 10)
 * [BUGFIX] Work-round more (problems with ill-formed debug data)[https://github.com/jbevain/cecil/issues/816] (issue #135)

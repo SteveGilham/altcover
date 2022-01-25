@@ -1278,11 +1278,10 @@ _Target
                                                         nugetCache @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
                                                         nugetCache @@ "cake.common/1.1.0/lib/netstandard2.0"
                                                         nugetCache @@ "cake.core/1.1.0/lib/netstandard2.0"
-                                                        nugetCache @@ "fake.core.environment/5.20.4/lib/netstandard2.0"
-                                                        nugetCache @@ "fake.core.process/5.20.4/lib/netstandard2.0"
-                                                        nugetCache @@ "fake.core.trace/5.20.4/lib/netstandard2.0"
-                                                        nugetCache @@ "fake.dotnet.cli/5.20.4/lib/netstandard2.0"
-                                                        nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.environment/5.21.0/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.process/5.21.0/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.core.trace/5.21.0/lib/netstandard2.0"
+                                                        nugetCache @@ "fake.dotnet.cli/5.21.0/lib/netstandard2.0"
                                                         nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
                                                         nugetCache @@ "gdksharp/3.24.24.34/lib/netstandard2.0"
                                                         nugetCache @@ "glibsharp/3.24.24.34/lib/netstandard2.0"
@@ -1318,7 +1317,7 @@ _Target
                       ToolPath = Option.get dixon
                       PlatformDirectory = refdir
                       DependencyDirectories = [
-                                                nugetCache @@ "fsharp.core/5.0.2/lib/netstandard2.0"
+                                                nugetCache @@ "fsharp.core/6.0.1/lib/netstandard2.0"
                                                 nugetCache @@ "powershellstandard.library/5.1.0/lib/netstandard2.0"
                                               ]
                       UseGAC = true
@@ -3863,11 +3862,11 @@ _Target
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
              ("BlackFox.CommandLine", "1.0.0")
-             ("FAKE.Core.Environment", "5.20.4")
-             ("FAKE.Core.Process", "5.20.4")
-             ("FAKE.DotNet.Cli", "5.19.1")
+             ("FAKE.Core.Environment", "5.21.0")
+             ("FAKE.Core.Process", "5.21.0")
+             ("FAKE.DotNet.Cli", "5.21.0")
              ("System.Collections.Immutable", "1.7.1")
-             ("FSharp.Core", "5.0.2") ],
+             ("FSharp.Core", "6.0.1") ],
            "_Packaging.fake",
            "./_Generated/altcover.fake.nuspec",
            "altcover.fake") ]
