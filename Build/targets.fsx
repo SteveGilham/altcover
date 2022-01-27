@@ -1039,7 +1039,8 @@ _Target
              "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
              "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ])
           ("./Build/csharp-rules.xml", // Framework builds
-           [ "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
+           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/net6.0/AltCover.Cake.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
              "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" ]) ]
         |> Seq.iter
             (fun (ruleset, files) ->

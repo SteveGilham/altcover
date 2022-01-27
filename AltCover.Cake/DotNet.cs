@@ -143,9 +143,6 @@ namespace AltCover.Cake
 #else
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
-    [SuppressMessage(
-      "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-      Justification = "AvoidSpeculativeGenerality too")]
     public static void DotNetCoverTest(
                     this ICakeContext context,
                     FilePath project,
