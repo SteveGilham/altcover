@@ -3779,7 +3779,23 @@ _Target
             |> Seq.map (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
             |> Seq.toList
 
-        printfn "Executing on %A" Environment.OSVersion
+        let publishC =
+            (Path.getFullName "./_Publish.cake").Length
+
+        let cake2Files = 
+            (!! "./_Publish.cake/**/*.*")
+            |> Seq.map
+                (fun x ->
+                    (x,
+                     Some(
+                         "lib"
+                         + Path
+                             .GetDirectoryName(x)
+                             .Substring(publishC)
+                             .Replace("\\", "/")
+                     ),
+                     None))
+            |> Seq.toList
 
         [ (List.concat [ applicationFiles
                          resourceFiles "tools/net472/"
@@ -3840,6 +3856,15 @@ _Target
            "_Packaging.visualizer",
            "./_Generated/altcover.visualizer.nuspec",
            "altcover.visualizer")
+
+          (List.concat [ cake2Files
+                         [ (Path.getFullName "Build/README.cake.md", Some "", None)
+                           (Path.getFullName "./_Binaries/README.cake.html", Some "", None) ]
+                         housekeeping ],
+           [ ],
+           "_Packaging.cake",
+           "./_Generated/altcover.cake.nuspec",
+           "altcover.cake")
 
           (List.concat [ fake2Files "lib/netstandard2.0/"
                          fox2Files "lib/netstandard2.0/"
@@ -3976,6 +4001,19 @@ _Target
                       Framework = Some "netcoreapp2.1" })
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
+        ["netcoreapp3.1"; "net5.0"; "net6.0"]
+        |> Seq.iter (fun p ->
+          DotNet.publish
+              (fun options ->
+                  { options with
+                        OutputPath = Some(publish + ".cake" + "/" + p)
+                        Configuration = DotNet.BuildConfiguration.Release
+                        MSBuildParams =
+                            { options.MSBuildParams with
+                                  Properties = options.MSBuildParams.Properties }
+                        Framework = Some p })
+              (Path.getFullName "./AltCover.Cake/AltCover.Cake.csproj"))
+
         // dotnet tooling mods
         [ ("DotnetTool",
            "./_Generated/altcover.global.nuspec",
@@ -3992,6 +4030,13 @@ _Target
            Some "codecoverage .netcore cross-platform")
 
           (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None, "README.api.md", None)
+
+          (String.Empty,
+           "./_Generated/altcover.cake.nuspec",
+           "AltCover (CAKE task helpers)",
+           None,
+           "README.cake.md",
+           Some "codecoverage .net Mono .netcore cross-platform Cake build")
 
           (String.Empty,
            "./_Generated/altcover.fake.nuspec",
@@ -4057,6 +4102,7 @@ _Target
 
         [ "./Build/README.core.md"
           "./Build/README.api.md"
+          "./Build/README.cake.md"
           "./Build/README.fake.md"
           "./Build/README.global.md"
           "./Build/README.visualizer.md" ]
