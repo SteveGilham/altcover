@@ -5448,6 +5448,82 @@ _Target
             "./Samples/Sample4/Sample4LongForm.fsproj")
 
 _Target
+    "Cake2Test" 
+    (fun _ ->
+        let before = Actions.ticksNow ()
+
+        try
+            Directory.ensure "./_Cake"
+            Shell.cleanDir ("./_Cake")
+            Directory.ensure "./_Cake/_DotnetTest"
+
+            let apiroot = Path.GetFullPath "./_Packaging.api"
+            let fakeroot = Path.GetFullPath "./_Packaging.fake"
+
+            let config =
+                XDocument.Load "./Build/NuGet.config.dotnettest"
+
+            let repo =
+                config.Descendants(XName.Get("add")) |> Seq.head
+
+            repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+            config.Save "./_Cake/_DotnetTest/NuGet.config"
+
+            let fsproj =
+                XDocument.Load "./Samples/Sample4/Sample4.fsproj"
+
+            let targets =
+                fsproj.Descendants(XName.Get("TargetFrameworks"))
+                |> Seq.head
+
+            targets.SetValue "net6.0"
+
+            fsproj.Save "./_Cake/_DotnetTest/cake_dotnettest.fsproj"
+
+            Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.fs")
+            Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.json")
+            Shell.copyDir "./_Cake/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
+
+            let config =
+                """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="local" value="{0}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>"""
+
+            File.WriteAllText(
+                "./_Cake/NuGet.config",
+                String.Format(config, Path.getFullName "./_Packaging.cake")
+            )
+
+            let script = File.ReadAllText ("./Build/build.cake")
+            File.WriteAllText(
+                "./_Cake/build.cake",
+                script.Replace("{0}", Path.getFullName "./_Packaging.cake")
+            )
+
+            Actions.RunDotnet
+                (withWorkingDirectoryOnly "_Cake")
+                "cake"
+                ""
+                "running cake script returned with a non-zero exit code"
+
+            let x =
+                Path.getFullName "./_Cake/_DotnetTest/coverage.net6.0.xml"
+
+            Actions.CheckSample4 before x
+        finally
+            [ "altcover.api"
+              "altcover.cake" ]
+            |> List.iter
+                (fun f ->
+                    let folder = (nugetCache @@ f) @@ Version.Value
+                    Shell.mkdir folder
+                    Actions.CleanDir folder))
+
+_Target
     "ApiUse"
     (fun _ ->
         let before = Actions.ticksNow ()
@@ -7553,6 +7629,8 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "MSBuildTest" ==> "Deployment"
 
 "Unpack" ==> "ApiUse" ==> "Deployment"
+
+"Unpack" ==> "Cake2Test" ==> "Deployment"
 
 "Unpack"
 ==> "DotnetTestIntegration"
