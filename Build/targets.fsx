@@ -5501,6 +5501,19 @@ _Target
 
             targets.SetValue "net6.0"
 
+            let pack =
+                fsproj.Descendants(XName.Get("PackageReference"))
+                |> Seq.head
+
+            let inject =
+                XElement(
+                    XName.Get "PackageReference",
+                    XAttribute(XName.Get "Include", "altcover.cake"),
+                    XAttribute(XName.Get "Version", Version.Value)
+                )
+
+            pack.AddBeforeSelf inject
+
             fsproj.Save "./_Cake/_DotnetTest/cake_dotnettest.fsproj"
 
             Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.fs")
@@ -5525,6 +5538,7 @@ _Target
             File.WriteAllText(
                 "./_Cake/build.cake",
                 script.Replace("{0}", (Path.getFullName "./_Packaging.cake").Replace("\\", "/"))
+                      .Replace("{1}", Version.Value)
             )
 
             Actions.RunDotnet

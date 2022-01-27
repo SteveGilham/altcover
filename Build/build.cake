@@ -1,6 +1,6 @@
 #addin "nuget:?package=Microsoft.TestPlatform.ObjectModel&Version=16.1.1"
 #addin "nuget:?package=PowerShellStandard.Library&Version=5.1.0"
-#addin "nuget:file://{0}?package=altcover.cake"
+#addin "nuget:file://{0}?package=altcover.cake&Version={1}"
 
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Debug");
@@ -43,7 +43,7 @@ Task("Build")
     public string StrongNameKey => String.Empty;
     public string Report => String.Empty;
     public IEnumerable<string> FileFilter => Array.Empty<string>();
-    public IEnumerable<string> AssemblyFilter => Array.Empty<string>();
+    public IEnumerable<string> AssemblyFilter => new string[] { "AltCover"};
     public IEnumerable<string> AssemblyExcludeFilter => Array.Empty<string>();
     public IEnumerable<string> TypeFilter => Array.Empty<string>();
     public IEnumerable<string> MethodFilter => Array.Empty<string>();
@@ -52,7 +52,7 @@ Task("Build")
     public IEnumerable<string> AttributeTopLevel => Array.Empty<string>();
     public IEnumerable<string> TypeTopLevel => Array.Empty<string>();
     public IEnumerable<string> MethodTopLevel => Array.Empty<string>();
-    public IEnumerable<string> CallContext => Array.Empty<string>();
+    public IEnumerable<string> CallContext => new string[] {"[Fact]", "0"};
     public string ReportFormat => String.Empty;
     public bool InPlace => false;
     public bool Save => false;
@@ -65,7 +65,7 @@ Task("Build")
     public bool ExposeReturnCode => true;
     public bool SourceLink => true;
     public bool Defer => true;
-    public bool LocalSource => false;
+    public bool LocalSource => true;
     public bool VisibleBranches => false;
     public string ShowStatic => String.Empty;
     public bool ShowGenerated => false;
