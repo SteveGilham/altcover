@@ -1,4 +1,4 @@
-// #addin nuget:file://{0}?package=altcover.cake
+#addin nuget:file://{0}?package=altcover.cake
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Debug");
 
@@ -23,15 +23,88 @@ Task("Build")
     });
 });
 
+  class TestOptions : AltCover.DotNet.ICLIOptions
+  {
+    public bool ForceDelete => false;
+    public bool FailFast => false;
+    public string ShowSummary => String.Empty;
+  }
+
+  class TestPrepareOptions : AltCover.Abstract.IPrepareOptions
+  {
+    public IEnumerable<string> InputDirectories => Array.Empty<string>();
+    public IEnumerable<string> OutputDirectories => Array.Empty<string>();
+    public IEnumerable<string> SymbolDirectories => Array.Empty<string>();
+    public IEnumerable<string> Dependencies => Array.Empty<string>();
+    public IEnumerable<string> Keys => Array.Empty<string>();
+    public string StrongNameKey => String.Empty;
+    public string Report => String.Empty;
+    public IEnumerable<string> FileFilter => Array.Empty<string>();
+    public IEnumerable<string> AssemblyFilter => Array.Empty<string>();
+    public IEnumerable<string> AssemblyExcludeFilter => Array.Empty<string>();
+    public IEnumerable<string> TypeFilter => Array.Empty<string>();
+    public IEnumerable<string> MethodFilter => Array.Empty<string>();
+    public IEnumerable<string> AttributeFilter => Array.Empty<string>();
+    public IEnumerable<string> PathFilter => Array.Empty<string>();
+    public IEnumerable<string> AttributeTopLevel => Array.Empty<string>();
+    public IEnumerable<string> TypeTopLevel => Array.Empty<string>();
+    public IEnumerable<string> MethodTopLevel => Array.Empty<string>();
+    public IEnumerable<string> CallContext => Array.Empty<string>();
+    public string ReportFormat => String.Empty;
+    public bool InPlace => false;
+    public bool Save => false;
+    public bool ZipFile => false;
+    public bool MethodPoint => false;
+    public bool SingleVisit => false;
+    public bool LineCover => false;
+    public bool BranchCover => false;
+    public IEnumerable<string> CommandLine => Array.Empty<string>();
+    public bool ExposeReturnCode => true;
+    public bool SourceLink => true;
+    public bool Defer => true;
+    public bool LocalSource => false;
+    public bool VisibleBranches => false;
+    public string ShowStatic => String.Empty;
+    public bool ShowGenerated => false;
+    public System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
+  }
+
+  class TestCollectOptions : AltCover.Abstract.ICollectOptions
+  {
+    public string RecorderDirectory => String.Empty;
+    public string WorkingDirectory => String.Empty;
+    public string Executable => String.Empty;
+    public string LcovReport => String.Empty;
+    public string Threshold => String.Empty;
+    public string Cobertura => String.Empty;
+    public string OutputFile => String.Empty;
+    public IEnumerable<string> CommandLine => Array.Empty<string>();
+    public bool ExposeReturnCode => true;
+    public string SummaryFormat => String.Empty;
+    public System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
+  }
+
 Task("Test")
     .IsDependentOn("Build")
     .Does(() =>
 {
-    DotNetTest("./_DotnetTest/cake_dotnettest.fsproj", new DotNetTestSettings
-    {
+    using AltCover.Cake;
+
+    Console.WriteLine("Version = {0}", Version());
+    Console.WriteLine("Import = {0}", ImportModule());
+
+    var altcoverSettings = new CoverageSettings {
+        PreparationPhase = new TestPrepareOptions(),
+        CollectionPhase = new TestCollectOptions(),
+        Options = new TestOptions()
+    };
+
+    var testSettings = new DotNetCoreTestSettings {
         Configuration = configuration,
         NoBuild = true,
-    });
+    };
+
+    DotNetCoverTest("./_DotnetTest/cake_dotnettest.fsproj", testSettings, altcoverSettings);
 });
 
 //////////////////////////////////////////////////////////////////////
