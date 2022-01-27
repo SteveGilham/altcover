@@ -5507,7 +5507,7 @@ _Target
             Actions.RunDotnet
                 (withWorkingDirectoryOnly "_Cake")
                 "cake"
-                ""
+                "build.cake --rebuild=true"
                 "running cake script returned with a non-zero exit code"
 
             let x =

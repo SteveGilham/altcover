@@ -10,7 +10,7 @@ Task("Clean")
     .WithCriteria(c => HasArgument("rebuild"))
     .Does(() =>
 {
-    CleanDirectory($"./_DotnetTest/bin/{configuration}");
+    CleanDirectory($"../_Binaries/cake_dotnettest/{configuration}+AnyCPU");
 });
 
 Task("Build")
