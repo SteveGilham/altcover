@@ -740,7 +740,8 @@ module internal Main =
 
         [ "../netcoreapp2.0"
           "../netstandard2.0"
-          "../any" ]
+          "../any"
+          "../netcoreapp3.1" ]
         |> Seq.map
              (fun d ->
                canonicalPath (
