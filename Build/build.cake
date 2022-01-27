@@ -1,4 +1,7 @@
-#addin nuget:file://{0}?package=altcover.cake
+#addin "nuget:?package=Microsoft.TestPlatform.ObjectModel&Version=16.1.1"
+#addin "nuget:?package=PowerShellStandard.Library&Version=5.1.0"
+#addin "nuget:file://{0}?package=altcover.cake"
+
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Debug");
 
