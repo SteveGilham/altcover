@@ -43,7 +43,7 @@ Task("Build")
     public string StrongNameKey => String.Empty;
     public string Report => String.Empty;
     public IEnumerable<string> FileFilter => Array.Empty<string>();
-    public IEnumerable<string> AssemblyFilter => new string[] { "AltCover"};
+    public IEnumerable<string> AssemblyFilter => Array.Empty<string>();
     public IEnumerable<string> AssemblyExcludeFilter => Array.Empty<string>();
     public IEnumerable<string> TypeFilter => Array.Empty<string>();
     public IEnumerable<string> MethodFilter => Array.Empty<string>();

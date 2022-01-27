@@ -5480,7 +5480,9 @@ _Target
 
         try
             Directory.ensure "./_Cake"
-            Shell.cleanDir ("./_Cake")
+            Shell.cleanDir "./_Cake"
+            Directory.ensure "./_Binaries/cake_dotnettest"
+            Shell.cleanDir "./_Binaries/cake_dotnettest"
             Directory.ensure "./_Cake/_DotnetTest"
 
             let config =
@@ -5509,7 +5511,8 @@ _Target
                 XElement(
                     XName.Get "PackageReference",
                     XAttribute(XName.Get "Include", "altcover.cake"),
-                    XAttribute(XName.Get "Version", Version.Value)
+                    XAttribute(XName.Get "Version", Version.Value),
+                    XElement(XName.Get "IncludeAssets", "build")
                 )
 
             pack.AddBeforeSelf inject
