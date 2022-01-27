@@ -1039,7 +1039,7 @@ _Target
              "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
              "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ])
           ("./Build/csharp-rules.xml", // Framework builds
-           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/net6.0/AltCover.Cake.dll"
+           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netcoreapp3.1/AltCover.Cake.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
              "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" ]) ]
         |> Seq.iter
@@ -3654,6 +3654,27 @@ _Target
                     File.WriteAllText(name, text)
                     (name, b, c))
 
+        let otherFilesCake=
+            otherFiles
+            |> List.map
+                (fun (a, b, c) ->
+                    let text =
+                        File
+                            .ReadAllText(a)
+                            .Replace("tools/netcoreapp2.0", "lib/netcoreapp3.1")
+
+                    let name =
+                        (Path.getFullName "./_Intermediate/api")
+                        @@ ("altcover.cake" + Path.GetExtension a)
+
+                    let b2 = match b with
+                             | None -> None
+                             | Some path -> Some (path.Replace("netstandard2.0", "netcoreapp3.1"))
+
+                    File.WriteAllText(name, text)
+                    (name, b2, c))
+
+
         let poshFiles where =
             [ (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
               (!! "./_Binaries/AltCover.Toolkit/Release+AnyCPU/netstandard2.0/*.Toolkit.*") ]
@@ -3860,6 +3881,7 @@ _Target
           (List.concat [ cake2Files
                          [ (Path.getFullName "Build/README.cake.md", Some "", None)
                            (Path.getFullName "./_Binaries/README.cake.html", Some "", None) ]
+                         otherFilesCake
                          housekeeping ],
            [ ],
            "_Packaging.cake",
@@ -4001,7 +4023,7 @@ _Target
                       Framework = Some "netcoreapp2.1" })
             (Path.getFullName "./AltCover.Avalonia/AltCover.Avalonia.fsproj")
 
-        ["netcoreapp3.1"; "net5.0"; "net6.0"]
+        ["netcoreapp3.1" ] // ; "net5.0"; "net6.0"]
         |> Seq.iter (fun p ->
           DotNet.publish
               (fun options ->
@@ -5457,9 +5479,6 @@ _Target
             Shell.cleanDir ("./_Cake")
             Directory.ensure "./_Cake/_DotnetTest"
 
-            let apiroot = Path.GetFullPath "./_Packaging.api"
-            let fakeroot = Path.GetFullPath "./_Packaging.fake"
-
             let config =
                 XDocument.Load "./Build/NuGet.config.dotnettest"
 
@@ -5501,7 +5520,7 @@ _Target
             let script = File.ReadAllText ("./Build/build.cake")
             File.WriteAllText(
                 "./_Cake/build.cake",
-                script.Replace("{0}", Path.getFullName "./_Packaging.cake")
+                script.Replace("{0}", (Path.getFullName "./_Packaging.cake").Replace("\\", "/"))
             )
 
             Actions.RunDotnet
