@@ -31,6 +31,12 @@
       "commands": [
         "dotnet-fsharplint"
       ]
+    },
+    "cake.tool": {
+      "version": "2.0.0",
+      "commands": [
+        "dotnet-cake"
+      ]
     }
   }
 }
