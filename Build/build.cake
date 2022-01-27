@@ -94,10 +94,8 @@ Task("Test")
     using AltCover.Cake;
 
     var testv = Version();
-    Console.WriteLine("Version = {1}", null, testv);
-
     var im = ImportModule();
-    Console.WriteLine("Import = {1}", null, im);
+    Console.WriteLine("Version = {1} Import = '{2}'", null, testv, im);
 
     var altcoverSettings = new CoverageSettings {
         PreparationPhase = new TestPrepareOptions(),
