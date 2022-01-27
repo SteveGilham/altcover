@@ -67,16 +67,26 @@ namespace AltCover.Cake
         var pabOut = new ProcessArgumentBuilder();
         if (pabIn != null)
         {
-          pabIn.CopyTo(pabOut);
+          // take while??
+          foreach (var arg in pabIn.Take(2))
+            pabOut.Append(arg);
         }
+
         var args = FSDotNet.ToTestArgumentList(
                     this.PreparationPhase,
                     this.CollectionPhase,
                     this.Options).ToArray();
-        Array.Reverse(args);
         Array.ForEach(
             args,
-            t => pabOut.Prepend(t));
+            t => pabOut.Append(t));
+
+        if (pabIn != null)
+        {
+          // skip while??
+          foreach (var arg in pabIn.Skip(2))
+            pabOut.Append(arg);
+        }
+        
         return pabOut;
       };
     }
