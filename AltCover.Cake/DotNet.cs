@@ -153,7 +153,7 @@ namespace AltCover.Cake
 #else
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
-    public static void DotNetCoverTest(
+    public static void DotNetTest(
                     this ICakeContext context,
                     FilePath project,
                     DotNetTestSettings testSettings,

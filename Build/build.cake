@@ -108,7 +108,7 @@ Task("Test")
         NoBuild = true,
     };
 
-    DotNetCoverTest("./_DotnetTest", 
+    DotNetTest("./_DotnetTest", 
                     // this strips down to just the project file name
                     // losing the relative directory
                     //"./_DotnetTest/cake_dotnettest.fsproj",
