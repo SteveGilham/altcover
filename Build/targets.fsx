@@ -3879,6 +3879,10 @@ _Target
            "altcover.visualizer")
 
           (List.concat [ cake2Files
+                         poshFiles "lib/netcoreapp3.1/"
+                         poshHelpFiles "lib/netcoreapp3.1/"
+                         dataFiles "lib/netcoreapp3.1/"
+                         monitorFiles "lib/netcoreapp3.1/"
                          [ (Path.getFullName "Build/README.cake.md", Some "", None)
                            (Path.getFullName "./_Binaries/README.cake.html", Some "", None) ]
                          otherFilesCake
