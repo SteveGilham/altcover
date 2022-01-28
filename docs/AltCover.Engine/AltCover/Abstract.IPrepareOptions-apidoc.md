@@ -22,6 +22,8 @@ public interface IPrepareOptions
 
 ## Members
 
+Breaks added for formatting reasons on GitHub pages.
+
 | name | description |
 | --- | --- |
 | [AssemblyExcludeFilter](Abstract.IPrepareOptions/AssemblyExcludeFilter-apidoc) { get; } | Corresponds to command line option `-e, --assemblyExcludeFilter=VALUE` |
@@ -32,6 +34,8 @@ public interface IPrepareOptions
 | [CallContext](Abstract.IPrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](Abstract.IPrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
 | [Defer](Abstract.IPrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
+
+continues...
 
 | name | description |
 | --- | --- |
@@ -44,6 +48,8 @@ public interface IPrepareOptions
 | [LineCover](Abstract.IPrepareOptions/LineCover-apidoc) { get; } | Corresponds to command line option `--linecover` |
 | [LocalSource](Abstract.IPrepareOptions/LocalSource-apidoc) { get; } | Corresponds to command line option `-l, --localSource` |
 
+continues...
+
 | name | description |
 | --- | --- |
 | [MethodFilter](Abstract.IPrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
@@ -55,6 +61,8 @@ public interface IPrepareOptions
 | [ReportFormat](Abstract.IPrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Abstract.IPrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](Abstract.IPrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
+
+continues...
 
 | name | description |
 | --- | --- |
