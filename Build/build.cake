@@ -62,8 +62,8 @@ Task("Build")
     public bool SingleVisit => false;
     public bool LineCover => false;
     public bool BranchCover => false;
-    public IEnumerable<string> CommandLine => Array.Empty<string>();
-    public bool ExposeReturnCode => true;
+    public IEnumerable<string> CommandLine => throw new NotImplementedException("CommandLine not used");
+    public bool ExposeReturnCode => throw new NotImplementedException("ExposeReturnCode not used");
     public bool SourceLink => true;
     public bool Defer => true;
     public bool LocalSource => true;
@@ -75,15 +75,15 @@ Task("Build")
 
   class TestCollectOptions : AltCover.Abstract.ICollectOptions
   {
-    public string RecorderDirectory => String.Empty;
-    public string WorkingDirectory => String.Empty;
-    public string Executable => String.Empty;
+    public string RecorderDirectory => throw new NotImplementedException("RecorderDirectory not used");
+    public string WorkingDirectory => throw new NotImplementedException("WorkingDirectory not used");
+    public string Executable => throw new NotImplementedException("Executable not used");
     public string LcovReport => String.Empty;
     public string Threshold => String.Empty;
     public string Cobertura => String.Empty;
     public string OutputFile => String.Empty;
-    public IEnumerable<string> CommandLine => Array.Empty<string>();
-    public bool ExposeReturnCode => true;
+    public IEnumerable<string> CommandLine => throw new NotImplementedException("CommandLine not used");
+    public bool ExposeReturnCode => throw new NotImplementedException("ExposeReturnCode not used");
     public string SummaryFormat => String.Empty;
     public System.Diagnostics.TraceLevel Verbosity => System.Diagnostics.TraceLevel.Verbose;
   }
