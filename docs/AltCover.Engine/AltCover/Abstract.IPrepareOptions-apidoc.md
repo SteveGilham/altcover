@@ -43,6 +43,9 @@ public interface IPrepareOptions
 | [MethodFilter](Abstract.IPrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
 | [MethodPoint](Abstract.IPrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
 | [MethodTopLevel](Abstract.IPrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
+
+| name | description |
+| --- | --- |
 | [OutputDirectories](Abstract.IPrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](Abstract.IPrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
 | [Report](Abstract.IPrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |

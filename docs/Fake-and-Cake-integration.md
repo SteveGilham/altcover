@@ -77,7 +77,7 @@ Implement the needed interfaces e.g. by copying and pasting this for the minimal
     public IEnumerable<string> AttributeTopLevel => Array.Empty<string>();
     public IEnumerable<string> TypeTopLevel => Array.Empty<string>();
     public IEnumerable<string> MethodTopLevel => Array.Empty<string>();
-    public IEnumerable<string> CallContext => new string[] {"[Fact]", "0"};
+    public IEnumerable<string> CallContext => Array.Empty<string>();
     public string ReportFormat => String.Empty;
     public bool InPlace => false;
     public bool Save => false;
@@ -89,7 +89,7 @@ Implement the needed interfaces e.g. by copying and pasting this for the minimal
     public IEnumerable<string> CommandLine => throw new NotImplementedException("CommandLine not used");
     public bool ExposeReturnCode => throw new NotImplementedException("ExposeReturnCode not used");
     public bool SourceLink => true;
-    public bool Defer => true;
+    public bool Defer => throw new NotImplementedException("Defer not used");
     public bool LocalSource => true;
     public bool VisibleBranches => false;
     public string ShowStatic => String.Empty;
