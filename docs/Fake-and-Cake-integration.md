@@ -36,6 +36,8 @@ Fake.DotNet.DotNet.test
 
 # Cake integration 
 
+Applies to Cake 1.1 and up (with obsolescence warnings if used with Cake 2.0 or later)
+
 Found in `AltCover.Cake.dll`  
 Detailed API documentation is [presented here](AltCover.Cake/AltCover.Cake-apidoc).
 
