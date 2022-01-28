@@ -5458,52 +5458,72 @@ _Target
   </packageSources>
 </configuration>"""
 
-            File.WriteAllText(
-                "./_Cake/NuGet.config",
-                String.Format(config, Path.getFullName "./_Packaging.api")
-            )
+            File.WriteAllText("./_Cake/NuGet.config", String.Format(config, Path.getFullName "./_Packaging.api"))
 
-            let script = File.ReadAllText ("./Build/build.cake")
+            let script = File.ReadAllText("./Build/build.cake")
+
             File.WriteAllText(
                 "./_Cake/build.cake",
-                script.Replace("{0}", (Path.getFullName "./_Packaging.api").Replace("\\", "/"))
-                      .Replace("{1}", Version.Value)
+                script
+                    .Replace(
+                        "{0}",
+                        (Path.getFullName "./_Packaging.api")
+                            .Replace("\\", "/")
+                    )
+                    .Replace("{1}", Version.Value)
             )
 
-            Actions.RunDotnet
-                (fun o' ->
-                    { dotnetOptions o' with
-                          WorkingDirectory = "./_Cake" })
-                "tool"
-                ("install -g cake.tool  --version 1.3.0")
-                "Installed"
+            [ " --version 1.3.0"; String.Empty ]
+            |> List.iter
+                (fun cakeversion ->
+                    try
+                        Actions.RunDotnet
+                            (fun o' ->
+                                { dotnetOptions o' with
+                                      WorkingDirectory = "./_Cake" })
+                            "tool"
+                            ("install -g cake.tool" + cakeversion)
+                            "Installed"
 
-            Actions.RunDotnet
-                (fun o' ->
-                    { dotnetOptions o' with
-                          WorkingDirectory = "./_Cake" })
-                "tool"
-                ("list -g ")
-                "Checked"
+                        let cv =
+                            if String.IsNullOrWhiteSpace cakeversion then
+                                "Latest"
+                            else
+                                cakeversion.Trim()
 
-            Actions.RunDotnet
-                (withWorkingDirectoryOnly "_Cake")
-                "cake"
-                "build.cake --rebuild=true"
-                "running cake script returned with a non-zero exit code"
+                        Actions.RunDotnet
+                            (fun o' ->
+                                { dotnetOptions o' with
+                                      WorkingDirectory = "./_Cake" })
+                            "tool"
+                            ("list -g ")
+                            "Checked"
 
-            let x =
-                Path.getFullName "./_Cake/_DotnetTest/coverage.net6.0.xml"
+                        Actions.RunDotnet
+                            (withWorkingDirectoryOnly "_Cake")
+                            "cake"
+                            ("build.cake --rebuild=true \"--cakeversion="
+                             + cv
+                             + "\"")
+                            "running cake script returned with a non-zero exit code"
 
-            Actions.CheckSample4 before x
+                        let x =
+                            Path.getFullName (
+                                "./_Cake/_DotnetTest/coverage."
+                                + cv
+                                + ".net6.0.xml"
+                            )
+
+                        Actions.CheckSample4 before x
+                    finally
+                        Actions.RunDotnet
+                            (fun o' ->
+                                { dotnetOptions o' with
+                                      WorkingDirectory = "./_Cake" })
+                            "tool"
+                            ("uninstall -g cake.tool")
+                            "uninstalled")
         finally
-            Actions.RunDotnet
-                (fun o' ->
-                    { dotnetOptions o' with
-                          WorkingDirectory = "./_Cake" })
-                "tool"
-                ("uninstall -g cake.tool")
-                "uninstalled"
             [ "altcover.api" ]
             |> List.iter
                 (fun f ->

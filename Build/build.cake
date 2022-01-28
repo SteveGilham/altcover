@@ -4,6 +4,7 @@
 
 var target = Argument("target", "Test");
 var configuration = Argument("configuration", "Debug");
+var cakeversion = Argument("cakeversion", "Unknown");
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -35,13 +36,13 @@ Task("Build")
 
   class TestPrepareOptions : AltCover.Abstract.IPrepareOptions
   {
-    public IEnumerable<string> InputDirectories => Array.Empty<string>();
-    public IEnumerable<string> OutputDirectories => Array.Empty<string>();
+    public IEnumerable<string> InputDirectories => throw new NotImplementedException("InputDirectories not used");
+    public IEnumerable<string> OutputDirectories => throw new NotImplementedException("OutputDirectories not used");
     public IEnumerable<string> SymbolDirectories => Array.Empty<string>();
     public IEnumerable<string> Dependencies => Array.Empty<string>();
     public IEnumerable<string> Keys => Array.Empty<string>();
     public string StrongNameKey => String.Empty;
-    public string Report => String.Empty;
+    public string Report { get; set;}
     public IEnumerable<string> FileFilter => Array.Empty<string>();
     public IEnumerable<string> AssemblyFilter => Array.Empty<string>();
     public IEnumerable<string> AssemblyExcludeFilter => Array.Empty<string>();
@@ -97,8 +98,12 @@ Task("Test")
     var im = ImportModule();
     Console.WriteLine("Version = {1} Import = '{2}'", null, testv, im);
 
+    var prep = new TestPrepareOptions();
+
+    prep.Report = "coverage." + cakeversion +".xml";
+
     var altcoverSettings = new CoverageSettings {
-        PreparationPhase = new TestPrepareOptions(),
+        PreparationPhase = prep,
         CollectionPhase = new TestCollectOptions(),
         Options = new TestOptions()
     };
