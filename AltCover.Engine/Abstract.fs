@@ -94,7 +94,7 @@ module Abstract =
     ///</summary>
     abstract member SummaryFormat : String with get
     ///<summary>
-    /// Corresponds to command line option ` -q`
+    /// Corresponds to command line option `-q`
     ///</summary>
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
@@ -125,7 +125,7 @@ module Abstract =
   type IPrepareOptions =
     interface
     ///<summary>
-    /// Corresponds to command line option ` -i, --inputDirectory=VALUE`
+    /// Corresponds to command line option `-i, --inputDirectory=VALUE`
     ///</summary>
     abstract member InputDirectories : IEnumerable<String> with get
     ///<summary>
@@ -141,7 +141,7 @@ module Abstract =
     ///</summary>
     abstract member Dependencies : IEnumerable<String> with get
     ///<summary>
-    /// Corresponds to command line option ` -k, --key=VALUE`
+    /// Corresponds to command line option `-k, --key=VALUE`
     ///</summary>
     abstract member Keys : IEnumerable<String> with get
     ///<summary>
@@ -169,7 +169,7 @@ module Abstract =
     ///</summary>
     abstract member TypeFilter : IEnumerable<String> with get
     ///<summary>
-    /// Corresponds to command line option ` -m, --methodFilter=VALUE`
+    /// Corresponds to command line option `-m, --methodFilter=VALUE`
     ///</summary>
     abstract member MethodFilter : IEnumerable<String> with get
     ///<summary>
@@ -249,7 +249,7 @@ module Abstract =
     ///</summary>
     abstract member LocalSource : bool with get
     ///<summary>
-    /// Corresponds to command line option ` -v, --visibleBranches`
+    /// Corresponds to command line option `-v, --visibleBranches`
     ///</summary>
     abstract member VisibleBranches : bool with get
     ///<summary>
@@ -257,11 +257,11 @@ module Abstract =
     ///</summary>
     abstract member ShowStatic : string with get
     ///<summary>
-    /// Corresponds to command line option ` --showGenerated`
+    /// Corresponds to command line option `--showGenerated`
     ///</summary>
     abstract member ShowGenerated : bool with get
     ///<summary>
-    /// Corresponds to command line option ` -q`
+    /// Corresponds to command line option `-q`
     ///</summary>
     abstract member Verbosity : System.Diagnostics.TraceLevel with get
   end
