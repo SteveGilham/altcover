@@ -32,6 +32,9 @@ public interface IPrepareOptions
 | [CallContext](Abstract.IPrepareOptions/CallContext-apidoc) { get; } | Corresponds to command line option `-c, --callContext=VALUE` |
 | [CommandLine](Abstract.IPrepareOptions/CommandLine-apidoc) { get; } | Corresponds to the command line to run, given after a `-- ` |
 | [Defer](Abstract.IPrepareOptions/Defer-apidoc) { get; } | Corresponds to command line option `--defer` |
+
+| name | description |
+| --- | --- |
 | [Dependencies](Abstract.IPrepareOptions/Dependencies-apidoc) { get; } | Corresponds to command line option `-d, --dependency=VALUE` |
 | [ExposeReturnCode](Abstract.IPrepareOptions/ExposeReturnCode-apidoc) { get; } | Corresponds to the converse of command line option `--dropReturnCode ` |
 | [FileFilter](Abstract.IPrepareOptions/FileFilter-apidoc) { get; } | Corresponds to command line option `-f, --fileFilter=VALUE` |
@@ -40,18 +43,21 @@ public interface IPrepareOptions
 | [Keys](Abstract.IPrepareOptions/Keys-apidoc) { get; } | Corresponds to command line option ` -k, --key=VALUE` |
 | [LineCover](Abstract.IPrepareOptions/LineCover-apidoc) { get; } | Corresponds to command line option `--linecover` |
 | [LocalSource](Abstract.IPrepareOptions/LocalSource-apidoc) { get; } | Corresponds to command line option `-l, --localSource` |
-| [MethodFilter](Abstract.IPrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
-| [MethodPoint](Abstract.IPrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
-| [MethodTopLevel](Abstract.IPrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 
 | name | description |
 | --- | --- |
+| [MethodFilter](Abstract.IPrepareOptions/MethodFilter-apidoc) { get; } | Corresponds to command line option ` -m, --methodFilter=VALUE` |
+| [MethodPoint](Abstract.IPrepareOptions/MethodPoint-apidoc) { get; } | Corresponds to command line option `--methodpoint` |
+| [MethodTopLevel](Abstract.IPrepareOptions/MethodTopLevel-apidoc) { get; } | Corresponds to command line option `--methodtoplevel=VALUE` |
 | [OutputDirectories](Abstract.IPrepareOptions/OutputDirectories-apidoc) { get; } | Corresponds to command line option `-o, --outputDirectory=VALUE` |
 | [PathFilter](Abstract.IPrepareOptions/PathFilter-apidoc) { get; } | Corresponds to command line option `-p, --pathFilter=VALUE` |
 | [Report](Abstract.IPrepareOptions/Report-apidoc) { get; } | Corresponds to command line option `-r, --report=VALUE` |
 | [ReportFormat](Abstract.IPrepareOptions/ReportFormat-apidoc) { get; } | Corresponds to command line option `--reportFormat=VALUE` |
 | [Save](Abstract.IPrepareOptions/Save-apidoc) { get; } | Corresponds to command line option `--save` |
 | [ShowGenerated](Abstract.IPrepareOptions/ShowGenerated-apidoc) { get; } | Corresponds to command line option ` --showGenerated` |
+
+| name | description |
+| --- | --- |
 | [ShowStatic](Abstract.IPrepareOptions/ShowStatic-apidoc) { get; } | Corresponds to command line option `--showstatic[=VALUE]` |
 | [SingleVisit](Abstract.IPrepareOptions/SingleVisit-apidoc) { get; } | Corresponds to command line option `--single` |
 | [SourceLink](Abstract.IPrepareOptions/SourceLink-apidoc) { get; } | Corresponds to command line option `--sourcelink` |
