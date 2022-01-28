@@ -1392,11 +1392,10 @@ _Target
         if Environment.isWindows
            && [ "APPVEYOR_BUILD_NUMBER"
                 "GITHUB_RUN_NUMBER" ]
-              |> List.exists (
-                  Environment.environVar
-                  >> String.IsNullOrWhiteSpace
-                  >> not
-              ) then
+              |> List.exists (Environment.environVar
+                              >> String.IsNullOrWhiteSpace
+                              >> not)
+        then
             let coveralls =
                 ("./packages/"
                  + (packageVersion "coveralls.io")
