@@ -65,7 +65,7 @@ Task("Build")
     public IEnumerable<string> CommandLine => throw new NotImplementedException("CommandLine not used");
     public bool ExposeReturnCode => throw new NotImplementedException("ExposeReturnCode not used");
     public bool SourceLink => true;
-    public bool Defer => true;
+    public bool Defer => throw new NotImplementedException("Defer not used");
     public bool LocalSource => true;
     public bool VisibleBranches => false;
     public string ShowStatic => String.Empty;
