@@ -49,7 +49,7 @@ In your `.cake` file include
 ```
 the first two needed to silence warnings.
 
-Implement the needed interfaces e.g. by copying and pasting this for the minimal example
+Implement the needed interfaces ([as documented here](AltCover.Engine/AltCover/Abstract-apidoc)) e.g. by copying and pasting this for the minimal example
 ```
   class TestOptions : AltCover.DotNet.ICLIOptions
   {
