@@ -5401,6 +5401,117 @@ _Target
             "./Samples/Sample4/Sample4LongForm.fsproj")
 
 _Target
+    "Cake1Test" 
+    (fun _ ->
+        let before = Actions.ticksNow ()
+
+        try
+            Directory.ensure "./_Cake"
+            Shell.cleanDir "./_Cake"
+            Directory.ensure "./_Binaries/cake_dotnettest"
+            Shell.cleanDir "./_Binaries/cake_dotnettest"
+            Directory.ensure "./_Cake/_DotnetTest"
+
+            let config =
+                XDocument.Load "./Build/NuGet.config.dotnettest"
+
+            let repo =
+                config.Descendants(XName.Get("add")) |> Seq.head
+
+            repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+            config.Save "./_Cake/_DotnetTest/NuGet.config"
+
+            let fsproj =
+                XDocument.Load "./Samples/Sample4/Sample4.fsproj"
+
+            let targets =
+                fsproj.Descendants(XName.Get("TargetFrameworks"))
+                |> Seq.head
+
+            targets.SetValue "net6.0"
+
+            let pack =
+                fsproj.Descendants(XName.Get("PackageReference"))
+                |> Seq.head
+
+            let inject =
+                XElement(
+                    XName.Get "PackageReference",
+                    XAttribute(XName.Get "Include", "altcover.api"),
+                    XAttribute(XName.Get "Version", Version.Value)
+                )
+
+            pack.AddBeforeSelf inject
+
+            fsproj.Save "./_Cake/_DotnetTest/cake_dotnettest.fsproj"
+
+            Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.fs")
+            Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.json")
+            Shell.copyDir "./_Cake/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
+
+            let config =
+                """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="local" value="{0}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>"""
+
+            File.WriteAllText(
+                "./_Cake/NuGet.config",
+                String.Format(config, Path.getFullName "./_Packaging.api")
+            )
+
+            let script = File.ReadAllText ("./Build/build.cake")
+            File.WriteAllText(
+                "./_Cake/build.cake",
+                script.Replace("{0}", (Path.getFullName "./_Packaging.api").Replace("\\", "/"))
+                      .Replace("{1}", Version.Value)
+            )
+
+            Actions.RunDotnet
+                (fun o' ->
+                    { dotnetOptions o' with
+                          WorkingDirectory = "./_Cake" })
+                "tool"
+                ("install -g cake.tool  --version 1.3.0")
+                "Installed"
+
+            Actions.RunDotnet
+                (fun o' ->
+                    { dotnetOptions o' with
+                          WorkingDirectory = "./_Cake" })
+                "tool"
+                ("list -g ")
+                "Checked"
+
+            Actions.RunDotnet
+                (withWorkingDirectoryOnly "_Cake")
+                "cake"
+                "build.cake --rebuild=true"
+                "running cake script returned with a non-zero exit code"
+
+            let x =
+                Path.getFullName "./_Cake/_DotnetTest/coverage.net6.0.xml"
+
+            Actions.CheckSample4 before x
+        finally
+            Actions.RunDotnet
+                (fun o' ->
+                    { dotnetOptions o' with
+                          WorkingDirectory = "./_Cake" })
+                "tool"
+                ("uninstall -g cake.tool")
+                "uninstalled"
+            [ "altcover.api" ]
+            |> List.iter
+                (fun f ->
+                    let folder = (nugetCache @@ f) @@ Version.Value
+                    Shell.mkdir folder
+                    Actions.CleanDir folder))
+
+_Target
     "ApiUse"
     (fun _ ->
         let before = Actions.ticksNow ()
@@ -7506,6 +7617,8 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "MSBuildTest" ==> "Deployment"
 
 "Unpack" ==> "ApiUse" ==> "Deployment"
+
+"Unpack" ==> "Cake1Test" ==> "Deployment"
 
 "Unpack"
 ==> "DotnetTestIntegration"
