@@ -20,7 +20,7 @@ In the project(s) to be covered, insert at least
     </PackageReference>
 ```
 
-with the relevant script fragment (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/33e11d1480e3bb27f710748cbe2f04e589d9a840/Build/targets.fsx#L5694-L5718))
+with the relevant script fragment (based on [the AltCover build script here](https://github.com/SteveGilham/altcover/blob/9b12b5b27f2877fcde186c1d8c08f6335108e306/Build/targets.fsx#L3425-L3454))
 
 ```
 #r "paket:
