@@ -2,10 +2,10 @@
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 8.2.83x (Habu series release 11)
+# 8.2.835 (Habu series release 11)
 * [BUGFIX] Fix tracked methods in the `Merge-OpenCover` cmdlet
-* [BUGFIX] Cake support would never have worked; fix it and add operational test
-* Move Fake.Build support to 5.21 as minimum; and now we can use F# v6 all around (recorder excepted)
+* [BUGFIX] Fix blocking ussue in Cake support; and add operational test
+* Move Fake.Build support to 5.21 as minimum; updating other supporting libraries
 
 # 8.2.833 (Habu series release 10)
 * [BUGFIX] Work-round more (problems with ill-formed debug data)[https://github.com/jbevain/cecil/issues/816] (issue #135)
