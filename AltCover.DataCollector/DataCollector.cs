@@ -12,6 +12,11 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 [assembly: System.Resources.NeutralResourcesLanguageAttribute("en-GB")]
+[assembly: SuppressMessage("AltCode.Rules.General",
+                           "JustifySuppressionRule",
+                           Scope = "member", // MethodDefinition
+                           Target = "AltCover.Resources.Resources::.ctor()",
+                           Justification = "Compiler generated")]
 
 namespace AltCover
 {
@@ -106,7 +111,7 @@ namespace AltCover
 
     public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
     {
-      if (!supervising) Supervise ();
+      if (!supervising) Supervise();
       Debug.WriteLine("TestCaseStart {0}", testCaseStartArgs);
     }
 

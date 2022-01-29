@@ -6,6 +6,8 @@ open System.Reflection
 open Fake.Core
 open Fake.DotNet
 
+open AltCover.Shared
+
 [<RequireQualifiedAccess>]
 [<SuppressMessage("Gendarme.Rules.Smells",
                   "RelaxedAvoidCodeDuplicatedInSameClassRule",
@@ -288,7 +290,8 @@ module AltCoverCommand =
                     Justification = "Fake.build style")>]
   let runWithMono monoPath options =
     let withMono (command: CreateProcess<_>) = // withMono line
-      if options.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
+      if options.ToolType.GetType().FullName
+         == "Fake.DotNet.ToolType+FullFramework"
          && Fake.Core.Environment.isWindows then
         match command.Command with
         | RawCommand (tool, args) ->
@@ -314,16 +317,16 @@ module AltCoverCommand =
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@290T.#monoPath",
+                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@292T.#monoPath",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@290T.#options",
+                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withMono@292T.#options",
                             Justification = "Generated code")>]
 [<assembly: SuppressMessage("Microsoft.Performance",
                             "CA1823:AvoidUnusedPrivateFields",
                             Scope = "member",
-                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@243T.#options",
+                            Target = "AltCoverFake.DotNet.Testing.AltCoverCommand+withWorkingDirectory@245T.#options",
                             Justification = "Generated code")>]
 ()

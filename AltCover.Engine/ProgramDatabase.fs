@@ -3,13 +3,14 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.IO
-open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
 open Mono.Cecil.Rocks
+
+open AltCover.Shared
 
 [<RequireQualifiedAccess>]
 module internal ProgramDatabase =
@@ -23,7 +24,7 @@ module internal ProgramDatabase =
     // but we do to get the embedded PDB info
     let internal getEmbed =
       (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes ()
-       |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.Mixin")
+       |> Seq.filter (fun m -> m.FullName == "Mono.Cecil.Mixin")
        |> Seq.head)
         .GetMethod("GetEmbeddedPortablePdbEntry")
 
@@ -65,7 +66,7 @@ module internal ProgramDatabase =
     |> Option.filter
          (fun s ->
            File.Exists s
-           || (s = (assembly.Name.Name + ".pdb")
+           || (s == (assembly.Name.Name + ".pdb")
                && (assembly |> I.getEmbeddedPortablePdbEntry)
                  .IsNotNull))
 

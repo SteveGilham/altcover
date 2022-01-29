@@ -6,6 +6,8 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
 
+open AltCover.Shared
+
 [<ExcludeFromCodeCoverage>]
 type internal Close =
   | DomainUnload
@@ -113,7 +115,7 @@ type internal Tracer =
 
   member internal this.OnStart() =
     let running =
-      if this.Tracer <> "Coverage.Default.xml.acv" then
+      if this.Tracer != "Coverage.Default.xml.acv" then
         this.Connect()
       else
         this

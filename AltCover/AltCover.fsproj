@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netcoreapp2.1;netcoreapp2.0;netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Configuration)'!='Debug'">netcoreapp2.1;netcoreapp2.0;net472</TargetFrameworks>
     <ToolCommandName Condition="'$(TargetFramework)' == 'netcoreapp2.1'">altcover</ToolCommandName>
     <PackAsTool Condition="'$(TargetFramework)' == 'netcoreapp2.1'">True</PackAsTool>
     <RootNamespace>AltCover</RootNamespace>
@@ -13,8 +14,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.0'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net472'">TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == 'netcoreapp2.1'">TRACE;DEBUG;CODE_ANALYSIS;GLOBALTOOL</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'netstandard2.0'">TRACE;DEBUG;CODE_ANALYSIS;GLOBALTOOL</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants Condition="'$(TargetFramework)' != 'netcoreapp2.1'">TRACE</DefineConstants>
@@ -51,7 +54,7 @@
 
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="5.0.2">
+    <PackageReference Update="FSharp.Core" Version="6.0.1">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
     <PackageReference Update="System.ValueTuple" Version="4.5.0" />

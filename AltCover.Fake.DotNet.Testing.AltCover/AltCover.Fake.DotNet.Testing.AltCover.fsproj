@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(Configuration)'=='Debug'">netstandard2.0;net472</TargetFrameworks>
-    <TargetFramework Condition="'$(Configuration)'!='Debug'">netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.Fake.DotNet.Testing.AltCover</RootNamespace>
     <AssemblyName>AltCover.Fake.DotNet.Testing.AltCover</AssemblyName>
     <GlobalDefineConstants>NoCanonicalDirectories</GlobalDefineConstants>
     <!-- something; Could not locate the assembly "Mono.Posix" -->
     <MSBuildWarningsAsMessages>MSB3277;MSB3245</MSBuildWarningsAsMessages>
+    <NoWarn>NU1701;NU1605</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -21,6 +21,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover.Toolkit\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
     <Compile Include="..\AltCover.Engine\Canonical.fs" Link="Canonical.fs" />
+    <Compile Include="..\AltCover.Engine\StringExtension.fs" Link="StringExtension.fs" />
     <Compile Include="..\AltCover.Engine\Abstract.fsi" Link="Abstract.fsi" />
     <Compile Include="..\AltCover.Engine\Abstract.fs" Link="Abstract.fs" />
     <Compile Include="..\AltCover.Engine\Primitive.fsi" Link="Primitive.fsi" />
@@ -40,23 +41,19 @@
 
   <ItemGroup>
     <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" />
-    <PackageReference Include="FAKE.Core.Environment" Version="5.20.4" />
-    <PackageReference Include="FAKE.Core.Process" Version="5.20.4" />
-    <PackageReference Include="FAKE.DotNet.Cli" Version="5.19.1" />
+    <PackageReference Include="FAKE.Core.Environment" Version="5.21.0" />
+    <PackageReference Include="FAKE.Core.Process" Version="5.21.0" />
+    <PackageReference Include="FAKE.DotNet.Cli" Version="5.21.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageReference Update="FSharp.Core" Version="5.0.2">
+    <PackageReference Update="FSharp.Core" Version="6.0.1">
       <ExcludeAssets>contentfiles</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

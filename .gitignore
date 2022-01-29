@@ -82,3 +82,4 @@ LastCoverageResults.log
 CoverageReport-*
 Samples/Sample29/Debug/
 Samples/Sample29/SimpleMix/Debug/
+ThirdParty/*.nupkg

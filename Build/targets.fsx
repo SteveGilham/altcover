@@ -7,6 +7,7 @@ open System.Reflection
 open System.Text
 open System.Xml
 open System.Xml.Linq
+open System.Xml.Schema
 
 open Actions
 open AltCode.Fake.DotNet
@@ -167,18 +168,22 @@ let dotnetOptionsWithRollForwards (o: DotNet.Options) =
 
     o.WithEnvironment env
 
-let fxcop =
+let (fxcop, dixon) =
     if Environment.isWindows then
         let expect =
             "./packages/fxcop/FxCopCmd.exe"
             |> Path.getFullName
 
         if File.Exists expect then
-            Some expect
+            (Some expect,
+             Some(
+                 "./packages/fxcop/DixonCmd.exe"
+                 |> Path.getFullName
+             ))
         else
-            None
+            (None, None)
     else
-        None
+        (None, None)
 
 let monoOnWindows =
     if Environment.isWindows then
@@ -236,6 +241,15 @@ let toolPackages =
 
     xml.Descendants(XName.Get("PackageReference"))
     |> Seq.filter (fun x -> x.Attribute(XName.Get("Include")) |> isNull |> not)
+    |> Seq.filter
+        (fun x ->
+            match x.Attribute(XName.Get("Condition")) with
+            | null -> true
+            | a ->
+                match (a.Value = "'$(OS)' == 'Windows_NT'", Environment.isWindows) with
+                | (true, true)
+                | (false, false) -> true
+                | _ -> false)
     |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
     |> Map.ofSeq
 
@@ -362,26 +376,18 @@ let coverletOptions (o: DotNet.Options) =
     { dotnetOptions o with
           CustomParams = Some "--collect:\"XPlat Code Coverage\"" }
 
-let coverletTestOptions (o: DotNet.TestOptions) =
+let coverletTaggedTestOptions report tag (o: DotNet.TestOptions) =
     { o.WithCommon dotnetOptions with
           Configuration = DotNet.BuildConfiguration.Debug
-          NoBuild = true
-          Framework = Some "net6.0"
-          Settings = Some "./_Generated/coverletArgs.runsettings"
-          Collect = Some "XPlat Code Coverage" }
-    |> testWithCLIArguments
-
-let coverletTaggedTestOptions tag (o: DotNet.TestOptions) =
-    { o.WithCommon dotnetOptions with
-          Configuration = DotNet.BuildConfiguration.Debug
+          ResultsDirectory = Some report
           NoBuild = true
           Framework = Some "net6.0"
           Settings = Some "./_Generated/coverletArgs.runsettings"
           Collect = Some "XPlat Code Coverage" }
     |> (testWithCLITaggedArguments tag)
 
-let coverletTestOptionsSample tag (o: DotNet.TestOptions) =
-    { coverletTaggedTestOptions tag o with
+let coverletTestOptionsSample report tag (o: DotNet.TestOptions) =
+    { coverletTaggedTestOptions report tag o with
           Settings = Some "./Build/coverletArgs.sample.runsettings"
           Collect = Some "XPlat Code Coverage" }
 
@@ -488,10 +494,16 @@ let doMSBuild config overrider proj =
 let msbuildRelease = doMSBuild withRelease
 let msbuildDebug = doMSBuild withDebug
 
+let dotnetOptionsWithSkipGtkInstall (o: DotNet.Options) =
+    let env =
+        o.Environment.Add("SkipGtkInstall", "True")
+
+    o.WithEnvironment env
+
 let dotnetBuildRelease proj =
     DotNet.build
         (fun p ->
-            { p.WithCommon dotnetOptions with
+            { p.WithCommon(dotnetOptions >> dotnetOptionsWithSkipGtkInstall) with
                   Configuration = DotNet.BuildConfiguration.Release }
             |> buildWithCLIArguments)
         (Path.GetFullPath proj)
@@ -499,7 +511,7 @@ let dotnetBuildRelease proj =
 let dotnetBuildDebug proj =
     DotNet.build
         (fun p ->
-            { p.WithCommon dotnetOptions with
+            { p.WithCommon(dotnetOptions >> dotnetOptionsWithSkipGtkInstall) with
                   Configuration = DotNet.BuildConfiguration.Debug }
             |> buildWithCLIArguments)
         (Path.GetFullPath proj)
@@ -823,6 +835,8 @@ _Target
                 |> Path.getFullName
 
             if Environment.isWindows then // the Jolt comment reader library is sadly windows/fullframework bound
+                // see Jolt.XmlDocCommentReaderSettings.CreateDefaultSettings()
+                //  https://github.com/red-gate/JoltNet-core/tree/master/Jolt
                 Actions.RunDotnet
                     dotnetOptions
                     ""
@@ -1012,6 +1026,7 @@ _Target
            [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll"
              "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
              "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+             "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
              "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
              "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
              "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll"
@@ -1019,14 +1034,20 @@ _Target
              "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3 (obsolete)
              "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ])
-          ("./Build/common-rules.xml",
-           [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool build
+          ("./Build/common-rules.xml",  // Framework builds
+           [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" // framework builds
              "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ])
+          ("./Build/common-rules.xml",
+           [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll" // global tool builds
+             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" ])
           ("./Build/csharp-rules.xml",
            [ "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll"
-             "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
              "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
-             "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ]) ]
+             "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ])
+          ("./Build/csharp-rules.xml",  // Framework builds
+           [ "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll"
+             "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" ]) ]
         |> Seq.iter
             (fun (ruleset, files) ->
                 Gendarme.run
@@ -1121,7 +1142,19 @@ _Target
 
                     printfn "%s" (finish text text2))
 
-        let deprecatedRules = [ "-Microsoft.Usage#CA2202" ] // double dispose
+        let deprecatedRules =
+            [ "-Microsoft.Usage#CA2202" // double dispose
+              "-Microsoft.Design#CA2210" ] // should strongname
+
+        let gendarmeRules =
+            [ "-Microsoft.Design#CA1016" // :MarkAssembliesWithAssemblyVersion"
+              "-Microsoft.Performance#CA1822" // :MarkMembersAsStatic"
+              "-Microsoft.Design#CA1031" // :DoNotCatchGeneralExceptionTypes"
+              //"-Microsoft.Usage#CA2208" // :InstantiateArgumentExceptionsCorrectly"
+              "-Microsoft.Usage#CA1801" // :ReviewUnusedParameters"
+              //"-Microsoft.Globalization#CA1307" // :SpecifyStringComparison"
+              "-Microsoft.Design#CA1028" // :EnumStorageShouldBeInt32"
+              "-Microsoft.Design#CA1002" ] // :DoNotExposeGenericLists"
 
         let nonFsharpRules =
             [ "-Microsoft.Design#CA1006" // nested generics
@@ -1133,60 +1166,35 @@ _Target
               "-Microsoft.Maintainability#CA1506" ] // AvoidExcessiveClassCoupling
 
         let standardRules =
-            [ "-Microsoft.Design#CA1020"
-              "-Microsoft.Usage#CA2243:AttributeStringLiteralsShouldParseCorrectly" ] // small namespaces
+            [ "-Microsoft.Design#CA1020" // small namespaces
+              "-Microsoft.Usage#CA2243" ] // :AttributeStringLiteralsShouldParseCorrectly"
 
-        let cantStrongName = [ "-Microsoft.Design#CA2210" ] // should strongname
+        let minimalRules =
+            List.concat [ deprecatedRules
+                          standardRules
+                          gendarmeRules ]
 
         let defaultRules =
             List.concat [ deprecatedRules
                           standardRules
+                          gendarmeRules
                           nonFsharpRules ]
 
         let defaultCSharpRules =
             List.concat [ deprecatedRules
                           standardRules
+                          gendarmeRules
                           [ "-Microsoft.Design#CA1026:DefaultParametersShouldNotBeUsed" ] ]
 
-        [ ((if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
-                [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll"
-                  "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-                  "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]
-            else // HACK HACK HACK
-                [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe"
-                  "_Binaries/AltCover.DataCollector/Debug+AnyCPU/net472/AltCover.DataCollector.dll" ]),  // TODO netcore support
-           [],
-           standardRules)
-          ([ "_Binaries/AltCover.Fake/Debug+AnyCPU/net472/AltCover.Fake.dll" ],
-           [],
-           List.concat [ defaultRules
-                         cantStrongName ]) // can't strongname this as Fake isn't strongnamed
-          ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net472/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
-           [],
-           defaultRules)
-          ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net472/AltCover.Cake.dll" ],
-           [],
-           List.concat [ defaultCSharpRules
-                         cantStrongName ]) // can't strongname this as Cake isn't strongnamed
-          ([ "_Binaries/AltCover.Toolkit/Debug+AnyCPU/net472/AltCover.Toolkit.dll"
-             "_Binaries/AltCover.DotNet/Debug+AnyCPU/net472/AltCover.DotNet.dll" ],
-           [],
-           defaultRules)
-          ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ], [], defaultRules)
-          ([ "_Binaries/AltCover.UICommon/Debug+AnyCPU/net472/AltCover.UICommon.dll"
-             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],
-           [],
-           defaultRules)
-          ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
+        let refdir =
+            @"C:\Program Files\dotnet\sdk\6.0.101\ref" // TODO generate
+
+        // net20 targets
+        [ ([ "_Binaries/AltCover.Recorder/Debug+AnyCPU/net20/AltCover.Recorder.dll"
              "_Binaries/AltCover.Monitor/Debug+AnyCPU/net20/AltCover.Local.Monitor.dll" ],
            [],
            "-Microsoft.Naming#CA1703:ResourceStringsShouldBeSpelledCorrectly"
-           :: defaultRules) // Esperanto resources in-line
-          ([ "_Binaries/AltCover.Engine/Debug+AnyCPU/net472/AltCover.Engine.dll" ],
-           [],
-           List.concat [ defaultRules
-                         [ "-Microsoft.Naming#CA1703" // spelling in resources
-                           "-Microsoft.Performance#CA1810" ] ]) ] // Static module initializers in $Type classes
+           :: defaultRules) ]
         |> Seq.iter
             (fun (files, types, ruleset) ->
                 try
@@ -1194,7 +1202,6 @@ _Target
                     |> FxCop.run
                         { FxCop.Params.Create() with
                               WorkingDirectory = "."
-                              DependencyDirectories = [ "./ThirdParty/gtk-sharp2" ]
                               ToolPath = Option.get fxcop
                               UseGAC = true
                               Verbose = false
@@ -1208,12 +1215,141 @@ _Target
                     dumpSuppressions "_Reports/FxCopReport.xml"
                     reraise ())
 
+        [ (fxcop,  // framework targets
+           String.Empty,
+           (if String.IsNullOrEmpty(Environment.environVar "APPVEYOR_BUILD_VERSION") then
+                [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/net472/AltCover.FontSupport.dll" // dual build intentional
+                  "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]
+            else // HACK HACK HACK
+                [ "_Binaries/AltCover/Debug+AnyCPU/net472/AltCover.exe" ]),
+           [],
+           minimalRules)
+          (fxcop,  // framework targets
+           String.Empty,
+           [ "_Binaries/AltCover.Async/Debug+AnyCPU/net46/AltCover.Async.dll"
+             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net472/AltCover.Visualizer.exe" ],  // GTK2
+           [],
+           defaultRules)
+          (dixon,
+           refdir,
+           [ // new platform "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // GTK3
+             "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" // surrogate for above
+             "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll"
+             "_Binaries/AltCover.Fake/Debug+AnyCPU/netstandard2.0/AltCover.Fake.dll"
+             "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+           [],
+           defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.FontSupport/Debug+AnyCPU/netstandard2.0/AltCover.FontSupport.dll"
+             // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll" // same as net472
+             "_Binaries/AltCover.DataCollector/Debug+AnyCPU/netstandard2.0/AltCover.DataCollector.dll" ],
+           [],
+           minimalRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover/Debug+AnyCPU/netstandard2.0/AltCover.dll" ], // new platform "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.1/AltCover.dll"
+           [],
+           minimalRules)
+          //          (dixon, // new platform
+//           refdir,
+//           [ // new platform "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netcoreapp2.1/AltCover.Visualizer.dll" // Avalonia
+//             //  GetReaderForFile returned an unexpected HResult: 0x80004005. // same at net472 if built thus
+//             "_Binaries/AltCover.Avalonia/Debug+AnyCPU/netstandard2.0/AltCover.Visualizer.dll" ], [], defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/AltCover.Cake.dll" ],
+           [],
+           defaultCSharpRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.UICommon/Debug+AnyCPU/netstandard2.0/AltCover.UICommon.dll"
+             "_Binaries/AltCover.Toolkit/Debug+AnyCPU/netstandard2.0/AltCover.Toolkit.dll"
+             "_Binaries/AltCover.Monitor/Debug+AnyCPU/netstandard2.0/AltCover.Local.Monitor.dll"
+             "_Binaries/AltCover.DotNet/Debug+AnyCPU/netstandard2.0/AltCover.DotNet.dll" ],
+           [],
+           defaultRules)
+          (dixon,
+           refdir,
+           [ "_Binaries/AltCover.Engine/Debug+AnyCPU/netstandard2.0/AltCover.Engine.dll" ],
+           [],
+           List.concat [ defaultRules
+                         [ "-Microsoft.Naming#CA1703" // spelling in resources
+                           "-Microsoft.Performance#CA1810" ] ]) ] // Static module initializers in $Type classes
+        |> Seq.iter
+            (fun (tool, platform, files, types, ruleset) ->
+                try
+                    files
+                    |> FxCop.run
+                        { FxCop.Params.Create() with
+                              WorkingDirectory = "."
+                              DependencyDirectories =
+                                  [ "./ThirdParty/gtk-sharp2"
+                                    nugetCache
+                                    @@ "blackfox.commandline/1.0.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "cake.common/1.1.0/lib/netstandard2.0"
+                                    nugetCache @@ "cake.core/1.1.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "fake.core.environment/5.21.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "fake.core.process/5.21.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "fake.core.trace/5.21.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "fake.dotnet.cli/5.21.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "fake.dotnet.msbuild/5.21.0/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "gdksharp/3.24.24.34/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "glibsharp/3.24.24.34/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "gtksharp/3.24.24.34/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "mono.cecil/0.11.4/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "mono.options/6.12.0.148/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "microsoft.build.framework/16.0.461/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "microsoft.build.utilities.core/16.0.461/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "microsoft.testplatform.objectmodel/16.1.1/lib/netstandard1.5"
+                                    nugetCache
+                                    @@ "microsoft.netframework.referenceassemblies.net472/1.0.2/build/.NETFramework/v4.7.2"
+                                    nugetCache
+                                    @@ "pangosharp/3.24.24.34/lib/netstandard2.0"
+                                    nugetCache
+                                    @@ "powershellstandard.library/5.1.0/lib/netstandard2.0" ]
+                              ToolPath = Option.get tool
+                              PlatformDirectory = platform
+                              UseGAC = true
+                              Verbose = false
+                              ReportFileName = "_Reports/FxCopReport.xml"
+                              Types = types
+                              Rules = ruleset
+                              FailOnError = FxCop.ErrorLevel.Warning
+                              IgnoreGeneratedCode = true }
+                with
+                | _ ->
+                    dumpSuppressions "_Reports/FxCopReport.xml"
+                    reraise ())
+
         try
-            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net472/AltCover.PowerShell.dll" ]
+            [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/AltCover.PowerShell.dll" ]
             |> FxCop.run
                 { FxCop.Params.Create() with
                       WorkingDirectory = "."
-                      ToolPath = Option.get fxcop
+                      ToolPath = Option.get dixon
+                      PlatformDirectory = refdir
+                      DependencyDirectories =
+                          [ nugetCache
+                            @@ "fsharp.core/6.0.1/lib/netstandard2.0"
+                            nugetCache
+                            @@ "powershellstandard.library/5.1.0/lib/netstandard2.0" ]
                       UseGAC = true
                       Verbose = false
                       ReportFileName = "_Reports/FxCopReport.xml"
@@ -1256,11 +1392,10 @@ _Target
         if Environment.isWindows
            && [ "APPVEYOR_BUILD_NUMBER"
                 "GITHUB_RUN_NUMBER" ]
-              |> List.exists (
-                                Environment.environVar
-                                >> String.IsNullOrWhiteSpace
-                                >> not
-                            ) then
+              |> List.exists (Environment.environVar
+                              >> String.IsNullOrWhiteSpace
+                              >> not)
+        then
             let coveralls =
                 ("./packages/"
                  + (packageVersion "coveralls.io")
@@ -1356,22 +1491,6 @@ _Target
         Directory.ensure "./_Reports"
 
         try
-//            [ Path.getFullName "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/AltCover.Api.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Expecto.Tests/Debug+AnyCPU/net472/AltCover.Expecto.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/AltCover.Monitor.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll"
-//              //Path.getFullName "_Binaries/AltCover.Recorder2.Tests/Debug+AnyCPU/net472/AltCover.Recorder2.Tests.dll"
-//              Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/AltCover.Tests.dll"
-//              Path.getFullName "_Binaries/AltCover.Visualizer.Tests/Debug+AnyCPU/net472/AltCover.Tests.Visualizer.dll"
-//              Path.getFullName
-//                  "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/AltCover.ValidateGendarmeEmulation.dll" ]
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/JustUnitTestReport.xml"
-
             let baseArgs =
                 [ "--noheader"
                   "--work=."
@@ -1385,14 +1504,6 @@ _Target
 
             Actions.Run(nunitConsole, ".", baseArgs) "Main NUnit failed"
 
-//            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll")
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/RecorderUnitTestReport.xml"
-
             let recArgs =
                 [ "--noheader"
                   "--work=."
@@ -1400,14 +1511,6 @@ _Target
                   Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/AltCover.Recorder.Tests.dll" ]
 
             Actions.Run(nunitConsole, ".", recArgs) "Recorder NUnit failed"
-
-//            !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/AltCover.Recorder.Tests.dll")
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/Recorder2UnitTestReport.xml"
 
             let rec2Args =
                 [ "--noheader"
@@ -1528,13 +1631,18 @@ _Target
                 |> Seq.fold
                     (fun l f ->
                         let here = Path.GetDirectoryName f
-                        let tr = here @@ "TestResults"
+                        let name = here |> Path.GetFileName
+
+                        let report =
+                            Path.Combine(Path.getFullName "./_Reports", "Coverlet_" + name)
+
+                        let tr = report @@ "TestResults"
                         Directory.ensure tr
                         Shell.cleanDir tr
 
                         try
                             f
-                            |> DotNet.test (coverletTaggedTestOptions "Coverlet")
+                            |> DotNet.test (coverletTaggedTestOptions tr "Coverlet")
                         with
                         | x -> eprintf "%A" x
 
@@ -1813,22 +1921,6 @@ _Target
         printfn "Unit test the instrumented net4x code"
 
         try
-//            [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*.Tests.dll"
-//              !! "_Binaries/AltCover.Api.Tests/Debug+AnyCPU/net472/__ApiTestWithAltCover/*.Tests.dll"
-//              //!!"_Binaries/AltCover.Monitor.Tests/Debug+AnyCPU/net472/__MonitorTestWithAltCover/*.Tests.dll"
-//              //!!"_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net472/AltCover.Tests.*.dll"
-//              !! "_Binaries/AltCover.ValidateGendarmeEmulation/Debug+AnyCPU/net472/__ValidateGendarmeEmulationWithAltCover/Alt*Valid*.dll"
-//              !! "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net472/__RecorderTestWithAltCover/Alt*Test*.dll"
-//              !! "_Binaries/AltCover.Tests/Debug+AnyCPU/net472/__UnitTestWithAltCover/*ple2.dll" ]
-//            |> Seq.concat
-//            |> Seq.distinct
-//            |> NUnitRetry
-//                (fun p ->
-//                    { p with
-//                          ToolPath = nunitConsole
-//                          WorkingDir = "." })
-//                "./_Reports/UnitTestWithAltCoverReport.xml"
-
             let baseArgs =
                 [ "--noheader"
                   "--work=."
@@ -1877,7 +1969,7 @@ _Target
 
         printfn "Execute the net20 Recorder tests"
 
-//        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
+        //        !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net20/__RecorderTestWithAltCover/Alt*.Test*.dll")
 //        |> NUnitRetry
 //            (fun p ->
 //                { p with
@@ -3478,8 +3570,11 @@ _Target
                 "_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/AltCover.PowerShell.dll-Help.xml"
 
         if (poshHelp |> File.Exists |> not)
-           && (Environment.isWindows |> not) then
-            File.WriteAllText(poshHelp, "DUMMY TEXT")
+           && (Environment.isWindows |> not) then // as the cmdletdoc tool uses a windows-only toolkit
+            File.WriteAllText(
+                poshHelp,
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?><helpItems schema=\"maml\" xmlns=\"http://msh\" />"
+            )
 
         let vis =
             Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/net472/AltCover.Visualizer.exe"
@@ -3786,11 +3881,11 @@ _Target
                          housekeeping ],
            [ // make these explicit, as this package implies an opt-in
              ("BlackFox.CommandLine", "1.0.0")
-             ("FAKE.Core.Environment", "5.20.4")
-             ("FAKE.Core.Process", "5.20.4")
-             ("FAKE.DotNet.Cli", "5.19.1")
+             ("FAKE.Core.Environment", "5.21.0")
+             ("FAKE.Core.Process", "5.21.0")
+             ("FAKE.DotNet.Cli", "5.21.0")
              ("System.Collections.Immutable", "1.7.1")
-             ("FSharp.Core", "5.0.2") ],
+             ("FSharp.Core", "6.0.1") ],
            "_Packaging.fake",
            "./_Generated/altcover.fake.nuspec",
            "altcover.fake") ]
@@ -4755,9 +4850,11 @@ _Target
         |> AltCoverCommand.run
 
         // now do it for coverlet
-        let here = Path.GetDirectoryName sample
-        let tr = here @@ "TestResults"
-        Directory.ensure tr
+        let report =
+            (Path.getFullName "./_Reports")
+            @@ "Coverlet_OpenCoverForPester"
+
+        let tr = report @@ "TestResults"
         Directory.ensure tr
         Shell.cleanDir tr
 
@@ -4769,7 +4866,7 @@ _Target
                     |> (buildWithCLITaggedArguments "CoverletForPester"))
                 sample
 
-            DotNet.test (coverletTestOptionsSample "CoverletForPester") sample
+            DotNet.test (coverletTestOptionsSample tr "CoverletForPester") sample
         with
         | x -> eprintf "%A" x
 
@@ -5341,6 +5438,137 @@ _Target
             "./Samples/Sample4/Sample4LongForm.fsproj")
 
 _Target
+    "Cake1Test"
+    (fun _ ->
+        let before = Actions.ticksNow ()
+
+        try
+            Directory.ensure "./_Cake"
+            Shell.cleanDir "./_Cake"
+            Directory.ensure "./_Binaries/cake_dotnettest"
+            Shell.cleanDir "./_Binaries/cake_dotnettest"
+            Directory.ensure "./_Cake/_DotnetTest"
+
+            let config =
+                XDocument.Load "./Build/NuGet.config.dotnettest"
+
+            let repo =
+                config.Descendants(XName.Get("add")) |> Seq.head
+
+            repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+            config.Save "./_Cake/_DotnetTest/NuGet.config"
+
+            let fsproj =
+                XDocument.Load "./Samples/Sample4/Sample4.fsproj"
+
+            let targets =
+                fsproj.Descendants(XName.Get("TargetFrameworks"))
+                |> Seq.head
+
+            targets.SetValue "net6.0"
+
+            let pack =
+                fsproj.Descendants(XName.Get("PackageReference"))
+                |> Seq.head
+
+            let inject =
+                XElement(
+                    XName.Get "PackageReference",
+                    XAttribute(XName.Get "Include", "altcover.api"),
+                    XAttribute(XName.Get "Version", Version.Value)
+                )
+
+            pack.AddBeforeSelf inject
+
+            fsproj.Save "./_Cake/_DotnetTest/cake_dotnettest.fsproj"
+
+            Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.fs")
+            Shell.copy "./_Cake/_DotnetTest" (!! "./Samples/Sample4/*.json")
+            Shell.copyDir "./_Cake/_DotnetTest/Data" "./Samples/Sample4/Data" File.Exists
+
+            let config =
+                """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="local" value="{0}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>"""
+
+            File.WriteAllText("./_Cake/NuGet.config", String.Format(config, Path.getFullName "./_Packaging.api"))
+
+            let script = File.ReadAllText("./Build/build.cake")
+
+            File.WriteAllText(
+                "./_Cake/build.cake",
+                script
+                    .Replace(
+                        "{0}",
+                        (Path.getFullName "./_Packaging.api")
+                            .Replace("\\", "/")
+                    )
+                    .Replace("{1}", Version.Value)
+            )
+
+            [ " --version 1.3.0"; String.Empty ]
+            |> List.iter
+                (fun cakeversion ->
+                    try
+                        Actions.RunDotnet
+                            (fun o' ->
+                                { dotnetOptions o' with
+                                      WorkingDirectory = "./_Cake" })
+                            "tool"
+                            ("install -g cake.tool" + cakeversion)
+                            "Installed"
+
+                        let cv =
+                            if String.IsNullOrWhiteSpace cakeversion then
+                                "Latest"
+                            else
+                                cakeversion.Trim()
+
+                        Actions.RunDotnet
+                            (fun o' ->
+                                { dotnetOptions o' with
+                                      WorkingDirectory = "./_Cake" })
+                            "tool"
+                            ("list -g ")
+                            "Checked"
+
+                        Actions.RunDotnet
+                            (withWorkingDirectoryOnly "_Cake")
+                            "cake"
+                            ("build.cake --rebuild=true \"--cakeversion="
+                             + cv
+                             + "\"")
+                            "running cake script returned with a non-zero exit code"
+
+                        let x =
+                            Path.getFullName (
+                                "./_Cake/_DotnetTest/coverage."
+                                + cv
+                                + ".net6.0.xml"
+                            )
+
+                        Actions.CheckSample4 before x
+                    finally
+                        Actions.RunDotnet
+                            (fun o' ->
+                                { dotnetOptions o' with
+                                      WorkingDirectory = "./_Cake" })
+                            "tool"
+                            ("uninstall -g cake.tool")
+                            "uninstalled")
+        finally
+            [ "altcover.api" ]
+            |> List.iter
+                (fun f ->
+                    let folder = (nugetCache @@ f) @@ Version.Value
+                    Shell.mkdir folder
+                    Actions.CleanDir folder))
+
+_Target
     "ApiUse"
     (fun _ ->
         let before = Actions.ticksNow ()
@@ -5541,13 +5769,14 @@ Target.runOrDefault "DoIt"
             File.WriteAllText("./_ApiUse/DriveApi.fsx", script.Replace("{0}", "\"" + ver + "\""))
 
             let dependencies =
-                """version 5.257.0
+                """version 6.2.1
 // [ FAKE GROUP ]
 group NetcoreBuild
   storage: none
   source https://api.nuget.org/v3/index.json
-  nuget Fake.Core.Target >= 5.20.3
-  nuget Fake.DotNet.Cli >= 5.20.3
+  nuget FSharp.Core = 6.0.1
+  nuget Fake.Core.Target >= 5.21.0
+  nuget Fake.DotNet.Cli >= 5.21.0
   source {0}
   nuget AltCover.Api {1}
   source {2}
@@ -6999,6 +7228,241 @@ _Target
 
         // coverageSummary ()
 
+        // Cobertura .xsd windows-1252 support
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+
+        let schemaOf x =
+            let result = XmlSchemaSet()
+            use stream = File.OpenRead x
+            use reader = XmlReader.Create(stream)
+            result.Add(String.Empty, reader) |> ignore
+            result
+
+        let coberturaStrict =
+            schemaOf "./AltCover.Tests/coverage-04.xsd"
+
+        let cobertura34 =
+            schemaOf "./AltCover.Toolkit/xsd/Cobertura.xsd"
+
+        let ncover =
+            schemaOf "./AltCover.Toolkit/xsd/NCover.xsd"
+
+        let ncoverEmbedded =
+            schemaOf "./AltCover.Toolkit/xsd/NCoverEmbedded.xsd"
+
+        let opencover =
+            schemaOf "./AltCover.Toolkit/xsd/OpenCover.xsd"
+
+        let opencoverStrict =
+            schemaOf "./AltCover.Toolkit/xsd/OpenCoverStrict.xsd"
+
+        let packages = "packages" |> Path.getFullName
+
+        let files =
+            !!(@"./**/*.xml")
+            |> Seq.filter
+                (fun f ->
+                    f.StartsWith(packages, StringComparison.Ordinal)
+                    |> not)
+            |> Seq.toList
+
+        let xml =
+            files |> List.map (fun x -> x, XDocument.Load x)
+
+        let ncover2Files =
+            xml
+            |> List.filter
+                (fun x ->
+                    let root = (snd x).Root
+
+                    root.Name.LocalName = "coverage"
+                    && isNull <| root.Attribute(XName.Get "line-rate"))
+            |> List.filter
+                (fun x ->
+                    try
+                        (snd x).Validate(ncoverEmbedded, null)
+                        false
+                    with
+                    | :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        let expected =
+            [ // 3 broken visit counts + 1 alien format
+              "AltCover.Recorder.Tests/SimpleCoverage.xml"
+              "AltCover.Tests/NCover122.xml"
+              "__AltCover.Recorder.Tests/SimpleCoverage.xml"
+              "Samples/Sample20/Reports/mprof-report.xml" ]
+            |> List.map Path.getFullName
+            |> List.filter File.Exists
+
+        Assert.That(ncover2Files, Is.EquivalentTo expected, "ncover2Files")
+
+        let ncoverFiles =
+            xml
+            |> List.filter
+                (fun x ->
+                    let root = (snd x).Root
+
+                    root.Name.LocalName = "coverage"
+                    && isNull <| root.Attribute(XName.Get "line-rate"))
+            |> List.filter
+                (fun x ->
+                    try
+                        (snd x).Validate(ncover, null)
+                        false
+                    with
+                    | :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        let expectedStrict =
+            [ expected // add embedded source cases
+              !!(@"./_Binaries/**/FlushLeavesExpectedTracesWhenDiverted.xml")
+              |> Seq.toList
+              [ "_Packaging/HandRolledMonoNCover.xml"
+                "AltCover.Tests/HandRolledToNCover.xml"
+                "AltCover.Tests/NCoverWithEmbeds.xml"
+                "AltCover.Tests/NCoverWithPartials.xml" ]
+              |> List.map Path.getFullName ]
+            |> List.concat
+            |> List.filter File.Exists
+
+        Assert.That(ncoverFiles, Is.EquivalentTo expectedStrict, "ncoverFiles")
+
+        let coberturaFiles =
+            xml
+            |> List.filter
+                (fun x ->
+                    let root = (snd x).Root
+
+                    root.Name.LocalName = "coverage"
+                    && not (isNull <| root.Attribute(XName.Get "line-rate")))
+            |> List.filter
+                (fun x ->
+                    try
+                        (snd x).Validate(cobertura34, null)
+                        false
+                    with
+                    | :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        Assert.That(coberturaFiles, Is.EquivalentTo [], "coberturaFiles")
+
+        let cobertura2Files =
+            xml
+            |> List.filter
+                (fun x ->
+                    let root = (snd x).Root
+
+                    root.Name.LocalName = "coverage"
+                    && not (isNull <| root.Attribute(XName.Get "line-rate")))
+            |> List.filter
+                (fun x ->
+                    try
+                        (snd x).Validate(coberturaStrict, null)
+                        false
+                    with
+                    | :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        let c2expect =
+            [ "Samples/Sample20/Reports/Cobertura_altcover.xml"
+              "Samples/Sample20/Reports/Cobertura_coverlet.xml" ]
+            |> List.map Path.getFullName
+
+        Assert.That(cobertura2Files, Is.EquivalentTo c2expect, "cobertura2Files")
+
+        let opencoverFiles =
+            xml
+            |> List.filter
+                (fun x ->
+                    let root = (snd x).Root
+                    root.Name.LocalName = "CoverageSession")
+            |> List.filter
+                (fun x ->
+                    try
+                        (snd x).Validate(opencover, null)
+                        false
+                    with
+                    | :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        let o1expect =
+            [ "AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
+              "AltCover.Tests/issue122.xml" // ditto
+              "AltCover.Tests/Sample1WithOpenCover.xml" // ditto
+              "__AltCover.Recorder.Tests/Sample1WithModifiedOpenCover.xml" // vc broken
+              "Samples/Sample20/Reports/OpenCover_coverlet.xml" ] // coverlet spelling error upsid "The required attribute 'uspid' is missing."
+            |> List.map Path.getFullName
+            |> List.filter File.Exists
+
+        Assert.That(opencoverFiles, Is.EquivalentTo o1expect, "opencoverFiles")
+
+        let opencover2Files =
+            xml
+            |> List.filter
+                (fun x ->
+                    let root = (snd x).Root
+                    root.Name.LocalName = "CoverageSession")
+            |> List.filter
+                (fun x ->
+                    try
+                        (snd x).Validate(opencoverStrict, null)
+                        false
+                    with
+                    | :? XmlSchemaValidationException -> true)
+            |> List.map fst
+
+        let o2expect =
+            [ // embeds
+              "__AltCover.Api.Tests/OpenCover.xml"
+              "AltCover.Api.Tests/OpenCover.xml"
+              "_DotnetTestBranchCover/coverage.xml"
+              "_DotnetTestBranchCoverInPlace/coverage.xml"
+              "_DotnetTestLineCover/coverage.xml"
+              "_DotnetTestLineCoverInPlace/coverage.xml"
+              "_Issue23/coverage.xml"
+              "_Issue67/coverage.xml"
+              "AltCover.Tests/HandRolledMonoCoverage.xml"
+              "AltCover.Tests/OpenCoverWithEmbeds.xml"
+              "AltCover.Tests/OpenCoverWithPartials.xml"
+              "AltCover.Tests/Sample4FullTracking.xml"
+              // coverlet
+              "AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
+              "AltCover.Tests/OpenCoverForPester.coverlet.expected.xml"
+              "__AltCover.Api.Tests/OpenCoverForPester.coverlet.xml"
+              "AltCover.Tests/Sample21.coverage.opencover.xml"
+              "AltCover.Tests/Sample4.coverlet.xml" ]
+
+        let o3expect = // embeds
+            !!(@"./**/JsonWithPartials*Xml.xml") |> Seq.toList
+
+        let o4expect = // coverlet
+            !!(@"./_Reports/**/*.coverlet.xml") |> Seq.toList
+
+        let o5expect = // coverlet
+            !!(@"./**/coverage.opencover.xml") |> Seq.toList
+
+        let oexpect =
+            [ o1expect
+              o2expect
+              o3expect
+              o4expect
+              o5expect ]
+            |> List.concat
+            |> List.map Path.getFullName
+            |> List.filter File.Exists
+
+        Assert.That(opencover2Files, Is.EquivalentTo oexpect, "opencover2Files")
+
+        // let noncoverFiles =
+        //     xml
+        //     |> List.filter (fun x -> let root = (snd x).Root
+        //                              root.Name.LocalName <> "CoverageSession" &&
+        //                              root.Name.LocalName <> "coverage")
+
+        //     |> List.map fst
+        // Assert.That(noncoverFiles, Is.EquivalentTo [])
+
         let issue71 = !!(@"./**/*.exn") |> Seq.toList
 
         match issue71 with
@@ -7251,6 +7715,8 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack" ==> "MSBuildTest" ==> "Deployment"
 
 "Unpack" ==> "ApiUse" ==> "Deployment"
+
+"Unpack" ==> "Cake1Test" ==> "Deployment"
 
 "Unpack"
 ==> "DotnetTestIntegration"

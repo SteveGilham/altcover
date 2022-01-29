@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -17,3 +18,7 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("04cf1d47-825f-44f3-80c4-7f0885eb7139")]
+
+[assembly: SuppressMessage("AltCode.Rules.General",
+                           "PreferStrongNamedAssembliesRule",
+                           Justification = "Cake itself is not strongnamed")]

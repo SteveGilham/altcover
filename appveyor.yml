@@ -15,7 +15,7 @@ nuget:
   disable_publish_on_pr: true
 install:
   # SDK version fix
-  - cinst dotnet-sdk --version 6.0.100
+  - cinst dotnet-sdk --version 6.0.101
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
@@ -47,7 +47,7 @@ artifacts:
 deploy:
 - provider: NuGet
   api_key:
-    secure: jF/k4M3O7X/jEB/EUtKVoBK7DFM1yE10YdXVh09f8cE4Rmk+2V+SevL2BvWKsLbO
+    secure: IAJhZUJ7+G2nmClLCyNKBtAt97YHrfgaUqCexj0VwWOJsXC6FkRrXDlcC4di5SV5
   on:
     branch: /release.*/
 notifications:

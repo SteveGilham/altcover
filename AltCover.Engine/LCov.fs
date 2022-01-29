@@ -6,6 +6,8 @@ open System.Globalization
 open System.IO
 open System.Xml.Linq
 
+open AltCover.Shared
+
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
                                                   "AvoidSpeculativeGeneralityRule",
                                                   Justification = "Delegation = first class functions")>]
@@ -111,10 +113,10 @@ FN:4,(anonymous_0)
                  assembly.Descendants("method".X)
                  |> Seq.filter
                       (fun m ->
-                        m.Attribute("excluded".X).Value <> "true"
+                        m.Attribute("excluded".X).Value != "true"
                         && m.Descendants("seqpnt".X)
                            |> Seq.exists
-                                (fun s -> s.Attribute("excluded".X).Value <> "true"))
+                                (fun s -> s.Attribute("excluded".X).Value != "true"))
                  |> Seq.collect
                       (fun m ->
                         m.Descendants("seqpnt".X)
@@ -177,7 +179,7 @@ FN:4,(anonymous_0)
 
                                  let name = fullname m
                                  writer.WriteLine("FNDA:" + v + "," + name)
-                                 n.Increment(v <> "0"))
+                                 n.Increment(v != "0"))
                                0
                         // This  list  is followed by two lines containing the number of functions
                         // found and hit:
@@ -293,7 +295,7 @@ FN:4,(anonymous_0)
                                  |> Seq.exists
                                       (fun r ->
                                         let f = r.Attribute("fileid".X)
-                                        f.IsNotNull && f.Value = uid))
+                                        f.IsNotNull && f.Value == uid))
                           |> Seq.toList
 
                         let FN (ms: XElement list) = // fsharplint:disable-line NonPublicValuesNames
@@ -302,7 +304,7 @@ FN:4,(anonymous_0)
                                (fun m ->
                                  m.Descendants("SequencePoint".X)
                                  |> Seq.filter
-                                      (fun s -> s.Attribute("fileid".X).Value = uid)
+                                      (fun s -> s.Attribute("fileid".X).Value == uid)
                                  |> Seq.tryHead
                                  |> Option.iter
                                       (fun s ->
@@ -326,7 +328,7 @@ FN:4,(anonymous_0)
                                (fun m ->
                                  m.Descendants("SequencePoint".X)
                                  |> Seq.filter
-                                      (fun s -> s.Attribute("fileid".X).Value = uid)
+                                      (fun s -> s.Attribute("fileid".X).Value == uid)
                                  |> Seq.tryHead
                                  |> Option.iter
                                       (fun s ->
@@ -358,7 +360,7 @@ FN:4,(anonymous_0)
                           methods
                           |> List.filter
                                (fun m ->
-                                 m.Attribute("visited".X).Value = "true"
+                                 m.Attribute("visited".X).Value == "true"
                                  || [ m.Descendants("SequencePoint".X)
                                       m.Descendants("BranchPoint".X)
                                       m.Descendants("MethodPoint".X) ]
@@ -366,7 +368,7 @@ FN:4,(anonymous_0)
                                     |> Seq.exists
                                          (fun s ->
                                            let v = s.Attribute("vc".X).Value
-                                           v.IsNotNull && v <> "0"))
+                                           v.IsNotNull && v != "0"))
 
                         writer.WriteLine(
                           "FNH:"
@@ -383,7 +385,7 @@ FN:4,(anonymous_0)
                           let (brf, brh, _) =
                             ms
                             |> Seq.collect (fun m -> m.Descendants("BranchPoint".X))
-                            |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = uid)
+                            |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
                             |> Seq.filter
                                  (fun b ->
                                    b.Attribute("sl".X).Value
@@ -401,16 +403,16 @@ FN:4,(anonymous_0)
                                      "BRDA:"
                                      + sl
                                      + ","
-                                     + (if o = off then u else usp)
+                                     + (if o == off then u else usp)
                                      + ","
                                      + path
                                      + ","
-                                     + (if vc = "0" then "-" else vc)
+                                     + (if vc == "0" then "-" else vc)
                                    )
 
                                    (f + 1,
-                                    h + (if vc = "0" then 0 else 1),
-                                    (if o = off then (o, u) else (off, usp))))
+                                    h + (if vc == "0" then 0 else 1),
+                                    (if o == off then (o, u) else (off, usp))))
                                  (0, 0, ("?", "?"))
                           // Branch coverage summaries are stored in two lines:
                           //
@@ -438,7 +440,7 @@ FN:4,(anonymous_0)
                         let (lf, lh) =
                           methods
                           |> Seq.collect (fun m -> m.Descendants("SequencePoint".X))
-                          |> Seq.filter (fun s -> s.Attribute("fileid".X).Value = uid)
+                          |> Seq.filter (fun s -> s.Attribute("fileid".X).Value == uid)
                           |> Seq.filter
                                (fun b ->
                                  b.Attribute("sl".X).Value
@@ -459,7 +461,7 @@ FN:4,(anonymous_0)
                                    vc.ToString(CultureInfo.InvariantCulture)
 
                                  writer.WriteLine("DA:" + sl + "," + vcs)
-                                 (f + 1, h + if vcs = "0" then 0 else 1))
+                                 (f + 1, h + if vcs == "0" then 0 else 1))
                                (0, 0)
                         // At  the  end of a section, there is a summary about how many lines were
                         // found and how many were actually instrumented:

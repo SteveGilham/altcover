@@ -14,6 +14,8 @@ open System.Resources
 open System.Runtime.CompilerServices
 open System.Threading
 
+open AltCover.Shared
+
 module Instance =
   // Public "fields"
 
@@ -91,7 +93,7 @@ module Instance =
     |> Seq.map (fun a -> a.GetName())
     |> Seq.exists
          (fun n ->
-           n.Name = "AltCover.DataCollector"
+           n.Name == "AltCover.DataCollector"
            && n.FullName.EndsWith(
              "PublicKeyToken=c02b1a9f5b7cade8",
              StringComparison.Ordinal
@@ -159,9 +161,6 @@ module Instance =
 
       [<SuppressMessage("Gendarme.Rules.Correctness",
                         "MethodCanBeMadeStaticRule",
-                        Justification = "It's a compatibility hack")>]
-      [<SuppressMessage("Microsoft.Performance",
-                        "CA1822:MarkMembersAsStatic",
                         Justification = "It's a compatibility hack")>]
       member this.Value
         with get () = AsyncLocal<'a>.item
@@ -318,9 +317,9 @@ module Instance =
       text
       |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
-    [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
-                                                      "AvoidLongParameterListsRule",
-                                                      Justification = "Self-contained internal decorator")>]
+    [<SuppressMessage("Gendarme.Rules.Smells",
+                      "AvoidLongParameterListsRule",
+                      Justification = "Self-contained internal decorator")>]
 
     let
 #if !DEBUG

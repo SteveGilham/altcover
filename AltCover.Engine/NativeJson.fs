@@ -6,6 +6,8 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Xml.Linq
 
+open AltCover.Shared
+
 #if RUNNER
 open System.Text
 open Mono.Cecil
@@ -975,7 +977,7 @@ module
 
     let vb =
       branches
-      |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+      |> Seq.filter (fun x -> x.Attribute("vc".X).Value != "0")
       |> Seq.length
 
     let points = sp.Descendants("SequencePoint".X)
@@ -983,7 +985,7 @@ module
 
     let vs =
       points
-      |> Seq.filter (fun x -> x.Attribute("vc".X).Value <> "0")
+      |> Seq.filter (fun x -> x.Attribute("vc".X).Value != "0")
       |> Seq.length
 
     if ns > 0 then
@@ -1127,7 +1129,7 @@ module
              )
 
            kvp.Value
-           |> Seq.tryFind (fun kvp -> kvp.Key = "\u00ABAltCover.embed\u00BB")
+           |> Seq.tryFind (fun kvp -> kvp.Key == "\u00ABAltCover.embed\u00BB")
            |> Option.bind (fun kvp -> kvp.Value.Keys |> Seq.tryHead)
            |> Option.iter
                 (fun embed -> item.Add(XAttribute(XName.Get "altcover.embed", embed)))
@@ -1396,7 +1398,12 @@ module
           Type = null
           VisibleType = null }
 
-    let visitAfterModule s = { s with Documents = null }
+    let visitAfterModule s =
+      let w =
+        StringBuilder() |> documentsToBuilder s.Documents
+
+      Visitor.moduleReport <- w.ToString()
+      { s with Documents = null }
 
     let reportVisitor (s: JsonContext) (node: Node) =
       match node with
@@ -1444,67 +1451,6 @@ type internal DocumentType =
                             Target = "<StartupCode$AltCover-UICommon>.$NativeJson.#.cctor()",
                             Justification = "Compiler Generated")>]
 #endif
-
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,Microsoft.FSharp.Core.FSharpOption`1<System.Int32>)",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#Branches",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#SeqPnts",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+BranchInfo.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.UInt32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+BranchInfo.#Times",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+BranchInfo.#Tracks",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#.ctor(System.Collections.Generic.SortedDictionary`2<System.Int32,System.Int32>,System.Collections.Generic.List`1<AltCover.NativeJson+BranchInfo>,System.Collections.Generic.List`1<AltCover.NativeJson+SeqPnt>,System.Nullable`1<System.Int32>,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.String>)",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+SeqPnt.#.ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1<System.String>,System.Collections.Generic.List`1<System.Int32>)",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+SeqPnt.#Times",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+SeqPnt.#Tracks",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#Entry",
-                            Justification = "Harmless in context")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1002:DoNotExposeGenericLists",
-                            Scope = "member",
-                            Target = "AltCover.NativeJson+Method.#Exit",
-                            Justification = "Harmless in context")>]
 
 [<assembly: SuppressMessage("Microsoft.Naming",
                             "CA1704:IdentifiersShouldBeSpelledCorrectly",

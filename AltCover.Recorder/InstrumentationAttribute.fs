@@ -22,11 +22,3 @@ type InstrumentationAttribute() =
     /// </summary>
     member val Configuration = "Uninstrumented!!" with get, set
   end
-
-[<assembly: SuppressMessage("Gendarme.Rules.Design",
-                            "MarkAssemblyWithAssemblyVersionRule",
-                            Justification = "doing so fails static linkage because of attribute duplication")>]
-[<assembly: SuppressMessage("Microsoft.Design",
-                            "CA1016:MarkAssembliesWithAssemblyVersion",
-                            Justification = "Exactly as above")>]
-()

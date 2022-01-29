@@ -8,6 +8,7 @@ open System.IO
 open System.Linq
 open System.Xml.XPath
 open GuiCommon
+open AltCover.Shared
 
 module HandlerCommon =
   let DoRowActivation
@@ -190,12 +191,15 @@ module HandlerCommon =
 
             let v =
               (snd n)
-              |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
+              |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) != "0")
               |> Seq.length
 
             line, (v, num)))
       .ToDictionary(fst, snd)
 
+  [<SuppressMessage("Gendarme.Rules.Globalization",
+                    "PreferStringComparisonOverrideRule",
+                    Justification = "Compiler generated")>]
   let UpdateCoverageFiles (window: IVisualizerWindow) path add =
     let casematch =
       match System.Environment.GetEnvironmentVariable("OS") with
